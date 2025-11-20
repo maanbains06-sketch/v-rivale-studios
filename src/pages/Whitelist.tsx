@@ -102,21 +102,41 @@ const Whitelist = () => {
   });
 
   useEffect(() => {
+    const checkAuth = async (session: Session | null) => {
+      if (session?.user) {
+        // Check if user has steam_id in profile
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('steam_id')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (!profile?.steam_id) {
+          toast({
+            title: "Steam ID Required",
+            description: "Please link your Steam ID to access the whitelist",
+            variant: "destructive",
+          });
+          navigate("/auth");
+          return;
+        }
+        
+        // Check for existing application
+        setTimeout(() => {
+          checkExistingApplication(session.user.id);
+          checkExistingDraft(session.user.id);
+        }, 0);
+      } else {
+        navigate("/auth");
+      }
+    };
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
-        if (!session?.user) {
-          navigate("/auth");
-        } else {
-          // Check for existing application
-          setTimeout(() => {
-            checkExistingApplication(session.user.id);
-            checkExistingDraft(session.user.id);
-          }, 0);
-        }
+        checkAuth(session);
       }
     );
 
@@ -124,17 +144,11 @@ const Whitelist = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      
-      if (!session?.user) {
-        navigate("/auth");
-      } else {
-        checkExistingApplication(session.user.id);
-        checkExistingDraft(session.user.id);
-      }
+      checkAuth(session);
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   // Update current time every minute for countdown
   useEffect(() => {
