@@ -11,10 +11,10 @@ const Store = () => {
       <main className="container mx-auto px-4 pt-24 pb-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-gradient mb-4">
-            APEX RP Store
+            Coming Soon
           </h1>
           <p className="text-muted-foreground text-lg">
-            Get exclusive merchandise and support the server
+            Exclusive merchandise will be available soon
           </p>
         </div>
 
