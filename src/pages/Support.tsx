@@ -1,4 +1,5 @@
 import Navigation from "@/components/Navigation";
+import PageHeader from "@/components/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Mail, MessageCircle, FileText, HelpCircle, Clock, Users, Shield, Zap } from "lucide-react";
@@ -9,28 +10,24 @@ const Support = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      <main className="container mx-auto px-4 pt-24 pb-12">
-        {/* Hero Section */}
-        <div className="text-center mb-16 animate-fade-in">
-          <h1 className="text-5xl md:text-6xl font-bold text-gradient mb-4">
-            Support Center
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            Get help, find answers, and connect with our dedicated support team. We're here to ensure your SLRP experience is exceptional.
-          </p>
-          <div className="flex flex-wrap gap-6 justify-center text-sm">
-            <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-primary" />
-              <span className="text-muted-foreground">24/7 Support Available</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-primary" />
-              <span className="text-muted-foreground">Active Community</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-primary" />
-              <span className="text-muted-foreground">Fast Response Time</span>
-            </div>
+      <PageHeader 
+        title="Support Center"
+        description="Get help, find answers, and connect with our dedicated support team. We're here to ensure your SLRP experience is exceptional."
+      />
+      
+      <main className="container mx-auto px-4 pb-12">
+        <div className="flex flex-wrap gap-6 justify-center text-sm mb-16">
+          <div className="flex items-center gap-2">
+            <Clock className="w-5 h-5 text-primary" />
+            <span className="text-muted-foreground">24/7 Support Available</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Users className="w-5 h-5 text-primary" />
+            <span className="text-muted-foreground">Active Community</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Zap className="w-5 h-5 text-primary" />
+            <span className="text-muted-foreground">Fast Response Time</span>
           </div>
         </div>
 

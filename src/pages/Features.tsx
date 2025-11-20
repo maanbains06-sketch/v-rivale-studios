@@ -1,5 +1,6 @@
 import { Briefcase, Car, Home, TrendingUp, Calendar, Shield } from "lucide-react";
 import Navigation from "@/components/Navigation";
+import PageHeader from "@/components/PageHeader";
 import jobsImg from "@/assets/feature-jobs.jpg";
 import vehiclesImg from "@/assets/feature-vehicles.jpg";
 import housingImg from "@/assets/feature-housing.jpg";
@@ -51,16 +52,13 @@ const Features = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      <main className="pt-24 pb-16">
+      <PageHeader 
+        title="Server Features"
+        description="Experience unmatched gameplay with our custom features and systems"
+      />
+      
+      <main className="pb-16">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16 animate-fade-in">
-            <h1 className="text-5xl md:text-6xl font-bold mb-4 text-gradient">
-              Server Features
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Experience unmatched gameplay with our custom features and systems
-            </p>
-          </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, index) => (
