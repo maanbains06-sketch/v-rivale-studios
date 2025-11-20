@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
+import headerStatus from "@/assets/header-status.jpg";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, Activity, Clock, Zap, TrendingUp, AlertCircle } from "lucide-react";
@@ -85,6 +86,7 @@ const Status = () => {
         title="Server Status"
         description="Real-time server statistics and performance metrics"
         badge="🟢 Server Online"
+        backgroundImage={headerStatus}
       />
       
       <main className="pb-16">

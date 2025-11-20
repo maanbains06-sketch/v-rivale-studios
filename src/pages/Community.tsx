@@ -2,6 +2,7 @@ import { MessageCircle, Users, Image, Calendar, HelpCircle, FileText, UserPlus, 
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
+import headerCommunity from "@/assets/header-community.jpg";
 
 const communityLinks = [
   {
@@ -65,6 +66,7 @@ const Community = () => {
       <PageHeader 
         title="Join Our Community"
         description="Connect with thousands of players and be part of something amazing"
+        backgroundImage={headerCommunity}
       />
       
       <main className="pb-16">

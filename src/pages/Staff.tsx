@@ -1,5 +1,6 @@
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
+import headerStaff from "@/assets/header-staff.jpg";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Shield, Users, Code, HeadphonesIcon, Star, Trophy, Heart, Target, Sparkles, Zap, Clock, Award, MessageCircle } from "lucide-react";
@@ -123,6 +124,7 @@ const Staff = () => {
         title="Meet Our Elite Team"
         description="Passionate professionals dedicated to creating the most immersive and professional roleplay experience"
         badge="24/7 Available"
+        backgroundImage={headerStaff}
       />
       
       <main className="pb-16">

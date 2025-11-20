@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
+import headerWhitelist from "@/assets/header-whitelist.jpg";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -214,6 +215,7 @@ const Whitelist = () => {
       <PageHeader 
         title="Whitelist Application"
         description="Apply to join SLRP and become part of our exclusive roleplay community"
+        backgroundImage={headerWhitelist}
       />
       
       <main className="pb-16">

@@ -1,5 +1,6 @@
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
+import headerStore from "@/assets/header-store.jpg";
 
 const Store = () => {
   return (
@@ -10,6 +11,7 @@ const Store = () => {
         title="SLRP Store"
         description="Exclusive merchandise and server perks"
         badge="Coming Soon"
+        backgroundImage={headerStore}
       />
       
       <main className="pb-16">
