@@ -61,6 +61,13 @@ const Navigation = () => {
             >
               Support
             </NavLink>
+            <NavLink 
+              to="/store" 
+              className="text-foreground/80 hover:text-primary transition-colors"
+              activeClassName="text-primary"
+            >
+              Store
+            </NavLink>
           </div>
           
           <div className="flex items-center gap-3">
