@@ -1,4 +1,5 @@
 import Navigation from "@/components/Navigation";
+import PageHeader from "@/components/PageHeader";
 import GalleryUploadForm from "@/components/GalleryUploadForm";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -10,33 +11,24 @@ const Gallery = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      <main className="pt-24 pb-16">
+      
+      <PageHeader 
+        title="Community Gallery"
+        description="Explore stunning screenshots, epic moments, and memorable experiences from our roleplay community"
+        badge="Media Gallery"
+      />
+      
+      <main className="pb-16">
         <div className="container mx-auto px-4">
-          {/* Hero Section */}
-          <div className="relative mb-16 animate-fade-in">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 rounded-3xl blur-3xl -z-10"></div>
-            <div className="text-center glass-effect rounded-3xl p-12 border border-border/20">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6">
-                <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
-                <span className="text-sm font-semibold text-primary">Media Gallery</span>
-              </div>
-              
-              <h1 className="text-6xl md:text-7xl font-bold text-gradient mb-6 leading-tight">
-                Community Gallery
-              </h1>
-              <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-8">
-                Explore stunning screenshots, epic moments, and memorable experiences from our roleplay community
-              </p>
-              
-              <Button
-                size="lg"
-                className="bg-primary hover:bg-primary/90"
-                onClick={() => setShowUploadForm(!showUploadForm)}
-              >
-                <Upload className="w-5 h-5 mr-2" />
-                {showUploadForm ? "Hide Upload Form" : "Submit Your Content"}
-              </Button>
-            </div>
+          <div className="text-center mb-8">
+            <Button
+              size="lg"
+              className="bg-primary hover:bg-primary/90"
+              onClick={() => setShowUploadForm(!showUploadForm)}
+            >
+              <Upload className="w-5 h-5 mr-2" />
+              {showUploadForm ? "Hide Upload Form" : "Submit Your Content"}
+            </Button>
           </div>
 
           {/* Upload Form */}

@@ -1,4 +1,5 @@
 import Navigation from "@/components/Navigation";
+import PageHeader from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserCircle2, BookOpen, Briefcase, AlertCircle } from "lucide-react";
@@ -7,14 +8,14 @@ const Guides = () => {
   return (
     <div className="min-h-screen">
       <Navigation />
-      <main className="pt-24 pb-16">
+      
+      <PageHeader 
+        title="Player Guides"
+        description="Everything you need to know to get started on SLRP"
+      />
+      
+      <main className="pb-16">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h1 className="text-5xl font-bold text-gradient mb-4">Player Guides</h1>
-            <p className="text-xl text-muted-foreground">
-              Everything you need to know to get started on SLRP
-            </p>
-          </div>
 
           <Tabs defaultValue="character" className="max-w-5xl mx-auto">
             <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 mb-8">

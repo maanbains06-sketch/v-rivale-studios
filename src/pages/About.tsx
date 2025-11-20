@@ -1,4 +1,5 @@
 import Navigation from "@/components/Navigation";
+import PageHeader from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Target, Heart, Shield, BookOpen, Sparkles, Users, Trophy, Zap, Calendar } from "lucide-react";
 
@@ -7,25 +8,14 @@ const About = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      <main className="pt-24 pb-16">
+      <PageHeader 
+        title="Our Story"
+        description="Building India's most immersive and professional GTA 5 roleplay community"
+        badge="About Skylife Roleplay India"
+      />
+      
+      <main className="pb-16">
         <div className="container mx-auto px-4">
-          {/* Hero Section */}
-          <div className="relative mb-20 animate-fade-in">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 rounded-3xl blur-3xl -z-10"></div>
-            <div className="text-center glass-effect rounded-3xl p-12 border border-border/20">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6">
-                <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-                <span className="text-sm font-semibold text-primary">About Skylife Roleplay India</span>
-              </div>
-              
-              <h1 className="text-6xl md:text-7xl font-bold text-gradient mb-6 leading-tight">
-                Our Story
-              </h1>
-              <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
-                Building India&apos;s most immersive and professional GTA 5 roleplay community
-              </p>
-            </div>
-          </div>
 
           {/* Story Section */}
           <div className="mb-20">

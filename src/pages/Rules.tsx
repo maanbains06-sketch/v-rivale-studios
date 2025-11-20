@@ -1,5 +1,6 @@
 import { CheckCircle2 } from "lucide-react";
 import Navigation from "@/components/Navigation";
+import PageHeader from "@/components/PageHeader";
 
 const rulesSections = [
   {
@@ -75,16 +76,13 @@ const Rules = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      <main className="pt-24 pb-16">
+      <PageHeader 
+        title="Server Rules"
+        description="Follow these rules to ensure a fair and enjoyable experience for everyone"
+      />
+      
+      <main className="pb-16">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16 animate-fade-in">
-            <h1 className="text-5xl md:text-6xl font-bold mb-4 text-gradient">
-              Server Rules
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Follow these rules to ensure a fair and enjoyable experience for everyone
-            </p>
-          </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {rulesSections.map((section, index) => (
