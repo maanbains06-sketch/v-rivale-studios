@@ -113,7 +113,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="border-t border-border/20 py-8 relative z-10">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div>
               <h3 className="text-2xl font-bold text-gradient mb-2">SLRP</h3>
               <p className="text-muted-foreground text-sm">
@@ -169,40 +169,6 @@ const Index = () => {
                   <li><a href="/support" className="hover:text-primary transition-colors">Ban Appeals</a></li>
                   <li><a href="/support" className="hover:text-primary transition-colors">Contact</a></li>
                 </ul>
-              </div>
-            </div>
-          </div>
-
-          {/* Legal Section */}
-          <div className="border-t border-border/20 pt-6">
-            <div className="glass-effect rounded-xl p-6">
-              <h4 className="font-bold text-primary mb-3 text-center">Legal & Disclaimer</h4>
-              <div className="space-y-3 text-xs text-muted-foreground leading-relaxed">
-                <p className="text-center">
-                  <strong className="text-foreground">Skylife Roleplay India (SLRP)</strong> is an independent roleplay community server for Grand Theft Auto V. 
-                  We are not affiliated with, endorsed by, or connected to Rockstar Games, Take-Two Interactive, or any of their subsidiaries.
-                </p>
-                <p className="text-center">
-                  Grand Theft Auto, GTA, and related marks are trademarks and/or registered trademarks of Take-Two Interactive Software, Inc. in the U.S. and/or other countries. 
-                  All rights to the original game content belong to their respective owners.
-                </p>
-                <div className="grid md:grid-cols-3 gap-4 mt-4 pt-4 border-t border-border/20">
-                  <div className="text-center">
-                    <p className="font-semibold text-foreground mb-1">Age Requirement</p>
-                    <p>Players must be 18+ years old to participate in our roleplay server.</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="font-semibold text-foreground mb-1">Fair Use</p>
-                    <p>Server operated under fair use for entertainment and educational purposes only.</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="font-semibold text-foreground mb-1">Community Rules</p>
-                    <p>By joining SLRP, you agree to abide by our terms of service and community guidelines.</p>
-                  </div>
-                </div>
-                <p className="text-center text-xs mt-4">
-                  For legal inquiries, please contact: <a href="mailto:legal@slrp.in" className="text-primary hover:underline">legal@slrp.in</a>
-                </p>
               </div>
             </div>
           </div>
