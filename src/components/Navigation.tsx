@@ -1,9 +1,32 @@
+import { useEffect, useState } from "react";
 import { NavLink } from "./NavLink";
-import { Users } from "lucide-react";
+import { Users, Shield } from "lucide-react";
 import { Button } from "./ui/button";
 import AnimatedLogoIcon from "./AnimatedLogoIcon";
+import { supabase } from "@/integrations/supabase/client";
 
 const Navigation = () => {
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    checkAdminStatus();
+  }, []);
+
+  const checkAdminStatus = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) return;
+
+    const { data: roleData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    setIsAdmin(!!roleData);
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass-effect border-b border-border/20">
       <div className="container mx-auto px-4 py-4">
@@ -84,6 +107,16 @@ const Navigation = () => {
             >
               Store
             </NavLink>
+            {isAdmin && (
+              <NavLink 
+                to="/admin" 
+                className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1"
+                activeClassName="text-primary"
+              >
+                <Shield className="w-4 h-4" />
+                Admin
+              </NavLink>
+            )}
           </div>
           
           <div className="flex items-center gap-3">
