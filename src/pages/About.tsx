@@ -1,5 +1,6 @@
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
+import headerAbout from "@/assets/header-about.jpg";
 import { Card, CardContent } from "@/components/ui/card";
 import { Target, Heart, Shield, BookOpen, Sparkles, Users, Trophy, Zap, Calendar } from "lucide-react";
 
@@ -12,6 +13,7 @@ const About = () => {
         title="Our Story"
         description="Building India's most immersive and professional GTA 5 roleplay community"
         badge="About Skylife Roleplay India"
+        backgroundImage={headerAbout}
       />
       
       <main className="pb-16">

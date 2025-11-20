@@ -1,8 +1,9 @@
+import { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
+import headerGallery from "@/assets/header-gallery.jpg";
 import GalleryUploadForm from "@/components/GalleryUploadForm";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 import { Upload } from "lucide-react";
 
 const Gallery = () => {
@@ -16,6 +17,7 @@ const Gallery = () => {
         title="Community Gallery"
         description="Explore stunning screenshots, epic moments, and memorable experiences from our roleplay community"
         badge="Media Gallery"
+        backgroundImage={headerGallery}
       />
       
       <main className="pb-16">

@@ -1,5 +1,6 @@
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
+import headerGuides from "@/assets/header-guides.jpg";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserCircle2, BookOpen, Briefcase, AlertCircle } from "lucide-react";
@@ -12,6 +13,7 @@ const Guides = () => {
       <PageHeader 
         title="Player Guides"
         description="Everything you need to know to get started on SLRP"
+        backgroundImage={headerGuides}
       />
       
       <main className="pb-16">

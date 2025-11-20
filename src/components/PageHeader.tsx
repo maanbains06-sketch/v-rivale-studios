@@ -1,17 +1,16 @@
-import heroBg from "@/assets/hero-bg-enhanced.jpg";
-
 interface PageHeaderProps {
   title: string;
   description?: string;
   badge?: string;
+  backgroundImage?: string;
 }
 
-const PageHeader = ({ title, description, badge }: PageHeaderProps) => {
+const PageHeader = ({ title, description, badge, backgroundImage }: PageHeaderProps) => {
   return (
     <section 
       className="relative min-h-[40vh] flex items-center justify-center overflow-hidden mb-12"
       style={{
-        backgroundImage: `url(${heroBg})`,
+        backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}

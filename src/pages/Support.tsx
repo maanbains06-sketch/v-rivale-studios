@@ -1,8 +1,10 @@
+import { MessageCircle, FileText, Users, HelpCircle, AlertCircle, CheckCircle } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
+import headerSupport from "@/assets/header-support.jpg";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Mail, MessageCircle, FileText, HelpCircle, Clock, Users, Shield, Zap } from "lucide-react";
+import { Mail, Clock, Shield, Zap } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const Support = () => {
@@ -13,6 +15,7 @@ const Support = () => {
       <PageHeader 
         title="Support Center"
         description="Get help, find answers, and connect with our dedicated support team. We're here to ensure your SLRP experience is exceptional."
+        backgroundImage={headerSupport}
       />
       
       <main className="container mx-auto px-4 pb-12">

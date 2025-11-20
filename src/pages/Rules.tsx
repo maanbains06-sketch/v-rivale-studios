@@ -1,6 +1,7 @@
 import { CheckCircle2 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
+import headerRules from "@/assets/header-rules.jpg";
 
 const rulesSections = [
   {
@@ -79,6 +80,7 @@ const Rules = () => {
       <PageHeader 
         title="Server Rules"
         description="Follow these rules to ensure a fair and enjoyable experience for everyone"
+        backgroundImage={headerRules}
       />
       
       <main className="pb-16">

@@ -1,6 +1,7 @@
 import { Briefcase, Car, Home, TrendingUp, Calendar, Shield } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
+import headerFeatures from "@/assets/header-features.jpg";
 import jobsImg from "@/assets/feature-jobs.jpg";
 import vehiclesImg from "@/assets/feature-vehicles.jpg";
 import housingImg from "@/assets/feature-housing.jpg";
@@ -55,6 +56,7 @@ const Features = () => {
       <PageHeader 
         title="Server Features"
         description="Experience unmatched gameplay with our custom features and systems"
+        backgroundImage={headerFeatures}
       />
       
       <main className="pb-16">
