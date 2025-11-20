@@ -4,14 +4,13 @@ import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Shield, Users, FileText, Image } from "lucide-react";
+import { Loader2, Shield, FileText, Image } from "lucide-react";
 import headerAdminBg from "@/assets/header-staff.jpg";
 
 interface UserRole {
@@ -289,223 +288,209 @@ const Admin = () => {
         backgroundImage={headerAdminBg}
       />
       
-      <div className="container mx-auto px-4 py-12">
-        <Tabs defaultValue="roles" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
-            <TabsTrigger value="roles" className="flex items-center gap-2">
-              <Shield className="w-4 h-4" />
-              User Roles
-            </TabsTrigger>
-            <TabsTrigger value="applications" className="flex items-center gap-2">
-              <FileText className="w-4 h-4" />
-              Applications
-            </TabsTrigger>
-            <TabsTrigger value="gallery" className="flex items-center gap-2">
-              <Image className="w-4 h-4" />
-              Gallery
-            </TabsTrigger>
-          </TabsList>
-
-          {/* User Roles Tab */}
-          <TabsContent value="roles">
-            <Card className="glass-effect border-border/20">
-              <CardHeader>
-                <CardTitle className="text-gradient">User Roles Management</CardTitle>
-                <CardDescription>View and manage user roles</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>User</TableHead>
-                      <TableHead>Current Role</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {userRoles.map((userRole) => (
-                      <TableRow key={userRole.id}>
-                        <TableCell>
-                          {userRole.discord_username || "Unknown User"}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={
-                            userRole.role === "admin" ? "default" :
-                            userRole.role === "moderator" ? "secondary" :
-                            "outline"
-                          }>
-                            {userRole.role}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Select
-                            value={userRole.role}
-                            onValueChange={(value) => updateUserRole(userRole.user_id, value as "admin" | "moderator" | "user")}
-                          >
-                            <SelectTrigger className="w-[150px]">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="user">User</SelectItem>
-                              <SelectItem value="moderator">Moderator</SelectItem>
-                              <SelectItem value="admin">Admin</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Whitelist Applications Tab */}
-          <TabsContent value="applications">
-            <Card className="glass-effect border-border/20">
-              <CardHeader>
-                <CardTitle className="text-gradient">Whitelist Applications</CardTitle>
-                <CardDescription>Review and manage whitelist applications</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {applications.map((app) => (
-                  <Card key={app.id} className="border-border/20">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-lg">{app.discord}</CardTitle>
-                          <CardDescription>
-                            Steam ID: {app.steam_id} | Age: {app.age}
-                          </CardDescription>
-                        </div>
-                        <Badge variant={
-                          app.status === "approved" ? "default" :
-                          app.status === "rejected" ? "destructive" :
-                          "secondary"
-                        }>
-                          {app.status}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <h4 className="font-semibold text-sm mb-1">Experience</h4>
-                        <p className="text-sm text-muted-foreground">{app.experience}</p>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-sm mb-1">Backstory</h4>
-                        <p className="text-sm text-muted-foreground">{app.backstory}</p>
-                      </div>
-                      
-                      {app.status === "pending" && (
-                        <div className="space-y-3 pt-4 border-t">
-                          <Textarea
-                            placeholder="Admin notes (optional)"
-                            value={selectedApp?.id === app.id ? adminNotes : ""}
-                            onChange={(e) => {
-                              setSelectedApp(app);
-                              setAdminNotes(e.target.value);
-                            }}
-                          />
-                          <div className="flex gap-2">
-                            <Button
-                              onClick={() => updateApplicationStatus(app.id, "approved")}
-                              className="bg-primary hover:bg-primary/90"
-                            >
-                              Approve
-                            </Button>
-                            <Button
-                              onClick={() => updateApplicationStatus(app.id, "rejected")}
-                              variant="destructive"
-                            >
-                              Reject
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
+      <div className="container mx-auto px-4 py-12 space-y-8">
+        {/* User Roles Section */}
+        <Card className="glass-effect border-border/20">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-primary" />
+              <CardTitle className="text-gradient">User Roles Management</CardTitle>
+            </div>
+            <CardDescription>View and manage user roles</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>User</TableHead>
+                  <TableHead>Current Role</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {userRoles.map((userRole) => (
+                  <TableRow key={userRole.id}>
+                    <TableCell>
+                      {userRole.discord_username || "Unknown User"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={
+                        userRole.role === "admin" ? "default" :
+                        userRole.role === "moderator" ? "secondary" :
+                        "outline"
+                      }>
+                        {userRole.role}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Select
+                        value={userRole.role}
+                        onValueChange={(value) => updateUserRole(userRole.user_id, value as "admin" | "moderator" | "user")}
+                      >
+                        <SelectTrigger className="w-[150px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="user">User</SelectItem>
+                          <SelectItem value="moderator">Moderator</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
 
-          {/* Gallery Submissions Tab */}
-          <TabsContent value="gallery">
-            <Card className="glass-effect border-border/20">
-              <CardHeader>
-                <CardTitle className="text-gradient">Gallery Submissions</CardTitle>
-                <CardDescription>Review and manage gallery submissions</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {submissions.map((submission) => (
-                  <Card key={submission.id} className="border-border/20">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-lg">{submission.title}</CardTitle>
-                          <CardDescription>
-                            Category: {submission.category} | Type: {submission.file_type}
-                          </CardDescription>
-                        </div>
-                        <Badge variant={
-                          submission.status === "approved" ? "default" :
-                          submission.status === "rejected" ? "destructive" :
-                          "secondary"
-                        }>
-                          {submission.status}
-                        </Badge>
+        {/* Whitelist Applications Section */}
+        <Card className="glass-effect border-border/20">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-primary" />
+              <CardTitle className="text-gradient">Whitelist Applications</CardTitle>
+            </div>
+            <CardDescription>Review and manage whitelist applications</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {applications.map((app) => (
+              <Card key={app.id} className="border-border/20">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <CardTitle className="text-lg">{app.discord}</CardTitle>
+                      <CardDescription>
+                        Steam ID: {app.steam_id} | Age: {app.age}
+                      </CardDescription>
+                    </div>
+                    <Badge variant={
+                      app.status === "approved" ? "default" :
+                      app.status === "rejected" ? "destructive" :
+                      "secondary"
+                    }>
+                      {app.status}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold text-sm mb-1">Experience</h4>
+                    <p className="text-sm text-muted-foreground">{app.experience}</p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm mb-1">Backstory</h4>
+                    <p className="text-sm text-muted-foreground">{app.backstory}</p>
+                  </div>
+                  
+                  {app.status === "pending" && (
+                    <div className="space-y-3 pt-4 border-t">
+                      <Textarea
+                        placeholder="Admin notes (optional)"
+                        value={selectedApp?.id === app.id ? adminNotes : ""}
+                        onChange={(e) => {
+                          setSelectedApp(app);
+                          setAdminNotes(e.target.value);
+                        }}
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => updateApplicationStatus(app.id, "approved")}
+                          className="bg-primary hover:bg-primary/90"
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          onClick={() => updateApplicationStatus(app.id, "rejected")}
+                          variant="destructive"
+                        >
+                          Reject
+                        </Button>
                       </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {submission.description && (
-                        <div>
-                          <h4 className="font-semibold text-sm mb-1">Description</h4>
-                          <p className="text-sm text-muted-foreground">{submission.description}</p>
-                        </div>
-                      )}
-                      
-                      <div>
-                        <img
-                          src={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/gallery/${submission.file_path}`}
-                          alt={submission.title}
-                          className="w-full max-w-md rounded-lg"
-                        />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Gallery Submissions Section */}
+        <Card className="glass-effect border-border/20">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Image className="w-5 h-5 text-primary" />
+              <CardTitle className="text-gradient">Gallery Submissions</CardTitle>
+            </div>
+            <CardDescription>Review and manage gallery submissions</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {submissions.map((submission) => (
+              <Card key={submission.id} className="border-border/20">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <CardTitle className="text-lg">{submission.title}</CardTitle>
+                      <CardDescription>
+                        Category: {submission.category} | Type: {submission.file_type}
+                      </CardDescription>
+                    </div>
+                    <Badge variant={
+                      submission.status === "approved" ? "default" :
+                      submission.status === "rejected" ? "destructive" :
+                      "secondary"
+                    }>
+                      {submission.status}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {submission.description && (
+                    <div>
+                      <h4 className="font-semibold text-sm mb-1">Description</h4>
+                      <p className="text-sm text-muted-foreground">{submission.description}</p>
+                    </div>
+                  )}
+                  
+                  <div>
+                    <img
+                      src={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/gallery/${submission.file_path}`}
+                      alt={submission.title}
+                      className="w-full max-w-md rounded-lg"
+                    />
+                  </div>
+                  
+                  {submission.status === "pending" && (
+                    <div className="space-y-3 pt-4 border-t">
+                      <Textarea
+                        placeholder="Rejection reason (optional)"
+                        value={selectedSubmission?.id === submission.id ? rejectionReason : ""}
+                        onChange={(e) => {
+                          setSelectedSubmission(submission);
+                          setRejectionReason(e.target.value);
+                        }}
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => updateSubmissionStatus(submission.id, "approved")}
+                          className="bg-primary hover:bg-primary/90"
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          onClick={() => updateSubmissionStatus(submission.id, "rejected")}
+                          variant="destructive"
+                        >
+                          Reject
+                        </Button>
                       </div>
-                      
-                      {submission.status === "pending" && (
-                        <div className="space-y-3 pt-4 border-t">
-                          <Textarea
-                            placeholder="Rejection reason (optional)"
-                            value={selectedSubmission?.id === submission.id ? rejectionReason : ""}
-                            onChange={(e) => {
-                              setSelectedSubmission(submission);
-                              setRejectionReason(e.target.value);
-                            }}
-                          />
-                          <div className="flex gap-2">
-                            <Button
-                              onClick={() => updateSubmissionStatus(submission.id, "approved")}
-                              className="bg-primary hover:bg-primary/90"
-                            >
-                              Approve
-                            </Button>
-                            <Button
-                              onClick={() => updateSubmissionStatus(submission.id, "rejected")}
-                              variant="destructive"
-                            >
-                              Reject
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
