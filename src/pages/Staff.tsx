@@ -1,7 +1,7 @@
 import Navigation from "@/components/Navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Users, Code, HeadphonesIcon, Star, Trophy, Heart, Target } from "lucide-react";
+import { Shield, Users, Code, HeadphonesIcon, Star, Trophy, Heart, Target, Sparkles, Zap, Clock, Award, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { StaffApplicationForm } from "@/components/StaffApplicationForm";
@@ -119,347 +119,503 @@ const Staff = () => {
       <StaffApplicationForm open={isApplicationOpen} onOpenChange={setIsApplicationOpen} />
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4">
-          {/* Hero Section */}
-          <div className="text-center mb-16 animate-fade-in">
-            <h1 className="text-5xl md:text-6xl font-bold text-gradient mb-4">Meet Our Team</h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-              Passionate professionals dedicated to creating the best roleplay experience in India
-            </p>
-            <div className="flex flex-wrap gap-8 justify-center">
-              <div className="text-center">
-                <div className="text-4xl font-bold text-primary mb-1">{staffMembers.length}+</div>
-                <div className="text-sm text-muted-foreground">Team Members</div>
+          {/* Hero Section with Enhanced Design */}
+          <div className="relative mb-20 animate-fade-in">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 rounded-3xl blur-3xl -z-10"></div>
+            <div className="text-center glass-effect rounded-3xl p-12 border border-border/20">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6">
+                <Sparkles className="w-4 h-4 text-primary animate-pulse" />
+                <span className="text-sm font-semibold text-primary">Professional Team • 24/7 Available</span>
               </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-primary mb-1">24/7</div>
-                <div className="text-sm text-muted-foreground">Staff Coverage</div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-primary mb-1">1000+</div>
-                <div className="text-sm text-muted-foreground">Issues Resolved</div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold text-primary mb-1">98%</div>
-                <div className="text-sm text-muted-foreground">Satisfaction Rate</div>
+              
+              <h1 className="text-6xl md:text-7xl font-bold text-gradient mb-6 leading-tight">
+                Meet Our Elite Team
+              </h1>
+              <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed">
+                Passionate professionals dedicated to creating the most immersive and professional roleplay experience in India
+              </p>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+                  <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-primary/20">
+                    <Users className="w-8 h-8 text-primary mx-auto mb-3" />
+                    <div className="text-4xl font-bold text-gradient mb-1">{staffMembers.length}+</div>
+                    <div className="text-sm text-muted-foreground">Team Members</div>
+                  </div>
+                </div>
+                
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+                  <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-primary/20">
+                    <Clock className="w-8 h-8 text-primary mx-auto mb-3" />
+                    <div className="text-4xl font-bold text-gradient mb-1">24/7</div>
+                    <div className="text-sm text-muted-foreground">Staff Coverage</div>
+                  </div>
+                </div>
+                
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+                  <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-primary/20">
+                    <Zap className="w-8 h-8 text-primary mx-auto mb-3" />
+                    <div className="text-4xl font-bold text-gradient mb-1">1000+</div>
+                    <div className="text-sm text-muted-foreground">Issues Resolved</div>
+                  </div>
+                </div>
+                
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+                  <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-primary/20">
+                    <Award className="w-8 h-8 text-primary mx-auto mb-3" />
+                    <div className="text-4xl font-bold text-gradient mb-1">98%</div>
+                    <div className="text-sm text-muted-foreground">Satisfaction Rate</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Team Values */}
-          <div className="grid md:grid-cols-4 gap-6 mb-16">
-            <Card className="glass-effect border-border/20 text-center">
-              <CardContent className="pt-6">
-                <Star className="w-12 h-12 text-primary mx-auto mb-3" />
-                <h3 className="text-lg font-bold mb-2">Excellence</h3>
-                <p className="text-sm text-muted-foreground">
-                  Striving for the highest quality in everything we do
-                </p>
-              </CardContent>
-            </Card>
+          {/* Team Values with Enhanced Design */}
+          <div className="mb-20">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold text-gradient mb-4">Our Core Values</h2>
+              <p className="text-lg text-muted-foreground">The principles that guide our team every day</p>
+            </div>
+            <div className="grid md:grid-cols-4 gap-6">
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <Card className="relative glass-effect border-border/20 text-center hover:border-primary/40 transition-all duration-300 overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                  <CardContent className="pt-8 pb-6">
+                    <div className="relative mb-4">
+                      <div className="absolute inset-0 bg-primary/20 rounded-full blur-lg"></div>
+                      <Star className="relative w-14 h-14 text-primary mx-auto group-hover:scale-110 transition-transform duration-300" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-3">Excellence</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Striving for the highest quality in everything we do
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
 
-            <Card className="glass-effect border-border/20 text-center">
-              <CardContent className="pt-6">
-                <Heart className="w-12 h-12 text-primary mx-auto mb-3" />
-                <h3 className="text-lg font-bold mb-2">Community First</h3>
-                <p className="text-sm text-muted-foreground">
-                  Your experience and satisfaction is our priority
-                </p>
-              </CardContent>
-            </Card>
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <Card className="relative glass-effect border-border/20 text-center hover:border-primary/40 transition-all duration-300 overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                  <CardContent className="pt-8 pb-6">
+                    <div className="relative mb-4">
+                      <div className="absolute inset-0 bg-primary/20 rounded-full blur-lg"></div>
+                      <Heart className="relative w-14 h-14 text-primary mx-auto group-hover:scale-110 transition-transform duration-300" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-3">Community First</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Your experience and satisfaction is our priority
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
 
-            <Card className="glass-effect border-border/20 text-center">
-              <CardContent className="pt-6">
-                <Trophy className="w-12 h-12 text-primary mx-auto mb-3" />
-                <h3 className="text-lg font-bold mb-2">Fair Play</h3>
-                <p className="text-sm text-muted-foreground">
-                  Maintaining integrity and fairness for all players
-                </p>
-              </CardContent>
-            </Card>
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <Card className="relative glass-effect border-border/20 text-center hover:border-primary/40 transition-all duration-300 overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                  <CardContent className="pt-8 pb-6">
+                    <div className="relative mb-4">
+                      <div className="absolute inset-0 bg-primary/20 rounded-full blur-lg"></div>
+                      <Trophy className="relative w-14 h-14 text-primary mx-auto group-hover:scale-110 transition-transform duration-300" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-3">Fair Play</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Maintaining integrity and fairness for all players
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
 
-            <Card className="glass-effect border-border/20 text-center">
-              <CardContent className="pt-6">
-                <Target className="w-12 h-12 text-primary mx-auto mb-3" />
-                <h3 className="text-lg font-bold mb-2">Innovation</h3>
-                <p className="text-sm text-muted-foreground">
-                  Constantly improving with new features and updates
-                </p>
-              </CardContent>
-            </Card>
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <Card className="relative glass-effect border-border/20 text-center hover:border-primary/40 transition-all duration-300 overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                  <CardContent className="pt-8 pb-6">
+                    <div className="relative mb-4">
+                      <div className="absolute inset-0 bg-primary/20 rounded-full blur-lg"></div>
+                      <Target className="relative w-14 h-14 text-primary mx-auto group-hover:scale-110 transition-transform duration-300" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-3">Innovation</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Constantly improving with new features and updates
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </div>
 
-          {/* Leadership Team */}
-          <div className="mb-12">
-            <h2 className="text-3xl font-bold text-center mb-8 text-foreground">Leadership Team</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          {/* Leadership Team with Enhanced Design */}
+          <div className="mb-16">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold text-gradient mb-4">Leadership Team</h2>
+              <p className="text-lg text-muted-foreground">The visionaries guiding SLRP to excellence</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
               {ownerStaff.map((member, index) => {
                 const Icon = roleIcons[member.roleType];
                 return (
-                  <Card 
-                    key={index} 
-                    className="glass-effect border-border/20 hover:border-primary/40 transition-all duration-300 group hover:scale-105"
-                  >
-                    <CardContent className="pt-6">
-                      <div className="flex flex-col items-center text-center">
-                        <div className="relative mb-4">
-                          <div className={`w-28 h-28 rounded-full overflow-hidden border-4 ${roleColors[member.roleType]} p-1 group-hover:scale-110 transition-transform duration-300`}>
-                            <img 
-                              src={member.avatar} 
-                              alt={member.name}
-                              className="w-full h-full rounded-full bg-background"
-                            />
+                  <div key={index} className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-secondary/20 to-primary/20 rounded-3xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <Card className="relative glass-effect border-border/20 hover:border-primary/40 transition-all duration-500 overflow-hidden">
+                      <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary via-secondary to-primary"></div>
+                      <CardContent className="pt-8 pb-6">
+                        <div className="flex flex-col items-center text-center">
+                          <div className="relative mb-6">
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-secondary/30 rounded-full blur-xl animate-pulse"></div>
+                            <div className={`relative w-32 h-32 rounded-full overflow-hidden border-4 ${roleColors[member.roleType]} p-1 group-hover:scale-110 transition-transform duration-500`}>
+                              <img 
+                                src={member.avatar} 
+                                alt={member.name}
+                                className="w-full h-full rounded-full bg-background"
+                              />
+                            </div>
+                            <div className={`absolute -bottom-2 -right-2 w-14 h-14 ${roleColors[member.roleType]} rounded-full flex items-center justify-center border-4 border-background shadow-lg`}>
+                              <Icon className="w-7 h-7 text-primary-foreground" />
+                            </div>
+                            <div className="absolute -top-2 -left-2 w-6 h-6 bg-green-500 rounded-full border-2 border-background animate-pulse"></div>
                           </div>
-                          <div className={`absolute -bottom-2 -right-2 w-12 h-12 ${roleColors[member.roleType]} rounded-full flex items-center justify-center border-2 border-background`}>
-                            <Icon className="w-6 h-6 text-primary-foreground" />
+
+                          <h3 className="text-2xl font-bold mb-2">{member.name}</h3>
+                          <Badge variant="outline" className="mb-4 border-primary text-primary px-4 py-1">
+                            {member.role}
+                          </Badge>
+
+                          {member.bio && (
+                            <p className="text-sm text-muted-foreground italic mb-6 max-w-md leading-relaxed">&quot;{member.bio}&quot;</p>
+                          )}
+
+                          <div className="w-full mb-5">
+                            <p className="text-xs text-muted-foreground mb-3 font-semibold uppercase tracking-wider">Key Responsibilities</p>
+                            <div className="flex flex-wrap gap-2 justify-center">
+                              {member.responsibilities.map((resp, idx) => (
+                                <Badge key={idx} variant="secondary" className="text-xs px-3 py-1 hover:bg-primary/20 transition-colors">
+                                  {resp}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 text-sm bg-card/50 px-4 py-2 rounded-full">
+                            <MessageCircle className="w-4 h-4 text-primary" />
+                            <span className="text-primary font-semibold">Discord:</span>
+                            <span className="text-muted-foreground">{member.discordTag}</span>
                           </div>
                         </div>
-
-                        <h3 className="text-2xl font-bold mb-1">{member.name}</h3>
-                        <Badge variant="outline" className="mb-3 border-primary text-primary">
-                          {member.role}
-                        </Badge>
-
-                        {member.bio && (
-                          <p className="text-sm text-muted-foreground italic mb-4">&quot;{member.bio}&quot;</p>
-                        )}
-
-                        <div className="w-full mb-4">
-                          <p className="text-xs text-muted-foreground mb-2 font-semibold">Responsibilities:</p>
-                          <div className="flex flex-wrap gap-1 justify-center">
-                            {member.responsibilities.map((resp, idx) => (
-                              <Badge key={idx} variant="secondary" className="text-xs">
-                                {resp}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="text-sm">
-                          <span className="text-primary font-semibold">Discord:</span>
-                          <span className="ml-1 text-muted-foreground">{member.discordTag}</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  </div>
                 );
               })}
             </div>
           </div>
 
           {/* Administration Team */}
-          <div className="mb-12">
-            <h2 className="text-3xl font-bold text-center mb-8 text-foreground">Administration Team</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="mb-16">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold text-gradient mb-4">Administration Team</h2>
+              <p className="text-lg text-muted-foreground">Ensuring smooth operations and fair gameplay</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {adminStaff.map((member, index) => {
                 const Icon = roleIcons[member.roleType];
                 return (
-                  <Card 
-                    key={index} 
-                    className="glass-effect border-border/20 hover:border-destructive/40 transition-all duration-300 group hover:scale-105"
-                  >
-                    <CardContent className="pt-6">
-                      <div className="flex flex-col items-center text-center">
-                        <div className="relative mb-4">
-                          <div className={`w-24 h-24 rounded-full overflow-hidden border-4 ${roleColors[member.roleType]} p-1 group-hover:scale-110 transition-transform duration-300`}>
-                            <img 
-                              src={member.avatar} 
-                              alt={member.name}
-                              className="w-full h-full rounded-full bg-background"
-                            />
+                  <div key={index} className="relative group">
+                    <div className="absolute inset-0 bg-destructive/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <Card className="relative glass-effect border-border/20 hover:border-destructive/40 transition-all duration-500 hover:shadow-xl hover:shadow-destructive/10">
+                      <CardContent className="pt-6 pb-6">
+                        <div className="flex flex-col items-center text-center">
+                          <div className="relative mb-5">
+                            <div className={`w-28 h-28 rounded-full overflow-hidden border-4 ${roleColors[member.roleType]} p-1 group-hover:scale-110 transition-transform duration-500`}>
+                              <img 
+                                src={member.avatar} 
+                                alt={member.name}
+                                className="w-full h-full rounded-full bg-background"
+                              />
+                            </div>
+                            <div className={`absolute -bottom-2 -right-2 w-12 h-12 ${roleColors[member.roleType]} rounded-full flex items-center justify-center border-3 border-background shadow-lg`}>
+                              <Icon className="w-6 h-6 text-primary-foreground" />
+                            </div>
+                            <div className="absolute -top-1 -left-1 w-5 h-5 bg-green-500 rounded-full border-2 border-background animate-pulse"></div>
                           </div>
-                          <div className={`absolute -bottom-2 -right-2 w-10 h-10 ${roleColors[member.roleType]} rounded-full flex items-center justify-center border-2 border-background`}>
-                            <Icon className="w-5 h-5 text-primary-foreground" />
+
+                          <h3 className="text-xl font-bold mb-2">{member.name}</h3>
+                          <Badge variant="outline" className="mb-4 border-destructive/40 px-3 py-1">
+                            {member.role}
+                          </Badge>
+
+                          {member.bio && (
+                            <p className="text-xs text-muted-foreground italic mb-4 leading-relaxed">&quot;{member.bio}&quot;</p>
+                          )}
+
+                          <div className="w-full mb-4">
+                            <p className="text-xs text-muted-foreground mb-2 font-semibold">Responsibilities</p>
+                            <div className="flex flex-wrap gap-1.5 justify-center">
+                              {member.responsibilities.map((resp, idx) => (
+                                <Badge key={idx} variant="secondary" className="text-xs hover:bg-primary/20 transition-colors">
+                                  {resp}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="text-sm text-muted-foreground flex items-center gap-1">
+                            <MessageCircle className="w-3.5 h-3.5 text-primary" />
+                            <span className="text-primary font-medium">Discord:</span> {member.discordTag}
                           </div>
                         </div>
-
-                        <h3 className="text-xl font-bold mb-1">{member.name}</h3>
-                        <Badge variant="outline" className="mb-3 border-destructive/40">
-                          {member.role}
-                        </Badge>
-
-                        {member.bio && (
-                          <p className="text-xs text-muted-foreground italic mb-3">&quot;{member.bio}&quot;</p>
-                        )}
-
-                        <div className="w-full mb-4">
-                          <p className="text-xs text-muted-foreground mb-2">Responsibilities:</p>
-                          <div className="flex flex-wrap gap-1 justify-center">
-                            {member.responsibilities.map((resp, idx) => (
-                              <Badge key={idx} variant="secondary" className="text-xs">
-                                {resp}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="text-sm text-muted-foreground">
-                          <span className="text-primary">Discord:</span> {member.discordTag}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  </div>
                 );
               })}
             </div>
           </div>
 
           {/* Development Team */}
-          <div className="mb-12">
-            <h2 className="text-3xl font-bold text-center mb-8 text-foreground">Development Team</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="mb-16">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold text-gradient mb-4">Development Team</h2>
+              <p className="text-lg text-muted-foreground">Building innovative features for the best RP experience</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {developerStaff.map((member, index) => {
                 const Icon = roleIcons[member.roleType];
                 return (
-                  <Card 
-                    key={index} 
-                    className="glass-effect border-border/20 hover:border-accent/40 transition-all duration-300 group hover:scale-105"
-                  >
-                    <CardContent className="pt-6">
-                      <div className="flex flex-col items-center text-center">
-                        <div className="relative mb-4">
-                          <div className={`w-24 h-24 rounded-full overflow-hidden border-4 ${roleColors[member.roleType]} p-1 group-hover:scale-110 transition-transform duration-300`}>
-                            <img 
-                              src={member.avatar} 
-                              alt={member.name}
-                              className="w-full h-full rounded-full bg-background"
-                            />
+                  <div key={index} className="relative group">
+                    <div className="absolute inset-0 bg-accent/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <Card className="relative glass-effect border-border/20 hover:border-accent/40 transition-all duration-500 hover:shadow-xl hover:shadow-accent/10">
+                      <CardContent className="pt-6 pb-6">
+                        <div className="flex flex-col items-center text-center">
+                          <div className="relative mb-5">
+                            <div className={`w-28 h-28 rounded-full overflow-hidden border-4 ${roleColors[member.roleType]} p-1 group-hover:scale-110 transition-transform duration-500`}>
+                              <img 
+                                src={member.avatar} 
+                                alt={member.name}
+                                className="w-full h-full rounded-full bg-background"
+                              />
+                            </div>
+                            <div className={`absolute -bottom-2 -right-2 w-12 h-12 ${roleColors[member.roleType]} rounded-full flex items-center justify-center border-3 border-background shadow-lg`}>
+                              <Icon className="w-6 h-6 text-primary-foreground" />
+                            </div>
+                            <div className="absolute -top-1 -left-1 w-5 h-5 bg-green-500 rounded-full border-2 border-background animate-pulse"></div>
                           </div>
-                          <div className={`absolute -bottom-2 -right-2 w-10 h-10 ${roleColors[member.roleType]} rounded-full flex items-center justify-center border-2 border-background`}>
-                            <Icon className="w-5 h-5 text-primary-foreground" />
+
+                          <h3 className="text-xl font-bold mb-2">{member.name}</h3>
+                          <Badge variant="outline" className="mb-4 border-accent/40 px-3 py-1">
+                            {member.role}
+                          </Badge>
+
+                          {member.bio && (
+                            <p className="text-xs text-muted-foreground italic mb-4 leading-relaxed">&quot;{member.bio}&quot;</p>
+                          )}
+
+                          <div className="w-full mb-4">
+                            <p className="text-xs text-muted-foreground mb-2 font-semibold">Responsibilities</p>
+                            <div className="flex flex-wrap gap-1.5 justify-center">
+                              {member.responsibilities.map((resp, idx) => (
+                                <Badge key={idx} variant="secondary" className="text-xs hover:bg-primary/20 transition-colors">
+                                  {resp}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="text-sm text-muted-foreground flex items-center gap-1">
+                            <MessageCircle className="w-3.5 h-3.5 text-primary" />
+                            <span className="text-primary font-medium">Discord:</span> {member.discordTag}
                           </div>
                         </div>
-
-                        <h3 className="text-xl font-bold mb-1">{member.name}</h3>
-                        <Badge variant="outline" className="mb-3 border-accent/40">
-                          {member.role}
-                        </Badge>
-
-                        {member.bio && (
-                          <p className="text-xs text-muted-foreground italic mb-3">&quot;{member.bio}&quot;</p>
-                        )}
-
-                        <div className="w-full mb-4">
-                          <p className="text-xs text-muted-foreground mb-2">Responsibilities:</p>
-                          <div className="flex flex-wrap gap-1 justify-center">
-                            {member.responsibilities.map((resp, idx) => (
-                              <Badge key={idx} variant="secondary" className="text-xs">
-                                {resp}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="text-sm text-muted-foreground">
-                          <span className="text-primary">Discord:</span> {member.discordTag}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  </div>
                 );
               })}
             </div>
           </div>
 
           {/* Moderation Team */}
-          <div className="mb-12">
-            <h2 className="text-3xl font-bold text-center mb-8 text-foreground">Moderation Team</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="mb-16">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold text-gradient mb-4">Moderation Team</h2>
+              <p className="text-lg text-muted-foreground">Keeping the community safe and welcoming</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {moderatorStaff.map((member, index) => {
                 const Icon = roleIcons[member.roleType];
                 return (
-                  <Card 
-                    key={index} 
-                    className="glass-effect border-border/20 hover:border-secondary/40 transition-all duration-300 group hover:scale-105"
-                  >
-                    <CardContent className="pt-6">
-                      <div className="flex flex-col items-center text-center">
-                        <div className="relative mb-4">
-                          <div className={`w-24 h-24 rounded-full overflow-hidden border-4 ${roleColors[member.roleType]} p-1 group-hover:scale-110 transition-transform duration-300`}>
-                            <img 
-                              src={member.avatar} 
-                              alt={member.name}
-                              className="w-full h-full rounded-full bg-background"
-                            />
+                  <div key={index} className="relative group">
+                    <div className="absolute inset-0 bg-secondary/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <Card className="relative glass-effect border-border/20 hover:border-secondary/40 transition-all duration-500 hover:shadow-xl hover:shadow-secondary/10">
+                      <CardContent className="pt-6 pb-6">
+                        <div className="flex flex-col items-center text-center">
+                          <div className="relative mb-5">
+                            <div className={`w-28 h-28 rounded-full overflow-hidden border-4 ${roleColors[member.roleType]} p-1 group-hover:scale-110 transition-transform duration-500`}>
+                              <img 
+                                src={member.avatar} 
+                                alt={member.name}
+                                className="w-full h-full rounded-full bg-background"
+                              />
+                            </div>
+                            <div className={`absolute -bottom-2 -right-2 w-12 h-12 ${roleColors[member.roleType]} rounded-full flex items-center justify-center border-3 border-background shadow-lg`}>
+                              <Icon className="w-6 h-6 text-primary-foreground" />
+                            </div>
+                            <div className="absolute -top-1 -left-1 w-5 h-5 bg-green-500 rounded-full border-2 border-background animate-pulse"></div>
                           </div>
-                          <div className={`absolute -bottom-2 -right-2 w-10 h-10 ${roleColors[member.roleType]} rounded-full flex items-center justify-center border-2 border-background`}>
-                            <Icon className="w-5 h-5 text-primary-foreground" />
+
+                          <h3 className="text-xl font-bold mb-2">{member.name}</h3>
+                          <Badge variant="outline" className="mb-4 border-secondary/40 px-3 py-1">
+                            {member.role}
+                          </Badge>
+
+                          {member.bio && (
+                            <p className="text-xs text-muted-foreground italic mb-4 leading-relaxed">&quot;{member.bio}&quot;</p>
+                          )}
+
+                          <div className="w-full mb-4">
+                            <p className="text-xs text-muted-foreground mb-2 font-semibold">Responsibilities</p>
+                            <div className="flex flex-wrap gap-1.5 justify-center">
+                              {member.responsibilities.map((resp, idx) => (
+                                <Badge key={idx} variant="secondary" className="text-xs hover:bg-primary/20 transition-colors">
+                                  {resp}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="text-sm text-muted-foreground flex items-center gap-1">
+                            <MessageCircle className="w-3.5 h-3.5 text-primary" />
+                            <span className="text-primary font-medium">Discord:</span> {member.discordTag}
                           </div>
                         </div>
-
-                        <h3 className="text-xl font-bold mb-1">{member.name}</h3>
-                        <Badge variant="outline" className="mb-3 border-secondary/40">
-                          {member.role}
-                        </Badge>
-
-                        {member.bio && (
-                          <p className="text-xs text-muted-foreground italic mb-3">&quot;{member.bio}&quot;</p>
-                        )}
-
-                        <div className="w-full mb-4">
-                          <p className="text-xs text-muted-foreground mb-2">Responsibilities:</p>
-                          <div className="flex flex-wrap gap-1 justify-center">
-                            {member.responsibilities.map((resp, idx) => (
-                              <Badge key={idx} variant="secondary" className="text-xs">
-                                {resp}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="text-sm text-muted-foreground">
-                          <span className="text-primary">Discord:</span> {member.discordTag}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  </div>
                 );
               })}
             </div>
           </div>
 
-          {/* Join Team Section */}
-          <div className="text-center glass-effect rounded-2xl p-12 border border-border/20 bg-gradient-to-br from-primary/5 to-background">
-            <Shield className="w-16 h-16 text-primary mx-auto mb-4" />
-            <h2 className="text-3xl font-bold mb-4">Want to Join Our Team?</h2>
-            <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
-              We&apos;re always looking for passionate, dedicated individuals who want to make a difference in the SLRP community
-            </p>
-            <div className="grid md:grid-cols-3 gap-4 max-w-3xl mx-auto mb-8">
-              <div className="p-4 rounded-lg bg-card/50">
-                <h3 className="font-semibold mb-2 text-primary">Requirements</h3>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• 18+ years old</li>
-                  <li>• Active player</li>
-                  <li>• Clean record</li>
-                  <li>• Strong RP knowledge</li>
-                </ul>
-              </div>
-              <div className="p-4 rounded-lg bg-card/50">
-                <h3 className="font-semibold mb-2 text-primary">Open Positions</h3>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Moderators</li>
-                  <li>• Developers</li>
-                  <li>• Event Coordinators</li>
-                  <li>• Content Creators</li>
-                </ul>
-              </div>
-              <div className="p-4 rounded-lg bg-card/50">
-                <h3 className="font-semibold mb-2 text-primary">Benefits</h3>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Exclusive perks</li>
-                  <li>• Staff training</li>
-                  <li>• Community impact</li>
-                  <li>• Recognition</li>
-                </ul>
+          {/* Join Team Section - Enhanced */}
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/20 rounded-3xl blur-3xl"></div>
+            <div className="relative text-center glass-effect rounded-3xl p-16 border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-background to-secondary/5 overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+              
+              <div className="relative z-10">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/20 border-2 border-primary/40 mb-6">
+                  <Shield className="w-10 h-10 text-primary" />
+                </div>
+                
+                <h2 className="text-4xl md:text-5xl font-bold text-gradient mb-6">Join Our Elite Team</h2>
+                <p className="text-xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
+                  We&apos;re always looking for passionate, dedicated individuals who want to make a real difference in the SLRP community and shape the future of roleplay
+                </p>
+                
+                <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12">
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-primary/10 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="relative p-6 rounded-2xl bg-card/50 border border-border/20 hover:border-primary/40 transition-all duration-300">
+                      <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                        <Users className="w-6 h-6 text-primary" />
+                      </div>
+                      <h3 className="font-bold text-lg mb-3 text-primary">Requirements</h3>
+                      <ul className="text-sm text-muted-foreground space-y-2 text-left">
+                        <li className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                          18+ years old
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                          Active player
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                          Clean record
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                          Strong RP knowledge
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-secondary/10 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="relative p-6 rounded-2xl bg-card/50 border border-border/20 hover:border-secondary/40 transition-all duration-300">
+                      <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center mx-auto mb-4">
+                        <Target className="w-6 h-6 text-secondary" />
+                      </div>
+                      <h3 className="font-bold text-lg mb-3 text-secondary">Open Positions</h3>
+                      <ul className="text-sm text-muted-foreground space-y-2 text-left">
+                        <li className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-secondary"></div>
+                          Moderators
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-secondary"></div>
+                          Developers
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-secondary"></div>
+                          Event Coordinators
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-secondary"></div>
+                          Content Creators
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-primary/10 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="relative p-6 rounded-2xl bg-card/50 border border-border/20 hover:border-primary/40 transition-all duration-300">
+                      <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                        <Award className="w-6 h-6 text-primary" />
+                      </div>
+                      <h3 className="font-bold text-lg mb-3 text-primary">Benefits</h3>
+                      <ul className="text-sm text-muted-foreground space-y-2 text-left">
+                        <li className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                          Exclusive perks
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                          Professional training
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                          Community impact
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                          Recognition & rewards
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                
+                <Button 
+                  size="lg" 
+                  className="bg-primary hover:bg-primary/90 text-lg px-8 py-6 shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 group"
+                  onClick={() => setIsApplicationOpen(true)}
+                >
+                  <Sparkles className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform duration-300" />
+                  Apply for Staff Position
+                </Button>
               </div>
             </div>
-            <Button 
-              size="lg" 
-              className="bg-primary hover:bg-primary/90"
-              onClick={() => setIsApplicationOpen(true)}
-            >
-              Apply for Staff Position
-            </Button>
           </div>
         </div>
       </main>
