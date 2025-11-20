@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield, FileCheck, LogOut, Menu, UserCircle } from "lucide-react";
+import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail } from "lucide-react";
 import { Button } from "./ui/button";
 import AnimatedLogoIcon from "./AnimatedLogoIcon";
 import { supabase } from "@/integrations/supabase/client";
@@ -184,6 +184,17 @@ const Navigation = () => {
                       Checking
                     </Button>
                   )}
+                  <Button 
+                    variant="outline"
+                    className="justify-start glass-effect"
+                    onClick={() => {
+                      navigate("/support");
+                      setIsMenuOpen(false);
+                    }}
+                  >
+                    <Mail className="w-4 h-4 mr-2" />
+                    Contact Server Owner
+                  </Button>
                   {user ? (
                     <>
                       <Button 
