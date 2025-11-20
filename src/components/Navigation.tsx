@@ -171,17 +171,19 @@ const Navigation = () => {
                       Admin Panel
                     </Button>
                   )}
-                  <Button 
-                    variant="outline"
-                    className="justify-start glass-effect"
-                    onClick={() => {
-                      navigate("/admin");
-                      setIsMenuOpen(false);
-                    }}
-                  >
-                    <FileCheck className="w-4 h-4 mr-2" />
-                    Checking
-                  </Button>
+                  {isAdmin && (
+                    <Button 
+                      variant="outline"
+                      className="justify-start glass-effect"
+                      onClick={() => {
+                        navigate("/admin");
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      <FileCheck className="w-4 h-4 mr-2" />
+                      Checking
+                    </Button>
+                  )}
                   {user ? (
                     <Button 
                       variant="outline"
