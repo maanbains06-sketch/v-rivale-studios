@@ -213,4 +213,17 @@ All colors MUST be HSL.
   .bg-gradient-radial {
     background: var(--gradient-glow);
   }
+
+  /* Logo Animation Utilities */
+  .animation-delay-100 {
+    animation-delay: 0.1s;
+  }
+  
+  .animation-delay-200 {
+    animation-delay: 0.2s;
+  }
+  
+  .animation-delay-300 {
+    animation-delay: 0.3s;
+  }
 }

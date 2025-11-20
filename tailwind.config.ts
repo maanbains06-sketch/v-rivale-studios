@@ -90,11 +90,62 @@ export default {
             height: "0",
           },
         },
+        "gradient-shift": {
+          "0%, 100%": {
+            backgroundPosition: "0% 50%",
+          },
+          "50%": {
+            backgroundPosition: "100% 50%",
+          },
+        },
+        "logo-float": {
+          "0%, 100%": {
+            transform: "translateY(0px)",
+          },
+          "50%": {
+            transform: "translateY(-10px)",
+          },
+        },
+        "orbit-1": {
+          "0%": {
+            transform: "rotate(0deg) translateX(60px) rotate(0deg)",
+            opacity: "1",
+          },
+          "100%": {
+            transform: "rotate(360deg) translateX(60px) rotate(-360deg)",
+            opacity: "0.3",
+          },
+        },
+        "orbit-2": {
+          "0%": {
+            transform: "rotate(120deg) translateX(50px) rotate(-120deg)",
+            opacity: "0.3",
+          },
+          "100%": {
+            transform: "rotate(480deg) translateX(50px) rotate(-480deg)",
+            opacity: "1",
+          },
+        },
+        "orbit-3": {
+          "0%": {
+            transform: "rotate(240deg) translateX(55px) rotate(-240deg)",
+            opacity: "1",
+          },
+          "100%": {
+            transform: "rotate(600deg) translateX(55px) rotate(-600deg)",
+            opacity: "0.3",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "gradient-shift": "gradient-shift 3s ease infinite",
+        "logo-float": "logo-float 3s ease-in-out infinite",
+        "orbit-1": "orbit-1 8s linear infinite",
+        "orbit-2": "orbit-2 10s linear infinite",
+        "orbit-3": "orbit-3 12s linear infinite",
       },
     },
   },

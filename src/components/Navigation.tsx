@@ -1,7 +1,6 @@
 import { NavLink } from "./NavLink";
 import { Users } from "lucide-react";
 import { Button } from "./ui/button";
-import slrpLogo from "@/assets/slrp-logo.png";
 
 const Navigation = () => {
   return (
@@ -9,8 +8,18 @@ const Navigation = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src={slrpLogo} alt="SLRP Logo" className="w-10 h-10 object-contain animate-pulse-slow" />
-            <h1 className="text-2xl font-bold text-gradient">SLRP</h1>
+            <div className="relative">
+              {/* Animated glow orb */}
+              <div className="absolute inset-0 blur-xl opacity-60 animate-pulse-slow">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-pink" />
+              </div>
+              {/* Logo letters with gradient */}
+              <h1 className="text-2xl font-bold relative z-10">
+                <span className="inline-block text-gradient bg-gradient-to-r from-neon-cyan to-neon-purple bg-clip-text text-transparent animate-gradient-shift">
+                  SLRP
+                </span>
+              </h1>
+            </div>
           </div>
           
           <div className="hidden md:flex items-center gap-6">
