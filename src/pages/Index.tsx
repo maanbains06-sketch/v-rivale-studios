@@ -122,7 +122,7 @@ const Index = () => {
             <div>
               <h3 className="text-2xl font-bold text-gradient mb-2">SLRP</h3>
               <p className="text-muted-foreground text-sm">
-                © 2024 SLRP. All rights reserved. Not affiliated with Rockstar Games.
+                © 2026 SLRP. All rights reserved. Not affiliated with Rockstar Games.
               </p>
             </div>
             <div className="flex gap-8">
