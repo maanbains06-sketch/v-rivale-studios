@@ -6,7 +6,7 @@ import headerRules from "@/assets/header-rules.jpg";
 const rulesSections = [
   {
     title: "General",
-    color: "from-neon-cyan to-neon-purple",
+    color: "from-primary to-accent-blue",
     rules: [
       "Respect all players and staff members at all times",
       "No cheating, hacking, or exploiting bugs",
@@ -17,7 +17,7 @@ const rulesSections = [
   },
   {
     title: "Roleplay",
-    color: "from-neon-purple to-neon-pink",
+    color: "from-accent-blue to-accent-light",
     rules: [
       "Value your character's life (No RDM/VDM)",
       "Follow realistic roleplay standards",
@@ -28,7 +28,7 @@ const rulesSections = [
   },
   {
     title: "Combat",
-    color: "from-neon-pink to-neon-cyan",
+    color: "from-accent-light to-primary",
     rules: [
       "Initiate proper RP before combat",
       "No combat logging during situations",
@@ -39,7 +39,7 @@ const rulesSections = [
   },
   {
     title: "Economy",
-    color: "from-neon-cyan to-secondary",
+    color: "from-primary to-secondary",
     rules: [
       "No money glitching or exploits",
       "Follow realistic business practices",
@@ -50,7 +50,7 @@ const rulesSections = [
   },
   {
     title: "Vehicles",
-    color: "from-secondary to-neon-purple",
+    color: "from-secondary to-accent-blue",
     rules: [
       "Drive realistically according to traffic laws",
       "No vehicle ramming without RP reason",
@@ -61,7 +61,7 @@ const rulesSections = [
   },
   {
     title: "Community",
-    color: "from-neon-purple to-neon-cyan",
+    color: "from-accent-blue to-primary",
     rules: [
       "Be helpful to new players",
       "Report rule violations to staff",

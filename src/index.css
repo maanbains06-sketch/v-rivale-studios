@@ -8,55 +8,47 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 230 20% 6%;
-    --foreground: 180 100% 98%;
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
 
-    --card: 230 18% 10%;
-    --card-foreground: 180 100% 98%;
+    --card: 222 40% 15%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 230 20% 8%;
-    --popover-foreground: 180 100% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 185 95% 60%;
-    --primary-foreground: 230 20% 6%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 47% 11%;
 
-    --secondary: 275 85% 65%;
-    --secondary-foreground: 180 100% 98%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 230 15% 20%;
-    --muted-foreground: 180 30% 75%;
+    --muted: 215 20% 25%;
+    --muted-foreground: 215 16% 65%;
 
-    --accent: 185 95% 60%;
-    --accent-foreground: 230 20% 6%;
+    --accent: 217 91% 60%;
+    --accent-foreground: 222 47% 11%;
 
-    --destructive: 0 85% 60%;
-    --destructive-foreground: 180 100% 98%;
+    --destructive: 0 63% 51%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 230 15% 22%;
-    --input: 230 15% 22%;
-    --ring: 185 95% 60%;
+    --border: 217 15% 25%;
+    --input: 217 15% 25%;
+    --ring: 217 91% 60%;
 
     --radius: 0.75rem;
 
-    /* Enhanced GTA RP colors */
-    --neon-cyan: 185 95% 60%;
-    --neon-purple: 275 85% 65%;
-    --neon-pink: 325 95% 68%;
-    --neon-blue: 210 100% 65%;
-    --neon-orange: 25 100% 60%;
-    --dark-bg: 230 20% 6%;
-    --glass-bg: 230 18% 10%;
+    /* Refined color palette */
+    --blue-accent: 217 91% 60%;
+    --blue-light: 213 97% 87%;
+    --orange-accent: 27 96% 61%;
+    --gray-dark: 222 47% 11%;
+    --gray-medium: 215 20% 25%;
     
-    /* Enhanced Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(185 95% 60%), hsl(275 85% 65%), hsl(325 95% 68%));
-    --gradient-secondary: linear-gradient(135deg, hsl(210 100% 65%), hsl(275 85% 65%));
-    --gradient-card: linear-gradient(135deg, hsl(230 18% 10% / 0.9), hsl(230 15% 14% / 0.7));
-    --gradient-glow: radial-gradient(circle at 50% 50%, hsl(185 95% 60% / 0.2), transparent 70%);
-    
-    /* Enhanced Effects */
-    --glow-cyan: 0 0 30px hsl(185 95% 60% / 0.6), 0 0 60px hsl(185 95% 60% / 0.3);
-    --glow-purple: 0 0 30px hsl(275 85% 65% / 0.6), 0 0 60px hsl(275 85% 65% / 0.3);
-    --glow-pink: 0 0 30px hsl(325 95% 68% / 0.6), 0 0 60px hsl(325 95% 68% / 0.3);
+    /* Professional Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(222 47% 11%), hsl(217 33% 17%));
+    --gradient-accent: linear-gradient(135deg, hsl(217 91% 60%), hsl(213 97% 87%));
+    --gradient-card: linear-gradient(135deg, hsl(222 40% 15% / 0.95), hsl(217 33% 17% / 0.85));
     
     --sidebar-background: 240 10% 10%;
     --sidebar-foreground: 180 100% 95%;
@@ -77,55 +69,15 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
     background-image: 
-      linear-gradient(135deg, hsl(230 20% 6% / 0.92), hsl(230 20% 8% / 0.88)),
+      linear-gradient(135deg, hsl(222 47% 11% / 0.98), hsl(217 33% 17% / 0.95)),
       url('/src/assets/hero-bg-enhanced.jpg');
     background-size: cover;
     background-position: center center;
     background-attachment: fixed;
     background-repeat: no-repeat;
-    perspective: 1px;
     height: 100vh;
     overflow-x: hidden;
     overflow-y: auto;
-    transform-style: preserve-3d;
-  }
-  
-  body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-      radial-gradient(circle at 20% 20%, hsl(185 95% 60% / 0.12), transparent 35%),
-      radial-gradient(circle at 80% 80%, hsl(275 85% 65% / 0.12), transparent 35%),
-      radial-gradient(circle at 50% 50%, hsl(325 95% 68% / 0.08), transparent 50%);
-    pointer-events: none;
-    z-index: 0;
-    transform: translateZ(-1px) scale(1.5);
-    animation: parallaxGlow 15s ease-in-out infinite alternate;
-  }
-  
-  @keyframes parallaxGlow {
-    0% {
-      background: 
-        radial-gradient(circle at 20% 20%, hsl(185 95% 60% / 0.12), transparent 35%),
-        radial-gradient(circle at 80% 80%, hsl(275 85% 65% / 0.12), transparent 35%),
-        radial-gradient(circle at 50% 50%, hsl(325 95% 68% / 0.08), transparent 50%);
-    }
-    50% {
-      background: 
-        radial-gradient(circle at 80% 30%, hsl(275 85% 65% / 0.15), transparent 35%),
-        radial-gradient(circle at 20% 70%, hsl(185 95% 60% / 0.15), transparent 35%),
-        radial-gradient(circle at 50% 50%, hsl(325 95% 68% / 0.1), transparent 50%);
-    }
-    100% {
-      background: 
-        radial-gradient(circle at 30% 80%, hsl(325 95% 68% / 0.12), transparent 35%),
-        radial-gradient(circle at 70% 20%, hsl(185 95% 60% / 0.12), transparent 35%),
-        radial-gradient(circle at 50% 50%, hsl(275 85% 65% / 0.08), transparent 50%);
-    }
   }
   
   body::after {
@@ -167,31 +119,32 @@ All colors MUST be HSL.
 
 @layer utilities {
   .text-gradient {
-    background: var(--gradient-hero);
+    background: linear-gradient(135deg, hsl(217 91% 60%), hsl(213 97% 87%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
   
   .glass-effect {
-    background: var(--gradient-card);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid hsl(var(--border) / 0.2);
+    background: linear-gradient(135deg, hsl(222 40% 15% / 0.8), hsl(217 33% 17% / 0.6));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid hsl(217 15% 25% / 0.4);
+    box-shadow: 0 4px 16px 0 hsl(222 47% 11% / 0.3);
     position: relative;
     z-index: 1;
   }
   
   .glow-cyan {
-    box-shadow: var(--glow-cyan);
+    box-shadow: 0 2px 12px hsl(217 91% 60% / 0.15);
   }
   
   .glow-purple {
-    box-shadow: var(--glow-purple);
+    box-shadow: 0 2px 12px hsl(217 91% 60% / 0.15);
   }
   
   .glow-pink {
-    box-shadow: var(--glow-pink);
+    box-shadow: 0 2px 12px hsl(217 91% 60% / 0.15);
   }
   
   .animate-glow {
@@ -200,18 +153,18 @@ All colors MUST be HSL.
   
   @keyframes glow {
     0% {
-      box-shadow: 0 0 15px hsl(185 95% 60% / 0.4), 0 0 30px hsl(185 95% 60% / 0.2);
+      box-shadow: 0 2px 12px hsl(217 91% 60% / 0.15);
     }
     50% {
-      box-shadow: 0 0 25px hsl(275 85% 65% / 0.6), 0 0 50px hsl(275 85% 65% / 0.3);
+      box-shadow: 0 4px 16px hsl(217 91% 60% / 0.25);
     }
     100% {
-      box-shadow: 0 0 30px hsl(185 95% 60% / 0.8), 0 0 60px hsl(185 95% 60% / 0.4);
+      box-shadow: 0 2px 12px hsl(217 91% 60% / 0.15);
     }
   }
   
   .bg-gradient-radial {
-    background: var(--gradient-glow);
+    background: radial-gradient(circle at 50% 50%, hsl(217 91% 60% / 0.1), transparent 70%);
   }
 
   /* Logo Animation Utilities */
