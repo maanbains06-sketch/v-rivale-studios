@@ -93,19 +93,32 @@ const AnimatedLogoIcon = ({ className = "" }: AnimatedLogoIconProps) => {
           </defs>
         </svg>
 
-        {/* Large stylized "S" letter */}
+        {/* Large prominent "S" letter with strong visibility */}
         <div 
-          className="absolute text-2xl font-bold"
+          className="absolute text-3xl font-bold z-10"
           style={{
             background: `linear-gradient(135deg, 
-              hsl(${(rotation + 185) % 360} 95% 75%), 
-              hsl(${(rotation + 275) % 360} 85% 70%), 
-              hsl(${(rotation + 325) % 360} 95% 75%))`,
+              hsl(185 95% 85%), 
+              hsl(275 85% 80%), 
+              hsl(325 95% 85%))`,
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
-            filter: `drop-shadow(0 0 8px hsl(${(rotation + 185) % 360} 95% 60% / 0.8))`,
+            filter: `drop-shadow(0 0 10px hsl(185 95% 60%)) drop-shadow(0 0 15px hsl(185 95% 60% / 0.8))`,
             transform: `scale(${pulseScale})`,
+            textShadow: '0 0 20px rgba(255,255,255,0.3)',
+          }}
+        >
+          S
+        </div>
+
+        {/* White backdrop for S to ensure visibility */}
+        <div 
+          className="absolute text-3xl font-bold opacity-30"
+          style={{
+            color: 'white',
+            transform: `scale(${pulseScale})`,
+            zIndex: 5,
           }}
         >
           S
