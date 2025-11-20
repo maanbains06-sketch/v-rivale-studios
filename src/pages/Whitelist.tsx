@@ -15,7 +15,7 @@ import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
-import { CheckCircle2, Clock, XCircle, Loader2, LogOut, Timer, Save, FileText } from "lucide-react";
+import { CheckCircle2, Clock, XCircle, Loader2, LogOut, Timer, Save, FileText, Mail } from "lucide-react";
 import { differenceInDays, differenceInHours, differenceInMinutes, addDays } from "date-fns";
 import {
   AlertDialog,
@@ -522,13 +522,19 @@ const Whitelist = () => {
                                   </div>
                                 </div>
                               </div>
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-sm text-muted-foreground mb-2">
                                 You can submit a new application on{" "}
                                 <strong className="text-foreground">
                                   {reapplicationInfo.reapplyDate?.toLocaleDateString()} at{" "}
                                   {reapplicationInfo.reapplyDate?.toLocaleTimeString()}
                                 </strong>
                               </p>
+                              <div className="flex items-center gap-2 mt-3 p-2 rounded bg-blue-500/5 border border-blue-500/10">
+                                <Mail className="w-4 h-4 text-blue-500" />
+                                <p className="text-xs text-muted-foreground">
+                                  You'll receive an email notification at <strong>{existingApplication.discord}</strong> when the waiting period ends.
+                                </p>
+                              </div>
                             </div>
                           </div>
                         </div>
