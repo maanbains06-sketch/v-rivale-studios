@@ -1,6 +1,12 @@
 import Navigation from "@/components/Navigation";
+import GalleryUploadForm from "@/components/GalleryUploadForm";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { Upload } from "lucide-react";
 
 const Gallery = () => {
+  const [showUploadForm, setShowUploadForm] = useState(false);
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -18,11 +24,27 @@ const Gallery = () => {
               <h1 className="text-6xl md:text-7xl font-bold text-gradient mb-6 leading-tight">
                 Community Gallery
               </h1>
-              <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-8">
                 Explore stunning screenshots, epic moments, and memorable experiences from our roleplay community
               </p>
+              
+              <Button
+                size="lg"
+                className="bg-primary hover:bg-primary/90"
+                onClick={() => setShowUploadForm(!showUploadForm)}
+              >
+                <Upload className="w-5 h-5 mr-2" />
+                {showUploadForm ? "Hide Upload Form" : "Submit Your Content"}
+              </Button>
             </div>
           </div>
+
+          {/* Upload Form */}
+          {showUploadForm && (
+            <div className="mb-16 animate-fade-in">
+              <GalleryUploadForm onSuccess={() => setShowUploadForm(false)} />
+            </div>
+          )}
 
           {/* Gallery Categories */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
