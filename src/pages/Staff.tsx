@@ -1,4 +1,5 @@
 import Navigation from "@/components/Navigation";
+import PageHeader from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Shield, Users, Code, HeadphonesIcon, Star, Trophy, Heart, Target, Sparkles, Zap, Clock, Award, MessageCircle } from "lucide-react";
@@ -117,60 +118,50 @@ const Staff = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       <StaffApplicationForm open={isApplicationOpen} onOpenChange={setIsApplicationOpen} />
-      <main className="pt-24 pb-16">
+      
+      <PageHeader 
+        title="Meet Our Elite Team"
+        description="Passionate professionals dedicated to creating the most immersive and professional roleplay experience"
+        badge="24/7 Available"
+      />
+      
+      <main className="pb-16">
         <div className="container mx-auto px-4">
-          {/* Hero Section with Enhanced Design */}
-          <div className="relative mb-20 animate-fade-in">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 rounded-3xl blur-3xl -z-10"></div>
-            <div className="text-center glass-effect rounded-3xl p-12 border border-border/20">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6">
-                <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-                <span className="text-sm font-semibold text-primary">Professional Team • 24/7 Available</span>
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mb-20">
+            <div className="relative group">
+              <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+              <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-primary/20">
+                <Users className="w-8 h-8 text-primary mx-auto mb-3" />
+                <div className="text-4xl font-bold text-gradient mb-1">{staffMembers.length}+</div>
+                <div className="text-sm text-muted-foreground">Team Members</div>
               </div>
-              
-              <h1 className="text-6xl md:text-7xl font-bold text-gradient mb-6 leading-tight">
-                Meet Our Elite Team
-              </h1>
-              <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed">
-                Passionate professionals dedicated to creating the most immersive and professional roleplay experience in India
-              </p>
-              
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
-                <div className="relative group">
-                  <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-                  <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-primary/20">
-                    <Users className="w-8 h-8 text-primary mx-auto mb-3" />
-                    <div className="text-4xl font-bold text-gradient mb-1">{staffMembers.length}+</div>
-                    <div className="text-sm text-muted-foreground">Team Members</div>
-                  </div>
-                </div>
-                
-                <div className="relative group">
-                  <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-                  <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-primary/20">
-                    <Clock className="w-8 h-8 text-primary mx-auto mb-3" />
-                    <div className="text-4xl font-bold text-gradient mb-1">24/7</div>
-                    <div className="text-sm text-muted-foreground">Staff Coverage</div>
-                  </div>
-                </div>
-                
-                <div className="relative group">
-                  <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-                  <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-primary/20">
-                    <Zap className="w-8 h-8 text-primary mx-auto mb-3" />
-                    <div className="text-4xl font-bold text-gradient mb-1">1000+</div>
-                    <div className="text-sm text-muted-foreground">Issues Resolved</div>
-                  </div>
-                </div>
-                
-                <div className="relative group">
-                  <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-                  <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-primary/20">
-                    <Award className="w-8 h-8 text-primary mx-auto mb-3" />
-                    <div className="text-4xl font-bold text-gradient mb-1">98%</div>
-                    <div className="text-sm text-muted-foreground">Satisfaction Rate</div>
-                  </div>
-                </div>
+            </div>
+            
+            <div className="relative group">
+              <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+              <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-primary/20">
+                <Clock className="w-8 h-8 text-primary mx-auto mb-3" />
+                <div className="text-4xl font-bold text-gradient mb-1">24/7</div>
+                <div className="text-sm text-muted-foreground">Staff Coverage</div>
+              </div>
+            </div>
+            
+            <div className="relative group">
+              <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+              <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-primary/20">
+                <Zap className="w-8 h-8 text-primary mx-auto mb-3" />
+                <div className="text-4xl font-bold text-gradient mb-1">1000+</div>
+                <div className="text-sm text-muted-foreground">Issues Resolved</div>
+              </div>
+            </div>
+            
+            <div className="relative group">
+              <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+              <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-primary/20">
+                <Award className="w-8 h-8 text-primary mx-auto mb-3" />
+                <div className="text-4xl font-bold text-gradient mb-1">98%</div>
+                <div className="text-sm text-muted-foreground">Satisfaction Rate</div>
               </div>
             </div>
           </div>

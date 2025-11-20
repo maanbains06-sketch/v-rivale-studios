@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
+import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -209,26 +210,25 @@ const Whitelist = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      <main className="pt-24 pb-16">
+      
+      <PageHeader 
+        title="Whitelist Application"
+        description="Apply to join SLRP and become part of our exclusive roleplay community"
+      />
+      
+      <main className="pb-16">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
-            {/* Header */}
-            <div className="text-center mb-12 animate-fade-in">
-              <div className="flex items-center justify-center gap-4 mb-4">
-                <h1 className="text-5xl font-bold text-gradient">Whitelist Application</h1>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSignOut}
-                  className="ml-auto"
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sign Out
-                </Button>
-              </div>
-              <p className="text-xl text-muted-foreground">
-                Apply to join SLRP and become part of our exclusive roleplay community
-              </p>
+            {/* Sign Out Button */}
+            <div className="flex justify-end mb-8 animate-fade-in">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSignOut}
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
             </div>
 
             {/* Existing Application Status */}
