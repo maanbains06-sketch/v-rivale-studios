@@ -22,9 +22,9 @@ const Auth = () => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Redirect to home if authenticated
+        // Redirect to whitelist if authenticated
         if (session?.user) {
-          navigate("/");
+          navigate("/whitelist");
         }
       }
     );
@@ -35,7 +35,7 @@ const Auth = () => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        navigate("/");
+        navigate("/whitelist");
       }
     });
 
@@ -48,7 +48,7 @@ const Auth = () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'discord',
       options: {
-        redirectTo: `${window.location.origin}/`,
+        redirectTo: `${window.location.origin}/whitelist`,
       },
     });
 
