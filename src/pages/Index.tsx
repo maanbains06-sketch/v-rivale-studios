@@ -1,4 +1,4 @@
-import { Users, Zap, Trophy, Play } from "lucide-react";
+import { Users, Zap, Trophy, Play, Instagram, Facebook, Twitter, Youtube } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
@@ -124,6 +124,28 @@ const Index = () => {
               <p className="text-muted-foreground text-sm">
                 © 2026 SLRP. All rights reserved. Not affiliated with Rockstar Games.
               </p>
+              <div className="flex gap-2 mt-3">
+                <Button size="sm" variant="outline" className="h-8 w-8 p-0" asChild>
+                  <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+                    <Instagram className="h-4 w-4" />
+                  </a>
+                </Button>
+                <Button size="sm" variant="outline" className="h-8 w-8 p-0" asChild>
+                  <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+                    <Facebook className="h-4 w-4" />
+                  </a>
+                </Button>
+                <Button size="sm" variant="outline" className="h-8 w-8 p-0" asChild>
+                  <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
+                    <Twitter className="h-4 w-4" />
+                  </a>
+                </Button>
+                <Button size="sm" variant="outline" className="h-8 w-8 p-0" asChild>
+                  <a href="https://youtube.com" target="_blank" rel="noopener noreferrer">
+                    <Youtube className="h-4 w-4" />
+                  </a>
+                </Button>
+              </div>
             </div>
             <div className="flex gap-8">
               <div>
