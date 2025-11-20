@@ -55,11 +55,11 @@ const Navigation = () => {
               Status
             </NavLink>
             <NavLink 
-              to="/whitelist" 
+              to="/support" 
               className="text-foreground/80 hover:text-primary transition-colors"
               activeClassName="text-primary"
             >
-              Apply
+              Support
             </NavLink>
           </div>
           
