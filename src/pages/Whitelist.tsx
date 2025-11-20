@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
@@ -15,7 +15,8 @@ import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
-import { CheckCircle2, Clock, XCircle, Loader2, LogOut } from "lucide-react";
+import { CheckCircle2, Clock, XCircle, Loader2, LogOut, Timer } from "lucide-react";
+import { differenceInDays, differenceInHours, differenceInMinutes, addDays } from "date-fns";
 
 const whitelistSchema = z.object({
   steamId: z.string()
@@ -63,6 +64,7 @@ const Whitelist = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [existingApplication, setExistingApplication] = useState<Application | null>(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   const form = useForm<WhitelistFormValues>({
     resolver: zodResolver(whitelistSchema),
@@ -107,6 +109,15 @@ const Whitelist = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  // Update current time every minute for countdown
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // Update every minute
+
+    return () => clearInterval(timer);
+  }, []);
 
   const checkExistingApplication = async (userId: string) => {
     try {
@@ -183,6 +194,33 @@ const Whitelist = () => {
       setSubmitting(false);
     }
   };
+
+  // Calculate reapplication eligibility for rejected applications
+  const reapplicationInfo = useMemo(() => {
+    if (!existingApplication || existingApplication.status !== "rejected") {
+      return null;
+    }
+
+    const rejectionDate = new Date(existingApplication.reviewed_at || existingApplication.created_at);
+    const reapplyDate = addDays(rejectionDate, 7);
+    const now = currentTime;
+
+    const canReapply = now >= reapplyDate;
+    
+    if (canReapply) {
+      return { canReapply: true, timeRemaining: null };
+    }
+
+    const daysLeft = differenceInDays(reapplyDate, now);
+    const hoursLeft = differenceInHours(reapplyDate, now) % 24;
+    const minutesLeft = differenceInMinutes(reapplyDate, now) % 60;
+
+    return {
+      canReapply: false,
+      timeRemaining: { days: daysLeft, hours: hoursLeft, minutes: minutesLeft },
+      reapplyDate
+    };
+  }, [existingApplication, currentTime]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -305,10 +343,58 @@ const Whitelist = () => {
                             </p>
                           </div>
                         )}
-                        <p className="text-sm text-muted-foreground">
-                          <strong>Can I reapply?</strong> Yes! You may submit a new application after 7 days. Please carefully review the rejection reason and our requirements before reapplying.
-                        </p>
                       </div>
+
+                      {/* Reapplication Countdown Timer */}
+                      {reapplicationInfo && !reapplicationInfo.canReapply && reapplicationInfo.timeRemaining && (
+                        <div className="p-4 rounded-lg bg-orange-500/10 border border-orange-500/20">
+                          <div className="flex items-start gap-3">
+                            <Timer className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
+                              <p className="text-foreground font-semibold mb-2">
+                                Reapplication Waiting Period
+                              </p>
+                              <div className="flex items-center gap-4 mb-3">
+                                <div className="flex-1 grid grid-cols-3 gap-2">
+                                  <div className="text-center p-3 rounded-lg bg-background/50 border border-border/20">
+                                    <div className="text-2xl font-bold text-orange-500">
+                                      {reapplicationInfo.timeRemaining.days}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground mt-1">Days</div>
+                                  </div>
+                                  <div className="text-center p-3 rounded-lg bg-background/50 border border-border/20">
+                                    <div className="text-2xl font-bold text-orange-500">
+                                      {reapplicationInfo.timeRemaining.hours}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground mt-1">Hours</div>
+                                  </div>
+                                  <div className="text-center p-3 rounded-lg bg-background/50 border border-border/20">
+                                    <div className="text-2xl font-bold text-orange-500">
+                                      {reapplicationInfo.timeRemaining.minutes}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground mt-1">Minutes</div>
+                                  </div>
+                                </div>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                You can submit a new application on{" "}
+                                <strong className="text-foreground">
+                                  {reapplicationInfo.reapplyDate?.toLocaleDateString()} at{" "}
+                                  {reapplicationInfo.reapplyDate?.toLocaleTimeString()}
+                                </strong>
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {reapplicationInfo && reapplicationInfo.canReapply && (
+                        <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+                          <p className="text-sm text-foreground">
+                            ✅ <strong>You can now reapply!</strong> The 7-day waiting period has ended. Please review the rejection reason and submit a new application below.
+                          </p>
+                        </div>
+                      )}
                       
                       <div className="p-4 rounded-lg bg-background/50 border border-border/20">
                         <p className="text-xs text-muted-foreground mb-2 font-semibold">Tips for Reapplication:</p>
@@ -354,8 +440,8 @@ const Whitelist = () => {
               </div>
             )}
 
-            {/* Application Form - Only show if no pending/approved application */}
-            {(!existingApplication || existingApplication.status === "rejected") && (
+            {/* Application Form - Only show if no pending/approved application AND reapplication period has passed */}
+            {(!existingApplication || (existingApplication.status === "rejected" && reapplicationInfo?.canReapply)) && (
               <div className="glass-effect rounded-xl p-8 border border-border/20 animate-fade-in">
                 <div className="mb-6 p-4 glass-effect rounded-lg border border-primary/20">
                   <div className="flex items-start gap-3">
