@@ -409,31 +409,6 @@ const Guides = () => {
                   <CardTitle className="text-2xl text-primary">Roleplay Tips & Best Practices</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6 text-foreground/90">
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground">🎭 Essential RP Commands</h3>
-                    <div className="space-y-3">
-                      <div className="p-3 bg-card/50 rounded-lg">
-                        <p className="font-mono text-primary mb-1">/me [action]</p>
-                        <p className="text-sm text-muted-foreground">Describe physical actions your character performs</p>
-                        <p className="text-xs italic mt-1">Example: /me pulls out phone and dials a number</p>
-                      </div>
-                      <div className="p-3 bg-card/50 rounded-lg">
-                        <p className="font-mono text-primary mb-1">/do [environment/result]</p>
-                        <p className="text-sm text-muted-foreground">Describe environmental details or action outcomes</p>
-                        <p className="text-xs italic mt-1">Example: /do The door is locked with a heavy deadbolt</p>
-                      </div>
-                      <div className="p-3 bg-card/50 rounded-lg">
-                        <p className="font-mono text-primary mb-1">/ooc [message]</p>
-                        <p className="text-sm text-muted-foreground">Out of character communication (use sparingly)</p>
-                        <p className="text-xs italic mt-1">Example: /ooc Sorry, my game froze for a sec</p>
-                      </div>
-                      <div className="p-3 bg-card/50 rounded-lg">
-                        <p className="font-mono text-primary mb-1">/whisper or /w [message]</p>
-                        <p className="text-sm text-muted-foreground">Speak quietly to people very close to you</p>
-                        <p className="text-xs italic mt-1">Example: /w Don&apos;t trust that guy...</p>
-                      </div>
-                    </div>
-                  </div>
 
                   <div>
                     <h3 className="text-xl font-semibold mb-3 text-foreground">✨ Creating Quality Roleplay</h3>
