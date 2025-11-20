@@ -62,7 +62,7 @@ const Whitelist = () => {
             <div className="text-center mb-12">
               <h1 className="text-5xl font-bold text-gradient mb-4">Whitelist Application</h1>
               <p className="text-xl text-muted-foreground">
-                Apply to join Skylife Roleplay India and become part of our exclusive community
+                Apply to join SLRP and become part of our exclusive community
               </p>
             </div>
 

@@ -11,7 +11,7 @@ const Store = () => {
             Coming Soon
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl">
-            Exclusive Skylife Roleplay India merchandise and server perks will be available soon. Stay tuned for updates!
+            Exclusive SLRP merchandise and server perks will be available soon. Stay tuned for updates!
           </p>
         </div>
       </main>
