@@ -9,7 +9,7 @@ const Navigation = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src={slrpLogo} alt="SLRP Logo" className="w-10 h-10 object-contain" />
+            <img src={slrpLogo} alt="SLRP Logo" className="w-10 h-10 object-contain animate-pulse-slow" />
             <h1 className="text-2xl font-bold text-gradient">SLRP</h1>
           </div>
           
