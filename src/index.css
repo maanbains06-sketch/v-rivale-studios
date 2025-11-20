@@ -8,50 +8,55 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 240 10% 8%;
-    --foreground: 180 100% 95%;
+    --background: 230 20% 6%;
+    --foreground: 180 100% 98%;
 
-    --card: 240 10% 12%;
-    --card-foreground: 180 100% 95%;
+    --card: 230 18% 10%;
+    --card-foreground: 180 100% 98%;
 
-    --popover: 240 10% 10%;
-    --popover-foreground: 180 100% 95%;
+    --popover: 230 20% 8%;
+    --popover-foreground: 180 100% 98%;
 
-    --primary: 180 90% 55%;
-    --primary-foreground: 240 10% 8%;
+    --primary: 185 95% 60%;
+    --primary-foreground: 230 20% 6%;
 
-    --secondary: 270 70% 60%;
-    --secondary-foreground: 180 100% 95%;
+    --secondary: 275 85% 65%;
+    --secondary-foreground: 180 100% 98%;
 
-    --muted: 240 10% 18%;
-    --muted-foreground: 180 20% 70%;
+    --muted: 230 15% 20%;
+    --muted-foreground: 180 30% 75%;
 
-    --accent: 180 90% 55%;
-    --accent-foreground: 240 10% 8%;
+    --accent: 185 95% 60%;
+    --accent-foreground: 230 20% 6%;
 
-    --destructive: 0 70% 50%;
-    --destructive-foreground: 180 100% 95%;
+    --destructive: 0 85% 60%;
+    --destructive-foreground: 180 100% 98%;
 
-    --border: 240 10% 20%;
-    --input: 240 10% 20%;
-    --ring: 180 90% 55%;
+    --border: 230 15% 22%;
+    --input: 230 15% 22%;
+    --ring: 185 95% 60%;
 
     --radius: 0.75rem;
 
-    /* Custom GTA RP colors */
-    --neon-cyan: 180 90% 55%;
-    --neon-purple: 270 70% 60%;
-    --neon-pink: 320 90% 65%;
-    --dark-bg: 240 10% 8%;
-    --glass-bg: 240 10% 12%;
+    /* Enhanced GTA RP colors */
+    --neon-cyan: 185 95% 60%;
+    --neon-purple: 275 85% 65%;
+    --neon-pink: 325 95% 68%;
+    --neon-blue: 210 100% 65%;
+    --neon-orange: 25 100% 60%;
+    --dark-bg: 230 20% 6%;
+    --glass-bg: 230 18% 10%;
     
-    /* Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(180 90% 55%), hsl(270 70% 60%), hsl(320 90% 65%));
-    --gradient-card: linear-gradient(135deg, hsl(240 10% 12% / 0.8), hsl(240 10% 15% / 0.6));
+    /* Enhanced Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(185 95% 60%), hsl(275 85% 65%), hsl(325 95% 68%));
+    --gradient-secondary: linear-gradient(135deg, hsl(210 100% 65%), hsl(275 85% 65%));
+    --gradient-card: linear-gradient(135deg, hsl(230 18% 10% / 0.9), hsl(230 15% 14% / 0.7));
+    --gradient-glow: radial-gradient(circle at 50% 50%, hsl(185 95% 60% / 0.2), transparent 70%);
     
-    /* Effects */
-    --glow-cyan: 0 0 20px hsl(180 90% 55% / 0.5);
-    --glow-purple: 0 0 20px hsl(270 70% 60% / 0.5);
+    /* Enhanced Effects */
+    --glow-cyan: 0 0 30px hsl(185 95% 60% / 0.6), 0 0 60px hsl(185 95% 60% / 0.3);
+    --glow-purple: 0 0 30px hsl(275 85% 65% / 0.6), 0 0 60px hsl(275 85% 65% / 0.3);
+    --glow-pink: 0 0 30px hsl(325 95% 68% / 0.6), 0 0 60px hsl(325 95% 68% / 0.3);
     
     --sidebar-background: 240 10% 10%;
     --sidebar-foreground: 180 100% 95%;
@@ -71,7 +76,7 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
-    background-image: url('/src/assets/hero-bg.jpg');
+    background-image: url('/src/assets/hero-bg-enhanced.jpg');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -85,7 +90,9 @@ All colors MUST be HSL.
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, hsl(240 10% 8% / 0.95), hsl(240 10% 8% / 0.85));
+    background: radial-gradient(circle at 20% 50%, hsl(185 95% 60% / 0.1), transparent 50%),
+                radial-gradient(circle at 80% 50%, hsl(275 85% 65% / 0.1), transparent 50%),
+                linear-gradient(135deg, hsl(230 20% 6% / 0.92), hsl(230 20% 8% / 0.88));
     z-index: -1;
   }
   
@@ -117,16 +124,27 @@ All colors MUST be HSL.
     box-shadow: var(--glow-purple);
   }
   
+  .glow-pink {
+    box-shadow: var(--glow-pink);
+  }
+  
   .animate-glow {
-    animation: glow 2s ease-in-out infinite alternate;
+    animation: glow 3s ease-in-out infinite alternate;
   }
   
   @keyframes glow {
-    from {
-      box-shadow: 0 0 10px hsl(180 90% 55% / 0.3);
+    0% {
+      box-shadow: 0 0 15px hsl(185 95% 60% / 0.4), 0 0 30px hsl(185 95% 60% / 0.2);
     }
-    to {
-      box-shadow: 0 0 20px hsl(180 90% 55% / 0.8), 0 0 30px hsl(180 90% 55% / 0.4);
+    50% {
+      box-shadow: 0 0 25px hsl(275 85% 65% / 0.6), 0 0 50px hsl(275 85% 65% / 0.3);
     }
+    100% {
+      box-shadow: 0 0 30px hsl(185 95% 60% / 0.8), 0 0 60px hsl(185 95% 60% / 0.4);
+    }
+  }
+  
+  .bg-gradient-radial {
+    background: var(--gradient-glow);
   }
 }
