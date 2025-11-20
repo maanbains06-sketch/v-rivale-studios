@@ -37,9 +37,10 @@ const Index = () => {
           backgroundImage: `url(${heroBg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
+          backgroundAttachment: 'fixed',
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/50 to-background"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/30 to-background/60"></div>
         
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center animate-fade-in">
