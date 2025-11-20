@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { User, Session } from "@supabase/supabase-js";
+import { MessageCircle } from "lucide-react";
 import Navigation from "@/components/Navigation";
 
 const Auth = () => {
@@ -96,6 +97,26 @@ const Auth = () => {
     }
   };
 
+  const handleDiscordSignIn = async () => {
+    setLoading(true);
+    
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'discord',
+      options: {
+        redirectTo: `${window.location.origin}/`,
+      },
+    });
+
+    if (error) {
+      toast({
+        title: "Discord Sign In Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      setLoading(false);
+    }
+  };
+
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -149,6 +170,25 @@ const Auth = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <Button
+              onClick={handleDiscordSignIn}
+              disabled={loading}
+              variant="outline"
+              className="w-full mb-6 bg-[#5865F2] hover:bg-[#4752C4] text-white border-0"
+            >
+              <MessageCircle className="w-5 h-5 mr-2" />
+              Continue with Discord
+            </Button>
+
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border/20" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">Or continue with email</span>
+              </div>
+            </div>
+
             <Tabs defaultValue="signup" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="signup">Sign Up</TabsTrigger>
