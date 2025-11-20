@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield, Activity, FileCheck, LogOut } from "lucide-react";
+import { Users, Shield, Activity, FileCheck, LogOut, Menu } from "lucide-react";
 import { Button } from "./ui/button";
 import AnimatedLogoIcon from "./AnimatedLogoIcon";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "./ui/use-toast";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 
 const Navigation = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [user, setUser] = useState(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -141,51 +143,83 @@ const Navigation = () => {
           </div>
           
           <div className="flex items-center gap-2">
-            {isAdmin && (
-              <Button 
-                variant="outline"
-                size="sm"
-                onClick={() => navigate("/admin")}
-              >
-                <Shield className="w-4 h-4 mr-2" />
-                Admin Panel
-              </Button>
-            )}
-            <Button 
-              variant="outline"
-              size="sm"
-              onClick={() => navigate("/status")}
-            >
-              <Activity className="w-4 h-4 mr-2" />
-              Server Stats
-            </Button>
-            <Button 
-              variant="outline"
-              size="sm"
-              onClick={() => navigate("/whitelist")}
-            >
-              <FileCheck className="w-4 h-4 mr-2" />
-              Apply Whitelist
-            </Button>
-            {user ? (
-              <Button 
-                variant="outline"
-                size="sm"
-                onClick={handleLogout}
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </Button>
-            ) : (
-              <Button 
-                className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                size="sm"
-                onClick={() => navigate("/auth")}
-              >
-                <Users className="w-4 h-4 mr-2" />
-                Join Now
-              </Button>
-            )}
+            <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+              <SheetTrigger asChild>
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  className="glass-effect"
+                >
+                  <Menu className="w-5 h-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent className="w-[300px] bg-background/95 backdrop-blur-xl border-border/20">
+                <SheetHeader>
+                  <SheetTitle className="text-gradient">Menu</SheetTitle>
+                </SheetHeader>
+                <div className="flex flex-col gap-3 mt-6">
+                  {isAdmin && (
+                    <Button 
+                      variant="outline"
+                      className="justify-start glass-effect"
+                      onClick={() => {
+                        navigate("/admin");
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      <Shield className="w-4 h-4 mr-2" />
+                      Admin Panel
+                    </Button>
+                  )}
+                  <Button 
+                    variant="outline"
+                    className="justify-start glass-effect"
+                    onClick={() => {
+                      navigate("/status");
+                      setIsMenuOpen(false);
+                    }}
+                  >
+                    <Activity className="w-4 h-4 mr-2" />
+                    Server Stats
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    className="justify-start glass-effect"
+                    onClick={() => {
+                      navigate("/whitelist");
+                      setIsMenuOpen(false);
+                    }}
+                  >
+                    <FileCheck className="w-4 h-4 mr-2" />
+                    Apply Whitelist
+                  </Button>
+                  {user ? (
+                    <Button 
+                      variant="outline"
+                      className="justify-start glass-effect"
+                      onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Logout
+                    </Button>
+                  ) : (
+                    <Button 
+                      className="justify-start bg-primary hover:bg-primary/90 text-primary-foreground"
+                      onClick={() => {
+                        navigate("/auth");
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      <Users className="w-4 h-4 mr-2" />
+                      Join Now
+                    </Button>
+                  )}
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>
