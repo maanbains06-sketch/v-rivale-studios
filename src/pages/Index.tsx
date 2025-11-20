@@ -2,6 +2,7 @@ import { Users, Zap, Trophy, Play, Instagram, Facebook, Twitter, Youtube } from 
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
+import AnimatedLogo from "@/components/AnimatedLogo";
 import heroBg from "@/assets/hero-bg-enhanced.jpg";
 
 const stats = [
@@ -42,9 +43,13 @@ const Index = () => {
         
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center animate-fade-in">
-            <h1 className="text-6xl md:text-8xl font-bold mb-6 text-gradient leading-tight font-italiana">
+            <div className="mb-8 flex justify-center">
+              <AnimatedLogo size="lg" />
+            </div>
+            
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-foreground/90 font-italiana tracking-wide">
               Skylife Roleplay India
-            </h1>
+            </h2>
             
             <p className="text-xl md:text-2xl text-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
               Experience the most immersive GTA 5 roleplay server. Join thousands of players in a living, breathing city with advanced economy, custom scripts, and a thriving community.
