@@ -6,7 +6,6 @@ interface AnimatedLogoIconProps {
 
 const AnimatedLogoIcon = ({ className = "" }: AnimatedLogoIconProps) => {
   const [rotation, setRotation] = useState(0);
-  const [pulseScale, setPulseScale] = useState(1);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -15,37 +14,25 @@ const AnimatedLogoIcon = ({ className = "" }: AnimatedLogoIconProps) => {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    const pulseInterval = setInterval(() => {
-      setPulseScale((prev) => {
-        const newScale = prev + 0.01;
-        return newScale > 1.08 ? 1 : newScale;
-      });
-    }, 40);
-    return () => clearInterval(pulseInterval);
-  }, []);
-
   return (
     <div className={`relative ${className}`}>
-      {/* Outer rotating glow */}
+      {/* Subtle outer glow - no pulsing */}
       <div 
-        className="absolute inset-0 rounded-full blur-lg opacity-50"
+        className="absolute inset-0 rounded-full blur-lg opacity-40"
         style={{
           background: `conic-gradient(from ${rotation}deg, 
-            hsl(185 95% 60% / 0.8), 
-            hsl(275 85% 65% / 0.8), 
-            hsl(325 95% 68% / 0.8), 
-            hsl(185 95% 60% / 0.8))`,
-          transform: `rotate(${rotation}deg) scale(${pulseScale})`,
+            hsl(185 95% 60% / 0.6), 
+            hsl(275 85% 65% / 0.6), 
+            hsl(325 95% 68% / 0.6), 
+            hsl(185 95% 60% / 0.6))`,
+          transform: `rotate(${rotation}deg)`,
         }}
       />
 
       {/* Main icon container */}
       <div className="relative w-full h-full flex items-center justify-center">
         {/* Background circle with glass effect */}
-        <div className="absolute w-9 h-9 rounded-full bg-gradient-to-br from-background/90 to-card/90 border-2 border-primary/50 backdrop-blur-sm" 
-          style={{ transform: `scale(${pulseScale})` }}
-        />
+        <div className="absolute w-9 h-9 rounded-full bg-gradient-to-br from-background/90 to-card/90 border-2 border-primary/50 backdrop-blur-sm" />
 
         {/* Rotating outer ring with notches */}
         <svg
@@ -93,7 +80,7 @@ const AnimatedLogoIcon = ({ className = "" }: AnimatedLogoIconProps) => {
           </defs>
         </svg>
 
-        {/* Large prominent "S" letter with strong visibility */}
+        {/* Large prominent "S" letter - static, no pulsing */}
         <div 
           className="absolute text-3xl font-bold z-10"
           style={{
@@ -104,9 +91,7 @@ const AnimatedLogoIcon = ({ className = "" }: AnimatedLogoIconProps) => {
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
-            filter: `drop-shadow(0 0 10px hsl(185 95% 60%)) drop-shadow(0 0 15px hsl(185 95% 60% / 0.8))`,
-            transform: `scale(${pulseScale})`,
-            textShadow: '0 0 20px rgba(255,255,255,0.3)',
+            filter: `drop-shadow(0 0 6px hsl(185 95% 60% / 0.5))`,
           }}
         >
           S
@@ -114,11 +99,9 @@ const AnimatedLogoIcon = ({ className = "" }: AnimatedLogoIconProps) => {
 
         {/* White backdrop for S to ensure visibility */}
         <div 
-          className="absolute text-3xl font-bold opacity-30"
+          className="absolute text-3xl font-bold opacity-20 z-5"
           style={{
             color: 'white',
-            transform: `scale(${pulseScale})`,
-            zIndex: 5,
           }}
         >
           S
@@ -135,7 +118,7 @@ const AnimatedLogoIcon = ({ className = "" }: AnimatedLogoIconProps) => {
               style={{
                 background: colors[i],
                 transform: `rotate(${angle}deg) translateX(22px) rotate(-${angle}deg)`,
-                boxShadow: `0 0 8px ${colors[i]}`,
+                boxShadow: `0 0 6px ${colors[i]}`,
               }}
             />
           );
@@ -143,19 +126,19 @@ const AnimatedLogoIcon = ({ className = "" }: AnimatedLogoIconProps) => {
 
         {/* Corner accent lines */}
         <div 
-          className="absolute top-0.5 left-0.5 w-2 h-2 border-l-2 border-t-2 border-neon-cyan opacity-60"
+          className="absolute top-0.5 left-0.5 w-2 h-2 border-l-2 border-t-2 border-neon-cyan opacity-50"
           style={{ transform: `rotate(${rotation * 0.3}deg)` }}
         />
         <div 
-          className="absolute top-0.5 right-0.5 w-2 h-2 border-r-2 border-t-2 border-neon-purple opacity-60"
+          className="absolute top-0.5 right-0.5 w-2 h-2 border-r-2 border-t-2 border-neon-purple opacity-50"
           style={{ transform: `rotate(${-rotation * 0.3}deg)` }}
         />
         <div 
-          className="absolute bottom-0.5 left-0.5 w-2 h-2 border-l-2 border-b-2 border-neon-pink opacity-60"
+          className="absolute bottom-0.5 left-0.5 w-2 h-2 border-l-2 border-b-2 border-neon-pink opacity-50"
           style={{ transform: `rotate(${rotation * 0.3}deg)` }}
         />
         <div 
-          className="absolute bottom-0.5 right-0.5 w-2 h-2 border-r-2 border-b-2 border-neon-cyan opacity-60"
+          className="absolute bottom-0.5 right-0.5 w-2 h-2 border-r-2 border-b-2 border-neon-cyan opacity-50"
           style={{ transform: `rotate(${-rotation * 0.3}deg)` }}
         />
       </div>
