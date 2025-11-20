@@ -81,39 +81,108 @@ const Guides = () => {
             <TabsContent value="rules" className="space-y-6">
               <Card className="glass-effect border-border/20">
                 <CardHeader>
-                  <CardTitle className="text-2xl text-primary">Essential Server Rules</CardTitle>
+                  <CardTitle className="text-2xl text-primary">APEX RP Server Rules</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4 text-foreground/90">
+                <CardContent className="space-y-6 text-foreground/90">
                   <div>
-                    <h3 className="text-xl font-semibold mb-2 text-foreground">Roleplay Standards</h3>
+                    <h3 className="text-xl font-semibold mb-3 text-foreground">1. General Roleplay Standards</h3>
                     <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li><strong>Stay In Character (IC):</strong> Keep all roleplay actions in character. Use /ooc for out of character chat.</li>
-                      <li><strong>Value Your Life:</strong> Act as if your character's life matters. Don't take unnecessary risks.</li>
-                      <li><strong>New Life Rule:</strong> If your character dies, you forget the events leading to your death.</li>
-                      <li><strong>Powergaming:</strong> Don't force actions on others or perform unrealistic feats.</li>
-                      <li><strong>Metagaming:</strong> Don't use out-of-character information in roleplay.</li>
+                      <li><strong>Fail RP:</strong> All roleplay must be realistic and believable. Acting in ways that break immersion or defy reality is prohibited.</li>
+                      <li><strong>Stay In Character (IC):</strong> Keep all roleplay actions and conversations in character at all times. Use /ooc sparingly for out-of-character communication.</li>
+                      <li><strong>Fear RP:</strong> Your character must value their life. Show realistic fear when threatened with weapons or outnumbered.</li>
+                      <li><strong>Value of Life:</strong> Treat your character&apos;s life as precious. Avoid unnecessary risks and dangerous situations without proper RP justification.</li>
+                      <li><strong>Character Development:</strong> Develop your character naturally over time. Instant wealth or dramatic personality changes must be justified through RP.</li>
                     </ul>
                   </div>
 
                   <div>
-                    <h3 className="text-xl font-semibold mb-2 text-foreground">Combat & Criminal RP</h3>
+                    <h3 className="text-xl font-semibold mb-3 text-foreground">2. Prohibited Behaviors</h3>
                     <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li>High-quality roleplay required before criminal activity</li>
-                      <li>No Random Deathmatch (RDM) - don't kill without reason</li>
-                      <li>Robberies require 4+ police officers online</li>
-                      <li>Give proper warnings before initiating combat</li>
-                      <li>Respect cooldown periods between major crimes</li>
+                      <li><strong>Metagaming:</strong> Using out-of-character information (Discord, streams, etc.) in roleplay is strictly forbidden.</li>
+                      <li><strong>Powergaming:</strong> Forcing actions on other players without giving them a chance to respond or performing unrealistic actions.</li>
+                      <li><strong>Random Deathmatch (RDM):</strong> Killing another player without valid roleplay reason or initiation.</li>
+                      <li><strong>Vehicle Deathmatch (VDM):</strong> Using vehicles as weapons without proper roleplay escalation.</li>
+                      <li><strong>Combat Logging:</strong> Disconnecting during active roleplay or to avoid consequences of your actions.</li>
+                      <li><strong>Exploiting/Glitching:</strong> Using game bugs or exploits for personal advantage is a bannable offense.</li>
                     </ul>
                   </div>
 
                   <div>
-                    <h3 className="text-xl font-semibold mb-2 text-foreground">Community Standards</h3>
+                    <h3 className="text-xl font-semibold mb-3 text-foreground">3. New Life Rule (NLR)</h3>
                     <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li>Respect all players and staff members</li>
-                      <li>No discrimination, harassment, or toxic behavior</li>
-                      <li>Keep chat appropriate and family-friendly</li>
-                      <li>Report rule breakers instead of retaliating</li>
-                      <li>Follow staff instructions without argument</li>
+                      <li>If your character dies, you forget all events leading up to and including your death</li>
+                      <li>You cannot return to the location of your death for 15 minutes</li>
+                      <li>You cannot seek revenge on the people who caused your death</li>
+                      <li>Medical RP that results in revival means you retain memories but may have injuries/trauma</li>
+                      <li>Permanent death scenarios must be approved by staff</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-semibold mb-3 text-foreground">4. Criminal Roleplay</h3>
+                    <ul className="list-disc list-inside space-y-2 ml-4">
+                      <li><strong>Crime Initiation:</strong> Provide high-quality roleplay before engaging in criminal activity. Quality over quantity.</li>
+                      <li><strong>Cop Baiting:</strong> Intentionally provoking police without proper RP reason is prohibited.</li>
+                      <li><strong>Major Crimes:</strong> Bank robberies, prison breaks, and gang wars require 4+ LEO online and proper planning RP.</li>
+                      <li><strong>Hostage RP:</strong> Must provide engaging RP for hostages. Don&apos;t use them solely as shields or bargaining chips.</li>
+                      <li><strong>Territory Wars:</strong> Gang conflicts must be pre-approved by staff and follow server conflict guidelines.</li>
+                      <li><strong>Crime Cooldowns:</strong> 30-minute cooldown between major crimes. 60 minutes for the same crime type.</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-semibold mb-3 text-foreground">5. Law Enforcement & Government</h3>
+                    <ul className="list-disc list-inside space-y-2 ml-4">
+                      <li>LEO must follow proper procedures: Miranda rights, reasonable suspicion, probable cause</li>
+                      <li>Corrupt cop RP requires staff approval and must be done carefully</li>
+                      <li>Cannot break character to enforce server rules - call staff instead</li>
+                      <li>EMS cannot be taken hostage or harmed while providing medical services</li>
+                      <li>Government officials must maintain professionalism and serve the community</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-semibold mb-3 text-foreground">6. Vehicle & Traffic Rules</h3>
+                    <ul className="list-disc list-inside space-y-2 ml-4">
+                      <li>Drive realistically - obey traffic laws unless in pursuit or fleeing</li>
+                      <li>No NOS/turbo in city limits (school zones, downtown)</li>
+                      <li>Motorcycles cannot jump off mountains or perform extreme stunts without RP reason</li>
+                      <li>Vehicle repairs must be done at mechanic shops or through mechanic RP</li>
+                      <li>Stealing LEO, EMS, or government vehicles is prohibited</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-semibold mb-3 text-foreground">7. Communication & Voice</h3>
+                    <ul className="list-disc list-inside space-y-2 ml-4">
+                      <li>Microphone required - text RP only allowed for mute characters with staff approval</li>
+                      <li>No voice changers unless character-appropriate and not used to break immersion</li>
+                      <li>Push-to-talk required - no open mic or background noise</li>
+                      <li>Phone calls and radio require proper use of phone/radio prop and appropriate distance</li>
+                      <li>No excessive yelling, ear-rape, or purposefully annoying sounds</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-semibold mb-3 text-foreground">8. Community Standards</h3>
+                    <ul className="list-disc list-inside space-y-2 ml-4">
+                      <li><strong>Respect:</strong> Treat all players and staff with respect. Harassment and toxicity result in immediate bans.</li>
+                      <li><strong>Zero Tolerance:</strong> Racism, sexism, homophobia, transphobia, and discrimination of any kind are not tolerated.</li>
+                      <li><strong>Age Restriction:</strong> Must be 18+ to play. Mature themes and language are present.</li>
+                      <li><strong>Stream Sniping:</strong> Watching someone&apos;s stream to gain info or find them in-game is prohibited.</li>
+                      <li><strong>Advertisement:</strong> Promoting other servers or communities will result in a permanent ban.</li>
+                      <li><strong>Staff Decisions:</strong> Staff decisions are final. Appeals can be made through proper channels.</li>
+                    </ul>
+                  </div>
+
+                  <div className="p-4 border border-primary/30 rounded-lg bg-primary/5 mt-6">
+                    <h4 className="font-semibold text-primary mb-2">⚠️ Important Notes</h4>
+                    <ul className="list-disc list-inside space-y-1 text-sm">
+                      <li>Staff reserve the right to interpret and enforce rules based on intent and context</li>
+                      <li>Not knowing the rules is not an excuse - read them thoroughly before playing</li>
+                      <li>Rules are subject to change - check Discord announcements regularly</li>
+                      <li>When in doubt, create a ticket and ask staff before proceeding</li>
+                      <li>All punishments are at staff discretion based on severity and history</li>
                     </ul>
                   </div>
                 </CardContent>
