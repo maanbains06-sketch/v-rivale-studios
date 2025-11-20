@@ -47,8 +47,8 @@ const Index = () => {
               <span className="text-sm text-foreground">Server Online • Players Active</span>
             </div>
             
-            <h1 className="text-6xl md:text-8xl font-bold mb-6 text-gradient leading-tight">
-              SLRP
+            <h1 className="text-6xl md:text-8xl font-bold mb-6 text-gradient leading-tight font-italiana">
+              Skylife Roleplay India
             </h1>
             
             <p className="text-xl md:text-2xl text-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
