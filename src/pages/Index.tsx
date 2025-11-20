@@ -48,7 +48,7 @@ const Index = () => {
             </div>
             
             <h1 className="text-6xl md:text-8xl font-bold mb-6 text-gradient leading-tight">
-              Skylife Roleplay India
+              SLRP
             </h1>
             
             <p className="text-xl md:text-2xl text-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
@@ -92,10 +92,10 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="glass-effect rounded-3xl p-8 md:p-12 text-center animate-fade-in">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gradient">
-              Why Choose Skylife Roleplay India?
+              Why Choose SLRP?
             </h2>
             <p className="text-lg text-muted-foreground mb-8 max-w-3xl mx-auto">
-              We offer an unparalleled roleplay experience with custom features, dedicated staff, and a passionate community. From realistic economy systems to unique job opportunities, every moment in Skylife Roleplay India is crafted for maximum immersion.
+              We offer an unparalleled roleplay experience with custom features, dedicated staff, and a passionate community. From realistic economy systems to unique job opportunities, every moment in SLRP is crafted for maximum immersion.
             </p>
             <div className="grid md:grid-cols-3 gap-6 text-left">
               <div className="p-6 rounded-xl bg-card/50">
@@ -120,9 +120,9 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div>
-              <h3 className="text-2xl font-bold text-gradient mb-2">Skylife Roleplay India</h3>
+              <h3 className="text-2xl font-bold text-gradient mb-2">SLRP</h3>
               <p className="text-muted-foreground text-sm">
-                © 2024 Skylife Roleplay India. All rights reserved. Not affiliated with Rockstar Games.
+                © 2024 SLRP. All rights reserved. Not affiliated with Rockstar Games.
               </p>
             </div>
             <div className="flex gap-8">

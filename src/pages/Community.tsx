@@ -131,7 +131,7 @@ const Community = () => {
       <footer className="border-t border-border/20 py-8">
         <div className="container mx-auto px-4">
           <div className="text-center text-muted-foreground text-sm">
-            <p>© 2024 Skylife Roleplay India. All rights reserved. Not affiliated with Rockstar Games.</p>
+            <p>© 2024 SLRP. All rights reserved. Not affiliated with Rockstar Games.</p>
           </div>
         </div>
       </footer>

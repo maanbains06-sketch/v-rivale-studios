@@ -158,7 +158,7 @@ const Staff = () => {
           <div className="mt-12 text-center glass-effect rounded-xl p-8 border border-border/20">
             <h2 className="text-2xl font-bold mb-4">Want to Join Our Team?</h2>
             <p className="text-muted-foreground mb-6">
-              We&apos;re always looking for dedicated individuals to help make Skylife Roleplay India better
+              We&apos;re always looking for dedicated individuals to help make SLRP better
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
               <Badge variant="outline" className="text-sm py-2 px-4">Staff Applications Opening Soon</Badge>
