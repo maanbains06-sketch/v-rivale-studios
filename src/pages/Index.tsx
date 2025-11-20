@@ -47,10 +47,6 @@ const Index = () => {
               <AnimatedLogo size="lg" />
             </div>
             
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-foreground/90 font-italiana tracking-wide">
-              Skylife Roleplay India
-            </h2>
-            
             <p className="text-xl md:text-2xl text-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
               Experience the most immersive GTA 5 roleplay server. Join thousands of players in a living, breathing city with advanced economy, custom scripts, and a thriving community.
             </p>
