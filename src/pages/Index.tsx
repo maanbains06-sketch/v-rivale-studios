@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import AnimatedLogo from "@/components/AnimatedLogo";
-import heroBg from "@/assets/hero-home-new.jpg";
+import heroBg from "@/assets/hero-home-realistic.jpg";
 
 const stats = [
   {
