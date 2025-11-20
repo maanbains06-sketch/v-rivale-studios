@@ -10,7 +10,7 @@ const Navigation = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {/* Animated Logo Icon */}
-            <AnimatedLogoIcon className="w-10 h-10" />
+            <AnimatedLogoIcon className="h-10" />
             
             {/* Logo Text */}
             <h1 className="text-2xl font-bold relative z-10">
