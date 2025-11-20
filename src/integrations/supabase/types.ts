@@ -197,6 +197,30 @@ export type Database = {
         }
         Relationships: []
       }
+      whitelist_reapplication_notifications: {
+        Row: {
+          application_id: string
+          created_at: string
+          email_sent_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          application_id: string
+          created_at?: string
+          email_sent_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          application_id?: string
+          created_at?: string
+          email_sent_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
