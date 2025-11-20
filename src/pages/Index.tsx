@@ -42,11 +42,6 @@ const Index = () => {
         
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center animate-fade-in">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-effect mb-8">
-              <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
-              <span className="text-sm text-foreground">Server Online • Players Active</span>
-            </div>
-            
             <h1 className="text-6xl md:text-8xl font-bold mb-6 text-gradient leading-tight font-italiana">
               Skylife Roleplay India
             </h1>
