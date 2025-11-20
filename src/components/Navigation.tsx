@@ -175,12 +175,12 @@ const Navigation = () => {
                     variant="outline"
                     className="justify-start glass-effect"
                     onClick={() => {
-                      navigate("/whitelist");
+                      navigate("/admin");
                       setIsMenuOpen(false);
                     }}
                   >
                     <FileCheck className="w-4 h-4 mr-2" />
-                    Apply Whitelist
+                    Checking
                   </Button>
                   {user ? (
                     <Button 
