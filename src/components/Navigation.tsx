@@ -11,7 +11,7 @@ const Navigation = () => {
             <h1 className="text-2xl font-bold text-gradient">APEX RP</h1>
           </div>
           
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-6">
             <NavLink 
               to="/" 
               className="text-foreground/80 hover:text-primary transition-colors"
@@ -27,18 +27,39 @@ const Navigation = () => {
               Features
             </NavLink>
             <NavLink 
-              to="/rules" 
+              to="/guides" 
               className="text-foreground/80 hover:text-primary transition-colors"
               activeClassName="text-primary"
             >
-              Rules
+              Guides
             </NavLink>
             <NavLink 
-              to="/community" 
+              to="/gallery" 
               className="text-foreground/80 hover:text-primary transition-colors"
               activeClassName="text-primary"
             >
-              Community
+              Gallery
+            </NavLink>
+            <NavLink 
+              to="/staff" 
+              className="text-foreground/80 hover:text-primary transition-colors"
+              activeClassName="text-primary"
+            >
+              Staff
+            </NavLink>
+            <NavLink 
+              to="/status" 
+              className="text-foreground/80 hover:text-primary transition-colors"
+              activeClassName="text-primary"
+            >
+              Status
+            </NavLink>
+            <NavLink 
+              to="/whitelist" 
+              className="text-foreground/80 hover:text-primary transition-colors"
+              activeClassName="text-primary"
+            >
+              Apply
             </NavLink>
           </div>
           

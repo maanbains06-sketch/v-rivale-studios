@@ -71,6 +71,22 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    background-image: url('/src/assets/hero-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
+  
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, hsl(240 10% 8% / 0.95), hsl(240 10% 8% / 0.85));
+    z-index: -1;
   }
   
   h1, h2, h3, h4, h5, h6 {
