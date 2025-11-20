@@ -22,6 +22,13 @@ const Navigation = () => {
               Home
             </NavLink>
             <NavLink 
+              to="/about" 
+              className="text-foreground/80 hover:text-primary transition-colors"
+              activeClassName="text-primary"
+            >
+              About
+            </NavLink>
+            <NavLink 
               to="/features" 
               className="text-foreground/80 hover:text-primary transition-colors"
               activeClassName="text-primary"
