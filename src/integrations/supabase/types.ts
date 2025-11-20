@@ -113,6 +113,42 @@ export type Database = {
         }
         Relationships: []
       }
+      whitelist_application_drafts: {
+        Row: {
+          age: number | null
+          backstory: string | null
+          created_at: string
+          discord: string | null
+          experience: string | null
+          id: string
+          steam_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          age?: number | null
+          backstory?: string | null
+          created_at?: string
+          discord?: string | null
+          experience?: string | null
+          id?: string
+          steam_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          age?: number | null
+          backstory?: string | null
+          created_at?: string
+          discord?: string | null
+          experience?: string | null
+          id?: string
+          steam_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       whitelist_applications: {
         Row: {
           admin_notes: string | null

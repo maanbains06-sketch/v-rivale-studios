@@ -15,8 +15,18 @@ import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
-import { CheckCircle2, Clock, XCircle, Loader2, LogOut, Timer } from "lucide-react";
+import { CheckCircle2, Clock, XCircle, Loader2, LogOut, Timer, Save, FileText } from "lucide-react";
 import { differenceInDays, differenceInHours, differenceInMinutes, addDays } from "date-fns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const whitelistSchema = z.object({
   steamId: z.string()
@@ -56,6 +66,16 @@ interface Application {
   backstory: string;
 }
 
+interface ApplicationDraft {
+  id: string;
+  steam_id: string | null;
+  discord: string | null;
+  age: number | null;
+  experience: string | null;
+  backstory: string | null;
+  updated_at: string;
+}
+
 const Whitelist = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -65,6 +85,10 @@ const Whitelist = () => {
   const [submitting, setSubmitting] = useState(false);
   const [existingApplication, setExistingApplication] = useState<Application | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [savingDraft, setSavingDraft] = useState(false);
+  const [loadingDraft, setLoadingDraft] = useState(false);
+  const [existingDraft, setExistingDraft] = useState<ApplicationDraft | null>(null);
+  const [showLoadDraftDialog, setShowLoadDraftDialog] = useState(false);
 
   const form = useForm<WhitelistFormValues>({
     resolver: zodResolver(whitelistSchema),
@@ -90,6 +114,7 @@ const Whitelist = () => {
           // Check for existing application
           setTimeout(() => {
             checkExistingApplication(session.user.id);
+            checkExistingDraft(session.user.id);
           }, 0);
         }
       }
@@ -104,6 +129,7 @@ const Whitelist = () => {
         navigate("/auth");
       } else {
         checkExistingApplication(session.user.id);
+        checkExistingDraft(session.user.id);
       }
     });
 
@@ -143,9 +169,122 @@ const Whitelist = () => {
     }
   };
 
+  const checkExistingDraft = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("whitelist_application_drafts")
+        .select("*")
+        .eq("user_id", userId)
+        .single();
+
+      if (error && error.code !== "PGRST116") {
+        console.error("Error fetching draft:", error);
+      }
+
+      if (data) {
+        setExistingDraft(data);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate("/");
+  };
+
+  const saveDraft = async () => {
+    if (!user) return;
+
+    setSavingDraft(true);
+    const formValues = form.getValues();
+
+    try {
+      const draftData = {
+        user_id: user.id,
+        steam_id: formValues.steamId || null,
+        discord: formValues.discord || null,
+        age: formValues.age ? parseInt(formValues.age) : null,
+        experience: formValues.experience || null,
+        backstory: formValues.backstory || null,
+      };
+
+      // Check if draft exists
+      if (existingDraft) {
+        // Update existing draft
+        const { error } = await supabase
+          .from("whitelist_application_drafts")
+          .update(draftData)
+          .eq("user_id", user.id);
+
+        if (error) throw error;
+      } else {
+        // Insert new draft
+        const { error } = await supabase
+          .from("whitelist_application_drafts")
+          .insert(draftData);
+
+        if (error) throw error;
+      }
+
+      toast({
+        title: "Draft Saved",
+        description: "Your application draft has been saved successfully.",
+      });
+
+      // Refresh draft data
+      await checkExistingDraft(user.id);
+    } catch (error: any) {
+      toast({
+        title: "Save Failed",
+        description: error.message || "Failed to save draft. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingDraft(false);
+    }
+  };
+
+  const loadDraft = () => {
+    if (!existingDraft) return;
+
+    form.setValue("steamId", existingDraft.steam_id || "");
+    form.setValue("discord", existingDraft.discord || "");
+    form.setValue("age", existingDraft.age ? existingDraft.age.toString() : "");
+    form.setValue("experience", existingDraft.experience || "");
+    form.setValue("backstory", existingDraft.backstory || "");
+
+    setShowLoadDraftDialog(false);
+    toast({
+      title: "Draft Loaded",
+      description: "Your saved draft has been loaded into the form.",
+    });
+  };
+
+  const deleteDraft = async () => {
+    if (!user || !existingDraft) return;
+
+    try {
+      const { error } = await supabase
+        .from("whitelist_application_drafts")
+        .delete()
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      setExistingDraft(null);
+      toast({
+        title: "Draft Deleted",
+        description: "Your application draft has been deleted.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Delete Failed",
+        description: error.message || "Failed to delete draft.",
+        variant: "destructive",
+      });
+    }
   };
 
   const onSubmit = async (data: WhitelistFormValues) => {
@@ -182,8 +321,15 @@ const Whitelist = () => {
         description: "We'll review your application within 24-48 hours and contact you on Discord.",
       });
 
+
       // Refresh the application status
       await checkExistingApplication(user.id);
+      
+      // Delete draft after successful submission
+      if (existingDraft) {
+        await deleteDraft();
+      }
+
     } catch (error: any) {
       toast({
         title: "Submission Failed",
@@ -568,12 +714,33 @@ const Whitelist = () => {
                       )}
                     />
 
-                    <div className="pt-4">
+
+                    <div className="pt-4 flex gap-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="lg"
+                        className="flex-1"
+                        onClick={saveDraft}
+                        disabled={savingDraft || submitting}
+                      >
+                        {savingDraft ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <Save className="w-4 h-4 mr-2" />
+                            Save Draft
+                          </>
+                        )}
+                      </Button>
                       <Button
                         type="submit"
                         size="lg"
-                        className="w-full bg-primary hover:bg-primary/90"
-                        disabled={submitting}
+                        className="flex-1 bg-primary hover:bg-primary/90"
+                        disabled={submitting || savingDraft}
                       >
                         {submitting ? (
                           <>
@@ -589,6 +756,7 @@ const Whitelist = () => {
                       </Button>
                     </div>
 
+
                     <p className="text-xs text-center text-muted-foreground mt-4">
                       By submitting this application, you agree to follow all server rules and guidelines. 
                       False information may result in permanent ban.
@@ -600,6 +768,23 @@ const Whitelist = () => {
           </div>
         </div>
       </main>
+
+      {/* Load Draft Confirmation Dialog */}
+      <AlertDialog open={showLoadDraftDialog} onOpenChange={setShowLoadDraftDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Load Saved Draft?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will replace any information you've currently entered in the form with your saved draft.
+              Any unsaved changes will be lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={loadDraft}>Load Draft</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
