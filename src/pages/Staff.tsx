@@ -3,6 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Shield, Users, Code, HeadphonesIcon, Star, Trophy, Heart, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { StaffApplicationForm } from "@/components/StaffApplicationForm";
 
 interface StaffMember {
   name: string;
@@ -104,6 +106,8 @@ const roleIcons = {
 };
 
 const Staff = () => {
+  const [isApplicationOpen, setIsApplicationOpen] = useState(false);
+  
   const ownerStaff = staffMembers.filter(m => m.roleType === "owner");
   const adminStaff = staffMembers.filter(m => m.roleType === "admin");
   const developerStaff = staffMembers.filter(m => m.roleType === "developer");
@@ -112,6 +116,7 @@ const Staff = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
+      <StaffApplicationForm open={isApplicationOpen} onOpenChange={setIsApplicationOpen} />
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4">
           {/* Hero Section */}
@@ -448,7 +453,11 @@ const Staff = () => {
                 </ul>
               </div>
             </div>
-            <Button size="lg" className="bg-primary hover:bg-primary/90">
+            <Button 
+              size="lg" 
+              className="bg-primary hover:bg-primary/90"
+              onClick={() => setIsApplicationOpen(true)}
+            >
               Apply for Staff Position
             </Button>
           </div>
