@@ -170,6 +170,14 @@ const Index = () => {
                   <li><a href="/support" className="hover:text-primary transition-colors">Contact</a></li>
                 </ul>
               </div>
+              <div>
+                <h4 className="font-semibold text-primary mb-2">Legal</h4>
+                <ul className="space-y-1 text-sm text-muted-foreground">
+                  <li><a href="#" className="hover:text-primary transition-colors">Privacy Policy</a></li>
+                  <li><a href="#" className="hover:text-primary transition-colors">Terms of Service</a></li>
+                  <li><a href="#" className="hover:text-primary transition-colors">Refund Policy</a></li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
