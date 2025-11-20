@@ -1,16 +1,27 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield } from "lucide-react";
+import { Users, Shield, Activity, FileCheck, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import AnimatedLogoIcon from "./AnimatedLogoIcon";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "./ui/use-toast";
 
 const Navigation = () => {
   const [isAdmin, setIsAdmin] = useState(false);
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     checkAdminStatus();
+    checkUser();
   }, []);
+
+  const checkUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setUser(user);
+  };
 
   const checkAdminStatus = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -25,6 +36,16 @@ const Navigation = () => {
       .maybeSingle();
 
     setIsAdmin(!!roleData);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setIsAdmin(false);
+    navigate("/");
+    toast({
+      title: "Logged out successfully",
+    });
   };
 
   return (
@@ -119,18 +140,52 @@ const Navigation = () => {
             )}
           </div>
           
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full glass-effect">
-              <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
-              <span className="text-sm text-foreground/90">Server Online</span>
-            </div>
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/admin")}
+              >
+                <Shield className="w-4 h-4 mr-2" />
+                Admin Panel
+              </Button>
+            )}
             <Button 
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
-              onClick={() => window.location.href = "/auth"}
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/status")}
             >
-              <Users className="w-4 h-4 mr-2" />
-              Join Now
+              <Activity className="w-4 h-4 mr-2" />
+              Server Stats
             </Button>
+            <Button 
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/whitelist")}
+            >
+              <FileCheck className="w-4 h-4 mr-2" />
+              Apply Whitelist
+            </Button>
+            {user ? (
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={handleLogout}
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
+            ) : (
+              <Button 
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                size="sm"
+                onClick={() => navigate("/auth")}
+              >
+                <Users className="w-4 h-4 mr-2" />
+                Join Now
+              </Button>
+            )}
           </div>
         </div>
       </div>
