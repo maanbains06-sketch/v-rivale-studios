@@ -1,6 +1,7 @@
 import { MessageCircle, Users, Image, Calendar, HelpCircle, FileText, UserPlus, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
+import PageHeader from "@/components/PageHeader";
 
 const communityLinks = [
   {
@@ -61,16 +62,13 @@ const Community = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      <main className="pt-24 pb-16">
+      <PageHeader 
+        title="Join Our Community"
+        description="Connect with thousands of players and be part of something amazing"
+      />
+      
+      <main className="pb-16">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16 animate-fade-in">
-            <h1 className="text-5xl md:text-6xl font-bold mb-4 text-gradient">
-              Join Our Community
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Connect with thousands of players and be part of something amazing
-            </p>
-          </div>
           
           <div className="grid md:grid-cols-2 gap-6 mb-16">
             {communityLinks.map((link, index) => (

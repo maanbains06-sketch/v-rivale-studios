@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Navigation from "@/components/Navigation";
+import PageHeader from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, Activity, Clock, Zap, TrendingUp, AlertCircle } from "lucide-react";
@@ -77,17 +78,17 @@ const Status = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Navigation />
-      <main className="pt-24 pb-16">
+      
+      <PageHeader 
+        title="Server Status"
+        description="Real-time server statistics and performance metrics"
+        badge="🟢 Server Online"
+      />
+      
+      <main className="pb-16">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h1 className="text-5xl font-bold text-gradient mb-4">Server Status</h1>
-            <div className="flex items-center justify-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-primary animate-pulse"></div>
-              <p className="text-xl text-foreground">Server Online</p>
-            </div>
-          </div>
 
           {/* Main Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
