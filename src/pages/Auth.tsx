@@ -69,7 +69,7 @@ const Auth = () => {
       <div className="container mx-auto px-4 pt-24 pb-12 flex items-center justify-center min-h-screen">
         <Card className="w-full max-w-md glass-effect border-border/20">
           <CardHeader className="text-center">
-            <CardTitle className="text-3xl text-gradient mb-2">Join APEX RP</CardTitle>
+            <CardTitle className="text-3xl text-gradient mb-2">Join Skylife Roleplay India</CardTitle>
             <CardDescription>
               Sign in with Discord to start your roleplay journey
             </CardDescription>

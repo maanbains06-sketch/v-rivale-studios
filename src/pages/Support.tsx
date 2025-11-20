@@ -48,7 +48,7 @@ const Support = () => {
             </CardHeader>
             <CardContent>
               <Button variant="outline" className="w-full">
-                support@apexrp.com
+                support@skylifeindia.com
               </Button>
             </CardContent>
           </Card>
