@@ -131,7 +131,21 @@ const Guides = () => {
                   </div>
 
                   <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground">5. Law Enforcement & Government</h3>
+                    <h3 className="text-xl font-semibold mb-3 text-foreground">5. Gang Roleplay</h3>
+                    <ul className="list-disc list-inside space-y-2 ml-4">
+                      <li><strong>Gang Formation:</strong> Official gangs require 5+ active members and staff approval. Submit gang application with backstory, colors, and territory claims.</li>
+                      <li><strong>Gang Colors & Identification:</strong> Gangs must wear recognizable colors/clothing. Cannot claim colors already used by established gangs.</li>
+                      <li><strong>Territory Control:</strong> Territories must be claimed through RP and staff approval. Defending territory requires valid RP escalation, not KOS (Kill on Sight).</li>
+                      <li><strong>Rival Gang Conflicts:</strong> Must initiate proper RP before engaging in gang wars. Minimum 3v3 for gang fights. No ambushing with overwhelming numbers.</li>
+                      <li><strong>Gang Recruitment:</strong> New members must go through proper initiation RP. Cannot recruit players under 1 week on the server without staff approval.</li>
+                      <li><strong>Alliance & Betrayal:</strong> Gang alliances and betrayals must be roleplayed with proper reasoning and story development.</li>
+                      <li><strong>Respect Boundaries:</strong> Cannot force non-gang members into gang conflicts. Civilians and businesses must be allowed to operate without constant harassment.</li>
+                      <li><strong>Gang Meetings & Events:</strong> Major gang events (large meetups, wars, truces) should be coordinated with staff to ensure server stability and fair RP.</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-semibold mb-3 text-foreground">6. Law Enforcement & Government</h3>
                     <ul className="list-disc list-inside space-y-2 ml-4">
                       <li>LEO must follow proper procedures: Miranda rights, reasonable suspicion, probable cause</li>
                       <li>Corrupt cop RP requires staff approval and must be done carefully</li>
@@ -142,7 +156,7 @@ const Guides = () => {
                   </div>
 
                   <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground">6. Vehicle & Traffic Rules</h3>
+                    <h3 className="text-xl font-semibold mb-3 text-foreground">7. Vehicle & Traffic Rules</h3>
                     <ul className="list-disc list-inside space-y-2 ml-4">
                       <li>Drive realistically - obey traffic laws unless in pursuit or fleeing</li>
                       <li>No NOS/turbo in city limits (school zones, downtown)</li>
@@ -153,7 +167,7 @@ const Guides = () => {
                   </div>
 
                   <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground">7. Communication & Voice</h3>
+                    <h3 className="text-xl font-semibold mb-3 text-foreground">8. Communication & Voice</h3>
                     <ul className="list-disc list-inside space-y-2 ml-4">
                       <li>Microphone required - text RP only allowed for mute characters with staff approval</li>
                       <li>No voice changers unless character-appropriate and not used to break immersion</li>
@@ -164,7 +178,7 @@ const Guides = () => {
                   </div>
 
                   <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground">8. Community Standards</h3>
+                    <h3 className="text-xl font-semibold mb-3 text-foreground">9. Community Standards</h3>
                     <ul className="list-disc list-inside space-y-2 ml-4">
                       <li><strong>Respect:</strong> Treat all players and staff with respect. Harassment and toxicity result in immediate bans.</li>
                       <li><strong>Zero Tolerance:</strong> Racism, sexism, homophobia, transphobia, and discrimination of any kind are not tolerated.</li>
