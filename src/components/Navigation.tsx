@@ -75,7 +75,10 @@ const Navigation = () => {
               <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
               <span className="text-sm text-foreground/90">Server Online</span>
             </div>
-            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+            <Button 
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              onClick={() => window.location.href = "/auth"}
+            >
               <Users className="w-4 h-4 mr-2" />
               Join Now
             </Button>
