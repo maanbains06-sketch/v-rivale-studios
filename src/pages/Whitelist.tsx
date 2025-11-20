@@ -233,57 +233,125 @@ const Whitelist = () => {
               </Button>
             </div>
 
-            {/* Existing Application Status */}
+            {/* Application Response Header */}
             {existingApplication && (
-              <Card className="glass-effect border-border/20 mb-8 animate-fade-in">
-                <CardContent className="pt-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="text-xl font-bold mb-2">Your Application Status</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Submitted on {new Date(existingApplication.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    {getStatusBadge(existingApplication.status)}
-                  </div>
-
-                  {existingApplication.status === "pending" && (
-                    <div className="p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20 mt-4">
-                      <p className="text-sm text-foreground">
-                        Your application is currently under review. Our staff team will review it within 24-48 hours. 
-                        You will be contacted on Discord: <strong>{existingApplication.discord}</strong>
-                      </p>
-                    </div>
-                  )}
-
-                  {existingApplication.status === "approved" && (
-                    <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20 mt-4">
-                      <p className="text-sm text-foreground font-semibold mb-2">
-                        Congratulations! Your application has been approved.
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        You can now join the server. Check your Discord for server connection details.
-                      </p>
-                    </div>
-                  )}
-
-                  {existingApplication.status === "rejected" && (
-                    <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 mt-4">
-                      <p className="text-sm text-foreground font-semibold mb-2">
-                        Your application was not approved.
-                      </p>
-                      {existingApplication.admin_notes && (
-                        <p className="text-sm text-muted-foreground mb-2">
-                          <strong>Reason:</strong> {existingApplication.admin_notes}
+              <div className="mb-8 animate-fade-in">
+                {/* Status Header */}
+                {existingApplication.status === "approved" && (
+                  <div className="glass-effect rounded-xl p-8 border-2 border-green-500/50 bg-green-500/5">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="p-3 rounded-full bg-green-500/20">
+                        <CheckCircle2 className="w-8 h-8 text-green-500" />
+                      </div>
+                      <div className="flex-1">
+                        <h2 className="text-2xl font-bold text-green-500 mb-1">Application Approved!</h2>
+                        <p className="text-sm text-muted-foreground">
+                          Reviewed on {existingApplication.reviewed_at ? new Date(existingApplication.reviewed_at).toLocaleDateString() : "N/A"}
                         </p>
+                      </div>
+                      {getStatusBadge(existingApplication.status)}
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+                        <p className="text-foreground font-semibold mb-3">
+                          🎉 Congratulations! Welcome to SLRP!
+                        </p>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          Your whitelist application has been approved by our staff team. You can now join our server and start your roleplay journey.
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          <strong>Next Steps:</strong> Check your Discord (<strong>{existingApplication.discord}</strong>) for server connection details and community guidelines.
+                        </p>
+                      </div>
+                      
+                      {existingApplication.admin_notes && (
+                        <div className="p-4 rounded-lg bg-background/50 border border-border/20">
+                          <p className="text-xs text-muted-foreground mb-1 font-semibold">Admin Note:</p>
+                          <p className="text-sm text-foreground">{existingApplication.admin_notes}</p>
+                        </div>
                       )}
+                    </div>
+                  </div>
+                )}
+
+                {existingApplication.status === "rejected" && (
+                  <div className="glass-effect rounded-xl p-8 border-2 border-red-500/50 bg-red-500/5">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="p-3 rounded-full bg-red-500/20">
+                        <XCircle className="w-8 h-8 text-red-500" />
+                      </div>
+                      <div className="flex-1">
+                        <h2 className="text-2xl font-bold text-red-500 mb-1">Application Rejected</h2>
+                        <p className="text-sm text-muted-foreground">
+                          Reviewed on {existingApplication.reviewed_at ? new Date(existingApplication.reviewed_at).toLocaleDateString() : "N/A"}
+                        </p>
+                      </div>
+                      {getStatusBadge(existingApplication.status)}
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
+                        <p className="text-foreground font-semibold mb-3">
+                          Your application was not approved at this time.
+                        </p>
+                        {existingApplication.admin_notes && (
+                          <div className="mb-3">
+                            <p className="text-sm text-muted-foreground mb-2">
+                              <strong>Rejection Reason:</strong>
+                            </p>
+                            <p className="text-sm text-foreground bg-background/50 p-3 rounded border border-border/20">
+                              {existingApplication.admin_notes}
+                            </p>
+                          </div>
+                        )}
+                        <p className="text-sm text-muted-foreground">
+                          <strong>Can I reapply?</strong> Yes! You may submit a new application after 7 days. Please carefully review the rejection reason and our requirements before reapplying.
+                        </p>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg bg-background/50 border border-border/20">
+                        <p className="text-xs text-muted-foreground mb-2 font-semibold">Tips for Reapplication:</p>
+                        <ul className="text-sm text-foreground space-y-1 list-disc list-inside">
+                          <li>Address the issues mentioned in the rejection reason</li>
+                          <li>Provide more detailed roleplay experience</li>
+                          <li>Create a more comprehensive character backstory</li>
+                          <li>Review our server rules and guidelines</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {existingApplication.status === "pending" && (
+                  <div className="glass-effect rounded-xl p-8 border-2 border-yellow-500/50 bg-yellow-500/5">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="p-3 rounded-full bg-yellow-500/20">
+                        <Clock className="w-8 h-8 text-yellow-500" />
+                      </div>
+                      <div className="flex-1">
+                        <h2 className="text-2xl font-bold text-yellow-500 mb-1">Application Under Review</h2>
+                        <p className="text-sm text-muted-foreground">
+                          Submitted on {new Date(existingApplication.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      {getStatusBadge(existingApplication.status)}
+                    </div>
+                    
+                    <div className="p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                      <p className="text-foreground font-semibold mb-3">
+                        Your application is currently being reviewed by our staff team.
+                      </p>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        <strong>Review Time:</strong> Applications are typically reviewed within 24-48 hours.
+                      </p>
                       <p className="text-sm text-muted-foreground">
-                        You may reapply after 7 days. Please review our requirements and improve your application.
+                        <strong>Contact:</strong> You will be contacted on Discord at <strong>{existingApplication.discord}</strong> once a decision is made.
                       </p>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
+                  </div>
+                )}
+              </div>
             )}
 
             {/* Application Form - Only show if no pending/approved application */}
