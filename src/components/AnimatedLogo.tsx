@@ -67,8 +67,8 @@ const AnimatedLogo = ({ className = "", size = "md" }: AnimatedLogoProps) => {
         </h1>
 
         {/* Subtitle */}
-        <div className="text-center mt-2">
-          <p className="text-base md:text-xl text-primary/80 tracking-wide font-light animate-pulse">
+        <div className="text-center mt-4">
+          <p className="text-2xl md:text-3xl lg:text-4xl text-primary/90 tracking-wide font-medium animate-pulse">
             Skylife Roleplay India
           </p>
         </div>
