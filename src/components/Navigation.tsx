@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield, FileCheck, LogOut, Menu } from "lucide-react";
+import { Users, Shield, FileCheck, LogOut, Menu, UserCircle } from "lucide-react";
 import { Button } from "./ui/button";
 import AnimatedLogoIcon from "./AnimatedLogoIcon";
 import { supabase } from "@/integrations/supabase/client";
@@ -185,17 +185,30 @@ const Navigation = () => {
                     </Button>
                   )}
                   {user ? (
-                    <Button 
-                      variant="outline"
-                      className="justify-start glass-effect"
-                      onClick={() => {
-                        handleLogout();
-                        setIsMenuOpen(false);
-                      }}
-                    >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Logout
-                    </Button>
+                    <>
+                      <Button 
+                        variant="outline"
+                        className="justify-start glass-effect"
+                        onClick={() => {
+                          navigate("/whitelist");
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        <UserCircle className="w-4 h-4 mr-2" />
+                        Profile
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        className="justify-start glass-effect"
+                        onClick={() => {
+                          handleLogout();
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Logout
+                      </Button>
+                    </>
                   ) : (
                     <Button 
                       className="justify-start bg-primary hover:bg-primary/90 text-primary-foreground"
