@@ -224,13 +224,13 @@ const Status = () => {
                 <div>
                   <h4 className="font-semibold text-sm mb-2 text-muted-foreground">Connect IP</h4>
                   <p className="text-lg font-mono bg-background/50 p-3 rounded-lg">
-                    connect.apexrp.com:30120
+                    connect.skylifeindia.com:30120
                   </p>
                 </div>
                 <div>
                   <h4 className="font-semibold text-sm mb-2 text-muted-foreground">Discord</h4>
                   <p className="text-lg font-mono bg-background/50 p-3 rounded-lg">
-                    discord.gg/apexrp
+                    discord.gg/skylifeindia
                   </p>
                 </div>
                 <div>

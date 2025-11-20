@@ -8,7 +8,7 @@ const Navigation = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-gradient">APEX RP</h1>
+            <h1 className="text-2xl font-bold text-gradient">Skylife Roleplay India</h1>
           </div>
           
           <div className="hidden md:flex items-center gap-6">

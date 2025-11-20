@@ -11,7 +11,7 @@ const Store = () => {
             Coming Soon
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl">
-            Exclusive APEX RP merchandise and server perks will be available soon. Stay tuned for updates!
+            Exclusive Skylife Roleplay India merchandise and server perks will be available soon. Stay tuned for updates!
           </p>
         </div>
       </main>

@@ -12,7 +12,7 @@ const Guides = () => {
           <div className="text-center mb-12">
             <h1 className="text-5xl font-bold text-gradient mb-4">Player Guides</h1>
             <p className="text-xl text-muted-foreground">
-              Everything you need to know to get started on APEX RP
+              Everything you need to know to get started on Skylife Roleplay India
             </p>
           </div>
 
@@ -81,7 +81,7 @@ const Guides = () => {
             <TabsContent value="rules" className="space-y-6">
               <Card className="glass-effect border-border/20">
                 <CardHeader>
-                  <CardTitle className="text-2xl text-primary">APEX RP Server Rules</CardTitle>
+                  <CardTitle className="text-2xl text-primary">Skylife Roleplay India Server Rules</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6 text-foreground/90">
                   <div>
