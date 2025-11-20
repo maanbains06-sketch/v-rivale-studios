@@ -196,63 +196,208 @@ const Guides = () => {
                 </CardHeader>
                 <CardContent className="space-y-6 text-foreground/90">
                   <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground">Legal Jobs</h3>
-                    <div className="space-y-3">
+                    <h3 className="text-xl font-semibold mb-4 text-foreground">🚔 Law Enforcement & Emergency Services</h3>
+                    <div className="space-y-4">
+                      <div className="p-4 glass-effect rounded-lg border border-primary/20">
+                        <h4 className="font-semibold text-primary mb-2">Los Santos Police Department (LSPD)</h4>
+                        <p className="text-sm mb-3">Serve and protect the citizens of Los Santos. Uphold the law and maintain peace in the city.</p>
+                        <ul className="list-disc list-inside text-sm space-y-1 ml-4 mb-3">
+                          <li><strong>Requirements:</strong> 21+ years old, clean criminal record, pass academy training</li>
+                          <li><strong>Pay Range:</strong> $250-600/hour based on rank + bonuses for arrests</li>
+                          <li><strong>Ranks:</strong> Cadet → Officer → Senior Officer → Corporal → Sergeant → Lieutenant → Captain → Chief</li>
+                          <li><strong>Divisions:</strong> Patrol, SWAT, Traffic Enforcement, K-9, Detective Bureau</li>
+                        </ul>
+                        <p className="text-xs text-muted-foreground italic">Apply at Mission Row Police Station. Interview and background check required.</p>
+                      </div>
+
+                      <div className="p-4 glass-effect rounded-lg border border-primary/20">
+                        <h4 className="font-semibold text-primary mb-2">Emergency Medical Services (EMS)</h4>
+                        <p className="text-sm mb-3">Save lives and provide critical medical care to injured citizens across Los Santos.</p>
+                        <ul className="list-disc list-inside text-sm space-y-1 ml-4 mb-3">
+                          <li><strong>Requirements:</strong> Medical certification, good driving record, calm under pressure</li>
+                          <li><strong>Pay Range:</strong> $200-500/hour + bonuses per successful revival</li>
+                          <li><strong>Ranks:</strong> EMT Trainee → EMT → Paramedic → Senior Paramedic → Doctor → Chief of Medicine</li>
+                          <li><strong>Specializations:</strong> Trauma Surgery, Psychiatry, Emergency Response, Air Ambulance</li>
+                        </ul>
+                        <p className="text-xs text-muted-foreground italic">Apply at Pillbox Medical Center. Requires medical RP knowledge and training.</p>
+                      </div>
+
+                      <div className="p-4 glass-effect rounded-lg border border-primary/20">
+                        <h4 className="font-semibold text-primary mb-2">Department of Justice (DOJ)</h4>
+                        <p className="text-sm mb-3">Lawyers, judges, and legal professionals ensuring justice is served.</p>
+                        <ul className="list-disc list-inside text-sm space-y-1 ml-4 mb-3">
+                          <li><strong>Positions:</strong> Public Defender, District Attorney, Judge, Court Clerk</li>
+                          <li><strong>Pay Range:</strong> $300-800/hour depending on position and case complexity</li>
+                          <li><strong>Requirements:</strong> Excellent RP skills, law knowledge, mature and professional</li>
+                        </ul>
+                        <p className="text-xs text-muted-foreground italic">Highly selective. Contact DOJ leadership for application process.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-semibold mb-4 text-foreground">💼 Civilian & Service Jobs</h3>
+                    <div className="space-y-4">
                       <div className="p-4 glass-effect rounded-lg">
-                        <h4 className="font-semibold text-primary mb-2">Police Officer</h4>
-                        <p className="text-sm mb-2">Uphold the law and maintain order in Los Santos.</p>
-                        <ul className="list-disc list-inside text-sm space-y-1 ml-4">
-                          <li>Requirements: Clean record, 21+, academy training</li>
-                          <li>Pay: $250-500 per hour + bonuses</li>
-                          <li>Progression: Officer → Sergeant → Lieutenant → Captain</li>
+                        <h4 className="font-semibold text-primary mb-2">Mechanic / Auto Shop</h4>
+                        <p className="text-sm mb-3">Repair, customize, and maintain vehicles. Run your own shop or work for established businesses.</p>
+                        <ul className="list-disc list-inside text-sm space-y-1 ml-4 mb-3">
+                          <li><strong>Pay:</strong> $150-400/hour + customer tips and custom job payments</li>
+                          <li><strong>Services:</strong> Repairs, custom paint jobs, performance upgrades, body kits</li>
+                          <li><strong>Progression:</strong> Apprentice → Mechanic → Master Mechanic → Shop Owner</li>
+                          <li><strong>Locations:</strong> Hayes Auto, Benny&apos;s Original Motor Works, Los Santos Customs</li>
                         </ul>
                       </div>
 
                       <div className="p-4 glass-effect rounded-lg">
-                        <h4 className="font-semibold text-primary mb-2">EMS / Paramedic</h4>
-                        <p className="text-sm mb-2">Save lives and provide medical assistance.</p>
-                        <ul className="list-disc list-inside text-sm space-y-1 ml-4">
-                          <li>Requirements: Medical training certification</li>
-                          <li>Pay: $200-400 per hour</li>
-                          <li>Progression: EMT → Paramedic → Doctor → Chief of Medicine</li>
+                        <h4 className="font-semibold text-primary mb-2">Real Estate Agent</h4>
+                        <p className="text-sm mb-3">Help players buy, sell, and rent properties. Earn commission on every deal.</p>
+                        <ul className="list-disc list-inside text-sm space-y-1 ml-4 mb-3">
+                          <li><strong>Pay:</strong> Commission-based (5-15% of property value per sale)</li>
+                          <li><strong>Skills Needed:</strong> Salesmanship, market knowledge, negotiation</li>
+                          <li><strong>Properties:</strong> Houses, apartments, businesses, warehouses, garages</li>
                         </ul>
                       </div>
 
                       <div className="p-4 glass-effect rounded-lg">
-                        <h4 className="font-semibold text-primary mb-2">Mechanic</h4>
-                        <p className="text-sm mb-2">Repair and customize vehicles across the city.</p>
-                        <ul className="list-disc list-inside text-sm space-y-1 ml-4">
-                          <li>Requirements: Basic mechanical knowledge</li>
-                          <li>Pay: $150-300 per hour + tips</li>
-                          <li>Progression: Apprentice → Mechanic → Master → Shop Owner</li>
+                        <h4 className="font-semibold text-primary mb-2">Taxi / Uber Driver</h4>
+                        <p className="text-sm mb-3">Transport passengers safely around the city. Great for meeting new people.</p>
+                        <ul className="list-disc list-inside text-sm space-y-1 ml-4 mb-3">
+                          <li><strong>Pay:</strong> $100-250/hour + fares and tips from passengers</li>
+                          <li><strong>Requirements:</strong> Clean driving record, friendly demeanor, city knowledge</li>
+                          <li><strong>Benefits:</strong> Flexible hours, meet diverse characters, explore the city</li>
+                        </ul>
+                      </div>
+
+                      <div className="p-4 glass-effect rounded-lg">
+                        <h4 className="font-semibold text-primary mb-2">Restaurant / Bar Owner</h4>
+                        <p className="text-sm mb-3">Open and manage restaurants, bars, nightclubs. Create unique dining experiences.</p>
+                        <ul className="list-disc list-inside text-sm space-y-1 ml-4 mb-3">
+                          <li><strong>Investment:</strong> $50,000-500,000 depending on location and size</li>
+                          <li><strong>Income:</strong> Revenue from sales, events, catering services</li>
+                          <li><strong>Staff:</strong> Hire chefs, bartenders, servers, security, DJs</li>
+                          <li><strong>Popular Spots:</strong> Vanilla Unicorn, Tequi-la-la, Bahama Mamas</li>
+                        </ul>
+                      </div>
+
+                      <div className="p-4 glass-effect rounded-lg">
+                        <h4 className="font-semibold text-primary mb-2">News Reporter / Journalist</h4>
+                        <p className="text-sm mb-3">Report on city events, conduct interviews, create engaging content for Weazel News.</p>
+                        <ul className="list-disc list-inside text-sm space-y-1 ml-4 mb-3">
+                          <li><strong>Pay:</strong> $150-350/hour + bonuses for exclusive stories</li>
+                          <li><strong>Equipment:</strong> News van, camera, microphone provided</li>
+                          <li><strong>Coverage:</strong> Crime scenes, court cases, events, interviews, investigations</li>
                         </ul>
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground">Criminal Activities</h3>
-                    <div className="space-y-3">
-                      <div className="p-4 glass-effect rounded-lg border border-destructive/20">
-                        <h4 className="font-semibold text-destructive mb-2">Gang Member</h4>
-                        <p className="text-sm mb-2">Join established gangs and control territory.</p>
+                    <h3 className="text-xl font-semibold mb-4 text-foreground">🏭 Blue Collar & Resource Jobs</h3>
+                    <div className="space-y-4">
+                      <div className="p-4 glass-effect rounded-lg">
+                        <h4 className="font-semibold text-primary mb-2">Mining & Ore Processing</h4>
+                        <p className="text-sm mb-3">Extract valuable resources from mines. Process and sell materials.</p>
                         <ul className="list-disc list-inside text-sm space-y-1 ml-4">
-                          <li>High-risk, high-reward lifestyle</li>
-                          <li>Territory control and gang wars</li>
-                          <li>Must follow gang-specific rules</li>
+                          <li><strong>Pay:</strong> $120-280/hour based on materials gathered</li>
+                          <li><strong>Resources:</strong> Iron, copper, gold, diamonds, coal</li>
+                          <li><strong>Location:</strong> Various mine sites around Blaine County</li>
                         </ul>
                       </div>
 
-                      <div className="p-4 glass-effect rounded-lg border border-destructive/20">
-                        <h4 className="font-semibold text-destructive mb-2">Drug Dealer</h4>
-                        <p className="text-sm mb-2">Manufacture and distribute illegal substances.</p>
+                      <div className="p-4 glass-effect rounded-lg">
+                        <h4 className="font-semibold text-primary mb-2">Fishing & Hunting</h4>
+                        <p className="text-sm mb-3">Catch fish or hunt animals. Sell to restaurants or markets.</p>
                         <ul className="list-disc list-inside text-sm space-y-1 ml-4">
-                          <li>Requires connections and territory</li>
-                          <li>Constant risk of police raids</li>
-                          <li>Lucrative but dangerous</li>
+                          <li><strong>Pay:</strong> $100-300/hour depending on catch quality and rarity</li>
+                          <li><strong>Equipment:</strong> Fishing rod, hunting rifle, licenses required</li>
+                          <li><strong>Locations:</strong> Pacific Ocean, Alamo Sea, forests and mountains</li>
+                        </ul>
+                      </div>
+
+                      <div className="p-4 glass-effect rounded-lg">
+                        <h4 className="font-semibold text-primary mb-2">Delivery Driver / Trucker</h4>
+                        <p className="text-sm mb-3">Transport goods across the state. Long hauls pay more.</p>
+                        <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                          <li><strong>Pay:</strong> $150-400/delivery based on distance and cargo value</li>
+                          <li><strong>Routes:</strong> Local deliveries, state-wide cargo, import/export</li>
+                          <li><strong>Requirements:</strong> Commercial driver license, reliable and timely</li>
+                        </ul>
+                      </div>
+
+                      <div className="p-4 glass-effect rounded-lg">
+                        <h4 className="font-semibold text-primary mb-2">Garbage Collector / Sanitation</h4>
+                        <p className="text-sm mb-3">Keep Los Santos clean. Honest work with steady pay.</p>
+                        <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                          <li><strong>Pay:</strong> $100-200/hour with route bonuses</li>
+                          <li><strong>Routes:</strong> Residential, commercial, industrial districts</li>
+                          <li><strong>Benefits:</strong> Low stress, flexible schedule, good starter job</li>
                         </ul>
                       </div>
                     </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-semibold mb-4 text-foreground">⚠️ Criminal Organizations & Activities</h3>
+                    <p className="text-sm text-destructive mb-4">
+                      <strong>Warning:</strong> Criminal activities are high-risk. Prison time, fines, and death are real consequences. Quality RP required.
+                    </p>
+                    <div className="space-y-4">
+                      <div className="p-4 glass-effect rounded-lg border border-destructive/30">
+                        <h4 className="font-semibold text-destructive mb-2">Gang Member</h4>
+                        <p className="text-sm mb-3">Join established gangs like Ballas, Vagos, or Families. Control territory and build your reputation.</p>
+                        <ul className="list-disc list-inside text-sm space-y-1 ml-4 mb-3">
+                          <li><strong>Income:</strong> Varies - drug sales, robberies, protection money</li>
+                          <li><strong>Requirements:</strong> Gang initiation, prove loyalty, follow gang codes</li>
+                          <li><strong>Risks:</strong> Rival gangs, police raids, prison sentences, death</li>
+                          <li><strong>Activities:</strong> Territory wars, drug trafficking, vehicle theft, robberies</li>
+                        </ul>
+                      </div>
+
+                      <div className="p-4 glass-effect rounded-lg border border-destructive/30">
+                        <h4 className="font-semibold text-destructive mb-2">Drug Manufacturing & Distribution</h4>
+                        <p className="text-sm mb-3">Produce and sell illegal substances. Requires connections and territory.</p>
+                        <ul className="list-disc list-inside text-sm space-y-1 ml-4 mb-3">
+                          <li><strong>Income:</strong> $500-2,000+/hour (high risk, high reward)</li>
+                          <li><strong>Process:</strong> Gather materials → Cook/grow → Package → Distribute</li>
+                          <li><strong>Locations:</strong> Hidden labs, farmhouses, warehouses</li>
+                          <li><strong>Risks:</strong> Raids, robberies, rival dealers, lengthy prison sentences</li>
+                        </ul>
+                      </div>
+
+                      <div className="p-4 glass-effect rounded-lg border border-destructive/30">
+                        <h4 className="font-semibold text-destructive mb-2">Heists & Robberies</h4>
+                        <p className="text-sm mb-3">Plan and execute major heists. Requires crew coordination and planning.</p>
+                        <ul className="list-disc list-inside text-sm space-y-1 ml-4 mb-3">
+                          <li><strong>Targets:</strong> Banks, jewelry stores, armored trucks, Fleeca branches, Pacific Standard</li>
+                          <li><strong>Payout:</strong> $10,000-500,000 depending on target and success</li>
+                          <li><strong>Requirements:</strong> 4+ LEO online, planning RP, proper gear</li>
+                          <li><strong>Roles:</strong> Driver, hacker, gunman, lookout, negotiator</li>
+                        </ul>
+                      </div>
+
+                      <div className="p-4 glass-effect rounded-lg border border-destructive/30">
+                        <h4 className="font-semibold text-destructive mb-2">Arms Dealer / Gun Running</h4>
+                        <p className="text-sm mb-3">Source and sell illegal firearms. Supply gangs and criminals.</p>
+                        <ul className="list-disc list-inside text-sm space-y-1 ml-4 mb-3">
+                          <li><strong>Income:</strong> $300-1,000+ per weapon sold</li>
+                          <li><strong>Operations:</strong> Import weapons, store in warehouses, sell to buyers</li>
+                          <li><strong>Risks:</strong> ATF investigations, robberies, informants, federal charges</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 border border-primary/30 rounded-lg bg-primary/5 mt-6">
+                    <h4 className="font-semibold text-primary mb-2">💡 Job Tips</h4>
+                    <ul className="list-disc list-inside space-y-1 text-sm">
+                      <li><strong>Start Legal:</strong> Build wealth and connections through legal jobs first</li>
+                      <li><strong>Network:</strong> Your success often depends on relationships with other players</li>
+                      <li><strong>Invest Wisely:</strong> Save money to buy businesses, properties, and equipment</li>
+                      <li><strong>Stay Consistent:</strong> Regular activity in your job builds reputation and trust</li>
+                      <li><strong>Create RP:</strong> Don&apos;t just grind - create interesting scenarios for others</li>
+                      <li><strong>Balance Risk:</strong> Criminal jobs pay more but come with real consequences</li>
+                    </ul>
                   </div>
                 </CardContent>
               </Card>
@@ -263,48 +408,161 @@ const Guides = () => {
                 <CardHeader>
                   <CardTitle className="text-2xl text-primary">Roleplay Tips & Best Practices</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4 text-foreground/90">
+                <CardContent className="space-y-6 text-foreground/90">
                   <div>
-                    <h3 className="text-xl font-semibold mb-2 text-foreground">Quality Roleplay</h3>
+                    <h3 className="text-xl font-semibold mb-3 text-foreground">🎭 Essential RP Commands</h3>
+                    <div className="space-y-3">
+                      <div className="p-3 bg-card/50 rounded-lg">
+                        <p className="font-mono text-primary mb-1">/me [action]</p>
+                        <p className="text-sm text-muted-foreground">Describe physical actions your character performs</p>
+                        <p className="text-xs italic mt-1">Example: /me pulls out phone and dials a number</p>
+                      </div>
+                      <div className="p-3 bg-card/50 rounded-lg">
+                        <p className="font-mono text-primary mb-1">/do [environment/result]</p>
+                        <p className="text-sm text-muted-foreground">Describe environmental details or action outcomes</p>
+                        <p className="text-xs italic mt-1">Example: /do The door is locked with a heavy deadbolt</p>
+                      </div>
+                      <div className="p-3 bg-card/50 rounded-lg">
+                        <p className="font-mono text-primary mb-1">/ooc [message]</p>
+                        <p className="text-sm text-muted-foreground">Out of character communication (use sparingly)</p>
+                        <p className="text-xs italic mt-1">Example: /ooc Sorry, my game froze for a sec</p>
+                      </div>
+                      <div className="p-3 bg-card/50 rounded-lg">
+                        <p className="font-mono text-primary mb-1">/whisper or /w [message]</p>
+                        <p className="text-sm text-muted-foreground">Speak quietly to people very close to you</p>
+                        <p className="text-xs italic mt-1">Example: /w Don&apos;t trust that guy...</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-semibold mb-3 text-foreground">✨ Creating Quality Roleplay</h3>
                     <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li><strong>Use /me and /do:</strong> Describe actions and environment details</li>
-                      <li><strong>Realistic Reactions:</strong> Respond appropriately to situations</li>
-                      <li><strong>Character Development:</strong> Let your character grow and change</li>
-                      <li><strong>Active Listening:</strong> Pay attention to what others say and do</li>
-                      <li><strong>Improvisation:</strong> Be flexible and adapt to unexpected scenarios</li>
+                      <li><strong>Show, Don&apos;t Tell:</strong> Instead of saying &quot;I&apos;m nervous&quot;, describe fidgeting, avoiding eye contact, or stuttering</li>
+                      <li><strong>Add Details:</strong> Don&apos;t just walk into a store - describe how you walk, what you&apos;re wearing, your mood</li>
+                      <li><strong>React Realistically:</strong> Getting shot hurts. Losing money is upsetting. Winning feels great. Show emotions!</li>
+                      <li><strong>Give Others Opportunities:</strong> Leave room in your RP for others to contribute and respond</li>
+                      <li><strong>Avoid Shortcuts:</strong> Don&apos;t rush through RP to get to mechanics. The journey is the fun part</li>
+                      <li><strong>Use Voice Variety:</strong> Change your tone, pace, and volume based on situations and emotions</li>
+                      <li><strong>Embrace Failure:</strong> Losing, failing, or making mistakes creates great RP opportunities</li>
                     </ul>
                   </div>
 
                   <div>
-                    <h3 className="text-xl font-semibold mb-2 text-foreground">Building Relationships</h3>
+                    <h3 className="text-xl font-semibold mb-3 text-foreground">👥 Building Relationships & Networks</h3>
                     <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li>Start conversations naturally in public spaces</li>
-                      <li>Remember details about characters you interact with</li>
-                      <li>Create meaningful connections and rivalries</li>
-                      <li>Join groups or create your own organization</li>
-                      <li>Participate in community events</li>
+                      <li><strong>Frequent Spots:</strong> Hang out at popular locations like Legion Square, Vanilla Unicorn, or coffee shops</li>
+                      <li><strong>Remember Details:</strong> Keep mental notes about characters you meet - their names, jobs, personalities</li>
+                      <li><strong>Exchange Numbers:</strong> Get phone numbers to stay in touch and create recurring RP</li>
+                      <li><strong>Join Organizations:</strong> Gangs, businesses, and groups provide built-in RP connections</li>
+                      <li><strong>Create History:</strong> Reference past interactions to deepen relationships</li>
+                      <li><strong>Be Approachable:</strong> Don&apos;t always hang with the same people. Meet new characters</li>
+                      <li><strong>Start Conversations:</strong> Ask questions, comment on surroundings, offer help</li>
+                      <li><strong>Follow Through:</strong> If you say you&apos;ll call or meet someone, do it!</li>
                     </ul>
                   </div>
 
                   <div>
-                    <h3 className="text-xl font-semibold mb-2 text-foreground">Common Mistakes to Avoid</h3>
+                    <h3 className="text-xl font-semibold mb-3 text-foreground">🎬 Advanced RP Techniques</h3>
                     <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li>Don't rush into criminal activity immediately</li>
-                      <li>Avoid one-dimensional characters</li>
-                      <li>Don't ignore other players trying to roleplay with you</li>
-                      <li>Never break character to argue about rules</li>
-                      <li>Don't take in-character conflicts personally</li>
+                      <li><strong>Develop Unique Mannerisms:</strong> Quirks, habits, speech patterns that make your character memorable</li>
+                      <li><strong>Create Consistent Backstory:</strong> Know your character&apos;s history and reference it naturally</li>
+                      <li><strong>Plan Character Arcs:</strong> Have long-term goals and let your character evolve toward them</li>
+                      <li><strong>Play Flawed Characters:</strong> Addictions, fears, biases, bad habits make characters interesting</li>
+                      <li><strong>Internal Conflict:</strong> Struggle with moral dilemmas, tough decisions, conflicting loyalties</li>
+                      <li><strong>Slow Burn Storylines:</strong> Not everything happens in one day. Let plots develop over weeks</li>
+                      <li><strong>Collaborate on Stories:</strong> Work with others to create interconnected character arcs</li>
+                      <li><strong>Use Props Effectively:</strong> Cigarettes, drinks, phones, documents - they add immersion</li>
                     </ul>
                   </div>
 
                   <div>
-                    <h3 className="text-xl font-semibold mb-2 text-foreground">Advanced Techniques</h3>
+                    <h3 className="text-xl font-semibold mb-3 text-foreground">⚠️ Common Mistakes to Avoid</h3>
                     <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li>Create detailed character backstories</li>
-                      <li>Develop character-specific speech patterns</li>
-                      <li>Plan long-term character arcs</li>
-                      <li>Collaborate with others on shared storylines</li>
-                      <li>Document your character's journey</li>
+                      <li><strong>Main Character Syndrome:</strong> Not everyone can be the toughest/richest/smartest. Be realistic</li>
+                      <li><strong>Winning Every Situation:</strong> Sometimes you lose fights, get arrested, or fail. That&apos;s okay!</li>
+                      <li><strong>Ignoring Others:</strong> Acknowledge people trying to RP with you, even if briefly</li>
+                      <li><strong>Breaking Character:</strong> Never drop character to argue rules or criticize someone&apos;s RP</li>
+                      <li><strong>Rushing Criminal RP:</strong> Don&apos;t jump into crime immediately. Build your character first</li>
+                      <li><strong>One-Note Characters:</strong> Don&apos;t be ONLY angry, ONLY funny, or ONLY serious all the time</li>
+                      <li><strong>Taking IC Personally:</strong> Your character&apos;s enemies aren&apos;t YOUR enemies. Separate IC from OOC</li>
+                      <li><strong>Forcing Storylines:</strong> Let RP flow naturally. Don&apos;t force people into your pre-planned plot</li>
+                      <li><strong>Neglecting Consequences:</strong> If you get shot, RP injuries. If you go to prison, accept it</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-semibold mb-3 text-foreground">💬 Specific RP Scenarios</h3>
+                    <div className="space-y-3">
+                      <div className="p-4 bg-card/30 rounded-lg">
+                        <h4 className="font-semibold text-primary mb-2">Traffic Stops (As Civilian)</h4>
+                        <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                          <li>Pull over safely when signaled</li>
+                          <li>Keep hands visible, be respectful</li>
+                          <li>RP nervousness if appropriate</li>
+                          <li>Have a story ready if carrying illegal items</li>
+                          <li>Accept tickets gracefully or try talking your way out</li>
+                        </ul>
+                      </div>
+
+                      <div className="p-4 bg-card/30 rounded-lg">
+                        <h4 className="font-semibold text-primary mb-2">Medical RP</h4>
+                        <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                          <li>Describe your injuries when EMS arrives</li>
+                          <li>RP pain, confusion, or unconsciousness appropriately</li>
+                          <li>Follow doctor&apos;s instructions and treatment</li>
+                          <li>Don&apos;t instantly get up and run after being revived</li>
+                          <li>Consider follow-up appointments for serious injuries</li>
+                        </ul>
+                      </div>
+
+                      <div className="p-4 bg-card/30 rounded-lg">
+                        <h4 className="font-semibold text-primary mb-2">Robbery RP (As Victim)</h4>
+                        <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                          <li>Value your life - comply if outnumbered/outgunned</li>
+                          <li>RP fear - shaking voice, raised hands, cooperation</li>
+                          <li>Don&apos;t be a hero unless it makes sense for your character</li>
+                          <li>Remember details to report to police later</li>
+                          <li>Accept the loss and move forward</li>
+                        </ul>
+                      </div>
+
+                      <div className="p-4 bg-card/30 rounded-lg">
+                        <h4 className="font-semibold text-primary mb-2">Job Interviews</h4>
+                        <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+                          <li>Dress appropriately for the position</li>
+                          <li>Research the company/organization beforehand</li>
+                          <li>Prepare answers about your background and skills</li>
+                          <li>Ask questions about the role and expectations</li>
+                          <li>Follow up afterwards to show interest</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-semibold mb-3 text-foreground">🌟 Pro Tips from Veterans</h3>
+                    <ul className="list-disc list-inside space-y-2 ml-4">
+                      <li><strong>Document Your Story:</strong> Keep notes or a journal about your character&apos;s journey</li>
+                      <li><strong>Watch and Learn:</strong> Observe experienced roleplayers to pick up techniques</li>
+                      <li><strong>Join Community Events:</strong> Server events create amazing RP opportunities</li>
+                      <li><strong>Don&apos;t Chase Mechanics:</strong> RP comes before grinding for money or items</li>
+                      <li><strong>Create Content for Others:</strong> Be the lawyer who helps others, the mechanic who does house calls</li>
+                      <li><strong>Stay Humble:</strong> Everyone started somewhere. Help new players learn</li>
+                      <li><strong>Take Breaks:</strong> Burnout is real. Step away when you need to</li>
+                      <li><strong>Have Fun!</strong> Remember this is a game. Enjoy the experience</li>
+                    </ul>
+                  </div>
+
+                  <div className="p-4 border border-primary/30 rounded-lg bg-primary/5 mt-6">
+                    <h4 className="font-semibold text-primary mb-3">📚 Recommended Learning Resources</h4>
+                    <ul className="list-disc list-inside space-y-1 text-sm">
+                      <li>Watch RP streams and videos to see different styles</li>
+                      <li>Join our Discord to discuss RP scenarios and get advice</li>
+                      <li>Read character backstories shared by other players</li>
+                      <li>Participate in RP workshops and training sessions</li>
+                      <li>Ask mentors and staff for feedback on your roleplay</li>
+                      <li>Study real-world professions you want to RP (cops, doctors, lawyers)</li>
                     </ul>
                   </div>
                 </CardContent>
