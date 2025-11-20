@@ -1,7 +1,7 @@
 import { Users, Zap, Trophy, MessageCircle, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
-import heroBg from "@/assets/hero-bg.jpg";
+import heroBg from "@/assets/hero-bg-enhanced.jpg";
 
 const stats = [
   {
