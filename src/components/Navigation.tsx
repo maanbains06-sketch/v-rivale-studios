@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail } from "lucide-react";
+import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail, Ban } from "lucide-react";
 import { Button } from "./ui/button";
 import AnimatedLogoIcon from "./AnimatedLogoIcon";
 import { supabase } from "@/integrations/supabase/client";
@@ -172,17 +172,30 @@ const Navigation = () => {
                     </Button>
                   )}
                   {isAdmin && (
-                    <Button 
-                      variant="outline"
-                      className="justify-start glass-effect"
-                      onClick={() => {
-                        navigate("/admin");
-                        setIsMenuOpen(false);
-                      }}
-                    >
-                      <FileCheck className="w-4 h-4 mr-2" />
-                      Checking
-                    </Button>
+                    <>
+                      <Button 
+                        variant="outline"
+                        className="justify-start glass-effect"
+                        onClick={() => {
+                          navigate("/admin");
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        <FileCheck className="w-4 h-4 mr-2" />
+                        Checking
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        className="justify-start glass-effect"
+                        onClick={() => {
+                          navigate("/admin");
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        <Ban className="w-4 h-4 mr-2" />
+                        Ban Appeals
+                      </Button>
+                    </>
                   )}
                   <Button 
                     variant="outline"
