@@ -110,6 +110,13 @@ const Navigation = () => {
               Staff
             </NavLink>
             <NavLink 
+              to="/job-application" 
+              className="text-foreground/80 hover:text-primary transition-colors"
+              activeClassName="text-primary"
+            >
+              Jobs
+            </NavLink>
+            <NavLink 
               to="/status" 
               className="text-foreground/80 hover:text-primary transition-colors"
               activeClassName="text-primary"
