@@ -200,6 +200,93 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_codes: {
+        Row: {
+          created_at: string
+          id: string
+          referral_code: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          referral_code: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          referral_code?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referral_rewards: {
+        Row: {
+          created_at: string
+          discount_percentage: number
+          id: string
+          total_earnings: number
+          total_referrals: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          discount_percentage?: number
+          id?: string
+          total_earnings?: number
+          total_referrals?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          discount_percentage?: number
+          id?: string
+          total_earnings?: number
+          total_referrals?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          created_at: string
+          id: string
+          purchase_amount: number | null
+          purchase_made: boolean
+          referred_email: string | null
+          referred_user_id: string | null
+          referrer_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          purchase_amount?: number | null
+          purchase_made?: boolean
+          referred_email?: string | null
+          referred_user_id?: string | null
+          referrer_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          purchase_amount?: number | null
+          purchase_made?: boolean
+          referred_email?: string | null
+          referred_user_id?: string | null
+          referrer_user_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       staff_applications: {
         Row: {
           admin_notes: string | null
@@ -493,6 +580,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_referral_code: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

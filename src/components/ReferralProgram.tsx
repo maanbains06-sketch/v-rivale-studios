@@ -1,19 +1,78 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy, Gift, Users, Check } from "lucide-react";
+import { Copy, Gift, Users, Check, LogIn } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 const ReferralProgram = () => {
   const [copied, setCopied] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [referralCode, setReferralCode] = useState<string>("");
+  const [totalReferrals, setTotalReferrals] = useState<number>(0);
+  const [discountPercentage, setDiscountPercentage] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
   
-  // Generate a unique referral code (in production, this would come from the backend)
-  const referralCode = "SLRP-" + Math.random().toString(36).substring(2, 8).toUpperCase();
-  const referralLink = `${window.location.origin}?ref=${referralCode}`;
+  const referralLink = referralCode ? `${window.location.origin}?ref=${referralCode}` : "";
+
+  useEffect(() => {
+    checkUser();
+  }, []);
+
+  const checkUser = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      
+      if (user) {
+        await fetchReferralData(user.id);
+      }
+    } catch (error) {
+      console.error("Error checking user:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchReferralData = async (userId: string) => {
+    try {
+      // Fetch referral code
+      const { data: codeData, error: codeError } = await supabase
+        .from("referral_codes")
+        .select("referral_code")
+        .eq("user_id", userId)
+        .single();
+
+      if (codeError) throw codeError;
+      setReferralCode(codeData.referral_code);
+
+      // Fetch referral rewards
+      const { data: rewardsData, error: rewardsError } = await supabase
+        .from("referral_rewards")
+        .select("total_referrals, discount_percentage")
+        .eq("user_id", userId)
+        .single();
+
+      if (rewardsError) throw rewardsError;
+      setTotalReferrals(rewardsData.total_referrals);
+      setDiscountPercentage(rewardsData.discount_percentage);
+    } catch (error) {
+      console.error("Error fetching referral data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load referral data",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleCopy = () => {
+    if (!referralLink) return;
+    
     navigator.clipboard.writeText(referralLink);
     setCopied(true);
     toast({
@@ -22,6 +81,49 @@ const ReferralProgram = () => {
     });
     setTimeout(() => setCopied(false), 2000);
   };
+
+  if (loading) {
+    return (
+      <div className="mt-16 text-center">
+        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
+        <p className="mt-4 text-muted-foreground">Loading referral data...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="mt-16 space-y-8">
+        <div className="text-center space-y-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 mb-4 animate-scale-in">
+            <Gift className="w-8 h-8 text-primary" />
+          </div>
+          <h2 className="text-3xl font-bold text-gradient">Referral Program</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Invite your friends to SLRP and earn rewards! Get 10% discount for every successful referral.
+          </p>
+        </div>
+
+        <Card className="glass-effect border-primary/30 max-w-2xl mx-auto animate-fade-in">
+          <CardContent className="pt-6 text-center space-y-4">
+            <LogIn className="w-12 h-12 mx-auto text-primary" />
+            <h3 className="text-xl font-semibold">Login Required</h3>
+            <p className="text-muted-foreground">
+              Please log in to access your unique referral link and start earning rewards.
+            </p>
+            <Button 
+              size="lg" 
+              onClick={() => navigate('/auth')}
+              className="mt-4"
+            >
+              <LogIn className="w-4 h-4 mr-2" />
+              Login to Get Your Link
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-16 space-y-8">
@@ -126,7 +228,7 @@ const ReferralProgram = () => {
               </div>
               <div className="text-right">
                 <p className="text-sm text-muted-foreground">Total Referrals</p>
-                <p className="text-2xl font-bold text-accent mt-1">0</p>
+                <p className="text-2xl font-bold text-accent mt-1">{totalReferrals}</p>
               </div>
             </div>
           </div>
@@ -135,8 +237,13 @@ const ReferralProgram = () => {
             <p className="text-sm font-semibold">Earned Rewards:</p>
             <div className="flex items-center justify-between p-3 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border border-primary/30">
               <span className="text-muted-foreground">Available Discount</span>
-              <span className="text-xl font-bold text-primary">0%</span>
+              <span className="text-xl font-bold text-primary">{discountPercentage}%</span>
             </div>
+            {discountPercentage > 0 && (
+              <p className="text-xs text-muted-foreground">
+                💰 You can use this discount on your next purchase!
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
