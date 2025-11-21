@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, FileText, Briefcase, Ban, Clock, Radio } from "lucide-react";
+import { Loader2, FileText, Briefcase, Ban, Clock, Radio, Users } from "lucide-react";
 import { format } from "date-fns";
 import headerCommunity from "@/assets/header-community.jpg";
 
@@ -33,6 +33,14 @@ interface BanAppeal {
   admin_notes?: string;
 }
 
+interface StaffApplication {
+  id: string;
+  position: string;
+  status: string;
+  created_at: string;
+  admin_notes?: string;
+}
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -41,6 +49,7 @@ const Dashboard = () => {
   const [whitelistApps, setWhitelistApps] = useState<WhitelistApplication[]>([]);
   const [jobApps, setJobApps] = useState<JobApplication[]>([]);
   const [banAppeals, setBanAppeals] = useState<BanAppeal[]>([]);
+  const [staffApps, setStaffApps] = useState<StaffApplication[]>([]);
 
   useEffect(() => {
     checkAuthAndLoadData();
@@ -84,6 +93,18 @@ const Dashboard = () => {
         (payload) => {
           console.log('Ban appeal change:', payload);
           handleBanAppealChange(payload);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'staff_applications'
+        },
+        (payload) => {
+          console.log('Staff application change:', payload);
+          handleStaffAppChange(payload);
         }
       )
       .subscribe();
@@ -168,6 +189,31 @@ const Dashboard = () => {
     }
   };
 
+  const handleStaffAppChange = (payload: any) => {
+    // Only update if the change is for the current user
+    if (payload.new?.user_id !== userId && payload.old?.user_id !== userId) {
+      return;
+    }
+
+    if (payload.eventType === 'INSERT') {
+      setStaffApps(prev => [payload.new, ...prev]);
+    } else if (payload.eventType === 'UPDATE') {
+      setStaffApps(prev => 
+        prev.map(app => app.id === payload.new.id ? payload.new : app)
+      );
+      // Show notification for status changes
+      if (payload.old?.status !== payload.new?.status) {
+        toast({
+          title: "Staff Application Updated",
+          description: `Your ${payload.new.position} application has been ${payload.new.status}.`,
+          variant: payload.new.status === "approved" ? "default" : "destructive",
+        });
+      }
+    } else if (payload.eventType === 'DELETE') {
+      setStaffApps(prev => prev.filter(app => app.id !== payload.old.id));
+    }
+  };
+
   const checkAuthAndLoadData = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -213,6 +259,15 @@ const Dashboard = () => {
       .order("created_at", { ascending: false });
 
     if (banData) setBanAppeals(banData);
+
+    // Load staff applications
+    const { data: staffData } = await supabase
+      .from("staff_applications")
+      .select("id, position, status, created_at, admin_notes")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (staffData) setStaffApps(staffData);
   };
 
   const getStatusBadgeVariant = (status: string) => {
@@ -398,6 +453,53 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           )}
+
+          {/* Staff Applications */}
+          <Card className="glass-effect border-border/20">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-primary" />
+                <CardTitle className="text-gradient">Staff Applications</CardTitle>
+              </div>
+              <CardDescription>Your staff position application statuses</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {staffApps.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">
+                  No staff applications found
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {staffApps.map((app) => (
+                    <Card key={app.id} className="border-border/20">
+                      <CardContent className="pt-6">
+                        <div className="flex items-start justify-between mb-4">
+                          <div>
+                            <p className="font-semibold text-lg mb-2 capitalize">
+                              {app.position.replace(/_/g, ' ')}
+                            </p>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Clock className="w-4 h-4" />
+                              <span>Submitted on {format(new Date(app.created_at), "PPP")}</span>
+                            </div>
+                          </div>
+                          <Badge variant={getStatusBadgeVariant(app.status)}>
+                            {app.status.toUpperCase()}
+                          </Badge>
+                        </div>
+                        {app.admin_notes && (
+                          <div className="mt-4 p-3 rounded-md bg-muted/50">
+                            <p className="text-sm font-medium mb-1">Admin Notes:</p>
+                            <p className="text-sm text-muted-foreground">{app.admin_notes}</p>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </main>
     </div>
