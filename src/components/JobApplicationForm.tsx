@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Shield, Heart, Wrench } from "lucide-react";
+import { Loader2, Shield, Heart, Wrench, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const jobApplicationSchema = z.object({
   character_name: z.string()
@@ -55,6 +55,9 @@ interface JobApplicationFormProps {
 const JobApplicationForm = ({ jobType }: JobApplicationFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [cooldownActive, setCooldownActive] = useState(false);
+  const [cooldownDays, setCooldownDays] = useState(0);
+  const [checkingCooldown, setCheckingCooldown] = useState(true);
 
   const form = useForm<JobApplicationFormData>({
     resolver: zodResolver(jobApplicationSchema),
@@ -69,6 +72,50 @@ const JobApplicationForm = ({ jobType }: JobApplicationFormProps) => {
       additional_info: "",
     },
   });
+
+  useEffect(() => {
+    checkApplicationCooldown();
+  }, [jobType]);
+
+  const checkApplicationCooldown = async () => {
+    setCheckingCooldown(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        setCheckingCooldown(false);
+        return;
+      }
+
+      // Check for existing applications in the last 10 days
+      const tenDaysAgo = new Date();
+      tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
+
+      const { data: recentApps } = await supabase
+        .from("job_applications")
+        .select("created_at")
+        .eq("user_id", user.id)
+        .eq("job_type", jobType)
+        .gte("created_at", tenDaysAgo.toISOString())
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (recentApps && recentApps.length > 0) {
+        const lastAppDate = new Date(recentApps[0].created_at);
+        const daysSinceLastApp = Math.floor((Date.now() - lastAppDate.getTime()) / (1000 * 60 * 60 * 24));
+        const remainingDays = 10 - daysSinceLastApp;
+        
+        if (remainingDays > 0) {
+          setCooldownActive(true);
+          setCooldownDays(remainingDays);
+        }
+      }
+    } catch (error) {
+      console.error("Error checking cooldown:", error);
+    } finally {
+      setCheckingCooldown(false);
+    }
+  };
 
   const onSubmit = async (data: JobApplicationFormData) => {
     setIsSubmitting(true);
@@ -155,6 +202,42 @@ const JobApplicationForm = ({ jobType }: JobApplicationFormProps) => {
         return <Wrench className="w-6 h-6 text-primary" />;
     }
   };
+
+  if (checkingCooldown) {
+    return (
+      <Card className="glass-effect border-border/20">
+        <CardContent className="flex justify-center items-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (cooldownActive) {
+    return (
+      <Card className="glass-effect border-border/20">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            {getJobIcon()}
+            <div>
+              <CardTitle className="text-gradient">{jobType} Application</CardTitle>
+              <CardDescription>{getJobDescription()}</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Alert className="border-border/20">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Application Cooldown Active</AlertTitle>
+            <AlertDescription>
+              You have recently submitted an application for {jobType}. 
+              Please wait {cooldownDays} more day{cooldownDays !== 1 ? 's' : ''} before submitting another application for this position.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="glass-effect border-border/20">

@@ -232,12 +232,12 @@ const Navigation = () => {
                         variant="outline"
                         className="justify-start glass-effect"
                         onClick={() => {
-                          navigate("/whitelist");
+                          navigate("/dashboard");
                           setIsMenuOpen(false);
                         }}
                       >
                         <UserCircle className="w-4 h-4 mr-2" />
-                        Profile
+                        My Dashboard
                       </Button>
                       <Button 
                         variant="outline"
