@@ -7,11 +7,13 @@ import { Separator } from "@/components/ui/separator";
 import { getDisplayPrice } from "@/lib/currency";
 import { useState, useEffect } from "react";
 import { detectUserCurrency } from "@/lib/currency";
+import { useNavigate } from "react-router-dom";
 
 const CartDrawer = () => {
   const { items, removeItem, updateQuantity, getTotalItems, getTotalPrice, clearCart } = useCart();
   const [currency, setCurrency] = useState<string>('INR');
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const detectedCurrency = detectUserCurrency();
@@ -106,7 +108,14 @@ const CartDrawer = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Button className="w-full" size="lg">
+                  <Button 
+                    className="w-full" 
+                    size="lg"
+                    onClick={() => {
+                      setOpen(false);
+                      navigate('/checkout');
+                    }}
+                  >
                     Proceed to Checkout
                   </Button>
                   <Button 

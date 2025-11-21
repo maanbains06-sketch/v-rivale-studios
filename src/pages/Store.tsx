@@ -331,6 +331,15 @@ const Store = () => {
                     Example: /redeem tbx-8832421277453-etd002
                   </p>
                 </div>
+
+                <Button 
+                  className="w-full mt-6" 
+                  size="lg"
+                  onClick={() => handleAddToCart('One of One Vehicle', BASE_PRICES.oneOfOne, 'oneofone')}
+                >
+                  <ShoppingCart className="w-4 h-4 mr-2" />
+                  Add to Basket
+                </Button>
               </CardContent>
             </Card>
           </section>

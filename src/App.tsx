@@ -17,6 +17,8 @@ import Gallery from "./pages/Gallery";
 import Status from "./pages/Status";
 import Support from "./pages/Support";
 import Store from "./pages/Store";
+import Checkout from "./pages/Checkout";
+import Confirmation from "./pages/Confirmation";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import AdminStaffApplications from "./pages/AdminStaffApplications";
@@ -47,6 +49,8 @@ const App = () => (
           <Route path="/status" element={<Status />} />
           <Route path="/support" element={<Support />} />
           <Route path="/store" element={<Store />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/confirmation" element={<Confirmation />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin-staff-applications" element={<AdminStaffApplications />} />
