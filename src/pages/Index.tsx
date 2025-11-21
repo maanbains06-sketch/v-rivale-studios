@@ -1,4 +1,4 @@
-import { Users, Zap, Trophy, Play, Instagram, Facebook, Twitter, Youtube } from "lucide-react";
+import { Users, Zap, CheckCircle, Play, Instagram, Facebook, Twitter, Youtube } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
@@ -17,9 +17,9 @@ const stats = [
     label: "Uptime",
   },
   {
-    icon: Trophy,
-    value: "#1",
-    label: "Ranked Server",
+    icon: CheckCircle,
+    value: "Online",
+    label: "Server Status",
   },
 ];
 
