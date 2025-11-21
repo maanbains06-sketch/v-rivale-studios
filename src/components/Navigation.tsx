@@ -213,6 +213,17 @@ const Navigation = () => {
                         <Briefcase className="w-4 h-4 mr-2" />
                         Job Applications
                       </Button>
+                      <Button 
+                        variant="outline"
+                        className="justify-start glass-effect"
+                        onClick={() => {
+                          navigate("/admin-staff-applications");
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        <Users className="w-4 h-4 mr-2" />
+                        Staff Applications
+                      </Button>
                     </>
                   )}
                   <Button 

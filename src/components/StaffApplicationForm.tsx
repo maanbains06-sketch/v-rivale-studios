@@ -135,9 +135,34 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
     setIsSubmitting(true);
     
     try {
-      // Here you would send the data to your backend/database
-      // For now, we'll simulate a submission
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Authentication Required",
+          description: "You must be logged in to submit an application.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from("staff_applications")
+        .insert({
+          user_id: user.id,
+          full_name: data.fullName,
+          age: parseInt(data.age),
+          discord_username: data.discordUsername,
+          in_game_name: data.inGameName,
+          position: data.position,
+          playtime: data.playtime,
+          experience: data.experience,
+          why_join: data.whyJoin,
+          availability: data.availability,
+          previous_experience: data.previousExperience || null,
+        });
+
+      if (error) throw error;
       
       toast({
         title: "Application Submitted!",
@@ -147,6 +172,7 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
       form.reset();
       onOpenChange(false);
     } catch (error) {
+      console.error("Error submitting application:", error);
       toast({
         title: "Submission Failed",
         description: "There was an error submitting your application. Please try again.",
