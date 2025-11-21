@@ -83,15 +83,6 @@ const staffMembers: StaffMember[] = [
     bio: "Optimizing performance and designing user interfaces"
   },
   {
-    name: "Nina Patel",
-    role: "Support Specialist",
-    roleType: "moderator",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Nina",
-    responsibilities: ["Whitelist Applications", "Technical Support", "Documentation"],
-    discordTag: "NinaSupport#0008",
-    bio: "Helping players with technical issues and whitelist process"
-  },
-  {
     name: "James Wilson",
     role: "Staff Coordinator",
     roleType: "staff",
@@ -110,6 +101,15 @@ const staffMembers: StaffMember[] = [
     bio: "Supporting players and mentoring new staff members"
   },
   {
+    name: "Priya Sharma",
+    role: "Staff Member",
+    roleType: "staff",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Priya",
+    responsibilities: ["Community Outreach", "Player Engagement", "Feedback Management"],
+    discordTag: "PriyaStaff#0013",
+    bio: "Connecting with the community and gathering valuable feedback"
+  },
+  {
     name: "Michael Chen",
     role: "Event Director",
     roleType: "event_manager",
@@ -126,6 +126,15 @@ const staffMembers: StaffMember[] = [
     responsibilities: ["Event Execution", "Prize Distribution", "Event Promotions"],
     discordTag: "OliviaEvents#0012",
     bio: "Bringing exciting events to life"
+  },
+  {
+    name: "Arjun Verma",
+    role: "Event Manager",
+    roleType: "event_manager",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Arjun",
+    responsibilities: ["Event Logistics", "Community Engagement", "Event Content"],
+    discordTag: "ArjunEvents#0014",
+    bio: "Managing event logistics and community participation"
   },
 ];
 
