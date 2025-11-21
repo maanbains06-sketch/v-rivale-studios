@@ -1,4 +1,4 @@
-import { Users, Zap, CheckCircle, Play, Instagram, Facebook, Twitter, Youtube } from "lucide-react";
+import { Users, Zap, CheckCircle, Play, Instagram, Facebook, Twitter, Youtube, MessageCircle, Image, Calendar, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
@@ -107,6 +107,112 @@ const Index = () => {
                 <h3 className="text-xl font-bold mb-2 text-primary">Regular Updates</h3>
                 <p className="text-muted-foreground">Constant improvements and new features based on community feedback and suggestions.</p>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Community Section */}
+      <section className="py-20 relative">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12 animate-fade-in">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gradient">
+              Join Our Thriving Community
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Connect with thousands of players, share your experiences, and be part of something special
+            </p>
+          </div>
+
+          {/* Featured Highlights */}
+          <div className="grid md:grid-cols-3 gap-6 mb-12">
+            <div className="glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 animate-fade-in">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-r from-neon-cyan to-neon-purple mb-4">
+                <Trophy className="w-6 h-6 text-background" />
+              </div>
+              <h3 className="text-xl font-bold mb-2 text-foreground">Weekly Events</h3>
+              <p className="text-muted-foreground mb-3">
+                Join exciting community events, tournaments, and special activities with amazing rewards
+              </p>
+              <Button 
+                variant="link" 
+                className="text-primary hover:text-primary/80 p-0"
+                onClick={() => navigate("/community")}
+              >
+                View Events →
+              </Button>
+            </div>
+
+            <div className="glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 animate-fade-in" style={{ animationDelay: '100ms' }}>
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-r from-neon-purple to-neon-pink mb-4">
+                <Users className="w-6 h-6 text-background" />
+              </div>
+              <h3 className="text-xl font-bold mb-2 text-foreground">10,000+ Members</h3>
+              <p className="text-muted-foreground mb-3">
+                Active community with friendly players ready to welcome you and enhance your experience
+              </p>
+              <Button 
+                variant="link" 
+                className="text-primary hover:text-primary/80 p-0"
+                onClick={() => navigate("/community")}
+              >
+                Join Discord →
+              </Button>
+            </div>
+
+            <div className="glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 animate-fade-in" style={{ animationDelay: '200ms' }}>
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-r from-neon-pink to-secondary mb-4">
+                <Image className="w-6 h-6 text-background" />
+              </div>
+              <h3 className="text-xl font-bold mb-2 text-foreground">Player Gallery</h3>
+              <p className="text-muted-foreground mb-3">
+                Share your best moments and check out incredible screenshots from our community
+              </p>
+              <Button 
+                variant="link" 
+                className="text-primary hover:text-primary/80 p-0"
+                onClick={() => navigate("/gallery")}
+              >
+                View Gallery →
+              </Button>
+            </div>
+          </div>
+
+          {/* Quick Links */}
+          <div className="glass-effect rounded-2xl p-8 text-center animate-fade-in">
+            <h3 className="text-2xl font-bold mb-6 text-foreground">Quick Community Links</h3>
+            <div className="flex flex-wrap justify-center gap-4">
+              <Button 
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                onClick={() => navigate("/community")}
+              >
+                <MessageCircle className="w-4 h-4 mr-2" />
+                Discord Server
+              </Button>
+              <Button 
+                variant="outline" 
+                className="border-primary text-primary hover:bg-primary/10"
+                onClick={() => navigate("/gallery")}
+              >
+                <Image className="w-4 h-4 mr-2" />
+                Community Gallery
+              </Button>
+              <Button 
+                variant="outline" 
+                className="border-primary text-primary hover:bg-primary/10"
+                onClick={() => navigate("/community")}
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                Upcoming Events
+              </Button>
+              <Button 
+                variant="outline" 
+                className="border-primary text-primary hover:bg-primary/10"
+                onClick={() => navigate("/guides")}
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Getting Started
+              </Button>
             </div>
           </div>
         </div>
