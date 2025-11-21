@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
 import headerStaff from "@/assets/header-staff.jpg";
@@ -157,6 +158,7 @@ const roleIcons = {
 };
 
 const Staff = () => {
+  const navigate = useNavigate();
   const [isApplicationOpen, setIsApplicationOpen] = useState(false);
   
   const ownerStaff = staffMembers.filter(m => m.roleType === "owner");
@@ -165,6 +167,11 @@ const Staff = () => {
   const moderatorStaff = staffMembers.filter(m => m.roleType === "moderator");
   const staffTeam = staffMembers.filter(m => m.roleType === "staff");
   const eventTeam = staffMembers.filter(m => m.roleType === "event_manager");
+
+  const handleStaffClick = (name: string) => {
+    const urlName = name.toLowerCase().replace(/\s+/g, "-");
+    navigate(`/staff/${urlName}`);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -306,9 +313,9 @@ const Staff = () => {
               {ownerStaff.map((member, index) => {
                 const Icon = roleIcons[member.roleType];
                 return (
-                  <div key={index} className="relative group">
+                  <div key={index} className="relative group cursor-pointer" onClick={() => handleStaffClick(member.name)}>
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-secondary/20 to-primary/20 rounded-3xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <Card className="relative glass-effect border-border/20 hover:border-primary/40 transition-all duration-500 overflow-hidden">
+                    <Card className="relative glass-effect border-border/20 hover:border-primary/40 transition-all duration-500 overflow-hidden hover:scale-[1.02]">
                       <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary via-secondary to-primary"></div>
                       <CardContent className="pt-8 pb-6">
                         <div className="flex flex-col items-center text-center">
@@ -371,9 +378,9 @@ const Staff = () => {
               {adminStaff.map((member, index) => {
                 const Icon = roleIcons[member.roleType];
                 return (
-                  <div key={index} className="relative group">
+                  <div key={index} className="relative group cursor-pointer" onClick={() => handleStaffClick(member.name)}>
                     <div className="absolute inset-0 bg-destructive/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <Card className="relative glass-effect border-border/20 hover:border-destructive/40 transition-all duration-500 hover:shadow-xl hover:shadow-destructive/10">
+                    <Card className="relative glass-effect border-border/20 hover:border-destructive/40 transition-all duration-500 hover:shadow-xl hover:shadow-destructive/10 hover:scale-[1.02]">
                       <CardContent className="pt-6 pb-6">
                         <div className="flex flex-col items-center text-center">
                           <div className="relative mb-5">
@@ -433,9 +440,9 @@ const Staff = () => {
               {developerStaff.map((member, index) => {
                 const Icon = roleIcons[member.roleType];
                 return (
-                  <div key={index} className="relative group">
+                  <div key={index} className="relative group cursor-pointer" onClick={() => handleStaffClick(member.name)}>
                     <div className="absolute inset-0 bg-accent/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <Card className="relative glass-effect border-border/20 hover:border-accent/40 transition-all duration-500 hover:shadow-xl hover:shadow-accent/10">
+                    <Card className="relative glass-effect border-border/20 hover:border-accent/40 transition-all duration-500 hover:shadow-xl hover:shadow-accent/10 hover:scale-[1.02]">
                       <CardContent className="pt-6 pb-6">
                         <div className="flex flex-col items-center text-center">
                           <div className="relative mb-5">
@@ -495,9 +502,9 @@ const Staff = () => {
               {moderatorStaff.map((member, index) => {
                 const Icon = roleIcons[member.roleType];
                 return (
-                  <div key={index} className="relative group">
+                  <div key={index} className="relative group cursor-pointer" onClick={() => handleStaffClick(member.name)}>
                     <div className="absolute inset-0 bg-secondary/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <Card className="relative glass-effect border-border/20 hover:border-secondary/40 transition-all duration-500 hover:shadow-xl hover:shadow-secondary/10">
+                    <Card className="relative glass-effect border-border/20 hover:border-secondary/40 transition-all duration-500 hover:shadow-xl hover:shadow-secondary/10 hover:scale-[1.02]">
                       <CardContent className="pt-6 pb-6">
                         <div className="flex flex-col items-center text-center">
                           <div className="relative mb-5">
@@ -557,9 +564,9 @@ const Staff = () => {
               {staffTeam.map((member, index) => {
                 const Icon = roleIcons[member.roleType];
                 return (
-                  <div key={index} className="relative group">
+                  <div key={index} className="relative group cursor-pointer" onClick={() => handleStaffClick(member.name)}>
                     <div className="absolute inset-0 bg-primary/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <Card className="relative glass-effect border-border/20 hover:border-primary/40 transition-all duration-500 hover:shadow-xl hover:shadow-primary/10">
+                    <Card className="relative glass-effect border-border/20 hover:border-primary/40 transition-all duration-500 hover:shadow-xl hover:shadow-primary/10 hover:scale-[1.02]">
                       <CardContent className="pt-6 pb-6">
                         <div className="flex flex-col items-center text-center">
                           <div className="relative mb-5">
@@ -619,9 +626,9 @@ const Staff = () => {
               {eventTeam.map((member, index) => {
                 const Icon = roleIcons[member.roleType];
                 return (
-                  <div key={index} className="relative group">
+                  <div key={index} className="relative group cursor-pointer" onClick={() => handleStaffClick(member.name)}>
                     <div className="absolute inset-0 bg-gradient-to-br from-secondary/10 to-primary/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <Card className="relative glass-effect border-border/20 hover:border-primary/40 transition-all duration-500 hover:shadow-xl hover:shadow-primary/10">
+                    <Card className="relative glass-effect border-border/20 hover:border-primary/40 transition-all duration-500 hover:shadow-xl hover:shadow-primary/10 hover:scale-[1.02]">
                       <CardContent className="pt-6 pb-6">
                         <div className="flex flex-col items-center text-center">
                           <div className="relative mb-5">
