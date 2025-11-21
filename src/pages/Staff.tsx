@@ -99,12 +99,15 @@ const Staff = () => {
     );
   }
 
+  // If no staff in database, show all sections with placeholder message
   const leadershipStaff = getStaffByDepartment("leadership");
   const adminStaff = getStaffByDepartment("administration");
   const developerStaff = getStaffByDepartment("development");
   const moderatorStaff = getStaffByDepartment("moderation");
   const supportStaff = getStaffByDepartment("support");
   const eventStaff = getStaffByDepartment("events");
+
+  const hasAnyStaff = staffMembers.length > 0;
 
   const renderStaffCard = (member: StaffMember, index: number) => {
     const Icon = roleIcons[member.role_type as keyof typeof roleIcons] || UserCheck;
@@ -294,82 +297,124 @@ const Staff = () => {
           </div>
 
           {/* Leadership Team */}
-          {leadershipStaff.length > 0 && (
-            <div className="mb-16">
-              <div className="text-center mb-12">
-                <h2 className="text-4xl font-bold text-gradient mb-4">Leadership Team</h2>
-                <p className="text-lg text-muted-foreground">The visionaries guiding SLRP to excellence</p>
-              </div>
+          <div className="mb-16">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold text-gradient mb-4">Leadership Team</h2>
+              <p className="text-lg text-muted-foreground">The visionaries guiding SLRP to excellence</p>
+            </div>
+            {leadershipStaff.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
                 {leadershipStaff.map((member, index) => renderStaffCard(member, index))}
               </div>
-            </div>
-          )}
+            ) : (
+              <Card className="glass-effect border-border/20 max-w-2xl mx-auto">
+                <CardContent className="p-8 text-center">
+                  <Shield className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                  <p className="text-muted-foreground">No leadership team members added yet</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
 
           {/* Administration Team */}
-          {adminStaff.length > 0 && (
-            <div className="mb-16">
-              <div className="text-center mb-12">
-                <h2 className="text-4xl font-bold text-gradient mb-4">Administration Team</h2>
-                <p className="text-lg text-muted-foreground">Ensuring smooth server operations</p>
-              </div>
+          <div className="mb-16">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold text-gradient mb-4">Administration Team</h2>
+              <p className="text-lg text-muted-foreground">Ensuring smooth server operations</p>
+            </div>
+            {adminStaff.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {adminStaff.map((member, index) => renderStaffCard(member, index))}
               </div>
-            </div>
-          )}
+            ) : (
+              <Card className="glass-effect border-border/20 max-w-2xl mx-auto">
+                <CardContent className="p-8 text-center">
+                  <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                  <p className="text-muted-foreground">No administration team members added yet</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
 
           {/* Development Team */}
-          {developerStaff.length > 0 && (
-            <div className="mb-16">
-              <div className="text-center mb-12">
-                <h2 className="text-4xl font-bold text-gradient mb-4">Development Team</h2>
-                <p className="text-lg text-muted-foreground">Building innovative features</p>
-              </div>
+          <div className="mb-16">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold text-gradient mb-4">Development Team</h2>
+              <p className="text-lg text-muted-foreground">Building innovative features</p>
+            </div>
+            {developerStaff.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {developerStaff.map((member, index) => renderStaffCard(member, index))}
               </div>
-            </div>
-          )}
+            ) : (
+              <Card className="glass-effect border-border/20 max-w-2xl mx-auto">
+                <CardContent className="p-8 text-center">
+                  <Code className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                  <p className="text-muted-foreground">No development team members added yet</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
 
           {/* Moderation Team */}
-          {moderatorStaff.length > 0 && (
-            <div className="mb-16">
-              <div className="text-center mb-12">
-                <h2 className="text-4xl font-bold text-gradient mb-4">Moderation Team</h2>
-                <p className="text-lg text-muted-foreground">Keeping the community safe and fair</p>
-              </div>
+          <div className="mb-16">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold text-gradient mb-4">Moderation Team</h2>
+              <p className="text-lg text-muted-foreground">Keeping the community safe and fair</p>
+            </div>
+            {moderatorStaff.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {moderatorStaff.map((member, index) => renderStaffCard(member, index))}
               </div>
-            </div>
-          )}
+            ) : (
+              <Card className="glass-effect border-border/20 max-w-2xl mx-auto">
+                <CardContent className="p-8 text-center">
+                  <HeadphonesIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                  <p className="text-muted-foreground">No moderation team members added yet</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
 
           {/* Support Team */}
-          {supportStaff.length > 0 && (
-            <div className="mb-16">
-              <div className="text-center mb-12">
-                <h2 className="text-4xl font-bold text-gradient mb-4">Support Team</h2>
-                <p className="text-lg text-muted-foreground">Always here to help</p>
-              </div>
+          <div className="mb-16">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold text-gradient mb-4">Support Team</h2>
+              <p className="text-lg text-muted-foreground">Always here to help</p>
+            </div>
+            {supportStaff.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {supportStaff.map((member, index) => renderStaffCard(member, index))}
               </div>
-            </div>
-          )}
+            ) : (
+              <Card className="glass-effect border-border/20 max-w-2xl mx-auto">
+                <CardContent className="p-8 text-center">
+                  <UserCheck className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                  <p className="text-muted-foreground">No support team members added yet</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
 
           {/* Events Team */}
-          {eventStaff.length > 0 && (
-            <div className="mb-16">
-              <div className="text-center mb-12">
-                <h2 className="text-4xl font-bold text-gradient mb-4">Events Team</h2>
-                <p className="text-lg text-muted-foreground">Creating unforgettable experiences</p>
-              </div>
+          <div className="mb-16">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold text-gradient mb-4">Events Team</h2>
+              <p className="text-lg text-muted-foreground">Creating unforgettable experiences</p>
+            </div>
+            {eventStaff.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {eventStaff.map((member, index) => renderStaffCard(member, index))}
               </div>
-            </div>
-          )}
+            ) : (
+              <Card className="glass-effect border-border/20 max-w-2xl mx-auto">
+                <CardContent className="p-8 text-center">
+                  <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                  <p className="text-muted-foreground">No events team members added yet</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
 
           {/* Join the Team CTA */}
           <div className="mt-20 text-center">
