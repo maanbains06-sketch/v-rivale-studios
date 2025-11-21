@@ -161,9 +161,12 @@ const Store = () => {
     setCurrency(detectedCurrency);
   }, []);
 
-  const handleAddToCart = (packageName: string, price: number, icon: string, image: string) => {
-    const cardElement = cardRefs.current[packageName.toLowerCase()];
-    if (!cardElement) return;
+  const handleAddToCart = (packageName: string, price: number, icon: string, image: string, refKey: string) => {
+    const cardElement = cardRefs.current[refKey];
+    if (!cardElement) {
+      console.error(`Card ref not found for key: ${refKey}`);
+      return;
+    }
     
     // Get card position
     const cardRect = cardElement.getBoundingClientRect();
@@ -185,11 +188,11 @@ const Store = () => {
       image 
     });
     
-    setAddingToCart(packageName.toLowerCase());
+    setAddingToCart(refKey);
     
     setTimeout(() => {
       addItem({
-        id: packageName.toLowerCase(),
+        id: packageName.toLowerCase().replace(/\s+/g, ''),
         name: packageName,
         price: price,
         icon: icon
@@ -331,7 +334,7 @@ const Store = () => {
                       className={`w-full mt-6 relative overflow-hidden group ${
                         addingToCart === pkg.name.toLowerCase() ? 'animate-pulse' : ''
                       }`}
-                      onClick={() => handleAddToCart(pkg.name, pkg.price, pkg.name.toLowerCase(), pkg.image)}
+                      onClick={() => handleAddToCart(pkg.name, pkg.price, pkg.name.toLowerCase(), pkg.image, pkg.name.toLowerCase())}
                       disabled={addingToCart === pkg.name.toLowerCase()}
                     >
                       <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary-foreground/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
@@ -393,7 +396,7 @@ const Store = () => {
                     className={`w-full relative overflow-hidden group ${
                       addingToCart === 'prio200' ? 'animate-pulse' : ''
                     }`}
-                    onClick={() => handleAddToCart('Prio 200', BASE_PRICES.prio200, 'prio200', tierPrio)}
+                    onClick={() => handleAddToCart('Prio 200', BASE_PRICES.prio200, 'prio200', tierPrio, 'prio200')}
                     disabled={addingToCart === 'prio200'}
                   >
                     <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary-foreground/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
@@ -453,7 +456,7 @@ const Store = () => {
                     className={`w-full relative overflow-hidden group ${
                       addingToCart === 'whitelisted' ? 'animate-pulse' : ''
                     }`}
-                    onClick={() => handleAddToCart('Whitelisted', BASE_PRICES.whitelisted, 'whitelisted', tierWhitelist)}
+                    onClick={() => handleAddToCart('Whitelisted', BASE_PRICES.whitelisted, 'whitelisted', tierWhitelist, 'whitelisted')}
                     disabled={addingToCart === 'whitelisted'}
                   >
                     <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary-foreground/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
@@ -537,7 +540,7 @@ const Store = () => {
                     addingToCart === 'oneofone' ? 'animate-pulse' : ''
                   }`}
                   size="lg"
-                  onClick={() => handleAddToCart('One of One Vehicle', BASE_PRICES.oneOfOne, 'oneofone', tierOneOfOne)}
+                  onClick={() => handleAddToCart('One of One Vehicle', BASE_PRICES.oneOfOne, 'oneofone', tierOneOfOne, 'oneofone')}
                   disabled={addingToCart === 'oneofone'}
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-secondary/0 via-secondary-foreground/20 to-secondary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
