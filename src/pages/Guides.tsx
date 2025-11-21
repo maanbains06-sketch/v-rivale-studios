@@ -4,6 +4,7 @@ import headerGuides from "@/assets/header-guides.jpg";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserCircle2, BookOpen, Briefcase, AlertCircle } from "lucide-react";
+import JobApplicationForm from "@/components/JobApplicationForm";
 
 const Guides = () => {
   return (
@@ -415,6 +416,32 @@ const Guides = () => {
                       <li><strong>Create RP:</strong> Don&apos;t just grind - create interesting scenarios for others</li>
                       <li><strong>Balance Risk:</strong> Criminal jobs pay more but come with real consequences</li>
                     </ul>
+                  </div>
+
+                  {/* Job Application Forms */}
+                  <div className="space-y-8 mt-12">
+                    <div className="text-center space-y-2">
+                      <h3 className="text-3xl font-bold text-gradient">Apply Now</h3>
+                      <p className="text-foreground/80">Submit your application for available positions</p>
+                    </div>
+
+                    <JobApplicationForm
+                      jobType="police"
+                      jobTitle="LSPD Officer"
+                      description="Join the Los Santos Police Department and help maintain law and order in the city."
+                    />
+
+                    <JobApplicationForm
+                      jobType="ems"
+                      jobTitle="EMS Paramedic"
+                      description="Save lives and provide emergency medical services to the citizens of Los Santos."
+                    />
+
+                    <JobApplicationForm
+                      jobType="mechanic"
+                      jobTitle="Mechanic"
+                      description="Repair and customize vehicles at one of Los Santos' premier auto shops."
+                    />
                   </div>
                 </CardContent>
               </Card>
