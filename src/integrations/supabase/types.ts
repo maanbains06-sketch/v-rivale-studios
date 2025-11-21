@@ -140,6 +140,66 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_members: {
+        Row: {
+          bio: string | null
+          created_at: string | null
+          department: string
+          discord_avatar: string | null
+          discord_id: string
+          discord_username: string | null
+          display_order: number | null
+          email: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          responsibilities: string[] | null
+          role: string
+          role_type: string
+          steam_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string | null
+          department: string
+          discord_avatar?: string | null
+          discord_id: string
+          discord_username?: string | null
+          display_order?: number | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          responsibilities?: string[] | null
+          role: string
+          role_type: string
+          steam_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string | null
+          department?: string
+          discord_avatar?: string | null
+          discord_id?: string
+          discord_username?: string | null
+          display_order?: number | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          responsibilities?: string[] | null
+          role?: string
+          role_type?: string
+          steam_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
