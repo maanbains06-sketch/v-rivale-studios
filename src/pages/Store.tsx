@@ -18,6 +18,7 @@ import tierSkylife from "@/assets/tier-skylife.jpg";
 import tierPrio from "@/assets/tier-prio.jpg";
 import tierWhitelist from "@/assets/tier-whitelist.jpg";
 import tierOneOfOne from "@/assets/tier-oneofone.jpg";
+import tierJewelry from "@/assets/tier-jewelry.jpg";
 
 const packages = [
   {
@@ -110,6 +111,38 @@ const packages = [
       "Custom mobile ringtone",
       "Custom names on cars",
       "2 custom number plates for others"
+    ]
+  },
+  {
+    name: "Custom Jewelry (Solo)",
+    price: BASE_PRICES.jewelrySolo,
+    image: tierJewelry,
+    icon: Sparkles,
+    gradient: "from-amber-400/20 via-yellow-500/20 to-orange-600/20",
+    borderColor: "border-amber-500/30",
+    iconColor: "text-amber-400",
+    glowColor: "shadow-amber-400/30",
+    features: [
+      "One custom jewelry piece",
+      "Unique design for your character",
+      "Premium customization"
+    ]
+  },
+  {
+    name: "Custom Jewelry (Gang)",
+    price: BASE_PRICES.jewelryGang,
+    image: tierJewelry,
+    icon: Crown,
+    gradient: "from-amber-400/20 via-yellow-500/20 to-orange-600/20",
+    borderColor: "border-amber-500/30",
+    iconColor: "text-amber-400",
+    glowColor: "shadow-amber-400/40",
+    premium: true,
+    features: [
+      "Custom jewelry for entire gang",
+      "Matching designs for all members",
+      "Premium group customization",
+      "Exclusive gang identity"
     ]
   }
 ];
