@@ -151,7 +151,7 @@ const packages = [
 const Store = () => {
   const [currency, setCurrency] = useState<string>('INR');
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
-  const [flyingItem, setFlyingItem] = useState<{ id: string; rect: DOMRect; image: string } | null>(null);
+  const [flyingItem, setFlyingItem] = useState<{ id: string; startX: number; startY: number; endX: number; endY: number; image: string } | null>(null);
   const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const { addItem } = useCart();
   const { toast } = useToast();
@@ -163,10 +163,27 @@ const Store = () => {
 
   const handleAddToCart = (packageName: string, price: number, icon: string, image: string) => {
     const cardElement = cardRefs.current[packageName.toLowerCase()];
-    if (cardElement) {
-      const rect = cardElement.getBoundingClientRect();
-      setFlyingItem({ id: packageName, rect, image });
-    }
+    if (!cardElement) return;
+    
+    // Get card position
+    const cardRect = cardElement.getBoundingClientRect();
+    const cardCenterX = cardRect.left + cardRect.width / 2;
+    const cardCenterY = cardRect.top + cardRect.height / 2;
+    
+    // Get cart button position (fixed top-right)
+    const cartButton = document.querySelector('[data-cart-button]');
+    const cartRect = cartButton?.getBoundingClientRect();
+    const cartX = cartRect ? cartRect.left + cartRect.width / 2 : window.innerWidth - 100;
+    const cartY = cartRect ? cartRect.top + cartRect.height / 2 : 100;
+    
+    setFlyingItem({ 
+      id: packageName, 
+      startX: cardCenterX,
+      startY: cardCenterY,
+      endX: cartX,
+      endY: cartY,
+      image 
+    });
     
     setAddingToCart(packageName.toLowerCase());
     
@@ -179,13 +196,13 @@ const Store = () => {
       });
       
       toast({
-        title: "Added to basket",
-        description: `${packageName} package has been added to your basket.`,
+        title: "Added to basket! 🛒",
+        description: `${packageName} has been added to your basket.`,
       });
 
       setAddingToCart(null);
-      setTimeout(() => setFlyingItem(null), 800);
-    }, 500);
+      setTimeout(() => setFlyingItem(null), 1000);
+    }, 700);
   };
 
   return (
@@ -198,31 +215,57 @@ const Store = () => {
         backgroundImage={headerStore}
       />
 
-      <div className="fixed top-24 right-6 z-50">
+      <div className="fixed top-24 right-6 z-50" data-cart-button>
         <CartDrawer />
       </div>
       
       {/* Flying animation element */}
       {flyingItem && (
-        <div
-          className="fixed pointer-events-none z-[100]"
-          style={{
-            left: flyingItem.rect.left,
-            top: flyingItem.rect.top,
-            width: flyingItem.rect.width,
-            height: flyingItem.rect.height,
-            animation: 'flyToCart 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards',
-          }}
-        >
-          <img 
-            src={flyingItem.image} 
-            alt="Flying item" 
-            className="w-full h-full object-cover rounded-lg shadow-2xl shadow-primary/50"
+        <>
+          <div
+            className="fixed pointer-events-none z-[100] w-32 h-32"
             style={{
-              animation: 'shrinkAndFade 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards',
-            }}
-          />
-        </div>
+              left: `${flyingItem.startX - 64}px`,
+              top: `${flyingItem.startY - 64}px`,
+              animation: 'flyToCart 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+              '--start-x': `${flyingItem.startX}px`,
+              '--start-y': `${flyingItem.startY}px`,
+              '--end-x': `${flyingItem.endX}px`,
+              '--end-y': `${flyingItem.endY}px`,
+            } as React.CSSProperties}
+          >
+            <div className="relative w-full h-full">
+              <img 
+                src={flyingItem.image} 
+                alt="Flying item" 
+                className="w-full h-full object-cover rounded-xl shadow-2xl border-4 border-primary/50"
+                style={{
+                  animation: 'spinAndShrink 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+                }}
+              />
+              <div 
+                className="absolute inset-0 rounded-xl"
+                style={{
+                  background: 'radial-gradient(circle, rgba(139, 92, 246, 0.4) 0%, transparent 70%)',
+                  animation: 'glowPulse 0.9s ease-out forwards',
+                }}
+              />
+            </div>
+          </div>
+          
+          {/* Particle effects */}
+          {[...Array(8)].map((_, i) => (
+            <div
+              key={i}
+              className="fixed pointer-events-none z-[99] w-2 h-2 bg-primary rounded-full"
+              style={{
+                left: `${flyingItem.startX}px`,
+                top: `${flyingItem.startY}px`,
+                animation: `particle${i} 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards`,
+              }}
+            />
+          ))}
+        </>
       )}
       
       <main className="pb-16">
@@ -511,33 +554,71 @@ const Store = () => {
       <style>{`
         @keyframes flyToCart {
           0% {
-            transform: translate(0, 0) scale(1);
+            transform: translate(0, 0) scale(1) rotate(0deg);
             opacity: 1;
           }
-          50% {
-            transform: translate(calc(50vw - 50%), calc(-50vh + 50%)) scale(0.6) rotate(180deg);
-            opacity: 0.7;
+          20% {
+            transform: translate(0, -30px) scale(1.1) rotate(5deg);
+            opacity: 1;
           }
           100% {
-            transform: translate(calc(100vw - 120px), calc(-100vh + 120px)) scale(0.1) rotate(360deg);
+            transform: translate(
+              calc(var(--end-x) - var(--start-x) + 64px),
+              calc(var(--end-y) - var(--start-y) + 64px)
+            ) scale(0.15) rotate(720deg);
             opacity: 0;
           }
         }
         
-        @keyframes shrinkAndFade {
+        @keyframes spinAndShrink {
           0% {
-            transform: scale(1);
-            filter: brightness(1);
+            transform: scale(1) rotate(0deg);
+            filter: brightness(1) drop-shadow(0 0 10px rgba(139, 92, 246, 0.5));
           }
-          50% {
-            transform: scale(0.6);
-            filter: brightness(1.3);
+          30% {
+            transform: scale(1.15) rotate(180deg);
+            filter: brightness(1.3) drop-shadow(0 0 20px rgba(139, 92, 246, 0.8));
           }
           100% {
-            transform: scale(0.1);
-            filter: brightness(2);
-            opacity: 0;
+            transform: scale(0.2) rotate(720deg);
+            filter: brightness(2) drop-shadow(0 0 30px rgba(139, 92, 246, 1));
           }
+        }
+        
+        @keyframes glowPulse {
+          0%, 100% {
+            opacity: 0.8;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(1.2);
+          }
+        }
+        
+        @keyframes particle0 {
+          to { transform: translate(80px, 0) scale(0); opacity: 0; }
+        }
+        @keyframes particle1 {
+          to { transform: translate(56px, 56px) scale(0); opacity: 0; }
+        }
+        @keyframes particle2 {
+          to { transform: translate(0, 80px) scale(0); opacity: 0; }
+        }
+        @keyframes particle3 {
+          to { transform: translate(-56px, 56px) scale(0); opacity: 0; }
+        }
+        @keyframes particle4 {
+          to { transform: translate(-80px, 0) scale(0); opacity: 0; }
+        }
+        @keyframes particle5 {
+          to { transform: translate(-56px, -56px) scale(0); opacity: 0; }
+        }
+        @keyframes particle6 {
+          to { transform: translate(0, -80px) scale(0); opacity: 0; }
+        }
+        @keyframes particle7 {
+          to { transform: translate(56px, -56px) scale(0); opacity: 0; }
         }
       `}</style>
     </div>
