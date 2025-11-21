@@ -1,11 +1,12 @@
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
+import ReferralProgram from "@/components/ReferralProgram";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Check, Crown, Sparkles, Star, ShoppingCart } from "lucide-react";
 import headerStore from "@/assets/header-store.jpg";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { BASE_PRICES, detectUserCurrency, getDisplayPrice } from "@/lib/currency";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
@@ -150,6 +151,8 @@ const packages = [
 const Store = () => {
   const [currency, setCurrency] = useState<string>('INR');
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
+  const [flyingItem, setFlyingItem] = useState<{ id: string; rect: DOMRect; image: string } | null>(null);
+  const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const { addItem } = useCart();
   const { toast } = useToast();
 
@@ -158,24 +161,31 @@ const Store = () => {
     setCurrency(detectedCurrency);
   }, []);
 
-  const handleAddToCart = (packageName: string, price: number, icon: string) => {
+  const handleAddToCart = (packageName: string, price: number, icon: string, image: string) => {
+    const cardElement = cardRefs.current[packageName.toLowerCase()];
+    if (cardElement) {
+      const rect = cardElement.getBoundingClientRect();
+      setFlyingItem({ id: packageName, rect, image });
+    }
+    
     setAddingToCart(packageName.toLowerCase());
     
-    addItem({
-      id: packageName.toLowerCase(),
-      name: packageName,
-      price: price,
-      icon: icon
-    });
-    
-    toast({
-      title: "Added to basket",
-      description: `${packageName} package has been added to your basket.`,
-    });
-
     setTimeout(() => {
+      addItem({
+        id: packageName.toLowerCase(),
+        name: packageName,
+        price: price,
+        icon: icon
+      });
+      
+      toast({
+        title: "Added to basket",
+        description: `${packageName} package has been added to your basket.`,
+      });
+
       setAddingToCart(null);
-    }, 600);
+      setTimeout(() => setFlyingItem(null), 800);
+    }, 500);
   };
 
   return (
@@ -192,6 +202,29 @@ const Store = () => {
         <CartDrawer />
       </div>
       
+      {/* Flying animation element */}
+      {flyingItem && (
+        <div
+          className="fixed pointer-events-none z-[100]"
+          style={{
+            left: flyingItem.rect.left,
+            top: flyingItem.rect.top,
+            width: flyingItem.rect.width,
+            height: flyingItem.rect.height,
+            animation: 'flyToCart 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards',
+          }}
+        >
+          <img 
+            src={flyingItem.image} 
+            alt="Flying item" 
+            className="w-full h-full object-cover rounded-lg shadow-2xl shadow-primary/50"
+            style={{
+              animation: 'shrinkAndFade 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards',
+            }}
+          />
+        </div>
+      )}
+      
       <main className="pb-16">
         <div className="container mx-auto px-4">
           {/* Main Packages */}
@@ -207,6 +240,7 @@ const Store = () => {
               {packages.map((pkg) => (
                 <Card 
                   key={pkg.name}
+                  ref={(el) => (cardRefs.current[pkg.name.toLowerCase()] = el)}
                   className={`relative glass-effect hover:scale-105 transition-all duration-300 ${pkg.borderColor} border-2 overflow-hidden group ${pkg.glowColor} hover:shadow-2xl`}
                 >
                   {pkg.popular && (
@@ -254,7 +288,7 @@ const Store = () => {
                       className={`w-full mt-6 relative overflow-hidden group ${
                         addingToCart === pkg.name.toLowerCase() ? 'animate-pulse' : ''
                       }`}
-                      onClick={() => handleAddToCart(pkg.name, pkg.price, pkg.name.toLowerCase())}
+                      onClick={() => handleAddToCart(pkg.name, pkg.price, pkg.name.toLowerCase(), pkg.image)}
                       disabled={addingToCart === pkg.name.toLowerCase()}
                     >
                       <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary-foreground/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
@@ -277,7 +311,10 @@ const Store = () => {
             
             <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
               {/* Prio 200 */}
-              <Card className="glass-effect border-2 border-primary/30 hover:scale-105 transition-all duration-300 shadow-primary/20 hover:shadow-2xl overflow-hidden group">
+              <Card 
+                ref={(el) => (cardRefs.current['prio200'] = el)}
+                className="glass-effect border-2 border-primary/30 hover:scale-105 transition-all duration-300 shadow-primary/20 hover:shadow-2xl overflow-hidden group"
+              >
                 <div className="relative h-40 overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10" />
                   <img 
@@ -313,7 +350,7 @@ const Store = () => {
                     className={`w-full relative overflow-hidden group ${
                       addingToCart === 'prio200' ? 'animate-pulse' : ''
                     }`}
-                    onClick={() => handleAddToCart('Prio 200', BASE_PRICES.prio200, 'prio200')}
+                    onClick={() => handleAddToCart('Prio 200', BASE_PRICES.prio200, 'prio200', tierPrio)}
                     disabled={addingToCart === 'prio200'}
                   >
                     <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary-foreground/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
@@ -326,7 +363,10 @@ const Store = () => {
               </Card>
 
               {/* Whitelisted */}
-              <Card className="glass-effect border-2 border-secondary/30 hover:scale-105 transition-all duration-300 relative shadow-secondary/20 hover:shadow-2xl overflow-hidden group">
+              <Card 
+                ref={(el) => (cardRefs.current['whitelisted'] = el)}
+                className="glass-effect border-2 border-secondary/30 hover:scale-105 transition-all duration-300 relative shadow-secondary/20 hover:shadow-2xl overflow-hidden group"
+              >
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-secondary text-secondary-foreground border-0 z-10 animate-pulse">
                   Exclusive
                 </Badge>
@@ -370,7 +410,7 @@ const Store = () => {
                     className={`w-full relative overflow-hidden group ${
                       addingToCart === 'whitelisted' ? 'animate-pulse' : ''
                     }`}
-                    onClick={() => handleAddToCart('Whitelisted', BASE_PRICES.whitelisted, 'whitelisted')}
+                    onClick={() => handleAddToCart('Whitelisted', BASE_PRICES.whitelisted, 'whitelisted', tierWhitelist)}
                     disabled={addingToCart === 'whitelisted'}
                   >
                     <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary-foreground/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
@@ -451,7 +491,7 @@ const Store = () => {
                     addingToCart === 'oneofone' ? 'animate-pulse' : ''
                   }`}
                   size="lg"
-                  onClick={() => handleAddToCart('One of One Vehicle', BASE_PRICES.oneOfOne, 'oneofone')}
+                  onClick={() => handleAddToCart('One of One Vehicle', BASE_PRICES.oneOfOne, 'oneofone', tierOneOfOne)}
                   disabled={addingToCart === 'oneofone'}
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-secondary/0 via-secondary-foreground/20 to-secondary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
@@ -463,8 +503,43 @@ const Store = () => {
               </CardContent>
             </Card>
           </section>
+          
+          <ReferralProgram />
         </div>
       </main>
+      
+      <style>{`
+        @keyframes flyToCart {
+          0% {
+            transform: translate(0, 0) scale(1);
+            opacity: 1;
+          }
+          50% {
+            transform: translate(calc(50vw - 50%), calc(-50vh + 50%)) scale(0.6) rotate(180deg);
+            opacity: 0.7;
+          }
+          100% {
+            transform: translate(calc(100vw - 120px), calc(-100vh + 120px)) scale(0.1) rotate(360deg);
+            opacity: 0;
+          }
+        }
+        
+        @keyframes shrinkAndFade {
+          0% {
+            transform: scale(1);
+            filter: brightness(1);
+          }
+          50% {
+            transform: scale(0.6);
+            filter: brightness(1.3);
+          }
+          100% {
+            transform: scale(0.1);
+            filter: brightness(2);
+            opacity: 0;
+          }
+        }
+      `}</style>
     </div>
   );
 };
