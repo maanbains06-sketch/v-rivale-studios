@@ -2,3 +2,6 @@ project_id = "obirpzwvnqveddyuulsb"
 
 [functions.send-reapplication-notifications]
 verify_jwt = false
+
+[functions.send-ban-appeal-notification]
+verify_jwt = false

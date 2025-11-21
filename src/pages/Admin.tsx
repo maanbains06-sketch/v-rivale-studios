@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Shield, FileText, Image } from "lucide-react";
+import { Loader2, Shield, FileText, Image, Ban } from "lucide-react";
 import headerAdminBg from "@/assets/header-staff.jpg";
 
 interface UserRole {
@@ -18,6 +18,19 @@ interface UserRole {
   user_id: string;
   role: "admin" | "moderator" | "user";
   discord_username?: string;
+}
+
+interface BanAppeal {
+  id: string;
+  user_id: string;
+  steam_id: string;
+  discord_username: string;
+  ban_reason: string;
+  appeal_reason: string;
+  additional_info?: string;
+  status: string;
+  created_at: string;
+  admin_notes?: string;
 }
 
 interface WhitelistApplication {
@@ -55,12 +68,16 @@ const Admin = () => {
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [applications, setApplications] = useState<WhitelistApplication[]>([]);
   const [submissions, setSubmissions] = useState<GallerySubmission[]>([]);
+  const [banAppeals, setBanAppeals] = useState<BanAppeal[]>([]);
   
   const [selectedApp, setSelectedApp] = useState<WhitelistApplication | null>(null);
   const [adminNotes, setAdminNotes] = useState("");
   
   const [selectedSubmission, setSelectedSubmission] = useState<GallerySubmission | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
+  
+  const [selectedAppeal, setSelectedAppeal] = useState<BanAppeal | null>(null);
+  const [appealAdminNotes, setAppealAdminNotes] = useState("");
 
   useEffect(() => {
     checkAdminAccess();
@@ -108,6 +125,7 @@ const Admin = () => {
       loadUserRoles(),
       loadApplications(),
       loadSubmissions(),
+      loadBanAppeals(),
     ]);
   };
 
@@ -167,6 +185,20 @@ const Admin = () => {
     }
 
     setSubmissions(data || []);
+  };
+
+  const loadBanAppeals = async () => {
+    const { data, error } = await supabase
+      .from("ban_appeals")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error loading ban appeals:", error);
+      return;
+    }
+
+    setBanAppeals(data || []);
   };
 
   const updateUserRole = async (userId: string, newRole: "admin" | "moderator" | "user") => {
@@ -265,6 +297,71 @@ const Admin = () => {
     setSelectedSubmission(null);
     setRejectionReason("");
     loadSubmissions();
+  };
+
+  const updateBanAppealStatus = async (
+    appealId: string,
+    status: "approved" | "rejected"
+  ) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    const appeal = banAppeals.find(a => a.id === appealId);
+    if (!appeal) return;
+
+    const { error: updateError } = await supabase
+      .from("ban_appeals")
+      .update({
+        status,
+        reviewed_by: user?.id,
+        reviewed_at: new Date().toISOString(),
+        admin_notes: appealAdminNotes || null,
+      })
+      .eq("id", appealId);
+
+    if (updateError) {
+      toast({
+        title: "Error",
+        description: "Failed to update ban appeal.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Send email notification
+    try {
+      const { error: emailError } = await supabase.functions.invoke('send-ban-appeal-notification', {
+        body: {
+          userId: appeal.user_id,
+          discordUsername: appeal.discord_username,
+          status,
+          adminNotes: appealAdminNotes || undefined,
+        }
+      });
+
+      if (emailError) {
+        console.error("Error sending email notification:", emailError);
+        toast({
+          title: "Warning",
+          description: "Ban appeal updated but email notification failed.",
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: `Ban appeal ${status} and notification sent.`,
+        });
+      }
+    } catch (error) {
+      console.error("Error invoking notification function:", error);
+      toast({
+        title: "Success",
+        description: `Ban appeal ${status} (email notification pending).`,
+      });
+    }
+
+    setSelectedAppeal(null);
+    setAppealAdminNotes("");
+    loadBanAppeals();
   };
 
   if (loading) {
@@ -484,6 +581,90 @@ const Admin = () => {
                           Reject
                         </Button>
                       </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Ban Appeals Section */}
+        <Card className="glass-effect border-border/20">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Ban className="w-5 h-5 text-primary" />
+              <CardTitle className="text-gradient">Ban Appeals</CardTitle>
+            </div>
+            <CardDescription>Review and manage ban appeals</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {banAppeals.map((appeal) => (
+              <Card key={appeal.id} className="border-border/20">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <CardTitle className="text-lg">{appeal.discord_username}</CardTitle>
+                      <CardDescription>
+                        Steam ID: {appeal.steam_id} | Submitted: {new Date(appeal.created_at).toLocaleDateString()}
+                      </CardDescription>
+                    </div>
+                    <Badge variant={
+                      appeal.status === "approved" ? "default" :
+                      appeal.status === "rejected" ? "destructive" :
+                      "secondary"
+                    }>
+                      {appeal.status}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold text-sm mb-1">Ban Reason</h4>
+                    <p className="text-sm text-muted-foreground">{appeal.ban_reason}</p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm mb-1">Appeal Reason</h4>
+                    <p className="text-sm text-muted-foreground">{appeal.appeal_reason}</p>
+                  </div>
+                  {appeal.additional_info && (
+                    <div>
+                      <h4 className="font-semibold text-sm mb-1">Additional Information</h4>
+                      <p className="text-sm text-muted-foreground">{appeal.additional_info}</p>
+                    </div>
+                  )}
+                  
+                  {appeal.status === "pending" && (
+                    <div className="space-y-3 pt-4 border-t">
+                      <Textarea
+                        placeholder="Admin notes (optional)"
+                        value={selectedAppeal?.id === appeal.id ? appealAdminNotes : ""}
+                        onChange={(e) => {
+                          setSelectedAppeal(appeal);
+                          setAppealAdminNotes(e.target.value);
+                        }}
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => updateBanAppealStatus(appeal.id, "approved")}
+                          className="bg-primary hover:bg-primary/90"
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          onClick={() => updateBanAppealStatus(appeal.id, "rejected")}
+                          variant="destructive"
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {appeal.admin_notes && (
+                    <div className="pt-4 border-t">
+                      <h4 className="font-semibold text-sm mb-1">Admin Notes</h4>
+                      <p className="text-sm text-muted-foreground">{appeal.admin_notes}</p>
                     </div>
                   )}
                 </CardContent>
