@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, FileText, Briefcase, Ban, Clock } from "lucide-react";
+import { Loader2, FileText, Briefcase, Ban, Clock, Radio } from "lucide-react";
 import { format } from "date-fns";
 import headerCommunity from "@/assets/header-community.jpg";
 
@@ -34,7 +35,9 @@ interface BanAppeal {
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
   const [whitelistApps, setWhitelistApps] = useState<WhitelistApplication[]>([]);
   const [jobApps, setJobApps] = useState<JobApplication[]>([]);
   const [banAppeals, setBanAppeals] = useState<BanAppeal[]>([]);
@@ -42,6 +45,128 @@ const Dashboard = () => {
   useEffect(() => {
     checkAuthAndLoadData();
   }, []);
+
+  useEffect(() => {
+    // Set up realtime subscriptions
+    const channel = supabase
+      .channel('dashboard-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'whitelist_applications'
+        },
+        (payload) => {
+          console.log('Whitelist application change:', payload);
+          handleWhitelistChange(payload);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'job_applications'
+        },
+        (payload) => {
+          console.log('Job application change:', payload);
+          handleJobChange(payload);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'ban_appeals'
+        },
+        (payload) => {
+          console.log('Ban appeal change:', payload);
+          handleBanAppealChange(payload);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const handleWhitelistChange = (payload: any) => {
+    // Only update if the change is for the current user
+    if (payload.new?.user_id !== userId && payload.old?.user_id !== userId) {
+      return;
+    }
+
+    if (payload.eventType === 'INSERT') {
+      setWhitelistApps(prev => [payload.new, ...prev]);
+    } else if (payload.eventType === 'UPDATE') {
+      setWhitelistApps(prev => 
+        prev.map(app => app.id === payload.new.id ? payload.new : app)
+      );
+      // Show notification for status changes
+      if (payload.old?.status !== payload.new?.status) {
+        toast({
+          title: "Whitelist Application Updated",
+          description: `Your whitelist application has been ${payload.new.status}.`,
+          variant: payload.new.status === "approved" ? "default" : "destructive",
+        });
+      }
+    } else if (payload.eventType === 'DELETE') {
+      setWhitelistApps(prev => prev.filter(app => app.id !== payload.old.id));
+    }
+  };
+
+  const handleJobChange = (payload: any) => {
+    // Only update if the change is for the current user
+    if (payload.new?.user_id !== userId && payload.old?.user_id !== userId) {
+      return;
+    }
+
+    if (payload.eventType === 'INSERT') {
+      setJobApps(prev => [payload.new, ...prev]);
+    } else if (payload.eventType === 'UPDATE') {
+      setJobApps(prev => 
+        prev.map(app => app.id === payload.new.id ? payload.new : app)
+      );
+      // Show notification for status changes
+      if (payload.old?.status !== payload.new?.status) {
+        toast({
+          title: "Job Application Updated",
+          description: `Your ${payload.new.job_type} application has been ${payload.new.status}.`,
+          variant: payload.new.status === "approved" ? "default" : "destructive",
+        });
+      }
+    } else if (payload.eventType === 'DELETE') {
+      setJobApps(prev => prev.filter(app => app.id !== payload.old.id));
+    }
+  };
+
+  const handleBanAppealChange = (payload: any) => {
+    // Only update if the change is for the current user
+    if (payload.new?.user_id !== userId && payload.old?.user_id !== userId) {
+      return;
+    }
+
+    if (payload.eventType === 'INSERT') {
+      setBanAppeals(prev => [payload.new, ...prev]);
+    } else if (payload.eventType === 'UPDATE') {
+      setBanAppeals(prev => 
+        prev.map(appeal => appeal.id === payload.new.id ? payload.new : appeal)
+      );
+      // Show notification for status changes
+      if (payload.old?.status !== payload.new?.status) {
+        toast({
+          title: "Ban Appeal Updated",
+          description: `Your ban appeal has been ${payload.new.status}.`,
+          variant: payload.new.status === "approved" ? "default" : "destructive",
+        });
+      }
+    } else if (payload.eventType === 'DELETE') {
+      setBanAppeals(prev => prev.filter(appeal => appeal.id !== payload.old.id));
+    }
+  };
 
   const checkAuthAndLoadData = async () => {
     try {
@@ -52,6 +177,7 @@ const Dashboard = () => {
         return;
       }
 
+      setUserId(user.id);
       await loadAllApplications(user.id);
     } catch (error) {
       console.error("Error loading dashboard:", error);
@@ -130,6 +256,12 @@ const Dashboard = () => {
       
       <main className="container mx-auto px-4 pb-16">
         <div className="max-w-6xl mx-auto space-y-8">
+          {/* Live Update Indicator */}
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <Radio className="w-4 h-4 text-primary animate-pulse" />
+            <span>Live updates active - changes will appear automatically</span>
+          </div>
+
           {/* Whitelist Applications */}
           <Card className="glass-effect border-border/20">
             <CardHeader>
