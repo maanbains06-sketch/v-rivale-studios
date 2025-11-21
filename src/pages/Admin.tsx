@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Shield, FileText, Image, Ban, Users as UsersIcon, Pencil, Trash2 } from "lucide-react";
+import { Loader2, Shield, FileText, Image, Ban, Users as UsersIcon, Pencil, Trash2, Briefcase } from "lucide-react";
 import { StaffManagementDialog } from "@/components/StaffManagementDialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import headerAdminBg from "@/assets/header-staff.jpg";
@@ -78,6 +78,23 @@ interface StaffMemberData {
   display_order: number;
 }
 
+interface JobApplication {
+  id: string;
+  user_id: string;
+  character_name: string;
+  age: number;
+  job_type: string;
+  phone_number: string;
+  previous_experience: string;
+  why_join: string;
+  character_background: string;
+  availability: string;
+  additional_info?: string;
+  status: string;
+  created_at: string;
+  admin_notes?: string;
+}
+
 const Admin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -89,6 +106,7 @@ const Admin = () => {
   const [submissions, setSubmissions] = useState<GallerySubmission[]>([]);
   const [banAppeals, setBanAppeals] = useState<BanAppeal[]>([]);
   const [staffMembers, setStaffMembers] = useState<StaffMemberData[]>([]);
+  const [jobApplications, setJobApplications] = useState<JobApplication[]>([]);
   
   const [selectedApp, setSelectedApp] = useState<WhitelistApplication | null>(null);
   const [adminNotes, setAdminNotes] = useState("");
@@ -98,6 +116,9 @@ const Admin = () => {
   
   const [selectedAppeal, setSelectedAppeal] = useState<BanAppeal | null>(null);
   const [appealAdminNotes, setAppealAdminNotes] = useState("");
+  
+  const [selectedJobApp, setSelectedJobApp] = useState<JobApplication | null>(null);
+  const [jobAdminNotes, setJobAdminNotes] = useState("");
   
   const [isStaffDialogOpen, setIsStaffDialogOpen] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<StaffMemberData | null>(null);
@@ -151,6 +172,7 @@ const Admin = () => {
       loadSubmissions(),
       loadBanAppeals(),
       loadStaffMembers(),
+      loadJobApplications(),
     ]);
   };
 
@@ -238,6 +260,20 @@ const Admin = () => {
     }
 
     setStaffMembers(data || []);
+  };
+
+  const loadJobApplications = async () => {
+    const { data, error } = await supabase
+      .from("job_applications")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error loading job applications:", error);
+      return;
+    }
+
+    setJobApplications(data || []);
   };
 
   const deleteStaffMember = async (id: string) => {
@@ -425,6 +461,41 @@ const Admin = () => {
     setSelectedAppeal(null);
     setAppealAdminNotes("");
     loadBanAppeals();
+  };
+
+  const updateJobApplicationStatus = async (
+    jobAppId: string,
+    status: "approved" | "rejected"
+  ) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    const { error } = await supabase
+      .from("job_applications")
+      .update({
+        status,
+        reviewed_by: user?.id,
+        reviewed_at: new Date().toISOString(),
+        admin_notes: jobAdminNotes || null,
+      })
+      .eq("id", jobAppId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update job application.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Success",
+      description: `Job application ${status} successfully.`,
+    });
+
+    setSelectedJobApp(null);
+    setJobAdminNotes("");
+    loadJobApplications();
   };
 
   if (loading) {
@@ -728,6 +799,98 @@ const Admin = () => {
                     <div className="pt-4 border-t">
                       <h4 className="font-semibold text-sm mb-1">Admin Notes</h4>
                       <p className="text-sm text-muted-foreground">{appeal.admin_notes}</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Job Applications Section */}
+        <Card className="glass-effect border-border/20">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Briefcase className="w-5 h-5 text-primary" />
+              <CardTitle className="text-gradient">Job Applications</CardTitle>
+            </div>
+            <CardDescription>Review and manage job applications</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {jobApplications.map((jobApp) => (
+              <Card key={jobApp.id} className="border-border/20">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <CardTitle className="text-lg">{jobApp.character_name}</CardTitle>
+                      <CardDescription>
+                        Position: {jobApp.job_type} | Age: {jobApp.age} | Phone: {jobApp.phone_number}
+                      </CardDescription>
+                    </div>
+                    <Badge variant={
+                      jobApp.status === "approved" ? "default" :
+                      jobApp.status === "rejected" ? "destructive" :
+                      "secondary"
+                    }>
+                      {jobApp.status}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold text-sm mb-1">Why Join</h4>
+                    <p className="text-sm text-muted-foreground">{jobApp.why_join}</p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm mb-1">Previous Experience</h4>
+                    <p className="text-sm text-muted-foreground">{jobApp.previous_experience}</p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm mb-1">Character Background</h4>
+                    <p className="text-sm text-muted-foreground">{jobApp.character_background}</p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm mb-1">Availability</h4>
+                    <p className="text-sm text-muted-foreground">{jobApp.availability}</p>
+                  </div>
+                  {jobApp.additional_info && (
+                    <div>
+                      <h4 className="font-semibold text-sm mb-1">Additional Info</h4>
+                      <p className="text-sm text-muted-foreground">{jobApp.additional_info}</p>
+                    </div>
+                  )}
+                  
+                  {jobApp.status === "pending" && (
+                    <div className="space-y-3 pt-4 border-t">
+                      <Textarea
+                        placeholder="Admin notes (optional)"
+                        value={selectedJobApp?.id === jobApp.id ? jobAdminNotes : ""}
+                        onChange={(e) => {
+                          setSelectedJobApp(jobApp);
+                          setJobAdminNotes(e.target.value);
+                        }}
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => updateJobApplicationStatus(jobApp.id, "approved")}
+                          className="bg-primary hover:bg-primary/90"
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          onClick={() => updateJobApplicationStatus(jobApp.id, "rejected")}
+                          variant="destructive"
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {jobApp.admin_notes && (
+                    <div className="pt-4 border-t">
+                      <h4 className="font-semibold text-sm mb-1">Admin Notes</h4>
+                      <p className="text-sm text-muted-foreground">{jobApp.admin_notes}</p>
                     </div>
                   )}
                 </CardContent>
