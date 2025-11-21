@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
+import CartDrawer from "./CartDrawer";
 
 const Navigation = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -150,6 +151,7 @@ const Navigation = () => {
           </div>
           
           <div className="flex items-center gap-2">
+            <CartDrawer />
             <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <SheetTrigger asChild>
                 <Button 
