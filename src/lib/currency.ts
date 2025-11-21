@@ -8,6 +8,8 @@ export const BASE_PRICES = {
   prio200: 200,
   whitelisted: 500,
   oneOfOne: 5000,
+  jewelrySolo: 300,
+  jewelryGang: 3000,
 };
 
 // Exchange rates relative to INR
