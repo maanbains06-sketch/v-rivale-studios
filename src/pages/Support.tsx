@@ -1,4 +1,4 @@
-import { MessageCircle, FileText, Users, HelpCircle, AlertCircle, CheckCircle } from "lucide-react";
+import { MessageCircle, FileText, Users, HelpCircle, AlertCircle, CheckCircle, Ban } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
 import headerSupport from "@/assets/header-support.jpg";
@@ -6,8 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Mail, Clock, Shield, Zap } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { useNavigate } from "react-router-dom";
 
 const Support = () => {
+  const navigate = useNavigate();
+  
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -19,19 +22,31 @@ const Support = () => {
       />
       
       <main className="container mx-auto px-4 pb-12">
-        <div className="flex flex-wrap gap-6 justify-center text-sm mb-16">
-          <div className="flex items-center gap-2">
-            <Clock className="w-5 h-5 text-primary" />
-            <span className="text-muted-foreground">24/7 Support Available</span>
+        <div className="flex flex-col items-center gap-6 mb-16">
+          <div className="flex flex-wrap gap-6 justify-center text-sm">
+            <div className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-primary" />
+              <span className="text-muted-foreground">24/7 Support Available</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Users className="w-5 h-5 text-primary" />
+              <span className="text-muted-foreground">Active Community</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Zap className="w-5 h-5 text-primary" />
+              <span className="text-muted-foreground">Fast Response Time</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-primary" />
-            <span className="text-muted-foreground">Active Community</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Zap className="w-5 h-5 text-primary" />
-            <span className="text-muted-foreground">Fast Response Time</span>
-          </div>
+          
+          <Button 
+            size="lg"
+            variant="outline"
+            className="border-primary text-primary hover:bg-primary/10"
+            onClick={() => navigate("/ban-appeal")}
+          >
+            <Ban className="w-5 h-5 mr-2" />
+            Submit Ban Appeal
+          </Button>
         </div>
 
         {/* Contact Methods */}

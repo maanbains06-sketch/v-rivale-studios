@@ -168,7 +168,7 @@ const Index = () => {
                 <ul className="space-y-1 text-sm text-muted-foreground">
                   <li><a href="/support" className="hover:text-primary transition-colors">Help Center</a></li>
                   <li><a href="/support" className="hover:text-primary transition-colors">Support Tickets</a></li>
-                  <li><a href="/support" className="hover:text-primary transition-colors">Ban Appeals</a></li>
+                  <li><a href="/ban-appeal" className="hover:text-primary transition-colors">Ban Appeals</a></li>
                   <li><a href="/support" className="hover:text-primary transition-colors">Contact</a></li>
                 </ul>
               </div>
