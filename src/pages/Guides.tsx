@@ -3,7 +3,7 @@ import PageHeader from "@/components/PageHeader";
 import headerGuides from "@/assets/header-guides.jpg";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserCircle2, BookOpen, Briefcase, AlertCircle } from "lucide-react";
+import { UserCircle2, BookOpen, AlertCircle } from "lucide-react";
 
 const Guides = () => {
   return (
@@ -20,7 +20,7 @@ const Guides = () => {
         <div className="container mx-auto px-4">
 
           <Tabs defaultValue="character" className="max-w-5xl mx-auto">
-            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 mb-8">
+            <TabsList className="grid w-full grid-cols-3 mb-8">
               <TabsTrigger value="character" className="gap-2">
                 <UserCircle2 className="w-4 h-4" />
                 Character
@@ -28,10 +28,6 @@ const Guides = () => {
               <TabsTrigger value="rules" className="gap-2">
                 <BookOpen className="w-4 h-4" />
                 Rules
-              </TabsTrigger>
-              <TabsTrigger value="jobs" className="gap-2">
-                <Briefcase className="w-4 h-4" />
-                Jobs
               </TabsTrigger>
               <TabsTrigger value="tips" className="gap-2">
                 <AlertCircle className="w-4 h-4" />
@@ -200,220 +196,6 @@ const Guides = () => {
                       <li>Rules are subject to change - check Discord announcements regularly</li>
                       <li>When in doubt, create a ticket and ask staff before proceeding</li>
                       <li>All punishments are at staff discretion based on severity and history</li>
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="jobs" className="space-y-6">
-              <Card className="glass-effect border-border/20">
-                <CardHeader>
-                  <CardTitle className="text-2xl text-primary">Job Guides & Career Paths</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6 text-foreground/90">
-                  <div>
-                    <h3 className="text-xl font-semibold mb-4 text-foreground">🚔 Law Enforcement & Emergency Services</h3>
-                    <div className="space-y-4">
-                      <div className="p-4 glass-effect rounded-lg border border-primary/20">
-                        <h4 className="font-semibold text-primary mb-2">Los Santos Police Department (LSPD)</h4>
-                        <p className="text-sm mb-3">Serve and protect the citizens of Los Santos. Uphold the law and maintain peace in the city.</p>
-                        <ul className="list-disc list-inside text-sm space-y-1 ml-4 mb-3">
-                          <li><strong>Requirements:</strong> 21+ years old, clean criminal record, pass academy training</li>
-                          <li><strong>Pay Range:</strong> $250-600/hour based on rank + bonuses for arrests</li>
-                          <li><strong>Ranks:</strong> Cadet → Officer → Senior Officer → Corporal → Sergeant → Lieutenant → Captain → Chief</li>
-                          <li><strong>Divisions:</strong> Patrol, SWAT, Traffic Enforcement, K-9, Detective Bureau</li>
-                        </ul>
-                        <p className="text-xs text-muted-foreground italic">Apply at Mission Row Police Station. Interview and background check required.</p>
-                      </div>
-
-                      <div className="p-4 glass-effect rounded-lg border border-primary/20">
-                        <h4 className="font-semibold text-primary mb-2">Emergency Medical Services (EMS)</h4>
-                        <p className="text-sm mb-3">Save lives and provide critical medical care to injured citizens across Los Santos.</p>
-                        <ul className="list-disc list-inside text-sm space-y-1 ml-4 mb-3">
-                          <li><strong>Requirements:</strong> Medical certification, good driving record, calm under pressure</li>
-                          <li><strong>Pay Range:</strong> $200-500/hour + bonuses per successful revival</li>
-                          <li><strong>Ranks:</strong> EMT Trainee → EMT → Paramedic → Senior Paramedic → Doctor → Chief of Medicine</li>
-                          <li><strong>Specializations:</strong> Trauma Surgery, Psychiatry, Emergency Response, Air Ambulance</li>
-                        </ul>
-                        <p className="text-xs text-muted-foreground italic">Apply at Pillbox Medical Center. Requires medical RP knowledge and training.</p>
-                      </div>
-
-                      <div className="p-4 glass-effect rounded-lg border border-primary/20">
-                        <h4 className="font-semibold text-primary mb-2">Department of Justice (DOJ)</h4>
-                        <p className="text-sm mb-3">Lawyers, judges, and legal professionals ensuring justice is served.</p>
-                        <ul className="list-disc list-inside text-sm space-y-1 ml-4 mb-3">
-                          <li><strong>Positions:</strong> Public Defender, District Attorney, Judge, Court Clerk</li>
-                          <li><strong>Pay Range:</strong> $300-800/hour depending on position and case complexity</li>
-                          <li><strong>Requirements:</strong> Excellent RP skills, law knowledge, mature and professional</li>
-                        </ul>
-                        <p className="text-xs text-muted-foreground italic">Highly selective. Contact DOJ leadership for application process.</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-xl font-semibold mb-4 text-foreground">💼 Civilian & Service Jobs</h3>
-                    <div className="space-y-4">
-                      <div className="p-4 glass-effect rounded-lg">
-                        <h4 className="font-semibold text-primary mb-2">Mechanic / Auto Shop</h4>
-                        <p className="text-sm mb-3">Repair, customize, and maintain vehicles. Run your own shop or work for established businesses.</p>
-                        <ul className="list-disc list-inside text-sm space-y-1 ml-4 mb-3">
-                          <li><strong>Pay:</strong> $150-400/hour + customer tips and custom job payments</li>
-                          <li><strong>Services:</strong> Repairs, custom paint jobs, performance upgrades, body kits</li>
-                          <li><strong>Progression:</strong> Apprentice → Mechanic → Master Mechanic → Shop Owner</li>
-                          <li><strong>Locations:</strong> Hayes Auto, Benny&apos;s Original Motor Works, Los Santos Customs</li>
-                        </ul>
-                      </div>
-
-                      <div className="p-4 glass-effect rounded-lg">
-                        <h4 className="font-semibold text-primary mb-2">Real Estate Agent</h4>
-                        <p className="text-sm mb-3">Help players buy, sell, and rent properties. Earn commission on every deal.</p>
-                        <ul className="list-disc list-inside text-sm space-y-1 ml-4 mb-3">
-                          <li><strong>Pay:</strong> Commission-based (5-15% of property value per sale)</li>
-                          <li><strong>Skills Needed:</strong> Salesmanship, market knowledge, negotiation</li>
-                          <li><strong>Properties:</strong> Houses, apartments, businesses, warehouses, garages</li>
-                        </ul>
-                      </div>
-
-                      <div className="p-4 glass-effect rounded-lg">
-                        <h4 className="font-semibold text-primary mb-2">Taxi / Uber Driver</h4>
-                        <p className="text-sm mb-3">Transport passengers safely around the city. Great for meeting new people.</p>
-                        <ul className="list-disc list-inside text-sm space-y-1 ml-4 mb-3">
-                          <li><strong>Pay:</strong> $100-250/hour + fares and tips from passengers</li>
-                          <li><strong>Requirements:</strong> Clean driving record, friendly demeanor, city knowledge</li>
-                          <li><strong>Benefits:</strong> Flexible hours, meet diverse characters, explore the city</li>
-                        </ul>
-                      </div>
-
-                      <div className="p-4 glass-effect rounded-lg">
-                        <h4 className="font-semibold text-primary mb-2">Restaurant / Bar Owner</h4>
-                        <p className="text-sm mb-3">Open and manage restaurants, bars, nightclubs. Create unique dining experiences.</p>
-                        <ul className="list-disc list-inside text-sm space-y-1 ml-4 mb-3">
-                          <li><strong>Investment:</strong> $50,000-500,000 depending on location and size</li>
-                          <li><strong>Income:</strong> Revenue from sales, events, catering services</li>
-                          <li><strong>Staff:</strong> Hire chefs, bartenders, servers, security, DJs</li>
-                          <li><strong>Popular Spots:</strong> Vanilla Unicorn, Tequi-la-la, Bahama Mamas</li>
-                        </ul>
-                      </div>
-
-                      <div className="p-4 glass-effect rounded-lg">
-                        <h4 className="font-semibold text-primary mb-2">News Reporter / Journalist</h4>
-                        <p className="text-sm mb-3">Report on city events, conduct interviews, create engaging content for Weazel News.</p>
-                        <ul className="list-disc list-inside text-sm space-y-1 ml-4 mb-3">
-                          <li><strong>Pay:</strong> $150-350/hour + bonuses for exclusive stories</li>
-                          <li><strong>Equipment:</strong> News van, camera, microphone provided</li>
-                          <li><strong>Coverage:</strong> Crime scenes, court cases, events, interviews, investigations</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-xl font-semibold mb-4 text-foreground">🏭 Blue Collar & Resource Jobs</h3>
-                    <div className="space-y-4">
-                      <div className="p-4 glass-effect rounded-lg">
-                        <h4 className="font-semibold text-primary mb-2">Mining & Ore Processing</h4>
-                        <p className="text-sm mb-3">Extract valuable resources from mines. Process and sell materials.</p>
-                        <ul className="list-disc list-inside text-sm space-y-1 ml-4">
-                          <li><strong>Pay:</strong> $120-280/hour based on materials gathered</li>
-                          <li><strong>Resources:</strong> Iron, copper, gold, diamonds, coal</li>
-                          <li><strong>Location:</strong> Various mine sites around Blaine County</li>
-                        </ul>
-                      </div>
-
-                      <div className="p-4 glass-effect rounded-lg">
-                        <h4 className="font-semibold text-primary mb-2">Fishing & Hunting</h4>
-                        <p className="text-sm mb-3">Catch fish or hunt animals. Sell to restaurants or markets.</p>
-                        <ul className="list-disc list-inside text-sm space-y-1 ml-4">
-                          <li><strong>Pay:</strong> $100-300/hour depending on catch quality and rarity</li>
-                          <li><strong>Equipment:</strong> Fishing rod, hunting rifle, licenses required</li>
-                          <li><strong>Locations:</strong> Pacific Ocean, Alamo Sea, forests and mountains</li>
-                        </ul>
-                      </div>
-
-                      <div className="p-4 glass-effect rounded-lg">
-                        <h4 className="font-semibold text-primary mb-2">Delivery Driver / Trucker</h4>
-                        <p className="text-sm mb-3">Transport goods across the state. Long hauls pay more.</p>
-                        <ul className="list-disc list-inside text-sm space-y-1 ml-4">
-                          <li><strong>Pay:</strong> $150-400/delivery based on distance and cargo value</li>
-                          <li><strong>Routes:</strong> Local deliveries, state-wide cargo, import/export</li>
-                          <li><strong>Requirements:</strong> Commercial driver license, reliable and timely</li>
-                        </ul>
-                      </div>
-
-                      <div className="p-4 glass-effect rounded-lg">
-                        <h4 className="font-semibold text-primary mb-2">Garbage Collector / Sanitation</h4>
-                        <p className="text-sm mb-3">Keep Los Santos clean. Honest work with steady pay.</p>
-                        <ul className="list-disc list-inside text-sm space-y-1 ml-4">
-                          <li><strong>Pay:</strong> $100-200/hour with route bonuses</li>
-                          <li><strong>Routes:</strong> Residential, commercial, industrial districts</li>
-                          <li><strong>Benefits:</strong> Low stress, flexible schedule, good starter job</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-xl font-semibold mb-4 text-foreground">⚠️ Criminal Organizations & Activities</h3>
-                    <p className="text-sm text-destructive mb-4">
-                      <strong>Warning:</strong> Criminal activities are high-risk. Prison time, fines, and death are real consequences. Quality RP required.
-                    </p>
-                    <div className="space-y-4">
-                      <div className="p-4 glass-effect rounded-lg border border-destructive/30">
-                        <h4 className="font-semibold text-destructive mb-2">Gang Member</h4>
-                        <p className="text-sm mb-3">Join established gangs like Ballas, Vagos, or Families. Control territory and build your reputation.</p>
-                        <ul className="list-disc list-inside text-sm space-y-1 ml-4 mb-3">
-                          <li><strong>Income:</strong> Varies - drug sales, robberies, protection money</li>
-                          <li><strong>Requirements:</strong> Gang initiation, prove loyalty, follow gang codes</li>
-                          <li><strong>Risks:</strong> Rival gangs, police raids, prison sentences, death</li>
-                          <li><strong>Activities:</strong> Territory wars, drug trafficking, vehicle theft, robberies</li>
-                        </ul>
-                      </div>
-
-                      <div className="p-4 glass-effect rounded-lg border border-destructive/30">
-                        <h4 className="font-semibold text-destructive mb-2">Drug Manufacturing & Distribution</h4>
-                        <p className="text-sm mb-3">Produce and sell illegal substances. Requires connections and territory.</p>
-                        <ul className="list-disc list-inside text-sm space-y-1 ml-4 mb-3">
-                          <li><strong>Income:</strong> $500-2,000+/hour (high risk, high reward)</li>
-                          <li><strong>Process:</strong> Gather materials → Cook/grow → Package → Distribute</li>
-                          <li><strong>Locations:</strong> Hidden labs, farmhouses, warehouses</li>
-                          <li><strong>Risks:</strong> Raids, robberies, rival dealers, lengthy prison sentences</li>
-                        </ul>
-                      </div>
-
-                      <div className="p-4 glass-effect rounded-lg border border-destructive/30">
-                        <h4 className="font-semibold text-destructive mb-2">Heists & Robberies</h4>
-                        <p className="text-sm mb-3">Plan and execute major heists. Requires crew coordination and planning.</p>
-                        <ul className="list-disc list-inside text-sm space-y-1 ml-4 mb-3">
-                          <li><strong>Targets:</strong> Banks, jewelry stores, armored trucks, Fleeca branches, Pacific Standard</li>
-                          <li><strong>Payout:</strong> $10,000-500,000 depending on target and success</li>
-                          <li><strong>Requirements:</strong> 4+ LEO online, planning RP, proper gear</li>
-                          <li><strong>Roles:</strong> Driver, hacker, gunman, lookout, negotiator</li>
-                        </ul>
-                      </div>
-
-                      <div className="p-4 glass-effect rounded-lg border border-destructive/30">
-                        <h4 className="font-semibold text-destructive mb-2">Arms Dealer / Gun Running</h4>
-                        <p className="text-sm mb-3">Source and sell illegal firearms. Supply gangs and criminals.</p>
-                        <ul className="list-disc list-inside text-sm space-y-1 ml-4 mb-3">
-                          <li><strong>Income:</strong> $300-1,000+ per weapon sold</li>
-                          <li><strong>Operations:</strong> Import weapons, store in warehouses, sell to buyers</li>
-                          <li><strong>Risks:</strong> ATF investigations, robberies, informants, federal charges</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-4 border border-primary/30 rounded-lg bg-primary/5 mt-6">
-                    <h4 className="font-semibold text-primary mb-2">💡 Job Tips</h4>
-                    <ul className="list-disc list-inside space-y-1 text-sm">
-                      <li><strong>Start Legal:</strong> Build wealth and connections through legal jobs first</li>
-                      <li><strong>Network:</strong> Your success often depends on relationships with other players</li>
-                      <li><strong>Invest Wisely:</strong> Save money to buy businesses, properties, and equipment</li>
-                      <li><strong>Stay Consistent:</strong> Regular activity in your job builds reputation and trust</li>
-                      <li><strong>Create RP:</strong> Don&apos;t just grind - create interesting scenarios for others</li>
-                      <li><strong>Balance Risk:</strong> Criminal jobs pay more but come with real consequences</li>
                     </ul>
                   </div>
                 </CardContent>
