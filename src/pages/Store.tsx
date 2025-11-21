@@ -5,10 +5,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Check, Crown, Sparkles, Star } from "lucide-react";
 import headerStore from "@/assets/header-store.jpg";
+import { useState, useEffect } from "react";
+import { BASE_PRICES, detectUserCurrency, getDisplayPrice } from "@/lib/currency";
 
 const packages = [
   {
     name: "Bronze",
+    price: BASE_PRICES.bronze,
     icon: Star,
     gradient: "from-amber-600/20 to-orange-600/20",
     borderColor: "border-amber-600/30",
@@ -21,6 +24,7 @@ const packages = [
   },
   {
     name: "Silver",
+    price: BASE_PRICES.silver,
     icon: Star,
     gradient: "from-slate-400/20 to-slate-600/20",
     borderColor: "border-slate-400/30",
@@ -34,6 +38,7 @@ const packages = [
   },
   {
     name: "Gold",
+    price: BASE_PRICES.gold,
     icon: Crown,
     gradient: "from-yellow-400/20 to-yellow-600/20",
     borderColor: "border-yellow-500/30",
@@ -48,6 +53,7 @@ const packages = [
   },
   {
     name: "Highlife",
+    price: BASE_PRICES.highlife,
     icon: Crown,
     gradient: "from-purple-500/20 to-pink-600/20",
     borderColor: "border-purple-500/30",
@@ -65,6 +71,7 @@ const packages = [
   },
   {
     name: "Skylife",
+    price: BASE_PRICES.skylife,
     icon: Sparkles,
     gradient: "from-cyan-400/20 via-blue-500/20 to-purple-600/20",
     borderColor: "border-cyan-400/30",
@@ -87,6 +94,13 @@ const packages = [
 ];
 
 const Store = () => {
+  const [currency, setCurrency] = useState<string>('INR');
+
+  useEffect(() => {
+    const detectedCurrency = detectUserCurrency();
+    setCurrency(detectedCurrency);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -130,7 +144,9 @@ const Store = () => {
                       <pkg.icon className={`w-6 h-6 ${pkg.iconColor}`} />
                     </div>
                     <CardTitle className="text-2xl">{pkg.name}</CardTitle>
-                    <CardDescription>Tier Package</CardDescription>
+                    <CardDescription className="text-lg font-semibold text-primary">
+                      {getDisplayPrice(pkg.price, currency)}
+                    </CardDescription>
                   </CardHeader>
                   
                   <CardContent>
@@ -166,7 +182,9 @@ const Store = () => {
                     <Star className="w-6 h-6 text-primary" />
                   </div>
                   <CardTitle className="text-2xl">Prio 200</CardTitle>
-                  <CardDescription>Essential Priority Access</CardDescription>
+                  <CardDescription className="text-lg font-semibold text-primary">
+                    {getDisplayPrice(BASE_PRICES.prio200, currency)}
+                  </CardDescription>
                 </CardHeader>
                 
                 <CardContent>
@@ -198,7 +216,9 @@ const Store = () => {
                     <Sparkles className="w-6 h-6 text-secondary" />
                   </div>
                   <CardTitle className="text-2xl">Whitelisted</CardTitle>
-                  <CardDescription className="text-lg font-semibold text-primary">$500 USD / $6</CardDescription>
+                  <CardDescription className="text-lg font-semibold text-primary">
+                    {getDisplayPrice(BASE_PRICES.whitelisted, currency)}
+                  </CardDescription>
                 </CardHeader>
                 
                 <CardContent>
