@@ -176,6 +176,43 @@ const Index = () => {
                 View Gallery →
               </Button>
             </div>
+
+            {/* Social Media Links */}
+            <div className="glass-effect rounded-2xl p-8 text-center animate-fade-in" style={{ animationDelay: '300ms' }}>
+              <h3 className="text-xl font-bold mb-4 text-foreground">Follow Us</h3>
+              <div className="flex justify-center gap-4">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="h-12 w-12 p-0 border-primary/50 hover:bg-primary/10 hover:border-primary"
+                  asChild
+                >
+                  <a href="https://youtube.com" target="_blank" rel="noopener noreferrer">
+                    <Youtube className="h-5 w-5 text-primary" />
+                  </a>
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="h-12 w-12 p-0 border-primary/50 hover:bg-primary/10 hover:border-primary"
+                  asChild
+                >
+                  <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+                    <Instagram className="h-5 w-5 text-primary" />
+                  </a>
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="h-12 w-12 p-0 border-primary/50 hover:bg-primary/10 hover:border-primary"
+                  asChild
+                >
+                  <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
+                    <Twitter className="h-5 w-5 text-primary" />
+                  </a>
+                </Button>
+              </div>
+            </div>
           </div>
 
         </div>
