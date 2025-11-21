@@ -1,5 +1,6 @@
 import { Users, Zap, CheckCircle, Play, Instagram, Facebook, Twitter, Youtube, MessageCircle, Image, Calendar, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import AnimatedLogo from "@/components/AnimatedLogo";
@@ -180,48 +181,81 @@ const Index = () => {
             {/* Social Media Links */}
             <div className="glass-effect rounded-2xl p-8 text-center animate-fade-in" style={{ animationDelay: '300ms' }}>
               <h3 className="text-xl font-bold mb-4 text-foreground">Follow Us</h3>
-              <div className="flex justify-center gap-4">
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="h-12 w-12 p-0 border-primary/50 hover:bg-primary/10 hover:border-primary"
-                  asChild
-                >
-                  <a href="https://youtube.com" target="_blank" rel="noopener noreferrer">
-                    <Youtube className="h-5 w-5 text-primary" />
-                  </a>
-                </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="h-12 w-12 p-0 border-primary/50 hover:bg-primary/10 hover:border-primary"
-                  asChild
-                >
-                  <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
-                    <Instagram className="h-5 w-5 text-primary" />
-                  </a>
-                </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="h-12 w-12 p-0 border-primary/50 hover:bg-primary/10 hover:border-primary"
-                  asChild
-                >
-                  <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
-                    <Twitter className="h-5 w-5 text-primary" />
-                  </a>
-                </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="h-12 w-12 p-0 border-primary/50 hover:bg-primary/10 hover:border-primary"
-                  asChild
-                >
-                  <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
-                    <Facebook className="h-5 w-5 text-primary" />
-                  </a>
-                </Button>
-              </div>
+              <TooltipProvider>
+                <div className="flex justify-center gap-4">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        size="lg" 
+                        variant="outline" 
+                        className="h-12 w-12 p-0 border-primary/50 hover:bg-primary/10 hover:border-primary hover-scale"
+                        asChild
+                      >
+                        <a href="https://youtube.com" target="_blank" rel="noopener noreferrer">
+                          <Youtube className="h-5 w-5 text-primary" />
+                        </a>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>YouTube</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        size="lg" 
+                        variant="outline" 
+                        className="h-12 w-12 p-0 border-primary/50 hover:bg-primary/10 hover:border-primary hover-scale"
+                        asChild
+                      >
+                        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+                          <Instagram className="h-5 w-5 text-primary" />
+                        </a>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Instagram</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        size="lg" 
+                        variant="outline" 
+                        className="h-12 w-12 p-0 border-primary/50 hover:bg-primary/10 hover:border-primary hover-scale"
+                        asChild
+                      >
+                        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
+                          <Twitter className="h-5 w-5 text-primary" />
+                        </a>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Twitter</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        size="lg" 
+                        variant="outline" 
+                        className="h-12 w-12 p-0 border-primary/50 hover:bg-primary/10 hover:border-primary hover-scale"
+                        asChild
+                      >
+                        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+                          <Facebook className="h-5 w-5 text-primary" />
+                        </a>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Facebook</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </TooltipProvider>
             </div>
           </div>
 
