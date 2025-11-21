@@ -253,6 +253,9 @@ const Store = () => {
                   <Sparkles className="w-6 h-6 text-secondary" />
                   One of One Vehicle Package
                 </CardTitle>
+                <CardDescription className="text-lg font-semibold text-primary mt-2">
+                  {getDisplayPrice(BASE_PRICES.oneOfOne, currency)}
+                </CardDescription>
                 <CardDescription>
                   Select a unique vehicle of your choice with this exclusive package
                 </CardDescription>
