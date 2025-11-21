@@ -7,6 +7,7 @@ export const BASE_PRICES = {
   skylife: 999,
   prio200: 200,
   whitelisted: 500,
+  oneOfOne: 5000,
 };
 
 // Exchange rates relative to INR
