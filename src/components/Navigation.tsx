@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail, Ban } from "lucide-react";
+import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail, Ban, Briefcase } from "lucide-react";
 import { Button } from "./ui/button";
 import AnimatedLogoIcon from "./AnimatedLogoIcon";
 import { supabase } from "@/integrations/supabase/client";
@@ -201,6 +201,17 @@ const Navigation = () => {
                       >
                         <Ban className="w-4 h-4 mr-2" />
                         Ban Appeals
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        className="justify-start glass-effect"
+                        onClick={() => {
+                          navigate("/admin");
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        <Briefcase className="w-4 h-4 mr-2" />
+                        Job Applications
                       </Button>
                     </>
                   )}
