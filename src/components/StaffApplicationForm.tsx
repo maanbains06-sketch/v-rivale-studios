@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -9,7 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const staffApplicationSchema = z.object({
   fullName: z.string()
@@ -63,7 +65,56 @@ interface StaffApplicationFormProps {
 
 export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCheckingEligibility, setIsCheckingEligibility] = useState(true);
+  const [isEligible, setIsEligible] = useState(false);
+  const [eligibilityMessage, setEligibilityMessage] = useState("");
   const { toast } = useToast();
+
+  useEffect(() => {
+    async function checkWhitelistStatus() {
+      if (!open) return;
+      
+      setIsCheckingEligibility(true);
+      
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          setIsEligible(false);
+          setEligibilityMessage("You must be logged in to apply for staff positions.");
+          setIsCheckingEligibility(false);
+          return;
+        }
+
+        const { data: whitelistApp, error } = await supabase
+          .from("whitelist_applications")
+          .select("status")
+          .eq("user_id", user.id)
+          .eq("status", "approved")
+          .maybeSingle();
+
+        if (error) {
+          console.error("Error checking whitelist status:", error);
+          setIsEligible(false);
+          setEligibilityMessage("Unable to verify your whitelist status. Please try again later.");
+        } else if (!whitelistApp) {
+          setIsEligible(false);
+          setEligibilityMessage("You must have an approved whitelist application before applying for staff positions. Please complete the whitelist application first.");
+        } else {
+          setIsEligible(true);
+          setEligibilityMessage("");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        setIsEligible(false);
+        setEligibilityMessage("An error occurred. Please try again later.");
+      } finally {
+        setIsCheckingEligibility(false);
+      }
+    }
+
+    checkWhitelistStatus();
+  }, [open]);
 
   const form = useForm<StaffApplicationFormData>({
     resolver: zodResolver(staffApplicationSchema),
@@ -116,8 +167,22 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
           </DialogDescription>
         </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {isCheckingEligibility ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-3 text-muted-foreground">Checking eligibility...</span>
+          </div>
+        ) : !isEligible ? (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Not Eligible</AlertTitle>
+            <AlertDescription>
+              {eligibilityMessage}
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -321,8 +386,9 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
                 )}
               </Button>
             </div>
-          </form>
-        </Form>
+            </form>
+          </Form>
+        )}
       </DialogContent>
     </Dialog>
   );
