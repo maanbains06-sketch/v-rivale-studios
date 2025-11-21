@@ -3,10 +3,13 @@ import PageHeader from "@/components/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Check, Crown, Sparkles, Star } from "lucide-react";
+import { Check, Crown, Sparkles, Star, ShoppingCart } from "lucide-react";
 import headerStore from "@/assets/header-store.jpg";
 import { useState, useEffect } from "react";
 import { BASE_PRICES, detectUserCurrency, getDisplayPrice } from "@/lib/currency";
+import { useCart } from "@/contexts/CartContext";
+import { useToast } from "@/hooks/use-toast";
+import CartDrawer from "@/components/CartDrawer";
 
 const packages = [
   {
@@ -95,11 +98,26 @@ const packages = [
 
 const Store = () => {
   const [currency, setCurrency] = useState<string>('INR');
+  const { addItem } = useCart();
+  const { toast } = useToast();
 
   useEffect(() => {
     const detectedCurrency = detectUserCurrency();
     setCurrency(detectedCurrency);
   }, []);
+
+  const handleAddToCart = (packageName: string, price: number, icon: string) => {
+    addItem({
+      id: packageName.toLowerCase(),
+      name: packageName,
+      price: price,
+      icon: icon
+    });
+    toast({
+      title: "Added to basket",
+      description: `${packageName} package has been added to your basket.`,
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -110,6 +128,10 @@ const Store = () => {
         description="Exclusive server packages and priority access"
         backgroundImage={headerStore}
       />
+
+      <div className="fixed top-24 right-6 z-50">
+        <CartDrawer />
+      </div>
       
       <main className="pb-16">
         <div className="container mx-auto px-4">
@@ -159,8 +181,12 @@ const Store = () => {
                       ))}
                     </ul>
                     
-                    <Button className="w-full mt-6" variant="outline">
-                      Select Package
+                    <Button 
+                      className="w-full mt-6" 
+                      onClick={() => handleAddToCart(pkg.name, pkg.price, pkg.name.toLowerCase())}
+                    >
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      Add to Basket
                     </Button>
                   </CardContent>
                 </Card>
@@ -199,8 +225,12 @@ const Store = () => {
                     </li>
                   </ul>
                   
-                  <Button className="w-full" variant="outline">
-                    Get Priority
+                  <Button 
+                    className="w-full"
+                    onClick={() => handleAddToCart('Prio 200', BASE_PRICES.prio200, 'prio200')}
+                  >
+                    <ShoppingCart className="w-4 h-4 mr-2" />
+                    Add to Basket
                   </Button>
                 </CardContent>
               </Card>
@@ -237,8 +267,12 @@ const Store = () => {
                     </li>
                   </ul>
                   
-                  <Button className="w-full" variant="default">
-                    Get Whitelisted
+                  <Button 
+                    className="w-full"
+                    onClick={() => handleAddToCart('Whitelisted', BASE_PRICES.whitelisted, 'whitelisted')}
+                  >
+                    <ShoppingCart className="w-4 h-4 mr-2" />
+                    Add to Basket
                   </Button>
                 </CardContent>
               </Card>
