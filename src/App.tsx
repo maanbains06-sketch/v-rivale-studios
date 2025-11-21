@@ -23,6 +23,7 @@ import Confirmation from "./pages/Confirmation";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import AdminStaffApplications from "./pages/AdminStaffApplications";
+import AdminReferrals from "./pages/AdminReferrals";
 import JobApplication from "./pages/JobApplication";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
@@ -53,6 +54,7 @@ const AppRoutes = () => {
       <Route path="/auth" element={<Auth />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="/admin-staff-applications" element={<AdminStaffApplications />} />
+      <Route path="/admin-referrals" element={<AdminReferrals />} />
       <Route path="/job-application" element={<JobApplication />} />
       <Route path="/dashboard" element={<Dashboard />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
