@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.send-ban-appeal-notification]
 verify_jwt = false
+
+[functions.fetch-discord-user]
+verify_jwt = false

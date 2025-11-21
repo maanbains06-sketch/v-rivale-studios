@@ -10,7 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Shield, FileText, Image, Ban } from "lucide-react";
+import { Loader2, Shield, FileText, Image, Ban, Users as UsersIcon, Pencil, Trash2 } from "lucide-react";
+import { StaffManagementDialog } from "@/components/StaffManagementDialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import headerAdminBg from "@/assets/header-staff.jpg";
 
 interface UserRole {
@@ -59,6 +61,23 @@ interface GallerySubmission {
   rejection_reason?: string;
 }
 
+interface StaffMemberData {
+  id: string;
+  name: string;
+  discord_id: string;
+  discord_username?: string;
+  discord_avatar?: string;
+  email?: string;
+  steam_id?: string;
+  role: string;
+  role_type: string;
+  department: string;
+  bio?: string;
+  responsibilities: string[];
+  is_active: boolean;
+  display_order: number;
+}
+
 const Admin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -69,6 +88,7 @@ const Admin = () => {
   const [applications, setApplications] = useState<WhitelistApplication[]>([]);
   const [submissions, setSubmissions] = useState<GallerySubmission[]>([]);
   const [banAppeals, setBanAppeals] = useState<BanAppeal[]>([]);
+  const [staffMembers, setStaffMembers] = useState<StaffMemberData[]>([]);
   
   const [selectedApp, setSelectedApp] = useState<WhitelistApplication | null>(null);
   const [adminNotes, setAdminNotes] = useState("");
@@ -78,6 +98,10 @@ const Admin = () => {
   
   const [selectedAppeal, setSelectedAppeal] = useState<BanAppeal | null>(null);
   const [appealAdminNotes, setAppealAdminNotes] = useState("");
+  
+  const [isStaffDialogOpen, setIsStaffDialogOpen] = useState(false);
+  const [selectedStaff, setSelectedStaff] = useState<StaffMemberData | null>(null);
+  const [staffToDelete, setStaffToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     checkAdminAccess();
@@ -126,6 +150,7 @@ const Admin = () => {
       loadApplications(),
       loadSubmissions(),
       loadBanAppeals(),
+      loadStaffMembers(),
     ]);
   };
 
@@ -191,7 +216,7 @@ const Admin = () => {
     const { data, error } = await supabase
       .from("ban_appeals")
       .select("*")
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false});
 
     if (error) {
       console.error("Error loading ban appeals:", error);
@@ -199,6 +224,44 @@ const Admin = () => {
     }
 
     setBanAppeals(data || []);
+  };
+
+  const loadStaffMembers = async () => {
+    const { data, error } = await supabase
+      .from("staff_members")
+      .select("*")
+      .order("display_order", { ascending: true });
+
+    if (error) {
+      console.error("Error loading staff members:", error);
+      return;
+    }
+
+    setStaffMembers(data || []);
+  };
+
+  const deleteStaffMember = async (id: string) => {
+    const { error } = await supabase
+      .from("staff_members")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete staff member.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Success",
+      description: "Staff member deleted successfully.",
+    });
+
+    setStaffToDelete(null);
+    loadStaffMembers();
   };
 
   const updateUserRole = async (userId: string, newRole: "admin" | "moderator" | "user") => {
@@ -672,7 +735,114 @@ const Admin = () => {
             ))}
           </CardContent>
         </Card>
+
+        {/* Staff Management Section */}
+        <Card className="glass-effect border-border/20">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <UsersIcon className="w-5 h-5 text-primary" />
+                <CardTitle className="text-gradient">Staff Management</CardTitle>
+              </div>
+              <Button onClick={() => {
+                setSelectedStaff(null);
+                setIsStaffDialogOpen(true);
+              }}>
+                Add Staff Member
+              </Button>
+            </div>
+            <CardDescription>Manage staff members and their information</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Department</TableHead>
+                  <TableHead>Discord</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {staffMembers.map((staff) => (
+                  <TableRow key={staff.id}>
+                    <TableCell className="flex items-center gap-2">
+                      {staff.discord_avatar && (
+                        <img 
+                          src={staff.discord_avatar} 
+                          alt={staff.name}
+                          className="w-8 h-8 rounded-full"
+                        />
+                      )}
+                      <span className="font-medium">{staff.name}</span>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{staff.role}</div>
+                        <div className="text-xs text-muted-foreground capitalize">{staff.role_type}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="capitalize">{staff.department.replace("_", " ")}</TableCell>
+                    <TableCell>{staff.discord_username || staff.discord_id}</TableCell>
+                    <TableCell>
+                      <Badge variant={staff.is_active ? "default" : "secondary"}>
+                        {staff.is_active ? "Active" : "Inactive"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedStaff(staff);
+                            setIsStaffDialogOpen(true);
+                          }}
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => setStaffToDelete(staff.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       </div>
+
+      <StaffManagementDialog
+        open={isStaffDialogOpen}
+        onOpenChange={setIsStaffDialogOpen}
+        staffMember={selectedStaff}
+        onSuccess={loadStaffMembers}
+      />
+
+      <AlertDialog open={!!staffToDelete} onOpenChange={() => setStaffToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this staff member. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => staffToDelete && deleteStaffMember(staffToDelete)}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
