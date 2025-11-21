@@ -260,6 +260,42 @@ export type Database = {
         }
         Relationships: []
       }
+      testimonials: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          is_featured: boolean
+          player_name: string
+          player_role: string | null
+          rating: number
+          testimonial: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          is_featured?: boolean
+          player_name: string
+          player_role?: string | null
+          rating: number
+          testimonial: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          is_featured?: boolean
+          player_name?: string
+          player_role?: string | null
+          rating?: number
+          testimonial?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

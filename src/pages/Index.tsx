@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import AnimatedLogo from "@/components/AnimatedLogo";
+import TestimonialsCarousel from "@/components/TestimonialsCarousel";
 import heroBg from "@/assets/hero-home-realistic.jpg";
 
 const stats = [
@@ -261,6 +262,22 @@ const Index = () => {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-20 relative">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12 animate-fade-in">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gradient">
+              What Our Players Say
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Don't just take our word for it - hear from our amazing community members
+            </p>
+          </div>
+          
+          <TestimonialsCarousel />
         </div>
       </section>
       
