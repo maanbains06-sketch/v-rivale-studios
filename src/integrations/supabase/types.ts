@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      ban_appeals: {
+        Row: {
+          additional_info: string | null
+          admin_notes: string | null
+          appeal_reason: string
+          ban_reason: string
+          created_at: string
+          discord_username: string
+          id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          steam_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          additional_info?: string | null
+          admin_notes?: string | null
+          appeal_reason: string
+          ban_reason: string
+          created_at?: string
+          discord_username: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          steam_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          additional_info?: string | null
+          admin_notes?: string | null
+          appeal_reason?: string
+          ban_reason?: string
+          created_at?: string
+          discord_username?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          steam_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       gallery_submissions: {
         Row: {
           approved_at: string | null

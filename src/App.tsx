@@ -11,6 +11,7 @@ import Community from "./pages/Community";
 import Whitelist from "./pages/Whitelist";
 import Staff from "./pages/Staff";
 import StaffProfile from "./pages/StaffProfile";
+import BanAppeal from "./pages/BanAppeal";
 import Guides from "./pages/Guides";
 import Gallery from "./pages/Gallery";
 import Status from "./pages/Status";
@@ -37,6 +38,7 @@ const App = () => (
           <Route path="/whitelist" element={<Whitelist />} />
           <Route path="/staff" element={<Staff />} />
           <Route path="/staff/:name" element={<StaffProfile />} />
+          <Route path="/ban-appeal" element={<BanAppeal />} />
           <Route path="/guides" element={<Guides />} />
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/status" element={<Status />} />
