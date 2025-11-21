@@ -469,7 +469,10 @@ const Store = () => {
 
           {/* One of One Vehicle Details */}
           <section>
-            <Card className="glass-effect border-2 border-secondary/20 max-w-4xl mx-auto overflow-hidden group hover:shadow-2xl transition-all duration-300">
+            <Card 
+              ref={(el) => (cardRefs.current['oneofone'] = el)}
+              className="glass-effect border-2 border-secondary/20 max-w-4xl mx-auto overflow-hidden group hover:shadow-2xl transition-all duration-300"
+            >
               <div className="relative h-48 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent z-10" />
                 <img 
