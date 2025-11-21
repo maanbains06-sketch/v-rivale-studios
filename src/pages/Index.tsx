@@ -211,6 +211,16 @@ const Index = () => {
                     <Twitter className="h-5 w-5 text-primary" />
                   </a>
                 </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="h-12 w-12 p-0 border-primary/50 hover:bg-primary/10 hover:border-primary"
+                  asChild
+                >
+                  <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+                    <Facebook className="h-5 w-5 text-primary" />
+                  </a>
+                </Button>
               </div>
             </div>
           </div>
