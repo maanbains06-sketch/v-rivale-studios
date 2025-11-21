@@ -10,15 +10,25 @@ import { BASE_PRICES, detectUserCurrency, getDisplayPrice } from "@/lib/currency
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import CartDrawer from "@/components/CartDrawer";
+import tierBronze from "@/assets/tier-bronze.jpg";
+import tierSilver from "@/assets/tier-silver.jpg";
+import tierGold from "@/assets/tier-gold.jpg";
+import tierHighlife from "@/assets/tier-highlife.jpg";
+import tierSkylife from "@/assets/tier-skylife.jpg";
+import tierPrio from "@/assets/tier-prio.jpg";
+import tierWhitelist from "@/assets/tier-whitelist.jpg";
+import tierOneOfOne from "@/assets/tier-oneofone.jpg";
 
 const packages = [
   {
     name: "Bronze",
     price: BASE_PRICES.bronze,
+    image: tierBronze,
     icon: Star,
     gradient: "from-amber-600/20 to-orange-600/20",
     borderColor: "border-amber-600/30",
     iconColor: "text-amber-500",
+    glowColor: "shadow-amber-500/20",
     features: [
       "Server queue priority",
       "Custom Discord tag",
@@ -28,10 +38,12 @@ const packages = [
   {
     name: "Silver",
     price: BASE_PRICES.silver,
+    image: tierSilver,
     icon: Star,
     gradient: "from-slate-400/20 to-slate-600/20",
     borderColor: "border-slate-400/30",
     iconColor: "text-slate-400",
+    glowColor: "shadow-slate-400/20",
     features: [
       "Server queue priority",
       "Custom Discord role",
@@ -42,10 +54,12 @@ const packages = [
   {
     name: "Gold",
     price: BASE_PRICES.gold,
+    image: tierGold,
     icon: Crown,
     gradient: "from-yellow-400/20 to-yellow-600/20",
     borderColor: "border-yellow-500/30",
     iconColor: "text-yellow-500",
+    glowColor: "shadow-yellow-500/30",
     popular: true,
     features: [
       "Custom Discord role",
@@ -57,10 +71,12 @@ const packages = [
   {
     name: "Highlife",
     price: BASE_PRICES.highlife,
+    image: tierHighlife,
     icon: Crown,
     gradient: "from-purple-500/20 to-pink-600/20",
     borderColor: "border-purple-500/30",
     iconColor: "text-purple-500",
+    glowColor: "shadow-purple-500/30",
     features: [
       "Custom Discord role",
       "Server queue priority",
@@ -75,10 +91,12 @@ const packages = [
   {
     name: "Skylife",
     price: BASE_PRICES.skylife,
+    image: tierSkylife,
     icon: Sparkles,
     gradient: "from-cyan-400/20 via-blue-500/20 to-purple-600/20",
     borderColor: "border-cyan-400/30",
     iconColor: "text-cyan-400",
+    glowColor: "shadow-cyan-400/40",
     premium: true,
     features: [
       "Custom Discord role",
@@ -98,6 +116,7 @@ const packages = [
 
 const Store = () => {
   const [currency, setCurrency] = useState<string>('INR');
+  const [addingToCart, setAddingToCart] = useState<string | null>(null);
   const { addItem } = useCart();
   const { toast } = useToast();
 
@@ -107,16 +126,23 @@ const Store = () => {
   }, []);
 
   const handleAddToCart = (packageName: string, price: number, icon: string) => {
+    setAddingToCart(packageName.toLowerCase());
+    
     addItem({
       id: packageName.toLowerCase(),
       name: packageName,
       price: price,
       icon: icon
     });
+    
     toast({
       title: "Added to basket",
       description: `${packageName} package has been added to your basket.`,
     });
+
+    setTimeout(() => {
+      setAddingToCart(null);
+    }, 600);
   };
 
   return (
@@ -148,23 +174,33 @@ const Store = () => {
               {packages.map((pkg) => (
                 <Card 
                   key={pkg.name}
-                  className={`relative glass-effect hover:scale-105 transition-all duration-300 ${pkg.borderColor} border-2`}
+                  className={`relative glass-effect hover:scale-105 transition-all duration-300 ${pkg.borderColor} border-2 overflow-hidden group ${pkg.glowColor} hover:shadow-2xl`}
                 >
                   {pkg.popular && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground z-10 animate-pulse">
                       Popular
                     </Badge>
                   )}
                   {pkg.premium && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white border-0">
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white border-0 z-10 animate-pulse">
                       Premium
                     </Badge>
                   )}
                   
-                  <CardHeader>
-                    <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${pkg.gradient} flex items-center justify-center mb-4`}>
+                  {/* Image Header */}
+                  <div className="relative h-40 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10" />
+                    <img 
+                      src={pkg.image} 
+                      alt={pkg.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                    <div className={`absolute top-4 right-4 w-12 h-12 rounded-lg bg-gradient-to-br ${pkg.gradient} flex items-center justify-center z-20 backdrop-blur-sm`}>
                       <pkg.icon className={`w-6 h-6 ${pkg.iconColor}`} />
                     </div>
+                  </div>
+                  
+                  <CardHeader>
                     <CardTitle className="text-2xl">{pkg.name}</CardTitle>
                     <CardDescription className="text-lg font-semibold text-primary">
                       {getDisplayPrice(pkg.price, currency)}
@@ -174,7 +210,7 @@ const Store = () => {
                   <CardContent>
                     <ul className="space-y-3">
                       {pkg.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-2">
+                        <li key={idx} className="flex items-start gap-2 animate-fade-in" style={{ animationDelay: `${idx * 50}ms` }}>
                           <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                           <span className="text-sm text-muted-foreground">{feature}</span>
                         </li>
@@ -182,11 +218,17 @@ const Store = () => {
                     </ul>
                     
                     <Button 
-                      className="w-full mt-6" 
+                      className={`w-full mt-6 relative overflow-hidden group ${
+                        addingToCart === pkg.name.toLowerCase() ? 'animate-pulse' : ''
+                      }`}
                       onClick={() => handleAddToCart(pkg.name, pkg.price, pkg.name.toLowerCase())}
+                      disabled={addingToCart === pkg.name.toLowerCase()}
                     >
-                      <ShoppingCart className="w-4 h-4 mr-2" />
-                      Add to Basket
+                      <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary-foreground/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                      <ShoppingCart className={`w-4 h-4 mr-2 ${
+                        addingToCart === pkg.name.toLowerCase() ? 'animate-bounce' : ''
+                      }`} />
+                      {addingToCart === pkg.name.toLowerCase() ? 'Adding...' : 'Add to Basket'}
                     </Button>
                   </CardContent>
                 </Card>
@@ -202,11 +244,20 @@ const Store = () => {
             
             <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
               {/* Prio 200 */}
-              <Card className="glass-effect border-2 border-primary/30 hover:scale-105 transition-all duration-300">
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-4">
+              <Card className="glass-effect border-2 border-primary/30 hover:scale-105 transition-all duration-300 shadow-primary/20 hover:shadow-2xl overflow-hidden group">
+                <div className="relative h-40 overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10" />
+                  <img 
+                    src={tierPrio} 
+                    alt="Prio 200"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute top-4 right-4 w-12 h-12 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center z-20 backdrop-blur-sm">
                     <Star className="w-6 h-6 text-primary" />
                   </div>
+                </div>
+                
+                <CardHeader>
                   <CardTitle className="text-2xl">Prio 200</CardTitle>
                   <CardDescription className="text-lg font-semibold text-primary">
                     {getDisplayPrice(BASE_PRICES.prio200, currency)}
@@ -226,25 +277,40 @@ const Store = () => {
                   </ul>
                   
                   <Button 
-                    className="w-full"
+                    className={`w-full relative overflow-hidden group ${
+                      addingToCart === 'prio200' ? 'animate-pulse' : ''
+                    }`}
                     onClick={() => handleAddToCart('Prio 200', BASE_PRICES.prio200, 'prio200')}
+                    disabled={addingToCart === 'prio200'}
                   >
-                    <ShoppingCart className="w-4 h-4 mr-2" />
-                    Add to Basket
+                    <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary-foreground/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                    <ShoppingCart className={`w-4 h-4 mr-2 ${
+                      addingToCart === 'prio200' ? 'animate-bounce' : ''
+                    }`} />
+                    {addingToCart === 'prio200' ? 'Adding...' : 'Add to Basket'}
                   </Button>
                 </CardContent>
               </Card>
 
               {/* Whitelisted */}
-              <Card className="glass-effect border-2 border-secondary/30 hover:scale-105 transition-all duration-300 relative">
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-secondary text-secondary-foreground border-0">
+              <Card className="glass-effect border-2 border-secondary/30 hover:scale-105 transition-all duration-300 relative shadow-secondary/20 hover:shadow-2xl overflow-hidden group">
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-secondary text-secondary-foreground border-0 z-10 animate-pulse">
                   Exclusive
                 </Badge>
                 
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-secondary/20 to-pink-600/20 flex items-center justify-center mb-4">
+                <div className="relative h-40 overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10" />
+                  <img 
+                    src={tierWhitelist} 
+                    alt="Whitelisted"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute top-4 right-4 w-12 h-12 rounded-lg bg-gradient-to-br from-secondary/20 to-pink-600/20 flex items-center justify-center z-20 backdrop-blur-sm">
                     <Sparkles className="w-6 h-6 text-secondary" />
                   </div>
+                </div>
+                
+                <CardHeader>
                   <CardTitle className="text-2xl">Whitelisted</CardTitle>
                   <CardDescription className="text-lg font-semibold text-primary">
                     {getDisplayPrice(BASE_PRICES.whitelisted, currency)}
@@ -268,11 +334,17 @@ const Store = () => {
                   </ul>
                   
                   <Button 
-                    className="w-full"
+                    className={`w-full relative overflow-hidden group ${
+                      addingToCart === 'whitelisted' ? 'animate-pulse' : ''
+                    }`}
                     onClick={() => handleAddToCart('Whitelisted', BASE_PRICES.whitelisted, 'whitelisted')}
+                    disabled={addingToCart === 'whitelisted'}
                   >
-                    <ShoppingCart className="w-4 h-4 mr-2" />
-                    Add to Basket
+                    <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary-foreground/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                    <ShoppingCart className={`w-4 h-4 mr-2 ${
+                      addingToCart === 'whitelisted' ? 'animate-bounce' : ''
+                    }`} />
+                    {addingToCart === 'whitelisted' ? 'Adding...' : 'Add to Basket'}
                   </Button>
                 </CardContent>
               </Card>
@@ -281,7 +353,16 @@ const Store = () => {
 
           {/* One of One Vehicle Details */}
           <section>
-            <Card className="glass-effect border-2 border-secondary/20 max-w-4xl mx-auto">
+            <Card className="glass-effect border-2 border-secondary/20 max-w-4xl mx-auto overflow-hidden group hover:shadow-2xl transition-all duration-300">
+              <div className="relative h-48 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent z-10" />
+                <img 
+                  src={tierOneOfOne} 
+                  alt="One of One Vehicle"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+              </div>
+              
               <CardHeader>
                 <CardTitle className="text-2xl flex items-center gap-2">
                   <Sparkles className="w-6 h-6 text-secondary" />
@@ -333,12 +414,18 @@ const Store = () => {
                 </div>
 
                 <Button 
-                  className="w-full mt-6" 
+                  className={`w-full mt-6 relative overflow-hidden group ${
+                    addingToCart === 'oneofone' ? 'animate-pulse' : ''
+                  }`}
                   size="lg"
                   onClick={() => handleAddToCart('One of One Vehicle', BASE_PRICES.oneOfOne, 'oneofone')}
+                  disabled={addingToCart === 'oneofone'}
                 >
-                  <ShoppingCart className="w-4 h-4 mr-2" />
-                  Add to Basket
+                  <span className="absolute inset-0 bg-gradient-to-r from-secondary/0 via-secondary-foreground/20 to-secondary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                  <ShoppingCart className={`w-4 h-4 mr-2 ${
+                    addingToCart === 'oneofone' ? 'animate-bounce' : ''
+                  }`} />
+                  {addingToCart === 'oneofone' ? 'Adding...' : 'Add to Basket'}
                 </Button>
               </CardContent>
             </Card>
