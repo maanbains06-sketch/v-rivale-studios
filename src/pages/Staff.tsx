@@ -3,7 +3,7 @@ import PageHeader from "@/components/PageHeader";
 import headerStaff from "@/assets/header-staff.jpg";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Users, Code, HeadphonesIcon, Star, Trophy, Heart, Target, Sparkles, Zap, Clock, Award, MessageCircle } from "lucide-react";
+import { Shield, Users, Code, HeadphonesIcon, Star, Trophy, Heart, Target, Sparkles, Zap, Clock, Award, MessageCircle, UserCheck, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { StaffApplicationForm } from "@/components/StaffApplicationForm";
@@ -11,7 +11,7 @@ import { StaffApplicationForm } from "@/components/StaffApplicationForm";
 interface StaffMember {
   name: string;
   role: string;
-  roleType: "owner" | "admin" | "moderator" | "developer";
+  roleType: "owner" | "admin" | "moderator" | "developer" | "staff" | "event_manager";
   avatar: string;
   responsibilities: string[];
   discordTag: string;
@@ -91,6 +91,42 @@ const staffMembers: StaffMember[] = [
     discordTag: "NinaSupport#0008",
     bio: "Helping players with technical issues and whitelist process"
   },
+  {
+    name: "James Wilson",
+    role: "Staff Coordinator",
+    roleType: "staff",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=James",
+    responsibilities: ["Staff Training", "Team Coordination", "Performance Reviews"],
+    discordTag: "JamesStaff#0009",
+    bio: "Managing staff operations and ensuring team excellence"
+  },
+  {
+    name: "Sophia Kumar",
+    role: "Senior Staff Member",
+    roleType: "staff",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sophia",
+    responsibilities: ["Player Support", "Ticket Resolution", "Staff Mentoring"],
+    discordTag: "SophiaStaff#0010",
+    bio: "Supporting players and mentoring new staff members"
+  },
+  {
+    name: "Michael Chen",
+    role: "Event Director",
+    roleType: "event_manager",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Michael",
+    responsibilities: ["Event Planning", "Community Events", "Special Activities"],
+    discordTag: "MichaelEvents#0011",
+    bio: "Creating unforgettable events for the community"
+  },
+  {
+    name: "Olivia Thompson",
+    role: "Event Coordinator",
+    roleType: "event_manager",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Olivia",
+    responsibilities: ["Event Execution", "Prize Distribution", "Event Promotions"],
+    discordTag: "OliviaEvents#0012",
+    bio: "Bringing exciting events to life"
+  },
 ];
 
 const roleColors = {
@@ -98,6 +134,8 @@ const roleColors = {
   admin: "bg-destructive",
   moderator: "bg-secondary",
   developer: "bg-accent",
+  staff: "bg-primary",
+  event_manager: "bg-gradient-to-r from-secondary to-primary",
 };
 
 const roleIcons = {
@@ -105,6 +143,8 @@ const roleIcons = {
   admin: Users,
   moderator: HeadphonesIcon,
   developer: Code,
+  staff: UserCheck,
+  event_manager: Calendar,
 };
 
 const Staff = () => {
@@ -114,6 +154,8 @@ const Staff = () => {
   const adminStaff = staffMembers.filter(m => m.roleType === "admin");
   const developerStaff = staffMembers.filter(m => m.roleType === "developer");
   const moderatorStaff = staffMembers.filter(m => m.roleType === "moderator");
+  const staffTeam = staffMembers.filter(m => m.roleType === "staff");
+  const eventTeam = staffMembers.filter(m => m.roleType === "event_manager");
 
   return (
     <div className="min-h-screen bg-background">
@@ -465,6 +507,130 @@ const Staff = () => {
 
                           <h3 className="text-xl font-bold mb-2">{member.name}</h3>
                           <Badge variant="outline" className="mb-4 border-secondary/40 px-3 py-1">
+                            {member.role}
+                          </Badge>
+
+                          {member.bio && (
+                            <p className="text-xs text-muted-foreground italic mb-4 leading-relaxed">&quot;{member.bio}&quot;</p>
+                          )}
+
+                          <div className="w-full mb-4">
+                            <p className="text-xs text-muted-foreground mb-2 font-semibold">Responsibilities</p>
+                            <div className="flex flex-wrap gap-1.5 justify-center">
+                              {member.responsibilities.map((resp, idx) => (
+                                <Badge key={idx} variant="secondary" className="text-xs hover:bg-primary/20 transition-colors">
+                                  {resp}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="text-sm text-muted-foreground flex items-center gap-1">
+                            <MessageCircle className="w-3.5 h-3.5 text-primary" />
+                            <span className="text-primary font-medium">Discord:</span> {member.discordTag}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Staff Team */}
+          <div className="mb-16">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold text-gradient mb-4">Staff Team</h2>
+              <p className="text-lg text-muted-foreground">Dedicated professionals ensuring quality service</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {staffTeam.map((member, index) => {
+                const Icon = roleIcons[member.roleType];
+                return (
+                  <div key={index} className="relative group">
+                    <div className="absolute inset-0 bg-primary/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <Card className="relative glass-effect border-border/20 hover:border-primary/40 transition-all duration-500 hover:shadow-xl hover:shadow-primary/10">
+                      <CardContent className="pt-6 pb-6">
+                        <div className="flex flex-col items-center text-center">
+                          <div className="relative mb-5">
+                            <div className={`w-28 h-28 rounded-full overflow-hidden border-4 ${roleColors[member.roleType]} p-1 group-hover:scale-110 transition-transform duration-500`}>
+                              <img 
+                                src={member.avatar} 
+                                alt={member.name}
+                                className="w-full h-full rounded-full bg-background"
+                              />
+                            </div>
+                            <div className={`absolute -bottom-2 -right-2 w-12 h-12 ${roleColors[member.roleType]} rounded-full flex items-center justify-center border-3 border-background shadow-lg`}>
+                              <Icon className="w-6 h-6 text-primary-foreground" />
+                            </div>
+                            <div className="absolute -top-1 -left-1 w-5 h-5 bg-green-500 rounded-full border-2 border-background animate-pulse"></div>
+                          </div>
+
+                          <h3 className="text-xl font-bold mb-2">{member.name}</h3>
+                          <Badge variant="outline" className="mb-4 border-primary/40 px-3 py-1">
+                            {member.role}
+                          </Badge>
+
+                          {member.bio && (
+                            <p className="text-xs text-muted-foreground italic mb-4 leading-relaxed">&quot;{member.bio}&quot;</p>
+                          )}
+
+                          <div className="w-full mb-4">
+                            <p className="text-xs text-muted-foreground mb-2 font-semibold">Responsibilities</p>
+                            <div className="flex flex-wrap gap-1.5 justify-center">
+                              {member.responsibilities.map((resp, idx) => (
+                                <Badge key={idx} variant="secondary" className="text-xs hover:bg-primary/20 transition-colors">
+                                  {resp}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="text-sm text-muted-foreground flex items-center gap-1">
+                            <MessageCircle className="w-3.5 h-3.5 text-primary" />
+                            <span className="text-primary font-medium">Discord:</span> {member.discordTag}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Event Management Team */}
+          <div className="mb-16">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold text-gradient mb-4">Event Management Team</h2>
+              <p className="text-lg text-muted-foreground">Creating memorable experiences for the community</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {eventTeam.map((member, index) => {
+                const Icon = roleIcons[member.roleType];
+                return (
+                  <div key={index} className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-br from-secondary/10 to-primary/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <Card className="relative glass-effect border-border/20 hover:border-primary/40 transition-all duration-500 hover:shadow-xl hover:shadow-primary/10">
+                      <CardContent className="pt-6 pb-6">
+                        <div className="flex flex-col items-center text-center">
+                          <div className="relative mb-5">
+                            <div className={`w-28 h-28 rounded-full overflow-hidden border-4 ${roleColors[member.roleType]} p-1 group-hover:scale-110 transition-transform duration-500`}>
+                              <img 
+                                src={member.avatar} 
+                                alt={member.name}
+                                className="w-full h-full rounded-full bg-background"
+                              />
+                            </div>
+                            <div className={`absolute -bottom-2 -right-2 w-12 h-12 ${roleColors[member.roleType]} rounded-full flex items-center justify-center border-3 border-background shadow-lg`}>
+                              <Icon className="w-6 h-6 text-primary-foreground" />
+                            </div>
+                            <div className="absolute -top-1 -left-1 w-5 h-5 bg-green-500 rounded-full border-2 border-background animate-pulse"></div>
+                          </div>
+
+                          <h3 className="text-xl font-bold mb-2">{member.name}</h3>
+                          <Badge variant="outline" className="mb-4 border-primary/40 px-3 py-1">
                             {member.role}
                           </Badge>
 
