@@ -34,8 +34,8 @@ const jobApplicationSchema = z.object({
     .max(1000, "Response must be less than 1000 characters"),
   character_background: z.string()
     .trim()
-    .min(50, "Please provide at least 50 characters for character background")
-    .max(2000, "Character background must be less than 2000 characters"),
+    .min(50, "Please provide at least 50 characters")
+    .max(2000, "Response must be less than 2000 characters"),
   availability: z.string()
     .trim()
     .min(10, "Please describe your availability")
@@ -122,6 +122,26 @@ const JobApplicationForm = ({ jobType }: JobApplicationFormProps) => {
         return "Save lives as an Emergency Medical Services professional. Provide critical medical care to citizens.";
       case "Mechanic":
         return "Keep vehicles running smoothly. Provide repair and maintenance services to the community.";
+    }
+  };
+
+  const getJobSpecificQuestion = () => {
+    switch (jobType) {
+      case "Police Department":
+        return {
+          label: "How would you handle a high-pressure situation involving multiple suspects?",
+          placeholder: "Describe your approach to handling complex law enforcement scenarios..."
+        };
+      case "EMS":
+        return {
+          label: "Describe your approach to handling a critical emergency medical situation with limited resources.",
+          placeholder: "Explain how you would prioritize and manage a challenging medical emergency..."
+        };
+      case "Mechanic":
+        return {
+          label: "What is your diagnostic process when a customer brings in a vehicle with an unknown issue?",
+          placeholder: "Describe your step-by-step approach to diagnosing and resolving vehicle problems..."
+        };
     }
   };
 
@@ -249,16 +269,16 @@ const JobApplicationForm = ({ jobType }: JobApplicationFormProps) => {
               name="character_background"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Character Background Story *</FormLabel>
+                  <FormLabel>{getJobSpecificQuestion().label} *</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Tell us about your character's background and story..."
+                      placeholder={getJobSpecificQuestion().placeholder}
                       className="min-h-[150px]"
                       {...field} 
                     />
                   </FormControl>
                   <FormDescription>
-                    Provide detailed background about your character (minimum 50 characters)
+                    Provide a detailed response (minimum 50 characters)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
