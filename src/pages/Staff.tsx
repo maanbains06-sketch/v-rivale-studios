@@ -3,10 +3,11 @@ import PageHeader from "@/components/PageHeader";
 import headerStaff from "@/assets/header-staff.jpg";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Users, Code, HeadphonesIcon, Star, Trophy, Heart, Target, Sparkles, Zap, Clock, Award, MessageCircle } from "lucide-react";
+import { Shield, Users, Code, HeadphonesIcon, Star, Trophy, Heart, Target, Sparkles, Zap, Clock, Award, MessageCircle, Activity, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { StaffApplicationForm } from "@/components/StaffApplicationForm";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface StaffMember {
   name: string;
@@ -129,8 +130,70 @@ const Staff = () => {
       
       <main className="pb-16">
         <div className="container mx-auto px-4">
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mb-20">
+          {/* Section Navigation Tabs */}
+          <div className="max-w-4xl mx-auto mb-12">
+            <Tabs defaultValue="status" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 glass-effect border border-border/20">
+                <TabsTrigger value="status" className="flex items-center gap-2">
+                  <Activity className="w-4 h-4" />
+                  Server Status
+                </TabsTrigger>
+                <TabsTrigger value="staff" className="flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Staff Team
+                </TabsTrigger>
+                <TabsTrigger value="events" className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  Event Management
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Server Status Tab */}
+              <TabsContent value="status" className="mt-8 space-y-8">
+                {/* Server Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-green-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+                    <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-green-500/20">
+                      <div className="w-4 h-4 bg-green-500 rounded-full mx-auto mb-3 animate-pulse"></div>
+                      <div className="text-4xl font-bold text-gradient mb-1">ONLINE</div>
+                      <div className="text-sm text-muted-foreground">Server Status</div>
+                    </div>
+                  </div>
+                  
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+                    <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-primary/20">
+                      <Users className="w-8 h-8 text-primary mx-auto mb-3" />
+                      <div className="text-4xl font-bold text-gradient mb-1">32/64</div>
+                      <div className="text-sm text-muted-foreground">Players Online</div>
+                    </div>
+                  </div>
+                  
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+                    <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-primary/20">
+                      <Zap className="w-8 h-8 text-primary mx-auto mb-3" />
+                      <div className="text-4xl font-bold text-gradient mb-1">45ms</div>
+                      <div className="text-sm text-muted-foreground">Average Ping</div>
+                    </div>
+                  </div>
+                  
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+                    <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-primary/20">
+                      <Clock className="w-8 h-8 text-primary mx-auto mb-3" />
+                      <div className="text-4xl font-bold text-gradient mb-1">99.9%</div>
+                      <div className="text-sm text-muted-foreground">Uptime</div>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* Staff Team Tab */}
+              <TabsContent value="staff" className="mt-8 space-y-16">
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
             <div className="relative group">
               <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
               <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-primary/20">
