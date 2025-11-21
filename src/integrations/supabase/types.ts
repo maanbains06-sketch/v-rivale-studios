@@ -200,6 +200,69 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_applications: {
+        Row: {
+          admin_notes: string | null
+          age: number
+          availability: string
+          created_at: string
+          discord_username: string
+          experience: string
+          full_name: string
+          id: string
+          in_game_name: string
+          playtime: string
+          position: string
+          previous_experience: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          why_join: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          age: number
+          availability: string
+          created_at?: string
+          discord_username: string
+          experience: string
+          full_name: string
+          id?: string
+          in_game_name: string
+          playtime: string
+          position: string
+          previous_experience?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          why_join: string
+        }
+        Update: {
+          admin_notes?: string | null
+          age?: number
+          availability?: string
+          created_at?: string
+          discord_username?: string
+          experience?: string
+          full_name?: string
+          id?: string
+          in_game_name?: string
+          playtime?: string
+          position?: string
+          previous_experience?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          why_join?: string
+        }
+        Relationships: []
+      }
       staff_members: {
         Row: {
           bio: string | null
