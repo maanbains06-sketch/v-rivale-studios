@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.fetch-discord-user]
 verify_jwt = false
+
+[functions.send-gallery-notification]
+verify_jwt = false

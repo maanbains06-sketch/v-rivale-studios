@@ -164,6 +164,18 @@ const AdminGallery = () => {
 
       if (error) throw error;
 
+      // Send notification email
+      try {
+        await supabase.functions.invoke("send-gallery-notification", {
+          body: {
+            submissionId: submission.id,
+            status: "approved",
+          },
+        });
+      } catch (emailError) {
+        console.error("Failed to send notification email:", emailError);
+      }
+
       toast({
         title: "Submission Approved",
         description: `"${submission.title}" has been approved and is now visible in the gallery.`,
@@ -196,6 +208,19 @@ const AdminGallery = () => {
         .eq("id", selectedSubmission.id);
 
       if (error) throw error;
+
+      // Send notification email
+      try {
+        await supabase.functions.invoke("send-gallery-notification", {
+          body: {
+            submissionId: selectedSubmission.id,
+            status: "rejected",
+            rejectionReason: rejectionReason.trim(),
+          },
+        });
+      } catch (emailError) {
+        console.error("Failed to send notification email:", emailError);
+      }
 
       toast({
         title: "Submission Rejected",

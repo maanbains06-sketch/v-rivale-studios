@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, FileText, Briefcase, Ban, Clock, Radio, Users } from "lucide-react";
+import { Loader2, FileText, Briefcase, Ban, Clock, Radio, Users, Image, Video } from "lucide-react";
 import { format } from "date-fns";
 import headerCommunity from "@/assets/header-community.jpg";
 
@@ -41,6 +41,17 @@ interface StaffApplication {
   admin_notes?: string;
 }
 
+interface GallerySubmission {
+  id: string;
+  title: string;
+  category: string;
+  status: string;
+  created_at: string;
+  rejection_reason?: string;
+  file_type: string;
+  file_path: string;
+}
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -50,6 +61,7 @@ const Dashboard = () => {
   const [jobApps, setJobApps] = useState<JobApplication[]>([]);
   const [banAppeals, setBanAppeals] = useState<BanAppeal[]>([]);
   const [staffApps, setStaffApps] = useState<StaffApplication[]>([]);
+  const [gallerySubmissions, setGallerySubmissions] = useState<GallerySubmission[]>([]);
 
   useEffect(() => {
     checkAuthAndLoadData();
@@ -105,6 +117,18 @@ const Dashboard = () => {
         (payload) => {
           console.log('Staff application change:', payload);
           handleStaffAppChange(payload);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'gallery_submissions'
+        },
+        (payload) => {
+          console.log('Gallery submission change:', payload);
+          handleGalleryChange(payload);
         }
       )
       .subscribe();
@@ -214,6 +238,31 @@ const Dashboard = () => {
     }
   };
 
+  const handleGalleryChange = (payload: any) => {
+    // Only update if the change is for the current user
+    if (payload.new?.user_id !== userId && payload.old?.user_id !== userId) {
+      return;
+    }
+
+    if (payload.eventType === 'INSERT') {
+      setGallerySubmissions(prev => [payload.new, ...prev]);
+    } else if (payload.eventType === 'UPDATE') {
+      setGallerySubmissions(prev => 
+        prev.map(sub => sub.id === payload.new.id ? payload.new : sub)
+      );
+      // Show notification for status changes
+      if (payload.old?.status !== payload.new?.status) {
+        toast({
+          title: "Gallery Submission Updated",
+          description: `Your submission "${payload.new.title}" has been ${payload.new.status}.`,
+          variant: payload.new.status === "approved" ? "default" : "destructive",
+        });
+      }
+    } else if (payload.eventType === 'DELETE') {
+      setGallerySubmissions(prev => prev.filter(sub => sub.id !== payload.old.id));
+    }
+  };
+
   const checkAuthAndLoadData = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -268,6 +317,15 @@ const Dashboard = () => {
       .order("created_at", { ascending: false });
 
     if (staffData) setStaffApps(staffData);
+
+    // Load gallery submissions
+    const { data: galleryData } = await supabase
+      .from("gallery_submissions")
+      .select("id, title, category, status, created_at, rejection_reason, file_type, file_path")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (galleryData) setGallerySubmissions(galleryData);
   };
 
   const getStatusBadgeVariant = (status: string) => {
@@ -476,7 +534,7 @@ const Dashboard = () => {
                         <div className="flex items-start justify-between mb-4">
                           <div>
                             <p className="font-semibold text-lg mb-2 capitalize">
-                              {app.position.replace(/_/g, ' ')}
+                              {app.position}
                             </p>
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <Clock className="w-4 h-4" />
@@ -493,6 +551,69 @@ const Dashboard = () => {
                             <p className="text-sm text-muted-foreground">{app.admin_notes}</p>
                           </div>
                         )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Gallery Submissions */}
+          <Card className="glass-effect border-border/20">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Image className="w-5 h-5 text-primary" />
+                <CardTitle className="text-gradient">Gallery Submissions</CardTitle>
+              </div>
+              <CardDescription>Your community gallery submissions</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {gallerySubmissions.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">
+                  No gallery submissions found
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {gallerySubmissions.map((sub) => (
+                    <Card key={sub.id} className="border-border/20">
+                      <CardContent className="pt-6">
+                        <div className="flex items-start gap-4">
+                          {/* Preview */}
+                          <div className="flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden bg-muted/50 flex items-center justify-center">
+                            {sub.file_type.startsWith('image/') ? (
+                              <Image className="w-8 h-8 text-muted-foreground" />
+                            ) : (
+                              <Video className="w-8 h-8 text-muted-foreground" />
+                            )}
+                          </div>
+
+                          {/* Details */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between mb-2">
+                              <div>
+                                <p className="font-semibold text-lg mb-1 truncate">{sub.title}</p>
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <Badge variant="outline" className="text-xs">
+                                    {sub.category}
+                                  </Badge>
+                                  <Clock className="w-3 h-3" />
+                                  <span>{format(new Date(sub.created_at), "PP")}</span>
+                                </div>
+                              </div>
+                              <Badge variant={getStatusBadgeVariant(sub.status)}>
+                                {sub.status.toUpperCase()}
+                              </Badge>
+                            </div>
+
+                            {sub.status === 'rejected' && sub.rejection_reason && (
+                              <div className="mt-4 p-3 rounded-md bg-destructive/10 border border-destructive/20">
+                                <p className="text-sm font-medium mb-1 text-destructive">Rejection Reason:</p>
+                                <p className="text-sm text-muted-foreground">{sub.rejection_reason}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </CardContent>
                     </Card>
                   ))}
