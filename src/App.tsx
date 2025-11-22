@@ -24,9 +24,11 @@ import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import AdminStaffApplications from "./pages/AdminStaffApplications";
 import AdminReferrals from "./pages/AdminReferrals";
+import AdminGallery from "./pages/AdminGallery";
 import JobApplication from "./pages/JobApplication";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
+import { CartProvider } from "./contexts/CartContext";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +57,7 @@ const AppRoutes = () => {
       <Route path="/admin" element={<Admin />} />
       <Route path="/admin-staff-applications" element={<AdminStaffApplications />} />
       <Route path="/admin-referrals" element={<AdminReferrals />} />
+      <Route path="/admin/gallery" element={<AdminGallery />} />
       <Route path="/job-application" element={<JobApplication />} />
       <Route path="/dashboard" element={<Dashboard />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
@@ -65,13 +68,15 @@ const AppRoutes = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-    </TooltipProvider>
+    <CartProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </TooltipProvider>
+    </CartProvider>
   </QueryClientProvider>
 );
 
