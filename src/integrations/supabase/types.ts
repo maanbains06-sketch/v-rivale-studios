@@ -123,12 +123,14 @@ export type Database = {
           character_name: string
           created_at: string
           id: string
+          job_specific_answer: string | null
           job_type: string
           phone_number: string
           previous_experience: string
           reviewed_at: string | null
           reviewed_by: string | null
           status: string
+          strengths: string | null
           updated_at: string
           user_id: string
           why_join: string
@@ -142,12 +144,14 @@ export type Database = {
           character_name: string
           created_at?: string
           id?: string
+          job_specific_answer?: string | null
           job_type: string
           phone_number: string
           previous_experience: string
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
+          strengths?: string | null
           updated_at?: string
           user_id: string
           why_join: string
@@ -161,12 +165,14 @@ export type Database = {
           character_name?: string
           created_at?: string
           id?: string
+          job_specific_answer?: string | null
           job_type?: string
           phone_number?: string
           previous_experience?: string
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
+          strengths?: string | null
           updated_at?: string
           user_id?: string
           why_join?: string

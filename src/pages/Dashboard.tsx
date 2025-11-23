@@ -6,7 +6,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, FileText, Briefcase, Ban, Clock, Radio, Users, Image, Video } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Loader2, FileText, Briefcase, Ban, Clock, Radio, Users, Image, Video, RefreshCw, Upload, X } from "lucide-react";
 import { format } from "date-fns";
 import headerCommunity from "@/assets/header-community.jpg";
 
@@ -48,6 +53,7 @@ interface GallerySubmission {
   status: string;
   created_at: string;
   rejection_reason?: string;
+  description?: string;
   file_type: string;
   file_path: string;
 }
@@ -62,6 +68,12 @@ const Dashboard = () => {
   const [banAppeals, setBanAppeals] = useState<BanAppeal[]>([]);
   const [staffApps, setStaffApps] = useState<StaffApplication[]>([]);
   const [gallerySubmissions, setGallerySubmissions] = useState<GallerySubmission[]>([]);
+  const [resubmitDialogOpen, setResubmitDialogOpen] = useState(false);
+  const [selectedSubmission, setSelectedSubmission] = useState<GallerySubmission | null>(null);
+  const [resubmitFile, setResubmitFile] = useState<File | null>(null);
+  const [resubmitPreview, setResubmitPreview] = useState<string | null>(null);
+  const [resubmitDescription, setResubmitDescription] = useState("");
+  const [resubmitting, setResubmitting] = useState(false);
 
   useEffect(() => {
     checkAuthAndLoadData();
@@ -321,7 +333,7 @@ const Dashboard = () => {
     // Load gallery submissions
     const { data: galleryData } = await supabase
       .from("gallery_submissions")
-      .select("id, title, category, status, created_at, rejection_reason, file_type, file_path")
+      .select("id, title, category, status, created_at, rejection_reason, description, file_type, file_path")
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
 
@@ -336,6 +348,125 @@ const Dashboard = () => {
         return "destructive";
       default:
         return "secondary";
+    }
+  };
+
+  const handleResubmitClick = (submission: GallerySubmission) => {
+    setSelectedSubmission(submission);
+    setResubmitDescription(submission.description || "");
+    setResubmitDialogOpen(true);
+  };
+
+  const handleResubmitFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) return;
+
+    if (selectedFile.size > 20 * 1024 * 1024) {
+      toast({
+        title: "File Too Large",
+        description: "Please select a file smaller than 20MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const allowedTypes = [
+      'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+      'video/mp4', 'video/webm', 'video/quicktime'
+    ];
+    
+    if (!allowedTypes.includes(selectedFile.type)) {
+      toast({
+        title: "Invalid File Type",
+        description: "Please select an image or video file.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setResubmitFile(selectedFile);
+
+    if (selectedFile.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setResubmitPreview(reader.result as string);
+      };
+      reader.readAsDataURL(selectedFile);
+    } else {
+      setResubmitPreview(null);
+    }
+  };
+
+  const handleResubmit = async () => {
+    if (!selectedSubmission || !resubmitFile) {
+      toast({
+        title: "File Required",
+        description: "Please select a new file to resubmit.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setResubmitting(true);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      // Delete old file from storage
+      await supabase.storage.from('gallery').remove([selectedSubmission.file_path]);
+
+      // Upload new file
+      const fileExt = resubmitFile.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('gallery')
+        .upload(fileName, resubmitFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Update submission record
+      const { error: updateError } = await supabase
+        .from('gallery_submissions')
+        .update({
+          file_path: fileName,
+          file_type: resubmitFile.type,
+          file_size: resubmitFile.size,
+          description: resubmitDescription.trim() || null,
+          status: 'pending',
+          rejection_reason: null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', selectedSubmission.id);
+
+      if (updateError) {
+        await supabase.storage.from('gallery').remove([fileName]);
+        throw updateError;
+      }
+
+      toast({
+        title: "Resubmission Successful!",
+        description: "Your content has been resubmitted and is pending approval.",
+      });
+
+      setResubmitDialogOpen(false);
+      setSelectedSubmission(null);
+      setResubmitFile(null);
+      setResubmitPreview(null);
+      setResubmitDescription("");
+    } catch (error: any) {
+      console.error("Resubmit error:", error);
+      toast({
+        title: "Resubmission Failed",
+        description: error.message || "There was an error resubmitting your content.",
+        variant: "destructive",
+      });
+    } finally {
+      setResubmitting(false);
     }
   };
 
@@ -563,7 +694,7 @@ const Dashboard = () => {
           <Card className="glass-effect border-border/20">
             <CardHeader>
               <div className="flex items-center gap-2">
-                <Image className="w-5 h-5 text-primary" />
+                <Users className="w-5 h-5 text-primary" />
                 <CardTitle className="text-gradient">Gallery Submissions</CardTitle>
               </div>
               <CardDescription>Your community gallery submissions</CardDescription>
@@ -575,45 +706,167 @@ const Dashboard = () => {
                 </p>
               ) : (
                 <div className="space-y-4">
-                  {gallerySubmissions.map((sub) => (
-                    <Card key={sub.id} className="border-border/20">
+                  {gallerySubmissions.map((submission) => (
+                    <Card key={submission.id} className="border-border/20">
                       <CardContent className="pt-6">
-                        <div className="flex items-start gap-4">
-                          {/* Preview */}
-                          <div className="flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden bg-muted/50 flex items-center justify-center">
-                            {sub.file_type.startsWith('image/') ? (
-                              <Image className="w-8 h-8 text-muted-foreground" />
-                            ) : (
-                              <Video className="w-8 h-8 text-muted-foreground" />
-                            )}
-                          </div>
-
-                          {/* Details */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between mb-2">
-                              <div>
-                                <p className="font-semibold text-lg mb-1 truncate">{sub.title}</p>
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                  <Badge variant="outline" className="text-xs">
-                                    {sub.category}
-                                  </Badge>
-                                  <Clock className="w-3 h-3" />
-                                  <span>{format(new Date(sub.created_at), "PP")}</span>
-                                </div>
-                              </div>
-                              <Badge variant={getStatusBadgeVariant(sub.status)}>
-                                {sub.status.toUpperCase()}
-                              </Badge>
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              {submission.file_type.startsWith('image/') ? (
+                                <Image className="w-4 h-4 text-muted-foreground" />
+                              ) : (
+                                <Video className="w-4 h-4 text-muted-foreground" />
+                              )}
+                              <p className="font-semibold text-lg">{submission.title}</p>
                             </div>
-
-                            {sub.status === 'rejected' && sub.rejection_reason && (
-                              <div className="mt-4 p-3 rounded-md bg-destructive/10 border border-destructive/20">
-                                <p className="text-sm font-medium mb-1 text-destructive">Rejection Reason:</p>
-                                <p className="text-sm text-muted-foreground">{sub.rejection_reason}</p>
-                              </div>
-                            )}
+                            <p className="text-sm text-muted-foreground mb-2">
+                              Category: {submission.category}
+                            </p>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Clock className="w-4 h-4" />
+                              <span>Submitted on {format(new Date(submission.created_at), "PPP")}</span>
+                            </div>
                           </div>
+                          <Badge variant={getStatusBadgeVariant(submission.status)}>
+                            {submission.status.toUpperCase()}
+                          </Badge>
                         </div>
+                        {submission.rejection_reason && (
+                          <>
+                            <div className="mt-4 p-3 rounded-md bg-destructive/10 border border-destructive/20">
+                              <p className="text-sm font-medium mb-1 text-destructive">Rejection Reason:</p>
+                              <p className="text-sm text-muted-foreground">{submission.rejection_reason}</p>
+                            </div>
+                            <div className="mt-4">
+                              <Dialog open={resubmitDialogOpen && selectedSubmission?.id === submission.id} onOpenChange={(open) => {
+                                setResubmitDialogOpen(open);
+                                if (!open) {
+                                  setSelectedSubmission(null);
+                                  setResubmitFile(null);
+                                  setResubmitPreview(null);
+                                }
+                              }}>
+                                <DialogTrigger asChild>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => handleResubmitClick(submission)}
+                                    className="w-full"
+                                  >
+                                    <RefreshCw className="w-4 h-4 mr-2" />
+                                    Resubmit with Improvements
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                                  <DialogHeader>
+                                    <DialogTitle>Resubmit Gallery Content</DialogTitle>
+                                    <DialogDescription>
+                                      Upload an improved version based on the admin's feedback
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  
+                                  <div className="space-y-4 py-4">
+                                    <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20">
+                                      <p className="text-sm font-medium mb-1 text-destructive">Admin Feedback:</p>
+                                      <p className="text-sm text-muted-foreground">{submission.rejection_reason}</p>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                      <Label htmlFor="resubmit-description">Description (Optional)</Label>
+                                      <Textarea
+                                        id="resubmit-description"
+                                        placeholder="Update your description..."
+                                        value={resubmitDescription}
+                                        onChange={(e) => setResubmitDescription(e.target.value)}
+                                        maxLength={500}
+                                        className="min-h-[100px] resize-none"
+                                      />
+                                      <p className="text-xs text-muted-foreground">{resubmitDescription.length}/500 characters</p>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                      <Label htmlFor="resubmit-file">New File *</Label>
+                                      {!resubmitFile ? (
+                                        <div className="border-2 border-dashed border-border/40 rounded-lg p-8 text-center hover:border-primary/40 transition-colors">
+                                          <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                                          <p className="text-sm text-foreground mb-2">
+                                            Upload improved version
+                                          </p>
+                                          <p className="text-xs text-muted-foreground mb-4">
+                                            Images or Videos (max 20MB)
+                                          </p>
+                                          <Input
+                                            id="resubmit-file"
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime"
+                                            onChange={handleResubmitFileChange}
+                                            className="hidden"
+                                          />
+                                          <Label
+                                            htmlFor="resubmit-file"
+                                            className="cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+                                          >
+                                            Choose File
+                                          </Label>
+                                        </div>
+                                      ) : (
+                                        <div className="relative border border-border/20 rounded-lg p-4 bg-background/50">
+                                          <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="absolute top-2 right-2 h-8 w-8 p-0"
+                                            onClick={() => {
+                                              setResubmitFile(null);
+                                              setResubmitPreview(null);
+                                            }}
+                                          >
+                                            <X className="h-4 w-4" />
+                                          </Button>
+                                          
+                                          {resubmitPreview && (
+                                            <div className="mb-4">
+                                              <img
+                                                src={resubmitPreview}
+                                                alt="Preview"
+                                                className="max-h-64 mx-auto rounded-lg object-contain"
+                                              />
+                                            </div>
+                                          )}
+                                          
+                                          <div className="text-sm">
+                                            <p className="font-medium truncate">{resubmitFile.name}</p>
+                                            <p className="text-muted-foreground">
+                                              {(resubmitFile.size / 1024 / 1024).toFixed(2)} MB
+                                            </p>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    <Button
+                                      onClick={handleResubmit}
+                                      disabled={!resubmitFile || resubmitting}
+                                      className="w-full"
+                                    >
+                                      {resubmitting ? (
+                                        <>
+                                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                          Resubmitting...
+                                        </>
+                                      ) : (
+                                        <>
+                                          <RefreshCw className="w-4 h-4 mr-2" />
+                                          Resubmit for Review
+                                        </>
+                                      )}
+                                    </Button>
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                            </div>
+                          </>
+                        )}
                       </CardContent>
                     </Card>
                   ))}
