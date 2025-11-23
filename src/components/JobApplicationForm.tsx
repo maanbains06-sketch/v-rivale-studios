@@ -26,19 +26,27 @@ const jobApplicationSchema = z.object({
     .max(20, "Phone number must be less than 20 characters"),
   previous_experience: z.string()
     .trim()
-    .min(10, "Please provide at least 10 characters")
+    .min(50, "Please provide at least 50 characters")
     .max(1000, "Previous experience must be less than 1000 characters"),
   why_join: z.string()
     .trim()
-    .min(20, "Please provide at least 20 characters")
+    .min(100, "Please provide at least 100 characters")
     .max(1000, "Response must be less than 1000 characters"),
   character_background: z.string()
     .trim()
-    .min(50, "Please provide at least 50 characters")
+    .min(100, "Please provide at least 100 characters")
     .max(2000, "Response must be less than 2000 characters"),
+  job_specific_answer: z.string()
+    .trim()
+    .min(75, "Please provide at least 75 characters")
+    .max(1500, "Response must be less than 1500 characters"),
+  strengths: z.string()
+    .trim()
+    .min(50, "Please provide at least 50 characters")
+    .max(1000, "Response must be less than 1000 characters"),
   availability: z.string()
     .trim()
-    .min(10, "Please describe your availability")
+    .min(20, "Please provide detailed availability information")
     .max(500, "Availability must be less than 500 characters"),
   additional_info: z.string()
     .trim()
@@ -68,6 +76,8 @@ const JobApplicationForm = ({ jobType }: JobApplicationFormProps) => {
       previous_experience: "",
       why_join: "",
       character_background: "",
+      job_specific_answer: "",
+      strengths: "",
       availability: "",
       additional_info: "",
     },
@@ -164,11 +174,11 @@ const JobApplicationForm = ({ jobType }: JobApplicationFormProps) => {
   const getJobDescription = () => {
     switch (jobType) {
       case "Police Department":
-        return "Join the LSPD and help maintain law and order in San Andreas. Serve and protect the community.";
+        return "Join the LSPD and serve with honor. Uphold the law, protect citizens, and maintain order in San Andreas.";
       case "EMS":
-        return "Save lives as an Emergency Medical Services professional. Provide critical medical care to citizens.";
+        return "Become a lifesaver. Provide critical emergency medical care and make a difference when every second counts.";
       case "Mechanic":
-        return "Keep vehicles running smoothly. Provide repair and maintenance services to the community.";
+        return "Master the art of automotive excellence. Keep the city moving with expert repairs and diagnostics.";
     }
   };
 
@@ -176,18 +186,38 @@ const JobApplicationForm = ({ jobType }: JobApplicationFormProps) => {
     switch (jobType) {
       case "Police Department":
         return {
-          label: "How would you handle a high-pressure situation involving multiple suspects?",
-          placeholder: "Describe your approach to handling complex law enforcement scenarios..."
+          label: "Scenario: Describe a high-stakes situation where you witnessed a fellow officer breaking protocol. *",
+          placeholder: "How would you handle this situation while maintaining team integrity and public safety? Walk us through your thought process, actions, and expected outcomes..."
         };
       case "EMS":
         return {
-          label: "Describe your approach to handling a critical emergency medical situation with limited resources.",
-          placeholder: "Explain how you would prioritize and manage a challenging medical emergency..."
+          label: "Scenario: You arrive at a scene with three critical patients but can only stabilize one immediately. *",
+          placeholder: "Walk us through your decision-making process. How would you triage, communicate with your team, and manage patient and family expectations in this life-or-death situation..."
         };
       case "Mechanic":
         return {
-          label: "What is your diagnostic process when a customer brings in a vehicle with an unknown issue?",
-          placeholder: "Describe your step-by-step approach to diagnosing and resolving vehicle problems..."
+          label: "Scenario: A high-value client brings in a custom vehicle with an intermittent electrical issue you've never encountered. *",
+          placeholder: "Describe your diagnostic approach, tools you'd use, how you'd research the problem, and how you'd manage client expectations throughout the process..."
+        };
+    }
+  };
+
+  const getStrengthsPrompt = () => {
+    switch (jobType) {
+      case "Police Department":
+        return {
+          label: "What makes you uniquely qualified for law enforcement in SLRP? *",
+          placeholder: "Describe specific skills, personality traits, past experiences, or unique perspectives that set you apart as a law enforcement professional..."
+        };
+      case "EMS":
+        return {
+          label: "What makes you stand out as an EMS professional? *",
+          placeholder: "Detail your medical knowledge, interpersonal skills, ability to work under pressure, or life experiences that make you exceptional in emergency medical services..."
+        };
+      case "Mechanic":
+        return {
+          label: "What sets you apart as a mechanic? *",
+          placeholder: "Highlight your technical skills, problem-solving abilities, customer service strengths, or experiences that make you a superior automotive technician..."
         };
     }
   };
@@ -313,13 +343,13 @@ const JobApplicationForm = ({ jobType }: JobApplicationFormProps) => {
                   <FormLabel>Why do you want to join the {jobType}? *</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Explain your motivation for joining this position..."
-                      className="min-h-[100px]"
+                      placeholder="Explain your deep motivation for pursuing this career path. What drives you to serve in this role?"
+                      className="min-h-[120px]"
                       {...field} 
                     />
                   </FormControl>
                   <FormDescription>
-                    Minimum 20 characters
+                    Be genuine and detailed (minimum 100 characters)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -331,16 +361,16 @@ const JobApplicationForm = ({ jobType }: JobApplicationFormProps) => {
               name="previous_experience"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Previous Experience *</FormLabel>
+                  <FormLabel>Previous Roleplay Experience *</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Describe any relevant roleplay experience..."
+                      placeholder="Describe any relevant roleplay experience in similar roles. Include servers, positions held, and what you learned..."
                       className="min-h-[100px]"
                       {...field} 
                     />
                   </FormControl>
                   <FormDescription>
-                    Previous roleplay experience in similar roles (minimum 10 characters)
+                    Detail your relevant RP background (minimum 50 characters)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -352,7 +382,28 @@ const JobApplicationForm = ({ jobType }: JobApplicationFormProps) => {
               name="character_background"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{getJobSpecificQuestion().label} *</FormLabel>
+                  <FormLabel>Character Background *</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Tell us about your character's background and story..."
+                      className="min-h-[120px]"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Provide a detailed character background (minimum 100 characters)
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="job_specific_answer"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{getJobSpecificQuestion().label}</FormLabel>
                   <FormControl>
                     <Textarea 
                       placeholder={getJobSpecificQuestion().placeholder}
@@ -361,7 +412,28 @@ const JobApplicationForm = ({ jobType }: JobApplicationFormProps) => {
                     />
                   </FormControl>
                   <FormDescription>
-                    Provide a detailed response (minimum 50 characters)
+                    Provide a comprehensive response demonstrating your critical thinking (minimum 75 characters)
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="strengths"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{getStrengthsPrompt().label}</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder={getStrengthsPrompt().placeholder}
+                      className="min-h-[120px]"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Be specific and honest about your strengths (minimum 50 characters)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -373,16 +445,16 @@ const JobApplicationForm = ({ jobType }: JobApplicationFormProps) => {
               name="availability"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Availability *</FormLabel>
+                  <FormLabel>Availability & Time Commitment *</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="What days/times are you typically available to play?"
+                      placeholder="Specify days of the week, time zones, typical hours available. Be as detailed as possible..."
                       className="min-h-[80px]"
                       {...field} 
                     />
                   </FormControl>
                   <FormDescription>
-                    Your typical availability for roleplay
+                    Your detailed availability for roleplay (minimum 20 characters)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
