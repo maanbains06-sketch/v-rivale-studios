@@ -130,6 +130,15 @@ const Support = () => {
               <CheckCircle className="w-5 h-5 mr-2" />
               {loading ? "Loading..." : "Ban Appeal Results"}
             </Button>
+            
+            <Button 
+              size="lg"
+              className="bg-primary hover:bg-primary/90"
+              onClick={() => navigate("/support-chat")}
+            >
+              <MessageCircle className="w-5 h-5 mr-2" />
+              Live Chat Support
+            </Button>
           </div>
         </div>
 
