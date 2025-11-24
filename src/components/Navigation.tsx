@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail, Ban, Briefcase, Gift, Image as ImageIcon } from "lucide-react";
+import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail, Ban, Briefcase, Gift, Image as ImageIcon, MessageSquare } from "lucide-react";
 import { Button } from "./ui/button";
 import AnimatedLogoIcon from "./AnimatedLogoIcon";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 import CartDrawer from "./CartDrawer";
+import { NotificationBell } from "./NotificationBell";
 
 const Navigation = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -151,6 +152,7 @@ const Navigation = () => {
           </div>
           
           <div className="flex items-center gap-2">
+            {user && <NotificationBell />}
             <CartDrawer />
             <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <SheetTrigger asChild>
@@ -247,6 +249,17 @@ const Navigation = () => {
                       >
                         <ImageIcon className="w-4 h-4 mr-2" />
                         Gallery Management
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        className="justify-start glass-effect"
+                        onClick={() => {
+                          navigate("/admin/support-chat");
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        <MessageSquare className="w-4 h-4 mr-2" />
+                        Support Chat Management
                       </Button>
                     </>
                   )}
