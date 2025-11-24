@@ -7,9 +7,80 @@ import { Button } from "@/components/ui/button";
 import { Mail, Clock, Shield, Zap } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
+
+interface BanAppeal {
+  id: string;
+  status: string;
+  discord_username: string;
+  steam_id: string;
+  ban_reason: string;
+  appeal_reason: string;
+  additional_info: string | null;
+  admin_notes: string | null;
+  created_at: string;
+  reviewed_at: string | null;
+}
 
 const Support = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [showResultsDialog, setShowResultsDialog] = useState(false);
+  const [banAppeals, setBanAppeals] = useState<BanAppeal[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchBanAppeals = async () => {
+    setLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Authentication Required",
+          description: "Please sign in to view your ban appeals.",
+          variant: "destructive",
+        });
+        navigate("/auth");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("ban_appeals")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      setBanAppeals(data || []);
+      setShowResultsDialog(true);
+    } catch (error) {
+      console.error("Error fetching ban appeals:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch ban appeals. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "approved":
+        return <Badge className="bg-green-500/20 text-green-500 border-green-500/50">Approved</Badge>;
+      case "rejected":
+        return <Badge className="bg-red-500/20 text-red-500 border-red-500/50">Rejected</Badge>;
+      default:
+        return <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/50">Pending</Badge>;
+    }
+  };
   
   return (
     <div className="min-h-screen bg-background">
@@ -38,15 +109,28 @@ const Support = () => {
             </div>
           </div>
           
-          <Button 
-            size="lg"
-            variant="outline"
-            className="border-primary text-primary hover:bg-primary/10"
-            onClick={() => navigate("/ban-appeal")}
-          >
-            <Ban className="w-5 h-5 mr-2" />
-            Submit Ban Appeal
-          </Button>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Button 
+              size="lg"
+              variant="outline"
+              className="border-primary text-primary hover:bg-primary/10"
+              onClick={() => navigate("/ban-appeal")}
+            >
+              <Ban className="w-5 h-5 mr-2" />
+              Submit Ban Appeal
+            </Button>
+            
+            <Button 
+              size="lg"
+              variant="outline"
+              className="border-primary text-primary hover:bg-primary/10"
+              onClick={fetchBanAppeals}
+              disabled={loading}
+            >
+              <CheckCircle className="w-5 h-5 mr-2" />
+              {loading ? "Loading..." : "Ban Appeal Results"}
+            </Button>
+          </div>
         </div>
 
         {/* Contact Methods */}
@@ -249,6 +333,90 @@ const Support = () => {
           </div>
         </div>
       </main>
+
+      <Dialog open={showResultsDialog} onOpenChange={setShowResultsDialog}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-2xl">
+              <Ban className="w-6 h-6 text-primary" />
+              Your Ban Appeal Results
+            </DialogTitle>
+            <DialogDescription>
+              View the status and details of all your ban appeals
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {banAppeals.length === 0 ? (
+              <div className="text-center py-12">
+                <AlertCircle className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                <p className="text-lg text-muted-foreground">No ban appeals found</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  You haven't submitted any ban appeals yet.
+                </p>
+              </div>
+            ) : (
+              banAppeals.map((appeal) => (
+                <Card key={appeal.id} className="glass-effect border-border/20">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <CardTitle className="text-lg">Appeal Status</CardTitle>
+                        <CardDescription>
+                          Submitted on {format(new Date(appeal.created_at), "PPP 'at' p")}
+                        </CardDescription>
+                      </div>
+                      {getStatusBadge(appeal.status)}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-muted-foreground">Discord Username</p>
+                        <p className="text-sm">{appeal.discord_username}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-muted-foreground">Steam ID</p>
+                        <p className="text-sm">{appeal.steam_id}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-muted-foreground">Ban Reason</p>
+                      <p className="text-sm">{appeal.ban_reason}</p>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-muted-foreground">Your Appeal</p>
+                      <p className="text-sm">{appeal.appeal_reason}</p>
+                    </div>
+                    
+                    {appeal.additional_info && (
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-muted-foreground">Additional Information</p>
+                        <p className="text-sm">{appeal.additional_info}</p>
+                      </div>
+                    )}
+                    
+                    {appeal.admin_notes && (
+                      <div className="space-y-1 bg-muted/50 p-4 rounded-lg">
+                        <p className="text-sm font-medium text-primary">Admin Response</p>
+                        <p className="text-sm">{appeal.admin_notes}</p>
+                      </div>
+                    )}
+                    
+                    {appeal.reviewed_at && (
+                      <div className="text-sm text-muted-foreground pt-2 border-t border-border/20">
+                        Reviewed on {format(new Date(appeal.reviewed_at), "PPP 'at' p")}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
