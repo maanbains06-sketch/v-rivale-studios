@@ -1290,6 +1290,14 @@ export type Database = {
         }
         Returns: string
       }
+      manual_link_staff_members: {
+        Args: never
+        Returns: {
+          assigned_role: string
+          staff_name: string
+          user_email: string
+        }[]
+      }
       notify_staff_sla_breach: { Args: never; Returns: undefined }
     }
     Enums: {
