@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.send-gallery-notification]
 verify_jwt = false
+
+[functions.check-sla-notifications]
+verify_jwt = false
