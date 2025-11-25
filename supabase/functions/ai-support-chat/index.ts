@@ -35,11 +35,68 @@ serve(async (req) => {
       ?.map((a) => `Article: ${a.title}\n${a.summary || a.content.slice(0, 300)}`)
       .join("\n\n") || "";
 
+    // First, analyze sentiment
+    const sentimentPrompt = `Analyze the sentiment and frustration level of this user message. Respond with a JSON object containing:
+- sentiment: one of "positive", "neutral", "negative", "frustrated"
+- score: a number from -1 (very negative/frustrated) to 1 (very positive)
+- reasoning: brief explanation
+
+User message: "${messages[messages.length - 1]?.content || ''}"`;
+
+    const sentimentResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          { role: "system", content: "You are a sentiment analysis expert. Always respond with valid JSON only." },
+          { role: "user", content: sentimentPrompt },
+        ],
+        stream: false,
+      }),
+    });
+
+    let sentimentData = { sentiment: "neutral", score: 0 };
+    if (sentimentResponse.ok) {
+      const sentimentResult = await sentimentResponse.json();
+      const sentimentText = sentimentResult.choices[0].message.content;
+      try {
+        const parsed = JSON.parse(sentimentText.replace(/```json\n?|\n?```/g, ''));
+        sentimentData = { sentiment: parsed.sentiment, score: parsed.score };
+      } catch (e) {
+        console.error("Failed to parse sentiment:", e);
+      }
+    }
+
+    // Update chat sentiment
+    if (chatId) {
+      const authHeader = req.headers.get("authorization");
+      if (authHeader) {
+        const token = authHeader.replace("Bearer ", "");
+        const userSupabase = createClient(supabaseUrl, supabaseKey, {
+          auth: { persistSession: false },
+          global: { headers: { Authorization: `Bearer ${token}` } },
+        });
+
+        await userSupabase
+          .from("support_chats")
+          .update({ 
+            sentiment: sentimentData.sentiment,
+            sentiment_score: sentimentData.score 
+          })
+          .eq("id", chatId);
+      }
+    }
+
     const systemPrompt = `You are a helpful support assistant for SLRP (Roleplay Server). Your role is to:
 
 1. Answer common questions about the server, applications, and support processes
 2. Guide users to the right resources
 3. If a question is complex or requires human judgment, politely suggest they wait for a staff member
+4. Be especially empathetic and helpful if you detect user frustration
 
 Knowledge Base Context:
 ${knowledgeContext}
@@ -53,6 +110,8 @@ Common Topics:
 - Store purchases: General info about tiers and perks
 
 If you don't know something or it requires admin action, say: "This requires assistance from our support team. A staff member will help you shortly."
+
+${sentimentData.sentiment === 'frustrated' ? 'IMPORTANT: The user seems frustrated. Be extra empathetic, acknowledge their concerns, and assure them a staff member will prioritize their issue.' : ''}
 
 Be friendly, concise, and professional.`;
 
