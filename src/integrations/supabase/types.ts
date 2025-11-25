@@ -209,6 +209,54 @@ export type Database = {
         }
         Relationships: []
       }
+      knowledge_articles: {
+        Row: {
+          author_id: string
+          category: string
+          content: string
+          created_at: string | null
+          helpful_count: number | null
+          id: string
+          is_published: boolean | null
+          source_chat_id: string | null
+          summary: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+          view_count: number | null
+        }
+        Insert: {
+          author_id: string
+          category: string
+          content: string
+          created_at?: string | null
+          helpful_count?: number | null
+          id?: string
+          is_published?: boolean | null
+          source_chat_id?: string | null
+          summary?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Update: {
+          author_id?: string
+          category?: string
+          content?: string
+          created_at?: string | null
+          helpful_count?: number | null
+          id?: string
+          is_published?: boolean | null
+          source_chat_id?: string | null
+          summary?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -356,6 +404,33 @@ export type Database = {
         }
         Relationships: []
       }
+      sla_config: {
+        Row: {
+          created_at: string | null
+          id: string
+          priority: string
+          resolution_time_minutes: number
+          response_time_minutes: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          priority: string
+          resolution_time_minutes: number
+          response_time_minutes: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          priority?: string
+          resolution_time_minutes?: number
+          response_time_minutes?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       staff_applications: {
         Row: {
           admin_notes: string | null
@@ -416,6 +491,39 @@ export type Database = {
           updated_at?: string
           user_id?: string
           why_join?: string
+        }
+        Relationships: []
+      }
+      staff_availability: {
+        Row: {
+          created_at: string | null
+          current_workload: number | null
+          id: string
+          is_available: boolean | null
+          last_assignment_at: string | null
+          max_concurrent_chats: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_workload?: number | null
+          id?: string
+          is_available?: boolean | null
+          last_assignment_at?: string | null
+          max_concurrent_chats?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_workload?: number | null
+          id?: string
+          is_available?: boolean | null
+          last_assignment_at?: string | null
+          max_concurrent_chats?: number | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -518,30 +626,57 @@ export type Database = {
         Row: {
           assigned_to: string | null
           created_at: string
+          escalated: boolean | null
+          escalated_at: string | null
+          first_response_at: string | null
           id: string
           last_message_at: string
+          priority: string | null
+          resolved_at: string | null
+          sla_breached: boolean | null
+          sla_resolution_target: string | null
+          sla_response_target: string | null
           status: string
           subject: string
+          tags: string[] | null
           updated_at: string
           user_id: string
         }
         Insert: {
           assigned_to?: string | null
           created_at?: string
+          escalated?: boolean | null
+          escalated_at?: string | null
+          first_response_at?: string | null
           id?: string
           last_message_at?: string
+          priority?: string | null
+          resolved_at?: string | null
+          sla_breached?: boolean | null
+          sla_resolution_target?: string | null
+          sla_response_target?: string | null
           status?: string
           subject: string
+          tags?: string[] | null
           updated_at?: string
           user_id: string
         }
         Update: {
           assigned_to?: string | null
           created_at?: string
+          escalated?: boolean | null
+          escalated_at?: string | null
+          first_response_at?: string | null
           id?: string
           last_message_at?: string
+          priority?: string | null
+          resolved_at?: string | null
+          sla_breached?: boolean | null
+          sla_resolution_target?: string | null
+          sla_response_target?: string | null
           status?: string
           subject?: string
+          tags?: string[] | null
           updated_at?: string
           user_id?: string
         }
@@ -759,6 +894,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assign_chat_to_staff: { Args: { chat_id: string }; Returns: string }
+      check_sla_breach: { Args: never; Returns: undefined }
       generate_referral_code: { Args: never; Returns: string }
       has_role: {
         Args: {
@@ -766,6 +903,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_article_helpful: {
+        Args: { article_id: string }
+        Returns: undefined
       }
     }
     Enums: {
