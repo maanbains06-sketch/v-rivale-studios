@@ -4,7 +4,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import AnimatedLogo from "@/components/AnimatedLogo";
-import heroBg from "@/assets/hero-home-realistic.jpg";
+import heroBg from "@/assets/hero-home-gta-thunder.jpg";
 
 const stats = [
   {
