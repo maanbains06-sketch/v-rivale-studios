@@ -4,6 +4,8 @@ import { X, ChevronLeft, ChevronRight, Download, Heart } from "lucide-react";
 import { useState, useEffect } from "react";
 import { ShareButtons } from "@/components/ShareButtons";
 import { useGalleryLikes } from "@/hooks/useGalleryLikes";
+import { GalleryComments } from "@/components/GalleryComments";
+import { Separator } from "@/components/ui/separator";
 
 interface GallerySubmission {
   id: string;
@@ -76,10 +78,12 @@ export const GalleryImageViewer = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl w-[95vw] h-[95vh] p-0 bg-black/95 border-none">
-        <div className="relative w-full h-full flex flex-col">
-          {/* Header */}
-          <div className="absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent p-6">
+      <DialogContent className="max-w-7xl w-[95vw] h-[95vh] p-0 bg-black/95 border-none overflow-hidden">
+        <div className="relative w-full h-full flex">
+          {/* Main Content Area */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent p-6">
             <div className="flex items-start justify-between">
               <div className="flex-1 mr-4">
                 <h2 className="text-xl font-bold text-white mb-1">
@@ -128,10 +132,10 @@ export const GalleryImageViewer = ({
                 </Button>
               </div>
             </div>
-          </div>
+            </div>
 
-          {/* Media Content */}
-          <div className="flex-1 flex items-center justify-center p-6 pt-24 pb-20">
+            {/* Media Content */}
+            <div className="flex-1 flex items-center justify-center p-6 pt-24 pb-20 overflow-hidden">
             {isVideo ? (
               <video
                 src={getFileUrl(currentSubmission.file_path)}
@@ -146,9 +150,9 @@ export const GalleryImageViewer = ({
                 className="max-w-full max-h-full object-contain rounded-lg"
               />
             )}
-          </div>
+            </div>
 
-          {/* Navigation */}
+            {/* Navigation */}
           {submissions.length > 1 && (
             <>
               <Button
@@ -168,16 +172,24 @@ export const GalleryImageViewer = ({
                 <ChevronRight className="h-8 w-8" />
               </Button>
             </>
-          )}
+            )}
 
-          {/* Footer Counter */}
-          {submissions.length > 1 && (
-            <div className="absolute bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-black/80 to-transparent p-6">
-              <div className="text-center text-white/70 text-sm">
-                {index + 1} / {submissions.length}
+            {/* Footer Counter */}
+            {submissions.length > 1 && (
+              <div className="absolute bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-black/80 to-transparent p-6">
+                <div className="text-center text-white/70 text-sm">
+                  {index + 1} / {submissions.length}
+                </div>
               </div>
+            )}
+          </div>
+
+          {/* Comments Sidebar */}
+          <div className="w-[400px] bg-black/60 backdrop-blur-sm border-l border-white/10 flex flex-col">
+            <div className="p-6 flex-1 overflow-hidden flex flex-col">
+              <GalleryComments submissionId={currentSubmission.id} />
             </div>
-          )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>
