@@ -1,6 +1,9 @@
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+// Discord Guild ID - replace with your actual Discord server ID
+const DISCORD_GUILD_ID = "YOUR_DISCORD_SERVER_ID";
+
 export const useStaffPresence = () => {
   useEffect(() => {
     const trackPresence = async () => {
@@ -8,36 +11,43 @@ export const useStaffPresence = () => {
       if (!user) return;
 
       // Check if user is staff
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id);
+      const { data: staffMember } = await supabase
+        .from("staff_members")
+        .select("discord_id")
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .single();
 
-      const isStaff = roles?.some(r => ['admin', 'moderator'].includes(r.role));
-      if (!isStaff) return;
+      if (!staffMember) return;
 
-      const channel = supabase.channel('staff-presence');
+      // Sync Discord activity periodically
+      const syncDiscordActivity = async () => {
+        try {
+          const { data, error } = await supabase.functions.invoke("check-discord-activity", {
+            body: {
+              userId: user.id,
+              guildId: DISCORD_GUILD_ID,
+            },
+          });
 
-      channel.subscribe(async (status) => {
-        if (status !== 'SUBSCRIBED') return;
+          if (error) {
+            console.error("Error checking Discord activity:", error);
+          } else {
+            console.log("Discord activity synced:", data);
+          }
+        } catch (error) {
+          console.error("Failed to sync Discord activity:", error);
+        }
+      };
 
-        await channel.track({
-          user_id: user.id,
-          online_at: new Date().toISOString(),
-        });
+      // Initial sync
+      syncDiscordActivity();
 
-        // Log login activity
-        await supabase.rpc('log_staff_activity', {
-          p_staff_user_id: user.id,
-          p_action_type: 'login',
-          p_action_description: 'Staff member logged in',
-        });
-      });
+      // Sync every 2 minutes
+      const interval = setInterval(syncDiscordActivity, 120000);
 
-      // Cleanup on unmount
       return () => {
-        channel.untrack();
-        supabase.removeChannel(channel);
+        clearInterval(interval);
       };
     };
 
