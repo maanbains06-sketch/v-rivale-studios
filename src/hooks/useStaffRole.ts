@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface StaffRole {
   isStaff: boolean;
+  isAdmin: boolean;
   department: string | null;
   roleType: string | null;
   loading: boolean;
@@ -11,6 +12,7 @@ interface StaffRole {
 export const useStaffRole = () => {
   const [staffRole, setStaffRole] = useState<StaffRole>({
     isStaff: false,
+    isAdmin: false,
     department: null,
     roleType: null,
     loading: true,
@@ -22,9 +24,18 @@ export const useStaffRole = () => {
         const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) {
-          setStaffRole({ isStaff: false, department: null, roleType: null, loading: false });
+          setStaffRole({ isStaff: false, isAdmin: false, department: null, roleType: null, loading: false });
           return;
         }
+
+        // Check if user is an admin or moderator
+        const { data: userRoles } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .in('role', ['admin', 'moderator']);
+
+        const isAdmin = userRoles && userRoles.length > 0;
 
         // Check if user is a staff member
         const { data: staffMember } = await supabase
@@ -34,19 +45,20 @@ export const useStaffRole = () => {
           .eq('is_active', true)
           .maybeSingle();
 
-        if (staffMember) {
+        if (staffMember || isAdmin) {
           setStaffRole({
-            isStaff: true,
-            department: staffMember.department,
-            roleType: staffMember.role_type,
+            isStaff: staffMember ? true : false,
+            isAdmin,
+            department: staffMember?.department || null,
+            roleType: staffMember?.role_type || null,
             loading: false,
           });
         } else {
-          setStaffRole({ isStaff: false, department: null, roleType: null, loading: false });
+          setStaffRole({ isStaff: false, isAdmin: false, department: null, roleType: null, loading: false });
         }
       } catch (error) {
         console.error('Error checking staff role:', error);
-        setStaffRole({ isStaff: false, department: null, roleType: null, loading: false });
+        setStaffRole({ isStaff: false, isAdmin: false, department: null, roleType: null, loading: false });
       }
     };
 
