@@ -133,6 +133,89 @@ export type Database = {
         }
         Relationships: []
       }
+      event_participants: {
+        Row: {
+          event_id: string
+          id: string
+          registered_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          event_id: string
+          id?: string
+          registered_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          event_id?: string
+          id?: string
+          registered_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_participants_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          banner_image: string | null
+          created_at: string
+          created_by: string | null
+          current_participants: number | null
+          description: string | null
+          end_date: string
+          event_type: string
+          id: string
+          location: string | null
+          max_participants: number | null
+          start_date: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          banner_image?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_participants?: number | null
+          description?: string | null
+          end_date: string
+          event_type?: string
+          id?: string
+          location?: string | null
+          max_participants?: number | null
+          start_date: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          banner_image?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_participants?: number | null
+          description?: string | null
+          end_date?: string
+          event_type?: string
+          id?: string
+          location?: string | null
+          max_participants?: number | null
+          start_date?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       favorite_staff: {
         Row: {
           created_at: string
