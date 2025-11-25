@@ -127,6 +127,13 @@ const Navigation = () => {
             >
               Store
             </NavLink>
+            <NavLink
+              to="/privacy-policy" 
+              className="text-foreground/80 hover:text-primary transition-colors"
+              activeClassName="text-primary"
+            >
+              Legal
+            </NavLink>
             {hasAdminAccess && (
               <NavLink 
                 to="/admin" 
