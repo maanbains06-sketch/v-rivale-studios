@@ -28,6 +28,100 @@ const stats = [
 const Index = () => {
   const navigate = useNavigate();
   const rainContainerRef = useRef<HTMLDivElement>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  // Initialize audio context
+  useEffect(() => {
+    audioContextRef.current = new AudioContext();
+    return () => {
+      audioContextRef.current?.close();
+    };
+  }, []);
+
+  // Thunder sound effect
+  const playThunderSound = () => {
+    const audioContext = audioContextRef.current;
+    if (!audioContext) return;
+
+    // Create thunder rumble using multiple oscillators
+    const now = audioContext.currentTime;
+    
+    // Low rumble
+    const oscillator1 = audioContext.createOscillator();
+    const gainNode1 = audioContext.createGain();
+    oscillator1.type = 'sawtooth';
+    oscillator1.frequency.setValueAtTime(50, now);
+    oscillator1.frequency.exponentialRampToValueAtTime(30, now + 0.5);
+    gainNode1.gain.setValueAtTime(0.3, now);
+    gainNode1.gain.exponentialRampToValueAtTime(0.01, now + 1.5);
+    oscillator1.connect(gainNode1);
+    gainNode1.connect(audioContext.destination);
+    oscillator1.start(now);
+    oscillator1.stop(now + 1.5);
+
+    // Mid rumble
+    const oscillator2 = audioContext.createOscillator();
+    const gainNode2 = audioContext.createGain();
+    oscillator2.type = 'sawtooth';
+    oscillator2.frequency.setValueAtTime(100, now);
+    oscillator2.frequency.exponentialRampToValueAtTime(60, now + 0.8);
+    gainNode2.gain.setValueAtTime(0.2, now);
+    gainNode2.gain.exponentialRampToValueAtTime(0.01, now + 1.2);
+    oscillator2.connect(gainNode2);
+    gainNode2.connect(audioContext.destination);
+    oscillator2.start(now);
+    oscillator2.stop(now + 1.2);
+
+    // Sharp crack
+    const noiseBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.1, audioContext.sampleRate);
+    const noiseData = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < noiseBuffer.length; i++) {
+      noiseData[i] = Math.random() * 2 - 1;
+    }
+    
+    const noiseSource = audioContext.createBufferSource();
+    const noiseGain = audioContext.createGain();
+    const noiseFilter = audioContext.createBiquadFilter();
+    noiseFilter.type = 'lowpass';
+    noiseFilter.frequency.setValueAtTime(1000, now);
+    noiseSource.buffer = noiseBuffer;
+    noiseGain.gain.setValueAtTime(0.4, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+    noiseSource.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(audioContext.destination);
+    noiseSource.start(now);
+  };
+
+  // Thunder timing synchronized with lightning
+  useEffect(() => {
+    // Lightning bolt 1: 4s cycle, strikes at 10% (0.4s)
+    const thunder1 = setInterval(() => {
+      setTimeout(() => playThunderSound(), 400);
+    }, 4000);
+
+    // Lightning bolt 2: 5s cycle, delay 1.5s, strikes at 10% (0.5s)
+    const thunder2 = setInterval(() => {
+      setTimeout(() => playThunderSound(), 500);
+    }, 5000);
+    setTimeout(() => {
+      setTimeout(() => playThunderSound(), 500);
+    }, 1500);
+
+    // Lightning bolt 3: 6s cycle, delay 3s, strikes at 10% (0.6s)
+    const thunder3 = setInterval(() => {
+      setTimeout(() => playThunderSound(), 600);
+    }, 6000);
+    setTimeout(() => {
+      setTimeout(() => playThunderSound(), 600);
+    }, 3000);
+
+    return () => {
+      clearInterval(thunder1);
+      clearInterval(thunder2);
+      clearInterval(thunder3);
+    };
+  }, []);
 
   useEffect(() => {
     const container = rainContainerRef.current;
