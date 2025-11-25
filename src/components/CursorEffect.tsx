@@ -71,14 +71,14 @@ export const CursorEffect = () => {
       for (let i = 0; i < 4; i++) { // More particles per interval
         const angle = Math.random() * Math.PI * 2;
         const speed = 0.4 + Math.random() * 0.6;
-        const spreadX = (Math.random() - 0.5) * 20; // More horizontal spread
+        const spreadX = (Math.random() - 0.5) * 10; // Less horizontal spread
         newParticles.push({
           id: particleIdRef.current++,
           x: position.x + spreadX,
           y: position.y,
-          velocityX: Math.cos(angle) * speed * 0.5,
+          velocityX: Math.cos(angle) * speed * 0.3,
           velocityY: -Math.abs(Math.sin(angle)) * speed - 1.2, // Faster upward movement
-          size: 5 + Math.random() * 8, // Larger particles
+          size: 2 + Math.random() * 3, // Much smaller particles
           opacity: 0.7 + Math.random() * 0.3,
           createdAt: now,
         });
@@ -137,10 +137,10 @@ export const CursorEffect = () => {
             style={{
               width: `${particle.size}px`,
               height: `${particle.size}px`,
-              background: `radial-gradient(circle, rgba(147, 197, 253, ${particle.opacity * 0.8}) 0%, rgba(96, 165, 250, ${particle.opacity * 0.6}) 40%, rgba(59, 130, 246, ${particle.opacity * 0.3}) 70%, transparent 90%)`,
-              filter: "blur(4px)",
+              background: `radial-gradient(circle, rgba(147, 197, 253, ${particle.opacity * 0.8}) 0%, rgba(96, 165, 250, ${particle.opacity * 0.5}) 50%, transparent 80%)`,
+              filter: "blur(2px)",
               opacity: particle.opacity,
-              boxShadow: `0 0 ${particle.size * 1.5}px rgba(96, 165, 250, ${particle.opacity * 0.4})`,
+              boxShadow: `0 0 ${particle.size * 1}px rgba(96, 165, 250, ${particle.opacity * 0.3})`,
             }}
           />
         </div>
