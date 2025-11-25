@@ -36,7 +36,7 @@ const Support = () => {
   const [banAppeals, setBanAppeals] = useState<BanAppeal[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const { onlineStatus } = useStaffOnlineStatus();
+  const { onlineStatus, onlineCount } = useStaffOnlineStatus();
   
   const [supportStats, setSupportStats] = useState({
     activeChats: 0,
@@ -50,12 +50,11 @@ const Support = () => {
   }, []);
 
   useEffect(() => {
-    const staffOnlineCount = Object.values(onlineStatus).filter(status => status.online).length;
     setSupportStats(prev => ({
       ...prev,
-      staffOnline: staffOnlineCount
+      staffOnline: onlineCount
     }));
-  }, [onlineStatus]);
+  }, [onlineCount]);
 
   const fetchSupportStats = async () => {
     try {
