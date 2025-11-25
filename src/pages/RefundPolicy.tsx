@@ -1,6 +1,6 @@
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
-import headerImage from "@/assets/header-store.jpg";
+import headerImage from "@/assets/header-support.jpg";
 import { DollarSign, Clock, CheckCircle, XCircle, AlertCircle, CreditCard } from "lucide-react";
 
 const RefundPolicy = () => {

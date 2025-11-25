@@ -1,6 +1,6 @@
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
-import headerImage from "@/assets/header-rules.jpg";
+import headerImage from "@/assets/header-community.jpg";
 import { FileText, Scale, Ban, AlertTriangle, Shield, Users } from "lucide-react";
 
 const TermsOfService = () => {
