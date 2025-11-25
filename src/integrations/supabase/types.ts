@@ -133,6 +133,35 @@ export type Database = {
         }
         Relationships: []
       }
+      favorite_staff: {
+        Row: {
+          created_at: string
+          id: string
+          staff_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          staff_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          staff_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorite_staff_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gallery_submissions: {
         Row: {
           approved_at: string | null
