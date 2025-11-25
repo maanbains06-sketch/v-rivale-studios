@@ -2,6 +2,7 @@ import { Users, Zap, CheckCircle, Play, Instagram, Facebook, Twitter, Youtube, M
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useRef } from "react";
 import Navigation from "@/components/Navigation";
 import AnimatedLogo from "@/components/AnimatedLogo";
 import heroBg from "@/assets/hero-home-gta-thunder.jpg";
@@ -26,6 +27,40 @@ const stats = [
 
 const Index = () => {
   const navigate = useNavigate();
+  const rainContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = rainContainerRef.current;
+    if (!container) return;
+
+    // Create rain drops
+    const createRainDrop = () => {
+      const drop = document.createElement('div');
+      drop.className = 'rain-drop';
+      drop.style.left = `${Math.random() * 100}%`;
+      drop.style.animationDuration = `${Math.random() * 0.5 + 0.5}s`;
+      drop.style.animationDelay = `${Math.random() * 2}s`;
+      drop.style.opacity = `${Math.random() * 0.3 + 0.3}`;
+      
+      container.appendChild(drop);
+
+      // Remove drop after animation
+      setTimeout(() => {
+        drop.remove();
+      }, 2500);
+    };
+
+    // Create multiple rain drops
+    const rainInterval = setInterval(() => {
+      for (let i = 0; i < 3; i++) {
+        createRainDrop();
+      }
+    }, 100);
+
+    return () => {
+      clearInterval(rainInterval);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -41,6 +76,11 @@ const Index = () => {
           backgroundAttachment: 'fixed',
         }}
       >
+        {/* Rain Animation Layer */}
+        <div 
+          ref={rainContainerRef}
+          className="absolute inset-0 z-[4] pointer-events-none overflow-hidden"
+        />
         {/* Animated Cloud Layers */}
         <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden">
           <div className="clouds-animation absolute w-[200%] h-full opacity-20"
