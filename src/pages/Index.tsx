@@ -125,140 +125,125 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Featured Highlights */}
+          {/* Community Highlights */}
           <div className="grid md:grid-cols-3 gap-6 mb-12">
-            <div className="glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 animate-fade-in">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-r from-neon-cyan to-neon-purple mb-4">
-                <Trophy className="w-6 h-6 text-background" />
+            <div className="glass-effect rounded-2xl p-8 text-center hover:scale-105 transition-all duration-300 animate-fade-in group">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-neon-cyan to-neon-purple mb-6 group-hover:scale-110 transition-transform duration-300">
+                <Trophy className="w-8 h-8 text-background" />
               </div>
-              <h3 className="text-xl font-bold mb-2 text-foreground">Weekly Events</h3>
-              <p className="text-muted-foreground mb-3">
-                Join exciting community events, tournaments, and special activities with amazing rewards
+              <h3 className="text-2xl font-bold mb-3 text-gradient">Weekly Events</h3>
+              <p className="text-muted-foreground text-base leading-relaxed">
+                Join exciting community events, tournaments, and special activities with amazing rewards every week
               </p>
-              <Button 
-                variant="link" 
-                className="text-primary hover:text-primary/80 p-0"
-                onClick={() => navigate("/community")}
-              >
-                View Events →
-              </Button>
             </div>
 
-            <div className="glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 animate-fade-in" style={{ animationDelay: '100ms' }}>
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-r from-neon-purple to-neon-pink mb-4">
-                <Users className="w-6 h-6 text-background" />
+            <div className="glass-effect rounded-2xl p-8 text-center hover:scale-105 transition-all duration-300 animate-fade-in group" style={{ animationDelay: '100ms' }}>
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-neon-purple to-neon-pink mb-6 group-hover:scale-110 transition-transform duration-300">
+                <Users className="w-8 h-8 text-background" />
               </div>
-              <h3 className="text-xl font-bold mb-2 text-foreground">10,000+ Members</h3>
-              <p className="text-muted-foreground mb-3">
-                Active community with friendly players ready to welcome you and enhance your experience
+              <h3 className="text-2xl font-bold mb-3 text-gradient">10,000+ Members</h3>
+              <p className="text-muted-foreground text-base leading-relaxed">
+                Active community with friendly players ready to welcome you and enhance your roleplay experience
               </p>
-              <Button 
-                variant="link" 
-                className="text-primary hover:text-primary/80 p-0"
-                onClick={() => navigate("/community")}
-              >
-                Join Discord →
-              </Button>
             </div>
 
-            <div className="glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 animate-fade-in" style={{ animationDelay: '200ms' }}>
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-r from-neon-pink to-secondary mb-4">
-                <Image className="w-6 h-6 text-background" />
+            <div className="glass-effect rounded-2xl p-8 text-center hover:scale-105 transition-all duration-300 animate-fade-in group" style={{ animationDelay: '200ms' }}>
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-neon-pink to-secondary mb-6 group-hover:scale-110 transition-transform duration-300">
+                <Image className="w-8 h-8 text-background" />
               </div>
-              <h3 className="text-xl font-bold mb-2 text-foreground">Player Gallery</h3>
-              <p className="text-muted-foreground mb-3">
-                Share your best moments and check out incredible screenshots from our community
+              <h3 className="text-2xl font-bold mb-3 text-gradient">Player Gallery</h3>
+              <p className="text-muted-foreground text-base leading-relaxed">
+                Share your best moments and check out incredible screenshots from our amazing community
               </p>
-              <Button 
-                variant="link" 
-                className="text-primary hover:text-primary/80 p-0"
-                onClick={() => navigate("/gallery")}
-              >
-                View Gallery →
-              </Button>
-            </div>
-
-            {/* Social Media Links */}
-            <div className="glass-effect rounded-2xl p-8 text-center animate-fade-in" style={{ animationDelay: '300ms' }}>
-              <h3 className="text-xl font-bold mb-4 text-foreground">Follow Us</h3>
-              <TooltipProvider>
-                <div className="flex justify-center gap-4">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        size="lg" 
-                        variant="outline" 
-                        className="h-12 w-12 p-0 border-primary/50 hover:bg-primary/10 hover:border-primary hover-scale"
-                        asChild
-                      >
-                        <a href="https://youtube.com" target="_blank" rel="noopener noreferrer">
-                          <Youtube className="h-5 w-5 text-primary" />
-                        </a>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>YouTube</p>
-                    </TooltipContent>
-                  </Tooltip>
-
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        size="lg" 
-                        variant="outline" 
-                        className="h-12 w-12 p-0 border-primary/50 hover:bg-primary/10 hover:border-primary hover-scale"
-                        asChild
-                      >
-                        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
-                          <Instagram className="h-5 w-5 text-primary" />
-                        </a>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Instagram</p>
-                    </TooltipContent>
-                  </Tooltip>
-
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        size="lg" 
-                        variant="outline" 
-                        className="h-12 w-12 p-0 border-primary/50 hover:bg-primary/10 hover:border-primary hover-scale"
-                        asChild
-                      >
-                        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
-                          <Twitter className="h-5 w-5 text-primary" />
-                        </a>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Twitter</p>
-                    </TooltipContent>
-                  </Tooltip>
-
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        size="lg" 
-                        variant="outline" 
-                        className="h-12 w-12 p-0 border-primary/50 hover:bg-primary/10 hover:border-primary hover-scale"
-                        asChild
-                      >
-                        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
-                          <Facebook className="h-5 w-5 text-primary" />
-                        </a>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Facebook</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-              </TooltipProvider>
             </div>
           </div>
 
+          {/* Enhanced Follow Us Section */}
+          <div className="max-w-4xl mx-auto">
+            <div className="glass-effect rounded-3xl p-12 text-center animate-fade-in relative overflow-hidden" style={{ animationDelay: '300ms' }}>
+              <div className="absolute inset-0 bg-gradient-to-br from-neon-cyan/5 via-neon-purple/5 to-neon-pink/5"></div>
+              <div className="relative z-10">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-neon-cyan via-neon-purple to-neon-pink mb-6 animate-glow">
+                  <MessageCircle className="w-10 h-10 text-background" />
+                </div>
+                <h3 className="text-3xl md:text-4xl font-bold mb-4 text-gradient">Stay Connected</h3>
+                <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
+                  Follow us on social media for the latest updates, community highlights, event announcements, and exclusive content
+                </p>
+                <TooltipProvider>
+                  <div className="flex justify-center gap-4 flex-wrap">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          size="lg" 
+                          className="h-14 w-14 p-0 rounded-xl border-2 border-primary/30 bg-primary/10 hover:bg-primary hover:border-primary transition-all duration-300 hover:scale-110 glow-cyan"
+                          asChild
+                        >
+                          <a href="https://youtube.com" target="_blank" rel="noopener noreferrer">
+                            <Youtube className="h-6 w-6 text-primary hover:text-primary-foreground transition-colors" />
+                          </a>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="text-base">
+                        <p>Subscribe on YouTube</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          size="lg" 
+                          className="h-14 w-14 p-0 rounded-xl border-2 border-primary/30 bg-primary/10 hover:bg-primary hover:border-primary transition-all duration-300 hover:scale-110 glow-purple"
+                          asChild
+                        >
+                          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+                            <Instagram className="h-6 w-6 text-primary hover:text-primary-foreground transition-colors" />
+                          </a>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="text-base">
+                        <p>Follow on Instagram</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          size="lg" 
+                          className="h-14 w-14 p-0 rounded-xl border-2 border-primary/30 bg-primary/10 hover:bg-primary hover:border-primary transition-all duration-300 hover:scale-110 glow-pink"
+                          asChild
+                        >
+                          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
+                            <Twitter className="h-6 w-6 text-primary hover:text-primary-foreground transition-colors" />
+                          </a>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="text-base">
+                        <p>Follow on Twitter</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          size="lg" 
+                          className="h-14 w-14 p-0 rounded-xl border-2 border-primary/30 bg-primary/10 hover:bg-primary hover:border-primary transition-all duration-300 hover:scale-110 glow-cyan"
+                          asChild
+                        >
+                          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+                            <Facebook className="h-6 w-6 text-primary hover:text-primary-foreground transition-colors" />
+                          </a>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="text-base">
+                        <p>Like on Facebook</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                </TooltipProvider>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
       
