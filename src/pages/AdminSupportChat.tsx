@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Send, MessageCircle, Check, Paperclip, X, Download, Zap } from "lucide-react";
+import { Send, MessageCircle, Check, Paperclip, X, Download, Zap, AlertCircle, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
@@ -42,6 +42,10 @@ interface Chat {
   created_at: string;
   last_message_at: string;
   assigned_to: string | null;
+  sentiment: string | null;
+  sentiment_score: number | null;
+  escalated: boolean | null;
+  sla_breached: boolean | null;
 }
 
 const AdminSupportChat = () => {
@@ -362,6 +366,12 @@ const AdminSupportChat = () => {
           <Card className="glass-effect border-border/20">
             <CardHeader>
               <CardTitle className="text-lg">Support Requests</CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">
+                <span className="mr-2">🔴 Frustrated</span>
+                <span className="mr-2">😟 Negative</span>
+                <span className="mr-2">😐 Neutral</span>
+                <span>😊 Positive</span>
+              </p>
             </CardHeader>
             <CardContent className="p-0">
               <ScrollArea className="h-[calc(100vh-400px)]">
@@ -378,13 +388,36 @@ const AdminSupportChat = () => {
                         onClick={() => setSelectedChat(chat)}
                         className={`w-full p-4 text-left hover:bg-accent transition-colors ${
                           selectedChat?.id === chat.id ? "bg-accent" : ""
-                        }`}
+                        } ${chat.sentiment === 'frustrated' ? "border-l-4 border-l-destructive" : ""}`}
                       >
                         <div className="flex items-start justify-between mb-1">
-                          <p className="font-medium text-sm truncate pr-2">{chat.subject}</p>
-                          <Badge variant="outline" className="text-xs">
-                            {chat.status}
-                          </Badge>
+                          <div className="flex items-center gap-1 flex-1 min-w-0">
+                            {chat.sentiment === 'frustrated' && (
+                              <span className="text-sm shrink-0" title="Frustrated user">🔴</span>
+                            )}
+                            {chat.sentiment === 'negative' && (
+                              <span className="text-sm shrink-0" title="Negative sentiment">😟</span>
+                            )}
+                            {chat.sentiment === 'positive' && (
+                              <span className="text-sm shrink-0" title="Positive sentiment">😊</span>
+                            )}
+                            <p className="font-medium text-sm truncate pr-2">{chat.subject}</p>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            {chat.escalated && (
+                              <Badge variant="destructive" className="text-xs px-1 py-0">
+                                <AlertCircle className="h-3 w-3" />
+                              </Badge>
+                            )}
+                            {chat.sla_breached && (
+                              <Badge variant="destructive" className="text-xs px-1 py-0">
+                                <Clock className="h-3 w-3" />
+                              </Badge>
+                            )}
+                            <Badge variant="outline" className="text-xs">
+                              {chat.status}
+                            </Badge>
+                          </div>
                         </div>
                         <p className="text-xs text-muted-foreground">
                           {format(new Date(chat.last_message_at), "PPp")}
@@ -403,8 +436,24 @@ const AdminSupportChat = () => {
               <>
                 <CardHeader className="border-b border-border/20">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{selectedChat.subject}</CardTitle>
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <CardTitle className="text-lg truncate">{selectedChat.subject}</CardTitle>
+                      {selectedChat.sentiment === 'frustrated' && (
+                        <Badge variant="destructive" className="animate-pulse shrink-0">
+                          🔴 Frustrated
+                        </Badge>
+                      )}
+                      {selectedChat.sentiment === 'negative' && (
+                        <Badge variant="secondary" className="shrink-0">😟 Negative</Badge>
+                      )}
+                      {selectedChat.escalated && (
+                        <Badge variant="destructive" className="shrink-0">
+                          <AlertCircle className="h-3 w-3 mr-1" />
+                          Escalated
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex gap-2 shrink-0">
                       {selectedChat.status === "open" && (
                         <Button
                           size="sm"

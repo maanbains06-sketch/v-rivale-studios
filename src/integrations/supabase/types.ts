@@ -633,6 +633,8 @@ export type Database = {
           last_message_at: string
           priority: string | null
           resolved_at: string | null
+          sentiment: string | null
+          sentiment_score: number | null
           sla_breached: boolean | null
           sla_resolution_target: string | null
           sla_response_target: string | null
@@ -652,6 +654,8 @@ export type Database = {
           last_message_at?: string
           priority?: string | null
           resolved_at?: string | null
+          sentiment?: string | null
+          sentiment_score?: number | null
           sla_breached?: boolean | null
           sla_resolution_target?: string | null
           sla_response_target?: string | null
@@ -671,6 +675,8 @@ export type Database = {
           last_message_at?: string
           priority?: string | null
           resolved_at?: string | null
+          sentiment?: string | null
+          sentiment_score?: number | null
           sla_breached?: boolean | null
           sla_resolution_target?: string | null
           sla_response_target?: string | null
