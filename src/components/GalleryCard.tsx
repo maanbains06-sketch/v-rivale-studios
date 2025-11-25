@@ -1,7 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Play } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar, Play, Heart } from "lucide-react";
 import { useState } from "react";
+import { useGalleryLikes } from "@/hooks/useGalleryLikes";
 
 interface GallerySubmission {
   id: string;
@@ -21,7 +23,13 @@ interface GalleryCardProps {
 
 export const GalleryCard = ({ submission, getFileUrl, onClick }: GalleryCardProps) => {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const { likeCount, isLiked, loading, toggleLike } = useGalleryLikes(submission.id);
   const isVideo = submission.file_type.startsWith("video/");
+
+  const handleLikeClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleLike();
+  };
 
   return (
     <Card
@@ -78,13 +86,25 @@ export const GalleryCard = ({ submission, getFileUrl, onClick }: GalleryCardProp
             {submission.description}
           </p>
         )}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Calendar className="h-3 w-3" />
-          {new Date(submission.created_at).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Calendar className="h-3 w-3" />
+            {new Date(submission.created_at).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`h-8 gap-1 ${isLiked ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-red-500'}`}
+            onClick={handleLikeClick}
+            disabled={loading}
+          >
+            <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
+            <span className="text-xs">{likeCount}</span>
+          </Button>
         </div>
       </CardContent>
     </Card>

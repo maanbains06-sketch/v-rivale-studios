@@ -245,6 +245,35 @@ export type Database = {
           },
         ]
       }
+      gallery_likes: {
+        Row: {
+          created_at: string | null
+          id: string
+          submission_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          submission_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          submission_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gallery_likes_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "gallery_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gallery_submissions: {
         Row: {
           approved_at: string | null
@@ -1204,6 +1233,10 @@ export type Database = {
       assign_chat_to_staff: { Args: { chat_id: string }; Returns: string }
       check_sla_breach: { Args: never; Returns: undefined }
       generate_referral_code: { Args: never; Returns: string }
+      get_gallery_like_count: {
+        Args: { submission_uuid: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
