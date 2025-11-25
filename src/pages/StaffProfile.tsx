@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import StaffActivityLog from "@/components/StaffActivityLog";
+import StaffPresence from "@/components/StaffPresence";
 
 interface StaffMember {
   id: string;
@@ -23,6 +25,8 @@ interface StaffMember {
   bio?: string;
   responsibilities: string[];
   is_active: boolean;
+  user_id?: string;
+  last_seen?: string;
 }
 
 const roleColors = {
@@ -160,6 +164,15 @@ const StaffProfile = () => {
                 <RoleIcon className="w-3 h-3 mr-1" />
                 {staffMember.role_type.replace("_", " ").toUpperCase()}
               </Badge>
+              {staffMember.user_id && (
+                <div className="mt-4">
+                  <StaffPresence 
+                    userId={staffMember.user_id} 
+                    lastSeen={staffMember.last_seen}
+                    showLastSeen={true}
+                  />
+                </div>
+              )}
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2 p-4 rounded-lg bg-muted/30">
@@ -374,6 +387,14 @@ const StaffProfile = () => {
                 )}
               </CardContent>
             </Card>
+
+            {staffMember.user_id && (
+              <StaffActivityLog 
+                staffUserId={staffMember.user_id} 
+                limit={15}
+                showTitle={true}
+              />
+            )}
           </div>
         </div>
       </div>

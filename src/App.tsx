@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useReferralTracking } from "@/hooks/useReferralTracking";
+import { useStaffPresence } from "@/hooks/useStaffPresence";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Features from "./pages/Features";
@@ -37,6 +38,7 @@ const queryClient = new QueryClient();
 
 const AppRoutes = () => {
   useReferralTracking();
+  useStaffPresence();
   
   return (
     <Routes>

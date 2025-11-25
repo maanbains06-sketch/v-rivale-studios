@@ -285,6 +285,15 @@ const AdminSupportChat = () => {
         .update({ last_message_at: new Date().toISOString() })
         .eq("id", selectedChat.id);
 
+      // Log staff activity
+      await supabase.rpc('log_staff_activity', {
+        p_staff_user_id: user.id,
+        p_action_type: 'chat_response',
+        p_action_description: `Responded to support chat: ${selectedChat.subject}`,
+        p_related_id: selectedChat.id,
+        p_related_type: 'support_chat',
+      });
+
       setNewMessage("");
       setAttachment(null);
       if (fileInputRef.current) {
@@ -306,6 +315,8 @@ const AdminSupportChat = () => {
   };
 
   const updateChatStatus = async (chatId: string, status: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
     const { error } = await supabase
       .from("support_chats")
       .update({ status })
@@ -319,6 +330,17 @@ const AdminSupportChat = () => {
         variant: "destructive",
       });
       return;
+    }
+
+    // Log staff activity
+    if (user) {
+      await supabase.rpc('log_staff_activity', {
+        p_staff_user_id: user.id,
+        p_action_type: 'status_change',
+        p_action_description: `Changed chat status to: ${status}`,
+        p_related_id: chatId,
+        p_related_type: 'support_chat',
+      });
     }
 
     toast({

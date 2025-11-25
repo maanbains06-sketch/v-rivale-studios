@@ -424,6 +424,39 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_activity_log: {
+        Row: {
+          action_description: string
+          action_type: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          related_id: string | null
+          related_type: string | null
+          staff_user_id: string
+        }
+        Insert: {
+          action_description: string
+          action_type: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          related_id?: string | null
+          related_type?: string | null
+          staff_user_id: string
+        }
+        Update: {
+          action_description?: string
+          action_type?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          related_id?: string | null
+          related_type?: string | null
+          staff_user_id?: string
+        }
+        Relationships: []
+      }
       staff_applications: {
         Row: {
           admin_notes: string | null
@@ -532,6 +565,7 @@ export type Database = {
           email: string | null
           id: string
           is_active: boolean | null
+          last_seen: string | null
           name: string
           responsibilities: string[] | null
           role: string
@@ -551,6 +585,7 @@ export type Database = {
           email?: string | null
           id?: string
           is_active?: boolean | null
+          last_seen?: string | null
           name: string
           responsibilities?: string[] | null
           role: string
@@ -570,6 +605,7 @@ export type Database = {
           email?: string | null
           id?: string
           is_active?: boolean | null
+          last_seen?: string | null
           name?: string
           responsibilities?: string[] | null
           role?: string
@@ -905,6 +941,17 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      log_staff_activity: {
+        Args: {
+          p_action_description: string
+          p_action_type: string
+          p_metadata?: Json
+          p_related_id?: string
+          p_related_type?: string
+          p_staff_user_id: string
+        }
+        Returns: string
       }
     }
     Enums: {
