@@ -36,6 +36,9 @@ import Dashboard from "./pages/Dashboard";
 import StaffOnboarding from "./pages/StaffOnboarding";
 import ApplicationStatus from "./pages/ApplicationStatus";
 import ContactOwner from "./pages/ContactOwner";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import RefundPolicy from "./pages/RefundPolicy";
 import NotFound from "./pages/NotFound";
 import { CartProvider } from "./contexts/CartContext";
 
@@ -78,6 +81,9 @@ const AppRoutes = () => {
       <Route path="/staff-onboarding" element={<StaffOnboarding />} />
       <Route path="/application-status" element={<ApplicationStatus />} />
       <Route path="/contact-owner" element={<ContactOwner />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/terms-of-service" element={<TermsOfService />} />
+      <Route path="/refund-policy" element={<RefundPolicy />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
