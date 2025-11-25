@@ -243,4 +243,33 @@ All colors MUST be HSL.
       transform: translateY(0);
     }
   }
+
+  @keyframes lightning-flash {
+    0%, 10%, 20%, 100% {
+      opacity: 0;
+    }
+    5%, 15% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes lightning-glow {
+    0%, 100% {
+      opacity: 0;
+      box-shadow: 0 0 0 rgba(139, 92, 246, 0);
+    }
+    50% {
+      opacity: 0.4;
+      box-shadow: 0 0 100px 50px rgba(139, 92, 246, 0.6), 
+                  0 0 200px 100px rgba(59, 130, 246, 0.4);
+    }
+  }
+
+  .lightning-flash {
+    animation: lightning-flash 0.4s ease-in-out;
+  }
+
+  .lightning-glow {
+    animation: lightning-glow 0.4s ease-in-out;
+  }
 }
