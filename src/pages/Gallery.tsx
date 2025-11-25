@@ -27,7 +27,7 @@ interface GallerySubmission {
 }
 
 const Gallery = () => {
-  const { canAccessCategory, isStaff, loading: staffLoading } = useStaffRole();
+  const { canAccessCategory, isStaff, isAdmin, loading: staffLoading } = useStaffRole();
   const { events, getRunningEvents, getUpcomingEvents, registerForEvent, cancelRegistration, checkUserRegistration } = useEvents();
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [submissions, setSubmissions] = useState<GallerySubmission[]>([]);
@@ -171,13 +171,29 @@ const Gallery = () => {
                 <Badge variant="secondary" className="text-xs mb-4 relative z-10">
                   {getSubmissionsByCategory('screenshot').length} photos
                 </Badge>
-                <Button 
-                  onClick={() => handleCategoryClick('screenshot')}
-                  size="sm"
-                  className="relative z-10 w-full bg-primary/20 hover:bg-primary text-foreground hover:text-primary-foreground"
-                >
-                  View Gallery
-                </Button>
+                <div className="space-y-2 relative z-10">
+                  <Button 
+                    onClick={() => handleCategoryClick('screenshot')}
+                    size="sm"
+                    className="w-full bg-primary/20 hover:bg-primary text-foreground hover:text-primary-foreground"
+                  >
+                    View Gallery
+                  </Button>
+                  {(isStaff || isAdmin) && (
+                    <Button 
+                      onClick={() => {
+                        setShowUploadForm(true);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      size="sm"
+                      variant="outline"
+                      className="w-full border-primary/40 hover:bg-primary/10"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Upload
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -194,13 +210,29 @@ const Gallery = () => {
                 <Badge variant="secondary" className="text-xs mb-4 relative z-10">
                   {getSubmissionsByCategory('video').length} videos
                 </Badge>
-                <Button 
-                  onClick={() => handleCategoryClick('video')}
-                  size="sm"
-                  className="relative z-10 w-full bg-secondary/20 hover:bg-secondary text-foreground hover:text-secondary-foreground"
-                >
-                  View Gallery
-                </Button>
+                <div className="space-y-2 relative z-10">
+                  <Button 
+                    onClick={() => handleCategoryClick('video')}
+                    size="sm"
+                    className="w-full bg-secondary/20 hover:bg-secondary text-foreground hover:text-secondary-foreground"
+                  >
+                    View Gallery
+                  </Button>
+                  {(isStaff || isAdmin) && (
+                    <Button 
+                      onClick={() => {
+                        setShowUploadForm(true);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      size="sm"
+                      variant="outline"
+                      className="w-full border-secondary/40 hover:bg-secondary/10"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Upload
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
 
