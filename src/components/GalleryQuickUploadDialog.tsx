@@ -7,8 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Upload, X, CheckCircle, Image as ImageIcon, Video } from "lucide-react";
+import { Loader2, Upload, X, CheckCircle, Image as ImageIcon, Video, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 
 interface GalleryQuickUploadDialogProps {
   open: boolean;
@@ -22,6 +23,9 @@ interface FileWithPreview {
   preview: string | null;
   title: string;
   description: string;
+  progress: number;
+  status: 'pending' | 'uploading' | 'processing' | 'complete' | 'error';
+  error?: string;
 }
 
 const GalleryQuickUploadDialog = ({ open, onOpenChange, category, onSuccess }: GalleryQuickUploadDialogProps) => {
@@ -90,7 +94,9 @@ const GalleryQuickUploadDialog = ({ open, onOpenChange, category, onSuccess }: G
         file,
         preview: null,
         title: defaultTitle,
-        description: ''
+        description: '',
+        progress: 0,
+        status: 'pending'
       };
 
       // Create preview for images
@@ -164,11 +170,23 @@ const GalleryQuickUploadDialog = ({ open, onOpenChange, category, onSuccess }: G
       let successCount = 0;
       let errorCount = 0;
 
-      for (const fileItem of files) {
+      for (let i = 0; i < files.length; i++) {
+        const fileItem = files[i];
+        
         try {
+          // Update status to uploading
+          setFiles(prev => prev.map((f, idx) => 
+            idx === i ? { ...f, status: 'uploading', progress: 10 } : f
+          ));
+
           // Generate unique file path
           const fileExt = fileItem.file.name.split('.').pop();
           const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+          // Simulate upload progress
+          setFiles(prev => prev.map((f, idx) => 
+            idx === i ? { ...f, progress: 40 } : f
+          ));
 
           // Upload file to storage
           const { error: uploadError } = await supabase.storage
@@ -181,6 +199,11 @@ const GalleryQuickUploadDialog = ({ open, onOpenChange, category, onSuccess }: G
           if (uploadError) {
             throw uploadError;
           }
+
+          // Update to processing
+          setFiles(prev => prev.map((f, idx) => 
+            idx === i ? { ...f, status: 'processing', progress: 70 } : f
+          ));
 
           // Create submission record
           const { error: dbError } = await supabase
@@ -202,9 +225,20 @@ const GalleryQuickUploadDialog = ({ open, onOpenChange, category, onSuccess }: G
             throw dbError;
           }
 
+          // Mark as complete
+          setFiles(prev => prev.map((f, idx) => 
+            idx === i ? { ...f, status: 'complete', progress: 100 } : f
+          ));
+
           successCount++;
         } catch (error: any) {
           console.error(`Upload error for ${fileItem.file.name}:`, error);
+          
+          // Mark as error
+          setFiles(prev => prev.map((f, idx) => 
+            idx === i ? { ...f, status: 'error', error: error.message } : f
+          ));
+          
           errorCount++;
         }
       }
@@ -319,10 +353,15 @@ const GalleryQuickUploadDialog = ({ open, onOpenChange, category, onSuccess }: G
                   onChange={handleFilesChange}
                   className="hidden"
                   multiple
+                  disabled={uploading}
                 />
                 <Label
                   htmlFor="add-more"
-                  className="cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-9 px-3"
+                  className={`inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors h-9 px-3 ${
+                    uploading 
+                      ? 'opacity-50 cursor-not-allowed' 
+                      : 'cursor-pointer hover:bg-accent hover:text-accent-foreground'
+                  }`}
                 >
                   <Upload className="w-4 h-4 mr-2" />
                   Add More
@@ -333,15 +372,62 @@ const GalleryQuickUploadDialog = ({ open, onOpenChange, category, onSuccess }: G
               <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
                 {files.map((fileItem, index) => (
                   <div key={index} className="relative border border-border/20 rounded-lg p-4 bg-background/50 space-y-3">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute top-2 right-2 h-8 w-8 p-0"
-                      onClick={() => removeFile(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+                    {fileItem.status === 'pending' && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute top-2 right-2 h-8 w-8 p-0"
+                        onClick={() => removeFile(index)}
+                        disabled={uploading}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+
+                    {/* Status Badge */}
+                    <div className="flex items-center justify-between mb-2">
+                      {fileItem.status === 'uploading' && (
+                        <Badge variant="secondary" className="gap-2">
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          Uploading...
+                        </Badge>
+                      )}
+                      {fileItem.status === 'processing' && (
+                        <Badge variant="secondary" className="gap-2">
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          Processing...
+                        </Badge>
+                      )}
+                      {fileItem.status === 'complete' && (
+                        <Badge className="gap-2 bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30">
+                          <CheckCircle className="w-3 h-3" />
+                          Complete
+                        </Badge>
+                      )}
+                      {fileItem.status === 'error' && (
+                        <Badge variant="destructive" className="gap-2">
+                          <AlertCircle className="w-3 h-3" />
+                          Failed
+                        </Badge>
+                      )}
+                      {fileItem.status === 'pending' && <div />}
+                    </div>
+
+                    {/* Progress Bar */}
+                    {(fileItem.status === 'uploading' || fileItem.status === 'processing' || fileItem.status === 'complete') && (
+                      <div className="space-y-1">
+                        <Progress value={fileItem.progress} className="h-2" />
+                        <p className="text-xs text-muted-foreground text-right">{fileItem.progress}%</p>
+                      </div>
+                    )}
+
+                    {/* Error Message */}
+                    {fileItem.status === 'error' && fileItem.error && (
+                      <div className="text-xs text-destructive bg-destructive/10 p-2 rounded">
+                        {fileItem.error}
+                      </div>
+                    )}
 
                     {fileItem.preview && (
                       <div className="mb-2">
@@ -363,6 +449,7 @@ const GalleryQuickUploadDialog = ({ open, onOpenChange, category, onSuccess }: G
                           maxLength={100}
                           className="h-9"
                           placeholder="Enter a title"
+                          disabled={uploading}
                         />
                       </div>
 
@@ -375,6 +462,7 @@ const GalleryQuickUploadDialog = ({ open, onOpenChange, category, onSuccess }: G
                           maxLength={500}
                           className="min-h-[60px] resize-none"
                           placeholder="Add a description..."
+                          disabled={uploading}
                         />
                       </div>
 
@@ -411,7 +499,7 @@ const GalleryQuickUploadDialog = ({ open, onOpenChange, category, onSuccess }: G
                 {uploading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Uploading {files.length} {files.length === 1 ? 'file' : 'files'}...
+                    Uploading ({files.filter(f => f.status === 'complete').length}/{files.length})...
                   </>
                 ) : (
                   <>
