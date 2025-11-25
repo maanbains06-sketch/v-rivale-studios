@@ -41,6 +41,7 @@ interface Chat {
   priority: string;
   tags: string[];
   assigned_to: string | null;
+  detected_language: string | null;
 }
 
 const SupportChat = () => {
@@ -527,6 +528,19 @@ const SupportChat = () => {
                   <div className="divide-y divide-border">
                     {chats.map((chat) => {
                       const isEscalated = chat.tags?.includes('auto_escalated');
+                      const languageEmoji = {
+                        'en': '🇬🇧',
+                        'es': '🇪🇸',
+                        'fr': '🇫🇷',
+                        'de': '🇩🇪',
+                        'it': '🇮🇹',
+                        'pt': '🇵🇹',
+                        'ru': '🇷🇺',
+                        'zh': '🇨🇳',
+                        'ja': '🇯🇵',
+                        'ko': '🇰🇷',
+                        'ar': '🇸🇦',
+                      }[chat.detected_language || 'en'] || '🌐';
                       
                       return (
                         <button
@@ -538,6 +552,7 @@ const SupportChat = () => {
                         >
                           <div className="flex items-start justify-between mb-1">
                             <div className="flex items-center gap-2 flex-1">
+                              <span className="text-sm">{languageEmoji}</span>
                               <p className="font-medium text-sm truncate">{chat.subject}</p>
                               {isEscalated && (
                                 <span className="text-xs px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-500 flex items-center gap-1">
@@ -574,7 +589,7 @@ const SupportChat = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle className="text-lg">{selectedChat.subject}</CardTitle>
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <p className="text-sm text-muted-foreground mt-1 flex items-center gap-3">
                         {selectedChat.assigned_to ? (
                           <span className="flex items-center gap-2">
                             <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
@@ -584,6 +599,12 @@ const SupportChat = () => {
                           <span className="flex items-center gap-2">
                             <Sparkles className="h-4 w-4 text-blue-500" />
                             AI Assistant
+                          </span>
+                        )}
+                        {selectedChat.detected_language && selectedChat.detected_language !== 'en' && (
+                          <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-blue-500/10 text-blue-500">
+                            <span>🌐</span>
+                            <span className="uppercase">{selectedChat.detected_language}</span>
                           </span>
                         )}
                       </p>

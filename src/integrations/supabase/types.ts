@@ -619,6 +619,7 @@ export type Database = {
         Row: {
           assigned_to: string | null
           created_at: string
+          detected_language: string | null
           escalated: boolean | null
           escalated_at: string | null
           first_response_at: string | null
@@ -640,6 +641,7 @@ export type Database = {
         Insert: {
           assigned_to?: string | null
           created_at?: string
+          detected_language?: string | null
           escalated?: boolean | null
           escalated_at?: string | null
           first_response_at?: string | null
@@ -661,6 +663,7 @@ export type Database = {
         Update: {
           assigned_to?: string | null
           created_at?: string
+          detected_language?: string | null
           escalated?: boolean | null
           escalated_at?: string | null
           first_response_at?: string | null

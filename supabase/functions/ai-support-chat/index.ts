@@ -71,6 +71,52 @@ serve(async (req) => {
       }
     }
 
+    // Detect language from user message
+    let detectedLanguage = 'en';
+    if (lastMessage) {
+      const languageDetectionResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { 
+              role: "system", 
+              content: "Detect the language of the user message and respond with ONLY the ISO 639-1 language code (e.g., 'en' for English, 'es' for Spanish, 'fr' for French, 'de' for German, 'it' for Italian, 'pt' for Portuguese, 'ru' for Russian, 'zh' for Chinese, 'ja' for Japanese, 'ko' for Korean, 'ar' for Arabic, etc.). Nothing else." 
+            },
+            { role: "user", content: lastMessage },
+          ],
+          stream: false,
+        }),
+      });
+
+      if (languageDetectionResponse.ok) {
+        const langResult = await languageDetectionResponse.json();
+        const langText = langResult.choices[0].message.content.trim().toLowerCase();
+        detectedLanguage = langText.slice(0, 2); // Take first 2 chars for safety
+      }
+
+      // Store detected language in chat
+      if (chatId) {
+        const authHeader = req.headers.get("authorization");
+        if (authHeader) {
+          const token = authHeader.replace("Bearer ", "");
+          const userSupabase = createClient(supabaseUrl, supabaseKey, {
+            auth: { persistSession: false },
+            global: { headers: { Authorization: `Bearer ${token}` } },
+          });
+
+          await userSupabase
+            .from("support_chats")
+            .update({ detected_language: detectedLanguage })
+            .eq("id", chatId);
+        }
+      }
+    }
+
     // First, analyze sentiment
     const sentimentPrompt = `Analyze the sentiment and frustration level of this user message. Respond with a JSON object containing:
 - sentiment: one of "positive", "neutral", "negative", "frustrated"
@@ -129,6 +175,7 @@ User message: "${messages[messages.length - 1]?.content || ''}"`;
 
     // Fetch previous chat history for context
     let conversationContext = "";
+    let storedLanguage = detectedLanguage;
     if (chatId) {
       const authHeader = req.headers.get("authorization");
       if (authHeader) {
@@ -140,15 +187,20 @@ User message: "${messages[messages.length - 1]?.content || ''}"`;
 
         const { data: chatData } = await userSupabase
           .from("support_chats")
-          .select("subject, priority, tags")
+          .select("subject, priority, tags, detected_language")
           .eq("id", chatId)
           .single();
 
         if (chatData) {
-          conversationContext = `\n\nChat Context:\n- Subject: ${chatData.subject}\n- Priority: ${chatData.priority}\n- Tags: ${chatData.tags?.join(', ') || 'none'}`;
+          storedLanguage = chatData.detected_language || detectedLanguage;
+          conversationContext = `\n\nChat Context:\n- Subject: ${chatData.subject}\n- Priority: ${chatData.priority}\n- Tags: ${chatData.tags?.join(', ') || 'none'}\n- User Language: ${storedLanguage}`;
         }
       }
     }
+
+    const languageInstructions = storedLanguage !== 'en' 
+      ? `\n\nIMPORTANT: The user is communicating in ${storedLanguage} language. You MUST respond in ${storedLanguage}. All your responses should be in the user's language (${storedLanguage}).`
+      : '';
 
     const systemPrompt = `You are a helpful support assistant for Skylife RP (Roleplay Server). Your role is to:
 
@@ -169,6 +221,8 @@ Common Topics:
 If something requires admin action or you're uncertain, remind them they can request human support.
 
 ${conversationContext}
+
+${languageInstructions}
 
 ${sentimentData.sentiment === 'frustrated' ? 'IMPORTANT: The user seems frustrated. Be extra empathetic, acknowledge their concerns, and suggest requesting human support for faster resolution.' : ''}
 
