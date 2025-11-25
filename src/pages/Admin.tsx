@@ -903,18 +903,30 @@ const Admin = () => {
         <Card className="glass-effect border-border/20">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <UsersIcon className="w-5 h-5 text-primary" />
-                <CardTitle className="text-gradient">Staff Management</CardTitle>
+              <div>
+                <div className="flex items-center gap-2">
+                  <UsersIcon className="w-5 h-5 text-primary" />
+                  <CardTitle className="text-gradient">Staff Management</CardTitle>
+                </div>
+                <CardDescription>Manage staff members and their information</CardDescription>
               </div>
-              <Button onClick={() => {
-                setSelectedStaff(null);
-                setIsStaffDialogOpen(true);
-              }}>
-                Add Staff Member
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/staff-setup")}
+                  className="border-primary/50 text-primary hover:bg-primary/10"
+                >
+                  <Shield className="w-4 h-4 mr-2" />
+                  Staff Setup
+                </Button>
+                <Button onClick={() => {
+                  setSelectedStaff(null);
+                  setIsStaffDialogOpen(true);
+                }}>
+                  Add Staff Member
+                </Button>
+              </div>
             </div>
-            <CardDescription>Manage staff members and their information</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
