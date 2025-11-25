@@ -33,7 +33,14 @@ const staffApplicationSchema = z.object({
     .trim()
     .min(2, { message: "In-game name must be at least 2 characters" })
     .max(50, { message: "In-game name must be less than 50 characters" }),
-  position: z.enum(["moderator", "developer", "event_coordinator", "content_creator"]),
+  position: z.enum([
+    "administrator",
+    "moderator", 
+    "developer", 
+    "support_staff",
+    "event_coordinator",
+    "content_creator"
+  ]),
   playtime: z.string()
     .trim()
     .min(1, { message: "Please specify your playtime" })
@@ -165,8 +172,8 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
       if (error) throw error;
       
       toast({
-        title: "Application Submitted!",
-        description: "Thank you for applying! We'll review your application and contact you on Discord within 3-5 business days.",
+        title: "Application Submitted Successfully!",
+        description: "Thank you for your interest! Our team will review your application and contact you on Discord within 3-5 business days if you're selected for an interview.",
       });
       
       form.reset();
@@ -187,11 +194,24 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl text-gradient">Staff Application Form</DialogTitle>
-          <DialogDescription>
-            Fill out this form to apply for a staff position at SLRP. All fields are required unless marked optional.
+          <DialogTitle className="text-2xl text-gradient">Join Our Elite Staff Team</DialogTitle>
+          <DialogDescription className="text-base">
+            Apply to become part of our professional team. Staff members get access to advanced tools including real-time presence tracking, activity logs, and priority support systems.
           </DialogDescription>
         </DialogHeader>
+
+        {/* Staff Benefits Section */}
+        <div className="glass-effect rounded-lg p-4 border border-primary/20 mb-4">
+          <h3 className="font-semibold text-primary mb-2">Staff Member Benefits</h3>
+          <ul className="text-sm text-muted-foreground space-y-1">
+            <li>• Real-time presence system with online status tracking</li>
+            <li>• Comprehensive activity logging and performance metrics</li>
+            <li>• Direct communication with server management</li>
+            <li>• Access to staff-only tools and resources</li>
+            <li>• Recognition through achievement badges</li>
+            <li>• Professional development and training opportunities</li>
+          </ul>
+        </div>
 
         {isCheckingEligibility ? (
           <div className="flex items-center justify-center py-12">
@@ -284,12 +304,47 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="moderator">Moderator</SelectItem>
-                      <SelectItem value="developer">Developer</SelectItem>
-                      <SelectItem value="event_coordinator">Event Coordinator</SelectItem>
-                      <SelectItem value="content_creator">Content Creator</SelectItem>
+                      <SelectItem value="administrator">
+                        <div className="flex flex-col">
+                          <span className="font-semibold">Administrator</span>
+                          <span className="text-xs text-muted-foreground">Server management, policy enforcement, staff coordination</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="moderator">
+                        <div className="flex flex-col">
+                          <span className="font-semibold">Moderator</span>
+                          <span className="text-xs text-muted-foreground">Community safety, rule enforcement, player reports</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="developer">
+                        <div className="flex flex-col">
+                          <span className="font-semibold">Developer</span>
+                          <span className="text-xs text-muted-foreground">Feature development, bug fixes, technical support</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="support_staff">
+                        <div className="flex flex-col">
+                          <span className="font-semibold">Support Staff</span>
+                          <span className="text-xs text-muted-foreground">Player assistance, ticket management, issue resolution</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="event_coordinator">
+                        <div className="flex flex-col">
+                          <span className="font-semibold">Event Coordinator</span>
+                          <span className="text-xs text-muted-foreground">Event planning, hosting, community engagement</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="content_creator">
+                        <div className="flex flex-col">
+                          <span className="font-semibold">Content Creator</span>
+                          <span className="text-xs text-muted-foreground">Media production, social presence, community outreach</span>
+                        </div>
+                      </SelectItem>
                     </SelectContent>
                   </Select>
+                  <FormDescription>
+                    Choose the position that best matches your skills and interests
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -315,16 +370,17 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
               name="experience"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Relevant Experience *</FormLabel>
+                  <FormLabel>Relevant Experience & Skills *</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Describe your experience with roleplay, moderation, development, or relevant skills..."
+                      placeholder="Describe your experience with roleplay, moderation, development, or relevant skills. Include any technical expertise, leadership experience, or community management background..."
                       className="min-h-[120px]"
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>
-                    {field.value.length}/1000 characters (minimum 50)
+                  <FormDescription className="flex justify-between">
+                    <span>Be specific about your qualifications and achievements</span>
+                    <span className="text-xs">{field.value.length}/1000 (min 50)</span>
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -336,16 +392,17 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
               name="whyJoin"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Why Do You Want To Join The Staff Team? *</FormLabel>
+                  <FormLabel>Why Do You Want To Join Our Staff Team? *</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Explain your motivation and what you can contribute to SLRP..."
+                      placeholder="Explain your motivation, what unique value you bring, and how you'll contribute to creating the best roleplay experience for our community..."
                       className="min-h-[120px]"
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>
-                    {field.value.length}/1000 characters (minimum 50)
+                  <FormDescription className="flex justify-between">
+                    <span>Share your passion and commitment to SLRP</span>
+                    <span className="text-xs">{field.value.length}/1000 (min 50)</span>
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -357,16 +414,16 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
               name="availability"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Availability *</FormLabel>
+                  <FormLabel>Weekly Availability & Timezone *</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Describe your typical availability (days, hours, timezone)..."
+                      placeholder="Example: Available Monday-Friday 6PM-11PM EST, and weekends 12PM-12AM EST. Approximately 20-30 hours per week..."
                       className="min-h-[80px]"
                       {...field}
                     />
                   </FormControl>
                   <FormDescription>
-                    Include your timezone and typical hours available
+                    Be specific about days, hours, and your timezone. Staff members are expected to maintain consistent presence.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -378,19 +435,26 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
               name="previousExperience"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Previous Staff Experience (Optional)</FormLabel>
+                  <FormLabel>Previous Staff/Leadership Experience (Optional)</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Have you been staff on other servers? Describe your roles and responsibilities..."
+                      placeholder="Have you been staff on other servers or held leadership roles? Describe your positions, responsibilities, achievements, and lessons learned..."
                       className="min-h-[80px]"
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>Leave blank if none</FormDescription>
+                  <FormDescription>Leave blank if none. This helps us understand your background.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            {/* Application Notice */}
+            <div className="bg-muted/30 rounded-lg p-4 border border-border/20">
+              <p className="text-sm text-muted-foreground">
+                <strong className="text-foreground">Application Process:</strong> After submission, your application will be reviewed by our management team. If selected, you'll be contacted on Discord for an interview within 3-5 business days. All applications are kept confidential.
+              </p>
+            </div>
 
             <div className="flex gap-3 justify-end pt-4">
               <Button
