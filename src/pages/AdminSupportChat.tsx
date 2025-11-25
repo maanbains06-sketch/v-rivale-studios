@@ -14,6 +14,8 @@ import { format } from "date-fns";
 import { CannedResponsesManager } from "@/components/CannedResponsesManager";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { StaffAvailabilityToggle } from "@/components/StaffAvailabilityToggle";
+import { StaffWorkloadDashboard } from "@/components/StaffWorkloadDashboard";
+import { ManualChatAssignment } from "@/components/ManualChatAssignment";
 
 interface Message {
   id: string;
@@ -369,6 +371,16 @@ const AdminSupportChat = () => {
             <CannedResponsesManager />
           </div>
           <StaffAvailabilityToggle />
+        </div>
+
+        {/* Controls Row */}
+        <div className="grid lg:grid-cols-3 gap-6 mb-6">
+          <div className="lg:col-span-2">
+            <StaffWorkloadDashboard />
+          </div>
+          <div>
+            <ManualChatAssignment />
+          </div>
         </div>
 
         <Tabs value={statusFilter} onValueChange={setStatusFilter} className="mb-6">
