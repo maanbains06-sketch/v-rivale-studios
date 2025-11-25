@@ -113,42 +113,42 @@ const Staff = () => {
     const Icon = roleIcons[member.role_type as keyof typeof roleIcons] || UserCheck;
     return (
       <div key={index} className="relative group cursor-pointer" onClick={() => handleStaffClick(member.id)}>
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-secondary/20 to-primary/20 rounded-3xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-secondary/20 to-primary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
         <Card className="relative glass-effect border-border/20 hover:border-primary/40 transition-all duration-500 overflow-hidden hover:scale-[1.02]">
-          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary via-secondary to-primary"></div>
-          <CardContent className="pt-8 pb-6">
+          <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-secondary to-primary"></div>
+          <CardContent className="pt-5 pb-4">
             <div className="flex flex-col items-center text-center">
-              <div className="relative mb-6">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-secondary/30 rounded-full blur-xl animate-pulse"></div>
-                <div className={`relative w-32 h-32 rounded-full overflow-hidden border-4 ${roleColors[member.role_type as keyof typeof roleColors]} p-1 group-hover:scale-110 transition-transform duration-500`}>
+              <div className="relative mb-4">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-secondary/30 rounded-full blur-lg animate-pulse"></div>
+                <div className={`relative w-20 h-20 rounded-full overflow-hidden border-3 ${roleColors[member.role_type as keyof typeof roleColors]} p-0.5 group-hover:scale-110 transition-transform duration-500`}>
                   <img 
                     src={member.discord_avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`} 
                     alt={member.name}
                     className="w-full h-full rounded-full bg-background"
                   />
                 </div>
-                <div className={`absolute -bottom-2 -right-2 w-14 h-14 ${roleColors[member.role_type as keyof typeof roleColors]} rounded-full flex items-center justify-center border-4 border-background shadow-lg`}>
-                  <Icon className="w-7 h-7 text-primary-foreground" />
+                <div className={`absolute -bottom-1 -right-1 w-9 h-9 ${roleColors[member.role_type as keyof typeof roleColors]} rounded-full flex items-center justify-center border-3 border-background shadow-lg`}>
+                  <Icon className="w-4 h-4 text-primary-foreground" />
                 </div>
-                <div className="absolute -top-2 -left-2 w-6 h-6 bg-green-500 rounded-full border-2 border-background animate-pulse"></div>
+                <div className="absolute -top-1 -left-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background animate-pulse"></div>
               </div>
 
-              <h3 className="text-2xl font-bold mb-2">{member.name}</h3>
-              <Badge variant="outline" className="mb-2 border-primary text-primary px-4 py-1">
+              <h3 className="text-lg font-bold mb-1.5">{member.name}</h3>
+              <Badge variant="outline" className="mb-1.5 border-primary text-primary px-3 py-0.5 text-xs">
                 {member.role}
               </Badge>
-              <Badge variant="secondary" className="mb-4 text-xs">
+              <Badge variant="secondary" className="mb-3 text-xs">
                 {member.department.replace("_", " ").toUpperCase()}
               </Badge>
 
               {member.bio && (
-                <p className="text-sm text-muted-foreground italic mb-6 max-w-md leading-relaxed">&quot;{member.bio}&quot;</p>
+                <p className="text-xs text-muted-foreground italic mb-4 max-w-xs leading-relaxed line-clamp-2">&quot;{member.bio}&quot;</p>
               )}
 
-              <div className="w-full space-y-3">
+              <div className="w-full space-y-2">
                 {/* Contact Information */}
-                <div className="bg-muted/30 rounded-lg p-4 space-y-2">
-                  <h4 className="text-xs font-semibold text-primary mb-3 uppercase tracking-wide">Contact Information</h4>
+                <div className="bg-muted/30 rounded-lg p-3 space-y-1.5">
+                  <h4 className="text-xs font-semibold text-primary mb-2 uppercase tracking-wide">Contact Information</h4>
                   
                   <div className="flex items-center justify-between text-left">
                     <span className="text-xs text-muted-foreground flex items-center gap-1">
@@ -190,14 +190,19 @@ const Staff = () => {
                 </div>
 
                 {/* Responsibilities */}
-                <div className="bg-muted/30 rounded-lg p-4">
-                  <h4 className="text-xs font-semibold text-primary mb-3 uppercase tracking-wide">Key Responsibilities</h4>
-                  <div className="flex flex-wrap gap-2 justify-center">
-                    {member.responsibilities.map((resp, idx) => (
-                      <Badge key={idx} variant="secondary" className="text-xs">
+                <div className="bg-muted/30 rounded-lg p-3">
+                  <h4 className="text-xs font-semibold text-primary mb-2 uppercase tracking-wide">Key Responsibilities</h4>
+                  <div className="flex flex-wrap gap-1.5 justify-center">
+                    {member.responsibilities.slice(0, 4).map((resp, idx) => (
+                      <Badge key={idx} variant="secondary" className="text-xs py-0.5">
                         {resp}
                       </Badge>
                     ))}
+                    {member.responsibilities.length > 4 && (
+                      <Badge variant="secondary" className="text-xs py-0.5">
+                        +{member.responsibilities.length - 4} more
+                      </Badge>
+                    )}
                   </div>
                 </div>
               </div>
@@ -345,7 +350,7 @@ const Staff = () => {
               <p className="text-lg text-muted-foreground">The visionaries guiding SLRP to excellence</p>
             </div>
             {leadershipStaff.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
                 {leadershipStaff.map((member, index) => renderStaffCard(member, index))}
               </div>
             ) : (
@@ -365,7 +370,7 @@ const Staff = () => {
               <p className="text-lg text-muted-foreground">Ensuring smooth server operations</p>
             </div>
             {adminStaff.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {adminStaff.map((member, index) => renderStaffCard(member, index))}
               </div>
             ) : (
@@ -385,7 +390,7 @@ const Staff = () => {
               <p className="text-lg text-muted-foreground">Building innovative features</p>
             </div>
             {developerStaff.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {developerStaff.map((member, index) => renderStaffCard(member, index))}
               </div>
             ) : (
@@ -405,7 +410,7 @@ const Staff = () => {
               <p className="text-lg text-muted-foreground">Keeping the community safe and fair</p>
             </div>
             {moderatorStaff.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {moderatorStaff.map((member, index) => renderStaffCard(member, index))}
               </div>
             ) : (
@@ -425,7 +430,7 @@ const Staff = () => {
               <p className="text-lg text-muted-foreground">Always here to help</p>
             </div>
             {supportStaff.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {supportStaff.map((member, index) => renderStaffCard(member, index))}
               </div>
             ) : (
@@ -445,7 +450,7 @@ const Staff = () => {
               <p className="text-lg text-muted-foreground">Creating unforgettable experiences</p>
             </div>
             {eventStaff.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {eventStaff.map((member, index) => renderStaffCard(member, index))}
               </div>
             ) : (
