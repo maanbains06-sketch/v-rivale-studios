@@ -5,7 +5,7 @@ import PageHeader from "@/components/PageHeader";
 import headerStaff from "@/assets/header-staff.jpg";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Users, Code, HeadphonesIcon, Star, Trophy, Heart, Target, Clock, Award, UserCheck, Calendar, Loader2 } from "lucide-react";
+import { Shield, Users, Code, HeadphonesIcon, Star, Trophy, Heart, Target, Clock, Award, UserCheck, Calendar, Loader2, MessageCircle, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState as useStateAlias } from "react";
 import { StaffApplicationForm } from "@/components/StaffApplicationForm";
@@ -134,8 +134,11 @@ const Staff = () => {
               </div>
 
               <h3 className="text-2xl font-bold mb-2">{member.name}</h3>
-              <Badge variant="outline" className="mb-4 border-primary text-primary px-4 py-1">
+              <Badge variant="outline" className="mb-2 border-primary text-primary px-4 py-1">
                 {member.role}
+              </Badge>
+              <Badge variant="secondary" className="mb-4 text-xs">
+                {member.department.replace("_", " ").toUpperCase()}
               </Badge>
 
               {member.bio && (
@@ -143,6 +146,50 @@ const Staff = () => {
               )}
 
               <div className="w-full space-y-3">
+                {/* Contact Information */}
+                <div className="bg-muted/30 rounded-lg p-4 space-y-2">
+                  <h4 className="text-xs font-semibold text-primary mb-3 uppercase tracking-wide">Contact Information</h4>
+                  
+                  <div className="flex items-center justify-between text-left">
+                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                      <MessageCircle className="w-3 h-3" />
+                      Discord
+                    </span>
+                    <span className="text-xs font-mono font-semibold">{member.discord_username || "N/A"}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-left">
+                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Shield className="w-3 h-3" />
+                      Discord ID
+                    </span>
+                    <span className="text-xs font-mono font-semibold">{member.discord_id}</span>
+                  </div>
+                  
+                  {member.email && (
+                    <div className="flex items-center justify-between text-left">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Mail className="w-3 h-3" />
+                        Email
+                      </span>
+                      <span className="text-xs font-mono font-semibold truncate max-w-[180px]" title={member.email}>
+                        {member.email}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {member.steam_id && (
+                    <div className="flex items-center justify-between text-left">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <UserCheck className="w-3 h-3" />
+                        Steam ID
+                      </span>
+                      <span className="text-xs font-mono font-semibold">{member.steam_id}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Responsibilities */}
                 <div className="bg-muted/30 rounded-lg p-4">
                   <h4 className="text-xs font-semibold text-primary mb-3 uppercase tracking-wide">Key Responsibilities</h4>
                   <div className="flex flex-wrap gap-2 justify-center">
@@ -152,11 +199,6 @@ const Staff = () => {
                       </Badge>
                     ))}
                   </div>
-                </div>
-
-                <div className="bg-muted/30 rounded-lg p-3 flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">Discord Tag</span>
-                  <span className="text-sm font-mono font-semibold">{member.discord_username || member.discord_id}</span>
                 </div>
               </div>
             </div>
