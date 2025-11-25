@@ -5,7 +5,7 @@ import PageHeader from "@/components/PageHeader";
 import headerStaff from "@/assets/header-staff.jpg";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Users, Code, HeadphonesIcon, Star, Trophy, Heart, Target, Clock, Award, UserCheck, Calendar, Loader2, MessageCircle, Mail } from "lucide-react";
+import { Shield, Users, Code, HeadphonesIcon, Star, Trophy, Heart, Target, Clock, Award, UserCheck, Calendar, Loader2, MessageCircle, Mail, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState as useStateAlias } from "react";
 import { StaffApplicationForm } from "@/components/StaffApplicationForm";
@@ -109,13 +109,53 @@ const Staff = () => {
 
   const hasAnyStaff = staffMembers.length > 0;
 
+  const getAchievementBadges = (member: StaffMember) => {
+    const badges = [];
+    
+    // Based on responsibilities or role, add achievement badges
+    if (member.responsibilities.some(r => r.toLowerCase().includes('lead') || r.toLowerCase().includes('manager'))) {
+      badges.push({ label: 'Team Lead', color: 'bg-purple-500' });
+    }
+    if (member.role_type === 'owner') {
+      badges.push({ label: 'Founder', color: 'bg-primary' });
+    }
+    if (member.responsibilities.length >= 5) {
+      badges.push({ label: 'Multi-Skilled', color: 'bg-blue-500' });
+    }
+    if (member.role_type === 'developer') {
+      badges.push({ label: 'Tech Expert', color: 'bg-green-500' });
+    }
+    if (member.department === 'support') {
+      badges.push({ label: 'Helper', color: 'bg-orange-500' });
+    }
+    
+    return badges.slice(0, 2); // Max 2 badges per card
+  };
+
   const renderStaffCard = (member: StaffMember, index: number) => {
     const Icon = roleIcons[member.role_type as keyof typeof roleIcons] || UserCheck;
+    const achievements = getAchievementBadges(member);
+    
     return (
-      <div key={index} className="relative group cursor-pointer" onClick={() => handleStaffClick(member.id)}>
+      <div key={index} className="relative group">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-secondary/20 to-primary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-        <Card className="relative glass-effect border-border/20 hover:border-primary/40 transition-all duration-500 overflow-hidden hover:scale-[1.02]">
+        <Card className="relative glass-effect border-border/20 hover:border-primary/40 transition-all duration-500 overflow-hidden group-hover:scale-[1.02]">
           <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-secondary to-primary"></div>
+          
+          {/* Achievement Badges */}
+          {achievements.length > 0 && (
+            <div className="absolute top-3 right-3 flex flex-col gap-1">
+              {achievements.map((badge, idx) => (
+                <Badge 
+                  key={idx} 
+                  className={`${badge.color} text-white text-xs px-2 py-0.5 shadow-lg border-0`}
+                >
+                  {badge.label}
+                </Badge>
+              ))}
+            </div>
+          )}
+          
           <CardContent className="pt-5 pb-4">
             <div className="flex flex-col items-center text-center">
               <div className="relative mb-4">
@@ -145,7 +185,7 @@ const Staff = () => {
                 <p className="text-xs text-muted-foreground italic mb-4 max-w-xs leading-relaxed line-clamp-2">&quot;{member.bio}&quot;</p>
               )}
 
-              <div className="w-full">
+              <div className="w-full space-y-3">
                 {/* Contact Information */}
                 <div className="bg-muted/30 rounded-lg p-3 space-y-1.5">
                   <h4 className="text-xs font-semibold text-primary mb-2 uppercase tracking-wide">Contact Information</h4>
@@ -188,6 +228,18 @@ const Staff = () => {
                     </div>
                   )}
                 </div>
+
+                {/* View Profile Button */}
+                <Button 
+                  className="w-full bg-primary/10 hover:bg-primary hover:text-primary-foreground text-primary border border-primary/20 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/20"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleStaffClick(member.id);
+                  }}
+                >
+                  <UserCircle className="w-4 h-4 mr-2" />
+                  View Full Profile
+                </Button>
               </div>
             </div>
           </CardContent>
