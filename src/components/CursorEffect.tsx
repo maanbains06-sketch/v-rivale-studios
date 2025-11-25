@@ -68,23 +68,24 @@ export const CursorEffect = () => {
       
       // Create new particles from cursor position
       const newParticles: Particle[] = [];
-      for (let i = 0; i < 2; i++) {
+      for (let i = 0; i < 4; i++) { // More particles per interval
         const angle = Math.random() * Math.PI * 2;
-        const speed = 0.3 + Math.random() * 0.5;
+        const speed = 0.4 + Math.random() * 0.6;
+        const spreadX = (Math.random() - 0.5) * 20; // More horizontal spread
         newParticles.push({
           id: particleIdRef.current++,
-          x: position.x,
+          x: position.x + spreadX,
           y: position.y,
-          velocityX: Math.cos(angle) * speed,
-          velocityY: -Math.abs(Math.sin(angle)) * speed - 1, // Always move upward
-          size: 3 + Math.random() * 4,
-          opacity: 0.6 + Math.random() * 0.4,
+          velocityX: Math.cos(angle) * speed * 0.5,
+          velocityY: -Math.abs(Math.sin(angle)) * speed - 1.2, // Faster upward movement
+          size: 5 + Math.random() * 8, // Larger particles
+          opacity: 0.7 + Math.random() * 0.3,
           createdAt: now,
         });
       }
 
-      setParticles((prev) => [...prev, ...newParticles].slice(-60)); // Keep last 60 particles
-    }, 100);
+      setParticles((prev) => [...prev, ...newParticles].slice(-100)); // Keep more particles
+    }, 80); // More frequent generation
 
     // Animation loop for particle movement
     const animate = () => {
@@ -136,9 +137,10 @@ export const CursorEffect = () => {
             style={{
               width: `${particle.size}px`,
               height: `${particle.size}px`,
-              background: `radial-gradient(circle, rgba(239, 68, 68, ${particle.opacity * 0.5}) 0%, rgba(220, 38, 38, ${particle.opacity * 0.3}) 50%, transparent 80%)`,
-              filter: "blur(3px)",
+              background: `radial-gradient(circle, rgba(147, 197, 253, ${particle.opacity * 0.8}) 0%, rgba(96, 165, 250, ${particle.opacity * 0.6}) 40%, rgba(59, 130, 246, ${particle.opacity * 0.3}) 70%, transparent 90%)`,
+              filter: "blur(4px)",
               opacity: particle.opacity,
+              boxShadow: `0 0 ${particle.size * 1.5}px rgba(96, 165, 250, ${particle.opacity * 0.4})`,
             }}
           />
         </div>
@@ -149,7 +151,7 @@ export const CursorEffect = () => {
         const age = Date.now() - point.timestamp;
         const opacity = Math.max(0, 1 - age / 600);
         const scale = 1 - age / 800;
-        const size = 12 + index * 0.5; // Much smaller particles
+        const size = 12 + index * 0.5;
         
         return (
           <div
@@ -166,9 +168,9 @@ export const CursorEffect = () => {
               style={{
                 width: `${size}px`,
                 height: `${size}px`,
-                background: `radial-gradient(circle, rgba(239, 68, 68, ${opacity * 0.4}) 0%, rgba(220, 38, 38, ${opacity * 0.2}) 40%, transparent 70%)`,
+                background: `radial-gradient(circle, rgba(147, 197, 253, ${opacity * 0.5}) 0%, rgba(96, 165, 250, ${opacity * 0.3}) 40%, transparent 70%)`,
                 filter: "blur(6px)",
-                opacity: opacity * 0.6,
+                opacity: opacity * 0.7,
                 transform: `scale(${scale})`,
               }}
             />
@@ -189,10 +191,10 @@ export const CursorEffect = () => {
         <div
           className="absolute inset-0 rounded-full"
           style={{
-            width: "24px",
-            height: "24px",
-            background: "radial-gradient(circle, rgba(239, 68, 68, 0.6) 0%, rgba(220, 38, 38, 0.3) 50%, transparent 80%)",
-            filter: "blur(8px)",
+            width: "28px",
+            height: "28px",
+            background: "radial-gradient(circle, rgba(147, 197, 253, 0.8) 0%, rgba(96, 165, 250, 0.5) 50%, transparent 80%)",
+            filter: "blur(10px)",
             animation: "cursorPulse 1.5s ease-in-out infinite",
           }}
         />
@@ -201,12 +203,13 @@ export const CursorEffect = () => {
         <div
           className="absolute inset-0 rounded-full"
           style={{
-            width: "12px",
-            height: "12px",
-            marginLeft: "6px",
-            marginTop: "6px",
-            background: "radial-gradient(circle, rgba(248, 113, 113, 0.8) 0%, rgba(239, 68, 68, 0.5) 50%, transparent 80%)",
-            filter: "blur(4px)",
+            width: "14px",
+            height: "14px",
+            marginLeft: "7px",
+            marginTop: "7px",
+            background: "radial-gradient(circle, rgba(191, 219, 254, 0.9) 0%, rgba(147, 197, 253, 0.7) 50%, transparent 80%)",
+            filter: "blur(5px)",
+            boxShadow: "0 0 15px rgba(96, 165, 250, 0.6)",
           }}
         />
       </div>
