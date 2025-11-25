@@ -3,12 +3,30 @@ import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, RefreshCw, User, Hash } from "lucide-react";
+import { Users, RefreshCw, User, Hash, MoreVertical, Ban, UserX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useStaffRole } from "@/hooks/useStaffRole";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 interface Player {
   id: number;
@@ -23,6 +41,12 @@ const AdminPlayers = () => {
   const [serverStatus, setServerStatus] = useState<'online' | 'offline'>('offline');
   const { isAdmin, loading: roleLoading } = useStaffRole();
   const navigate = useNavigate();
+  const [actionDialog, setActionDialog] = useState<{
+    open: boolean;
+    type: 'kick' | 'ban' | null;
+    player: Player | null;
+  }>({ open: false, type: null, player: null });
+  const [actionReason, setActionReason] = useState("");
 
   useEffect(() => {
     if (!roleLoading && !isAdmin) {
@@ -59,6 +83,36 @@ const AdminPlayers = () => {
       console.error('Error:', error);
       toast.error('Failed to connect to server');
       setIsLoading(false);
+    }
+  };
+
+  const handleAction = async () => {
+    if (!actionDialog.player || !actionDialog.type) return;
+
+    try {
+      const { error } = await supabase.functions.invoke('admin-player-action', {
+        body: {
+          playerId: actionDialog.player.id,
+          action: actionDialog.type,
+          reason: actionReason || 'No reason provided',
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success(
+        `Player ${actionDialog.player.name} has been ${actionDialog.type}ed`,
+        {
+          description: actionReason || 'No reason provided',
+        }
+      );
+
+      setActionDialog({ open: false, type: null, player: null });
+      setActionReason("");
+      fetchPlayers();
+    } catch (error) {
+      console.error('Error performing action:', error);
+      toast.error(`Failed to ${actionDialog.type} player`);
     }
   };
 
@@ -165,11 +219,40 @@ const AdminPlayers = () => {
                               </div>
                             </div>
                           </div>
-                          {player.ping !== undefined && (
-                            <Badge variant="outline">
-                              {player.ping}ms
-                            </Badge>
-                          )}
+                          <div className="flex items-center gap-2">
+                            {player.ping !== undefined && (
+                              <Badge variant="outline">
+                                {player.ping}ms
+                              </Badge>
+                            )}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                  <MoreVertical className="w-4 h-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    setActionDialog({ open: true, type: 'kick', player })
+                                  }
+                                  className="text-orange-600"
+                                >
+                                  <UserX className="w-4 h-4 mr-2" />
+                                  Kick Player
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    setActionDialog({ open: true, type: 'ban', player })
+                                  }
+                                  className="text-destructive"
+                                >
+                                  <Ban className="w-4 h-4 mr-2" />
+                                  Ban Player
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -195,6 +278,44 @@ const AdminPlayers = () => {
           </Card>
         </div>
       </div>
+
+      <AlertDialog open={actionDialog.open} onOpenChange={(open) => {
+        if (!open) {
+          setActionDialog({ open: false, type: null, player: null });
+          setActionReason("");
+        }
+      }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {actionDialog.type === 'kick' ? 'Kick Player' : 'Ban Player'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to {actionDialog.type} {actionDialog.player?.name}?
+              {actionDialog.type === 'ban' && ' This action will permanently ban the player from the server.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="reason">Reason</Label>
+            <Textarea
+              id="reason"
+              placeholder="Enter reason for this action..."
+              value={actionReason}
+              onChange={(e) => setActionReason(e.target.value)}
+              className="min-h-[100px]"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleAction}
+              className={actionDialog.type === 'ban' ? 'bg-destructive hover:bg-destructive/90' : ''}
+            >
+              {actionDialog.type === 'kick' ? 'Kick' : 'Ban'} Player
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
