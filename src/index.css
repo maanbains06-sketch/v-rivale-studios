@@ -265,11 +265,75 @@ All colors MUST be HSL.
     }
   }
 
+  @keyframes clouds-move {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  @keyframes lightning-bolt {
+    0%, 100% {
+      opacity: 0;
+      transform: translateY(-100%) scaleY(0);
+    }
+    10%, 30% {
+      opacity: 1;
+      transform: translateY(0) scaleY(1);
+    }
+    40% {
+      opacity: 0;
+      transform: translateY(0) scaleY(1);
+    }
+  }
+
+  @keyframes atmospheric-glow {
+    0%, 100% {
+      opacity: 0.3;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.6;
+      transform: scale(1.1);
+    }
+  }
+
+  @keyframes pulse-lightning {
+    0%, 100% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 0.8;
+    }
+  }
+
   .lightning-flash {
     animation: lightning-flash 0.4s ease-in-out;
   }
 
   .lightning-glow {
     animation: lightning-glow 0.4s ease-in-out;
+  }
+
+  .clouds-animation {
+    animation: clouds-move 60s linear infinite;
+  }
+
+  .lightning-bolt-1 {
+    animation: lightning-bolt 4s ease-in-out infinite;
+  }
+
+  .lightning-bolt-2 {
+    animation: lightning-bolt 5s ease-in-out infinite 1.5s;
+  }
+
+  .lightning-bolt-3 {
+    animation: lightning-bolt 6s ease-in-out infinite 3s;
+  }
+
+  .atmospheric-glow {
+    animation: atmospheric-glow 8s ease-in-out infinite;
   }
 }

@@ -61,6 +61,72 @@ const Index = () => {
           backgroundAttachment: 'fixed',
         }}
       >
+        {/* Animated Cloud Layers */}
+        <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden">
+          <div className="clouds-animation absolute w-[200%] h-full opacity-20"
+            style={{
+              background: 'linear-gradient(90deg, transparent 0%, rgba(139, 92, 246, 0.3) 25%, transparent 50%, rgba(59, 130, 246, 0.3) 75%, transparent 100%)',
+            }}
+          />
+        </div>
+
+        {/* Animated Lightning Bolts */}
+        <div className="absolute inset-0 z-[2] pointer-events-none">
+          <svg className="lightning-bolt-1 absolute top-0 left-[20%] w-2 h-full opacity-0" viewBox="0 0 10 100" preserveAspectRatio="none">
+            <path d="M 5 0 L 3 40 L 7 40 L 4 100" fill="none" stroke="rgba(139, 92, 246, 0.9)" strokeWidth="2" filter="url(#glow)" />
+            <defs>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                <feMerge>
+                  <feMergeNode in="coloredBlur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+          </svg>
+          
+          <svg className="lightning-bolt-2 absolute top-0 left-[50%] w-2 h-full opacity-0" viewBox="0 0 10 100" preserveAspectRatio="none">
+            <path d="M 5 0 L 4 35 L 6 35 L 3 100" fill="none" stroke="rgba(59, 130, 246, 0.9)" strokeWidth="2" filter="url(#glow2)" />
+            <defs>
+              <filter id="glow2">
+                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                <feMerge>
+                  <feMergeNode in="coloredBlur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+          </svg>
+
+          <svg className="lightning-bolt-3 absolute top-0 left-[75%] w-2 h-full opacity-0" viewBox="0 0 10 100" preserveAspectRatio="none">
+            <path d="M 5 0 L 6 45 L 4 45 L 7 100" fill="none" stroke="rgba(139, 92, 246, 0.9)" strokeWidth="2" filter="url(#glow3)" />
+            <defs>
+              <filter id="glow3">
+                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                <feMerge>
+                  <feMergeNode in="coloredBlur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+          </svg>
+        </div>
+
+        {/* Atmospheric Glow Effects */}
+        <div className="absolute inset-0 z-[3] pointer-events-none">
+          <div className="atmospheric-glow absolute top-[10%] left-[30%] w-96 h-96 rounded-full blur-3xl"
+            style={{
+              background: 'radial-gradient(circle, rgba(139, 92, 246, 0.4) 0%, transparent 70%)'
+            }}
+          />
+          <div className="atmospheric-glow absolute top-[15%] right-[20%] w-80 h-80 rounded-full blur-3xl"
+            style={{
+              background: 'radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, transparent 70%)',
+              animationDelay: '2s'
+            }}
+          />
+        </div>
+
         {/* Lightning Flash Overlays */}
         <div className={`absolute inset-0 bg-white pointer-events-none z-20 ${lightning ? 'lightning-flash' : 'opacity-0'}`} />
         <div className={`absolute inset-0 pointer-events-none z-20 ${lightning ? 'lightning-glow' : 'opacity-0'}`} 
@@ -69,9 +135,11 @@ const Index = () => {
           }}
         />
         
-        <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/30 to-background/60"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/30 to-background/60 z-[5]"></div>
         
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="container mx-auto px-4 relative z-10"
+          style={{ zIndex: 30 }}
+        >
           <div className="text-center animate-fade-in">
             <div className="mb-8 flex justify-center">
               <AnimatedLogo size="lg" />
