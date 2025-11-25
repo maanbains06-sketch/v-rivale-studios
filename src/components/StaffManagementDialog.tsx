@@ -177,6 +177,9 @@ export const StaffManagementDialog = ({ open, onOpenChange, staffMember, onSucce
           {/* Discord ID with Fetch Button */}
           <div className="space-y-2">
             <Label htmlFor="discord_id">Discord ID *</Label>
+            <p className="text-xs text-muted-foreground">
+              Enter the Discord ID and click "Fetch Info" to automatically populate username and avatar
+            </p>
             <div className="flex gap-2">
               <Input
                 id="discord_id"
@@ -190,11 +193,31 @@ export const StaffManagementDialog = ({ open, onOpenChange, staffMember, onSucce
                 type="button"
                 onClick={fetchDiscordInfo}
                 disabled={fetchingDiscord || !formData.discord_id}
-                variant="outline"
+                variant="secondary"
+                className="whitespace-nowrap"
               >
-                {fetchingDiscord ? <Loader2 className="w-4 h-4 animate-spin" /> : "Fetch Info"}
+                {fetchingDiscord ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    Fetching...
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Fetch Info
+                  </>
+                )}
               </Button>
             </div>
+            {formData.discord_avatar && (
+              <div className="flex items-center gap-2 mt-2 p-2 bg-muted rounded-lg">
+                <img src={formData.discord_avatar} alt="Discord Avatar" className="w-10 h-10 rounded-full" />
+                <div className="text-sm">
+                  <p className="font-medium">{formData.discord_username}</p>
+                  <p className="text-xs text-muted-foreground">Avatar fetched from Discord</p>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -214,8 +237,10 @@ export const StaffManagementDialog = ({ open, onOpenChange, staffMember, onSucce
                 id="discord_username"
                 value={formData.discord_username}
                 onChange={(e) => setFormData({ ...formData, discord_username: e.target.value })}
-                readOnly
+                placeholder="Auto-populated from Discord"
+                className="bg-muted/50"
               />
+              <p className="text-xs text-muted-foreground">This field is auto-filled when fetching Discord info</p>
             </div>
           </div>
 
