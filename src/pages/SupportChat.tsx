@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Send, MessageCircle, Plus, Paperclip, X, Download, Star, Sparkles, UserPlus } from "lucide-react";
+import { Send, MessageCircle, Plus, Paperclip, X, Download, Star, Sparkles, UserPlus, ThumbsUp, ThumbsDown } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -25,6 +25,11 @@ interface Message {
   attachment_url: string | null;
   attachment_name: string | null;
   attachment_size: number | null;
+}
+
+interface MessageRating {
+  message_id: string;
+  rating: 'helpful' | 'not_helpful';
 }
 
 interface Chat {
@@ -55,6 +60,7 @@ const SupportChat = () => {
   const [feedback, setFeedback] = useState("");
   const [attachment, setAttachment] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [messageRatings, setMessageRatings] = useState<Map<string, MessageRating>>(new Map());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -66,6 +72,7 @@ const SupportChat = () => {
   useEffect(() => {
     if (selectedChat) {
       fetchMessages(selectedChat.id);
+      fetchMessageRatings(selectedChat.id);
       setupRealtimeSubscription(selectedChat.id);
     }
   }, [selectedChat]);
@@ -124,6 +131,64 @@ const SupportChat = () => {
     }
 
     setMessages(data || []);
+  };
+
+  const fetchMessageRatings = async (chatId: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from("ai_message_ratings")
+      .select("message_id, rating")
+      .eq("chat_id", chatId)
+      .eq("user_id", user.id);
+
+    if (error) {
+      console.error("Error fetching ratings:", error);
+      return;
+    }
+
+    const ratingsMap = new Map<string, MessageRating>();
+    data?.forEach((rating) => {
+      ratingsMap.set(rating.message_id, {
+        message_id: rating.message_id,
+        rating: rating.rating as 'helpful' | 'not_helpful'
+      });
+    });
+    setMessageRatings(ratingsMap);
+  };
+
+  const rateMessage = async (messageId: string, ratingValue: 'helpful' | 'not_helpful') => {
+    if (!selectedChat) return;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from("ai_message_ratings")
+        .insert({
+          message_id: messageId,
+          chat_id: selectedChat.id,
+          user_id: user.id,
+          rating: ratingValue,
+        });
+
+      if (error) throw error;
+
+      setMessageRatings(prev => {
+        const newMap = new Map(prev);
+        newMap.set(messageId, { message_id: messageId, rating: ratingValue });
+        return newMap;
+      });
+
+      toast({
+        title: "Thank you!",
+        description: "Your feedback helps us improve our AI support.",
+      });
+    } catch (error) {
+      console.error("Error rating message:", error);
+    }
   };
 
   const setupRealtimeSubscription = (chatId: string) => {
@@ -338,7 +403,17 @@ const SupportChat = () => {
             }),
           });
 
-          if (!response.ok) {
+          if (response.ok) {
+            const data = await response.json();
+            // If chat was auto-escalated, refresh chat data to show updated status
+            if (data.escalated) {
+              await fetchChats();
+              toast({
+                title: "Escalated to Human Support",
+                description: "Your request has been prioritized for immediate assistance.",
+              });
+            }
+          } else {
             console.error('AI response failed:', response.status);
           }
         } catch (aiError) {
@@ -450,29 +525,41 @@ const SupportChat = () => {
                   </div>
                 ) : (
                   <div className="divide-y divide-border">
-                    {chats.map((chat) => (
-                      <button
-                        key={chat.id}
-                        onClick={() => setSelectedChat(chat)}
-                        className={`w-full p-4 text-left hover:bg-accent transition-colors ${
-                          selectedChat?.id === chat.id ? "bg-accent" : ""
-                        }`}
-                      >
-                        <div className="flex items-start justify-between mb-1">
-                          <p className="font-medium text-sm truncate">{chat.subject}</p>
-                          <span className={`text-xs px-2 py-1 rounded-full ${
-                            chat.status === "open" ? "bg-green-500/20 text-green-500" :
-                            chat.status === "closed" ? "bg-gray-500/20 text-gray-500" :
-                            "bg-yellow-500/20 text-yellow-500"
-                          }`}>
-                            {chat.status}
-                          </span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          {format(new Date(chat.last_message_at), "PPp")}
-                        </p>
-                      </button>
-                    ))}
+                    {chats.map((chat) => {
+                      const isEscalated = chat.tags?.includes('auto_escalated');
+                      
+                      return (
+                        <button
+                          key={chat.id}
+                          onClick={() => setSelectedChat(chat)}
+                          className={`w-full p-4 text-left hover:bg-accent transition-colors ${
+                            selectedChat?.id === chat.id ? "bg-accent" : ""
+                          }`}
+                        >
+                          <div className="flex items-start justify-between mb-1">
+                            <div className="flex items-center gap-2 flex-1">
+                              <p className="font-medium text-sm truncate">{chat.subject}</p>
+                              {isEscalated && (
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-500 flex items-center gap-1">
+                                  <UserPlus className="h-3 w-3" />
+                                  Escalated
+                                </span>
+                              )}
+                            </div>
+                            <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ml-2 ${
+                              chat.status === "open" ? "bg-green-500/20 text-green-500" :
+                              chat.status === "closed" ? "bg-gray-500/20 text-gray-500" :
+                              "bg-yellow-500/20 text-yellow-500"
+                            }`}>
+                              {chat.status}
+                            </span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {format(new Date(chat.last_message_at), "PPp")}
+                          </p>
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </ScrollArea>
@@ -559,36 +646,72 @@ const SupportChat = () => {
                 <CardContent className="flex-1 flex flex-col p-4">
                   <ScrollArea className="flex-1 pr-4">
                     <div className="space-y-4">
-                      {messages.map((message) => (
-                        <div
-                          key={message.id}
-                          className={`flex ${message.is_staff ? "justify-start" : "justify-end"}`}
-                        >
+                      {messages.map((message) => {
+                        const isAiMessage = message.is_staff && message.user_id === "00000000-0000-0000-0000-000000000000";
+                        const currentRating = messageRatings.get(message.id);
+                        
+                        return (
                           <div
-                            className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                              message.is_staff
-                                ? "bg-accent text-foreground"
-                                : "bg-primary text-primary-foreground"
-                            }`}
+                            key={message.id}
+                            className={`flex ${message.is_staff ? "justify-start" : "justify-end"}`}
                           >
-                            <p className="text-sm">{message.message}</p>
-                            {message.attachment_url && (
-                              <a
-                                href={message.attachment_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 mt-2 text-xs underline hover:opacity-80"
+                            <div className="flex flex-col gap-2">
+                              <div
+                                className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                                  message.is_staff
+                                    ? "bg-accent text-foreground"
+                                    : "bg-primary text-primary-foreground"
+                                }`}
                               >
-                                <Download className="h-3 w-3" />
-                                {message.attachment_name} ({(message.attachment_size! / 1024).toFixed(1)}KB)
-                              </a>
-                            )}
-                            <p className="text-xs opacity-70 mt-1">
-                              {format(new Date(message.created_at), "p")}
-                            </p>
+                                {isAiMessage && (
+                                  <div className="flex items-center gap-2 mb-2 text-xs opacity-70">
+                                    <Sparkles className="h-3 w-3" />
+                                    <span>AI Assistant</span>
+                                  </div>
+                                )}
+                                <p className="text-sm">{message.message}</p>
+                                {message.attachment_url && (
+                                  <a
+                                    href={message.attachment_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 mt-2 text-xs underline hover:opacity-80"
+                                  >
+                                    <Download className="h-3 w-3" />
+                                    {message.attachment_name} ({(message.attachment_size! / 1024).toFixed(1)}KB)
+                                  </a>
+                                )}
+                                <p className="text-xs opacity-70 mt-1">
+                                  {format(new Date(message.created_at), "p")}
+                                </p>
+                              </div>
+                              {isAiMessage && (
+                                <div className="flex items-center gap-2 ml-2">
+                                  <span className="text-xs text-muted-foreground">Was this helpful?</span>
+                                  <Button
+                                    size="sm"
+                                    variant={currentRating?.rating === 'helpful' ? "default" : "ghost"}
+                                    className="h-6 w-6 p-0"
+                                    onClick={() => rateMessage(message.id, 'helpful')}
+                                    disabled={!!currentRating}
+                                  >
+                                    <ThumbsUp className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant={currentRating?.rating === 'not_helpful' ? "default" : "ghost"}
+                                    className="h-6 w-6 p-0"
+                                    onClick={() => rateMessage(message.id, 'not_helpful')}
+                                    disabled={!!currentRating}
+                                  >
+                                    <ThumbsDown className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                       <div ref={messagesEndRef} />
                     </div>
                   </ScrollArea>
