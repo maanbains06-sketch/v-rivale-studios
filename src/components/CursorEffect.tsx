@@ -68,24 +68,24 @@ export const CursorEffect = () => {
       
       // Create new particles from cursor position
       const newParticles: Particle[] = [];
-      for (let i = 0; i < 4; i++) { // More particles per interval
+      for (let i = 0; i < 8; i++) { // Many more particles per interval
         const angle = Math.random() * Math.PI * 2;
         const speed = 0.4 + Math.random() * 0.6;
-        const spreadX = (Math.random() - 0.5) * 10; // Less horizontal spread
+        const spreadX = (Math.random() - 0.5) * 10;
         newParticles.push({
           id: particleIdRef.current++,
           x: position.x + spreadX,
           y: position.y,
           velocityX: Math.cos(angle) * speed * 0.3,
-          velocityY: -Math.abs(Math.sin(angle)) * speed - 1.2, // Faster upward movement
-          size: 2 + Math.random() * 3, // Much smaller particles
-          opacity: 0.7 + Math.random() * 0.3,
+          velocityY: -Math.abs(Math.sin(angle)) * speed - 1.2,
+          size: 3 + Math.random() * 4, // Slightly larger for visibility
+          opacity: 0.8 + Math.random() * 0.2, // Higher base opacity
           createdAt: now,
         });
       }
 
-      setParticles((prev) => [...prev, ...newParticles].slice(-100)); // Keep more particles
-    }, 80); // More frequent generation
+      setParticles((prev) => [...prev, ...newParticles].slice(-150)); // Keep even more particles
+    }, 60); // More frequent generation
 
     // Animation loop for particle movement
     const animate = () => {
@@ -137,10 +137,10 @@ export const CursorEffect = () => {
             style={{
               width: `${particle.size}px`,
               height: `${particle.size}px`,
-              background: `radial-gradient(circle, rgba(147, 197, 253, ${particle.opacity * 0.8}) 0%, rgba(96, 165, 250, ${particle.opacity * 0.5}) 50%, transparent 80%)`,
+              background: `radial-gradient(circle, rgba(191, 219, 254, ${particle.opacity}) 0%, rgba(147, 197, 253, ${particle.opacity * 0.8}) 40%, rgba(96, 165, 250, ${particle.opacity * 0.5}) 70%, transparent 90%)`,
               filter: "blur(2px)",
               opacity: particle.opacity,
-              boxShadow: `0 0 ${particle.size * 1}px rgba(96, 165, 250, ${particle.opacity * 0.3})`,
+              boxShadow: `0 0 ${particle.size * 2}px rgba(147, 197, 253, ${particle.opacity * 0.7}), 0 0 ${particle.size * 3}px rgba(96, 165, 250, ${particle.opacity * 0.4})`,
             }}
           />
         </div>
