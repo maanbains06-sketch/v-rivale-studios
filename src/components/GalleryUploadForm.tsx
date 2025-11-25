@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Upload, X, CheckCircle } from "lucide-react";
+import { Loader2, Upload, X, CheckCircle, Lock } from "lucide-react";
+import { useStaffRole } from "@/hooks/useStaffRole";
 
 interface GalleryUploadFormProps {
   onSuccess?: () => void;
@@ -17,12 +18,20 @@ interface GalleryUploadFormProps {
 const GalleryUploadForm = ({ onSuccess }: GalleryUploadFormProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { canAccessCategory, loading: staffLoading } = useStaffRole();
   const [uploading, setUploading] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+
+  const categories = [
+    { value: 'screenshot', label: 'Screenshot', restricted: false },
+    { value: 'video', label: 'Video', restricted: false },
+    { value: 'event', label: 'Event', restricted: true },
+    { value: 'community', label: 'Community', restricted: false },
+  ];
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -223,17 +232,34 @@ const GalleryUploadForm = ({ onSuccess }: GalleryUploadFormProps) => {
           {/* Category */}
           <div className="space-y-2">
             <Label htmlFor="category">Category *</Label>
-            <Select value={category} onValueChange={setCategory} required>
+            <Select value={category} onValueChange={setCategory} required disabled={staffLoading}>
               <SelectTrigger className="bg-background/50">
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="screenshot">Screenshot</SelectItem>
-                <SelectItem value="video">Video</SelectItem>
-                <SelectItem value="event">Event</SelectItem>
-                <SelectItem value="community">Community</SelectItem>
+                {categories.map((cat) => {
+                  const isAccessible = !cat.restricted || canAccessCategory(cat.value);
+                  return (
+                    <SelectItem 
+                      key={cat.value} 
+                      value={cat.value}
+                      disabled={!isAccessible}
+                    >
+                      <div className="flex items-center gap-2">
+                        {cat.label}
+                        {!isAccessible && (
+                          <Lock className="h-3 w-3 text-muted-foreground" />
+                        )}
+                      </div>
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground">
+              {categories.find(c => c.value === 'event')?.restricted && 
+                "Events category requires staff access (Administration, Development, Leadership, or Events team)"}
+            </p>
           </div>
 
           {/* File Upload */}
