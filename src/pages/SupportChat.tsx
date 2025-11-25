@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Send, MessageCircle, Plus, Paperclip, X, Download, Star, Sparkles, UserPlus, ThumbsUp, ThumbsDown } from "lucide-react";
+import { Send, MessageCircle, Plus, Paperclip, X, Download, Star, Sparkles, UserPlus, ThumbsUp, ThumbsDown, CreditCard } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -47,6 +47,8 @@ interface Chat {
 const SupportChat = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const category = searchParams.get('category');
   const [chats, setChats] = useState<Chat[]>([]);
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -68,6 +70,12 @@ const SupportChat = () => {
   useEffect(() => {
     checkAuth();
     fetchChats();
+    
+    // Auto-open create dialog if category is specified and no chats exist
+    if (category === 'refund') {
+      setNewChatSubject("Refund Request");
+      setCreateDialogOpen(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -228,11 +236,16 @@ const SupportChat = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // Prepare tags based on category
+    const tags = category === 'refund' ? ['refund', 'billing'] : [];
+
     const { data, error } = await supabase
       .from("support_chats")
       .insert({
         user_id: user.id,
         subject: newChatSubject,
+        tags: tags,
+        priority: category === 'refund' ? 'high' : 'normal',
       })
       .select()
       .single();
@@ -254,9 +267,10 @@ const SupportChat = () => {
     setCreateDialogOpen(false);
     setLoading(false);
     
+    const categoryText = category === 'refund' ? 'refund request' : 'support chat';
     toast({
       title: "Chat Created",
-      description: "Your support chat has been created. Our team will respond shortly.",
+      description: `Your ${categoryText} has been created. Our team will respond shortly.`,
     });
   };
 
@@ -477,8 +491,8 @@ const SupportChat = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       <PageHeader
-        title="Live Support Chat"
-        description="Get real-time assistance from our support team"
+        title={category === 'refund' ? "Refund Support" : "Live Support Chat"}
+        description={category === 'refund' ? "Get assistance with refund requests and billing issues" : "Get real-time assistance from our support team"}
         backgroundImage={headerSupport}
       />
 
@@ -497,14 +511,31 @@ const SupportChat = () => {
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Create New Support Chat</DialogTitle>
+                    <DialogTitle>
+                      {category === 'refund' ? (
+                        <div className="flex items-center gap-2">
+                          <CreditCard className="w-5 h-5 text-primary" />
+                          Create Refund Request
+                        </div>
+                      ) : (
+                        'Create New Support Chat'
+                      )}
+                    </DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4 pt-4">
+                    {category === 'refund' && (
+                      <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+                        <p className="text-sm text-muted-foreground">
+                          <strong>Refund requests</strong> are prioritized and handled by our billing team. 
+                          Please provide details about your purchase and reason for the refund request.
+                        </p>
+                      </div>
+                    )}
                     <div className="space-y-2">
                       <Label htmlFor="subject">Subject</Label>
                       <Input
                         id="subject"
-                        placeholder="What do you need help with?"
+                        placeholder={category === 'refund' ? "Refund Request - Order #" : "What do you need help with?"}
                         value={newChatSubject}
                         onChange={(e) => setNewChatSubject(e.target.value)}
                       />
@@ -528,6 +559,7 @@ const SupportChat = () => {
                   <div className="divide-y divide-border">
                     {chats.map((chat) => {
                       const isEscalated = chat.tags?.includes('auto_escalated');
+                      const isRefund = chat.tags?.includes('refund');
                       const languageEmoji = {
                         'en': '🇬🇧',
                         'es': '🇪🇸',
@@ -554,6 +586,12 @@ const SupportChat = () => {
                             <div className="flex items-center gap-2 flex-1">
                               <span className="text-sm">{languageEmoji}</span>
                               <p className="font-medium text-sm truncate">{chat.subject}</p>
+                              {isRefund && (
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-secondary/20 text-secondary flex items-center gap-1">
+                                  <CreditCard className="h-3 w-3" />
+                                  Refund
+                                </span>
+                              )}
                               {isEscalated && (
                                 <span className="text-xs px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-500 flex items-center gap-1">
                                   <UserPlus className="h-3 w-3" />
