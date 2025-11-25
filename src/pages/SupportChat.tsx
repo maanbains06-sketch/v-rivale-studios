@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Send, MessageCircle, Plus, Paperclip, X, Download, Star, Sparkles } from "lucide-react";
+import { Send, MessageCircle, Plus, Paperclip, X, Download, Star, Sparkles, UserPlus } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -35,6 +35,7 @@ interface Chat {
   last_message_at: string;
   priority: string;
   tags: string[];
+  assigned_to: string | null;
 }
 
 const SupportChat = () => {
@@ -235,6 +236,38 @@ const SupportChat = () => {
     };
   };
 
+  const requestHumanSupport = async () => {
+    if (!selectedChat) return;
+
+    try {
+      const { error } = await supabase
+        .from("support_chats")
+        .update({ 
+          status: 'in_progress',
+          priority: 'high',
+          tags: ['human_requested']
+        })
+        .eq("id", selectedChat.id);
+
+      if (error) throw error;
+
+      // Refresh chats to update UI
+      await fetchChats();
+
+      toast({
+        title: "Human support requested",
+        description: "A staff member will assist you shortly.",
+      });
+    } catch (error) {
+      console.error("Error requesting human support:", error);
+      toast({
+        title: "Error",
+        description: "Failed to request human support.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const sendMessage = async () => {
     if ((!newMessage.trim() && !attachment) || !selectedChat) return;
 
@@ -242,6 +275,7 @@ const SupportChat = () => {
     if (!user) return;
 
     setUploading(true);
+    const messageToSend = newMessage;
 
     try {
       let attachmentData = null;
@@ -252,7 +286,7 @@ const SupportChat = () => {
       const { error } = await supabase.from("support_messages").insert({
         chat_id: selectedChat.id,
         user_id: user.id,
-        message: newMessage || "Sent an attachment",
+        message: messageToSend || "Sent an attachment",
         is_staff: false,
         attachment_url: attachmentData?.url,
         attachment_name: attachmentData?.name,
@@ -279,6 +313,38 @@ const SupportChat = () => {
       setAttachment(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
+      }
+
+      // Get AI response if chat is still open and not assigned to human
+      if (selectedChat.status === 'open' && !selectedChat.assigned_to && messageToSend.trim()) {
+        const chatMessages = messages.map(m => ({
+          role: m.is_staff ? 'assistant' : 'user',
+          content: m.message
+        }));
+        chatMessages.push({ role: 'user', content: messageToSend });
+
+        const { data: session } = await supabase.auth.getSession();
+        
+        try {
+          const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-support-chat`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.session?.access_token}`,
+            },
+            body: JSON.stringify({
+              messages: chatMessages,
+              chatId: selectedChat.id
+            }),
+          });
+
+          if (!response.ok) {
+            console.error('AI response failed:', response.status);
+          }
+        } catch (aiError) {
+          console.error('AI call error:', aiError);
+          // Don't show error to user, AI is optional enhancement
+        }
       }
     } catch (error) {
       toast({
@@ -350,7 +416,7 @@ const SupportChat = () => {
                 <DialogTrigger asChild>
                   <Button size="sm" variant="outline">
                     <Plus className="h-4 w-4 mr-2" />
-                    New Chat
+                    Skylife Support
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -419,15 +485,37 @@ const SupportChat = () => {
               <>
                 <CardHeader className="border-b border-border/20">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{selectedChat.subject}</CardTitle>
-                    {selectedChat.status === "closed" && (
-                      <Dialog open={ratingDialogOpen} onOpenChange={setRatingDialogOpen}>
-                        <DialogTrigger asChild>
-                          <Button size="sm" variant="outline">
-                            <Star className="h-4 w-4 mr-2" />
-                            Rate Support
-                          </Button>
-                        </DialogTrigger>
+                    <div>
+                      <CardTitle className="text-lg">{selectedChat.subject}</CardTitle>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {selectedChat.assigned_to ? (
+                          <span className="flex items-center gap-2">
+                            <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+                            Staff Support
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-2">
+                            <Sparkles className="h-4 w-4 text-blue-500" />
+                            AI Assistant
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      {!selectedChat.assigned_to && selectedChat.status === 'open' && (
+                        <Button size="sm" variant="outline" onClick={requestHumanSupport}>
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          Request Human
+                        </Button>
+                      )}
+                      {selectedChat.status === "closed" && (
+                        <Dialog open={ratingDialogOpen} onOpenChange={setRatingDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button size="sm" variant="outline">
+                              <Star className="h-4 w-4 mr-2" />
+                              Rate Support
+                            </Button>
+                          </DialogTrigger>
                         <DialogContent>
                           <DialogHeader>
                             <DialogTitle>Rate Your Support Experience</DialogTitle>
@@ -462,9 +550,10 @@ const SupportChat = () => {
                               Submit Rating
                             </Button>
                           </div>
-                        </DialogContent>
-                      </Dialog>
-                    )}
+                          </DialogContent>
+                        </Dialog>
+                      )}
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col p-4">
