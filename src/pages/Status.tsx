@@ -4,11 +4,12 @@ import PageHeader from "@/components/PageHeader";
 import headerStatus from "@/assets/header-status.jpg";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, Activity, Clock, Zap, TrendingUp, AlertCircle, Server, Wifi, Network, Sparkles, Radio, Shield } from "lucide-react";
+import { Users, Activity, Clock, Zap, TrendingUp, AlertCircle, Server, Wifi, Network, Sparkles, Radio, Shield, Calendar, AlertTriangle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { format } from "date-fns";
 
 interface ServerStats {
   playersOnline: number;
@@ -58,6 +59,8 @@ const Status = () => {
     networkLatency: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [lastUptimeSeconds, setLastUptimeSeconds] = useState<number | null>(null);
+  const [maintenance, setMaintenance] = useState<any[]>([]);
 
   const fetchServerStatus = async () => {
     try {
@@ -69,6 +72,14 @@ const Status = () => {
         return;
       }
 
+      // Check for server restart (uptime decreased)
+      if (lastUptimeSeconds !== null && data.uptimeSeconds < lastUptimeSeconds && data.status === 'online') {
+        toast.success('Server Restarted', {
+          description: `${data.serverName || 'Server'} has been restarted. Current uptime: ${data.uptime}`,
+        });
+      }
+      
+      setLastUptimeSeconds(data.uptimeSeconds);
       setServerData(data);
       setIsLoading(false);
     } catch (error) {
@@ -78,15 +89,34 @@ const Status = () => {
     }
   };
 
+  const fetchMaintenance = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('maintenance_schedules')
+        .select('*')
+        .in('status', ['scheduled', 'in_progress'])
+        .order('scheduled_start', { ascending: true });
+      
+      if (!error && data) {
+        setMaintenance(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch maintenance schedules:', error);
+    }
+  };
+
   useEffect(() => {
-    // Initial fetch
     fetchServerStatus();
+    fetchMaintenance();
+    
+    const statusInterval = setInterval(fetchServerStatus, 10000);
+    const maintenanceInterval = setInterval(fetchMaintenance, 60000);
 
-    // Poll every 10 seconds for real-time updates
-    const interval = setInterval(fetchServerStatus, 10000);
-
-    return () => clearInterval(interval);
-  }, []);
+    return () => {
+      clearInterval(statusInterval);
+      clearInterval(maintenanceInterval);
+    };
+  }, [lastUptimeSeconds]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -171,6 +201,50 @@ const Status = () => {
       
       <main className="pb-16">
         <div className="container mx-auto px-4">
+
+          {/* Scheduled Maintenance Section */}
+          {maintenance.length > 0 && (
+            <div className="mb-8 animate-fade-in">
+              <Card className="glass-effect border-2 border-warning/50 bg-warning/5">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 rounded-full bg-warning/20">
+                      <AlertTriangle className="h-6 w-6 text-warning" />
+                    </div>
+                    <div className="flex-1 space-y-4">
+                      <h3 className="text-xl font-semibold flex items-center gap-2">
+                        <span>Scheduled Maintenance</span>
+                        <Badge variant="outline" className="bg-warning/20 text-warning border-warning/30">
+                          {maintenance.length} {maintenance.length === 1 ? 'Event' : 'Events'}
+                        </Badge>
+                      </h3>
+                      <div className="space-y-4">
+                        {maintenance.map((item) => (
+                          <div key={item.id} className="p-4 rounded-lg bg-background/50 border border-border/50 space-y-2">
+                            <div className="flex items-center gap-3 flex-wrap">
+                              <Badge variant={item.status === 'in_progress' ? 'destructive' : 'secondary'} className="text-xs">
+                                {item.status === 'in_progress' ? '🔴 In Progress' : '🟡 Scheduled'}
+                              </Badge>
+                              <h4 className="font-semibold text-foreground">{item.title}</h4>
+                            </div>
+                            {item.description && (
+                              <p className="text-sm text-muted-foreground">{item.description}</p>
+                            )}
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Calendar className="h-4 w-4" />
+                              <span>
+                                {format(new Date(item.scheduled_start), 'PPp')} - {format(new Date(item.scheduled_end), 'PPp')}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           {/* Live Status Hero Banner */}
           <div className="mb-12 relative overflow-hidden">
