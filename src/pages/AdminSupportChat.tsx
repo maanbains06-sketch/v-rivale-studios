@@ -14,7 +14,6 @@ import { format } from "date-fns";
 import { CannedResponsesManager } from "@/components/CannedResponsesManager";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { StaffAvailabilityToggle } from "@/components/StaffAvailabilityToggle";
-import { CreateArticleDialog } from "@/components/CreateArticleDialog";
 
 interface Message {
   id: string;
@@ -345,10 +344,7 @@ const AdminSupportChat = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-4xl font-bold">Support Chat Management</h1>
-            <div className="flex gap-2">
-              <CreateArticleDialog />
-              <CannedResponsesManager />
-            </div>
+            <CannedResponsesManager />
           </div>
           <StaffAvailabilityToggle />
         </div>
