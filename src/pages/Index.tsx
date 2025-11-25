@@ -33,21 +33,43 @@ const Index = () => {
     const container = rainContainerRef.current;
     if (!container) return;
 
+    // Create rain splash effect
+    const createSplash = (left: string) => {
+      const splash = document.createElement('div');
+      splash.className = 'rain-splash';
+      splash.style.left = left;
+      splash.style.bottom = '0';
+      
+      container.appendChild(splash);
+
+      // Remove splash after animation
+      setTimeout(() => {
+        splash.remove();
+      }, 300);
+    };
+
     // Create rain drops
     const createRainDrop = () => {
       const drop = document.createElement('div');
       drop.className = 'rain-drop';
-      drop.style.left = `${Math.random() * 100}%`;
-      drop.style.animationDuration = `${Math.random() * 0.5 + 0.5}s`;
+      const leftPosition = `${Math.random() * 100}%`;
+      drop.style.left = leftPosition;
+      const duration = Math.random() * 0.5 + 0.5;
+      drop.style.animationDuration = `${duration}s`;
       drop.style.animationDelay = `${Math.random() * 2}s`;
       drop.style.opacity = `${Math.random() * 0.3 + 0.3}`;
       
       container.appendChild(drop);
 
+      // Create splash when drop hits ground
+      setTimeout(() => {
+        createSplash(leftPosition);
+      }, (duration * 1000));
+
       // Remove drop after animation
       setTimeout(() => {
         drop.remove();
-      }, 2500);
+      }, (duration * 1000) + 100);
     };
 
     // Create multiple rain drops
