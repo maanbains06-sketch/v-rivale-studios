@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Users, Activity, Clock, Zap, TrendingUp, AlertCircle, Server, Wifi, Network, Sparkles, Radio, Shield } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface ServerStats {
   playersOnline: number;
@@ -32,33 +34,99 @@ interface ActiveEvent {
   participants: number;
 }
 
+interface ServerStatus {
+  status: 'online' | 'offline' | 'maintenance' | 'error';
+  players: {
+    current: number;
+    max: number;
+  };
+  uptime: string;
+  uptimeSeconds: number;
+  serverLoad: number;
+  networkLatency: number;
+  serverName?: string;
+  error?: string;
+}
+
 const Status = () => {
-  const [stats, setStats] = useState<ServerStats>({
-    playersOnline: 0,
-    maxPlayers: 128,
-    uptime: "0d 0h 0m",
-    cpu: 0,
-    memory: 0,
-    ping: 0,
+  const [serverData, setServerData] = useState<ServerStatus>({
+    status: 'offline',
+    players: { current: 0, max: 32 },
+    uptime: '0h',
+    uptimeSeconds: 0,
+    serverLoad: 0,
+    networkLatency: 0,
   });
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Simulate real-time updates
+  const fetchServerStatus = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('fivem-server-status');
+      
+      if (error) {
+        console.error('Error fetching server status:', error);
+        toast.error('Failed to fetch server status');
+        return;
+      }
+
+      setServerData(data);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Failed to connect to server');
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const updateStats = () => {
-      setStats({
-        playersOnline: Math.floor(Math.random() * 128) + 50,
-        maxPlayers: 128,
-        uptime: "7d 14h 32m",
-        cpu: Math.floor(Math.random() * 30) + 40,
-        memory: Math.floor(Math.random() * 20) + 60,
-        ping: Math.floor(Math.random() * 20) + 30,
-      });
-    };
+    // Initial fetch
+    fetchServerStatus();
 
-    updateStats();
-    const interval = setInterval(updateStats, 5000);
+    // Poll every 10 seconds for real-time updates
+    const interval = setInterval(fetchServerStatus, 10000);
+
     return () => clearInterval(interval);
   }, []);
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'online':
+        return 'from-green-400 to-green-600';
+      case 'offline':
+        return 'from-red-400 to-red-600';
+      case 'maintenance':
+        return 'from-yellow-400 to-yellow-600';
+      default:
+        return 'from-gray-400 to-gray-600';
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'online':
+        return 'All Systems Operational';
+      case 'offline':
+        return 'Server Offline';
+      case 'maintenance':
+        return 'Under Maintenance';
+      default:
+        return 'Status Unknown';
+    }
+  };
+
+  const getLatencyText = (latency: number) => {
+    if (latency < 50) return 'Excellent';
+    if (latency < 100) return 'Good';
+    if (latency < 150) return 'Fair';
+    return 'Poor';
+  };
+
+  const getLoadText = (load: number) => {
+    if (load < 50) return 'Optimal';
+    if (load < 75) return 'Good';
+    if (load < 90) return 'High';
+    return 'Critical';
+  };
 
   const recentUpdates: RecentUpdate[] = [
     { id: 1, title: "New Housing System Released", date: "2 hours ago", type: "update" },
@@ -93,7 +161,11 @@ const Status = () => {
       <PageHeader 
         title="Server Status"
         description="Real-time server statistics and performance metrics"
-        badge="🟢 Live & Operational"
+        badge={
+          serverData.status === 'online' ? '🟢 Live & Operational' :
+          serverData.status === 'maintenance' ? '🟡 Under Maintenance' :
+          '🔴 Server Offline'
+        }
         backgroundImage={headerStatus}
       />
       
@@ -106,29 +178,43 @@ const Status = () => {
             <div className="relative flex flex-col md:flex-row items-center justify-between gap-6 p-8 rounded-2xl glass-effect border-2 border-primary/40 bg-gradient-to-br from-background/90 via-background/95 to-background/90 animate-fade-in">
               <div className="flex items-center gap-6">
                 <div className="relative">
-                  <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg shadow-green-500/50">
+                  <div className={`w-20 h-20 bg-gradient-to-br ${getStatusColor(serverData.status)} rounded-full flex items-center justify-center shadow-lg shadow-${serverData.status === 'online' ? 'green' : 'red'}-500/50`}>
                     <Server className="w-10 h-10 text-white" />
                   </div>
-                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full animate-pulse border-4 border-background" />
-                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full animate-ping" />
+                  {serverData.status === 'online' && (
+                    <>
+                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full animate-pulse border-4 border-background" />
+                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full animate-ping" />
+                    </>
+                  )}
                 </div>
                 <div>
                   <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                    All Systems Operational
+                    {getStatusText(serverData.status)}
                   </h2>
                   <p className="text-muted-foreground mt-2 flex items-center gap-2">
                     <Clock className="w-4 h-4" />
-                    <span>Last updated: Just now • Monitoring in real-time</span>
+                    <span>Last updated: Just now • {isLoading ? 'Loading...' : 'Live'}</span>
                   </p>
+                  {serverData.serverName && (
+                    <p className="text-sm text-muted-foreground mt-1">{serverData.serverName}</p>
+                  )}
                 </div>
               </div>
               <div className="flex gap-4">
-                <Badge variant="outline" className="px-4 py-2 text-sm bg-green-500/10 text-green-500 border-green-500/30">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse" />
-                  Online
-                </Badge>
-                <Badge variant="outline" className="px-4 py-2 text-sm bg-primary/10 text-primary border-primary/30">
-                  99.9% Uptime
+                <Badge variant="outline" className={`px-4 py-2 text-sm ${
+                  serverData.status === 'online' ? 'bg-green-500/10 text-green-500 border-green-500/30' :
+                  serverData.status === 'maintenance' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30' :
+                  'bg-red-500/10 text-red-500 border-red-500/30'
+                }`}>
+                  <div className={`w-2 h-2 ${
+                    serverData.status === 'online' ? 'bg-green-500' :
+                    serverData.status === 'maintenance' ? 'bg-yellow-500' :
+                    'bg-red-500'
+                  } rounded-full mr-2 ${serverData.status === 'online' ? 'animate-pulse' : ''}`} />
+                  {serverData.status === 'online' ? 'Online' :
+                   serverData.status === 'maintenance' ? 'Maintenance' :
+                   'Offline'}
                 </Badge>
               </div>
             </div>
@@ -148,21 +234,21 @@ const Status = () => {
               </CardHeader>
               <CardContent className="relative z-10 px-4 pb-4">
                 <div className="text-3xl font-bold bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent mb-1">
-                  {stats.playersOnline}/{stats.maxPlayers}
+                  {isLoading ? '--' : serverData.players.current}/{serverData.players.max}
                 </div>
                 <p className="text-[10px] text-muted-foreground mb-2">Online now</p>
                 <div className="relative mb-1.5">
                   <Progress 
-                    value={(stats.playersOnline / stats.maxPlayers) * 100} 
+                    value={(serverData.players.current / serverData.players.max) * 100} 
                     className="h-1.5 bg-primary/20"
                   />
                   <div className="absolute inset-0 h-1.5 bg-gradient-to-r from-primary/40 to-secondary/40 blur-sm" />
                 </div>
                 <div className="flex items-center justify-between text-[10px]">
-                  <span className="text-muted-foreground">{Math.round((stats.playersOnline / stats.maxPlayers) * 100)}%</span>
-                  <span className="text-green-500 font-semibold flex items-center gap-0.5">
+                  <span className="text-muted-foreground">{Math.round((serverData.players.current / serverData.players.max) * 100)}%</span>
+                  <span className={`font-semibold flex items-center gap-0.5 ${serverData.status === 'online' ? 'text-green-500' : 'text-red-500'}`}>
                     <TrendingUp className="w-2.5 h-2.5" />
-                    Active
+                    {serverData.status === 'online' ? 'Active' : 'Inactive'}
                   </span>
                 </div>
               </CardContent>
@@ -179,13 +265,17 @@ const Status = () => {
                 </div>
               </CardHeader>
               <CardContent className="relative z-10 px-4 pb-4">
-                <div className="text-3xl font-bold text-secondary mb-1">{stats.uptime}</div>
+                <div className="text-3xl font-bold text-secondary mb-1">
+                  {isLoading ? '--' : serverData.uptime}
+                </div>
                 <p className="text-[10px] text-green-500 font-semibold flex items-center gap-1 mb-2">
                   <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse" />
-                  99.9% Reliable
+                  {serverData.status === 'online' ? 'Running Stable' : 'Offline'}
                 </p>
                 <div className="p-1.5 rounded-lg bg-secondary/10 border border-secondary/20">
-                  <p className="text-[9px] text-muted-foreground text-center">No Downtime</p>
+                  <p className="text-[9px] text-muted-foreground text-center">
+                    {serverData.status === 'online' ? 'No Issues' : 'Not Available'}
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -204,17 +294,17 @@ const Status = () => {
                 <div className="space-y-2.5">
                   <div>
                     <div className="flex items-center justify-between mb-0.5">
-                      <span className="text-[9px] font-medium text-muted-foreground uppercase">CPU</span>
-                      <span className="text-lg font-bold text-accent">{stats.cpu}%</span>
+                      <span className="text-[9px] font-medium text-muted-foreground uppercase">Load</span>
+                      <span className="text-lg font-bold text-accent">
+                        {isLoading ? '--' : serverData.serverLoad}%
+                      </span>
                     </div>
-                    <Progress value={stats.cpu} className="h-1 bg-accent/20" />
+                    <Progress value={serverData.serverLoad} className="h-1 bg-accent/20" />
                   </div>
-                  <div>
-                    <div className="flex items-center justify-between mb-0.5">
-                      <span className="text-[9px] font-medium text-muted-foreground uppercase">RAM</span>
-                      <span className="text-lg font-bold text-accent">{stats.memory}%</span>
-                    </div>
-                    <Progress value={stats.memory} className="h-1 bg-accent/20" />
+                  <div className="p-1.5 rounded-lg bg-accent/10 border border-accent/20">
+                    <p className="text-[9px] text-muted-foreground text-center">
+                      {isLoading ? 'Loading...' : getLoadText(serverData.serverLoad)}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -232,20 +322,24 @@ const Status = () => {
               </CardHeader>
               <CardContent className="relative z-10 px-4 pb-4">
                 <div className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-1">
-                  {stats.ping}ms
+                  {isLoading ? '--' : serverData.networkLatency}ms
                 </div>
                 <div className="flex items-center gap-1.5 mb-2">
                   <div className="flex gap-0.5">
-                    <div className="w-0.5 h-3 bg-green-500 rounded-full animate-pulse" />
-                    <div className="w-0.5 h-3 bg-green-500 rounded-full animate-pulse animation-delay-100" />
-                    <div className="w-0.5 h-3 bg-green-500 rounded-full animate-pulse animation-delay-200" />
+                    <div className={`w-0.5 h-3 rounded-full animate-pulse ${serverData.networkLatency < 50 ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                    <div className={`w-0.5 h-3 rounded-full animate-pulse animation-delay-100 ${serverData.networkLatency < 50 ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                    <div className={`w-0.5 h-3 rounded-full animate-pulse animation-delay-200 ${serverData.networkLatency < 50 ? 'bg-green-500' : 'bg-yellow-500'}`} />
                   </div>
-                  <p className="text-[10px] text-green-500 font-semibold">Excellent</p>
+                  <p className={`text-[10px] font-semibold ${serverData.networkLatency < 50 ? 'text-green-500' : 'text-yellow-500'}`}>
+                    {isLoading ? 'Loading...' : getLatencyText(serverData.networkLatency)}
+                  </p>
                 </div>
                 <div className="p-1.5 rounded-lg bg-primary/10 border border-primary/20">
                   <div className="flex items-center gap-1 justify-center">
                     <Network className="w-2.5 h-2.5 text-primary" />
-                    <p className="text-[9px] text-muted-foreground">Stable</p>
+                    <p className="text-[9px] text-muted-foreground">
+                      {serverData.status === 'online' ? 'Stable' : 'Unavailable'}
+                    </p>
                   </div>
                 </div>
               </CardContent>
