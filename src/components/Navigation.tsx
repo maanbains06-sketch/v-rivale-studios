@@ -277,7 +277,7 @@ const Navigation = () => {
                     variant="outline"
                     className="justify-start glass-effect"
                     onClick={() => {
-                      navigate("/support");
+                      navigate("/contact-owner");
                       setIsMenuOpen(false);
                     }}
                   >
