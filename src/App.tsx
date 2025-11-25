@@ -32,6 +32,8 @@ import SupportAnalytics from "./pages/SupportAnalytics";
 import AdminStaffStats from "./pages/AdminStaffStats";
 import JobApplication from "./pages/JobApplication";
 import Dashboard from "./pages/Dashboard";
+import StaffOnboarding from "./pages/StaffOnboarding";
+import ApplicationStatus from "./pages/ApplicationStatus";
 import NotFound from "./pages/NotFound";
 import { CartProvider } from "./contexts/CartContext";
 
@@ -70,6 +72,8 @@ const AppRoutes = () => {
       <Route path="/support-chat" element={<SupportChat />} />
       <Route path="/job-application" element={<JobApplication />} />
       <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/staff-onboarding" element={<StaffOnboarding />} />
+      <Route path="/application-status" element={<ApplicationStatus />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>

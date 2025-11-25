@@ -645,6 +645,163 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_onboarding_checklist: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          display_order: number
+          id: string
+          is_required: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description: string
+          display_order?: number
+          id?: string
+          is_required?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          display_order?: number
+          id?: string
+          is_required?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      staff_onboarding_progress: {
+        Row: {
+          checklist_item_id: string
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          staff_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          checklist_item_id: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          staff_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          checklist_item_id?: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          staff_user_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_onboarding_progress_checklist_item_id_fkey"
+            columns: ["checklist_item_id"]
+            isOneToOne: false
+            referencedRelation: "staff_onboarding_checklist"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_training_modules: {
+        Row: {
+          content: string
+          created_at: string
+          description: string
+          display_order: number
+          duration_minutes: number | null
+          id: string
+          is_required: boolean
+          module_type: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          description: string
+          display_order?: number
+          duration_minutes?: number | null
+          id?: string
+          is_required?: boolean
+          module_type: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          description?: string
+          display_order?: number
+          duration_minutes?: number | null
+          id?: string
+          is_required?: boolean
+          module_type?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      staff_training_progress: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          id: string
+          module_id: string
+          notes: string | null
+          score: number | null
+          staff_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          module_id: string
+          notes?: string | null
+          score?: number | null
+          staff_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          module_id?: string
+          notes?: string | null
+          score?: number | null
+          staff_user_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_training_progress_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "staff_training_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_chat_ratings: {
         Row: {
           chat_id: string
