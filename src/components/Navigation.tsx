@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail, Ban, Briefcase, Gift, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard } from "lucide-react";
+import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail, Ban, Briefcase, Gift, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, Ticket } from "lucide-react";
 import { Button } from "./ui/button";
 import AnimatedLogoIcon from "./AnimatedLogoIcon";
 import { supabase } from "@/integrations/supabase/client";
@@ -266,6 +266,17 @@ const Navigation = () => {
                         variant="outline"
                         className="justify-start glass-effect"
                         onClick={() => {
+                          navigate("/admin-promo-analytics");
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        <Ticket className="w-4 h-4 mr-2" />
+                        Promo Code Analytics
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="justify-start glass-effect"
+                        onClick={() => {
                           navigate("/admin/gallery");
                           setIsMenuOpen(false);
                         }}
@@ -319,44 +330,6 @@ const Navigation = () => {
                     <Mail className="w-4 h-4 mr-2" />
                     Contact Server Owner
                   </Button>
-                  
-                  {/* Legal Section */}
-                  <div className="border-t border-border/20 pt-3 mt-3">
-                    <p className="text-sm text-muted-foreground mb-2 px-2">Legal</p>
-                    <Button 
-                      variant="outline"
-                      className="justify-start glass-effect w-full"
-                      onClick={() => {
-                        navigate("/privacy-policy");
-                        setIsMenuOpen(false);
-                      }}
-                    >
-                      <Lock className="w-4 h-4 mr-2 text-primary" />
-                      Privacy Policy
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      className="justify-start glass-effect w-full mt-2"
-                      onClick={() => {
-                        navigate("/terms-of-service");
-                        setIsMenuOpen(false);
-                      }}
-                    >
-                      <Scale className="w-4 h-4 mr-2 text-secondary" />
-                      Terms of Service
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      className="justify-start glass-effect w-full mt-2"
-                      onClick={() => {
-                        navigate("/refund-policy");
-                        setIsMenuOpen(false);
-                      }}
-                    >
-                      <CreditCard className="w-4 h-4 mr-2 text-primary" />
-                      Refund Policy
-                    </Button>
-                  </div>
                   
                   {user ? (
                     <>

@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.send-refund-notification]
 verify_jwt = false
+
+[functions.send-promo-code-email]
+verify_jwt = false

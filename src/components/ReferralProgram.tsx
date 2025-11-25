@@ -258,50 +258,74 @@ const ReferralProgram = () => {
             <CardDescription>Promo codes you received from referrals</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            {promoCodes.map((promo) => (
-              <div 
-                key={promo.id} 
-                className={`p-4 rounded-lg border ${
-                  promo.is_used 
-                    ? 'bg-muted/50 border-border/50' 
-                    : 'bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/30'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${promo.is_used ? 'bg-muted' : 'bg-primary/10'}`}>
-                      <Ticket className={`w-5 h-5 ${promo.is_used ? 'text-muted-foreground' : 'text-primary'}`} />
+            {promoCodes.map((promo) => {
+              const now = new Date();
+              const expiresAt = promo.expires_at ? new Date(promo.expires_at) : null;
+              const daysUntilExpiry = expiresAt ? Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : null;
+              const isExpiringSoon = daysUntilExpiry !== null && daysUntilExpiry <= 7 && daysUntilExpiry > 0;
+              const isExpired = expiresAt && expiresAt < now;
+
+              return (
+                <div 
+                  key={promo.id} 
+                  className={`p-4 rounded-lg border ${
+                    promo.is_used || isExpired
+                      ? 'bg-muted/50 border-border/50' 
+                      : isExpiringSoon
+                      ? 'bg-gradient-to-r from-orange-500/5 to-red-500/5 border-orange-500/30'
+                      : 'bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/30'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className={`p-2 rounded-lg ${promo.is_used || isExpired ? 'bg-muted' : 'bg-primary/10'}`}>
+                        <Ticket className={`w-5 h-5 ${promo.is_used || isExpired ? 'text-muted-foreground' : 'text-primary'}`} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-mono font-bold text-lg">{promo.code}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {promo.is_used ? (
+                            <span>Used on {new Date(promo.used_at).toLocaleDateString()}</span>
+                          ) : isExpired ? (
+                            <span className="text-destructive">Expired on {expiresAt.toLocaleDateString()}</span>
+                          ) : (
+                            <>
+                              <span className="text-primary font-medium">{promo.discount_percentage}% discount • Use at checkout</span>
+                              {isExpiringSoon && (
+                                <span className="block text-orange-500 font-medium mt-1">
+                                  ⚠️ Expires in {daysUntilExpiry} {daysUntilExpiry === 1 ? 'day' : 'days'}!
+                                </span>
+                              )}
+                              {expiresAt && !isExpiringSoon && (
+                                <span className="block text-xs mt-1">
+                                  Valid until {expiresAt.toLocaleDateString()}
+                                </span>
+                              )}
+                            </>
+                          )}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-mono font-bold text-lg">{promo.code}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {promo.is_used ? (
-                          <span>Used on {new Date(promo.used_at).toLocaleDateString()}</span>
-                        ) : (
-                          <span className="text-primary font-medium">{promo.discount_percentage}% discount • Use at checkout</span>
-                        )}
-                      </p>
-                    </div>
+                    {!promo.is_used && !isExpired && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          navigator.clipboard.writeText(promo.code);
+                          toast({
+                            title: "Code Copied!",
+                            description: "Paste this code at checkout to get your discount",
+                          });
+                        }}
+                      >
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy
+                      </Button>
+                    )}
                   </div>
-                  {!promo.is_used && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        navigator.clipboard.writeText(promo.code);
-                        toast({
-                          title: "Code Copied!",
-                          description: "Paste this code at checkout to get your discount",
-                        });
-                      }}
-                    >
-                      <Copy className="w-4 h-4 mr-2" />
-                      Copy
-                    </Button>
-                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </CardContent>
         </Card>
       )}

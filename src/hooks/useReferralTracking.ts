@@ -77,14 +77,36 @@ export const useReferralTracking = () => {
       const { data: promoCode } = await supabase.rpc('generate_promo_code');
       
       if (promoCode) {
+        const expiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString();
+        
         await supabase
           .from('promo_codes')
           .insert({
             code: promoCode,
             user_id: userId,
             discount_percentage: 20,
-            expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(), // 90 days
+            expires_at: expiresAt,
           });
+
+        // Send email notification with promo code
+        try {
+          const { data: { user: referredUser } } = await supabase.auth.getUser();
+          
+          if (referredUser?.email) {
+            await supabase.functions.invoke('send-promo-code-email', {
+              body: {
+                userEmail: referredUser.email,
+                userName: referredUser.user_metadata?.discord_username || '',
+                promoCode: promoCode,
+                discountPercentage: 20,
+                expiresAt: expiresAt,
+              },
+            });
+          }
+        } catch (emailError) {
+          console.error('Error sending promo code email:', emailError);
+          // Don't fail the referral if email fails
+        }
       }
 
       // Update referrer's rewards
