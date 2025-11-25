@@ -18,7 +18,7 @@ export const useReferralTracking = () => {
         // Show notification about referral discount
         toast({
           title: "🎁 Referral Discount Applied!",
-          description: "Get 5% off your first purchase with this referral",
+          description: "Get 20% off your purchase with this referral",
         });
 
         // Check if user is logged in
@@ -73,6 +73,20 @@ export const useReferralTracking = () => {
           referred_user_id: userId,
         });
 
+      // Generate unique promo code for the referred user
+      const { data: promoCode } = await supabase.rpc('generate_promo_code');
+      
+      if (promoCode) {
+        await supabase
+          .from('promo_codes')
+          .insert({
+            code: promoCode,
+            user_id: userId,
+            discount_percentage: 20,
+            expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(), // 90 days
+          });
+      }
+
       // Update referrer's rewards
       const { data: currentRewards } = await supabase
         .from('referral_rewards')
@@ -82,7 +96,7 @@ export const useReferralTracking = () => {
 
       if (currentRewards) {
         const newTotalReferrals = currentRewards.total_referrals + 1;
-        const newDiscount = Math.min(newTotalReferrals * 10, 50); // Cap at 50%
+        const newDiscount = Math.min(newTotalReferrals * 20, 100); // 20% per referral, cap at 100%
 
         await supabase
           .from('referral_rewards')
