@@ -68,24 +68,24 @@ export const CursorEffect = () => {
       
       // Create new particles from cursor position
       const newParticles: Particle[] = [];
-      for (let i = 0; i < 5; i++) { // Fewer particles
+      for (let i = 0; i < 5; i++) {
         const angle = Math.random() * Math.PI * 2;
-        const speed = 0.4 + Math.random() * 0.6;
-        const spreadX = (Math.random() - 0.5) * 4; // Much tighter horizontal spread
+        const speed = 0.8 + Math.random() * 1.2; // Faster speed
+        const spreadX = (Math.random() - 0.5) * 4;
         newParticles.push({
           id: particleIdRef.current++,
           x: position.x + spreadX,
           y: position.y,
-          velocityX: Math.cos(angle) * speed * 0.1, // Less horizontal drift
-          velocityY: -Math.abs(Math.sin(angle)) * speed - 1.2,
-          size: 2 + Math.random() * 2, // Smaller particles
+          velocityX: Math.cos(angle) * speed * 0.1,
+          velocityY: -Math.abs(Math.sin(angle)) * speed - 2.5, // Much faster upward movement
+          size: 2 + Math.random() * 2,
           opacity: 0.8 + Math.random() * 0.2,
           createdAt: now,
         });
       }
 
       setParticles((prev) => [...prev, ...newParticles].slice(-120));
-    }, 70);
+    }, 50); // More frequent generation for smoother flow
 
     // Animation loop for particle movement
     const animate = () => {
@@ -96,11 +96,11 @@ export const CursorEffect = () => {
             ...particle,
             x: particle.x + particle.velocityX,
             y: particle.y + particle.velocityY,
-            opacity: Math.max(0, particle.opacity - 0.01),
+            opacity: Math.max(0, particle.opacity - 0.008), // Slower fade for longer visibility
           }))
           .filter((particle) => {
             const age = now - particle.createdAt;
-            return age < 2000 && particle.opacity > 0; // Keep for 2 seconds
+            return age < 2500 && particle.opacity > 0 && particle.y > -100; // Keep until off-screen top
           });
       });
       
