@@ -162,23 +162,52 @@ const StaffProfile = () => {
               </Badge>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                <MessageCircle className="w-5 h-5 text-primary" />
-                <div>
-                  <p className="text-sm font-medium">Discord</p>
-                  <p className="text-sm text-muted-foreground">{staffMember.discord_username || staffMember.discord_id}</p>
-                </div>
-              </div>
-              
-              {staffMember.discord_id && (
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                  <Shield className="w-5 h-5 text-primary" />
-                  <div>
-                    <p className="text-sm font-medium">Discord ID</p>
-                    <p className="text-sm text-muted-foreground font-mono">{staffMember.discord_id}</p>
+              <div className="space-y-2 p-4 rounded-lg bg-muted/30">
+                <h4 className="text-xs font-semibold text-primary uppercase tracking-wide mb-3">Contact Details</h4>
+                
+                <div className="flex items-center gap-3 p-2 rounded-lg bg-background/50">
+                  <MessageCircle className="w-4 h-4 text-primary shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-muted-foreground">Discord</p>
+                    <p className="text-sm font-semibold truncate">{staffMember.discord_username || "N/A"}</p>
                   </div>
                 </div>
-              )}
+                
+                <div className="flex items-center gap-3 p-2 rounded-lg bg-background/50">
+                  <Shield className="w-4 h-4 text-primary shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-muted-foreground">Discord ID</p>
+                    <p className="text-xs font-mono font-semibold">{staffMember.discord_id}</p>
+                  </div>
+                </div>
+                
+                {staffMember.email && (
+                  <div className="flex items-center gap-3 p-2 rounded-lg bg-background/50">
+                    <Mail className="w-4 h-4 text-primary shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-muted-foreground">Email</p>
+                      <p className="text-sm font-semibold truncate" title={staffMember.email}>{staffMember.email}</p>
+                    </div>
+                  </div>
+                )}
+                
+                {staffMember.steam_id && (
+                  <div className="flex items-center gap-3 p-2 rounded-lg bg-background/50">
+                    <UserCheck className="w-4 h-4 text-primary shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-muted-foreground">Steam ID</p>
+                      <p className="text-xs font-mono font-semibold">{staffMember.steam_id}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <div className="p-4 rounded-lg bg-muted/30">
+                <h4 className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">Department</h4>
+                <Badge variant="outline" className="w-full justify-center capitalize">
+                  {staffMember.department.replace("_", " ")}
+                </Badge>
+              </div>
             </CardContent>
           </Card>
 
@@ -208,6 +237,70 @@ const StaffProfile = () => {
                       {responsibility}
                     </Badge>
                   ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="glass-effect border-border/20">
+              <CardHeader>
+                <CardTitle>Complete Profile Information</CardTitle>
+                <CardDescription>
+                  All details about {staffMember.name}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Personal Information */}
+                <div>
+                  <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                    <UserCheck className="w-4 h-4 text-primary" />
+                    Personal Information
+                  </h4>
+                  <div className="grid gap-3">
+                    <div className="flex items-start justify-between p-3 rounded-lg bg-muted/50">
+                      <span className="text-sm text-muted-foreground">Full Name</span>
+                      <span className="text-sm font-semibold text-right">{staffMember.name}</span>
+                    </div>
+                    <div className="flex items-start justify-between p-3 rounded-lg bg-muted/50">
+                      <span className="text-sm text-muted-foreground">Role</span>
+                      <Badge className={`${roleColors[staffMember.role_type as keyof typeof roleColors]} border shrink-0`}>
+                        {staffMember.role}
+                      </Badge>
+                    </div>
+                    <div className="flex items-start justify-between p-3 rounded-lg bg-muted/50">
+                      <span className="text-sm text-muted-foreground">Department</span>
+                      <span className="text-sm font-semibold capitalize">{staffMember.department.replace("_", " ")}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contact Details */}
+                <div>
+                  <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                    <MessageCircle className="w-4 h-4 text-primary" />
+                    Contact Details
+                  </h4>
+                  <div className="grid gap-3">
+                    <div className="flex items-start justify-between p-3 rounded-lg bg-muted/50">
+                      <span className="text-sm text-muted-foreground">Discord Username</span>
+                      <span className="text-sm font-mono font-semibold">{staffMember.discord_username || "N/A"}</span>
+                    </div>
+                    <div className="flex items-start justify-between p-3 rounded-lg bg-muted/50">
+                      <span className="text-sm text-muted-foreground">Discord ID</span>
+                      <span className="text-xs font-mono font-semibold">{staffMember.discord_id}</span>
+                    </div>
+                    {staffMember.email && (
+                      <div className="flex items-start justify-between p-3 rounded-lg bg-muted/50">
+                        <span className="text-sm text-muted-foreground">Email Address</span>
+                        <span className="text-sm font-mono font-semibold break-all text-right max-w-[60%]">{staffMember.email}</span>
+                      </div>
+                    )}
+                    {staffMember.steam_id && (
+                      <div className="flex items-start justify-between p-3 rounded-lg bg-muted/50">
+                        <span className="text-sm text-muted-foreground">Steam ID</span>
+                        <span className="text-sm font-mono font-semibold">{staffMember.steam_id}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -279,19 +372,6 @@ const StaffProfile = () => {
                     </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-
-            <Card className="glass-effect border-border/20">
-              <CardHeader>
-                <CardTitle>Department</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-sm capitalize">
-                    {staffMember.department.replace("_", " ")}
-                  </Badge>
-                </div>
               </CardContent>
             </Card>
           </div>
