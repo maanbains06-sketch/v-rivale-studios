@@ -159,10 +159,7 @@ const Gallery = () => {
           {/* Gallery Categories */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             {/* Screenshots */}
-            <button
-              onClick={() => handleCategoryClick('screenshot')}
-              className="relative group cursor-pointer w-full text-left transform hover:scale-105 transition-all duration-300"
-            >
+            <div className="relative group w-full transform hover:scale-105 transition-all duration-300">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="relative glass-effect rounded-2xl p-8 border border-border/20 hover:border-primary/40 transition-all duration-300 text-center overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700"></div>
@@ -171,17 +168,21 @@ const Gallery = () => {
                 </div>
                 <h3 className="text-xl font-bold mb-2 relative z-10">Screenshots</h3>
                 <p className="text-sm text-muted-foreground mb-4 relative z-10">Beautiful moments captured</p>
-                <Badge variant="secondary" className="text-xs relative z-10">
+                <Badge variant="secondary" className="text-xs mb-4 relative z-10">
                   {getSubmissionsByCategory('screenshot').length} photos
                 </Badge>
+                <Button 
+                  onClick={() => handleCategoryClick('screenshot')}
+                  size="sm"
+                  className="relative z-10 w-full bg-primary/20 hover:bg-primary text-foreground hover:text-primary-foreground"
+                >
+                  View Gallery
+                </Button>
               </div>
-            </button>
+            </div>
 
             {/* Videos */}
-            <button
-              onClick={() => handleCategoryClick('video')}
-              className="relative group cursor-pointer w-full text-left transform hover:scale-105 transition-all duration-300"
-            >
+            <div className="relative group w-full transform hover:scale-105 transition-all duration-300">
               <div className="absolute inset-0 bg-gradient-to-br from-secondary/20 to-primary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="relative glass-effect rounded-2xl p-8 border border-border/20 hover:border-secondary/40 transition-all duration-300 text-center overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700"></div>
@@ -190,17 +191,21 @@ const Gallery = () => {
                 </div>
                 <h3 className="text-xl font-bold mb-2 relative z-10">Videos</h3>
                 <p className="text-sm text-muted-foreground mb-4 relative z-10">Epic roleplay moments</p>
-                <Badge variant="secondary" className="text-xs relative z-10">
+                <Badge variant="secondary" className="text-xs mb-4 relative z-10">
                   {getSubmissionsByCategory('video').length} videos
                 </Badge>
+                <Button 
+                  onClick={() => handleCategoryClick('video')}
+                  size="sm"
+                  className="relative z-10 w-full bg-secondary/20 hover:bg-secondary text-foreground hover:text-secondary-foreground"
+                >
+                  View Gallery
+                </Button>
               </div>
-            </button>
+            </div>
 
             {/* Events */}
-            <button
-              onClick={() => handleCategoryClick('event')}
-              className="relative group cursor-pointer w-full text-left transform hover:scale-105 transition-all duration-300"
-            >
+            <div className="relative group w-full transform hover:scale-105 transition-all duration-300">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="relative glass-effect rounded-2xl p-8 border border-border/20 hover:border-primary/40 transition-all duration-300 text-center overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700"></div>
@@ -209,17 +214,21 @@ const Gallery = () => {
                 </div>
                 <h3 className="text-xl font-bold mb-2 relative z-10">Events</h3>
                 <p className="text-sm text-muted-foreground mb-4 relative z-10">Community gatherings</p>
-                <Badge variant="secondary" className="text-xs relative z-10">
+                <Badge variant="secondary" className="text-xs mb-4 relative z-10">
                   {getRunningEvents().length} Running · {getUpcomingEvents().length} Upcoming
                 </Badge>
+                <Button 
+                  onClick={() => handleCategoryClick('event')}
+                  size="sm"
+                  className="relative z-10 w-full bg-primary/20 hover:bg-primary text-foreground hover:text-primary-foreground"
+                >
+                  View Events
+                </Button>
               </div>
-            </button>
+            </div>
 
             {/* Community */}
-            <button
-              onClick={() => handleCategoryClick('community')}
-              className="relative group cursor-pointer w-full text-left transform hover:scale-105 transition-all duration-300"
-            >
+            <div className="relative group w-full transform hover:scale-105 transition-all duration-300">
               <div className="absolute inset-0 bg-gradient-to-br from-secondary/20 to-primary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="relative glass-effect rounded-2xl p-8 border border-border/20 hover:border-secondary/40 transition-all duration-300 text-center overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700"></div>
@@ -228,11 +237,18 @@ const Gallery = () => {
                 </div>
                 <h3 className="text-xl font-bold mb-2 relative z-10">Community</h3>
                 <p className="text-sm text-muted-foreground mb-4 relative z-10">Fan art & creations</p>
-                <Badge variant="secondary" className="text-xs relative z-10">
+                <Badge variant="secondary" className="text-xs mb-4 relative z-10">
                   {getSubmissionsByCategory('community').length} items
                 </Badge>
+                <Button 
+                  onClick={() => handleCategoryClick('community')}
+                  size="sm"
+                  className="relative z-10 w-full bg-secondary/20 hover:bg-secondary text-foreground hover:text-secondary-foreground"
+                >
+                  View Gallery
+                </Button>
               </div>
-            </button>
+            </div>
           </div>
 
           {/* Filtered Submissions */}
