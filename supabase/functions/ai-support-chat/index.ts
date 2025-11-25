@@ -24,6 +24,53 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Check for escalation keywords
+    const lastMessage = messages[messages.length - 1]?.content || '';
+    const escalationKeywords = [
+      'speak to manager', 'talk to manager', 'human support', 'real person',
+      'urgent', 'emergency', 'immediate help', 'escalate', 'supervisor',
+      'not helpful', 'useless', 'terrible support'
+    ];
+    
+    const shouldEscalate = escalationKeywords.some(keyword => 
+      lastMessage.toLowerCase().includes(keyword)
+    );
+
+    if (shouldEscalate && chatId) {
+      const authHeader = req.headers.get("authorization");
+      if (authHeader) {
+        const token = authHeader.replace("Bearer ", "");
+        const userSupabase = createClient(supabaseUrl, supabaseKey, {
+          auth: { persistSession: false },
+          global: { headers: { Authorization: `Bearer ${token}` } },
+        });
+
+        await userSupabase
+          .from("support_chats")
+          .update({ 
+            status: 'in_progress',
+            priority: 'high',
+            tags: ['auto_escalated', 'human_requested']
+          })
+          .eq("id", chatId);
+
+        // Send escalation message
+        await userSupabase.from("support_messages").insert({
+          chat_id: chatId,
+          user_id: "00000000-0000-0000-0000-000000000000",
+          message: "I've detected you need immediate human assistance. Your request has been escalated to our support team with high priority. A staff member will assist you shortly.",
+          is_staff: true,
+        });
+
+        return new Response(JSON.stringify({ 
+          message: "I've detected you need immediate human assistance. Your request has been escalated to our support team with high priority. A staff member will assist you shortly.",
+          escalated: true 
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     // First, analyze sentiment
     const sentimentPrompt = `Analyze the sentiment and frustration level of this user message. Respond with a JSON object containing:
 - sentiment: one of "positive", "neutral", "negative", "frustrated"
@@ -80,12 +127,36 @@ User message: "${messages[messages.length - 1]?.content || ''}"`;
       }
     }
 
+    // Fetch previous chat history for context
+    let conversationContext = "";
+    if (chatId) {
+      const authHeader = req.headers.get("authorization");
+      if (authHeader) {
+        const token = authHeader.replace("Bearer ", "");
+        const userSupabase = createClient(supabaseUrl, supabaseKey, {
+          auth: { persistSession: false },
+          global: { headers: { Authorization: `Bearer ${token}` } },
+        });
+
+        const { data: chatData } = await userSupabase
+          .from("support_chats")
+          .select("subject, priority, tags")
+          .eq("id", chatId)
+          .single();
+
+        if (chatData) {
+          conversationContext = `\n\nChat Context:\n- Subject: ${chatData.subject}\n- Priority: ${chatData.priority}\n- Tags: ${chatData.tags?.join(', ') || 'none'}`;
+        }
+      }
+    }
+
     const systemPrompt = `You are a helpful support assistant for Skylife RP (Roleplay Server). Your role is to:
 
 1. Answer common questions about the server, applications, and support processes
 2. Guide users to the right resources
-3. If a question is complex, requires admin action, or you cannot fully resolve it, politely suggest: "If you need further assistance, you can request human support using the 'Request Human' button."
-4. Be especially empathetic and helpful if you detect user frustration
+3. Remember the conversation history and provide contextual responses based on previous messages
+4. If a question is complex, requires admin action, or you cannot fully resolve it, politely suggest: "If you need further assistance, you can request human support using the 'Request Human' button."
+5. Be especially empathetic and helpful if you detect user frustration
 
 Common Topics:
 - Whitelist applications: Explain the process, requirements, and timeline
@@ -97,9 +168,11 @@ Common Topics:
 
 If something requires admin action or you're uncertain, remind them they can request human support.
 
+${conversationContext}
+
 ${sentimentData.sentiment === 'frustrated' ? 'IMPORTANT: The user seems frustrated. Be extra empathetic, acknowledge their concerns, and suggest requesting human support for faster resolution.' : ''}
 
-Be friendly, concise, and professional.`;
+Be friendly, concise, professional, and use the conversation history to provide personalized support.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

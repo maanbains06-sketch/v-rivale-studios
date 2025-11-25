@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_message_ratings: {
+        Row: {
+          chat_id: string
+          created_at: string | null
+          feedback: string | null
+          id: string
+          message_id: string
+          rating: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          chat_id: string
+          created_at?: string | null
+          feedback?: string | null
+          id?: string
+          message_id: string
+          rating: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          chat_id?: string
+          created_at?: string | null
+          feedback?: string | null
+          id?: string
+          message_id?: string
+          rating?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_message_ratings_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "support_chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ban_appeals: {
         Row: {
           additional_info: string | null
