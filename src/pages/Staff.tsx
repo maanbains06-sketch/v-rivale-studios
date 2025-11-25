@@ -145,7 +145,7 @@ const Staff = () => {
                 <p className="text-xs text-muted-foreground italic mb-4 max-w-xs leading-relaxed line-clamp-2">&quot;{member.bio}&quot;</p>
               )}
 
-              <div className="w-full space-y-2">
+              <div className="w-full">
                 {/* Contact Information */}
                 <div className="bg-muted/30 rounded-lg p-3 space-y-1.5">
                   <h4 className="text-xs font-semibold text-primary mb-2 uppercase tracking-wide">Contact Information</h4>
@@ -187,23 +187,6 @@ const Staff = () => {
                       <span className="text-xs font-mono font-semibold">{member.steam_id}</span>
                     </div>
                   )}
-                </div>
-
-                {/* Responsibilities */}
-                <div className="bg-muted/30 rounded-lg p-3">
-                  <h4 className="text-xs font-semibold text-primary mb-2 uppercase tracking-wide">Key Responsibilities</h4>
-                  <div className="flex flex-wrap gap-1.5 justify-center">
-                    {member.responsibilities.slice(0, 4).map((resp, idx) => (
-                      <Badge key={idx} variant="secondary" className="text-xs py-0.5">
-                        {resp}
-                      </Badge>
-                    ))}
-                    {member.responsibilities.length > 4 && (
-                      <Badge variant="secondary" className="text-xs py-0.5">
-                        +{member.responsibilities.length - 4} more
-                      </Badge>
-                    )}
-                  </div>
                 </div>
               </div>
             </div>
