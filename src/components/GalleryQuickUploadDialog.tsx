@@ -128,6 +128,18 @@ const GalleryQuickUploadDialog = ({ open, onOpenChange, category, onSuccess }: G
     setFiles(prev => prev.map((f, i) => i === index ? { ...f, description } : f));
   };
 
+  const retryFailedUploads = () => {
+    setFiles(prev => prev.map(f => 
+      f.status === 'error' ? { ...f, status: 'pending', progress: 0, error: undefined } : f
+    ));
+  };
+
+  const retryFile = (index: number) => {
+    setFiles(prev => prev.map((f, i) => 
+      i === index && f.status === 'error' ? { ...f, status: 'pending', progress: 0, error: undefined } : f
+    ));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -172,6 +184,17 @@ const GalleryQuickUploadDialog = ({ open, onOpenChange, category, onSuccess }: G
 
       for (let i = 0; i < files.length; i++) {
         const fileItem = files[i];
+        
+        // Skip already completed files
+        if (fileItem.status === 'complete') {
+          successCount++;
+          continue;
+        }
+
+        // Skip files that are not pending (shouldn't happen, but safety check)
+        if (fileItem.status !== 'pending') {
+          continue;
+        }
         
         try {
           // Update status to uploading
@@ -258,11 +281,24 @@ const GalleryQuickUploadDialog = ({ open, onOpenChange, category, onSuccess }: G
         });
       }
 
-      // Reset form on any success
-      if (successCount > 0) {
+      // Only close and reset if ALL files completed successfully
+      if (successCount > 0 && errorCount === 0) {
+        toast({
+          title: "All Uploads Complete!",
+          description: `${successCount} ${successCount === 1 ? 'file' : 'files'} uploaded successfully.`,
+        });
+        
         setFiles([]);
         onOpenChange(false);
         
+        if (onSuccess) {
+          onSuccess();
+        }
+      }
+      
+      // If there are errors but also successes, just notify but keep dialog open
+      if (errorCount > 0 && successCount > 0) {
+        // The toast was already shown above with both success and error counts
         if (onSuccess) {
           onSuccess();
         }
@@ -387,31 +423,45 @@ const GalleryQuickUploadDialog = ({ open, onOpenChange, category, onSuccess }: G
 
                     {/* Status Badge */}
                     <div className="flex items-center justify-between mb-2">
-                      {fileItem.status === 'uploading' && (
-                        <Badge variant="secondary" className="gap-2">
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                          Uploading...
-                        </Badge>
+                      <div>
+                        {fileItem.status === 'uploading' && (
+                          <Badge variant="secondary" className="gap-2">
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            Uploading...
+                          </Badge>
+                        )}
+                        {fileItem.status === 'processing' && (
+                          <Badge variant="secondary" className="gap-2">
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            Processing...
+                          </Badge>
+                        )}
+                        {fileItem.status === 'complete' && (
+                          <Badge className="gap-2 bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30">
+                            <CheckCircle className="w-3 h-3" />
+                            Complete
+                          </Badge>
+                        )}
+                        {fileItem.status === 'error' && (
+                          <Badge variant="destructive" className="gap-2">
+                            <AlertCircle className="w-3 h-3" />
+                            Failed
+                          </Badge>
+                        )}
+                        {fileItem.status === 'pending' && <div />}
+                      </div>
+
+                      {fileItem.status === 'error' && !uploading && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => retryFile(index)}
+                          className="h-7 text-xs"
+                        >
+                          Retry
+                        </Button>
                       )}
-                      {fileItem.status === 'processing' && (
-                        <Badge variant="secondary" className="gap-2">
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                          Processing...
-                        </Badge>
-                      )}
-                      {fileItem.status === 'complete' && (
-                        <Badge className="gap-2 bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30">
-                          <CheckCircle className="w-3 h-3" />
-                          Complete
-                        </Badge>
-                      )}
-                      {fileItem.status === 'error' && (
-                        <Badge variant="destructive" className="gap-2">
-                          <AlertCircle className="w-3 h-3" />
-                          Failed
-                        </Badge>
-                      )}
-                      {fileItem.status === 'pending' && <div />}
                     </div>
 
                     {/* Progress Bar */}
@@ -478,36 +528,58 @@ const GalleryQuickUploadDialog = ({ open, onOpenChange, category, onSuccess }: G
 
           {/* Submit Button */}
           {files.length > 0 && (
-            <div className="flex gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1"
-                onClick={() => {
-                  setFiles([]);
-                  onOpenChange(false);
-                }}
-                disabled={uploading}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                className="flex-1 bg-primary hover:bg-primary/90"
-                disabled={uploading}
-              >
-                {uploading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Uploading ({files.filter(f => f.status === 'complete').length}/{files.length})...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload {files.length} {files.length === 1 ? 'file' : 'files'}
-                  </>
+            <div className="space-y-3">
+              {/* Retry All Failed Button */}
+              {files.some(f => f.status === 'error') && !uploading && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full border-destructive/40 hover:bg-destructive/10 text-destructive hover:text-destructive"
+                  onClick={retryFailedUploads}
+                >
+                  <AlertCircle className="w-4 h-4 mr-2" />
+                  Retry All Failed Uploads ({files.filter(f => f.status === 'error').length})
+                </Button>
+              )}
+
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    setFiles([]);
+                    onOpenChange(false);
+                  }}
+                  disabled={uploading}
+                >
+                  {files.every(f => f.status === 'complete') ? 'Close' : 'Cancel'}
+                </Button>
+                
+                {/* Only show upload button if there are pending files */}
+                {files.some(f => f.status === 'pending') && (
+                  <Button
+                    type="submit"
+                    className="flex-1 bg-primary hover:bg-primary/90"
+                    disabled={uploading}
+                  >
+                    {uploading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Uploading ({files.filter(f => f.status === 'complete').length}/{files.length})...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4 mr-2" />
+                        {files.some(f => f.status === 'complete') 
+                          ? `Upload ${files.filter(f => f.status === 'pending').length} Remaining` 
+                          : `Upload ${files.length} ${files.length === 1 ? 'file' : 'files'}`
+                        }
+                      </>
+                    )}
+                  </Button>
                 )}
-              </Button>
+              </div>
             </div>
           )}
 
