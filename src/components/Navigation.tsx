@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail, Ban, Briefcase, Gift, Image as ImageIcon, MessageSquare, BarChart3 } from "lucide-react";
+import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail, Ban, Briefcase, Gift, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown } from "lucide-react";
 import { Button } from "./ui/button";
 import AnimatedLogoIcon from "./AnimatedLogoIcon";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +10,12 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui
 import CartDrawer from "./CartDrawer";
 import { NotificationBell } from "./NotificationBell";
 import { useStaffRole } from "@/hooks/useStaffRole";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navigation = () => {
   const [user, setUser] = useState(null);
@@ -127,13 +133,32 @@ const Navigation = () => {
             >
               Store
             </NavLink>
-            <NavLink
-              to="/privacy-policy" 
-              className="text-foreground/80 hover:text-primary transition-colors"
-              activeClassName="text-primary"
-            >
-              Legal
-            </NavLink>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1 outline-none">
+                Legal
+                <ChevronDown className="w-4 h-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="glass-effect border-border/20">
+                <DropdownMenuItem 
+                  className="cursor-pointer"
+                  onClick={() => navigate("/privacy-policy")}
+                >
+                  Privacy Policy
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  className="cursor-pointer"
+                  onClick={() => navigate("/terms-of-service")}
+                >
+                  Terms of Service
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  className="cursor-pointer"
+                  onClick={() => navigate("/refund-policy")}
+                >
+                  Refund Policy
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             {hasAdminAccess && (
               <NavLink 
                 to="/admin" 
@@ -291,6 +316,45 @@ const Navigation = () => {
                     <Mail className="w-4 h-4 mr-2" />
                     Contact Server Owner
                   </Button>
+                  
+                  {/* Legal Section */}
+                  <div className="border-t border-border/20 pt-3 mt-3">
+                    <p className="text-sm text-muted-foreground mb-2 px-2">Legal</p>
+                    <Button 
+                      variant="outline"
+                      className="justify-start glass-effect w-full"
+                      onClick={() => {
+                        navigate("/privacy-policy");
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      <Shield className="w-4 h-4 mr-2" />
+                      Privacy Policy
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      className="justify-start glass-effect w-full mt-2"
+                      onClick={() => {
+                        navigate("/terms-of-service");
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      <FileCheck className="w-4 h-4 mr-2" />
+                      Terms of Service
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      className="justify-start glass-effect w-full mt-2"
+                      onClick={() => {
+                        navigate("/refund-policy");
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      <FileCheck className="w-4 h-4 mr-2" />
+                      Refund Policy
+                    </Button>
+                  </div>
+                  
                   {user ? (
                     <>
                       <Button 
