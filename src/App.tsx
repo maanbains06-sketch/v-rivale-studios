@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useReferralTracking } from "@/hooks/useReferralTracking";
 import { useStaffPresence } from "@/hooks/useStaffPresence";
+import { CursorEffect } from "@/components/CursorEffect";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Features from "./pages/Features";
@@ -96,6 +97,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <CartProvider>
       <TooltipProvider>
+        <CursorEffect />
         <Toaster />
         <Sonner />
         <BrowserRouter>
