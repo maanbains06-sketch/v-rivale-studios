@@ -13,6 +13,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useStaffOnlineStatus } from "@/hooks/useStaffOnlineStatus";
 import { StaffOnlineIndicator } from "@/components/StaffOnlineIndicator";
+import { useFavoriteStaff } from "@/hooks/useFavoriteStaff";
+import { useFavoriteStaffNotifications } from "@/hooks/useFavoriteStaffNotifications";
+import { FavoriteStaffButton } from "@/components/FavoriteStaffButton";
 
 interface StaffMember {
   id: string;
@@ -56,7 +59,11 @@ const Staff = () => {
   const [isApplicationOpen, setIsApplicationOpen] = useStateAlias(false);
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
-  const { isOnline, getLastSeen } = useStaffOnlineStatus();
+  const { isOnline, getLastSeen, onlineStatus } = useStaffOnlineStatus();
+  const { favorites, toggleFavorite, isFavorite } = useFavoriteStaff();
+  
+  // Enable notifications for favorite staff
+  useFavoriteStaffNotifications(favorites, onlineStatus);
 
   useEffect(() => {
     loadStaffMembers();
@@ -108,7 +115,17 @@ const Staff = () => {
   const adminStaff = getStaffByDepartment("administration");
   const developerStaff = getStaffByDepartment("development");
   const moderatorStaff = getStaffByDepartment("moderation");
-  const supportStaff = getStaffByDepartment("support");
+  
+  // General staff team (display_order 36-38)
+  const generalStaff = staffMembers.filter(m => 
+    m.display_order >= 36 && m.display_order <= 38 && m.role_type === "staff"
+  );
+  
+  // Support team (display_order 40-42)
+  const supportStaff = staffMembers.filter(m => 
+    m.display_order >= 40 && m.display_order <= 42
+  );
+  
   const eventStaff = getStaffByDepartment("events");
 
   const hasAnyStaff = staffMembers.length > 0;
@@ -161,6 +178,14 @@ const Staff = () => {
               ))}
             </div>
           )}
+
+          {/* Favorite Button */}
+          <div className="absolute top-3 left-3 z-10">
+            <FavoriteStaffButton 
+              isFavorite={isFavorite(member.id)}
+              onToggle={() => toggleFavorite(member.id)}
+            />
+          </div>
           
           <CardContent className="pt-5 pb-4">
             <div className="flex flex-col items-center text-center">
@@ -474,6 +499,26 @@ const Staff = () => {
                 <CardContent className="p-8 text-center">
                   <HeadphonesIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
                   <p className="text-muted-foreground">No moderation team members added yet</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Staff Team */}
+          <div className="mb-16">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold text-gradient mb-4">Staff Team</h2>
+              <p className="text-lg text-muted-foreground">Core team members providing essential services</p>
+            </div>
+            {generalStaff.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {generalStaff.map((member, index) => renderStaffCard(member, index))}
+              </div>
+            ) : (
+              <Card className="glass-effect border-border/20 max-w-2xl mx-auto">
+                <CardContent className="p-8 text-center">
+                  <UserCheck className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                  <p className="text-muted-foreground">No staff team members added yet</p>
                 </CardContent>
               </Card>
             )}
