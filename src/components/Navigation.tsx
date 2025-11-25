@@ -9,16 +9,20 @@ import { useToast } from "@/hooks/use-toast";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 import CartDrawer from "./CartDrawer";
 import { NotificationBell } from "./NotificationBell";
+import { useStaffRole } from "@/hooks/useStaffRole";
 
 const Navigation = () => {
-  const [isAdmin, setIsAdmin] = useState(false);
   const [user, setUser] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isAdmin, department, loading } = useStaffRole();
+
+  // Check if user has admin panel access (admin role OR leadership/administration/development department)
+  const hasAdminAccess = isAdmin || 
+    (department && ['leadership', 'administration', 'development'].includes(department.toLowerCase()));
 
   useEffect(() => {
-    checkAdminStatus();
     checkUser();
   }, []);
 
@@ -27,25 +31,9 @@ const Navigation = () => {
     setUser(user);
   };
 
-  const checkAdminStatus = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) return;
-
-    const { data: roleData } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-
-    setIsAdmin(!!roleData);
-  };
-
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
-    setIsAdmin(false);
     navigate("/");
     toast({
       title: "Logged out successfully",
@@ -139,7 +127,7 @@ const Navigation = () => {
             >
               Store
             </NavLink>
-            {isAdmin && (
+            {hasAdminAccess && (
               <NavLink 
                 to="/admin" 
                 className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1"
@@ -169,7 +157,7 @@ const Navigation = () => {
                   <SheetTitle className="text-gradient">Menu</SheetTitle>
                 </SheetHeader>
                 <div className="flex flex-col gap-3 mt-6">
-                  {isAdmin && (
+                  {hasAdminAccess && (
                     <Button 
                       variant="outline"
                       className="justify-start glass-effect"
@@ -182,7 +170,7 @@ const Navigation = () => {
                       Admin Panel
                     </Button>
                   )}
-                  {isAdmin && (
+                  {hasAdminAccess && (
                     <>
                       <Button 
                         variant="outline"
