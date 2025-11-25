@@ -141,62 +141,42 @@ const Gallery = () => {
 
           {/* Gallery Categories */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-            {/* Screenshots - All Staff */}
+            {/* Screenshots - View All, Upload Staff Only */}
             <button
               onClick={() => handleCategoryClick('screenshot')}
-              disabled={!isStaff}
-              className={`relative group ${!isStaff ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'} w-full text-left`}
+              className="relative group cursor-pointer w-full text-left"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="relative glass-effect rounded-2xl p-8 border border-border/20 hover:border-primary/40 transition-all duration-300 text-center">
                 <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
                   <ImageIcon className="w-8 h-8 text-primary" />
                 </div>
-                <h3 className="text-xl font-bold mb-2 flex items-center justify-center gap-2">
-                  Screenshots
-                  {!isStaff && <Lock className="w-4 h-4 text-muted-foreground" />}
-                </h3>
+                <h3 className="text-xl font-bold mb-2">Screenshots</h3>
                 <p className="text-sm text-muted-foreground">Beautiful moments captured by our community</p>
                 <div className="mt-4">
-                  {isStaff ? (
-                    <Badge variant="secondary" className="text-xs">
-                      Staff Access
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-xs">
-                      Staff Only
-                    </Badge>
-                  )}
+                  <Badge variant="secondary" className="text-xs">
+                    {getSubmissionsByCategory('screenshot').length} photos
+                  </Badge>
                 </div>
               </div>
             </button>
 
-            {/* Videos - All Staff */}
+            {/* Videos - View All, Upload Staff Only */}
             <button
               onClick={() => handleCategoryClick('video')}
-              disabled={!isStaff}
-              className={`relative group ${!isStaff ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'} w-full text-left`}
+              className="relative group cursor-pointer w-full text-left"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-secondary/20 to-primary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="relative glass-effect rounded-2xl p-8 border border-border/20 hover:border-secondary/40 transition-all duration-300 text-center">
                 <div className="w-16 h-16 rounded-full bg-secondary/20 flex items-center justify-center mx-auto mb-4">
                   <Video className="w-8 h-8 text-secondary" />
                 </div>
-                <h3 className="text-xl font-bold mb-2 flex items-center justify-center gap-2">
-                  Videos
-                  {!isStaff && <Lock className="w-4 h-4 text-muted-foreground" />}
-                </h3>
+                <h3 className="text-xl font-bold mb-2">Videos</h3>
                 <p className="text-sm text-muted-foreground">Epic roleplay scenarios and highlights</p>
                 <div className="mt-4">
-                  {isStaff ? (
-                    <Badge variant="secondary" className="text-xs">
-                      Staff Access
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-xs">
-                      Staff Only
-                    </Badge>
-                  )}
+                  <Badge variant="secondary" className="text-xs">
+                    {getSubmissionsByCategory('video').length} videos
+                  </Badge>
                 </div>
               </div>
             </button>
