@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail, Ban, Briefcase, Gift, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown } from "lucide-react";
+import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail, Ban, Briefcase, Gift, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard } from "lucide-react";
 import { Button } from "./ui/button";
 import AnimatedLogoIcon from "./AnimatedLogoIcon";
 import { supabase } from "@/integrations/supabase/client";
@@ -138,23 +138,26 @@ const Navigation = () => {
                 Legal
                 <ChevronDown className="w-4 h-4" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="glass-effect border-border/20">
+              <DropdownMenuContent className="bg-background/95 backdrop-blur-xl border border-border/20 shadow-xl z-50">
                 <DropdownMenuItem 
-                  className="cursor-pointer"
+                  className="cursor-pointer flex items-center gap-2"
                   onClick={() => navigate("/privacy-policy")}
                 >
+                  <Lock className="w-4 h-4 text-primary" />
                   Privacy Policy
                 </DropdownMenuItem>
                 <DropdownMenuItem 
-                  className="cursor-pointer"
+                  className="cursor-pointer flex items-center gap-2"
                   onClick={() => navigate("/terms-of-service")}
                 >
+                  <Scale className="w-4 h-4 text-secondary" />
                   Terms of Service
                 </DropdownMenuItem>
                 <DropdownMenuItem 
-                  className="cursor-pointer"
+                  className="cursor-pointer flex items-center gap-2"
                   onClick={() => navigate("/refund-policy")}
                 >
+                  <CreditCard className="w-4 h-4 text-primary" />
                   Refund Policy
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -328,7 +331,7 @@ const Navigation = () => {
                         setIsMenuOpen(false);
                       }}
                     >
-                      <Shield className="w-4 h-4 mr-2" />
+                      <Lock className="w-4 h-4 mr-2 text-primary" />
                       Privacy Policy
                     </Button>
                     <Button 
@@ -339,7 +342,7 @@ const Navigation = () => {
                         setIsMenuOpen(false);
                       }}
                     >
-                      <FileCheck className="w-4 h-4 mr-2" />
+                      <Scale className="w-4 h-4 mr-2 text-secondary" />
                       Terms of Service
                     </Button>
                     <Button 
@@ -350,7 +353,7 @@ const Navigation = () => {
                         setIsMenuOpen(false);
                       }}
                     >
-                      <FileCheck className="w-4 h-4 mr-2" />
+                      <CreditCard className="w-4 h-4 mr-2 text-primary" />
                       Refund Policy
                     </Button>
                   </div>
