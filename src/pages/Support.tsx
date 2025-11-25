@@ -1,9 +1,10 @@
-import { MessageCircle, FileText, Users, HelpCircle, AlertCircle, CheckCircle, Ban } from "lucide-react";
+import { MessageCircle, FileText, Users, HelpCircle, AlertCircle, CheckCircle, Ban, Search, TrendingUp, Activity, UserCheck } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
 import headerSupport from "@/assets/header-support.jpg";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Mail, Clock, Shield, Zap } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useNavigate } from "react-router-dom";
@@ -33,6 +34,53 @@ const Support = () => {
   const [showResultsDialog, setShowResultsDialog] = useState(false);
   const [banAppeals, setBanAppeals] = useState<BanAppeal[]>([]);
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [supportStats, setSupportStats] = useState({
+    activeChats: 0,
+    avgResponseTime: "< 5 min",
+    staffOnline: 0,
+    resolvedToday: 0
+  });
+
+  useEffect(() => {
+    fetchSupportStats();
+  }, []);
+
+  const fetchSupportStats = async () => {
+    try {
+      // Fetch active chats count
+      const { count: activeChatsCount } = await supabase
+        .from("support_chats")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "open");
+
+      // Fetch staff online count
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const { count: staffOnlineCount } = await supabase
+        .from("staff_members")
+        .select("*", { count: "exact", head: true })
+        .eq("is_active", true)
+        .gte("last_seen", fiveMinutesAgo);
+
+      // Fetch resolved chats today
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const { count: resolvedCount } = await supabase
+        .from("support_chats")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "closed")
+        .gte("resolved_at", todayStart.toISOString());
+
+      setSupportStats({
+        activeChats: activeChatsCount || 0,
+        avgResponseTime: "< 5 min",
+        staffOnline: staffOnlineCount || 0,
+        resolvedToday: resolvedCount || 0
+      });
+    } catch (error) {
+      console.error("Error fetching support stats:", error);
+    }
+  };
 
   const fetchBanAppeals = async () => {
     setLoading(true);
@@ -81,6 +129,54 @@ const Support = () => {
         return <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/50">Pending</Badge>;
     }
   };
+
+  const faqItems = [
+    {
+      id: "item-1",
+      question: "How do I join the SLRP server?",
+      answer: "To join SLRP, you need to: 1) Apply for whitelist on our website, 2) Wait for approval (usually 24-48 hours), 3) Join our Discord for setup instructions, 4) Install FiveM and connect using our server IP: connect.skylifeindia.com:30120"
+    },
+    {
+      id: "item-2",
+      question: "What are the server requirements?",
+      answer: "You need: GTA V (legal copy), FiveM installed, a working microphone, Discord account, age 18+, and ability to roleplay in English. Basic PC specs: Intel i5/Ryzen 5, 8GB RAM, GTX 1060 or equivalent."
+    },
+    {
+      id: "item-3",
+      question: "How long does whitelist approval take?",
+      answer: "Whitelist applications are typically reviewed within 24-48 hours. During peak times, it may take up to 72 hours. You'll receive a notification on Discord once your application is reviewed. Make sure to check your Discord DMs!"
+    },
+    {
+      id: "item-4",
+      question: "What happens if I break server rules?",
+      answer: "Rule violations result in warnings, temporary bans, or permanent bans depending on severity. Minor offenses get warnings, while serious violations (RDM, VDM, metagaming) may result in immediate bans. All punishments can be appealed through our ticket system."
+    },
+    {
+      id: "item-5",
+      question: "Can I play without a microphone?",
+      answer: "No, a working microphone is mandatory for SLRP. Roleplay requires voice communication for immersion. Text-only roleplay is not permitted except for characters approved as mute, which requires special staff approval before joining."
+    },
+    {
+      id: "item-6",
+      question: "How do I report a player?",
+      answer: "To report a player: 1) Use /report in-game for immediate issues, 2) Create a ticket in Discord with evidence (video/screenshots), 3) Include player names, timestamps, and detailed description. Never take matters into your own hands - let staff handle it."
+    },
+    {
+      id: "item-7",
+      question: "What jobs can I do on the server?",
+      answer: "SLRP offers 30+ jobs including: Police, EMS, Mechanics, Real Estate, Taxi drivers, Lawyers, Miners, Fishermen, and various business opportunities. Criminal activities include gang operations, drug dealing, and heists. Check our Guides page for detailed job information."
+    },
+    {
+      id: "item-8",
+      question: "Is there a character limit?",
+      answer: "Yes, you can create up to 3 characters per account. Each character has separate inventory, money, and storyline. You cannot transfer items or money between your own characters as this violates metagaming rules."
+    }
+  ];
+
+  const filteredFaqs = faqItems.filter(item =>
+    item.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.answer.toLowerCase().includes(searchQuery.toLowerCase())
+  );
   
   return (
     <div className="min-h-screen bg-background">
@@ -93,21 +189,70 @@ const Support = () => {
       />
       
       <main className="container mx-auto px-4 pb-12">
+        {/* Support Stats */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12 max-w-5xl mx-auto -mt-16 relative z-10">
+          <Card className="glass-effect border-primary/20 hover:border-primary/50 transition-all animate-fade-in">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                  <Activity className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground">{supportStats.activeChats}</p>
+                  <p className="text-xs text-muted-foreground">Active Chats</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="glass-effect border-primary/20 hover:border-primary/50 transition-all animate-fade-in" style={{ animationDelay: "0.1s" }}>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground">{supportStats.avgResponseTime}</p>
+                  <p className="text-xs text-muted-foreground">Avg Response</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="glass-effect border-primary/20 hover:border-primary/50 transition-all animate-fade-in" style={{ animationDelay: "0.2s" }}>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center relative">
+                  <UserCheck className="w-6 h-6 text-primary" />
+                  {supportStats.staffOnline > 0 && (
+                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-card animate-pulse" />
+                  )}
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground">{supportStats.staffOnline}</p>
+                  <p className="text-xs text-muted-foreground">Staff Online</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="glass-effect border-primary/20 hover:border-primary/50 transition-all animate-fade-in" style={{ animationDelay: "0.3s" }}>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                  <TrendingUp className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground">{supportStats.resolvedToday}</p>
+                  <p className="text-xs text-muted-foreground">Resolved Today</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Actions */}
         <div className="flex flex-col items-center gap-6 mb-16">
-          <div className="flex flex-wrap gap-6 justify-center text-sm">
-            <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-primary" />
-              <span className="text-muted-foreground">24/7 Support Available</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-primary" />
-              <span className="text-muted-foreground">Active Community</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-primary" />
-              <span className="text-muted-foreground">Fast Response Time</span>
-            </div>
-          </div>
           
           <div className="flex flex-wrap gap-4 justify-center">
             <Button 
@@ -236,68 +381,61 @@ const Support = () => {
 
         {/* FAQ Section */}
         <div className="max-w-4xl mx-auto mb-16">
-          <h2 className="text-3xl font-bold text-center mb-8 text-foreground">Frequently Asked Questions</h2>
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold mb-4 text-foreground">Frequently Asked Questions</h2>
+            <p className="text-muted-foreground mb-6">Search through our knowledge base to find instant answers</p>
+            
+            <div className="relative max-w-xl mx-auto">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search FAQs..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 h-12 bg-card/50 border-border/50 focus:border-primary/50 transition-colors"
+              />
+            </div>
+          </div>
+
           <Card className="glass-effect border-border/20">
             <CardContent className="pt-6">
-              <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="item-1">
-                  <AccordionTrigger className="text-left">How do I join the SLRP server?</AccordionTrigger>
-                  <AccordionContent>
-                    To join SLRP, you need to: 1) Apply for whitelist on our website, 2) Wait for approval (usually 24-48 hours), 3) Join our Discord for setup instructions, 4) Install FiveM and connect using our server IP: connect.skylifeindia.com:30120
-                  </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="item-2">
-                  <AccordionTrigger className="text-left">What are the server requirements?</AccordionTrigger>
-                  <AccordionContent>
-                    You need: GTA V (legal copy), FiveM installed, a working microphone, Discord account, age 18+, and ability to roleplay in English. Basic PC specs: Intel i5/Ryzen 5, 8GB RAM, GTX 1060 or equivalent.
-                  </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="item-3">
-                  <AccordionTrigger className="text-left">How long does whitelist approval take?</AccordionTrigger>
-                  <AccordionContent>
-                    Whitelist applications are typically reviewed within 24-48 hours. During peak times, it may take up to 72 hours. You'll receive a notification on Discord once your application is reviewed. Make sure to check your Discord DMs!
-                  </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="item-4">
-                  <AccordionTrigger className="text-left">What happens if I break server rules?</AccordionTrigger>
-                  <AccordionContent>
-                    Rule violations result in warnings, temporary bans, or permanent bans depending on severity. Minor offenses get warnings, while serious violations (RDM, VDM, metagaming) may result in immediate bans. All punishments can be appealed through our ticket system.
-                  </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="item-5">
-                  <AccordionTrigger className="text-left">Can I play without a microphone?</AccordionTrigger>
-                  <AccordionContent>
-                    No, a working microphone is mandatory for SLRP. Roleplay requires voice communication for immersion. Text-only roleplay is not permitted except for characters approved as mute, which requires special staff approval before joining.
-                  </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="item-6">
-                  <AccordionTrigger className="text-left">How do I report a player?</AccordionTrigger>
-                  <AccordionContent>
-                    To report a player: 1) Use /report in-game for immediate issues, 2) Create a ticket in Discord with evidence (video/screenshots), 3) Include player names, timestamps, and detailed description. Never take matters into your own hands - let staff handle it.
-                  </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="item-7">
-                  <AccordionTrigger className="text-left">What jobs can I do on the server?</AccordionTrigger>
-                  <AccordionContent>
-                    SLRP offers 30+ jobs including: Police, EMS, Mechanics, Real Estate, Taxi drivers, Lawyers, Miners, Fishermen, and various business opportunities. Criminal activities include gang operations, drug dealing, and heists. Check our Guides page for detailed job information.
-                  </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="item-8">
-                  <AccordionTrigger className="text-left">Is there a character limit?</AccordionTrigger>
-                  <AccordionContent>
-                    Yes, you can create up to 3 characters per account. Each character has separate inventory, money, and storyline. You cannot transfer items or money between your own characters as this violates metagaming rules.
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
+              {filteredFaqs.length === 0 ? (
+                <div className="text-center py-12">
+                  <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+                  <p className="text-lg text-muted-foreground">No FAQs match your search</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Try different keywords or browse all questions
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    className="mt-4"
+                    onClick={() => setSearchQuery("")}
+                  >
+                    Clear Search
+                  </Button>
+                </div>
+              ) : (
+                <Accordion type="single" collapsible className="w-full">
+                  {filteredFaqs.map((item) => (
+                    <AccordionItem key={item.id} value={item.id}>
+                      <AccordionTrigger className="text-left hover:text-primary transition-colors">
+                        {item.question}
+                      </AccordionTrigger>
+                      <AccordionContent className="text-muted-foreground">
+                        {item.answer}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              )}
             </CardContent>
           </Card>
+
+          {searchQuery && filteredFaqs.length > 0 && (
+            <p className="text-center text-sm text-muted-foreground mt-4">
+              Showing {filteredFaqs.length} of {faqItems.length} questions
+            </p>
+          )}
         </div>
 
         {/* Support Guidelines */}
