@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { useStaffOnlineStatus } from "@/hooks/useStaffOnlineStatus";
 
 interface BanAppeal {
   id: string;
@@ -35,6 +36,8 @@ const Support = () => {
   const [banAppeals, setBanAppeals] = useState<BanAppeal[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const { onlineStatus } = useStaffOnlineStatus();
+  
   const [supportStats, setSupportStats] = useState({
     activeChats: 0,
     avgResponseTime: "< 5 min",
@@ -46,6 +49,14 @@ const Support = () => {
     fetchSupportStats();
   }, []);
 
+  useEffect(() => {
+    const staffOnlineCount = Object.values(onlineStatus).filter(status => status.online).length;
+    setSupportStats(prev => ({
+      ...prev,
+      staffOnline: staffOnlineCount
+    }));
+  }, [onlineStatus]);
+
   const fetchSupportStats = async () => {
     try {
       // Fetch active chats count
@@ -53,14 +64,6 @@ const Support = () => {
         .from("support_chats")
         .select("*", { count: "exact", head: true })
         .eq("status", "open");
-
-      // Fetch staff online count
-      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-      const { count: staffOnlineCount } = await supabase
-        .from("staff_members")
-        .select("*", { count: "exact", head: true })
-        .eq("is_active", true)
-        .gte("last_seen", fiveMinutesAgo);
 
       // Fetch resolved chats today
       const todayStart = new Date();
@@ -71,12 +74,11 @@ const Support = () => {
         .eq("status", "closed")
         .gte("resolved_at", todayStart.toISOString());
 
-      setSupportStats({
+      setSupportStats(prev => ({
+        ...prev,
         activeChats: activeChatsCount || 0,
-        avgResponseTime: "< 5 min",
-        staffOnline: staffOnlineCount || 0,
         resolvedToday: resolvedCount || 0
-      });
+      }));
     } catch (error) {
       console.error("Error fetching support stats:", error);
     }
