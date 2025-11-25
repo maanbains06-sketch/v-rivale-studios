@@ -115,8 +115,14 @@ export const NotificationBell = () => {
     setOpen(false);
     
     // Navigate based on notification type
-    if (notification.type === "support_messages") {
-      navigate("/support-chat");
+    if (notification.type === "support_messages" || 
+        notification.type === "support_chats" || 
+        notification.type === "sla_breach") {
+      if (notification.reference_id) {
+        navigate(`/admin-support-chat?chat_id=${notification.reference_id}`);
+      } else {
+        navigate("/admin-support-chat");
+      }
     } else {
       navigate("/dashboard");
     }

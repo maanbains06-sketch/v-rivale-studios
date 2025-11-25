@@ -1290,6 +1290,7 @@ export type Database = {
         }
         Returns: string
       }
+      notify_staff_sla_breach: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
