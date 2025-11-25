@@ -58,9 +58,10 @@ type JobApplicationFormData = z.infer<typeof jobApplicationSchema>;
 
 interface JobApplicationFormProps {
   jobType: "Police Department" | "EMS" | "Mechanic";
+  jobImage: string;
 }
 
-const JobApplicationForm = ({ jobType }: JobApplicationFormProps) => {
+const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cooldownActive, setCooldownActive] = useState(false);
@@ -245,42 +246,69 @@ const JobApplicationForm = ({ jobType }: JobApplicationFormProps) => {
 
   if (cooldownActive) {
     return (
-      <Card className="glass-effect border-border/20">
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            {getJobIcon()}
-            <div>
-              <CardTitle className="text-gradient">{jobType} Application</CardTitle>
-              <CardDescription>{getJobDescription()}</CardDescription>
+      <div className="space-y-6">
+        {/* Job Header with Image */}
+        <div className="relative rounded-2xl overflow-hidden h-64 group">
+          <img 
+            src={jobImage} 
+            alt={`${jobType} Career`}
+            className="w-full h-full object-cover opacity-50"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/90 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 p-8">
+            <div className="flex items-center gap-4 mb-3">
+              <div className="p-3 rounded-xl bg-primary/20 backdrop-blur-sm">
+                {getJobIcon()}
+              </div>
+              <div>
+                <h2 className="text-3xl font-bold text-foreground mb-1">{jobType} Application</h2>
+                <p className="text-muted-foreground">{getJobDescription()}</p>
+              </div>
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          <Alert className="border-border/20">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Application Cooldown Active</AlertTitle>
-            <AlertDescription>
-              You have recently submitted an application for {jobType}. 
-              Please wait {cooldownDays} more day{cooldownDays !== 1 ? 's' : ''} before submitting another application for this position.
-            </AlertDescription>
-          </Alert>
-        </CardContent>
-      </Card>
+        </div>
+        
+        <Card className="glass-effect border-border/20">
+          <CardContent className="pt-6">
+            <Alert className="border-border/20">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Application Cooldown Active</AlertTitle>
+              <AlertDescription>
+                You have recently submitted an application for {jobType}. 
+                Please wait {cooldownDays} more day{cooldownDays !== 1 ? 's' : ''} before submitting another application for this position.
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <Card className="glass-effect border-border/20">
-      <CardHeader>
-        <div className="flex items-center gap-3">
-          {getJobIcon()}
-          <div>
-            <CardTitle className="text-gradient">{jobType} Application</CardTitle>
-            <CardDescription>{getJobDescription()}</CardDescription>
+    <div className="space-y-6">
+      {/* Job Header with Image */}
+      <div className="relative rounded-2xl overflow-hidden h-64 group">
+        <img 
+          src={jobImage} 
+          alt={`${jobType} Career`}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 p-8">
+          <div className="flex items-center gap-4 mb-3">
+            <div className="p-3 rounded-xl bg-primary/20 backdrop-blur-sm">
+              {getJobIcon()}
+            </div>
+            <div>
+              <h2 className="text-3xl font-bold text-foreground mb-1">{jobType} Application</h2>
+              <p className="text-muted-foreground">{getJobDescription()}</p>
+            </div>
           </div>
         </div>
-      </CardHeader>
-      <CardContent>
+      </div>
+
+      <Card className="glass-effect border-border/20">
+        <CardContent className="pt-8">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -481,22 +509,26 @@ const JobApplicationForm = ({ jobType }: JobApplicationFormProps) => {
 
             <Button 
               type="submit" 
-              className="w-full bg-primary hover:bg-primary/90"
-              disabled={isSubmitting}
+              disabled={isSubmitting} 
+              className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg"
+              size="lg"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Submitting...
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Submitting Application...
                 </>
               ) : (
-                "Submit Application"
+                <>
+                  Submit {jobType} Application
+                </>
               )}
             </Button>
           </form>
         </Form>
       </CardContent>
     </Card>
+    </div>
   );
 };
 
