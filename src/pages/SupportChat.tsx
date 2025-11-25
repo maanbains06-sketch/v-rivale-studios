@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Send, MessageCircle, Plus, Paperclip, X, Download, Star } from "lucide-react";
+import { Send, MessageCircle, Plus, Paperclip, X, Download, Star, Sparkles } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import headerSupport from "@/assets/header-support.jpg";
@@ -32,6 +33,8 @@ interface Chat {
   status: string;
   created_at: string;
   last_message_at: string;
+  priority: string;
+  tags: string[];
 }
 
 const SupportChat = () => {
@@ -42,8 +45,10 @@ const SupportChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [newChatSubject, setNewChatSubject] = useState("");
+  const [newChatPriority, setNewChatPriority] = useState("normal");
   const [loading, setLoading] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [aiAssisting, setAiAssisting] = useState(false);
   const [ratingDialogOpen, setRatingDialogOpen] = useState(false);
   const [rating, setRating] = useState(0);
   const [feedback, setFeedback] = useState("");

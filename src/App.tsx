@@ -28,6 +28,8 @@ import AdminGallery from "./pages/AdminGallery";
 import SupportChat from "./pages/SupportChat";
 import AdminSupportChat from "./pages/AdminSupportChat";
 import SupportAnalytics from "./pages/SupportAnalytics";
+import KnowledgeBase from "./pages/KnowledgeBase";
+import KnowledgeArticle from "./pages/KnowledgeArticle";
 import JobApplication from "./pages/JobApplication";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
@@ -63,6 +65,8 @@ const AppRoutes = () => {
       <Route path="/admin/gallery" element={<AdminGallery />} />
           <Route path="/admin/support-chat" element={<AdminSupportChat />} />
           <Route path="/admin/support-analytics" element={<SupportAnalytics />} />
+          <Route path="/knowledge" element={<KnowledgeBase />} />
+          <Route path="/knowledge/:id" element={<KnowledgeArticle />} />
       <Route path="/support-chat" element={<SupportChat />} />
       <Route path="/job-application" element={<JobApplication />} />
       <Route path="/dashboard" element={<Dashboard />} />
