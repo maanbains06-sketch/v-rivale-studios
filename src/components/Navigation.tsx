@@ -317,6 +317,17 @@ const Navigation = () => {
                         <Users className="w-4 h-4 mr-2" />
                         Staff Statistics
                       </Button>
+                      <Button 
+                        variant="outline"
+                        className="justify-start glass-effect"
+                        onClick={() => {
+                          navigate("/admin/players-active");
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        <Users className="w-4 h-4 mr-2" />
+                        Players Active
+                      </Button>
                     </>
                   )}
                   <Button 

@@ -50,7 +50,14 @@ serve(async (req) => {
       let isOnline = true;
 
       if (playersResponse.ok) {
-        players = await playersResponse.json();
+        const rawPlayers = await playersResponse.json();
+        // Format players data with id and name
+        players = rawPlayers.map((player: any) => ({
+          id: player.id,
+          name: player.name,
+          identifiers: player.identifiers,
+          ping: player.ping,
+        }));
       }
 
       if (infoResponse.ok) {
@@ -94,6 +101,7 @@ serve(async (req) => {
         gametype: info.gametype || 'Roleplay',
         mapname: info.mapname || 'Los Santos',
         resources: info.resources?.length || 0,
+        playerList: players,
       };
 
       console.log('Server data:', serverData);
