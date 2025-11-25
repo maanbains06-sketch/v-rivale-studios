@@ -2,7 +2,6 @@ import { Users, Zap, CheckCircle, Play, Instagram, Facebook, Twitter, Youtube, M
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
 import Navigation from "@/components/Navigation";
 import AnimatedLogo from "@/components/AnimatedLogo";
 import heroBg from "@/assets/hero-home-gta-thunder.jpg";
@@ -27,25 +26,6 @@ const stats = [
 
 const Index = () => {
   const navigate = useNavigate();
-  const [lightning, setLightning] = useState(false);
-
-  useEffect(() => {
-    const triggerLightning = () => {
-      setLightning(true);
-      setTimeout(() => setLightning(false), 400);
-    };
-
-    // Random lightning strikes between 3-8 seconds
-    const scheduleLightning = () => {
-      const randomDelay = Math.random() * 5000 + 3000;
-      setTimeout(() => {
-        triggerLightning();
-        scheduleLightning();
-      }, randomDelay);
-    };
-
-    scheduleLightning();
-  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -127,14 +107,6 @@ const Index = () => {
           />
         </div>
 
-        {/* Lightning Flash Overlays */}
-        <div className={`absolute inset-0 bg-white pointer-events-none z-20 ${lightning ? 'lightning-flash' : 'opacity-0'}`} />
-        <div className={`absolute inset-0 pointer-events-none z-20 ${lightning ? 'lightning-glow' : 'opacity-0'}`} 
-          style={{
-            background: 'radial-gradient(circle at 50% 20%, rgba(139, 92, 246, 0.3), transparent 70%)'
-          }}
-        />
-        
         <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/30 to-background/60 z-[5]"></div>
         
         <div className="container mx-auto px-4 relative z-10"
