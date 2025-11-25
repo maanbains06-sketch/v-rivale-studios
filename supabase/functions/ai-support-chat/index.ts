@@ -19,21 +19,10 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Initialize Supabase client for fetching knowledge base articles
+    // Initialize Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Fetch relevant knowledge articles for context
-    const { data: articles } = await supabase
-      .from("knowledge_articles")
-      .select("title, content, summary")
-      .eq("is_published", true)
-      .limit(5);
-
-    const knowledgeContext = articles
-      ?.map((a) => `Article: ${a.title}\n${a.summary || a.content.slice(0, 300)}`)
-      .join("\n\n") || "";
 
     // First, analyze sentiment
     const sentimentPrompt = `Analyze the sentiment and frustration level of this user message. Respond with a JSON object containing:
@@ -97,9 +86,6 @@ User message: "${messages[messages.length - 1]?.content || ''}"`;
 2. Guide users to the right resources
 3. If a question is complex or requires human judgment, politely suggest they wait for a staff member
 4. Be especially empathetic and helpful if you detect user frustration
-
-Knowledge Base Context:
-${knowledgeContext}
 
 Common Topics:
 - Whitelist applications: Explain the process, requirements, and timeline

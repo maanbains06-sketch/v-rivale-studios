@@ -209,54 +209,6 @@ export type Database = {
         }
         Relationships: []
       }
-      knowledge_articles: {
-        Row: {
-          author_id: string
-          category: string
-          content: string
-          created_at: string | null
-          helpful_count: number | null
-          id: string
-          is_published: boolean | null
-          source_chat_id: string | null
-          summary: string | null
-          tags: string[] | null
-          title: string
-          updated_at: string | null
-          view_count: number | null
-        }
-        Insert: {
-          author_id: string
-          category: string
-          content: string
-          created_at?: string | null
-          helpful_count?: number | null
-          id?: string
-          is_published?: boolean | null
-          source_chat_id?: string | null
-          summary?: string | null
-          tags?: string[] | null
-          title: string
-          updated_at?: string | null
-          view_count?: number | null
-        }
-        Update: {
-          author_id?: string
-          category?: string
-          content?: string
-          created_at?: string | null
-          helpful_count?: number | null
-          id?: string
-          is_published?: boolean | null
-          source_chat_id?: string | null
-          summary?: string | null
-          tags?: string[] | null
-          title?: string
-          updated_at?: string | null
-          view_count?: number | null
-        }
-        Relationships: []
-      }
       notifications: {
         Row: {
           created_at: string
@@ -909,10 +861,6 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
-      }
-      increment_article_helpful: {
-        Args: { article_id: string }
-        Returns: undefined
       }
     }
     Enums: {
