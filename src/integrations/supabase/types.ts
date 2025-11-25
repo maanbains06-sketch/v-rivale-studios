@@ -1266,6 +1266,14 @@ export type Database = {
     }
     Functions: {
       assign_chat_to_staff: { Args: { chat_id: string }; Returns: string }
+      auto_assign_unassigned_chats: {
+        Args: never
+        Returns: {
+          assigned_to: string
+          chat_id: string
+          chat_subject: string
+        }[]
+      }
       check_sla_breach: { Args: never; Returns: undefined }
       generate_referral_code: { Args: never; Returns: string }
       get_gallery_like_count: {
@@ -1299,6 +1307,13 @@ export type Database = {
         }[]
       }
       notify_staff_sla_breach: { Args: never; Returns: undefined }
+      rebalance_staff_workload: {
+        Args: never
+        Returns: {
+          message: string
+          rebalanced_count: number
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
