@@ -134,34 +134,34 @@ const Status = () => {
             </div>
           </div>
 
-          {/* Main Stats Grid - All Cards Equal Compact Size */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          {/* Main Stats Grid - Extra Compact Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
             {/* Players Online Card */}
-            <Card className="relative overflow-hidden glass-effect border-2 border-primary/30 hover:border-primary/60 transition-all duration-500 group animate-fade-in hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-1">
+            <Card className="relative overflow-hidden glass-effect border border-primary/30 hover:border-primary/60 transition-all duration-500 group animate-fade-in hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-1">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="absolute top-0 right-0 w-24 h-24 bg-primary/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-                <CardTitle className="text-xs font-medium text-muted-foreground">Players Online</CardTitle>
-                <div className="p-2 rounded-lg bg-primary/20 group-hover:bg-primary/30 transition-colors">
-                  <Users className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
+              <div className="absolute top-0 right-0 w-20 h-20 bg-primary/20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 relative z-10 p-4">
+                <CardTitle className="text-[10px] font-medium text-muted-foreground uppercase">Players</CardTitle>
+                <div className="p-1.5 rounded-lg bg-primary/20 group-hover:bg-primary/30 transition-colors">
+                  <Users className="h-3 w-3 text-primary group-hover:scale-110 transition-transform" />
                 </div>
               </CardHeader>
-              <CardContent className="relative z-10">
-                <div className="text-4xl font-bold bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent mb-2">
+              <CardContent className="relative z-10 px-4 pb-4">
+                <div className="text-3xl font-bold bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent mb-1">
                   {stats.playersOnline}/{stats.maxPlayers}
                 </div>
-                <p className="text-xs text-muted-foreground mb-3">Active players</p>
-                <div className="relative mb-2">
+                <p className="text-[10px] text-muted-foreground mb-2">Online now</p>
+                <div className="relative mb-1.5">
                   <Progress 
                     value={(stats.playersOnline / stats.maxPlayers) * 100} 
-                    className="h-2 bg-primary/20"
+                    className="h-1.5 bg-primary/20"
                   />
-                  <div className="absolute inset-0 h-2 bg-gradient-to-r from-primary/40 to-secondary/40 blur-sm" />
+                  <div className="absolute inset-0 h-1.5 bg-gradient-to-r from-primary/40 to-secondary/40 blur-sm" />
                 </div>
-                <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center justify-between text-[10px]">
                   <span className="text-muted-foreground">{Math.round((stats.playersOnline / stats.maxPlayers) * 100)}%</span>
-                  <span className="text-green-500 font-semibold flex items-center gap-1">
-                    <TrendingUp className="w-3 h-3" />
+                  <span className="text-green-500 font-semibold flex items-center gap-0.5">
+                    <TrendingUp className="w-2.5 h-2.5" />
                     Active
                   </span>
                 </div>
@@ -169,83 +169,83 @@ const Status = () => {
             </Card>
 
             {/* Server Uptime - Compact */}
-            <Card className="relative overflow-hidden glass-effect border-2 border-secondary/30 hover:border-secondary/60 transition-all duration-500 group animate-fade-in animation-delay-100 hover:shadow-2xl hover:shadow-secondary/20 hover:-translate-y-1">
+            <Card className="relative overflow-hidden glass-effect border border-secondary/30 hover:border-secondary/60 transition-all duration-500 group animate-fade-in animation-delay-100 hover:shadow-xl hover:shadow-secondary/20 hover:-translate-y-1">
               <div className="absolute inset-0 bg-gradient-to-br from-secondary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="absolute top-0 right-0 w-24 h-24 bg-secondary/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-                <CardTitle className="text-xs font-medium text-muted-foreground">Server Uptime</CardTitle>
-                <div className="p-2 rounded-lg bg-secondary/20 group-hover:bg-secondary/30 transition-colors">
-                  <Clock className="h-4 w-4 text-secondary group-hover:scale-110 transition-transform" />
+              <div className="absolute top-0 right-0 w-20 h-20 bg-secondary/20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 relative z-10 p-4">
+                <CardTitle className="text-[10px] font-medium text-muted-foreground uppercase">Uptime</CardTitle>
+                <div className="p-1.5 rounded-lg bg-secondary/20 group-hover:bg-secondary/30 transition-colors">
+                  <Clock className="h-3 w-3 text-secondary group-hover:scale-110 transition-transform" />
                 </div>
               </CardHeader>
-              <CardContent className="relative z-10">
-                <div className="text-4xl font-bold text-secondary mb-2">{stats.uptime}</div>
-                <p className="text-xs text-green-500 font-semibold flex items-center gap-1 mb-3">
-                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                  99.9% Uptime
+              <CardContent className="relative z-10 px-4 pb-4">
+                <div className="text-3xl font-bold text-secondary mb-1">{stats.uptime}</div>
+                <p className="text-[10px] text-green-500 font-semibold flex items-center gap-1 mb-2">
+                  <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse" />
+                  99.9% Reliable
                 </p>
-                <div className="p-2 rounded-lg bg-secondary/10 border border-secondary/20">
-                  <p className="text-xs text-muted-foreground">Zero Downtime</p>
+                <div className="p-1.5 rounded-lg bg-secondary/10 border border-secondary/20">
+                  <p className="text-[9px] text-muted-foreground text-center">No Downtime</p>
                 </div>
               </CardContent>
             </Card>
 
             {/* Server Load - Compact */}
-            <Card className="relative overflow-hidden glass-effect border-2 border-accent/30 hover:border-accent/60 transition-all duration-500 group animate-fade-in animation-delay-200 hover:shadow-2xl hover:shadow-accent/20 hover:-translate-y-1">
+            <Card className="relative overflow-hidden glass-effect border border-accent/30 hover:border-accent/60 transition-all duration-500 group animate-fade-in animation-delay-200 hover:shadow-xl hover:shadow-accent/20 hover:-translate-y-1">
               <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="absolute top-0 right-0 w-24 h-24 bg-accent/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-                <CardTitle className="text-xs font-medium text-muted-foreground">Server Load</CardTitle>
-                <div className="p-2 rounded-lg bg-accent/20 group-hover:bg-accent/30 transition-colors">
-                  <Activity className="h-4 w-4 text-accent group-hover:scale-110 transition-transform" />
+              <div className="absolute top-0 right-0 w-20 h-20 bg-accent/20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 relative z-10 p-4">
+                <CardTitle className="text-[10px] font-medium text-muted-foreground uppercase">Load</CardTitle>
+                <div className="p-1.5 rounded-lg bg-accent/20 group-hover:bg-accent/30 transition-colors">
+                  <Activity className="h-3 w-3 text-accent group-hover:scale-110 transition-transform" />
                 </div>
               </CardHeader>
-              <CardContent className="relative z-10">
-                <div className="space-y-3">
+              <CardContent className="relative z-10 px-4 pb-4">
+                <div className="space-y-2.5">
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px] font-medium text-muted-foreground uppercase">CPU</span>
-                      <span className="text-xl font-bold text-accent">{stats.cpu}%</span>
+                    <div className="flex items-center justify-between mb-0.5">
+                      <span className="text-[9px] font-medium text-muted-foreground uppercase">CPU</span>
+                      <span className="text-lg font-bold text-accent">{stats.cpu}%</span>
                     </div>
-                    <Progress value={stats.cpu} className="h-1.5 bg-accent/20" />
+                    <Progress value={stats.cpu} className="h-1 bg-accent/20" />
                   </div>
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px] font-medium text-muted-foreground uppercase">RAM</span>
-                      <span className="text-xl font-bold text-accent">{stats.memory}%</span>
+                    <div className="flex items-center justify-between mb-0.5">
+                      <span className="text-[9px] font-medium text-muted-foreground uppercase">RAM</span>
+                      <span className="text-lg font-bold text-accent">{stats.memory}%</span>
                     </div>
-                    <Progress value={stats.memory} className="h-1.5 bg-accent/20" />
+                    <Progress value={stats.memory} className="h-1 bg-accent/20" />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Network Latency - Compact */}
-            <Card className="relative overflow-hidden glass-effect border-2 border-primary/30 hover:border-primary/60 transition-all duration-500 group animate-fade-in animation-delay-300 hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-1">
+            <Card className="relative overflow-hidden glass-effect border border-primary/30 hover:border-primary/60 transition-all duration-500 group animate-fade-in animation-delay-300 hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-1">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="absolute top-0 right-0 w-24 h-24 bg-primary/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-                <CardTitle className="text-xs font-medium text-muted-foreground">Network Latency</CardTitle>
-                <div className="p-2 rounded-lg bg-primary/20 group-hover:bg-primary/30 transition-colors">
-                  <Zap className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
+              <div className="absolute top-0 right-0 w-20 h-20 bg-primary/20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 relative z-10 p-4">
+                <CardTitle className="text-[10px] font-medium text-muted-foreground uppercase">Latency</CardTitle>
+                <div className="p-1.5 rounded-lg bg-primary/20 group-hover:bg-primary/30 transition-colors">
+                  <Zap className="h-3 w-3 text-primary group-hover:scale-110 transition-transform" />
                 </div>
               </CardHeader>
-              <CardContent className="relative z-10">
-                <div className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
+              <CardContent className="relative z-10 px-4 pb-4">
+                <div className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-1">
                   {stats.ping}ms
                 </div>
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-1.5 mb-2">
                   <div className="flex gap-0.5">
-                    <div className="w-0.5 h-4 bg-green-500 rounded-full animate-pulse" />
-                    <div className="w-0.5 h-4 bg-green-500 rounded-full animate-pulse animation-delay-100" />
-                    <div className="w-0.5 h-4 bg-green-500 rounded-full animate-pulse animation-delay-200" />
+                    <div className="w-0.5 h-3 bg-green-500 rounded-full animate-pulse" />
+                    <div className="w-0.5 h-3 bg-green-500 rounded-full animate-pulse animation-delay-100" />
+                    <div className="w-0.5 h-3 bg-green-500 rounded-full animate-pulse animation-delay-200" />
                   </div>
-                  <p className="text-xs text-green-500 font-semibold">Excellent</p>
+                  <p className="text-[10px] text-green-500 font-semibold">Excellent</p>
                 </div>
-                <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
-                  <div className="flex items-center gap-1.5">
-                    <Network className="w-3 h-3 text-primary" />
-                    <p className="text-[10px] text-muted-foreground">Stable</p>
+                <div className="p-1.5 rounded-lg bg-primary/10 border border-primary/20">
+                  <div className="flex items-center gap-1 justify-center">
+                    <Network className="w-2.5 h-2.5 text-primary" />
+                    <p className="text-[9px] text-muted-foreground">Stable</p>
                   </div>
                 </div>
               </CardContent>
