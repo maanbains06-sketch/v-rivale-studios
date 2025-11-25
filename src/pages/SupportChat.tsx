@@ -267,6 +267,21 @@ const SupportChat = () => {
     setCreateDialogOpen(false);
     setLoading(false);
     
+    // Send refund notification email to staff if it's a refund request
+    if (category === 'refund') {
+      try {
+        await supabase.functions.invoke('send-refund-notification', {
+          body: {
+            chatId: data.id,
+            subject: newChatSubject,
+            userId: user.id,
+          }
+        });
+      } catch (error) {
+        console.error("Error sending refund notification:", error);
+      }
+    }
+    
     const categoryText = category === 'refund' ? 'refund request' : 'support chat';
     toast({
       title: "Chat Created",
