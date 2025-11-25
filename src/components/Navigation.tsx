@@ -272,6 +272,17 @@ const Navigation = () => {
                         <BarChart3 className="w-4 h-4 mr-2" />
                         Support Analytics
                       </Button>
+                      <Button 
+                        variant="outline"
+                        className="justify-start glass-effect"
+                        onClick={() => {
+                          navigate("/admin/staff-stats");
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        <Users className="w-4 h-4 mr-2" />
+                        Staff Statistics
+                      </Button>
                     </>
                   )}
                   <Button 
