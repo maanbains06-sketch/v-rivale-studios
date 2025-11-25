@@ -253,18 +253,43 @@ const Support = () => {
           </Card>
         </div>
 
+        {/* How It Works Info */}
+        <div className="max-w-3xl mx-auto mb-12">
+          <Card className="glass-effect border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                  <MessageCircle className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">How Chat Support Works</h3>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>✓ Click "Live Chat Support" to start a conversation</li>
+                    <li>✓ All {supportStats.staffOnline} online staff members are automatically notified</li>
+                    <li>✓ Average response time: {supportStats.avgResponseTime}</li>
+                    <li>✓ Chat history is saved - you can continue the conversation anytime</li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Quick Actions */}
         <div className="flex flex-col items-center gap-6 mb-16">
+          <div className="text-center mb-4">
+            <h2 className="text-2xl font-bold text-foreground mb-2">Need Help?</h2>
+            <p className="text-muted-foreground">Our staff team is ready to assist you</p>
+          </div>
           
           <div className="flex flex-wrap gap-4 justify-center">
             <Button 
               size="lg"
-              variant="outline"
-              className="border-primary text-primary hover:bg-primary/10"
-              onClick={() => navigate("/ban-appeal")}
+              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/25"
+              onClick={() => navigate("/support-chat")}
             >
-              <Ban className="w-5 h-5 mr-2" />
-              Submit Ban Appeal
+              <MessageCircle className="w-5 h-5 mr-2" />
+              Live Chat Support
             </Button>
             
             <Button 
@@ -280,12 +305,19 @@ const Support = () => {
             
             <Button 
               size="lg"
-              className="bg-primary hover:bg-primary/90"
-              onClick={() => navigate("/support-chat")}
+              variant="outline"
+              className="border-primary text-primary hover:bg-primary/10"
+              onClick={() => navigate("/ban-appeal")}
             >
-              <MessageCircle className="w-5 h-5 mr-2" />
-              Live Chat Support
+              <Ban className="w-5 h-5 mr-2" />
+              Submit Ban Appeal
             </Button>
+          </div>
+          
+          <div className="mt-2 text-center">
+            <p className="text-sm text-muted-foreground">
+              💬 Staff notifications: {supportStats.staffOnline} team members online and ready to help
+            </p>
           </div>
         </div>
 
