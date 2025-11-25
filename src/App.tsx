@@ -2,9 +2,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useReferralTracking } from "@/hooks/useReferralTracking";
 import { useStaffPresence } from "@/hooks/useStaffPresence";
+import { AnimatePresence } from "framer-motion";
+import { PageTransition } from "@/components/PageTransition";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Features from "./pages/Features";
@@ -48,47 +50,50 @@ const queryClient = new QueryClient();
 const AppRoutes = () => {
   useReferralTracking();
   useStaffPresence();
+  const location = useLocation();
   
   return (
-    <Routes>
-      <Route path="/" element={<Index />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/features" element={<Features />} />
-      <Route path="/rules" element={<Rules />} />
-      <Route path="/community" element={<Community />} />
-      <Route path="/whitelist" element={<Whitelist />} />
-      <Route path="/staff" element={<Staff />} />
-      <Route path="/staff/:name" element={<StaffProfile />} />
-      <Route path="/staff-setup" element={<StaffSetup />} />
-      <Route path="/ban-appeal" element={<BanAppeal />} />
-      <Route path="/guides" element={<Guides />} />
-      <Route path="/gallery" element={<Gallery />} />
-      <Route path="/status" element={<Status />} />
-      <Route path="/support" element={<Support />} />
-      <Route path="/store" element={<Store />} />
-      <Route path="/checkout" element={<Checkout />} />
-      <Route path="/confirmation" element={<Confirmation />} />
-      <Route path="/auth" element={<Auth />} />
-      <Route path="/admin" element={<Admin />} />
-      <Route path="/admin-staff-applications" element={<AdminStaffApplications />} />
-      <Route path="/admin-referrals" element={<AdminReferrals />} />
-      <Route path="/admin-promo-analytics" element={<AdminPromoAnalytics />} />
-      <Route path="/admin/gallery" element={<AdminGallery />} />
-      <Route path="/admin/support-chat" element={<AdminSupportChat />} />
-      <Route path="/admin/support-analytics" element={<SupportAnalytics />} />
-      <Route path="/admin/staff-stats" element={<AdminStaffStats />} />
-      <Route path="/support-chat" element={<SupportChat />} />
-      <Route path="/job-application" element={<JobApplication />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/staff-onboarding" element={<StaffOnboarding />} />
-      <Route path="/application-status" element={<ApplicationStatus />} />
-      <Route path="/contact-owner" element={<ContactOwner />} />
-      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-      <Route path="/terms-of-service" element={<TermsOfService />} />
-      <Route path="/refund-policy" element={<RefundPolicy />} />
-      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<PageTransition><Index /></PageTransition>} />
+        <Route path="/about" element={<PageTransition><About /></PageTransition>} />
+        <Route path="/features" element={<PageTransition><Features /></PageTransition>} />
+        <Route path="/rules" element={<PageTransition><Rules /></PageTransition>} />
+        <Route path="/community" element={<PageTransition><Community /></PageTransition>} />
+        <Route path="/whitelist" element={<PageTransition><Whitelist /></PageTransition>} />
+        <Route path="/staff" element={<PageTransition><Staff /></PageTransition>} />
+        <Route path="/staff/:name" element={<PageTransition><StaffProfile /></PageTransition>} />
+        <Route path="/staff-setup" element={<PageTransition><StaffSetup /></PageTransition>} />
+        <Route path="/ban-appeal" element={<PageTransition><BanAppeal /></PageTransition>} />
+        <Route path="/guides" element={<PageTransition><Guides /></PageTransition>} />
+        <Route path="/gallery" element={<PageTransition><Gallery /></PageTransition>} />
+        <Route path="/status" element={<PageTransition><Status /></PageTransition>} />
+        <Route path="/support" element={<PageTransition><Support /></PageTransition>} />
+        <Route path="/store" element={<PageTransition><Store /></PageTransition>} />
+        <Route path="/checkout" element={<PageTransition><Checkout /></PageTransition>} />
+        <Route path="/confirmation" element={<PageTransition><Confirmation /></PageTransition>} />
+        <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
+        <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
+        <Route path="/admin-staff-applications" element={<PageTransition><AdminStaffApplications /></PageTransition>} />
+        <Route path="/admin-referrals" element={<PageTransition><AdminReferrals /></PageTransition>} />
+        <Route path="/admin-promo-analytics" element={<PageTransition><AdminPromoAnalytics /></PageTransition>} />
+        <Route path="/admin/gallery" element={<PageTransition><AdminGallery /></PageTransition>} />
+        <Route path="/admin/support-chat" element={<PageTransition><AdminSupportChat /></PageTransition>} />
+        <Route path="/admin/support-analytics" element={<PageTransition><SupportAnalytics /></PageTransition>} />
+        <Route path="/admin/staff-stats" element={<PageTransition><AdminStaffStats /></PageTransition>} />
+        <Route path="/support-chat" element={<PageTransition><SupportChat /></PageTransition>} />
+        <Route path="/job-application" element={<PageTransition><JobApplication /></PageTransition>} />
+        <Route path="/dashboard" element={<PageTransition><Dashboard /></PageTransition>} />
+        <Route path="/staff-onboarding" element={<PageTransition><StaffOnboarding /></PageTransition>} />
+        <Route path="/application-status" element={<PageTransition><ApplicationStatus /></PageTransition>} />
+        <Route path="/contact-owner" element={<PageTransition><ContactOwner /></PageTransition>} />
+        <Route path="/privacy-policy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
+        <Route path="/terms-of-service" element={<PageTransition><TermsOfService /></PageTransition>} />
+        <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+      </Routes>
+    </AnimatePresence>
   );
 };
 
