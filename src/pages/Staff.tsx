@@ -11,6 +11,8 @@ import { useState as useStateAlias } from "react";
 import { StaffApplicationForm } from "@/components/StaffApplicationForm";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useStaffOnlineStatus } from "@/hooks/useStaffOnlineStatus";
+import { StaffOnlineIndicator } from "@/components/StaffOnlineIndicator";
 
 interface StaffMember {
   id: string;
@@ -27,6 +29,7 @@ interface StaffMember {
   responsibilities: string[];
   is_active: boolean;
   display_order: number;
+  user_id?: string | null;
 }
 
 const roleColors = {
@@ -53,6 +56,7 @@ const Staff = () => {
   const [isApplicationOpen, setIsApplicationOpen] = useStateAlias(false);
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const { isOnline, getLastSeen } = useStaffOnlineStatus();
 
   useEffect(() => {
     loadStaffMembers();
@@ -135,6 +139,8 @@ const Staff = () => {
   const renderStaffCard = (member: StaffMember, index: number) => {
     const Icon = roleIcons[member.role_type as keyof typeof roleIcons] || UserCheck;
     const achievements = getAchievementBadges(member);
+    const staffIsOnline = isOnline(member.user_id);
+    const lastSeenTime = getLastSeen(member.user_id);
     
     return (
       <div key={index} className="relative group">
@@ -144,7 +150,7 @@ const Staff = () => {
           
           {/* Achievement Badges */}
           {achievements.length > 0 && (
-            <div className="absolute top-3 right-3 flex flex-col gap-1">
+            <div className="absolute top-3 right-3 flex flex-col gap-1 z-10">
               {achievements.map((badge, idx) => (
                 <Badge 
                   key={idx} 
@@ -170,16 +176,31 @@ const Staff = () => {
                 <div className={`absolute -bottom-1 -right-1 w-9 h-9 ${roleColors[member.role_type as keyof typeof roleColors]} rounded-full flex items-center justify-center border-3 border-background shadow-lg`}>
                   <Icon className="w-4 h-4 text-primary-foreground" />
                 </div>
-                <div className="absolute -top-1 -left-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background animate-pulse"></div>
+                {/* Online Status Indicator */}
+                <div className="absolute -top-1 -left-1">
+                  <StaffOnlineIndicator 
+                    isOnline={staffIsOnline} 
+                    lastSeen={lastSeenTime}
+                    size="lg"
+                  />
+                </div>
               </div>
 
               <h3 className="text-lg font-bold mb-1.5">{member.name}</h3>
               <Badge variant="outline" className="mb-1.5 border-primary text-primary px-3 py-0.5 text-xs">
                 {member.role}
               </Badge>
-              <Badge variant="secondary" className="mb-3 text-xs">
-                {member.department.replace("_", " ").toUpperCase()}
-              </Badge>
+              <div className="flex items-center gap-2 mb-3">
+                <Badge variant="secondary" className="text-xs">
+                  {member.department.replace("_", " ").toUpperCase()}
+                </Badge>
+                <StaffOnlineIndicator 
+                  isOnline={staffIsOnline} 
+                  lastSeen={lastSeenTime}
+                  showLabel
+                  size="sm"
+                />
+              </div>
 
               {member.bio && (
                 <p className="text-xs text-muted-foreground italic mb-4 max-w-xs leading-relaxed line-clamp-2">&quot;{member.bio}&quot;</p>
