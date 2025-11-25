@@ -62,6 +62,36 @@ export type Database = {
         }
         Relationships: []
       }
+      canned_responses: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          created_by: string
+          id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          content: string
+          created_at?: string
+          created_by: string
+          id?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       gallery_submissions: {
         Row: {
           approved_at: string | null
@@ -449,6 +479,41 @@ export type Database = {
         }
         Relationships: []
       }
+      support_chat_ratings: {
+        Row: {
+          chat_id: string
+          created_at: string
+          feedback: string | null
+          id: string
+          rating: number
+          user_id: string
+        }
+        Insert: {
+          chat_id: string
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          rating: number
+          user_id: string
+        }
+        Update: {
+          chat_id?: string
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          rating?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_chat_ratings_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "support_chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_chats: {
         Row: {
           assigned_to: string | null
@@ -484,6 +549,9 @@ export type Database = {
       }
       support_messages: {
         Row: {
+          attachment_name: string | null
+          attachment_size: number | null
+          attachment_url: string | null
           chat_id: string
           created_at: string
           id: string
@@ -494,6 +562,9 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          attachment_name?: string | null
+          attachment_size?: number | null
+          attachment_url?: string | null
           chat_id: string
           created_at?: string
           id?: string
@@ -504,6 +575,9 @@ export type Database = {
           user_id: string
         }
         Update: {
+          attachment_name?: string | null
+          attachment_size?: number | null
+          attachment_url?: string | null
           chat_id?: string
           created_at?: string
           id?: string

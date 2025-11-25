@@ -8,11 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Send, MessageCircle, Plus } from "lucide-react";
+import { Send, MessageCircle, Plus, Paperclip, X, Download, Star } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import headerSupport from "@/assets/header-support.jpg";
 import { format } from "date-fns";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Message {
   id: string;
@@ -20,6 +21,9 @@ interface Message {
   is_staff: boolean;
   created_at: string;
   user_id: string;
+  attachment_url: string | null;
+  attachment_name: string | null;
+  attachment_size: number | null;
 }
 
 interface Chat {
@@ -40,7 +44,13 @@ const SupportChat = () => {
   const [newChatSubject, setNewChatSubject] = useState("");
   const [loading, setLoading] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [ratingDialogOpen, setRatingDialogOpen] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [feedback, setFeedback] = useState("");
+  const [attachment, setAttachment] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     checkAuth();
@@ -178,36 +188,142 @@ const SupportChat = () => {
     });
   };
 
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Check file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          title: "File Too Large",
+          description: "Please select a file smaller than 10MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+      setAttachment(file);
+    }
+  };
+
+  const uploadAttachment = async (chatId: string, userId: string) => {
+    if (!attachment) return null;
+
+    const fileExt = attachment.name.split('.').pop();
+    const fileName = `${userId}/${chatId}/${Date.now()}.${fileExt}`;
+
+    const { data, error } = await supabase.storage
+      .from('chat-attachments')
+      .upload(fileName, attachment);
+
+    if (error) {
+      console.error("Error uploading file:", error);
+      throw error;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('chat-attachments')
+      .getPublicUrl(data.path);
+
+    return {
+      url: publicUrl,
+      name: attachment.name,
+      size: attachment.size,
+    };
+  };
+
   const sendMessage = async () => {
-    if (!newMessage.trim() || !selectedChat) return;
+    if ((!newMessage.trim() && !attachment) || !selectedChat) return;
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { error } = await supabase.from("support_messages").insert({
-      chat_id: selectedChat.id,
-      user_id: user.id,
-      message: newMessage,
-      is_staff: false,
-    });
+    setUploading(true);
 
-    if (error) {
-      console.error("Error sending message:", error);
+    try {
+      let attachmentData = null;
+      if (attachment) {
+        attachmentData = await uploadAttachment(selectedChat.id, user.id);
+      }
+
+      const { error } = await supabase.from("support_messages").insert({
+        chat_id: selectedChat.id,
+        user_id: user.id,
+        message: newMessage || "Sent an attachment",
+        is_staff: false,
+        attachment_url: attachmentData?.url,
+        attachment_name: attachmentData?.name,
+        attachment_size: attachmentData?.size,
+      });
+
+      if (error) {
+        console.error("Error sending message:", error);
+        toast({
+          title: "Error",
+          description: "Failed to send message.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Update last_message_at
+      await supabase
+        .from("support_chats")
+        .update({ last_message_at: new Date().toISOString() })
+        .eq("id", selectedChat.id);
+
+      setNewMessage("");
+      setAttachment(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to send message.",
+        description: "Failed to upload attachment.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRateChat = async () => {
+    if (!selectedChat || rating === 0) {
+      toast({
+        title: "Rating Required",
+        description: "Please select a rating before submitting.",
         variant: "destructive",
       });
       return;
     }
 
-    // Update last_message_at
-    await supabase
-      .from("support_chats")
-      .update({ last_message_at: new Date().toISOString() })
-      .eq("id", selectedChat.id);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-    setNewMessage("");
+    const { error } = await supabase.from("support_chat_ratings").insert({
+      chat_id: selectedChat.id,
+      user_id: user.id,
+      rating,
+      feedback: feedback || null,
+    });
+
+    if (error) {
+      console.error("Error submitting rating:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit rating.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Thank You!",
+      description: "Your feedback helps us improve our support service.",
+    });
+
+    setRatingDialogOpen(false);
+    setRating(0);
+    setFeedback("");
   };
 
   return (
@@ -297,7 +413,54 @@ const SupportChat = () => {
             {selectedChat ? (
               <>
                 <CardHeader className="border-b border-border/20">
-                  <CardTitle className="text-lg">{selectedChat.subject}</CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg">{selectedChat.subject}</CardTitle>
+                    {selectedChat.status === "closed" && (
+                      <Dialog open={ratingDialogOpen} onOpenChange={setRatingDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button size="sm" variant="outline">
+                            <Star className="h-4 w-4 mr-2" />
+                            Rate Support
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Rate Your Support Experience</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4 pt-4">
+                            <div className="space-y-2">
+                              <Label>How would you rate your experience?</Label>
+                              <div className="flex gap-2">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Button
+                                    key={star}
+                                    variant={rating >= star ? "default" : "outline"}
+                                    size="icon"
+                                    onClick={() => setRating(star)}
+                                  >
+                                    <Star className={`h-5 w-5 ${rating >= star ? "fill-current" : ""}`} />
+                                  </Button>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="feedback">Additional Feedback (Optional)</Label>
+                              <Textarea
+                                id="feedback"
+                                placeholder="Tell us more about your experience..."
+                                value={feedback}
+                                onChange={(e) => setFeedback(e.target.value)}
+                                rows={4}
+                              />
+                            </div>
+                            <Button onClick={handleRateChat} className="w-full">
+                              Submit Rating
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col p-4">
                   <ScrollArea className="flex-1 pr-4">
@@ -315,6 +478,17 @@ const SupportChat = () => {
                             }`}
                           >
                             <p className="text-sm">{message.message}</p>
+                            {message.attachment_url && (
+                              <a
+                                href={message.attachment_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 mt-2 text-xs underline hover:opacity-80"
+                              >
+                                <Download className="h-3 w-3" />
+                                {message.attachment_name} ({(message.attachment_size! / 1024).toFixed(1)}KB)
+                              </a>
+                            )}
                             <p className="text-xs opacity-70 mt-1">
                               {format(new Date(message.created_at), "p")}
                             </p>
@@ -324,16 +498,52 @@ const SupportChat = () => {
                       <div ref={messagesEndRef} />
                     </div>
                   </ScrollArea>
-                  <div className="flex gap-2 mt-4 pt-4 border-t border-border/20">
-                    <Input
-                      placeholder="Type your message..."
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyPress={(e) => e.key === "Enter" && sendMessage()}
-                    />
-                    <Button onClick={sendMessage} size="icon">
-                      <Send className="h-4 w-4" />
-                    </Button>
+                  <div className="space-y-2 mt-4 pt-4 border-t border-border/20">
+                    {attachment && (
+                      <div className="flex items-center gap-2 text-sm bg-accent px-3 py-2 rounded-md">
+                        <Paperclip className="h-4 w-4" />
+                        <span className="flex-1 truncate">{attachment.name}</span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setAttachment(null);
+                            if (fileInputRef.current) {
+                              fileInputRef.current.value = "";
+                            }
+                          }}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileSelect}
+                        className="hidden"
+                        accept="image/*,.pdf,.txt,.doc,.docx"
+                      />
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                      >
+                        <Paperclip className="h-4 w-4" />
+                      </Button>
+                      <Input
+                        placeholder="Type your message..."
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        onKeyPress={(e) => e.key === "Enter" && !uploading && sendMessage()}
+                        disabled={uploading}
+                      />
+                      <Button onClick={sendMessage} size="icon" disabled={uploading}>
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </>

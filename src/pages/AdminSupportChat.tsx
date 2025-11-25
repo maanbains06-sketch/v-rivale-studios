@@ -7,10 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Send, MessageCircle, Check, X } from "lucide-react";
+import { Send, MessageCircle, Check, Paperclip, X, Download, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
+import { CannedResponsesManager } from "@/components/CannedResponsesManager";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Message {
   id: string;
@@ -18,6 +20,16 @@ interface Message {
   is_staff: boolean;
   created_at: string;
   user_id: string;
+  attachment_url: string | null;
+  attachment_name: string | null;
+  attachment_size: number | null;
+}
+
+interface CannedResponse {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
 }
 
 interface Chat {
@@ -39,7 +51,12 @@ const AdminSupportChat = () => {
   const [newMessage, setNewMessage] = useState("");
   const [statusFilter, setStatusFilter] = useState("open");
   const [isAdmin, setIsAdmin] = useState(false);
+  const [cannedResponses, setCannedResponses] = useState<CannedResponse[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [attachment, setAttachment] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     checkAdminAccess();
@@ -48,6 +65,7 @@ const AdminSupportChat = () => {
   useEffect(() => {
     if (isAdmin) {
       fetchChats();
+      fetchCannedResponses();
       setupChatsRealtimeSubscription();
     }
   }, [isAdmin, statusFilter]);
@@ -109,6 +127,21 @@ const AdminSupportChat = () => {
     setChats(data || []);
   };
 
+  const fetchCannedResponses = async () => {
+    const { data, error } = await supabase
+      .from("canned_responses")
+      .select("*")
+      .order("category", { ascending: true })
+      .order("title", { ascending: true });
+
+    if (error) {
+      console.error("Error fetching canned responses:", error);
+      return;
+    }
+
+    setCannedResponses(data || []);
+  };
+
   const setupChatsRealtimeSubscription = () => {
     const channel = supabase
       .channel("admin-support-chats")
@@ -167,36 +200,104 @@ const AdminSupportChat = () => {
     };
   };
 
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          title: "File Too Large",
+          description: "Please select a file smaller than 10MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+      setAttachment(file);
+    }
+  };
+
+  const uploadAttachment = async (chatId: string, userId: string) => {
+    if (!attachment) return null;
+
+    const fileExt = attachment.name.split('.').pop();
+    const fileName = `${userId}/${chatId}/${Date.now()}.${fileExt}`;
+
+    const { data, error } = await supabase.storage
+      .from('chat-attachments')
+      .upload(fileName, attachment);
+
+    if (error) {
+      console.error("Error uploading file:", error);
+      throw error;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('chat-attachments')
+      .getPublicUrl(data.path);
+
+    return {
+      url: publicUrl,
+      name: attachment.name,
+      size: attachment.size,
+    };
+  };
+
   const sendMessage = async () => {
-    if (!newMessage.trim() || !selectedChat) return;
+    if ((!newMessage.trim() && !attachment) || !selectedChat) return;
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { error } = await supabase.from("support_messages").insert({
-      chat_id: selectedChat.id,
-      user_id: user.id,
-      message: newMessage,
-      is_staff: true,
-    });
+    setUploading(true);
 
-    if (error) {
-      console.error("Error sending message:", error);
+    try {
+      let attachmentData = null;
+      if (attachment) {
+        attachmentData = await uploadAttachment(selectedChat.id, user.id);
+      }
+
+      const { error } = await supabase.from("support_messages").insert({
+        chat_id: selectedChat.id,
+        user_id: user.id,
+        message: newMessage || "Sent an attachment",
+        is_staff: true,
+        attachment_url: attachmentData?.url,
+        attachment_name: attachmentData?.name,
+        attachment_size: attachmentData?.size,
+      });
+
+      if (error) {
+        console.error("Error sending message:", error);
+        toast({
+          title: "Error",
+          description: "Failed to send message.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      await supabase
+        .from("support_chats")
+        .update({ last_message_at: new Date().toISOString() })
+        .eq("id", selectedChat.id);
+
+      setNewMessage("");
+      setAttachment(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to send message.",
+        description: "Failed to upload attachment.",
         variant: "destructive",
       });
-      return;
+    } finally {
+      setUploading(false);
     }
+  };
 
-    // Update last_message_at
-    await supabase
-      .from("support_chats")
-      .update({ last_message_at: new Date().toISOString() })
-      .eq("id", selectedChat.id);
-
-    setNewMessage("");
+  const insertCannedResponse = (content: string) => {
+    setNewMessage(content);
   };
 
   const updateChatStatus = async (chatId: string, status: string) => {
@@ -235,7 +336,10 @@ const AdminSupportChat = () => {
       <Navigation />
 
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-8">Support Chat Management</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-4xl font-bold">Support Chat Management</h1>
+          <CannedResponsesManager />
+        </div>
 
         <Tabs value={statusFilter} onValueChange={setStatusFilter} className="mb-6">
           <TabsList>
@@ -334,6 +438,17 @@ const AdminSupportChat = () => {
                               <p className="text-xs font-semibold opacity-70 mb-1">Support Staff</p>
                             )}
                             <p className="text-sm">{message.message}</p>
+                            {message.attachment_url && (
+                              <a
+                                href={message.attachment_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 mt-2 text-xs underline hover:opacity-80"
+                              >
+                                <Download className="h-3 w-3" />
+                                {message.attachment_name} ({(message.attachment_size! / 1024).toFixed(1)}KB)
+                              </a>
+                            )}
                             <p className="text-xs opacity-70 mt-1">
                               {format(new Date(message.created_at), "p")}
                             </p>
@@ -344,16 +459,91 @@ const AdminSupportChat = () => {
                     </div>
                   </ScrollArea>
                   {selectedChat.status !== "closed" && (
-                    <div className="flex gap-2 mt-4 pt-4 border-t border-border/20">
-                      <Input
-                        placeholder="Type your response..."
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        onKeyPress={(e) => e.key === "Enter" && sendMessage()}
-                      />
-                      <Button onClick={sendMessage} size="icon">
-                        <Send className="h-4 w-4" />
-                      </Button>
+                    <div className="space-y-2 mt-4 pt-4 border-t border-border/20">
+                      {/* Canned Responses */}
+                      <div className="flex gap-2">
+                        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                          <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Quick Replies" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Templates</SelectItem>
+                            <SelectItem value="general">General</SelectItem>
+                            <SelectItem value="technical">Technical</SelectItem>
+                            <SelectItem value="billing">Billing</SelectItem>
+                            <SelectItem value="account">Account</SelectItem>
+                            <SelectItem value="whitelist">Whitelist</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {selectedCategory !== "all" && (
+                          <ScrollArea className="flex-1 h-[100px]">
+                            <div className="flex flex-wrap gap-2">
+                              {cannedResponses
+                                .filter(r => selectedCategory === "all" || r.category === selectedCategory)
+                                .map(response => (
+                                  <Button
+                                    key={response.id}
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => insertCannedResponse(response.content)}
+                                  >
+                                    <Zap className="h-3 w-3 mr-1" />
+                                    {response.title}
+                                  </Button>
+                                ))}
+                            </div>
+                          </ScrollArea>
+                        )}
+                      </div>
+
+                      {/* Attachment Preview */}
+                      {attachment && (
+                        <div className="flex items-center gap-2 text-sm bg-accent px-3 py-2 rounded-md">
+                          <Paperclip className="h-4 w-4" />
+                          <span className="flex-1 truncate">{attachment.name}</span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              setAttachment(null);
+                              if (fileInputRef.current) {
+                                fileInputRef.current.value = "";
+                              }
+                            }}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* Message Input */}
+                      <div className="flex gap-2">
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleFileSelect}
+                          className="hidden"
+                          accept="image/*,.pdf,.txt,.doc,.docx"
+                        />
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={uploading}
+                        >
+                          <Paperclip className="h-4 w-4" />
+                        </Button>
+                        <Input
+                          placeholder="Type your response..."
+                          value={newMessage}
+                          onChange={(e) => setNewMessage(e.target.value)}
+                          onKeyPress={(e) => e.key === "Enter" && !uploading && sendMessage()}
+                          disabled={uploading}
+                        />
+                        <Button onClick={sendMessage} size="icon" disabled={uploading}>
+                          <Send className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </CardContent>

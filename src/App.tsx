@@ -27,6 +27,7 @@ import AdminReferrals from "./pages/AdminReferrals";
 import AdminGallery from "./pages/AdminGallery";
 import SupportChat from "./pages/SupportChat";
 import AdminSupportChat from "./pages/AdminSupportChat";
+import SupportAnalytics from "./pages/SupportAnalytics";
 import JobApplication from "./pages/JobApplication";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
@@ -60,7 +61,8 @@ const AppRoutes = () => {
       <Route path="/admin-staff-applications" element={<AdminStaffApplications />} />
       <Route path="/admin-referrals" element={<AdminReferrals />} />
       <Route path="/admin/gallery" element={<AdminGallery />} />
-      <Route path="/admin/support-chat" element={<AdminSupportChat />} />
+          <Route path="/admin/support-chat" element={<AdminSupportChat />} />
+          <Route path="/admin/support-analytics" element={<SupportAnalytics />} />
       <Route path="/support-chat" element={<SupportChat />} />
       <Route path="/job-application" element={<JobApplication />} />
       <Route path="/dashboard" element={<Dashboard />} />
