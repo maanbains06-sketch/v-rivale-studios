@@ -3,6 +3,7 @@ import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
 import headerGallery from "@/assets/header-gallery.jpg";
 import GalleryUploadForm from "@/components/GalleryUploadForm";
+import GalleryQuickUploadDialog from "@/components/GalleryQuickUploadDialog";
 import { Button } from "@/components/ui/button";
 import { Upload, Image as ImageIcon, Video, Calendar, Users, MapPin, UserPlus, X, Grid3x3, List } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,6 +39,8 @@ const Gallery = () => {
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
   const [viewMode, setViewMode] = useState<"grid" | "masonry">("grid");
+  const [quickUploadOpen, setQuickUploadOpen] = useState(false);
+  const [quickUploadCategory, setQuickUploadCategory] = useState<'screenshot' | 'video'>('screenshot');
 
   useEffect(() => {
     loadApprovedSubmissions();
@@ -182,15 +185,15 @@ const Gallery = () => {
                   {(isStaff || isAdmin) && (
                     <Button 
                       onClick={() => {
-                        setShowUploadForm(true);
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        setQuickUploadCategory('screenshot');
+                        setQuickUploadOpen(true);
                       }}
                       size="sm"
                       variant="outline"
                       className="w-full border-primary/40 hover:bg-primary/10"
                     >
                       <Upload className="w-4 h-4 mr-2" />
-                      Upload
+                      Quick Upload
                     </Button>
                   )}
                 </div>
@@ -221,15 +224,15 @@ const Gallery = () => {
                   {(isStaff || isAdmin) && (
                     <Button 
                       onClick={() => {
-                        setShowUploadForm(true);
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        setQuickUploadCategory('video');
+                        setQuickUploadOpen(true);
                       }}
                       size="sm"
                       variant="outline"
                       className="w-full border-secondary/40 hover:bg-secondary/10"
                     >
                       <Upload className="w-4 h-4 mr-2" />
-                      Upload
+                      Quick Upload
                     </Button>
                   )}
                 </div>
@@ -375,6 +378,14 @@ const Gallery = () => {
             isOpen={viewerOpen}
             onClose={() => setViewerOpen(false)}
             getFileUrl={getFileUrl}
+          />
+
+          {/* Quick Upload Dialog */}
+          <GalleryQuickUploadDialog
+            open={quickUploadOpen}
+            onOpenChange={setQuickUploadOpen}
+            category={quickUploadCategory}
+            onSuccess={loadApprovedSubmissions}
           />
 
           {/* Events Dialog */}
