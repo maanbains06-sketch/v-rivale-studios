@@ -238,7 +238,8 @@ const GalleryUploadForm = ({ onSuccess }: GalleryUploadFormProps) => {
               </SelectTrigger>
               <SelectContent>
                 {categories.map((cat) => {
-                  const isAccessible = !cat.restricted || canAccessCategory(cat.value);
+                  // Community is open to all, others require staff access
+                  const isAccessible = cat.value === 'community' || canAccessCategory(cat.value);
                   return (
                     <SelectItem 
                       key={cat.value} 
@@ -257,8 +258,7 @@ const GalleryUploadForm = ({ onSuccess }: GalleryUploadFormProps) => {
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              {categories.find(c => c.value === 'event')?.restricted && 
-                "Events category requires staff access (Administration, Development, Leadership, or Events team)"}
+              Screenshots, Videos, and Events require staff access. Community is open to all.
             </p>
           </div>
 
