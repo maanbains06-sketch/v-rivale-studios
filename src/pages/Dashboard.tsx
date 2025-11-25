@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, FileText, Briefcase, Ban, Clock, Radio, Users, Image, Video, RefreshCw, Upload, X } from "lucide-react";
+import { Loader2, FileText, Briefcase, Ban, Clock, Radio, Users, Image, Video, RefreshCw, Upload, X, GraduationCap, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 import headerCommunity from "@/assets/header-community.jpg";
 
@@ -682,6 +682,14 @@ const Dashboard = () => {
                             <p className="text-sm text-muted-foreground">{app.admin_notes}</p>
                           </div>
                         )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full mt-4"
+                          onClick={() => navigate('/application-status')}
+                        >
+                          View Detailed Status <ExternalLink className="ml-2 h-4 w-4" />
+                        </Button>
                       </CardContent>
                     </Card>
                   ))}
@@ -689,6 +697,30 @@ const Dashboard = () => {
               )}
             </CardContent>
           </Card>
+
+          {/* Staff Onboarding - Show only if staff application is approved */}
+          {staffApps.some(app => app.status === 'approved') && (
+            <Card className="glass-effect border-border/20 border-green-500/50 bg-green-50/5">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <GraduationCap className="w-5 h-5 text-green-500" />
+                  <CardTitle className="text-gradient">Staff Onboarding</CardTitle>
+                </div>
+                <CardDescription>Complete your training and onboarding checklist</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Congratulations on joining the team! Complete your training modules and onboarding tasks to get started.
+                </p>
+                <Button
+                  className="w-full"
+                  onClick={() => navigate('/staff-onboarding')}
+                >
+                  Start Onboarding <GraduationCap className="ml-2 h-4 w-4" />
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Gallery Submissions */}
           <Card className="glass-effect border-border/20">
