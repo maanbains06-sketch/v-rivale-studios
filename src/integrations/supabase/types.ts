@@ -245,6 +245,41 @@ export type Database = {
           },
         ]
       }
+      gallery_comments: {
+        Row: {
+          comment: string
+          created_at: string | null
+          id: string
+          submission_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          comment: string
+          created_at?: string | null
+          id?: string
+          submission_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          comment?: string
+          created_at?: string | null
+          id?: string
+          submission_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gallery_comments_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "gallery_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gallery_likes: {
         Row: {
           created_at: string | null
