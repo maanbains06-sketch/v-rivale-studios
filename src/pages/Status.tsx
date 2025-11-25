@@ -4,7 +4,7 @@ import PageHeader from "@/components/PageHeader";
 import headerStatus from "@/assets/header-status.jpg";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, Activity, Clock, Zap, TrendingUp, AlertCircle, Server, Wifi, Network, Sparkles, Radio, Shield, Database, HardDrive, Cpu, Signal } from "lucide-react";
+import { Users, Activity, Clock, Zap, TrendingUp, AlertCircle, Server, Wifi, Network, Sparkles, Radio, Shield } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 
@@ -15,10 +15,6 @@ interface ServerStats {
   cpu: number;
   memory: number;
   ping: number;
-  disk: number;
-  bandwidth: number;
-  tps: number;
-  healthScore: number;
 }
 
 interface RecentUpdate {
@@ -38,77 +34,31 @@ interface ActiveEvent {
 
 const Status = () => {
   const [stats, setStats] = useState<ServerStats>({
-    playersOnline: 87,
+    playersOnline: 0,
     maxPlayers: 128,
-    uptime: "7d 14h 32m",
-    cpu: 45,
-    memory: 62,
-    ping: 32,
-    disk: 48,
-    bandwidth: 75,
-    tps: 19.8,
-    healthScore: 98,
+    uptime: "0d 0h 0m",
+    cpu: 0,
+    memory: 0,
+    ping: 0,
   });
 
-  const [cpuHistory, setCpuHistory] = useState<number[]>([45, 42, 48, 43, 47, 45, 44, 46, 45, 43]);
-  const [memoryHistory, setMemoryHistory] = useState<number[]>([62, 61, 63, 62, 64, 62, 61, 63, 62, 63]);
-
-  // Simulate smooth real-time updates
+  // Simulate real-time updates
   useEffect(() => {
     const updateStats = () => {
-      setStats((prev) => {
-        const newCpu = Math.max(35, Math.min(75, prev.cpu + (Math.random() - 0.5) * 6));
-        const newMemory = Math.max(55, Math.min(80, prev.memory + (Math.random() - 0.5) * 4));
-        const newPing = Math.max(25, Math.min(50, prev.ping + (Math.random() - 0.5) * 8));
-        const newPlayers = Math.max(45, Math.min(128, prev.playersOnline + Math.floor((Math.random() - 0.5) * 5)));
-        const newTps = Math.max(18.5, Math.min(20, prev.tps + (Math.random() - 0.5) * 0.2));
-        const newBandwidth = Math.max(60, Math.min(90, prev.bandwidth + (Math.random() - 0.5) * 10));
-        
-        // Calculate health score based on metrics
-        const healthScore = Math.round(
-          ((100 - newCpu) * 0.3) +
-          ((100 - newMemory) * 0.2) +
-          ((100 - newPing) * 0.2) +
-          (newTps / 20 * 100 * 0.15) +
-          ((100 - newBandwidth) * 0.15)
-        );
-
-        return {
-          ...prev,
-          cpu: Math.round(newCpu),
-          memory: Math.round(newMemory),
-          ping: Math.round(newPing),
-          playersOnline: newPlayers,
-          tps: Number(newTps.toFixed(1)),
-          bandwidth: Math.round(newBandwidth),
-          healthScore: Math.max(85, Math.min(100, healthScore)),
-        };
+      setStats({
+        playersOnline: Math.floor(Math.random() * 128) + 50,
+        maxPlayers: 128,
+        uptime: "7d 14h 32m",
+        cpu: Math.floor(Math.random() * 30) + 40,
+        memory: Math.floor(Math.random() * 20) + 60,
+        ping: Math.floor(Math.random() * 20) + 30,
       });
-
-      // Update history for charts
-      setCpuHistory((prev) => [...prev.slice(1), stats.cpu]);
-      setMemoryHistory((prev) => [...prev.slice(1), stats.memory]);
     };
 
     updateStats();
-    const interval = setInterval(updateStats, 3000);
+    const interval = setInterval(updateStats, 5000);
     return () => clearInterval(interval);
-  }, [stats.cpu, stats.memory]);
-
-  const getHealthColor = (score: number) => {
-    if (score >= 95) return { bg: "bg-green-500", text: "text-green-500", status: "Excellent" };
-    if (score >= 85) return { bg: "bg-blue-500", text: "text-blue-500", status: "Good" };
-    if (score >= 70) return { bg: "bg-yellow-500", text: "text-yellow-500", status: "Fair" };
-    return { bg: "bg-red-500", text: "text-red-500", status: "Poor" };
-  };
-
-  const getStatusColor = (value: number, threshold: number) => {
-    if (value < threshold) return "text-green-500";
-    if (value < threshold * 1.2) return "text-yellow-500";
-    return "text-red-500";
-  };
-
-  const healthStatus = getHealthColor(stats.healthScore);
+  }, []);
 
   const recentUpdates: RecentUpdate[] = [
     { id: 1, title: "New Housing System Released", date: "2 hours ago", type: "update" },
@@ -150,54 +100,42 @@ const Status = () => {
       <main className="pb-16">
         <div className="container mx-auto px-4">
 
-          {/* Live Status Hero Banner with Health Score */}
+          {/* Live Status Hero Banner */}
           <div className="mb-12 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-secondary/20 to-accent/20 blur-3xl animate-pulse" />
             <div className="relative flex flex-col md:flex-row items-center justify-between gap-6 p-8 rounded-2xl glass-effect border-2 border-primary/40 bg-gradient-to-br from-background/90 via-background/95 to-background/90 animate-fade-in">
               <div className="flex items-center gap-6">
                 <div className="relative">
-                  <div className={`w-24 h-24 ${healthStatus.bg} bg-opacity-20 rounded-full flex items-center justify-center shadow-2xl relative overflow-hidden`}>
-                    <div className={`absolute inset-0 ${healthStatus.bg} opacity-20 animate-pulse`} />
-                    <div className="relative z-10 text-center">
-                      <div className={`text-3xl font-bold ${healthStatus.text}`}>{stats.healthScore}</div>
-                      <div className="text-[10px] text-muted-foreground font-semibold">SCORE</div>
-                    </div>
+                  <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg shadow-green-500/50">
+                    <Server className="w-10 h-10 text-white" />
                   </div>
-                  <div className={`absolute -top-1 -right-1 w-6 h-6 ${healthStatus.bg} rounded-full animate-pulse border-4 border-background`} />
-                  <div className={`absolute -top-1 -right-1 w-6 h-6 ${healthStatus.bg} rounded-full animate-ping`} />
+                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full animate-pulse border-4 border-background" />
+                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full animate-ping" />
                 </div>
                 <div>
                   <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
                     All Systems Operational
                   </h2>
-                  <p className={`text-lg font-semibold ${healthStatus.text} mt-1`}>
-                    System Health: {healthStatus.status}
-                  </p>
-                  <p className="text-muted-foreground text-sm mt-2 flex items-center gap-2">
+                  <p className="text-muted-foreground mt-2 flex items-center gap-2">
                     <Clock className="w-4 h-4" />
                     <span>Last updated: Just now • Monitoring in real-time</span>
                   </p>
                 </div>
               </div>
-              <div className="flex flex-col gap-3">
-                <Badge variant="outline" className="px-4 py-2 text-sm bg-green-500/10 text-green-500 border-green-500/30 flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <div className="flex gap-4">
+                <Badge variant="outline" className="px-4 py-2 text-sm bg-green-500/10 text-green-500 border-green-500/30">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse" />
                   Online
                 </Badge>
                 <Badge variant="outline" className="px-4 py-2 text-sm bg-primary/10 text-primary border-primary/30">
                   99.9% Uptime
                 </Badge>
-                <Badge variant="outline" className="px-4 py-2 text-sm bg-secondary/10 text-secondary border-secondary/30 flex items-center gap-1">
-                  <Signal className="w-3 h-3" />
-                  {stats.tps} TPS
-                </Badge>
               </div>
             </div>
           </div>
 
-          {/* Main Stats Grid with Enhanced Visuals and Charts */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {/* Players Online Card */}
+          {/* Main Stats Grid with Enhanced Visuals */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             <Card className="relative overflow-hidden glass-effect border-2 border-primary/30 hover:border-primary/60 transition-all duration-500 group animate-fade-in hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-1">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
@@ -212,7 +150,7 @@ const Status = () => {
                   {stats.playersOnline}
                 </div>
                 <p className="text-sm text-muted-foreground mb-4">of {stats.maxPlayers} maximum capacity</p>
-                <div className="relative mb-2">
+                <div className="relative">
                   <Progress 
                     value={(stats.playersOnline / stats.maxPlayers) * 100} 
                     className="h-3 bg-primary/20"
@@ -229,75 +167,59 @@ const Status = () => {
               </CardContent>
             </Card>
 
-            {/* CPU Usage with Chart */}
             <Card className="relative overflow-hidden glass-effect border-2 border-secondary/30 hover:border-secondary/60 transition-all duration-500 group animate-fade-in animation-delay-100 hover:shadow-2xl hover:shadow-secondary/20 hover:-translate-y-1">
               <div className="absolute inset-0 bg-gradient-to-br from-secondary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
-                <CardTitle className="text-sm font-medium text-muted-foreground">CPU Usage</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Server Uptime</CardTitle>
                 <div className="p-3 rounded-xl bg-secondary/20 group-hover:bg-secondary/30 transition-colors">
-                  <Cpu className="h-6 w-6 text-secondary group-hover:scale-110 transition-transform" />
+                  <Clock className="h-6 w-6 text-secondary group-hover:scale-110 transition-transform" />
                 </div>
               </CardHeader>
               <CardContent className="relative z-10">
-                <div className={`text-5xl font-bold mb-2 ${getStatusColor(stats.cpu, 70)}`}>
-                  {stats.cpu}%
-                </div>
-                <p className="text-sm text-muted-foreground mb-4">Average load across all cores</p>
-                <div className="relative mb-2">
-                  <Progress 
-                    value={stats.cpu} 
-                    className="h-3 bg-secondary/20"
-                  />
-                </div>
-                {/* Mini CPU Chart */}
-                <div className="flex items-end gap-1 h-12 mt-4">
-                  {cpuHistory.map((value, index) => (
-                    <div
-                      key={index}
-                      className="flex-1 bg-gradient-to-t from-secondary to-secondary/50 rounded-t transition-all duration-300"
-                      style={{ height: `${(value / 100) * 100}%` }}
-                    />
-                  ))}
+                <div className="text-5xl font-bold text-secondary mb-2">{stats.uptime}</div>
+                <p className="text-sm text-green-500 font-semibold mb-4 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                  99.9% Reliability Record
+                </p>
+                <div className="p-3 rounded-lg bg-secondary/10 border border-secondary/20">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">This Month</span>
+                    <Badge variant="secondary" className="text-xs">Zero Downtime</Badge>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Memory Usage with Chart */}
             <Card className="relative overflow-hidden glass-effect border-2 border-accent/30 hover:border-accent/60 transition-all duration-500 group animate-fade-in animation-delay-200 hover:shadow-2xl hover:shadow-accent/20 hover:-translate-y-1">
               <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="absolute top-0 right-0 w-32 h-32 bg-accent/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Memory Usage</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Server Load</CardTitle>
                 <div className="p-3 rounded-xl bg-accent/20 group-hover:bg-accent/30 transition-colors">
-                  <Database className="h-6 w-6 text-accent group-hover:scale-110 transition-transform" />
+                  <Activity className="h-6 w-6 text-accent group-hover:scale-110 transition-transform" />
                 </div>
               </CardHeader>
               <CardContent className="relative z-10">
-                <div className={`text-5xl font-bold mb-2 ${getStatusColor(stats.memory, 80)}`}>
-                  {stats.memory}%
-                </div>
-                <p className="text-sm text-muted-foreground mb-4">16GB DDR4 RAM utilized</p>
-                <div className="relative mb-2">
-                  <Progress 
-                    value={stats.memory} 
-                    className="h-3 bg-accent/20"
-                  />
-                </div>
-                {/* Mini Memory Chart */}
-                <div className="flex items-end gap-1 h-12 mt-4">
-                  {memoryHistory.map((value, index) => (
-                    <div
-                      key={index}
-                      className="flex-1 bg-gradient-to-t from-accent to-accent/50 rounded-t transition-all duration-300"
-                      style={{ height: `${(value / 100) * 100}%` }}
-                    />
-                  ))}
+                <div className="space-y-4">
+                  <div className="p-3 rounded-lg bg-background/50 border border-border/20">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-medium text-muted-foreground">CPU Usage</span>
+                      <span className="text-lg font-bold text-accent">{stats.cpu}%</span>
+                    </div>
+                    <Progress value={stats.cpu} className="h-2 bg-accent/20" />
+                  </div>
+                  <div className="p-3 rounded-lg bg-background/50 border border-border/20">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-medium text-muted-foreground">Memory</span>
+                      <span className="text-lg font-bold text-accent">{stats.memory}%</span>
+                    </div>
+                    <Progress value={stats.memory} className="h-2 bg-accent/20" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Network Latency */}
             <Card className="relative overflow-hidden glass-effect border-2 border-primary/30 hover:border-primary/60 transition-all duration-500 group animate-fade-in animation-delay-300 hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-1">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
@@ -313,77 +235,16 @@ const Status = () => {
                 </div>
                 <div className="flex items-center gap-2 mb-4">
                   <div className="flex gap-1">
-                    <div className={`w-1 h-6 ${stats.ping < 50 ? 'bg-green-500' : 'bg-yellow-500'} rounded-full animate-pulse`} />
-                    <div className={`w-1 h-6 ${stats.ping < 50 ? 'bg-green-500' : 'bg-yellow-500'} rounded-full animate-pulse animation-delay-100`} />
-                    <div className={`w-1 h-6 ${stats.ping < 50 ? 'bg-green-500' : 'bg-yellow-500'} rounded-full animate-pulse animation-delay-200`} />
+                    <div className="w-1 h-6 bg-green-500 rounded-full animate-pulse" />
+                    <div className="w-1 h-6 bg-green-500 rounded-full animate-pulse animation-delay-100" />
+                    <div className="w-1 h-6 bg-green-500 rounded-full animate-pulse animation-delay-200" />
                   </div>
-                  <p className={`text-xs font-semibold ${stats.ping < 50 ? 'text-green-500' : 'text-yellow-500'}`}>
-                    {stats.ping < 50 ? 'Excellent' : 'Good'} Connection
-                  </p>
+                  <p className="text-xs text-green-500 font-semibold">Excellent Connection</p>
                 </div>
                 <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
                   <div className="flex items-center gap-2">
                     <Network className="w-4 h-4 text-primary" />
                     <p className="text-xs text-muted-foreground">Network Stable & Optimized</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Disk Usage */}
-            <Card className="relative overflow-hidden glass-effect border-2 border-secondary/30 hover:border-secondary/60 transition-all duration-500 group animate-fade-in animation-delay-100 hover:shadow-2xl hover:shadow-secondary/20 hover:-translate-y-1">
-              <div className="absolute inset-0 bg-gradient-to-br from-secondary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Disk Usage</CardTitle>
-                <div className="p-3 rounded-xl bg-secondary/20 group-hover:bg-secondary/30 transition-colors">
-                  <HardDrive className="h-6 w-6 text-secondary group-hover:scale-110 transition-transform" />
-                </div>
-              </CardHeader>
-              <CardContent className="relative z-10">
-                <div className="text-5xl font-bold text-secondary mb-2">{stats.disk}%</div>
-                <p className="text-sm text-muted-foreground mb-4">240GB / 500GB SSD</p>
-                <div className="relative mb-2">
-                  <Progress 
-                    value={stats.disk} 
-                    className="h-3 bg-secondary/20"
-                  />
-                </div>
-                <div className="mt-3 p-3 rounded-lg bg-secondary/10 border border-secondary/20">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Free Space</span>
-                    <span className="text-secondary font-semibold">260GB Available</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Server Uptime */}
-            <Card className="relative overflow-hidden glass-effect border-2 border-accent/30 hover:border-accent/60 transition-all duration-500 group animate-fade-in animation-delay-200 hover:shadow-2xl hover:shadow-accent/20 hover:-translate-y-1">
-              <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="absolute top-0 right-0 w-32 h-32 bg-accent/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Server Uptime</CardTitle>
-                <div className="p-3 rounded-xl bg-accent/20 group-hover:bg-accent/30 transition-colors">
-                  <Clock className="h-6 w-6 text-accent group-hover:scale-110 transition-transform" />
-                </div>
-              </CardHeader>
-              <CardContent className="relative z-10">
-                <div className="text-4xl font-bold text-accent mb-2">{stats.uptime}</div>
-                <p className="text-sm text-green-500 font-semibold mb-4 flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                  99.9% Reliability Record
-                </p>
-                <div className="p-3 rounded-lg bg-accent/10 border border-accent/20">
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div>
-                      <span className="text-muted-foreground block">This Month</span>
-                      <span className="text-accent font-semibold">Zero Downtime</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground block">Last Restart</span>
-                      <span className="text-accent font-semibold">7 days ago</span>
-                    </div>
                   </div>
                 </div>
               </CardContent>
