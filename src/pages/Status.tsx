@@ -134,34 +134,34 @@ const Status = () => {
             </div>
           </div>
 
-          {/* Main Stats Grid - Players Card Large, Others Smaller */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6 mb-12">
-            {/* Players Online Card - Spans more columns */}
-            <Card className="lg:col-span-4 relative overflow-hidden glass-effect border-2 border-primary/30 hover:border-primary/60 transition-all duration-500 group animate-fade-in hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-1">
+          {/* Main Stats Grid - All Cards Equal Compact Size */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            {/* Players Online Card */}
+            <Card className="relative overflow-hidden glass-effect border-2 border-primary/30 hover:border-primary/60 transition-all duration-500 group animate-fade-in hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-1">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Players Online</CardTitle>
-                <div className="p-3 rounded-xl bg-primary/20 group-hover:bg-primary/30 transition-colors">
-                  <Users className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
+              <div className="absolute top-0 right-0 w-24 h-24 bg-primary/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+                <CardTitle className="text-xs font-medium text-muted-foreground">Players Online</CardTitle>
+                <div className="p-2 rounded-lg bg-primary/20 group-hover:bg-primary/30 transition-colors">
+                  <Users className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
                 </div>
               </CardHeader>
               <CardContent className="relative z-10">
-                <div className="text-6xl font-bold bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent mb-3">
+                <div className="text-4xl font-bold bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent mb-2">
                   {stats.playersOnline}/{stats.maxPlayers}
                 </div>
-                <p className="text-sm text-muted-foreground mb-4">Active players on the server</p>
-                <div className="relative mb-3">
+                <p className="text-xs text-muted-foreground mb-3">Active players</p>
+                <div className="relative mb-2">
                   <Progress 
                     value={(stats.playersOnline / stats.maxPlayers) * 100} 
-                    className="h-3 bg-primary/20"
+                    className="h-2 bg-primary/20"
                   />
-                  <div className="absolute inset-0 h-3 bg-gradient-to-r from-primary/40 to-secondary/40 blur-sm" />
+                  <div className="absolute inset-0 h-2 bg-gradient-to-r from-primary/40 to-secondary/40 blur-sm" />
                 </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground font-medium">{Math.round((stats.playersOnline / stats.maxPlayers) * 100)}% Capacity</span>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">{Math.round((stats.playersOnline / stats.maxPlayers) * 100)}%</span>
                   <span className="text-green-500 font-semibold flex items-center gap-1">
-                    <TrendingUp className="w-4 h-4" />
+                    <TrendingUp className="w-3 h-3" />
                     Active
                   </span>
                 </div>
@@ -169,7 +169,7 @@ const Status = () => {
             </Card>
 
             {/* Server Uptime - Compact */}
-            <Card className="lg:col-span-3 relative overflow-hidden glass-effect border-2 border-secondary/30 hover:border-secondary/60 transition-all duration-500 group animate-fade-in animation-delay-100 hover:shadow-2xl hover:shadow-secondary/20 hover:-translate-y-1">
+            <Card className="relative overflow-hidden glass-effect border-2 border-secondary/30 hover:border-secondary/60 transition-all duration-500 group animate-fade-in animation-delay-100 hover:shadow-2xl hover:shadow-secondary/20 hover:-translate-y-1">
               <div className="absolute inset-0 bg-gradient-to-br from-secondary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="absolute top-0 right-0 w-24 h-24 bg-secondary/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
@@ -179,7 +179,7 @@ const Status = () => {
                 </div>
               </CardHeader>
               <CardContent className="relative z-10">
-                <div className="text-3xl font-bold text-secondary mb-2">{stats.uptime}</div>
+                <div className="text-4xl font-bold text-secondary mb-2">{stats.uptime}</div>
                 <p className="text-xs text-green-500 font-semibold flex items-center gap-1 mb-3">
                   <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
                   99.9% Uptime
@@ -191,7 +191,7 @@ const Status = () => {
             </Card>
 
             {/* Server Load - Compact */}
-            <Card className="lg:col-span-2 relative overflow-hidden glass-effect border-2 border-accent/30 hover:border-accent/60 transition-all duration-500 group animate-fade-in animation-delay-200 hover:shadow-2xl hover:shadow-accent/20 hover:-translate-y-1">
+            <Card className="relative overflow-hidden glass-effect border-2 border-accent/30 hover:border-accent/60 transition-all duration-500 group animate-fade-in animation-delay-200 hover:shadow-2xl hover:shadow-accent/20 hover:-translate-y-1">
               <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="absolute top-0 right-0 w-24 h-24 bg-accent/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
@@ -205,14 +205,14 @@ const Status = () => {
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-[10px] font-medium text-muted-foreground uppercase">CPU</span>
-                      <span className="text-lg font-bold text-accent">{stats.cpu}%</span>
+                      <span className="text-xl font-bold text-accent">{stats.cpu}%</span>
                     </div>
                     <Progress value={stats.cpu} className="h-1.5 bg-accent/20" />
                   </div>
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-[10px] font-medium text-muted-foreground uppercase">RAM</span>
-                      <span className="text-lg font-bold text-accent">{stats.memory}%</span>
+                      <span className="text-xl font-bold text-accent">{stats.memory}%</span>
                     </div>
                     <Progress value={stats.memory} className="h-1.5 bg-accent/20" />
                   </div>
@@ -221,7 +221,7 @@ const Status = () => {
             </Card>
 
             {/* Network Latency - Compact */}
-            <Card className="lg:col-span-3 relative overflow-hidden glass-effect border-2 border-primary/30 hover:border-primary/60 transition-all duration-500 group animate-fade-in animation-delay-300 hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-1">
+            <Card className="relative overflow-hidden glass-effect border-2 border-primary/30 hover:border-primary/60 transition-all duration-500 group animate-fade-in animation-delay-300 hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-1">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="absolute top-0 right-0 w-24 h-24 bg-primary/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
@@ -231,7 +231,7 @@ const Status = () => {
                 </div>
               </CardHeader>
               <CardContent className="relative z-10">
-                <div className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
+                <div className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
                   {stats.ping}ms
                 </div>
                 <div className="flex items-center gap-2 mb-3">
@@ -245,7 +245,7 @@ const Status = () => {
                 <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
                   <div className="flex items-center gap-1.5">
                     <Network className="w-3 h-3 text-primary" />
-                    <p className="text-[10px] text-muted-foreground">Stable Connection</p>
+                    <p className="text-[10px] text-muted-foreground">Stable</p>
                   </div>
                 </div>
               </CardContent>
