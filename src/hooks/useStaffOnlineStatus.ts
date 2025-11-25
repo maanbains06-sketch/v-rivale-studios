@@ -13,22 +13,30 @@ export const useStaffOnlineStatus = () => {
   useEffect(() => {
     const fetchStaffStatus = async () => {
       try {
-        // Fetch all staff members with their last_seen timestamp
-        const { data: staffMembers, error } = await supabase
+        // Fetch all staff members with their last_seen timestamp and availability
+        const { data: staffMembers, error: staffError } = await supabase
           .from("staff_members")
-          .select("user_id, last_seen, discord_id")
+          .select(`
+            user_id, 
+            last_seen, 
+            discord_id,
+            staff_availability (
+              is_available
+            )
+          `)
           .eq("is_active", true)
           .not("user_id", "is", null);
 
-        if (error) throw error;
+        if (staffError) throw staffError;
 
         if (staffMembers) {
           const status: { [userId: string]: OnlineStatusData } = {};
           const now = new Date();
           
-          // Consider staff online if their last_seen is within the last 5 minutes
-          // This works with Discord activity tracking
-          staffMembers.forEach((member) => {
+          // Consider staff online if:
+          // 1. Their last_seen is within the last 5 minutes AND
+          // 2. They are marked as available in staff_availability
+          staffMembers.forEach((member: any) => {
             if (member.user_id) {
               const lastSeen = member.last_seen;
               let isOnline = false;
@@ -37,8 +45,14 @@ export const useStaffOnlineStatus = () => {
                 const lastSeenDate = new Date(lastSeen);
                 const minutesSinceLastSeen = (now.getTime() - lastSeenDate.getTime()) / 1000 / 60;
                 
-                // Online if active within last 5 minutes
-                isOnline = minutesSinceLastSeen < 5;
+                // Check if recently active (within last 5 minutes)
+                const isRecentlyActive = minutesSinceLastSeen < 5;
+                
+                // Check if marked as available
+                const isAvailable = member.staff_availability?.[0]?.is_available ?? false;
+                
+                // Online only if both conditions are met
+                isOnline = isRecentlyActive && isAvailable;
               }
               
               status[member.user_id] = {
@@ -62,8 +76,8 @@ export const useStaffOnlineStatus = () => {
     // Refresh status every 30 seconds
     const interval = setInterval(fetchStaffStatus, 30000);
 
-    // Subscribe to realtime updates on staff_members table
-    const channel = supabase
+    // Subscribe to realtime updates on both staff_members and staff_availability tables
+    const staffMembersChannel = supabase
       .channel("staff-status-changes")
       .on(
         "postgres_changes",
@@ -72,33 +86,28 @@ export const useStaffOnlineStatus = () => {
           schema: "public",
           table: "staff_members",
         },
-        (payload: any) => {
-          if (payload.new.user_id) {
-            const now = new Date();
-            const lastSeen = payload.new.last_seen;
-            let isOnline = false;
-            
-            if (lastSeen) {
-              const lastSeenDate = new Date(lastSeen);
-              const minutesSinceLastSeen = (now.getTime() - lastSeenDate.getTime()) / 1000 / 60;
-              isOnline = minutesSinceLastSeen < 5;
-            }
-            
-            setOnlineStatus((prev) => ({
-              ...prev,
-              [payload.new.user_id]: {
-                online: isOnline,
-                lastSeen: lastSeen,
-              },
-            }));
-          }
+        () => {
+          // Refetch when staff_members updates
+          fetchStaffStatus();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "staff_availability",
+        },
+        () => {
+          // Refetch when staff_availability updates
+          fetchStaffStatus();
         }
       )
       .subscribe();
 
     return () => {
       clearInterval(interval);
-      supabase.removeChannel(channel);
+      supabase.removeChannel(staffMembersChannel);
     };
   }, []);
 
