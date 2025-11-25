@@ -305,21 +305,21 @@ const Support = () => {
               size="lg"
               variant="outline"
               className="border-primary text-primary hover:bg-primary/10"
-              onClick={fetchBanAppeals}
-              disabled={loading}
+              onClick={() => navigate("/ban-appeal")}
             >
-              <CheckCircle className="w-5 h-5 mr-2" />
-              {loading ? "Loading..." : "Ban Appeal Results"}
+              <Ban className="w-5 h-5 mr-2" />
+              Submit Ban Appeal
             </Button>
             
             <Button 
               size="lg"
               variant="outline"
               className="border-primary text-primary hover:bg-primary/10"
-              onClick={() => navigate("/ban-appeal")}
+              onClick={fetchBanAppeals}
+              disabled={loading}
             >
-              <Ban className="w-5 h-5 mr-2" />
-              Submit Ban Appeal
+              <CheckCircle className="w-5 h-5 mr-2" />
+              {loading ? "Loading..." : "Ban Appeal Results"}
             </Button>
           </div>
           
