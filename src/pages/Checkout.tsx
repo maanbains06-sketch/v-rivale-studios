@@ -10,6 +10,7 @@ import { useCart } from "@/contexts/CartContext";
 import { getDisplayPrice, detectUserCurrency } from "@/lib/currency";
 import { useToast } from "@/hooks/use-toast";
 import { ShoppingCart, CreditCard } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -21,7 +22,10 @@ const Checkout = () => {
     name: '',
     email: '',
     discord: '',
+    promoCode: '',
   });
+  const [promoDiscount, setPromoDiscount] = useState(0);
+  const [promoError, setPromoError] = useState('');
 
   useEffect(() => {
     const detectedCurrency = detectUserCurrency();
@@ -33,10 +37,58 @@ const Checkout = () => {
   }, [items, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [name]: value
     }));
+    
+    // Clear promo error when user types
+    if (name === 'promoCode') {
+      setPromoError('');
+      setPromoDiscount(0);
+    }
+  };
+
+  const validatePromoCode = async () => {
+    if (!formData.promoCode.trim()) {
+      setPromoError('');
+      setPromoDiscount(0);
+      return;
+    }
+
+    try {
+      const { data: promoData, error } = await supabase
+        .from('promo_codes')
+        .select('*')
+        .eq('code', formData.promoCode.toUpperCase())
+        .eq('is_used', false)
+        .single();
+
+      if (error || !promoData) {
+        setPromoError('Invalid or already used promo code');
+        setPromoDiscount(0);
+        return;
+      }
+
+      // Check if expired
+      if (promoData.expires_at && new Date(promoData.expires_at) < new Date()) {
+        setPromoError('This promo code has expired');
+        setPromoDiscount(0);
+        return;
+      }
+
+      setPromoDiscount(promoData.discount_percentage);
+      setPromoError('');
+      toast({
+        title: "Promo Code Applied!",
+        description: `You got ${promoData.discount_percentage}% off your purchase!`,
+      });
+    } catch (error) {
+      console.error('Error validating promo code:', error);
+      setPromoError('Error validating promo code');
+      setPromoDiscount(0);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,15 +106,32 @@ const Checkout = () => {
     setIsProcessing(true);
 
     try {
-      // Here you would integrate with your payment provider
-      // For now, we'll simulate a successful payment
+      // Mark promo code as used if provided
+      if (formData.promoCode && promoDiscount > 0) {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        await supabase
+          .from('promo_codes')
+          .update({
+            is_used: true,
+            used_by: user?.id,
+            used_at: new Date().toISOString(),
+          })
+          .eq('code', formData.promoCode.toUpperCase());
+      }
+
+      const finalTotal = promoDiscount > 0 
+        ? getTotalPrice() * (1 - promoDiscount / 100)
+        : getTotalPrice();
       
       // Navigate to confirmation page with order details
       navigate('/confirmation', {
         state: {
           orderDetails: {
             items: items,
-            total: getTotalPrice(),
+            total: finalTotal,
+            originalTotal: getTotalPrice(),
+            discount: promoDiscount,
             currency: currency,
             customerInfo: formData,
             orderNumber: `SLRP-${Date.now()}`,
@@ -144,6 +213,36 @@ const Checkout = () => {
                       />
                     </div>
 
+                    <div>
+                      <Label htmlFor="promoCode">Promo Code (Optional)</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          id="promoCode"
+                          name="promoCode"
+                          value={formData.promoCode}
+                          onChange={handleInputChange}
+                          placeholder="Enter promo code"
+                          className="flex-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={validatePromoCode}
+                          disabled={!formData.promoCode.trim()}
+                        >
+                          Apply
+                        </Button>
+                      </div>
+                      {promoError && (
+                        <p className="text-sm text-destructive mt-1">{promoError}</p>
+                      )}
+                      {promoDiscount > 0 && (
+                        <p className="text-sm text-primary font-medium mt-1">
+                          ✓ {promoDiscount}% discount applied!
+                        </p>
+                      )}
+                    </div>
+
                     <Button
                       type="submit"
                       className="w-full"
@@ -191,11 +290,22 @@ const Checkout = () => {
                         {getDisplayPrice(getTotalPrice(), currency)}
                       </span>
                     </div>
+                    {promoDiscount > 0 && (
+                      <div className="flex justify-between text-sm text-primary">
+                        <span>Promo Discount ({promoDiscount}%)</span>
+                        <span>-{getDisplayPrice(getTotalPrice() * (promoDiscount / 100), currency)}</span>
+                      </div>
+                    )}
                     <Separator />
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total</span>
                       <span className="text-primary">
-                        {getDisplayPrice(getTotalPrice(), currency)}
+                        {getDisplayPrice(
+                          promoDiscount > 0 
+                            ? getTotalPrice() * (1 - promoDiscount / 100)
+                            : getTotalPrice(), 
+                          currency
+                        )}
                       </span>
                     </div>
                   </div>

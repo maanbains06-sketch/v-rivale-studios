@@ -486,6 +486,45 @@ export type Database = {
         }
         Relationships: []
       }
+      promo_codes: {
+        Row: {
+          code: string
+          created_at: string
+          discount_percentage: number
+          expires_at: string | null
+          id: string
+          is_used: boolean
+          updated_at: string
+          used_at: string | null
+          used_by: string | null
+          user_id: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          discount_percentage?: number
+          expires_at?: string | null
+          id?: string
+          is_used?: boolean
+          updated_at?: string
+          used_at?: string | null
+          used_by?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          discount_percentage?: number
+          expires_at?: string | null
+          id?: string
+          is_used?: boolean
+          updated_at?: string
+          used_at?: string | null
+          used_by?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       referral_codes: {
         Row: {
           created_at: string
@@ -1275,6 +1314,7 @@ export type Database = {
         }[]
       }
       check_sla_breach: { Args: never; Returns: undefined }
+      generate_promo_code: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
       get_gallery_like_count: {
         Args: { submission_uuid: string }

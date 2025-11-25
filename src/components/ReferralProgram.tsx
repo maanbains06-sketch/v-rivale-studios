@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy, Gift, Users, Check, LogIn } from "lucide-react";
+import { Copy, Gift, Users, Check, LogIn, Ticket } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { usePromoCode } from "@/hooks/usePromoCode";
 
 const ReferralProgram = () => {
   const [copied, setCopied] = useState(false);
@@ -16,6 +17,7 @@ const ReferralProgram = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { promoCodes, loading: promoLoading } = usePromoCode();
   
   const referralLink = referralCode ? `${window.location.origin}?ref=${referralCode}` : "";
 
@@ -99,9 +101,9 @@ const ReferralProgram = () => {
             <Gift className="w-8 h-8 text-primary" />
           </div>
           <h2 className="text-3xl font-bold text-gradient">Referral Program</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Invite your friends to SLRP and earn rewards! Get 10% discount for every successful referral.
-          </p>
+        <p className="text-muted-foreground max-w-2xl mx-auto">
+          Invite your friends to SLRP and earn rewards! Get 20% discount for every successful referral.
+        </p>
         </div>
 
         <Card className="glass-effect border-primary/30 max-w-2xl mx-auto animate-fade-in">
@@ -133,7 +135,7 @@ const ReferralProgram = () => {
         </div>
         <h2 className="text-3xl font-bold text-gradient">Referral Program</h2>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Invite your friends to SLRP and earn rewards! Get 10% discount for every successful referral.
+          Invite your friends to SLRP and earn rewards! Get 20% discount for every successful referral.
         </p>
       </div>
 
@@ -160,14 +162,14 @@ const ReferralProgram = () => {
             <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center mb-4">
               <Gift className="w-6 h-6 text-accent" />
             </div>
-            <CardTitle>They Get 5% Off</CardTitle>
+            <CardTitle>They Get 20% Off</CardTitle>
             <CardDescription>
-              Your friends save money on their first purchase
+              Your friends get a unique promo code for 20% off
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              First-time users get 5% discount using your referral link
+              Each friend gets a unique promo code for 20% discount on their purchase
             </p>
           </CardContent>
         </Card>
@@ -177,14 +179,14 @@ const ReferralProgram = () => {
             <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mb-4">
               <Check className="w-6 h-6 text-green-500" />
             </div>
-            <CardTitle>You Get 10% Off</CardTitle>
+            <CardTitle>You Get 20% Off</CardTitle>
             <CardDescription>
               Earn rewards for every successful referral
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Get 10% discount credit for each friend who makes a purchase
+              Get 20% discount credit for each friend who makes a purchase
             </p>
           </CardContent>
         </Card>
@@ -247,6 +249,62 @@ const ReferralProgram = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Promo Codes Section */}
+      {promoCodes.length > 0 && (
+        <Card className="glass-effect border-primary/30 max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: '0.5s' }}>
+          <CardHeader>
+            <CardTitle>Your Promo Codes</CardTitle>
+            <CardDescription>Promo codes you received from referrals</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {promoCodes.map((promo) => (
+              <div 
+                key={promo.id} 
+                className={`p-4 rounded-lg border ${
+                  promo.is_used 
+                    ? 'bg-muted/50 border-border/50' 
+                    : 'bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/30'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-lg ${promo.is_used ? 'bg-muted' : 'bg-primary/10'}`}>
+                      <Ticket className={`w-5 h-5 ${promo.is_used ? 'text-muted-foreground' : 'text-primary'}`} />
+                    </div>
+                    <div>
+                      <p className="font-mono font-bold text-lg">{promo.code}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {promo.is_used ? (
+                          <span>Used on {new Date(promo.used_at).toLocaleDateString()}</span>
+                        ) : (
+                          <span className="text-primary font-medium">{promo.discount_percentage}% discount • Use at checkout</span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  {!promo.is_used && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(promo.code);
+                        toast({
+                          title: "Code Copied!",
+                          description: "Paste this code at checkout to get your discount",
+                        });
+                      }}
+                    >
+                      <Copy className="w-4 h-4 mr-2" />
+                      Copy
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
