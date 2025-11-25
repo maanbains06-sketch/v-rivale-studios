@@ -34,6 +34,7 @@ import SupportChat from "./pages/SupportChat";
 import AdminSupportChat from "./pages/AdminSupportChat";
 import SupportAnalytics from "./pages/SupportAnalytics";
 import AdminStaffStats from "./pages/AdminStaffStats";
+import AdminPlayers from "./pages/AdminPlayers";
 import JobApplication from "./pages/JobApplication";
 import Dashboard from "./pages/Dashboard";
 import StaffOnboarding from "./pages/StaffOnboarding";
@@ -81,6 +82,7 @@ const AppRoutes = () => {
         <Route path="/admin/support-chat" element={<PageTransition><AdminSupportChat /></PageTransition>} />
         <Route path="/admin/support-analytics" element={<PageTransition><SupportAnalytics /></PageTransition>} />
         <Route path="/admin/staff-stats" element={<PageTransition><AdminStaffStats /></PageTransition>} />
+        <Route path="/admin/players-active" element={<PageTransition><AdminPlayers /></PageTransition>} />
         <Route path="/support-chat" element={<PageTransition><SupportChat /></PageTransition>} />
         <Route path="/job-application" element={<PageTransition><JobApplication /></PageTransition>} />
         <Route path="/dashboard" element={<PageTransition><Dashboard /></PageTransition>} />
