@@ -3,12 +3,33 @@ import PageHeader from "@/components/PageHeader";
 import headerGuides from "@/assets/header-guides-new.jpg";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserCircle2, BookOpen, AlertCircle } from "lucide-react";
+import { UserCircle2, BookOpen, AlertCircle, HelpCircle } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+const RPTerm = ({ term, definition }: { term: string; definition: string }) => (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <span className="inline-flex items-center gap-1 cursor-help border-b border-dotted border-primary/50 hover:border-primary transition-colors">
+        <strong>{term}</strong>
+        <HelpCircle className="w-3 h-3 text-primary/70" />
+      </span>
+    </TooltipTrigger>
+    <TooltipContent className="max-w-xs">
+      <p>{definition}</p>
+    </TooltipContent>
+  </Tooltip>
+);
 
 const Guides = () => {
   return (
-    <div className="min-h-screen">
-      <Navigation />
+    <TooltipProvider delayDuration={200}>
+      <div className="min-h-screen">
+        <Navigation />
       
       <PageHeader 
         title="Player Guides"
@@ -86,10 +107,10 @@ const Guides = () => {
                   <div>
                     <h3 className="text-xl font-semibold mb-3 text-foreground">1. General Roleplay Standards</h3>
                     <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li><strong>Fail RP:</strong> All roleplay must be realistic and believable. Acting in ways that break immersion or defy reality is prohibited.</li>
-                      <li><strong>Stay In Character (IC):</strong> Keep all roleplay actions and conversations in character at all times. Use /ooc sparingly for out-of-character communication.</li>
-                      <li><strong>Fear RP:</strong> Your character must value their life. Show realistic fear when threatened with weapons or outnumbered.</li>
-                      <li><strong>Value of Life:</strong> Treat your character&apos;s life as precious. Avoid unnecessary risks and dangerous situations without proper RP justification.</li>
+                      <li><RPTerm term="Fail RP" definition="Acting unrealistically or breaking immersion. Examples: jumping off buildings without injury, ignoring injuries, or performing superhuman feats." />: All roleplay must be realistic and believable. Acting in ways that break immersion or defy reality is prohibited.</li>
+                      <li><RPTerm term="Stay In Character (IC)" definition="Keeping all actions and conversations within your character's perspective. Never reference real-world events or use out-of-game knowledge." />: Keep all roleplay actions and conversations in character at all times. Use /ooc sparingly for out-of-character communication.</li>
+                      <li><RPTerm term="Fear RP" definition="Showing realistic fear and compliance when your life is threatened. You must act as you would in real life when faced with danger." />: Your character must value their life. Show realistic fear when threatened with weapons or outnumbered.</li>
+                      <li><RPTerm term="Value of Life" definition="Treating your character's life as irreplaceable. Avoid unnecessary risks and act with self-preservation in dangerous situations." />: Treat your character&apos;s life as precious. Avoid unnecessary risks and dangerous situations without proper RP justification.</li>
                       <li><strong>Character Development:</strong> Develop your character naturally over time. Instant wealth or dramatic personality changes must be justified through RP.</li>
                     </ul>
                   </div>
@@ -97,17 +118,17 @@ const Guides = () => {
                   <div>
                     <h3 className="text-xl font-semibold mb-3 text-foreground">2. Prohibited Behaviors</h3>
                     <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li><strong>Metagaming:</strong> Using out-of-character information (Discord, streams, etc.) in roleplay is strictly forbidden.</li>
-                      <li><strong>Powergaming:</strong> Forcing actions on other players without giving them a chance to respond or performing unrealistic actions.</li>
-                      <li><strong>Random Deathmatch (RDM):</strong> Killing another player without valid roleplay reason or initiation.</li>
-                      <li><strong>Vehicle Deathmatch (VDM):</strong> Using vehicles as weapons without proper roleplay escalation.</li>
-                      <li><strong>Combat Logging:</strong> Disconnecting during active roleplay or to avoid consequences of your actions.</li>
+                      <li><RPTerm term="Metagaming" definition="Using information your character wouldn't know (from Discord, streams, previous characters, or other sources) to gain an unfair advantage in roleplay." />: Using out-of-character information (Discord, streams, etc.) in roleplay is strictly forbidden.</li>
+                      <li><RPTerm term="Powergaming" definition="Forcing roleplay outcomes on others without allowing them to react, or performing unrealistic actions that give you an unfair advantage." />: Forcing actions on other players without giving them a chance to respond or performing unrealistic actions.</li>
+                      <li><RPTerm term="Random Deathmatch (RDM)" definition="Killing or attacking another player without any valid roleplay reason or proper initiation of conflict." />: Killing another player without valid roleplay reason or initiation.</li>
+                      <li><RPTerm term="Vehicle Deathmatch (VDM)" definition="Using your vehicle as a weapon to hit, ram, or kill players without proper roleplay justification and escalation." />: Using vehicles as weapons without proper roleplay escalation.</li>
+                      <li><RPTerm term="Combat Logging" definition="Logging out or disconnecting during active roleplay, especially during combat or to avoid arrest/consequences." />: Disconnecting during active roleplay or to avoid consequences of your actions.</li>
                       <li><strong>Exploiting/Glitching:</strong> Using game bugs or exploits for personal advantage is a bannable offense.</li>
                     </ul>
                   </div>
 
                   <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground">3. New Life Rule (NLR)</h3>
+                    <h3 className="text-xl font-semibold mb-3 text-foreground">3. <RPTerm term="New Life Rule (NLR)" definition="When your character dies, you forget everything about that death and cannot return to the area or seek revenge. Think of it as starting fresh after respawning." /></h3>
                     <ul className="list-disc list-inside space-y-2 ml-4">
                       <li>If your character dies, you forget all events leading up to and including your death</li>
                       <li>You cannot return to the location of your death for 15 minutes</li>
@@ -121,7 +142,7 @@ const Guides = () => {
                     <h3 className="text-xl font-semibold mb-3 text-foreground">4. Criminal Roleplay</h3>
                     <ul className="list-disc list-inside space-y-2 ml-4">
                       <li><strong>Crime Initiation:</strong> Provide high-quality roleplay before engaging in criminal activity. Quality over quantity.</li>
-                      <li><strong>Cop Baiting:</strong> Intentionally provoking police without proper RP reason is prohibited.</li>
+                      <li><RPTerm term="Cop Baiting" definition="Intentionally committing crimes or acting suspiciously in front of police just to provoke a chase or interaction without legitimate roleplay reason." />: Intentionally provoking police without proper RP reason is prohibited.</li>
                       <li><strong>Major Crimes:</strong> Bank robberies, prison breaks, and gang wars require 4+ LEO online and proper planning RP.</li>
                       <li><strong>Hostage RP:</strong> Must provide engaging RP for hostages. Don&apos;t use them solely as shields or bargaining chips.</li>
                       <li><strong>Territory Wars:</strong> Gang conflicts must be pre-approved by staff and follow server conflict guidelines.</li>
@@ -134,7 +155,7 @@ const Guides = () => {
                     <ul className="list-disc list-inside space-y-2 ml-4">
                       <li><strong>Gang Formation:</strong> Official gangs require 5+ active members and staff approval. Submit gang application with backstory, colors, and territory claims.</li>
                       <li><strong>Gang Colors & Identification:</strong> Gangs must wear recognizable colors/clothing. Cannot claim colors already used by established gangs.</li>
-                      <li><strong>Territory Control:</strong> Territories must be claimed through RP and staff approval. Defending territory requires valid RP escalation, not KOS (Kill on Sight).</li>
+                      <li><strong>Territory Control:</strong> Territories must be claimed through RP and staff approval. Defending territory requires valid RP escalation, not <RPTerm term="KOS (Kill on Sight)" definition="A policy where anyone entering a specific area can be killed immediately without warning or roleplay. Generally prohibited as it removes roleplay opportunity." />.</li>
                       <li><strong>Rival Gang Conflicts:</strong> Must initiate proper RP before engaging in gang wars. Minimum 3v3 for gang fights. No ambushing with overwhelming numbers.</li>
                       <li><strong>Gang Recruitment:</strong> New members must go through proper initiation RP. Cannot recruit players under 1 week on the server without staff approval.</li>
                       <li><strong>Alliance & Betrayal:</strong> Gang alliances and betrayals must be roleplayed with proper reasoning and story development.</li>
@@ -146,10 +167,10 @@ const Guides = () => {
                   <div>
                     <h3 className="text-xl font-semibold mb-3 text-foreground">6. Law Enforcement & Government</h3>
                     <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li>LEO must follow proper procedures: Miranda rights, reasonable suspicion, probable cause</li>
+                      <li><RPTerm term="LEO" definition="Law Enforcement Officer - refers to police, sheriff, or any law enforcement role on the server." /> must follow proper procedures: Miranda rights, reasonable suspicion, probable cause</li>
                       <li>Corrupt cop RP requires staff approval and must be done carefully</li>
                       <li>Cannot break character to enforce server rules - call staff instead</li>
-                      <li>EMS cannot be taken hostage or harmed while providing medical services</li>
+                      <li><RPTerm term="EMS" definition="Emergency Medical Services - paramedics and medical personnel who respond to injuries and emergencies." /> cannot be taken hostage or harmed while providing medical services</li>
                       <li>Government officials must maintain professionalism and serve the community</li>
                     </ul>
                   </div>
@@ -345,7 +366,8 @@ const Guides = () => {
           </Tabs>
         </div>
       </main>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 };
 
