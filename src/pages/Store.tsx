@@ -5,9 +5,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Check, Crown, Sparkles, Star, ShoppingCart } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Check, Crown, Sparkles, Star, ShoppingCart, ArrowUpDown } from "lucide-react";
 import headerStore from "@/assets/header-store.jpg";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { BASE_PRICES, detectUserCurrency, getDisplayPrice } from "@/lib/currency";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
@@ -155,9 +162,25 @@ const Store = () => {
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
   const [flyingItem, setFlyingItem] = useState<{ id: string; startX: number; startY: number; endX: number; endY: number; image: string } | null>(null);
   const [giftCardNumber, setGiftCardNumber] = useState("");
+  const [sortBy, setSortBy] = useState<string>("default");
   const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const { addItem } = useCart();
   const { toast } = useToast();
+
+  // Sort packages based on selected option
+  const sortedPackages = useMemo(() => {
+    const pkgCopy = [...packages];
+    switch (sortBy) {
+      case "price-low":
+        return pkgCopy.sort((a, b) => a.price - b.price);
+      case "price-high":
+        return pkgCopy.sort((a, b) => b.price - a.price);
+      case "features":
+        return pkgCopy.sort((a, b) => b.features.length - a.features.length);
+      default:
+        return pkgCopy;
+    }
+  }, [sortBy]);
 
   useEffect(() => {
     const detectedCurrency = detectUserCurrency();
@@ -293,7 +316,7 @@ const Store = () => {
         <div className="container mx-auto px-4">
           <div className="flex gap-6">
             {/* Left Sidebar */}
-            <div className="w-80 flex-shrink-0 space-y-6">
+            <div className="w-64 flex-shrink-0 space-y-6">
               {/* Navigation */}
               <Card className="bg-card/60 backdrop-blur-sm border-border/50">
                 <CardContent className="p-6 space-y-4">
@@ -355,14 +378,33 @@ const Store = () => {
 
             {/* Main Content - Store Packages */}
             <div className="flex-1">
+              {/* Filter Bar */}
+              <div className="mb-6 flex items-center justify-between bg-card/40 backdrop-blur-sm border border-border/50 rounded-lg p-4">
+                <div className="flex items-center gap-2">
+                  <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground">Sort by:</span>
+                </div>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-[200px] bg-background/50 border-border">
+                    <SelectValue placeholder="Default order" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border-border z-50">
+                    <SelectItem value="default">Default order</SelectItem>
+                    <SelectItem value="price-low">Price: Low to High</SelectItem>
+                    <SelectItem value="price-high">Price: High to Low</SelectItem>
+                    <SelectItem value="features">Most Features</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Main Packages */}
               <section className="mb-12">
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {packages.map((pkg) => (
+                  {sortedPackages.map((pkg) => (
                     <Card 
                       key={pkg.name}
                       ref={(el) => (cardRefs.current[pkg.name.toLowerCase()] = el)}
-                      className="relative bg-card/60 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-300 overflow-hidden group"
+                      className="relative bg-card/70 backdrop-blur-sm border-2 border-border/50 hover:border-primary/70 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 overflow-hidden group"
                     >
                       {pkg.popular && (
                         <Badge className="absolute top-2 right-2 z-10 bg-primary/90 text-primary-foreground text-[10px] px-2 py-0.5">
@@ -378,11 +420,12 @@ const Store = () => {
                       )}
                       
                       {/* Image Container with Dark Background */}
-                      <div className="relative w-full aspect-square bg-gradient-to-br from-background/90 to-background/70 flex items-center justify-center p-6 border-b border-border/30">
+                      <div className="relative w-full aspect-square bg-gradient-to-br from-background/95 to-background/80 flex items-center justify-center p-6 border-b-2 border-border/40">
+                        <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                         <img
                           src={pkg.image}
                           alt={pkg.name}
-                          className="w-full h-full object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.2)] group-hover:scale-110 transition-transform duration-500"
+                          className="w-full h-full object-contain drop-shadow-[0_0_25px_rgba(255,255,255,0.25)] group-hover:scale-110 group-hover:drop-shadow-[0_0_35px_rgba(255,255,255,0.4)] transition-all duration-500 relative z-10"
                         />
                       </div>
                       
@@ -436,13 +479,14 @@ const Store = () => {
                   {/* Prio 200 */}
                   <Card 
                     ref={(el) => (cardRefs.current['prio200'] = el)}
-                    className="relative bg-card/60 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-300 overflow-hidden group"
+                    className="relative bg-card/70 backdrop-blur-sm border-2 border-border/50 hover:border-primary/70 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 overflow-hidden group"
                   >
-                    <div className="relative w-full aspect-square bg-gradient-to-br from-background/90 to-background/70 flex items-center justify-center p-6 border-b border-border/30">
+                    <div className="relative w-full aspect-square bg-gradient-to-br from-background/95 to-background/80 flex items-center justify-center p-6 border-b-2 border-border/40">
+                      <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                       <img
                         src={tierPrio}
                         alt="Prio 200"
-                        className="w-full h-full object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.2)] group-hover:scale-110 transition-transform duration-500"
+                        className="w-full h-full object-contain drop-shadow-[0_0_25px_rgba(255,255,255,0.25)] group-hover:scale-110 group-hover:drop-shadow-[0_0_35px_rgba(255,255,255,0.4)] transition-all duration-500 relative z-10"
                       />
                     </div>
                     
@@ -485,17 +529,18 @@ const Store = () => {
                   {/* Whitelisted */}
                   <Card 
                     ref={(el) => (cardRefs.current['whitelisted'] = el)}
-                    className="relative bg-card/60 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-300 overflow-hidden group"
+                    className="relative bg-card/70 backdrop-blur-sm border-2 border-border/50 hover:border-primary/70 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 overflow-hidden group"
                   >
                     <Badge className="absolute top-2 right-2 z-10 bg-secondary/90 text-secondary-foreground text-[10px] px-2 py-0.5">
                       Exclusive
                     </Badge>
 
-                    <div className="relative w-full aspect-square bg-gradient-to-br from-background/90 to-background/70 flex items-center justify-center p-6 border-b border-border/30">
+                    <div className="relative w-full aspect-square bg-gradient-to-br from-background/95 to-background/80 flex items-center justify-center p-6 border-b-2 border-border/40">
+                      <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                       <img
                         src={tierWhitelist}
                         alt="Whitelisted"
-                        className="w-full h-full object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.2)] group-hover:scale-110 transition-transform duration-500"
+                        className="w-full h-full object-contain drop-shadow-[0_0_25px_rgba(255,255,255,0.25)] group-hover:scale-110 group-hover:drop-shadow-[0_0_35px_rgba(255,255,255,0.4)] transition-all duration-500 relative z-10"
                       />
                     </div>
                     
@@ -546,18 +591,19 @@ const Store = () => {
                 <div className="max-w-3xl mx-auto">
                   <Card 
                     ref={(el) => (cardRefs.current['oneofone'] = el)}
-                    className="relative bg-card/60 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-300 overflow-hidden group"
+                    className="relative bg-card/70 backdrop-blur-sm border-2 border-border/50 hover:border-primary/70 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 overflow-hidden group"
                   >
                     <Badge className="absolute top-2 right-2 z-10 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] px-2 py-0.5">
                       <Crown className="w-2.5 h-2.5 mr-1" />
                       Ultimate
                     </Badge>
 
-                    <div className="relative w-full aspect-[16/9] bg-gradient-to-br from-background/90 to-background/70 flex items-center justify-center p-8 border-b border-border/30">
+                    <div className="relative w-full aspect-[16/9] bg-gradient-to-br from-background/95 to-background/80 flex items-center justify-center p-8 border-b-2 border-border/40">
+                      <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                       <img
                         src={tierOneOfOne}
                         alt="One of One"
-                        className="w-full h-full object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.2)] group-hover:scale-110 transition-transform duration-500"
+                        className="w-full h-full object-contain drop-shadow-[0_0_25px_rgba(255,255,255,0.25)] group-hover:scale-110 group-hover:drop-shadow-[0_0_35px_rgba(255,255,255,0.4)] transition-all duration-500 relative z-10"
                       />
                     </div>
                     
