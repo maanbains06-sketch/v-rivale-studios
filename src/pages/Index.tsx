@@ -424,22 +424,26 @@ const Index = () => {
               </p>
               <div className="flex gap-2 mt-3">
                 <Button size="sm" variant="outline" className="h-8 w-8 p-0" asChild>
-                  <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+                  <a href="https://www.instagram.com/skyliferpindia/" target="_blank" rel="noopener noreferrer">
                     <Instagram className="h-4 w-4" />
                   </a>
                 </Button>
                 <Button size="sm" variant="outline" className="h-8 w-8 p-0" asChild>
-                  <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+                  <a
+                    href="https://www.facebook.com/profile.php?id=61583338351412"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <Facebook className="h-4 w-4" />
                   </a>
                 </Button>
                 <Button size="sm" variant="outline" className="h-8 w-8 p-0" asChild>
-                  <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
+                  <a href="https://x.com/Skyliferolp1d" target="_blank" rel="noopener noreferrer">
                     <Twitter className="h-4 w-4" />
                   </a>
                 </Button>
                 <Button size="sm" variant="outline" className="h-8 w-8 p-0" asChild>
-                  <a href="https://youtube.com" target="_blank" rel="noopener noreferrer">
+                  <a href="https://www.youtube.com/@Skyliferpindia20" target="_blank" rel="noopener noreferrer">
                     <Youtube className="h-4 w-4" />
                   </a>
                 </Button>
