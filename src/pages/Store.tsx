@@ -356,48 +356,49 @@ const Store = () => {
             {/* Main Content - Store Packages */}
             <div className="flex-1">
               {/* Main Packages */}
-              <section className="mb-16">
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <section className="mb-12">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {packages.map((pkg) => (
                     <Card 
                       key={pkg.name}
                       ref={(el) => (cardRefs.current[pkg.name.toLowerCase()] = el)}
-                      className="relative bg-card/60 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-300 overflow-hidden"
+                      className="relative bg-card/60 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-300 overflow-hidden group"
                     >
                       {pkg.popular && (
-                        <Badge className="absolute top-3 right-3 z-10 bg-primary/90 text-primary-foreground text-xs">
-                          <Star className="w-3 h-3 mr-1" />
+                        <Badge className="absolute top-2 right-2 z-10 bg-primary/90 text-primary-foreground text-[10px] px-2 py-0.5">
+                          <Star className="w-2.5 h-2.5 mr-1" />
                           Popular
                         </Badge>
                       )}
                       {pkg.premium && (
-                        <Badge className="absolute top-3 right-3 z-10 bg-purple-500/90 text-white text-xs">
-                          <Star className="w-3 h-3 mr-1" />
+                        <Badge className="absolute top-2 right-2 z-10 bg-purple-500/90 text-white text-[10px] px-2 py-0.5">
+                          <Star className="w-2.5 h-2.5 mr-1" />
                           Premium
                         </Badge>
                       )}
                       
                       {/* Image Container with Dark Background */}
-                      <div className="relative w-full aspect-square bg-background/80 flex items-center justify-center p-8">
+                      <div className="relative w-full aspect-square bg-gradient-to-br from-background/90 to-background/70 flex items-center justify-center p-6 border-b border-border/30">
                         <img
                           src={pkg.image}
                           alt={pkg.name}
-                          className="w-full h-full object-contain drop-shadow-[0_0_25px_rgba(255,255,255,0.3)] hover:scale-105 transition-transform duration-300"
+                          className="w-full h-full object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.2)] group-hover:scale-110 transition-transform duration-500"
                         />
                       </div>
                       
-                      <CardContent className="p-6">
+                      <CardContent className="p-4">
                         <div className="space-y-3">
-                          <h3 className="text-2xl font-bold text-foreground">{pkg.name}</h3>
-                          
-                          <div className="text-2xl font-bold text-foreground">
-                            {getDisplayPrice(pkg.price, currency)}
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-lg font-bold text-foreground">{pkg.name}</h3>
+                            <div className="text-xl font-bold text-primary">
+                              {getDisplayPrice(pkg.price, currency)}
+                            </div>
                           </div>
 
                           <Button
                             onClick={() => handleAddToCart(pkg.name, pkg.price, pkg.name.toLowerCase(), pkg.image, pkg.name.toLowerCase())}
                             disabled={addingToCart === pkg.name.toLowerCase()}
-                            className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold text-lg py-6"
+                            className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-5"
                           >
                             <ShoppingCart className={`w-4 h-4 mr-2 ${
                               addingToCart === pkg.name.toLowerCase() ? 'animate-bounce' : ''
@@ -405,14 +406,23 @@ const Store = () => {
                             {addingToCart === pkg.name.toLowerCase() ? 'Adding...' : 'Add to Basket'}
                           </Button>
 
-                          <ul className="space-y-2 mt-4">
-                            {pkg.features.map((feature, index) => (
-                              <li key={index} className="flex items-start gap-2 text-sm text-muted-foreground">
-                                <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                                <span>{feature}</span>
-                              </li>
-                            ))}
-                          </ul>
+                          {pkg.features.length > 0 && (
+                            <div className="pt-2 border-t border-border/30">
+                              <ul className="space-y-1.5">
+                                {pkg.features.slice(0, 3).map((feature, index) => (
+                                  <li key={index} className="flex items-start gap-2 text-xs text-muted-foreground">
+                                    <Check className="w-3.5 h-3.5 text-primary flex-shrink-0 mt-0.5" />
+                                    <span className="leading-tight">{feature}</span>
+                                  </li>
+                                ))}
+                                {pkg.features.length > 3 && (
+                                  <li className="text-xs text-muted-foreground/60 italic pl-5">
+                                    +{pkg.features.length - 3} more features
+                                  </li>
+                                )}
+                              </ul>
+                            </div>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -421,33 +431,34 @@ const Store = () => {
               </section>
 
               {/* Additional Packages */}
-              <section className="mb-16">
-                <div className="grid md:grid-cols-2 gap-6">
+              <section className="mb-12">
+                <div className="grid md:grid-cols-2 gap-4">
                   {/* Prio 200 */}
                   <Card 
                     ref={(el) => (cardRefs.current['prio200'] = el)}
-                    className="relative bg-card/60 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-300 overflow-hidden"
+                    className="relative bg-card/60 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-300 overflow-hidden group"
                   >
-                    <div className="relative w-full aspect-square bg-background/80 flex items-center justify-center p-8">
+                    <div className="relative w-full aspect-square bg-gradient-to-br from-background/90 to-background/70 flex items-center justify-center p-6 border-b border-border/30">
                       <img
                         src={tierPrio}
                         alt="Prio 200"
-                        className="w-full h-full object-contain drop-shadow-[0_0_25px_rgba(255,255,255,0.3)] hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.2)] group-hover:scale-110 transition-transform duration-500"
                       />
                     </div>
                     
-                    <CardContent className="p-6">
+                    <CardContent className="p-4">
                       <div className="space-y-3">
-                        <h3 className="text-2xl font-bold text-foreground">Prio 200</h3>
-                        
-                        <div className="text-2xl font-bold text-foreground">
-                          {getDisplayPrice(BASE_PRICES.prio200, currency)}
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-bold text-foreground">Prio 200</h3>
+                          <div className="text-xl font-bold text-primary">
+                            {getDisplayPrice(BASE_PRICES.prio200, currency)}
+                          </div>
                         </div>
 
                         <Button
                           onClick={() => handleAddToCart('Prio 200', BASE_PRICES.prio200, 'prio200', tierPrio, 'prio200')}
                           disabled={addingToCart === 'prio200'}
-                          className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold text-lg py-6"
+                          className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-5"
                         >
                           <ShoppingCart className={`w-4 h-4 mr-2 ${
                             addingToCart === 'prio200' ? 'animate-bounce' : ''
@@ -455,16 +466,18 @@ const Store = () => {
                           {addingToCart === 'prio200' ? 'Adding...' : 'Add to Basket'}
                         </Button>
 
-                        <ul className="space-y-2 mt-4">
-                          <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                            <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                            <span>Queue priority</span>
-                          </li>
-                          <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                            <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                            <span>Fast team response</span>
-                          </li>
-                        </ul>
+                        <div className="pt-2 border-t border-border/30">
+                          <ul className="space-y-1.5">
+                            <li className="flex items-start gap-2 text-xs text-muted-foreground">
+                              <Check className="w-3.5 h-3.5 text-primary flex-shrink-0 mt-0.5" />
+                              <span className="leading-tight">Queue priority</span>
+                            </li>
+                            <li className="flex items-start gap-2 text-xs text-muted-foreground">
+                              <Check className="w-3.5 h-3.5 text-primary flex-shrink-0 mt-0.5" />
+                              <span className="leading-tight">Fast team response</span>
+                            </li>
+                          </ul>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -472,32 +485,33 @@ const Store = () => {
                   {/* Whitelisted */}
                   <Card 
                     ref={(el) => (cardRefs.current['whitelisted'] = el)}
-                    className="relative bg-card/60 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-300 overflow-hidden"
+                    className="relative bg-card/60 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-300 overflow-hidden group"
                   >
-                    <Badge className="absolute top-3 right-3 z-10 bg-secondary/90 text-secondary-foreground text-xs">
+                    <Badge className="absolute top-2 right-2 z-10 bg-secondary/90 text-secondary-foreground text-[10px] px-2 py-0.5">
                       Exclusive
                     </Badge>
 
-                    <div className="relative w-full aspect-square bg-background/80 flex items-center justify-center p-8">
+                    <div className="relative w-full aspect-square bg-gradient-to-br from-background/90 to-background/70 flex items-center justify-center p-6 border-b border-border/30">
                       <img
                         src={tierWhitelist}
                         alt="Whitelisted"
-                        className="w-full h-full object-contain drop-shadow-[0_0_25px_rgba(255,255,255,0.3)] hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.2)] group-hover:scale-110 transition-transform duration-500"
                       />
                     </div>
                     
-                    <CardContent className="p-6">
+                    <CardContent className="p-4">
                       <div className="space-y-3">
-                        <h3 className="text-2xl font-bold text-foreground">Whitelisted</h3>
-                        
-                        <div className="text-2xl font-bold text-foreground">
-                          {getDisplayPrice(BASE_PRICES.whitelisted, currency)}
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-bold text-foreground">Whitelisted</h3>
+                          <div className="text-xl font-bold text-primary">
+                            {getDisplayPrice(BASE_PRICES.whitelisted, currency)}
+                          </div>
                         </div>
 
                         <Button
                           onClick={() => handleAddToCart('Whitelisted', BASE_PRICES.whitelisted, 'whitelisted', tierWhitelist, 'whitelisted')}
                           disabled={addingToCart === 'whitelisted'}
-                          className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold text-lg py-6"
+                          className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-5"
                         >
                           <ShoppingCart className={`w-4 h-4 mr-2 ${
                             addingToCart === 'whitelisted' ? 'animate-bounce' : ''
@@ -505,20 +519,22 @@ const Store = () => {
                           {addingToCart === 'whitelisted' ? 'Adding...' : 'Add to Basket'}
                         </Button>
 
-                        <ul className="space-y-2 mt-4">
-                          <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                            <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                            <span>Instant server entry</span>
-                          </li>
-                          <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                            <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                            <span>No need to fill any form</span>
-                          </li>
-                          <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                            <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                            <span>Exclusive access</span>
-                          </li>
-                        </ul>
+                        <div className="pt-2 border-t border-border/30">
+                          <ul className="space-y-1.5">
+                            <li className="flex items-start gap-2 text-xs text-muted-foreground">
+                              <Check className="w-3.5 h-3.5 text-primary flex-shrink-0 mt-0.5" />
+                              <span className="leading-tight">Instant server entry</span>
+                            </li>
+                            <li className="flex items-start gap-2 text-xs text-muted-foreground">
+                              <Check className="w-3.5 h-3.5 text-primary flex-shrink-0 mt-0.5" />
+                              <span className="leading-tight">No need to fill any form</span>
+                            </li>
+                            <li className="flex items-start gap-2 text-xs text-muted-foreground">
+                              <Check className="w-3.5 h-3.5 text-primary flex-shrink-0 mt-0.5" />
+                              <span className="leading-tight">Exclusive access</span>
+                            </li>
+                          </ul>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -526,37 +542,38 @@ const Store = () => {
               </section>
 
               {/* One of One */}
-              <section className="mb-16">
-                <div className="max-w-2xl">
+              <section className="mb-12">
+                <div className="max-w-3xl mx-auto">
                   <Card 
                     ref={(el) => (cardRefs.current['oneofone'] = el)}
-                    className="relative bg-card/60 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-300 overflow-hidden"
+                    className="relative bg-card/60 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-300 overflow-hidden group"
                   >
-                    <Badge className="absolute top-3 right-3 z-10 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs">
-                      <Crown className="w-3 h-3 mr-1" />
+                    <Badge className="absolute top-2 right-2 z-10 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] px-2 py-0.5">
+                      <Crown className="w-2.5 h-2.5 mr-1" />
                       Ultimate
                     </Badge>
 
-                    <div className="relative w-full aspect-square bg-background/80 flex items-center justify-center p-8">
+                    <div className="relative w-full aspect-[16/9] bg-gradient-to-br from-background/90 to-background/70 flex items-center justify-center p-8 border-b border-border/30">
                       <img
                         src={tierOneOfOne}
                         alt="One of One"
-                        className="w-full h-full object-contain drop-shadow-[0_0_25px_rgba(255,255,255,0.3)] hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.2)] group-hover:scale-110 transition-transform duration-500"
                       />
                     </div>
                     
                     <CardContent className="p-6">
-                      <div className="space-y-3">
-                        <h3 className="text-2xl font-bold text-foreground">One of One</h3>
-                        
-                        <div className="text-2xl font-bold text-foreground">
-                          {getDisplayPrice(BASE_PRICES.oneOfOne, currency)}
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-2xl font-bold text-foreground">One of One</h3>
+                          <div className="text-2xl font-bold text-primary">
+                            {getDisplayPrice(BASE_PRICES.oneOfOne, currency)}
+                          </div>
                         </div>
 
                         <Button
                           onClick={() => handleAddToCart('One of One', BASE_PRICES.oneOfOne, 'oneofone', tierOneOfOne, 'oneofone')}
                           disabled={addingToCart === 'oneofone'}
-                          className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold text-lg py-6"
+                          className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-5"
                         >
                           <ShoppingCart className={`w-4 h-4 mr-2 ${
                             addingToCart === 'oneofone' ? 'animate-bounce' : ''
@@ -564,24 +581,26 @@ const Store = () => {
                           {addingToCart === 'oneofone' ? 'Adding...' : 'Add to Basket'}
                         </Button>
 
-                        <ul className="space-y-2 mt-4">
-                          <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                            <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                            <span>Everything from Skylife +</span>
-                          </li>
-                          <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                            <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                            <span>Custom vehicle</span>
-                          </li>
-                          <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                            <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                            <span>Custom name on cars</span>
-                          </li>
-                          <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                            <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                            <span>All clothing items</span>
-                          </li>
-                        </ul>
+                        <div className="pt-3 border-t border-border/30">
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span className="leading-tight">Everything from Skylife +</span>
+                            </div>
+                            <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span className="leading-tight">Custom vehicle</span>
+                            </div>
+                            <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span className="leading-tight">Custom name on cars</span>
+                            </div>
+                            <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span className="leading-tight">All clothing items</span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
