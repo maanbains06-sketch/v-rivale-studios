@@ -287,62 +287,62 @@ const Store = () => {
                 <Card 
                   key={pkg.name}
                   ref={(el) => (cardRefs.current[pkg.name.toLowerCase()] = el)}
-                  className={`relative glass-effect hover:scale-105 transition-all duration-300 ${pkg.borderColor} border-2 overflow-hidden group ${pkg.glowColor} hover:shadow-2xl`}
+                  className="relative bg-card/40 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-300 overflow-hidden"
                 >
                   {pkg.popular && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground z-10 animate-pulse">
+                    <Badge className="absolute top-3 right-3 z-10 bg-primary/90 text-primary-foreground text-xs">
+                      <Star className="w-3 h-3 mr-1" />
                       Popular
                     </Badge>
                   )}
                   {pkg.premium && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-cyan-500 to-purple-600 text-white border-0 z-10 animate-pulse">
+                    <Badge className="absolute top-3 right-3 z-10 bg-purple-500/90 text-white text-xs">
+                      <Star className="w-3 h-3 mr-1" />
                       Premium
                     </Badge>
                   )}
                   
-                  {/* Image Header */}
-                  <div className="relative h-40 overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10" />
-                    <img 
-                      src={pkg.image} 
-                      alt={pkg.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className={`absolute top-4 right-4 w-12 h-12 rounded-lg bg-gradient-to-br ${pkg.gradient} flex items-center justify-center z-20 backdrop-blur-sm`}>
-                      <pkg.icon className={`w-6 h-6 ${pkg.iconColor}`} />
+                  <CardContent className="p-6">
+                    {/* Card Image */}
+                    <div className="aspect-[4/3] mb-4 rounded-lg overflow-hidden bg-gradient-to-br from-background/50 to-background flex items-center justify-center border border-border/50">
+                      <img 
+                        src={pkg.image} 
+                        alt={pkg.name}
+                        className="w-4/5 h-4/5 object-contain transform hover:scale-105 transition-transform duration-300"
+                        style={{
+                          filter: 'drop-shadow(0 0 20px rgba(0, 0, 0, 0.5))',
+                        }}
+                      />
                     </div>
-                  </div>
-                  
-                  <CardHeader>
-                    <CardTitle className="text-2xl">{pkg.name}</CardTitle>
-                    <CardDescription className="text-lg font-semibold text-primary">
-                      {getDisplayPrice(pkg.price, currency)}
-                    </CardDescription>
-                  </CardHeader>
-                  
-                  <CardContent>
-                    <ul className="space-y-3">
-                      {pkg.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-2 animate-fade-in" style={{ animationDelay: `${idx * 50}ms` }}>
-                          <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                          <span className="text-sm text-muted-foreground">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    
-                    <Button 
-                      className={`w-full mt-6 relative overflow-hidden group ${
-                        addingToCart === pkg.name.toLowerCase() ? 'animate-pulse' : ''
-                      }`}
-                      onClick={() => handleAddToCart(pkg.name, pkg.price, pkg.name.toLowerCase(), pkg.image, pkg.name.toLowerCase())}
-                      disabled={addingToCart === pkg.name.toLowerCase()}
-                    >
-                      <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary-foreground/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                      <ShoppingCart className={`w-4 h-4 mr-2 ${
-                        addingToCart === pkg.name.toLowerCase() ? 'animate-bounce' : ''
-                      }`} />
-                      {addingToCart === pkg.name.toLowerCase() ? 'Adding...' : 'Add to Basket'}
-                    </Button>
+
+                    <div className="space-y-3">
+                      <h3 className="text-xl font-bold text-foreground">{pkg.name}</h3>
+                      
+                      <div className="text-2xl font-bold text-foreground">
+                        {getDisplayPrice(pkg.price, currency)}
+                      </div>
+
+                      <ul className="space-y-2 min-h-[120px]">
+                        {pkg.features.slice(0, 4).map((feature, index) => (
+                          <li key={index} className="flex items-start gap-2 text-xs text-muted-foreground">
+                            <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+
+                      <Button
+                        onClick={() => handleAddToCart(pkg.name, pkg.price, pkg.name.toLowerCase(), pkg.image, pkg.name.toLowerCase())}
+                        disabled={addingToCart === pkg.name.toLowerCase()}
+                        className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold"
+                        size="lg"
+                      >
+                        <ShoppingCart className={`w-4 h-4 mr-2 ${
+                          addingToCart === pkg.name.toLowerCase() ? 'animate-bounce' : ''
+                        }`} />
+                        {addingToCart === pkg.name.toLowerCase() ? 'Adding...' : 'Add to Basket'}
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -359,112 +359,108 @@ const Store = () => {
               {/* Prio 200 */}
               <Card 
                 ref={(el) => (cardRefs.current['prio200'] = el)}
-                className="glass-effect border-2 border-primary/30 hover:scale-105 transition-all duration-300 shadow-primary/20 hover:shadow-2xl overflow-hidden group"
+                className="relative bg-card/40 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-300 overflow-hidden"
               >
-                <div className="relative h-40 overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10" />
-                  <img 
-                    src={tierPrio} 
-                    alt="Prio 200"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute top-4 right-4 w-12 h-12 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center z-20 backdrop-blur-sm">
-                    <Star className="w-6 h-6 text-primary" />
+                <CardContent className="p-6">
+                  <div className="aspect-[4/3] mb-4 rounded-lg overflow-hidden bg-gradient-to-br from-background/50 to-background flex items-center justify-center border border-border/50">
+                    <img 
+                      src={tierPrio} 
+                      alt="Prio 200"
+                      className="w-4/5 h-4/5 object-contain transform hover:scale-105 transition-transform duration-300"
+                      style={{
+                        filter: 'drop-shadow(0 0 20px rgba(0, 0, 0, 0.5))',
+                      }}
+                    />
                   </div>
-                </div>
-                
-                <CardHeader>
-                  <CardTitle className="text-2xl">Prio 200</CardTitle>
-                  <CardDescription className="text-lg font-semibold text-primary">
-                    {getDisplayPrice(BASE_PRICES.prio200, currency)}
-                  </CardDescription>
-                </CardHeader>
-                
-                <CardContent>
-                  <ul className="space-y-3 mb-6">
-                    <li className="flex items-start gap-2">
-                      <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                      <span className="text-sm text-muted-foreground">Queue priority</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                      <span className="text-sm text-muted-foreground">Fast team response</span>
-                    </li>
-                  </ul>
-                  
-                  <Button 
-                    className={`w-full relative overflow-hidden group ${
-                      addingToCart === 'prio200' ? 'animate-pulse' : ''
-                    }`}
-                    onClick={() => handleAddToCart('Prio 200', BASE_PRICES.prio200, 'prio200', tierPrio, 'prio200')}
-                    disabled={addingToCart === 'prio200'}
-                  >
-                    <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary-foreground/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                    <ShoppingCart className={`w-4 h-4 mr-2 ${
-                      addingToCart === 'prio200' ? 'animate-bounce' : ''
-                    }`} />
-                    {addingToCart === 'prio200' ? 'Adding...' : 'Add to Basket'}
-                  </Button>
+
+                  <div className="space-y-3">
+                    <h3 className="text-xl font-bold text-foreground">Prio 200</h3>
+                    
+                    <div className="text-2xl font-bold text-foreground">
+                      {getDisplayPrice(BASE_PRICES.prio200, currency)}
+                    </div>
+
+                    <ul className="space-y-2 min-h-[120px]">
+                      <li className="flex items-start gap-2 text-xs text-muted-foreground">
+                        <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                        <span>Queue priority</span>
+                      </li>
+                      <li className="flex items-start gap-2 text-xs text-muted-foreground">
+                        <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                        <span>Fast team response</span>
+                      </li>
+                    </ul>
+
+                    <Button
+                      onClick={() => handleAddToCart('Prio 200', BASE_PRICES.prio200, 'prio200', tierPrio, 'prio200')}
+                      disabled={addingToCart === 'prio200'}
+                      className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold"
+                      size="lg"
+                    >
+                      <ShoppingCart className={`w-4 h-4 mr-2 ${
+                        addingToCart === 'prio200' ? 'animate-bounce' : ''
+                      }`} />
+                      {addingToCart === 'prio200' ? 'Adding...' : 'Add to Basket'}
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
 
               {/* Whitelisted */}
               <Card 
                 ref={(el) => (cardRefs.current['whitelisted'] = el)}
-                className="glass-effect border-2 border-secondary/30 hover:scale-105 transition-all duration-300 relative shadow-secondary/20 hover:shadow-2xl overflow-hidden group"
+                className="relative bg-card/40 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-300 overflow-hidden"
               >
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-secondary text-secondary-foreground border-0 z-10 animate-pulse">
+                <Badge className="absolute top-3 right-3 z-10 bg-secondary/90 text-secondary-foreground text-xs">
                   Exclusive
                 </Badge>
-                
-                <div className="relative h-40 overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10" />
-                  <img 
-                    src={tierWhitelist} 
-                    alt="Whitelisted"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute top-4 right-4 w-12 h-12 rounded-lg bg-gradient-to-br from-secondary/20 to-pink-600/20 flex items-center justify-center z-20 backdrop-blur-sm">
-                    <Sparkles className="w-6 h-6 text-secondary" />
+
+                <CardContent className="p-6">
+                  <div className="aspect-[4/3] mb-4 rounded-lg overflow-hidden bg-gradient-to-br from-background/50 to-background flex items-center justify-center border border-border/50">
+                    <img 
+                      src={tierWhitelist} 
+                      alt="Whitelisted"
+                      className="w-4/5 h-4/5 object-contain transform hover:scale-105 transition-transform duration-300"
+                      style={{
+                        filter: 'drop-shadow(0 0 20px rgba(0, 0, 0, 0.5))',
+                      }}
+                    />
                   </div>
-                </div>
-                
-                <CardHeader>
-                  <CardTitle className="text-2xl">Whitelisted</CardTitle>
-                  <CardDescription className="text-lg font-semibold text-primary">
-                    {getDisplayPrice(BASE_PRICES.whitelisted, currency)}
-                  </CardDescription>
-                </CardHeader>
-                
-                <CardContent>
-                  <ul className="space-y-3 mb-6">
-                    <li className="flex items-start gap-2">
-                      <Check className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
-                      <span className="text-sm text-muted-foreground">Instant server entry</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
-                      <span className="text-sm text-muted-foreground">No need to fill any form</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
-                      <span className="text-sm text-muted-foreground">One of one vehicle</span>
-                    </li>
-                  </ul>
-                  
-                  <Button 
-                    className={`w-full relative overflow-hidden group ${
-                      addingToCart === 'whitelisted' ? 'animate-pulse' : ''
-                    }`}
-                    onClick={() => handleAddToCart('Whitelisted', BASE_PRICES.whitelisted, 'whitelisted', tierWhitelist, 'whitelisted')}
-                    disabled={addingToCart === 'whitelisted'}
-                  >
-                    <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary-foreground/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                    <ShoppingCart className={`w-4 h-4 mr-2 ${
-                      addingToCart === 'whitelisted' ? 'animate-bounce' : ''
-                    }`} />
-                    {addingToCart === 'whitelisted' ? 'Adding...' : 'Add to Basket'}
-                  </Button>
+
+                  <div className="space-y-3">
+                    <h3 className="text-xl font-bold text-foreground">Whitelisted</h3>
+                    
+                    <div className="text-2xl font-bold text-foreground">
+                      {getDisplayPrice(BASE_PRICES.whitelisted, currency)}
+                    </div>
+
+                    <ul className="space-y-2 min-h-[120px]">
+                      <li className="flex items-start gap-2 text-xs text-muted-foreground">
+                        <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                        <span>Instant server entry</span>
+                      </li>
+                      <li className="flex items-start gap-2 text-xs text-muted-foreground">
+                        <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                        <span>No need to fill any form</span>
+                      </li>
+                      <li className="flex items-start gap-2 text-xs text-muted-foreground">
+                        <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                        <span>One of one vehicle</span>
+                      </li>
+                    </ul>
+
+                    <Button
+                      onClick={() => handleAddToCart('Whitelisted', BASE_PRICES.whitelisted, 'whitelisted', tierWhitelist, 'whitelisted')}
+                      disabled={addingToCart === 'whitelisted'}
+                      className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold"
+                      size="lg"
+                    >
+                      <ShoppingCart className={`w-4 h-4 mr-2 ${
+                        addingToCart === 'whitelisted' ? 'animate-bounce' : ''
+                      }`} />
+                      {addingToCart === 'whitelisted' ? 'Adding...' : 'Add to Basket'}
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -474,43 +470,50 @@ const Store = () => {
           <section>
             <Card 
               ref={(el) => (cardRefs.current['oneofone'] = el)}
-              className="glass-effect border-2 border-secondary/20 max-w-4xl mx-auto overflow-hidden group hover:shadow-2xl transition-all duration-300"
+              className="relative bg-card/40 backdrop-blur-sm border border-border/50 max-w-4xl mx-auto overflow-hidden"
             >
-              <div className="relative h-48 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent z-10" />
-                <img 
-                  src={tierOneOfOne} 
-                  alt="One of One Vehicle"
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-              </div>
-              
-              <CardHeader>
-                <CardTitle className="text-2xl flex items-center gap-2">
-                  <Sparkles className="w-6 h-6 text-secondary" />
-                  One of One Vehicle Package
-                </CardTitle>
-                <CardDescription className="text-lg font-semibold text-primary mt-2">
-                  {getDisplayPrice(BASE_PRICES.oneOfOne, currency)}
-                </CardDescription>
-                <CardDescription>
-                  Select a unique vehicle of your choice with this exclusive package
-                </CardDescription>
-              </CardHeader>
-              
-              <CardContent className="space-y-6">
-                <div className="bg-muted/30 rounded-lg p-4 space-y-2">
+              <CardContent className="p-6">
+                <div className="aspect-[4/3] mb-4 rounded-lg overflow-hidden bg-gradient-to-br from-background/50 to-background flex items-center justify-center border border-border/50">
+                  <img 
+                    src={tierOneOfOne} 
+                    alt="One of One Vehicle"
+                    className="w-4/5 h-4/5 object-contain transform hover:scale-105 transition-transform duration-300"
+                    style={{
+                      filter: 'drop-shadow(0 0 20px rgba(0, 0, 0, 0.5))',
+                    }}
+                  />
+                </div>
+
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xl font-bold text-foreground">One of One Vehicle Package</h3>
+                    <Badge className="bg-purple-500/90 text-white text-xs">
+                      <Star className="w-3 h-3 mr-1" />
+                      Ultra Premium
+                    </Badge>
+                  </div>
+                  
+                  <div className="text-2xl font-bold text-foreground">
+                    {getDisplayPrice(BASE_PRICES.oneOfOne, currency)}
+                  </div>
+                  
                   <p className="text-sm text-muted-foreground">
+                    Select a unique vehicle of your choice with this exclusive package
+                  </p>
+                </div>
+
+                <div className="bg-background/50 rounded-lg p-4 mb-4 space-y-2">
+                  <p className="text-xs text-muted-foreground">
                     <strong>Note:</strong> You are responsible for the purchase of the vehicle if it's a paid vehicle.
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     If you want a custom livery, additional charges may apply.
                   </p>
                 </div>
 
-                <div>
-                  <h4 className="font-semibold mb-4">Steps to Getting Your One of One Vehicle:</h4>
-                  <ol className="space-y-3">
+                <div className="mb-4">
+                  <h4 className="text-sm font-semibold mb-3 text-foreground">Steps to Getting Your One of One Vehicle:</h4>
+                  <ol className="space-y-2">
                     {[
                       "Open a one of one vehicle ticket under support in the Discord",
                       "Send a link to the vehicle of your choice so we can make sure it's available",
@@ -519,31 +522,28 @@ const Store = () => {
                       "After purchase, wait 2-10 minutes and use this command in-game to redeem coins: /redeem (tebex transaction id)",
                       "Meet up with the Dev in the Server to claim your Vehicle"
                     ].map((step, idx) => (
-                      <li key={idx} className="flex gap-3">
-                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-secondary/20 text-secondary text-sm font-semibold shrink-0">
+                      <li key={idx} className="flex gap-2">
+                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-[10px] font-bold shrink-0">
                           {idx + 1}
                         </span>
-                        <span className="text-sm text-muted-foreground">{step}</span>
+                        <span className="text-xs text-muted-foreground">{step}</span>
                       </li>
                     ))}
                   </ol>
                 </div>
 
-                <div className="bg-accent/10 rounded-lg p-4 border border-accent/20">
-                  <p className="text-sm font-mono text-accent">
+                <div className="bg-accent/10 rounded-lg p-3 border border-accent/20 mb-4">
+                  <p className="text-xs font-mono text-accent">
                     Example: /redeem tbx-8832421277453-etd002
                   </p>
                 </div>
 
                 <Button 
-                  className={`w-full mt-6 relative overflow-hidden group ${
-                    addingToCart === 'oneofone' ? 'animate-pulse' : ''
-                  }`}
+                  className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold"
                   size="lg"
                   onClick={() => handleAddToCart('One of One Vehicle', BASE_PRICES.oneOfOne, 'oneofone', tierOneOfOne, 'oneofone')}
                   disabled={addingToCart === 'oneofone'}
                 >
-                  <span className="absolute inset-0 bg-gradient-to-r from-secondary/0 via-secondary-foreground/20 to-secondary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                   <ShoppingCart className={`w-4 h-4 mr-2 ${
                     addingToCart === 'oneofone' ? 'animate-bounce' : ''
                   }`} />
