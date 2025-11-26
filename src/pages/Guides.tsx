@@ -1,6 +1,6 @@
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
-import headerGuides from "@/assets/header-guides.jpg";
+import headerGuides from "@/assets/header-guides-new.jpg";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserCircle2, BookOpen, AlertCircle } from "lucide-react";
