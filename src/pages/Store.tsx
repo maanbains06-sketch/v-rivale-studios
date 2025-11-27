@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -157,12 +158,28 @@ const packages = [
   }
 ];
 
+interface Package {
+  name: string;
+  price: number;
+  image: string;
+  icon: any;
+  gradient: string;
+  borderColor: string;
+  iconColor: string;
+  glowColor: string;
+  features: string[];
+  popular?: boolean;
+  premium?: boolean;
+}
+
 const Store = () => {
   const [currency, setCurrency] = useState<string>('INR');
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
   const [flyingItem, setFlyingItem] = useState<{ id: string; startX: number; startY: number; endX: number; endY: number; image: string } | null>(null);
   const [giftCardNumber, setGiftCardNumber] = useState("");
   const [sortBy, setSortBy] = useState<string>("default");
+  const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
+  const [selectedSpecialPackage, setSelectedSpecialPackage] = useState<{name: string; price: number; image: string; features: string[]} | null>(null);
   const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const { addItem } = useCart();
   const { toast } = useToast();
@@ -404,7 +421,8 @@ const Store = () => {
                     <Card 
                       key={pkg.name}
                       ref={(el) => (cardRefs.current[pkg.name.toLowerCase()] = el)}
-                      className="relative bg-card/70 backdrop-blur-sm border-2 border-border/50 hover:border-primary/70 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 overflow-hidden group"
+                      className="relative bg-card/70 backdrop-blur-sm border-2 border-border/50 hover:border-primary/70 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 overflow-hidden group cursor-pointer"
+                      onClick={() => setSelectedPackage(pkg)}
                     >
                       {pkg.popular && (
                         <Badge className="absolute top-2 right-2 z-10 bg-primary/90 text-primary-foreground text-[10px] px-2 py-0.5">
@@ -419,13 +437,13 @@ const Store = () => {
                         </Badge>
                       )}
                       
-                      {/* Image Container with Dark Background */}
-                      <div className="relative w-full aspect-square bg-gradient-to-br from-background/95 to-background/80 flex items-center justify-center p-6 border-b-2 border-border/40">
+                      {/* Image Container - Smaller */}
+                      <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-background/95 to-background/80 flex items-center justify-center p-4 border-b-2 border-border/40">
                         <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                         <img
                           src={pkg.image}
                           alt={pkg.name}
-                          className="w-full h-full object-contain drop-shadow-[0_0_25px_rgba(255,255,255,0.25)] group-hover:scale-110 group-hover:drop-shadow-[0_0_35px_rgba(255,255,255,0.4)] transition-all duration-500 relative z-10"
+                          className="w-full h-full object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.2)] group-hover:scale-110 group-hover:drop-shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-500 relative z-10"
                         />
                       </div>
                       
@@ -438,34 +456,21 @@ const Store = () => {
                             </div>
                           </div>
 
+                          <p className="text-xs text-muted-foreground text-center">Click to view all features</p>
+
                           <Button
-                            onClick={() => handleAddToCart(pkg.name, pkg.price, pkg.name.toLowerCase(), pkg.image, pkg.name.toLowerCase())}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAddToCart(pkg.name, pkg.price, pkg.name.toLowerCase(), pkg.image, pkg.name.toLowerCase());
+                            }}
                             disabled={addingToCart === pkg.name.toLowerCase()}
-                            className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-5"
+                            className="w-full bg-cyan-500 hover:bg-cyan-600 active:scale-95 text-white font-semibold py-6 transition-all duration-200"
                           >
-                            <ShoppingCart className={`w-4 h-4 mr-2 ${
-                              addingToCart === pkg.name.toLowerCase() ? 'animate-bounce' : ''
+                            <ShoppingCart className={`w-5 h-5 mr-2 ${
+                              addingToCart === pkg.name.toLowerCase() ? 'animate-spin' : ''
                             }`} />
                             {addingToCart === pkg.name.toLowerCase() ? 'Adding...' : 'Add to Basket'}
                           </Button>
-
-                          {pkg.features.length > 0 && (
-                            <div className="pt-2 border-t border-border/30">
-                              <ul className="space-y-1.5">
-                                {pkg.features.slice(0, 3).map((feature, index) => (
-                                  <li key={index} className="flex items-start gap-2 text-xs text-muted-foreground">
-                                    <Check className="w-3.5 h-3.5 text-primary flex-shrink-0 mt-0.5" />
-                                    <span className="leading-tight">{feature}</span>
-                                  </li>
-                                ))}
-                                {pkg.features.length > 3 && (
-                                  <li className="text-xs text-muted-foreground/60 italic pl-5">
-                                    +{pkg.features.length - 3} more features
-                                  </li>
-                                )}
-                              </ul>
-                            </div>
-                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -473,20 +478,26 @@ const Store = () => {
                 </div>
               </section>
 
-              {/* Additional Packages */}
+              {/* Additional Packages - Priority Tickets */}
               <section className="mb-12">
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 gap-6">
                   {/* Prio 200 */}
                   <Card 
                     ref={(el) => (cardRefs.current['prio200'] = el)}
-                    className="relative bg-card/70 backdrop-blur-sm border-2 border-border/50 hover:border-primary/70 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 overflow-hidden group"
+                    className="relative bg-card/70 backdrop-blur-sm border-2 border-border/50 hover:border-primary/70 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 overflow-hidden group cursor-pointer"
+                    onClick={() => setSelectedSpecialPackage({ 
+                      name: 'Prio 200', 
+                      price: BASE_PRICES.prio200, 
+                      image: tierPrio, 
+                      features: ['Queue priority access to server', 'Skip long wait times', 'Fast team response and support', 'Join server during peak hours'] 
+                    })}
                   >
-                    <div className="relative w-full aspect-square bg-gradient-to-br from-background/95 to-background/80 flex items-center justify-center p-6 border-b-2 border-border/40">
+                    <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-background/95 to-background/80 flex items-center justify-center p-4 border-b-2 border-border/40">
                       <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                       <img
                         src={tierPrio}
                         alt="Prio 200"
-                        className="w-full h-full object-contain drop-shadow-[0_0_25px_rgba(255,255,255,0.25)] group-hover:scale-110 group-hover:drop-shadow-[0_0_35px_rgba(255,255,255,0.4)] transition-all duration-500 relative z-10"
+                        className="w-full h-full object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.2)] group-hover:scale-110 group-hover:drop-shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-500 relative z-10"
                       />
                     </div>
                     
@@ -499,29 +510,21 @@ const Store = () => {
                           </div>
                         </div>
 
+                        <p className="text-xs text-muted-foreground text-center">Click to view all features</p>
+
                         <Button
-                          onClick={() => handleAddToCart('Prio 200', BASE_PRICES.prio200, 'prio200', tierPrio, 'prio200')}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAddToCart('Prio 200', BASE_PRICES.prio200, 'prio200', tierPrio, 'prio200');
+                          }}
                           disabled={addingToCart === 'prio200'}
-                          className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-5"
+                          className="w-full bg-cyan-500 hover:bg-cyan-600 active:scale-95 text-white font-semibold py-6 transition-all duration-200"
                         >
-                          <ShoppingCart className={`w-4 h-4 mr-2 ${
-                            addingToCart === 'prio200' ? 'animate-bounce' : ''
+                          <ShoppingCart className={`w-5 h-5 mr-2 ${
+                            addingToCart === 'prio200' ? 'animate-spin' : ''
                           }`} />
                           {addingToCart === 'prio200' ? 'Adding...' : 'Add to Basket'}
                         </Button>
-
-                        <div className="pt-2 border-t border-border/30">
-                          <ul className="space-y-1.5">
-                            <li className="flex items-start gap-2 text-xs text-muted-foreground">
-                              <Check className="w-3.5 h-3.5 text-primary flex-shrink-0 mt-0.5" />
-                              <span className="leading-tight">Queue priority</span>
-                            </li>
-                            <li className="flex items-start gap-2 text-xs text-muted-foreground">
-                              <Check className="w-3.5 h-3.5 text-primary flex-shrink-0 mt-0.5" />
-                              <span className="leading-tight">Fast team response</span>
-                            </li>
-                          </ul>
-                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -529,18 +532,24 @@ const Store = () => {
                   {/* Whitelisted */}
                   <Card 
                     ref={(el) => (cardRefs.current['whitelisted'] = el)}
-                    className="relative bg-card/70 backdrop-blur-sm border-2 border-border/50 hover:border-primary/70 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 overflow-hidden group"
+                    className="relative bg-card/70 backdrop-blur-sm border-2 border-border/50 hover:border-primary/70 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 overflow-hidden group cursor-pointer"
+                    onClick={() => setSelectedSpecialPackage({ 
+                      name: 'Whitelisted', 
+                      price: BASE_PRICES.whitelisted, 
+                      image: tierWhitelist, 
+                      features: ['Instant server entry without waiting', 'Bypass whitelist application process', 'No need to fill any form', 'Exclusive immediate access', 'Priority customer support'] 
+                    })}
                   >
                     <Badge className="absolute top-2 right-2 z-10 bg-secondary/90 text-secondary-foreground text-[10px] px-2 py-0.5">
                       Exclusive
                     </Badge>
 
-                    <div className="relative w-full aspect-square bg-gradient-to-br from-background/95 to-background/80 flex items-center justify-center p-6 border-b-2 border-border/40">
+                    <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-background/95 to-background/80 flex items-center justify-center p-4 border-b-2 border-border/40">
                       <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                       <img
                         src={tierWhitelist}
                         alt="Whitelisted"
-                        className="w-full h-full object-contain drop-shadow-[0_0_25px_rgba(255,255,255,0.25)] group-hover:scale-110 group-hover:drop-shadow-[0_0_35px_rgba(255,255,255,0.4)] transition-all duration-500 relative z-10"
+                        className="w-full h-full object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.2)] group-hover:scale-110 group-hover:drop-shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-500 relative z-10"
                       />
                     </div>
                     
@@ -553,33 +562,21 @@ const Store = () => {
                           </div>
                         </div>
 
+                        <p className="text-xs text-muted-foreground text-center">Click to view all features</p>
+
                         <Button
-                          onClick={() => handleAddToCart('Whitelisted', BASE_PRICES.whitelisted, 'whitelisted', tierWhitelist, 'whitelisted')}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAddToCart('Whitelisted', BASE_PRICES.whitelisted, 'whitelisted', tierWhitelist, 'whitelisted');
+                          }}
                           disabled={addingToCart === 'whitelisted'}
-                          className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-5"
+                          className="w-full bg-cyan-500 hover:bg-cyan-600 active:scale-95 text-white font-semibold py-6 transition-all duration-200"
                         >
-                          <ShoppingCart className={`w-4 h-4 mr-2 ${
-                            addingToCart === 'whitelisted' ? 'animate-bounce' : ''
+                          <ShoppingCart className={`w-5 h-5 mr-2 ${
+                            addingToCart === 'whitelisted' ? 'animate-spin' : ''
                           }`} />
                           {addingToCart === 'whitelisted' ? 'Adding...' : 'Add to Basket'}
                         </Button>
-
-                        <div className="pt-2 border-t border-border/30">
-                          <ul className="space-y-1.5">
-                            <li className="flex items-start gap-2 text-xs text-muted-foreground">
-                              <Check className="w-3.5 h-3.5 text-primary flex-shrink-0 mt-0.5" />
-                              <span className="leading-tight">Instant server entry</span>
-                            </li>
-                            <li className="flex items-start gap-2 text-xs text-muted-foreground">
-                              <Check className="w-3.5 h-3.5 text-primary flex-shrink-0 mt-0.5" />
-                              <span className="leading-tight">No need to fill any form</span>
-                            </li>
-                            <li className="flex items-start gap-2 text-xs text-muted-foreground">
-                              <Check className="w-3.5 h-3.5 text-primary flex-shrink-0 mt-0.5" />
-                              <span className="leading-tight">Exclusive access</span>
-                            </li>
-                          </ul>
-                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -588,22 +585,50 @@ const Store = () => {
 
               {/* One of One */}
               <section className="mb-12">
-                <div className="max-w-3xl mx-auto">
+                <div className="max-w-4xl mx-auto">
                   <Card 
                     ref={(el) => (cardRefs.current['oneofone'] = el)}
-                    className="relative bg-card/70 backdrop-blur-sm border-2 border-border/50 hover:border-primary/70 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 overflow-hidden group"
+                    className="relative bg-card/70 backdrop-blur-sm border-2 border-border/50 hover:border-primary/70 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 overflow-hidden group cursor-pointer"
+                    onClick={() => setSelectedSpecialPackage({ 
+                      name: 'One of One', 
+                      price: BASE_PRICES.oneOfOne, 
+                      image: tierOneOfOne, 
+                      features: [
+                        'Everything from Skylife package included',
+                        'Fully custom exclusive vehicle - only 1 exists in the entire server',
+                        'Complete freedom to design your dream vehicle from scratch',
+                        'Custom vehicle model selection from extensive catalog',
+                        'Personalized paint jobs with unlimited color combinations',
+                        'Custom vinyl wraps and decals designed to your specifications',
+                        'Unique license plate text (within guidelines)',
+                        'Custom interior modifications and color schemes',
+                        'Performance tuning to your preferred handling style',
+                        'Exclusive sound customization (engine, horn, exhaust)',
+                        'Custom lighting packages (underglow, interior ambient, headlights)',
+                        'Permanent ownership - vehicle is bound to your character',
+                        'Showcase your vehicle in special dealership display',
+                        'Priority support for any vehicle-related issues',
+                        'Free maintenance and repairs for lifetime',
+                        'Ability to update customization once per month',
+                        'Exclusive "One of One" badge on vehicle',
+                        'VIP parking spot in city center',
+                        'Featured in server social media and promotional content',
+                        'Custom names on all your cars',
+                        'All clothing items unlocked',
+                      ] 
+                    })}
                   >
                     <Badge className="absolute top-2 right-2 z-10 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] px-2 py-0.5">
                       <Crown className="w-2.5 h-2.5 mr-1" />
                       Ultimate
                     </Badge>
 
-                    <div className="relative w-full aspect-[16/9] bg-gradient-to-br from-background/95 to-background/80 flex items-center justify-center p-8 border-b-2 border-border/40">
+                    <div className="relative w-full aspect-[21/9] bg-gradient-to-br from-background/95 to-background/80 flex items-center justify-center p-8 border-b-2 border-border/40">
                       <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                       <img
                         src={tierOneOfOne}
                         alt="One of One"
-                        className="w-full h-full object-contain drop-shadow-[0_0_25px_rgba(255,255,255,0.25)] group-hover:scale-110 group-hover:drop-shadow-[0_0_35px_rgba(255,255,255,0.4)] transition-all duration-500 relative z-10"
+                        className="w-full h-full object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.3)] group-hover:scale-105 group-hover:drop-shadow-[0_0_40px_rgba(255,255,255,0.5)] transition-all duration-500 relative z-10"
                       />
                     </div>
                     
@@ -611,42 +636,26 @@ const Store = () => {
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
                           <h3 className="text-2xl font-bold text-foreground">One of One</h3>
-                          <div className="text-2xl font-bold text-primary">
+                          <div className="text-3xl font-bold text-primary">
                             {getDisplayPrice(BASE_PRICES.oneOfOne, currency)}
                           </div>
                         </div>
 
+                        <p className="text-sm text-muted-foreground text-center">Click to view all features</p>
+
                         <Button
-                          onClick={() => handleAddToCart('One of One', BASE_PRICES.oneOfOne, 'oneofone', tierOneOfOne, 'oneofone')}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAddToCart('One of One', BASE_PRICES.oneOfOne, 'oneofone', tierOneOfOne, 'oneofone');
+                          }}
                           disabled={addingToCart === 'oneofone'}
-                          className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-5"
+                          className="w-full bg-cyan-500 hover:bg-cyan-600 active:scale-95 text-white font-semibold py-7 text-lg transition-all duration-200"
                         >
-                          <ShoppingCart className={`w-4 h-4 mr-2 ${
-                            addingToCart === 'oneofone' ? 'animate-bounce' : ''
+                          <ShoppingCart className={`w-6 h-6 mr-2 ${
+                            addingToCart === 'oneofone' ? 'animate-spin' : ''
                           }`} />
                           {addingToCart === 'oneofone' ? 'Adding...' : 'Add to Basket'}
                         </Button>
-
-                        <div className="pt-3 border-t border-border/30">
-                          <div className="grid grid-cols-2 gap-3">
-                            <div className="flex items-start gap-2 text-sm text-muted-foreground">
-                              <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                              <span className="leading-tight">Everything from Skylife +</span>
-                            </div>
-                            <div className="flex items-start gap-2 text-sm text-muted-foreground">
-                              <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                              <span className="leading-tight">Custom vehicle</span>
-                            </div>
-                            <div className="flex items-start gap-2 text-sm text-muted-foreground">
-                              <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                              <span className="leading-tight">Custom name on cars</span>
-                            </div>
-                            <div className="flex items-start gap-2 text-sm text-muted-foreground">
-                              <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                              <span className="leading-tight">All clothing items</span>
-                            </div>
-                          </div>
-                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -661,6 +670,115 @@ const Store = () => {
           </div>
         </div>
       </main>
+
+      {/* Package Details Dialog */}
+      <Dialog open={!!selectedPackage} onOpenChange={() => setSelectedPackage(null)}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          {selectedPackage && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center justify-between">
+                  <DialogTitle className="text-3xl">{selectedPackage.name}</DialogTitle>
+                  <div className="text-3xl font-bold text-primary">
+                    {getDisplayPrice(selectedPackage.price, currency)}
+                  </div>
+                </div>
+              </DialogHeader>
+
+              <div className="space-y-6">
+                <div className="relative aspect-video rounded-lg overflow-hidden bg-background/50">
+                  <img
+                    src={selectedPackage.image}
+                    alt={selectedPackage.name}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-semibold mb-4">Features Included:</h3>
+                  <ul className="space-y-3">
+                    {selectedPackage.features.map((feature, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                        <span className="text-muted-foreground">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <Button 
+                  onClick={(e) => {
+                    handleAddToCart(selectedPackage.name, selectedPackage.price, selectedPackage.name.toLowerCase(), selectedPackage.image, selectedPackage.name.toLowerCase());
+                    setSelectedPackage(null);
+                  }}
+                  disabled={addingToCart === selectedPackage.name.toLowerCase()}
+                  className="w-full bg-cyan-500 hover:bg-cyan-600 active:scale-95 text-white font-semibold text-lg py-7 transition-all duration-200"
+                >
+                  <ShoppingCart className={`w-6 h-6 mr-2 ${
+                    addingToCart === selectedPackage.name.toLowerCase() ? 'animate-spin' : ''
+                  }`} />
+                  {addingToCart === selectedPackage.name.toLowerCase() ? 'Adding...' : 'Add to Basket'}
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Special Package Details Dialog */}
+      <Dialog open={!!selectedSpecialPackage} onOpenChange={() => setSelectedSpecialPackage(null)}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          {selectedSpecialPackage && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center justify-between">
+                  <DialogTitle className="text-3xl">{selectedSpecialPackage.name}</DialogTitle>
+                  <div className="text-3xl font-bold text-primary">
+                    {getDisplayPrice(selectedSpecialPackage.price, currency)}
+                  </div>
+                </div>
+              </DialogHeader>
+
+              <div className="space-y-6">
+                <div className="relative aspect-video rounded-lg overflow-hidden bg-background/50">
+                  <img
+                    src={selectedSpecialPackage.image}
+                    alt={selectedSpecialPackage.name}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-semibold mb-4">Features Included:</h3>
+                  <ul className="space-y-3">
+                    {selectedSpecialPackage.features.map((feature, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                        <span className="text-muted-foreground">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <Button 
+                  onClick={(e) => {
+                    const refKey = selectedSpecialPackage.name.toLowerCase().replace(/\s+/g, '');
+                    handleAddToCart(selectedSpecialPackage.name, selectedSpecialPackage.price, refKey, selectedSpecialPackage.image, refKey);
+                    setSelectedSpecialPackage(null);
+                  }}
+                  disabled={addingToCart === selectedSpecialPackage.name.toLowerCase().replace(/\s+/g, '')}
+                  className="w-full bg-cyan-500 hover:bg-cyan-600 active:scale-95 text-white font-semibold text-lg py-7 transition-all duration-200"
+                >
+                  <ShoppingCart className={`w-6 h-6 mr-2 ${
+                    addingToCart === selectedSpecialPackage.name.toLowerCase().replace(/\s+/g, '') ? 'animate-spin' : ''
+                  }`} />
+                  {addingToCart === selectedSpecialPackage.name.toLowerCase().replace(/\s+/g, '') ? 'Adding...' : 'Add to Basket'}
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
       
       <style>{`
         @keyframes flyToCart {
