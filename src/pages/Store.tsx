@@ -13,12 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Check, Crown, Sparkles, Star, ShoppingCart, ArrowUpDown } from "lucide-react";
+import { Check, Crown, Sparkles, Star, ShoppingCart, ArrowUpDown, Heart, Gift, Home, HeadphonesIcon, CreditCard } from "lucide-react";
 import headerStore from "@/assets/header-store.jpg";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { BASE_PRICES, detectUserCurrency, getDisplayPrice } from "@/lib/currency";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
+import { usePackageFavorites } from "@/hooks/usePackageFavorites";
 import CartDrawer from "@/components/CartDrawer";
 import { Link } from "react-router-dom";
 import tierBronze from "@/assets/tier-bronze.jpg";
@@ -180,13 +181,53 @@ const Store = () => {
   const [sortBy, setSortBy] = useState<string>("default");
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
   const [selectedSpecialPackage, setSelectedSpecialPackage] = useState<{name: string; price: number; image: string; features: string[]} | null>(null);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const { addItem } = useCart();
   const { toast } = useToast();
+  const { toggleFavorite, isFavorite } = usePackageFavorites();
 
-  // Sort packages based on selected option
+  // Define bundles with discounted pricing
+  const bundles = [
+    {
+      id: 'starter-bundle',
+      name: 'Starter Bundle',
+      packages: ['Bronze', 'Prio 200'],
+      originalPrice: BASE_PRICES.bronze + BASE_PRICES.prio200,
+      price: (BASE_PRICES.bronze + BASE_PRICES.prio200) * 0.85, // 15% off
+      discount: 15,
+      description: 'Perfect for getting started with priority access',
+    },
+    {
+      id: 'premium-bundle',
+      name: 'Premium Bundle',
+      packages: ['Gold', 'Whitelisted'],
+      originalPrice: BASE_PRICES.gold + BASE_PRICES.whitelisted,
+      price: (BASE_PRICES.gold + BASE_PRICES.whitelisted) * 0.80, // 20% off
+      discount: 20,
+      description: 'Most popular combination for serious players',
+    },
+    {
+      id: 'ultimate-bundle',
+      name: 'Ultimate Bundle',
+      packages: ['Skylife', 'Custom Jewelry (Solo)'],
+      originalPrice: BASE_PRICES.skylife + BASE_PRICES.jewelrySolo,
+      price: (BASE_PRICES.skylife + BASE_PRICES.jewelrySolo) * 0.75, // 25% off
+      discount: 25,
+      description: 'Complete VIP experience with custom accessories',
+    },
+  ];
+
+  // Sort and filter packages
   const sortedPackages = useMemo(() => {
-    const pkgCopy = [...packages];
+    let pkgCopy = [...packages];
+    
+    // Filter by favorites if enabled
+    if (showFavoritesOnly) {
+      pkgCopy = pkgCopy.filter(pkg => isFavorite(pkg.name.toLowerCase()));
+    }
+    
+    // Sort packages
     switch (sortBy) {
       case "price-low":
         return pkgCopy.sort((a, b) => a.price - b.price);
@@ -197,7 +238,7 @@ const Store = () => {
       default:
         return pkgCopy;
     }
-  }, [sortBy]);
+  }, [sortBy, showFavoritesOnly, isFavorite]);
 
   useEffect(() => {
     const detectedCurrency = detectUserCurrency();
@@ -396,86 +437,207 @@ const Store = () => {
             {/* Main Content - Store Packages */}
             <div className="flex-1">
               {/* Filter Bar */}
-              <div className="mb-6 flex items-center justify-between bg-card/40 backdrop-blur-sm border border-border/50 rounded-lg p-4">
-                <div className="flex items-center gap-2">
-                  <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">Sort by:</span>
+              <div className="mb-6 flex items-center justify-between gap-4 bg-card/40 backdrop-blur-sm border border-border/50 rounded-lg p-4 flex-wrap">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm font-medium text-foreground">Sort by:</span>
+                  </div>
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="w-[200px] bg-background/50 border-border">
+                      <SelectValue placeholder="Default order" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border-border z-50">
+                      <SelectItem value="default">Default order</SelectItem>
+                      <SelectItem value="price-low">Price: Low to High</SelectItem>
+                      <SelectItem value="price-high">Price: High to Low</SelectItem>
+                      <SelectItem value="features">Most Features</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-[200px] bg-background/50 border-border">
-                    <SelectValue placeholder="Default order" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background border-border z-50">
-                    <SelectItem value="default">Default order</SelectItem>
-                    <SelectItem value="price-low">Price: Low to High</SelectItem>
-                    <SelectItem value="price-high">Price: High to Low</SelectItem>
-                    <SelectItem value="features">Most Features</SelectItem>
-                  </SelectContent>
-                </Select>
+                
+                <Button
+                  variant={showFavoritesOnly ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                  className="gap-2"
+                >
+                  <Heart className={`w-4 h-4 ${showFavoritesOnly ? 'fill-current' : ''}`} />
+                  {showFavoritesOnly ? 'Show All' : 'Favorites Only'}
+                </Button>
               </div>
 
-              {/* Main Packages */}
+              {/* Package Bundles */}
               <section className="mb-12">
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {sortedPackages.map((pkg) => (
-                    <Card 
-                      key={pkg.name}
-                      ref={(el) => (cardRefs.current[pkg.name.toLowerCase()] = el)}
-                      className="relative bg-card/70 backdrop-blur-sm border-2 border-border/50 hover:border-primary/70 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 overflow-hidden group cursor-pointer"
-                      onClick={() => setSelectedPackage(pkg)}
-                    >
-                      {pkg.popular && (
-                        <Badge className="absolute top-2 right-2 z-10 bg-primary/90 text-primary-foreground text-[10px] px-2 py-0.5">
-                          <Star className="w-2.5 h-2.5 mr-1" />
-                          Popular
-                        </Badge>
-                      )}
-                      {pkg.premium && (
-                        <Badge className="absolute top-2 right-2 z-10 bg-purple-500/90 text-white text-[10px] px-2 py-0.5">
-                          <Star className="w-2.5 h-2.5 mr-1" />
-                          Premium
-                        </Badge>
-                      )}
+                <div className="mb-6">
+                  <h2 className="text-3xl font-bold mb-2">🎁 Package Bundles</h2>
+                  <p className="text-muted-foreground">Save more when you buy packages together</p>
+                </div>
+                <div className="grid md:grid-cols-3 gap-6">
+                  {bundles.map((bundle) => (
+                    <Card key={bundle.id} className="relative bg-gradient-to-br from-card/80 to-card/60 backdrop-blur-sm border-2 border-primary/30 hover:border-primary/60 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 overflow-hidden group">
+                      <Badge className="absolute top-3 right-3 z-10 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-3 py-1 font-bold">
+                        {bundle.discount}% OFF
+                      </Badge>
                       
-                      {/* Image Container - Smaller */}
-                      <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-background/95 to-background/80 flex items-center justify-center p-4 border-b-2 border-border/40">
-                        <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        <img
-                          src={pkg.image}
-                          alt={pkg.name}
-                          className="w-full h-full object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.2)] group-hover:scale-110 group-hover:drop-shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-500 relative z-10"
-                        />
-                      </div>
-                      
-                      <CardContent className="p-4">
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <h3 className="text-lg font-bold text-foreground">{pkg.name}</h3>
-                            <div className="text-xl font-bold text-primary">
-                              {getDisplayPrice(pkg.price, currency)}
-                            </div>
-                          </div>
-
-                          <p className="text-xs text-muted-foreground text-center">Click to view all features</p>
-
-                          <Button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAddToCart(pkg.name, pkg.price, pkg.name.toLowerCase(), pkg.image, pkg.name.toLowerCase());
-                            }}
-                            disabled={addingToCart === pkg.name.toLowerCase()}
-                            className="w-full bg-cyan-500 hover:bg-cyan-600 active:scale-95 text-white font-semibold py-6 transition-all duration-200"
-                          >
-                            <ShoppingCart className={`w-5 h-5 mr-2 ${
-                              addingToCart === pkg.name.toLowerCase() ? 'animate-spin' : ''
-                            }`} />
-                            {addingToCart === pkg.name.toLowerCase() ? 'Adding...' : 'Add to Basket'}
-                          </Button>
+                      <CardContent className="p-6 space-y-4">
+                        <div>
+                          <h3 className="text-2xl font-bold text-foreground mb-2">{bundle.name}</h3>
+                          <p className="text-sm text-muted-foreground">{bundle.description}</p>
                         </div>
+
+                        <div className="space-y-2">
+                          <div className="text-xs text-muted-foreground font-semibold">Includes:</div>
+                          {bundle.packages.map((pkgName, idx) => (
+                            <div key={idx} className="flex items-center gap-2 text-sm">
+                              <Check className="w-4 h-4 text-green-500" />
+                              <span>{pkgName}</span>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="pt-3 border-t border-border/30 space-y-2">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground line-through">Original Price:</span>
+                            <span className="text-muted-foreground line-through">
+                              {getDisplayPrice(bundle.originalPrice, currency)}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-lg font-semibold">Bundle Price:</span>
+                            <span className="text-2xl font-bold text-green-500">
+                              {getDisplayPrice(bundle.price, currency)}
+                            </span>
+                          </div>
+                        </div>
+
+                        <Button
+                          onClick={() => {
+                            bundle.packages.forEach(pkgName => {
+                              const pkg = packages.find(p => p.name === pkgName);
+                              if (pkg) {
+                                handleAddToCart(pkg.name, pkg.price, pkg.name.toLowerCase(), pkg.image, pkg.name.toLowerCase());
+                              }
+                            });
+                            toast({
+                              title: 'Bundle added to basket! 🎉',
+                              description: `${bundle.name} packages added with ${bundle.discount}% discount applied.`,
+                            });
+                          }}
+                          className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold py-6 transition-all duration-200"
+                        >
+                          <Gift className="w-5 h-5 mr-2" />
+                          Add Bundle to Basket
+                        </Button>
                       </CardContent>
                     </Card>
                   ))}
                 </div>
+              </section>
+
+              {/* Main Packages */}
+              <section className="mb-12">
+                <div className="mb-6">
+                  <h2 className="text-3xl font-bold mb-2">Individual Packages</h2>
+                  <p className="text-muted-foreground">Choose packages that fit your needs</p>
+                </div>
+                {showFavoritesOnly && sortedPackages.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Heart className="w-16 h-16 mx-auto text-muted-foreground/30 mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">No favorites yet</h3>
+                    <p className="text-muted-foreground">Click the heart icon on packages to save them as favorites</p>
+                  </div>
+                ) : (
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {sortedPackages.map((pkg) => (
+                      <Card 
+                        key={pkg.name}
+                        ref={(el) => (cardRefs.current[pkg.name.toLowerCase()] = el)}
+                        className="relative bg-card/70 backdrop-blur-sm border-2 border-border/50 hover:border-primary/70 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 overflow-hidden group"
+                      >
+                        {pkg.popular && (
+                          <Badge className="absolute top-2 right-12 z-10 bg-primary/90 text-primary-foreground text-[10px] px-2 py-0.5">
+                            <Star className="w-2.5 h-2.5 mr-1" />
+                            Popular
+                          </Badge>
+                        )}
+                        {pkg.premium && (
+                          <Badge className="absolute top-2 right-12 z-10 bg-purple-500/90 text-white text-[10px] px-2 py-0.5">
+                            <Star className="w-2.5 h-2.5 mr-1" />
+                            Premium
+                          </Badge>
+                        )}
+                        
+                        {/* Favorite Button */}
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="absolute top-2 right-2 z-10 h-8 w-8 rounded-full bg-background/80 hover:bg-background"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleFavorite(pkg.name.toLowerCase());
+                          }}
+                        >
+                          <Heart 
+                            className={`h-4 w-4 transition-all ${
+                              isFavorite(pkg.name.toLowerCase()) 
+                                ? 'fill-red-500 text-red-500' 
+                                : 'text-muted-foreground hover:text-red-500'
+                            }`} 
+                          />
+                        </Button>
+                        
+                        {/* Image Container - Smaller */}
+                        <div 
+                          className="relative w-full aspect-[4/3] bg-gradient-to-br from-background/95 to-background/80 flex items-center justify-center p-4 border-b-2 border-border/40 cursor-pointer"
+                          onClick={() => setSelectedPackage(pkg)}
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                          <img
+                            src={pkg.image}
+                            alt={pkg.name}
+                            className="w-full h-full object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.2)] group-hover:scale-110 group-hover:drop-shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-500 relative z-10"
+                          />
+                        </div>
+                        
+                        <CardContent className="p-4">
+                          <div className="space-y-3">
+                            <div 
+                              className="flex items-center justify-between cursor-pointer"
+                              onClick={() => setSelectedPackage(pkg)}
+                            >
+                              <h3 className="text-lg font-bold text-foreground">{pkg.name}</h3>
+                              <div className="text-xl font-bold text-primary">
+                                {getDisplayPrice(pkg.price, currency)}
+                              </div>
+                            </div>
+
+                            <p 
+                              className="text-xs text-muted-foreground text-center cursor-pointer"
+                              onClick={() => setSelectedPackage(pkg)}
+                            >
+                              Click to view all features
+                            </p>
+
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAddToCart(pkg.name, pkg.price, pkg.name.toLowerCase(), pkg.image, pkg.name.toLowerCase());
+                              }}
+                              disabled={addingToCart === pkg.name.toLowerCase()}
+                              className="w-full bg-cyan-500 hover:bg-cyan-600 active:scale-95 text-white font-semibold py-6 transition-all duration-200"
+                            >
+                              <ShoppingCart className={`w-5 h-5 mr-2 ${
+                                addingToCart === pkg.name.toLowerCase() ? 'animate-spin' : ''
+                              }`} />
+                              {addingToCart === pkg.name.toLowerCase() ? 'Adding...' : 'Add to Basket'}
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </section>
 
               {/* Additional Packages - Priority Tickets */}
