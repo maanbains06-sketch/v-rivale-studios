@@ -11,6 +11,7 @@ import { getDisplayPrice, detectUserCurrency } from "@/lib/currency";
 import { useToast } from "@/hooks/use-toast";
 import { ShoppingCart, CreditCard, Sparkles, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import gtaBg from "@/assets/hero-home-realistic.jpg";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -157,8 +158,17 @@ const Checkout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <Navigation />
+    <div className="min-h-screen relative overflow-hidden">
+      {/* GTA 5 Background */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center opacity-15"
+        style={{ backgroundImage: `url(${gtaBg})` }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/90 to-background/95" />
+      
+      {/* Content */}
+      <div className="relative z-10">
+        <Navigation />
       
       <main className="container mx-auto px-4 pt-24 pb-16">
         <div className="max-w-6xl mx-auto">
@@ -342,6 +352,7 @@ const Checkout = () => {
           </div>
         </div>
       </main>
+      </div>
     </div>
   );
 };
