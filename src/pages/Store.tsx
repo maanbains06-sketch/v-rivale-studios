@@ -187,36 +187,6 @@ const Store = () => {
   const { toast } = useToast();
   const { toggleFavorite, isFavorite } = usePackageFavorites();
 
-  // Define bundles with discounted pricing
-  const bundles = [
-    {
-      id: 'starter-bundle',
-      name: 'Starter Bundle',
-      packages: ['Bronze', 'Prio 200'],
-      originalPrice: BASE_PRICES.bronze + BASE_PRICES.prio200,
-      price: (BASE_PRICES.bronze + BASE_PRICES.prio200) * 0.85, // 15% off
-      discount: 15,
-      description: 'Perfect for getting started with priority access',
-    },
-    {
-      id: 'premium-bundle',
-      name: 'Premium Bundle',
-      packages: ['Gold', 'Whitelisted'],
-      originalPrice: BASE_PRICES.gold + BASE_PRICES.whitelisted,
-      price: (BASE_PRICES.gold + BASE_PRICES.whitelisted) * 0.80, // 20% off
-      discount: 20,
-      description: 'Most popular combination for serious players',
-    },
-    {
-      id: 'ultimate-bundle',
-      name: 'Ultimate Bundle',
-      packages: ['Skylife', 'Custom Jewelry (Solo)'],
-      originalPrice: BASE_PRICES.skylife + BASE_PRICES.jewelrySolo,
-      price: (BASE_PRICES.skylife + BASE_PRICES.jewelrySolo) * 0.75, // 25% off
-      discount: 25,
-      description: 'Complete VIP experience with custom accessories',
-    },
-  ];
 
   // Sort and filter packages
   const sortedPackages = useMemo(() => {
@@ -467,78 +437,10 @@ const Store = () => {
                 </Button>
               </div>
 
-              {/* Package Bundles */}
-              <section className="mb-12">
-                <div className="mb-6">
-                  <h2 className="text-3xl font-bold mb-2">🎁 Package Bundles</h2>
-                  <p className="text-muted-foreground">Save more when you buy packages together</p>
-                </div>
-                <div className="grid md:grid-cols-3 gap-6">
-                  {bundles.map((bundle) => (
-                    <Card key={bundle.id} className="relative bg-gradient-to-br from-card/80 to-card/60 backdrop-blur-sm border-2 border-primary/30 hover:border-primary/60 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 overflow-hidden group">
-                      <Badge className="absolute top-3 right-3 z-10 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-3 py-1 font-bold">
-                        {bundle.discount}% OFF
-                      </Badge>
-                      
-                      <CardContent className="p-6 space-y-4">
-                        <div>
-                          <h3 className="text-2xl font-bold text-foreground mb-2">{bundle.name}</h3>
-                          <p className="text-sm text-muted-foreground">{bundle.description}</p>
-                        </div>
-
-                        <div className="space-y-2">
-                          <div className="text-xs text-muted-foreground font-semibold">Includes:</div>
-                          {bundle.packages.map((pkgName, idx) => (
-                            <div key={idx} className="flex items-center gap-2 text-sm">
-                              <Check className="w-4 h-4 text-green-500" />
-                              <span>{pkgName}</span>
-                            </div>
-                          ))}
-                        </div>
-
-                        <div className="pt-3 border-t border-border/30 space-y-2">
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground line-through">Original Price:</span>
-                            <span className="text-muted-foreground line-through">
-                              {getDisplayPrice(bundle.originalPrice, currency)}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-lg font-semibold">Bundle Price:</span>
-                            <span className="text-2xl font-bold text-green-500">
-                              {getDisplayPrice(bundle.price, currency)}
-                            </span>
-                          </div>
-                        </div>
-
-                        <Button
-                          onClick={() => {
-                            bundle.packages.forEach(pkgName => {
-                              const pkg = packages.find(p => p.name === pkgName);
-                              if (pkg) {
-                                handleAddToCart(pkg.name, pkg.price, pkg.name.toLowerCase(), pkg.image, pkg.name.toLowerCase());
-                              }
-                            });
-                            toast({
-                              title: 'Bundle added to basket! 🎉',
-                              description: `${bundle.name} packages added with ${bundle.discount}% discount applied.`,
-                            });
-                          }}
-                          className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold py-6 transition-all duration-200"
-                        >
-                          <Gift className="w-5 h-5 mr-2" />
-                          Add Bundle to Basket
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </section>
-
               {/* Main Packages */}
               <section className="mb-12">
                 <div className="mb-6">
-                  <h2 className="text-3xl font-bold mb-2">Individual Packages</h2>
+                  <h2 className="text-3xl font-bold mb-2">Server Packages</h2>
                   <p className="text-muted-foreground">Choose packages that fit your needs</p>
                 </div>
                 {showFavoritesOnly && sortedPackages.length === 0 ? (

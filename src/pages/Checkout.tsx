@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/contexts/CartContext";
 import { getDisplayPrice, detectUserCurrency } from "@/lib/currency";
 import { useToast } from "@/hooks/use-toast";
-import { ShoppingCart, CreditCard } from "lucide-react";
+import { ShoppingCart, CreditCard, Sparkles, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const Checkout = () => {
@@ -157,22 +157,25 @@ const Checkout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       <Navigation />
       
       <main className="container mx-auto px-4 pt-24 pb-16">
         <div className="max-w-6xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold mb-2">Checkout</h1>
-            <p className="text-muted-foreground">Complete your purchase</p>
+          <div className="mb-8 text-center">
+            <h1 className="text-5xl font-bold mb-3 bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text">Checkout</h1>
+            <p className="text-lg text-muted-foreground font-medium">Complete your purchase securely</p>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Order Summary */}
             <div className="lg:col-span-2 space-y-6">
-              <Card className="glass-effect">
-                <CardHeader>
-                  <CardTitle>Contact Information</CardTitle>
+              <Card className="glass-effect border-2 border-border/60 bg-gradient-to-br from-card via-card to-primary/5 shadow-xl">
+                <CardHeader className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
+                  <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                    <Lock className="h-6 w-6 text-primary" />
+                    Contact Information
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleSubmit} className="space-y-4">
@@ -245,11 +248,11 @@ const Checkout = () => {
 
                     <Button
                       type="submit"
-                      className="w-full"
+                      className="w-full bg-gradient-to-r from-primary via-primary to-primary/80 hover:from-primary/90 hover:via-primary/85 hover:to-primary/70 shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 font-bold text-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
                       size="lg"
                       disabled={isProcessing}
                     >
-                      <CreditCard className="w-4 h-4 mr-2" />
+                      <CreditCard className="w-5 h-5 mr-2" />
                       {isProcessing ? 'Processing...' : 'Complete Purchase'}
                     </Button>
                   </form>
@@ -259,47 +262,64 @@ const Checkout = () => {
 
             {/* Order Summary Sidebar */}
             <div className="lg:col-span-1">
-              <Card className="glass-effect sticky top-24">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <ShoppingCart className="w-5 h-5" />
+              <Card className="glass-effect border-2 border-border/60 bg-gradient-to-br from-card via-card to-primary/5 shadow-xl sticky top-24">
+                <CardHeader className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
+                  <CardTitle className="text-2xl font-bold flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/20">
+                      <ShoppingCart className="w-5 h-5 text-primary-foreground" />
+                    </div>
                     Order Summary
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
+                <CardContent className="space-y-4 pt-6">
+                  <div className="space-y-4">
                     {items.map((item) => (
-                      <div key={item.id} className="flex justify-between text-sm">
-                        <div>
-                          <p className="font-medium">{item.name}</p>
-                          <p className="text-muted-foreground">Qty: {item.quantity}</p>
+                      <div key={item.id} className="flex gap-4 p-3 rounded-xl bg-gradient-to-br from-muted/40 to-muted/20 border border-border/40">
+                        <div className="flex-shrink-0">
+                          <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center overflow-hidden border-2 border-primary/20">
+                            <img 
+                              src={item.icon} 
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                target.nextElementSibling?.classList.remove('hidden');
+                              }}
+                            />
+                            <Sparkles className="h-8 w-8 text-primary/40 hidden" />
+                          </div>
                         </div>
-                        <p className="font-semibold">
-                          {getDisplayPrice(item.price * item.quantity, currency)}
-                        </p>
+                        <div className="flex-1">
+                          <p className="font-bold text-base mb-1">{item.name}</p>
+                          <p className="text-sm text-muted-foreground mb-1">Quantity: {item.quantity}</p>
+                          <p className="font-bold text-primary">
+                            {getDisplayPrice(item.price * item.quantity, currency)}
+                          </p>
+                        </div>
                       </div>
                     ))}
                   </div>
 
-                  <Separator />
+                  <Separator className="bg-border/50" />
 
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Subtotal</span>
-                      <span className="font-semibold">
+                  <div className="space-y-3 p-4 rounded-xl bg-gradient-to-br from-muted/40 to-muted/20 border border-border/40">
+                    <div className="flex justify-between text-base">
+                      <span className="text-muted-foreground font-medium">Subtotal</span>
+                      <span className="font-bold">
                         {getDisplayPrice(getTotalPrice(), currency)}
                       </span>
                     </div>
                     {promoDiscount > 0 && (
-                      <div className="flex justify-between text-sm text-primary">
+                      <div className="flex justify-between text-base text-primary font-bold">
                         <span>Promo Discount ({promoDiscount}%)</span>
                         <span>-{getDisplayPrice(getTotalPrice() * (promoDiscount / 100), currency)}</span>
                       </div>
                     )}
-                    <Separator />
-                    <div className="flex justify-between text-lg font-bold">
-                      <span>Total</span>
-                      <span className="text-primary">
+                    <Separator className="bg-border/50" />
+                    <div className="flex justify-between text-xl font-bold">
+                      <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">Total</span>
+                      <span className="text-primary text-2xl">
                         {getDisplayPrice(
                           promoDiscount > 0 
                             ? getTotalPrice() * (1 - promoDiscount / 100)
@@ -310,8 +330,8 @@ const Checkout = () => {
                     </div>
                   </div>
 
-                  <div className="bg-muted/30 rounded-lg p-4 mt-4">
-                    <p className="text-xs text-muted-foreground">
+                  <div className="bg-gradient-to-br from-muted/40 to-muted/20 rounded-xl p-4 mt-4 border border-border/40">
+                    <p className="text-xs text-muted-foreground leading-relaxed">
                       By completing this purchase, you agree to our terms and conditions.
                       You will receive a confirmation email with your order details.
                     </p>
