@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { detectUserCurrency } from "@/lib/currency";
 import { useNavigate } from "react-router-dom";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import gtaBg from "@/assets/hero-home-gta-thunder.jpg";
 
 const CartDrawer = () => {
   const { items, removeItem, updateQuantity, getTotalItems, getTotalPrice, clearCart } = useCart();
@@ -42,8 +43,14 @@ const CartDrawer = () => {
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-lg flex flex-col p-0 bg-gradient-to-br from-background via-background to-primary/5">
-        <SheetHeader className="px-6 pt-6 pb-4 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
+      <SheetContent className="w-full sm:max-w-lg flex flex-col p-0 bg-gradient-to-br from-background via-background to-primary/5 relative overflow-hidden">
+        {/* GTA 5 Background */}
+        <div 
+          className="absolute inset-0 opacity-10 bg-cover bg-center"
+          style={{ backgroundImage: `url(${gtaBg})` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/90 to-background/95" />
+        <SheetHeader className="px-6 pt-6 pb-4 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent relative z-10">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/20">
               <ShoppingCart className="h-6 w-6 text-primary-foreground" />
@@ -57,7 +64,7 @@ const CartDrawer = () => {
           </div>
         </SheetHeader>
         
-        <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 flex flex-col min-h-0 relative z-10">
           {items.length === 0 ? (
             <div className="flex-1 flex items-center justify-center px-6">
               <div className="text-center max-w-sm">
