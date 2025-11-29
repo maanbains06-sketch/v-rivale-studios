@@ -133,6 +133,13 @@ const Navigation = () => {
             >
               Store
             </NavLink>
+            <NavLink 
+              to="/order-history" 
+              className="text-foreground/80 hover:text-primary transition-colors"
+              activeClassName="text-primary"
+            >
+              Orders
+            </NavLink>
             <DropdownMenu>
               <DropdownMenuTrigger className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1 outline-none">
                 Legal

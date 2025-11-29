@@ -23,6 +23,7 @@ import Status from "./pages/Status";
 import Support from "./pages/Support";
 import Store from "./pages/Store";
 import Checkout from "./pages/Checkout";
+import OrderHistory from "./pages/OrderHistory";
 import Confirmation from "./pages/Confirmation";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
@@ -72,6 +73,7 @@ const AppRoutes = () => {
         <Route path="/support" element={<PageTransition><Support /></PageTransition>} />
         <Route path="/store" element={<PageTransition><Store /></PageTransition>} />
         <Route path="/checkout" element={<PageTransition><Checkout /></PageTransition>} />
+        <Route path="/order-history" element={<PageTransition><OrderHistory /></PageTransition>} />
         <Route path="/confirmation" element={<PageTransition><Confirmation /></PageTransition>} />
         <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
         <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />

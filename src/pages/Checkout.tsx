@@ -107,15 +107,24 @@ const Checkout = () => {
     setIsProcessing(true);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Authentication Required",
+          description: "Please login to complete your purchase",
+          variant: "destructive",
+        });
+        navigate("/auth");
+        return;
+      }
+
       // Mark promo code as used if provided
       if (formData.promoCode && promoDiscount > 0) {
-        const { data: { user } } = await supabase.auth.getUser();
-        
         await supabase
           .from('promo_codes')
           .update({
             is_used: true,
-            used_by: user?.id,
+            used_by: session.user.id,
             used_at: new Date().toISOString(),
           })
           .eq('code', formData.promoCode.toUpperCase());
@@ -125,27 +134,68 @@ const Checkout = () => {
         ? getTotalPrice() * (1 - promoDiscount / 100)
         : getTotalPrice();
       
-      // Navigate to confirmation page with order details
-      navigate('/confirmation', {
-        state: {
-          orderDetails: {
-            items: items,
-            total: finalTotal,
-            originalTotal: getTotalPrice(),
-            discount: promoDiscount,
-            currency: currency,
-            customerInfo: formData,
-            orderNumber: `SLRP-${Date.now()}`,
-          }
-        }
-      });
+      // Generate order number
+      const orderNumber = `SLRP-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
+      // Prepare order data
+      const orderData = {
+        user_id: session.user.id,
+        order_number: orderNumber,
+        items: items.map(item => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          icon: item.icon,
+        })),
+        total: finalTotal,
+        currency: currency,
+        status: 'pending',
+        customer_name: formData.name,
+        customer_email: formData.email,
+        discord_username: formData.discord,
+      };
+
+      // Save order to database
+      const { error: orderError } = await supabase
+        .from('orders')
+        .insert(orderData);
+
+      if (orderError) throw orderError;
+
+      // Send email notification
+      try {
+        await supabase.functions.invoke('send-purchase-confirmation', {
+          body: {
+            customerEmail: formData.email,
+            customerName: formData.name,
+            orderNumber: orderNumber,
+            items: items.map(item => ({
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+            })),
+            total: finalTotal,
+            currency: currency,
+          },
+        });
+      } catch (emailError) {
+        console.error("Email notification error:", emailError);
+        // Don't fail the order if email fails
+      }
+
+      toast({
+        title: "Order Placed Successfully! 🎉",
+        description: "Check your email for confirmation. You will be contacted on Discord.",
+      });
+      
       clearCart();
-    } catch (error) {
+      navigate("/order-history");
+    } catch (error: any) {
       console.error('Payment error:', error);
       toast({
         title: "Payment failed",
-        description: "There was an error processing your payment. Please try again.",
+        description: error.message || "There was an error processing your payment. Please try again.",
         variant: "destructive",
       });
     } finally {

@@ -9,6 +9,8 @@ export const useGalleryLikes = (submissionId: string) => {
   const { toast } = useToast();
 
   useEffect(() => {
+    if (!submissionId) return;
+    
     loadLikeData();
     
     // Subscribe to real-time updates
@@ -34,6 +36,8 @@ export const useGalleryLikes = (submissionId: string) => {
   }, [submissionId]);
 
   const loadLikeData = async () => {
+    if (!submissionId) return;
+    
     try {
       // Get like count
       const { count } = await supabase
