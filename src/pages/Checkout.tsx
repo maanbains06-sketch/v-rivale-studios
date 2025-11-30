@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/contexts/CartContext";
 import { getDisplayPrice, detectUserCurrency } from "@/lib/currency";
 import { useToast } from "@/hooks/use-toast";
+import { generateReceiptPDF } from "@/lib/pdfGenerator";
 import { ShoppingCart, CreditCard, Sparkles, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import gtaBg from "@/assets/hero-home-realistic.jpg";
@@ -190,6 +191,40 @@ const Checkout = () => {
       });
       
       clearCart();
+      
+      // Show download option
+      setTimeout(() => {
+        toast({
+          title: "Download Your Receipt",
+          description: "Your receipt is ready to download.",
+          action: (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                generateReceiptPDF({
+                  orderNumber: orderNumber,
+                  customerName: formData.name,
+                  customerEmail: formData.email,
+                  items: items.map(item => ({
+                    name: item.name,
+                    price: item.price,
+                    quantity: item.quantity,
+                  })),
+                  subtotal: getTotalPrice(),
+                  total: finalTotal,
+                  currency: currency,
+                  date: new Date().toISOString(),
+                  discount: promoDiscount,
+                });
+              }}
+            >
+              Download PDF
+            </Button>
+          ),
+        });
+      }, 1000);
+      
       navigate("/order-history");
     } catch (error: any) {
       console.error('Payment error:', error);

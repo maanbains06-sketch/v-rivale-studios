@@ -6,8 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Package, Clock, CheckCircle, XCircle, ShoppingBag } from "lucide-react";
+import { Loader2, Package, Clock, CheckCircle, XCircle, ShoppingBag, Download } from "lucide-react";
 import { formatPrice } from "@/lib/currency";
+import { generateReceiptPDF } from "@/lib/pdfGenerator";
 import gtaBg from "@/assets/hero-home-realistic.jpg";
 
 interface OrderItem {
@@ -111,6 +112,24 @@ const OrderHistory = () => {
     );
   };
 
+  const handleDownloadReceipt = (order: Order) => {
+    generateReceiptPDF({
+      orderNumber: order.order_number,
+      customerName: order.customer_name,
+      customerEmail: order.customer_email,
+      items: order.items,
+      subtotal: order.total,
+      total: order.total,
+      currency: order.currency,
+      date: order.created_at,
+    });
+    
+    toast({
+      title: "Receipt Downloaded",
+      description: "Your purchase receipt has been downloaded successfully.",
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
@@ -212,10 +231,20 @@ const OrderHistory = () => {
 
                       {/* Total */}
                       <div className="flex items-center justify-between pt-4 border-t">
-                        <p className="text-lg font-semibold">Total Amount</p>
-                        <p className="text-2xl font-bold text-primary">
-                          {formatPrice(order.total, order.currency)}
-                        </p>
+                        <div>
+                          <p className="text-lg font-semibold">Total Amount</p>
+                          <p className="text-2xl font-bold text-primary">
+                            {formatPrice(order.total, order.currency)}
+                          </p>
+                        </div>
+                        <Button
+                          onClick={() => handleDownloadReceipt(order)}
+                          variant="outline"
+                          className="gap-2 hover:bg-primary/10 hover:border-primary/50"
+                        >
+                          <Download className="h-4 w-4" />
+                          Download Receipt
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
