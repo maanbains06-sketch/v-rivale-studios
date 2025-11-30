@@ -1,17 +1,38 @@
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Trash2, Plus, Minus, Package, Sparkles } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { getDisplayPrice } from "@/lib/currency";
-import { useState, useEffect } from "react";
-import { detectUserCurrency } from "@/lib/currency";
 import { useNavigate } from "react-router-dom";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import gtaBg from "@/assets/hero-home-gta-thunder.jpg";
 
 const CartDrawer = () => {
+  const { getTotalItems } = useCart();
+  const navigate = useNavigate();
+  const totalItems = getTotalItems();
+
+  return (
+    <Button 
+      variant="outline" 
+      size="icon" 
+      className="relative hover:bg-primary/10 hover:border-primary/40 transition-all duration-300"
+      onClick={() => navigate('/checkout')}
+    >
+      <ShoppingCart className="h-5 w-5" />
+      {totalItems > 0 && (
+        <Badge 
+          className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center p-0 text-xs font-bold bg-primary animate-in zoom-in-50 duration-300"
+          variant="default"
+        >
+          {totalItems}
+        </Badge>
+      )}
+    </Button>
+  );
+};
+
+export default CartDrawer;
+
+/* OLD DRAWER IMPLEMENTATION - KEEPING FOR REFERENCE
+const CartDrawerOld = () => {
   const { items, removeItem, updateQuantity, getTotalItems, getTotalPrice, clearCart } = useCart();
   const [currency, setCurrency] = useState<string>('INR');
   const [open, setOpen] = useState(false);
@@ -44,9 +65,7 @@ const CartDrawer = () => {
         </Button>
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-lg flex flex-col p-0 bg-gradient-to-br from-background via-background to-primary/5 relative overflow-hidden">
-        {/* GTA 5 Background */}
-        <div 
-          className="absolute inset-0 opacity-10 bg-cover bg-center"
+        <div className="absolute inset-0 opacity-10 bg-cover bg-center"
           style={{ backgroundImage: `url(${gtaBg})` }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/90 to-background/95" />
@@ -86,7 +105,6 @@ const CartDrawer = () => {
                       key={item.id} 
                       className="group relative flex gap-4 p-4 bg-gradient-to-br from-card via-card to-primary/5 rounded-2xl border-2 border-border/60 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 transition-all duration-300"
                     >
-                      {/* Item Image */}
                       <div className="relative flex-shrink-0">
                         <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center overflow-hidden border-2 border-primary/20 group-hover:border-primary/40 transition-all duration-300">
                           <img 
@@ -190,5 +208,4 @@ const CartDrawer = () => {
     </Sheet>
   );
 };
-
-export default CartDrawer;
+*/
