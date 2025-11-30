@@ -524,7 +524,7 @@ const Store = () => {
                             <Button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleAddToCart(pkg.name, pkg.price, pkg.name.toLowerCase(), pkg.image, pkg.name.toLowerCase());
+                                handleAddToCart(pkg.name, pkg.price, pkg.image, pkg.image, pkg.name.toLowerCase());
                               }}
                               disabled={addingToCart === pkg.name.toLowerCase()}
                               className="w-full bg-cyan-500 hover:bg-cyan-600 active:scale-95 text-white font-semibold py-6 transition-all duration-200"
@@ -772,7 +772,7 @@ const Store = () => {
 
                 <Button 
                   onClick={(e) => {
-                    handleAddToCart(selectedPackage.name, selectedPackage.price, selectedPackage.name.toLowerCase(), selectedPackage.image, selectedPackage.name.toLowerCase());
+                    handleAddToCart(selectedPackage.name, selectedPackage.price, selectedPackage.image, selectedPackage.image, selectedPackage.name.toLowerCase());
                     setSelectedPackage(null);
                   }}
                   disabled={addingToCart === selectedPackage.name.toLowerCase()}
@@ -827,7 +827,7 @@ const Store = () => {
                 <Button 
                   onClick={(e) => {
                     const refKey = selectedSpecialPackage.name.toLowerCase().replace(/\s+/g, '');
-                    handleAddToCart(selectedSpecialPackage.name, selectedSpecialPackage.price, refKey, selectedSpecialPackage.image, refKey);
+                    handleAddToCart(selectedSpecialPackage.name, selectedSpecialPackage.price, selectedSpecialPackage.image, selectedSpecialPackage.image, refKey);
                     setSelectedSpecialPackage(null);
                   }}
                   disabled={addingToCart === selectedSpecialPackage.name.toLowerCase().replace(/\s+/g, '')}
