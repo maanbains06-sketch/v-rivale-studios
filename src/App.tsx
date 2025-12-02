@@ -76,6 +76,8 @@ const AppRoutes = () => {
         <Route path="/order-history" element={<PageTransition><OrderHistory /></PageTransition>} />
         <Route path="/confirmation" element={<PageTransition><Confirmation /></PageTransition>} />
         <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
+        <Route path="/login" element={<PageTransition><Auth /></PageTransition>} />
+        <Route path="/signup" element={<PageTransition><Auth /></PageTransition>} />
         <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
         <Route path="/admin-staff-applications" element={<PageTransition><AdminStaffApplications /></PageTransition>} />
         <Route path="/admin-referrals" element={<PageTransition><AdminReferrals /></PageTransition>} />
