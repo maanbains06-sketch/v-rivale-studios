@@ -18,7 +18,6 @@ const BanAppeal = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     discordUsername: "",
-    steamId: "",
     banReason: "",
     appealReason: "",
     additionalInfo: "",
@@ -44,7 +43,7 @@ const BanAppeal = () => {
       const { error } = await supabase.from("ban_appeals").insert({
         user_id: user.id,
         discord_username: formData.discordUsername,
-        steam_id: formData.steamId,
+        steam_id: "N/A", // Steam ID removed from authentication
         ban_reason: formData.banReason,
         appeal_reason: formData.appealReason,
         additional_info: formData.additionalInfo || null,
@@ -109,18 +108,6 @@ const BanAppeal = () => {
                     name="discordUsername"
                     placeholder="username#0000"
                     value={formData.discordUsername}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="steamId">Steam ID *</Label>
-                  <Input
-                    id="steamId"
-                    name="steamId"
-                    placeholder="STEAM_0:0:12345678"
-                    value={formData.steamId}
                     onChange={handleChange}
                     required
                   />

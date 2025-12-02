@@ -29,11 +29,6 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const whitelistSchema = z.object({
-  steamId: z.string()
-    .trim()
-    .min(17, "Steam ID must be at least 17 characters")
-    .max(20, "Steam ID must not exceed 20 characters")
-    .regex(/^STEAM_[0-5]:[01]:\d+$/, "Invalid Steam ID format (e.g., STEAM_0:1:12345678)"),
   discord: z.string()
     .trim()
     .min(2, "Discord username is required")
@@ -59,7 +54,6 @@ interface Application {
   created_at: string;
   reviewed_at: string | null;
   admin_notes: string | null;
-  steam_id: string;
   discord: string;
   age: number;
   experience: string;
@@ -68,7 +62,6 @@ interface Application {
 
 interface ApplicationDraft {
   id: string;
-  steam_id: string | null;
   discord: string | null;
   age: number | null;
   experience: string | null;
@@ -93,7 +86,6 @@ const Whitelist = () => {
   const form = useForm<WhitelistFormValues>({
     resolver: zodResolver(whitelistSchema),
     defaultValues: {
-      steamId: "",
       discord: "",
       age: "",
       experience: "",
@@ -104,23 +96,6 @@ const Whitelist = () => {
   useEffect(() => {
     const checkAuth = async (session: Session | null) => {
       if (session?.user) {
-        // Check if user has steam_id in profile
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('steam_id')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (!profile?.steam_id) {
-          toast({
-            title: "Steam ID Required",
-            description: "Please link your Steam ID to access the whitelist",
-            variant: "destructive",
-          });
-          navigate("/auth");
-          return;
-        }
-        
         // Check for existing application
         setTimeout(() => {
           checkExistingApplication(session.user.id);
@@ -217,7 +192,6 @@ const Whitelist = () => {
     try {
       const draftData = {
         user_id: user.id,
-        steam_id: formValues.steamId || null,
         discord: formValues.discord || null,
         age: formValues.age ? parseInt(formValues.age) : null,
         experience: formValues.experience || null,
@@ -263,7 +237,6 @@ const Whitelist = () => {
   const loadDraft = () => {
     if (!existingDraft) return;
 
-    form.setValue("steamId", existingDraft.steam_id || "");
     form.setValue("discord", existingDraft.discord || "");
     form.setValue("age", existingDraft.age ? existingDraft.age.toString() : "");
     form.setValue("experience", existingDraft.experience || "");
@@ -318,7 +291,6 @@ const Whitelist = () => {
         .from("whitelist_applications")
         .insert({
           user_id: user.id,
-          steam_id: data.steamId,
           discord: data.discord,
           age: parseInt(data.age),
           experience: data.experience,
@@ -617,7 +589,6 @@ const Whitelist = () => {
                       <ul className="list-disc list-inside space-y-1">
                         <li>Must be 16+ years old</li>
                         <li>Active Discord account required</li>
-                        <li>Valid Steam ID from GTA V</li>
                         <li>Detailed roleplay experience description (min. 50 characters)</li>
                         <li>Creative character backstory (min. 100 characters)</li>
                         <li>Commitment to server rules and quality RP</li>
@@ -628,28 +599,7 @@ const Whitelist = () => {
 
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <FormField
-                      control={form.control}
-                      name="steamId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Steam ID *</FormLabel>
-                          <FormControl>
-                            <Input 
-                              placeholder="STEAM_0:1:12345678" 
-                              {...field}
-                              className="bg-background/50"
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Your Steam ID in format: STEAM_0:1:12345678
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
+                     <FormField
                       control={form.control}
                       name="discord"
                       render={({ field }) => (

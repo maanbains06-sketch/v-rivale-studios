@@ -82,7 +82,7 @@ export type Database = {
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
-          steam_id: string
+          steam_id?: string
           updated_at?: string
           user_id: string
         }
@@ -241,6 +241,13 @@ export type Database = {
             columns: ["staff_id"]
             isOneToOne: false
             referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorite_staff_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1341,7 +1348,7 @@ export type Database = {
           reviewed_at: string | null
           reviewed_by: string | null
           status: Database["public"]["Enums"]["application_status"]
-          steam_id: string
+          steam_id: string | null
           updated_at: string
           user_id: string
         }
@@ -1356,7 +1363,7 @@ export type Database = {
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["application_status"]
-          steam_id: string
+          steam_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -1371,7 +1378,7 @@ export type Database = {
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["application_status"]
-          steam_id?: string
+          steam_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -1403,7 +1410,48 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      staff_members_public: {
+        Row: {
+          bio: string | null
+          created_at: string | null
+          department: string | null
+          discord_avatar: string | null
+          display_order: number | null
+          id: string | null
+          is_active: boolean | null
+          name: string | null
+          responsibilities: string[] | null
+          role: string | null
+          role_type: string | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string | null
+          department?: string | null
+          discord_avatar?: string | null
+          display_order?: number | null
+          id?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          responsibilities?: string[] | null
+          role?: string | null
+          role_type?: string | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string | null
+          department?: string | null
+          discord_avatar?: string | null
+          display_order?: number | null
+          id?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          responsibilities?: string[] | null
+          role?: string | null
+          role_type?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       assign_chat_to_staff: { Args: { chat_id: string }; Returns: string }

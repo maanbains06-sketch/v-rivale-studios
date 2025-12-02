@@ -7,7 +7,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.fetch-discord-user]
-verify_jwt = false
+verify_jwt = true
 
 [functions.send-gallery-notification]
 verify_jwt = false
@@ -19,7 +19,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.send-owner-message]
-verify_jwt = false
+verify_jwt = true
 
 [functions.send-refund-notification]
 verify_jwt = false
