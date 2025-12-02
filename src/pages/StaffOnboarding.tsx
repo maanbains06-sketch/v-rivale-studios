@@ -1,4 +1,5 @@
 import { useState } from "react";
+import DOMPurify from "dompurify";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -148,7 +149,7 @@ const StaffOnboarding = () => {
               <DialogDescription>{selectedModule?.description}</DialogDescription>
             </DialogHeader>
             <div className="prose prose-sm max-w-none dark:prose-invert">
-              <div dangerouslySetInnerHTML={{ __html: selectedModule?.content || "" }} />
+              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedModule?.content || "") }} />
             </div>
           </DialogContent>
         </Dialog>
