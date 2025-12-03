@@ -18,13 +18,22 @@ const Auth = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(false);
   const location = window.location.pathname;
+  const searchParams = new URLSearchParams(window.location.search);
+  const isSignupFlow = searchParams.get("signup") === "true" || location === "/signup";
   const defaultTab = location === "/signup" ? "signup" : "login";
 
   useEffect(() => {
     const checkAuth = async (session: Session | null) => {
       if (session?.user) {
-        // Redirect authenticated users to whitelist
-        navigate("/whitelist");
+        // Check URL params to determine if this is signup or login flow
+        const urlParams = new URLSearchParams(window.location.search);
+        const isSignup = urlParams.get("signup") === "true";
+        
+        if (isSignup) {
+          navigate("/discord-signup");
+        } else {
+          navigate("/discord-profile");
+        }
       }
     };
 
@@ -47,7 +56,7 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const handleDiscordSignIn = async () => {
+  const handleDiscordLogin = async () => {
     setLoading(true);
     
     const { error } = await supabase.auth.signInWithOAuth({
@@ -60,6 +69,26 @@ const Auth = () => {
     if (error) {
       toast({
         title: "Discord Sign In Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      setLoading(false);
+    }
+  };
+
+  const handleDiscordSignup = async () => {
+    setLoading(true);
+    
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'discord',
+      options: {
+        redirectTo: `${window.location.origin}/auth?signup=true`,
+      },
+    });
+
+    if (error) {
+      toast({
+        title: "Discord Sign Up Failed",
         description: error.message,
         variant: "destructive",
       });
@@ -148,7 +177,7 @@ const Auth = () => {
                   </div>
                   
                   <Button
-                    onClick={handleDiscordSignIn}
+                    onClick={handleDiscordLogin}
                     disabled={loading || !!user}
                     size="lg"
                     className="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white disabled:opacity-50"
@@ -197,7 +226,7 @@ const Auth = () => {
                   </div>
                   
                   <Button
-                    onClick={handleDiscordSignIn}
+                    onClick={handleDiscordSignup}
                     disabled={loading || !!user}
                     size="lg"
                     className="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white disabled:opacity-50"
