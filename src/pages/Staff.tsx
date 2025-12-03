@@ -20,11 +20,7 @@ import { FavoriteStaffButton } from "@/components/FavoriteStaffButton";
 interface StaffMember {
   id: string;
   name: string;
-  discord_id: string;
-  discord_username?: string;
   discord_avatar?: string;
-  email?: string;
-  steam_id?: string;
   role: string;
   role_type: string;
   department: string;
@@ -32,7 +28,7 @@ interface StaffMember {
   responsibilities: string[];
   is_active: boolean;
   display_order: number;
-  user_id?: string | null;
+  // Note: user_id not available from public view - online status won't work
 }
 
 const roleColors = {
@@ -72,7 +68,7 @@ const Staff = () => {
   const loadStaffMembers = async () => {
     try {
       const { data, error } = await supabase
-        .from("staff_members")
+        .from("staff_members_public")
         .select("*")
         .eq("is_active", true)
         .order("display_order", { ascending: true });
@@ -156,8 +152,9 @@ const Staff = () => {
   const renderStaffCard = (member: StaffMember, index: number) => {
     const Icon = roleIcons[member.role_type as keyof typeof roleIcons] || UserCheck;
     const achievements = getAchievementBadges(member);
-    const staffIsOnline = isOnline(member.user_id);
-    const lastSeenTime = getLastSeen(member.user_id);
+    // Online status not available from public view for privacy
+    const staffIsOnline = false;
+    const lastSeenTime = null;
     
     return (
       <div key={index} className="relative group">
@@ -232,49 +229,6 @@ const Staff = () => {
               )}
 
               <div className="w-full space-y-3">
-                {/* Contact Information */}
-                <div className="bg-muted/30 rounded-lg p-3 space-y-1.5">
-                  <h4 className="text-xs font-semibold text-primary mb-2 uppercase tracking-wide">Contact Information</h4>
-                  
-                  <div className="flex items-center justify-between text-left">
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <MessageCircle className="w-3 h-3" />
-                      Discord
-                    </span>
-                    <span className="text-xs font-mono font-semibold">{member.discord_username || "N/A"}</span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between text-left">
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Shield className="w-3 h-3" />
-                      Discord ID
-                    </span>
-                    <span className="text-xs font-mono font-semibold">{member.discord_id}</span>
-                  </div>
-                  
-                  {member.email && (
-                    <div className="flex items-center justify-between text-left">
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Mail className="w-3 h-3" />
-                        Email
-                      </span>
-                      <span className="text-xs font-mono font-semibold truncate max-w-[180px]" title={member.email}>
-                        {member.email}
-                      </span>
-                    </div>
-                  )}
-                  
-                  {member.steam_id && (
-                    <div className="flex items-center justify-between text-left">
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <UserCheck className="w-3 h-3" />
-                        Steam ID
-                      </span>
-                      <span className="text-xs font-mono font-semibold">{member.steam_id}</span>
-                    </div>
-                  )}
-                </div>
-
                 {/* View Profile Button */}
                 <Button 
                   className="w-full bg-primary/10 hover:bg-primary hover:text-primary-foreground text-primary border border-primary/20 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/20"
