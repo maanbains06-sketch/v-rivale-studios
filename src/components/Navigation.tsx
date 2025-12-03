@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail, Ban, Briefcase, Gift, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, Ticket } from "lucide-react";
+import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail, Ban, Briefcase, Gift, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, Ticket, ExternalLink } from "lucide-react";
 import { Button } from "./ui/button";
 import AnimatedLogoIcon from "./AnimatedLogoIcon";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
-import CartDrawer from "./CartDrawer";
 import { NotificationBell } from "./NotificationBell";
 import { useStaffRole } from "@/hooks/useStaffRole";
 import {
@@ -16,6 +15,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+const TEBEX_STORE_URL = "https://slrp.tebex.io"; // Update this to your actual Tebex store URL
 
 const Navigation = () => {
   const [user, setUser] = useState(null);
@@ -126,13 +127,15 @@ const Navigation = () => {
             >
               Support
             </NavLink>
-            <NavLink
-              to="/store" 
-              className="text-foreground/80 hover:text-primary transition-colors"
-              activeClassName="text-primary"
+            <a
+              href={TEBEX_STORE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1"
             >
               Store
-            </NavLink>
+              <ExternalLink className="w-3 h-3" />
+            </a>
             <DropdownMenu>
               <DropdownMenuTrigger className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1 outline-none">
                 Legal
@@ -176,7 +179,6 @@ const Navigation = () => {
           
           <div className="flex items-center gap-2">
             {user && <NotificationBell />}
-            <CartDrawer />
             <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <SheetTrigger asChild>
                 <Button 

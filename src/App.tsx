@@ -21,9 +21,6 @@ import Guides from "./pages/Guides";
 import Gallery from "./pages/Gallery";
 import Status from "./pages/Status";
 import Support from "./pages/Support";
-import Store from "./pages/Store";
-import Checkout from "./pages/Checkout";
-import OrderHistory from "./pages/OrderHistory";
 import Confirmation from "./pages/Confirmation";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
@@ -45,7 +42,6 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import RefundPolicy from "./pages/RefundPolicy";
 import NotFound from "./pages/NotFound";
-import { CartProvider } from "./contexts/CartContext";
 
 const queryClient = new QueryClient();
 
@@ -71,9 +67,6 @@ const AppRoutes = () => {
         <Route path="/gallery" element={<PageTransition><Gallery /></PageTransition>} />
         <Route path="/status" element={<PageTransition><Status /></PageTransition>} />
         <Route path="/support" element={<PageTransition><Support /></PageTransition>} />
-        <Route path="/store" element={<PageTransition><Store /></PageTransition>} />
-        <Route path="/checkout" element={<PageTransition><Checkout /></PageTransition>} />
-        <Route path="/order-history" element={<PageTransition><OrderHistory /></PageTransition>} />
         <Route path="/confirmation" element={<PageTransition><Confirmation /></PageTransition>} />
         <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
         <Route path="/login" element={<PageTransition><Auth /></PageTransition>} />
@@ -105,15 +98,13 @@ const AppRoutes = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <CartProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </TooltipProvider>
-    </CartProvider>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 
