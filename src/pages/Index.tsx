@@ -494,7 +494,7 @@ const Index = () => {
                     </a>
                   </li>
                   <li>
-                    <a href="/store" className="hover:text-primary transition-colors">
+                    <a href="https://skylife-roleplay-india.tebex.io" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
                       Store
                     </a>
                   </li>
