@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Mail, MessageCircle, Shield, Calendar, UserCheck, Loader2 } from "lucide-react";
+import { ArrowLeft, Shield, Calendar, UserCheck, Loader2 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,25 +8,17 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import StaffActivityLog from "@/components/StaffActivityLog";
-import StaffPresence from "@/components/StaffPresence";
 
 interface StaffMember {
   id: string;
   name: string;
-  discord_id: string;
-  discord_username?: string;
   discord_avatar?: string;
-  email?: string;
-  steam_id?: string;
   role: string;
   role_type: string;
   department: string;
   bio?: string;
   responsibilities: string[];
   is_active: boolean;
-  user_id?: string;
-  last_seen?: string;
 }
 
 const roleColors = {
@@ -63,7 +55,7 @@ const StaffProfile = () => {
 
     try {
       const { data, error } = await supabase
-        .from("staff_members")
+        .from("staff_members_public")
         .select("*")
         .eq("id", name)
         .eq("is_active", true)
@@ -71,7 +63,7 @@ const StaffProfile = () => {
 
       if (error) throw error;
 
-      setStaffMember(data);
+      setStaffMember(data as StaffMember);
     } catch (error: any) {
       console.error("Error loading staff member:", error);
       toast({
@@ -164,57 +156,8 @@ const StaffProfile = () => {
                 <RoleIcon className="w-3 h-3 mr-1" />
                 {staffMember.role_type.replace("_", " ").toUpperCase()}
               </Badge>
-              {staffMember.user_id && (
-                <div className="mt-4">
-                  <StaffPresence 
-                    userId={staffMember.user_id} 
-                    lastSeen={staffMember.last_seen}
-                    showLastSeen={true}
-                  />
-                </div>
-              )}
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2 p-4 rounded-lg bg-muted/30">
-                <h4 className="text-xs font-semibold text-primary uppercase tracking-wide mb-3">Contact Details</h4>
-                
-                <div className="flex items-center gap-3 p-2 rounded-lg bg-background/50">
-                  <MessageCircle className="w-4 h-4 text-primary shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-muted-foreground">Discord</p>
-                    <p className="text-sm font-semibold truncate">{staffMember.discord_username || "N/A"}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3 p-2 rounded-lg bg-background/50">
-                  <Shield className="w-4 h-4 text-primary shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-muted-foreground">Discord ID</p>
-                    <p className="text-xs font-mono font-semibold">{staffMember.discord_id}</p>
-                  </div>
-                </div>
-                
-                {staffMember.email && (
-                  <div className="flex items-center gap-3 p-2 rounded-lg bg-background/50">
-                    <Mail className="w-4 h-4 text-primary shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-muted-foreground">Email</p>
-                      <p className="text-sm font-semibold truncate" title={staffMember.email}>{staffMember.email}</p>
-                    </div>
-                  </div>
-                )}
-                
-                {staffMember.steam_id && (
-                  <div className="flex items-center gap-3 p-2 rounded-lg bg-background/50">
-                    <UserCheck className="w-4 h-4 text-primary shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-muted-foreground">Steam ID</p>
-                      <p className="text-xs font-mono font-semibold">{staffMember.steam_id}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-              
               <div className="p-4 rounded-lg bg-muted/30">
                 <h4 className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">Department</h4>
                 <Badge variant="outline" className="w-full justify-center capitalize">
@@ -245,28 +188,29 @@ const StaffProfile = () => {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {staffMember.responsibilities.map((responsibility, index) => (
+                  {staffMember.responsibilities?.map((responsibility, index) => (
                     <Badge key={index} variant="outline" className="text-sm">
                       {responsibility}
                     </Badge>
-                  ))}
+                  )) || (
+                    <p className="text-muted-foreground">No responsibilities listed.</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
 
             <Card className="glass-effect border-border/20">
               <CardHeader>
-                <CardTitle>Complete Profile Information</CardTitle>
+                <CardTitle>Profile Information</CardTitle>
                 <CardDescription>
-                  All details about {staffMember.name}
+                  Details about {staffMember.name}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Personal Information */}
                 <div>
                   <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
                     <UserCheck className="w-4 h-4 text-primary" />
-                    Personal Information
+                    Staff Details
                   </h4>
                   <div className="grid gap-3">
                     <div className="flex items-start justify-between p-3 rounded-lg bg-muted/50">
@@ -285,116 +229,29 @@ const StaffProfile = () => {
                     </div>
                   </div>
                 </div>
-
-                {/* Contact Details */}
-                <div>
-                  <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                    <MessageCircle className="w-4 h-4 text-primary" />
-                    Contact Details
-                  </h4>
-                  <div className="grid gap-3">
-                    <div className="flex items-start justify-between p-3 rounded-lg bg-muted/50">
-                      <span className="text-sm text-muted-foreground">Discord Username</span>
-                      <span className="text-sm font-mono font-semibold">{staffMember.discord_username || "N/A"}</span>
-                    </div>
-                    <div className="flex items-start justify-between p-3 rounded-lg bg-muted/50">
-                      <span className="text-sm text-muted-foreground">Discord ID</span>
-                      <span className="text-xs font-mono font-semibold">{staffMember.discord_id}</span>
-                    </div>
-                    {staffMember.email && (
-                      <div className="flex items-start justify-between p-3 rounded-lg bg-muted/50">
-                        <span className="text-sm text-muted-foreground">Email Address</span>
-                        <span className="text-sm font-mono font-semibold break-all text-right max-w-[60%]">{staffMember.email}</span>
-                      </div>
-                    )}
-                    {staffMember.steam_id && (
-                      <div className="flex items-start justify-between p-3 rounded-lg bg-muted/50">
-                        <span className="text-sm text-muted-foreground">Steam ID</span>
-                        <span className="text-sm font-mono font-semibold">{staffMember.steam_id}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
               </CardContent>
             </Card>
 
             <Card className="glass-effect border-border/20">
               <CardHeader>
-                <CardTitle>Contact Information</CardTitle>
+                <CardTitle>Contact</CardTitle>
                 <CardDescription>
-                  Reach out to {staffMember.name.split(" ")[0]} through the following channels
+                  How to reach {staffMember.name.split(" ")[0]}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent>
                 <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50">
-                  <MessageCircle className="w-5 h-5 text-primary mt-0.5" />
+                  <Shield className="w-5 h-5 text-primary mt-0.5" />
                   <div className="flex-1">
-                    <p className="font-medium mb-1">Discord</p>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Best way to reach me for quick responses
+                    <p className="font-medium mb-1">Support Tickets</p>
+                    <p className="text-sm text-muted-foreground">
+                      For assistance, please create a support ticket through our support system. 
+                      Staff members will respond to your inquiries there.
                     </p>
-                    <div className="space-y-1">
-                      <p className="text-sm font-mono bg-background px-2 py-1 rounded w-fit">
-                        {staffMember.discord_username || staffMember.discord_id}
-                      </p>
-                      <p className="text-xs text-muted-foreground font-mono">
-                        ID: {staffMember.discord_id}
-                      </p>
-                    </div>
                   </div>
                 </div>
-
-                {staffMember.email && (
-                  <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50">
-                    <Mail className="w-5 h-5 text-primary mt-0.5" />
-                    <div className="flex-1">
-                      <p className="font-medium mb-1">Email</p>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        For formal inquiries and support
-                      </p>
-                      <p className="text-sm font-mono bg-background px-2 py-1 rounded w-fit">
-                        {staffMember.email}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {staffMember.steam_id && (
-                  <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50">
-                    <Shield className="w-5 h-5 text-primary mt-0.5" />
-                    <div className="flex-1">
-                      <p className="font-medium mb-1">Steam ID</p>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        In-game identification
-                      </p>
-                      <p className="text-sm font-mono bg-background px-2 py-1 rounded w-fit">
-                        {staffMember.steam_id}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {!staffMember.email && !staffMember.steam_id && (
-                  <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50">
-                    <MessageCircle className="w-5 h-5 text-primary mt-0.5" />
-                    <div className="flex-1">
-                      <p className="font-medium mb-1">In-Game</p>
-                      <p className="text-sm text-muted-foreground">
-                        Available for support tickets and general inquiries within the server
-                      </p>
-                    </div>
-                  </div>
-                )}
               </CardContent>
             </Card>
-
-            {staffMember.user_id && (
-              <StaffActivityLog 
-                staffUserId={staffMember.user_id} 
-                limit={15}
-                showTitle={true}
-              />
-            )}
           </div>
         </div>
       </div>
