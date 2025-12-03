@@ -4,7 +4,7 @@ project_id = "obirpzwvnqveddyuulsb"
 verify_jwt = false
 
 [functions.send-ban-appeal-notification]
-verify_jwt = false
+verify_jwt = true
 
 [functions.fetch-discord-user]
 verify_jwt = true
@@ -22,7 +22,7 @@ verify_jwt = false
 verify_jwt = true
 
 [functions.send-refund-notification]
-verify_jwt = false
+verify_jwt = true
 
 [functions.send-promo-code-email]
-verify_jwt = false
+verify_jwt = true

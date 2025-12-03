@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
@@ -21,7 +22,70 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Verify JWT and get authenticated user
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      console.error("No authorization header provided");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !user) {
+      console.error("Auth error:", authError);
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
     const { userEmail, userName, promoCode, discountPercentage, expiresAt }: PromoCodeEmailRequest = await req.json();
+
+    // Verify the promo code belongs to the authenticated user or was created for them
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    const { data: promoData, error: promoError } = await supabaseAdmin
+      .from("promo_codes")
+      .select("user_id, code")
+      .eq("code", promoCode)
+      .single();
+
+    if (promoError || !promoData) {
+      console.error("Promo code not found:", promoError);
+      return new Response(
+        JSON.stringify({ error: "Invalid promo code" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Verify the promo code belongs to this user
+    if (promoData.user_id !== user.id) {
+      console.error("User attempting to send promo email for code they don't own");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized - promo code does not belong to you" }),
+        { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Also verify the email matches the user's email
+    if (userEmail !== user.email) {
+      console.error("User attempting to send promo email to different address");
+      return new Response(
+        JSON.stringify({ error: "Can only send promo email to your own email address" }),
+        { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
 
     console.log("Sending promo code email to:", userEmail);
 

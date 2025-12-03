@@ -21,24 +21,82 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { chatId, subject, userId }: RefundNotificationRequest = await req.json();
-
-    console.log("Processing refund notification for chat:", chatId);
+    // Verify JWT and get authenticated user
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      console.error("No authorization header provided");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
 
     const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !user) {
+      console.error("Auth error:", authError);
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    const { chatId, subject, userId }: RefundNotificationRequest = await req.json();
+
+    // Verify the userId matches the authenticated user
+    if (userId !== user.id) {
+      console.error("User attempting to create refund notification for different user");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized - cannot create notification for another user" }),
+        { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Use service role for admin operations
+    const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
+    // Verify the chat belongs to the authenticated user
+    const { data: chatData, error: chatError } = await supabaseAdmin
+      .from("support_chats")
+      .select("user_id, subject")
+      .eq("id", chatId)
+      .single();
+
+    if (chatError || !chatData) {
+      console.error("Chat not found:", chatError);
+      return new Response(
+        JSON.stringify({ error: "Chat not found" }),
+        { status: 404, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    if (chatData.user_id !== user.id) {
+      console.error("User attempting to access chat they don't own");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized - chat does not belong to you" }),
+        { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    console.log("Processing refund notification for chat:", chatId);
+
     // Get user profile info
-    const { data: profile } = await supabaseClient
+    const { data: profile } = await supabaseAdmin
       .from("profiles")
       .select("discord_username, steam_id")
       .eq("id", userId)
       .single();
 
     // Get staff emails (billing team and admins)
-    const { data: staffMembers } = await supabaseClient
+    const { data: staffMembers } = await supabaseAdmin
       .from("staff_members")
       .select("email, name, department")
       .eq("is_active", true)
@@ -130,7 +188,7 @@ Reply to this chat with any additional information or questions. Our billing tea
 Thank you for your patience,
 **SLRP Billing Team** 💙`;
 
-    const { error: messageError } = await supabaseClient
+    const { error: messageError } = await supabaseAdmin
       .from("support_messages")
       .insert({
         chat_id: chatId,

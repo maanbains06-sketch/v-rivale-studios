@@ -24,15 +24,55 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { userId, discordUsername, status, adminNotes }: BanAppealNotificationRequest = await req.json();
+    // Verify JWT and get authenticated user
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      console.error("No authorization header provided");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
 
-    console.log("Sending ban appeal notification:", { userId, discordUsername, status });
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: authHeader } } }
+    );
 
-    // Create Supabase client with service role key to get user email
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !user) {
+      console.error("Auth error:", authError);
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Create Supabase admin client for role checking and admin operations
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
+
+    // Verify the caller has admin or moderator role
+    const { data: roleData, error: roleError } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .in("role", ["admin", "moderator"]);
+
+    if (roleError || !roleData || roleData.length === 0) {
+      console.error("User does not have admin/moderator role");
+      return new Response(
+        JSON.stringify({ error: "Forbidden - admin or moderator role required" }),
+        { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    const { userId, discordUsername, status, adminNotes }: BanAppealNotificationRequest = await req.json();
+
+    console.log("Sending ban appeal notification:", { userId, discordUsername, status });
 
     // Get user's email from auth.users
     const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(userId);
