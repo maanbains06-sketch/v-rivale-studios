@@ -41,6 +41,8 @@ import ContactOwner from "./pages/ContactOwner";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import RefundPolicy from "./pages/RefundPolicy";
+import DiscordSignupForm from "./pages/DiscordSignupForm";
+import DiscordProfile from "./pages/DiscordProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -71,6 +73,8 @@ const AppRoutes = () => {
         <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
         <Route path="/login" element={<PageTransition><Auth /></PageTransition>} />
         <Route path="/signup" element={<PageTransition><Auth /></PageTransition>} />
+        <Route path="/discord-signup" element={<PageTransition><DiscordSignupForm /></PageTransition>} />
+        <Route path="/discord-profile" element={<PageTransition><DiscordProfile /></PageTransition>} />
         <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
         <Route path="/admin-staff-applications" element={<PageTransition><AdminStaffApplications /></PageTransition>} />
         <Route path="/admin-referrals" element={<PageTransition><AdminReferrals /></PageTransition>} />
