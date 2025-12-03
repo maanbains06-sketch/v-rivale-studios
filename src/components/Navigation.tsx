@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const TEBEX_STORE_URL = "https://slrp.tebex.io"; // Update this to your actual Tebex store URL
+const TEBEX_STORE_URL = "https://skylife-roleplay-india.tebex.io";
 
 const Navigation = () => {
   const [user, setUser] = useState(null);
