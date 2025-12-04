@@ -4,7 +4,22 @@ import PageHeader from "@/components/PageHeader";
 import headerStatus from "@/assets/header-status.jpg";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, Activity, Clock, Zap, TrendingUp, AlertCircle, Server, Wifi, Network, Sparkles, Radio, Shield, Calendar, AlertTriangle } from "lucide-react";
+import {
+  Users,
+  Activity,
+  Clock,
+  Zap,
+  TrendingUp,
+  AlertCircle,
+  Server,
+  Wifi,
+  Network,
+  Sparkles,
+  Radio,
+  Shield,
+  Calendar,
+  AlertTriangle,
+} from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,7 +51,7 @@ interface ActiveEvent {
 }
 
 interface ServerStatus {
-  status: 'online' | 'offline' | 'maintenance' | 'error';
+  status: "online" | "offline" | "maintenance" | "error";
   players: {
     current: number;
     max: number;
@@ -51,9 +66,9 @@ interface ServerStatus {
 
 const Status = () => {
   const [serverData, setServerData] = useState<ServerStatus>({
-    status: 'offline',
+    status: "offline",
     players: { current: 0, max: 32 },
-    uptime: '0h',
+    uptime: "0h",
     uptimeSeconds: 0,
     serverLoad: 0,
     networkLatency: 0,
@@ -66,27 +81,27 @@ const Status = () => {
 
   const fetchServerStatus = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('fivem-server-status');
-      
+      const { data, error } = await supabase.functions.invoke("fivem-server-status");
+
       if (error) {
-        console.error('Error fetching server status:', error);
-        toast.error('Failed to fetch server status');
+        console.error("Error fetching server status:", error);
+        toast.error("Failed to fetch server status");
         return;
       }
 
       // Check for server restart (uptime decreased)
-      if (lastUptimeSeconds !== null && data.uptimeSeconds < lastUptimeSeconds && data.status === 'online') {
-        toast.success('Server Restarted', {
-          description: `${data.serverName || 'Server'} has been restarted. Current uptime: ${data.uptime}`,
+      if (lastUptimeSeconds !== null && data.uptimeSeconds < lastUptimeSeconds && data.status === "online") {
+        toast.success("Server Restarted", {
+          description: `${data.serverName || "Server"} has been restarted. Current uptime: ${data.uptime}`,
         });
       }
-      
+
       setLastUptimeSeconds(data.uptimeSeconds);
       setServerData(data);
       setIsLoading(false);
     } catch (error) {
-      console.error('Error:', error);
-      toast.error('Failed to connect to server');
+      console.error("Error:", error);
+      toast.error("Failed to connect to server");
       setIsLoading(false);
     }
   };
@@ -94,16 +109,16 @@ const Status = () => {
   const fetchMaintenance = async () => {
     try {
       const { data, error } = await supabase
-        .from('maintenance_schedules')
-        .select('*')
-        .in('status', ['scheduled', 'in_progress'])
-        .order('scheduled_start', { ascending: true });
-      
+        .from("maintenance_schedules")
+        .select("*")
+        .in("status", ["scheduled", "in_progress"])
+        .order("scheduled_start", { ascending: true });
+
       if (!error && data) {
         setMaintenance(data);
       }
     } catch (error) {
-      console.error('Failed to fetch maintenance schedules:', error);
+      console.error("Failed to fetch maintenance schedules:", error);
     }
   };
 
@@ -111,16 +126,16 @@ const Status = () => {
     try {
       // Fetch recent maintenance/updates from maintenance_schedules
       const { data: maintenanceData, error: maintenanceError } = await supabase
-        .from('maintenance_schedules')
-        .select('*')
-        .order('created_at', { ascending: false })
+        .from("maintenance_schedules")
+        .select("*")
+        .order("created_at", { ascending: false })
         .limit(5);
 
       // Fetch recent events
       const { data: eventsData, error: eventsError } = await supabase
-        .from('events')
-        .select('*')
-        .order('created_at', { ascending: false })
+        .from("events")
+        .select("*")
+        .order("created_at", { ascending: false })
         .limit(5);
 
       const updates: RecentUpdate[] = [];
@@ -132,7 +147,7 @@ const Status = () => {
             id: index + 1,
             title: item.title,
             date: getTimeAgo(new Date(item.created_at)),
-            type: 'maintenance'
+            type: "maintenance",
           });
         });
       }
@@ -144,7 +159,7 @@ const Status = () => {
             id: updates.length + index + 1,
             title: item.title,
             date: getTimeAgo(new Date(item.created_at)),
-            type: 'event'
+            type: "event",
           });
         });
       }
@@ -158,17 +173,17 @@ const Status = () => {
 
       setRecentUpdates(updates.slice(0, 5));
     } catch (error) {
-      console.error('Failed to fetch recent updates:', error);
+      console.error("Failed to fetch recent updates:", error);
     }
   };
 
   const fetchActiveEvents = async () => {
     try {
       const { data, error } = await supabase
-        .from('events')
-        .select('*')
-        .in('status', ['upcoming', 'running'])
-        .order('start_date', { ascending: true })
+        .from("events")
+        .select("*")
+        .in("status", ["upcoming", "running"])
+        .order("start_date", { ascending: true })
         .limit(5);
 
       if (!error && data) {
@@ -177,12 +192,12 @@ const Status = () => {
           name: event.title,
           startTime: getEventStartTime(new Date(event.start_date)),
           endTime: getEventDuration(new Date(event.start_date), new Date(event.end_date)),
-          participants: event.current_participants || 0
+          participants: event.current_participants || 0,
         }));
         setActiveEvents(events);
       }
     } catch (error) {
-      console.error('Failed to fetch active events:', error);
+      console.error("Failed to fetch active events:", error);
     }
   };
 
@@ -195,7 +210,7 @@ const Status = () => {
 
     if (diffMins < 60) return `${diffMins} minutes ago`;
     if (diffHours < 24) return `${diffHours} hours ago`;
-    if (diffDays === 1) return '1 day ago';
+    if (diffDays === 1) return "1 day ago";
     return `${diffDays} days ago`;
   };
 
@@ -204,22 +219,22 @@ const Status = () => {
     if (!match) return 0;
     const value = parseInt(match[1]);
     const unit = match[2];
-    if (unit === 'minute') return value;
-    if (unit === 'hour') return value * 60;
-    if (unit === 'day') return value * 1440;
+    if (unit === "minute") return value;
+    if (unit === "hour") return value * 60;
+    if (unit === "day") return value * 1440;
     return 0;
   };
 
   const getEventStartTime = (startDate: Date): string => {
     const now = new Date();
     const diffMs = startDate.getTime() - now.getTime();
-    
-    if (diffMs <= 0) return 'Now';
-    
+
+    if (diffMs <= 0) return "Now";
+
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffHours / 24);
-    
-    if (diffHours < 1) return 'Starting soon';
+
+    if (diffHours < 1) return "Starting soon";
     if (diffHours < 24) return `In ${diffHours} hours`;
     return `In ${diffDays} days`;
   };
@@ -228,7 +243,7 @@ const Status = () => {
     const diffMs = endDate.getTime() - startDate.getTime();
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffHours / 24);
-    
+
     if (diffHours < 24) return `${diffHours} hours`;
     return `${diffDays} days`;
   };
@@ -238,7 +253,7 @@ const Status = () => {
     fetchMaintenance();
     fetchRecentUpdates();
     fetchActiveEvents();
-    
+
     const statusInterval = setInterval(fetchServerStatus, 10000);
     const maintenanceInterval = setInterval(fetchMaintenance, 60000);
     const updatesInterval = setInterval(fetchRecentUpdates, 60000);
@@ -254,42 +269,42 @@ const Status = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'online':
-        return 'from-green-400 to-green-600';
-      case 'offline':
-        return 'from-red-400 to-red-600';
-      case 'maintenance':
-        return 'from-yellow-400 to-yellow-600';
+      case "online":
+        return "from-green-400 to-green-600";
+      case "offline":
+        return "from-red-400 to-red-600";
+      case "maintenance":
+        return "from-yellow-400 to-yellow-600";
       default:
-        return 'from-gray-400 to-gray-600';
+        return "from-gray-400 to-gray-600";
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'online':
-        return 'All Systems Operational';
-      case 'offline':
-        return 'Server Offline';
-      case 'maintenance':
-        return 'Under Maintenance';
+      case "online":
+        return "All Systems Operational";
+      case "offline":
+        return "Server Offline";
+      case "maintenance":
+        return "Under Maintenance";
       default:
-        return 'Status Unknown';
+        return "Status Unknown";
     }
   };
 
   const getLatencyText = (latency: number) => {
-    if (latency < 50) return 'Excellent';
-    if (latency < 100) return 'Good';
-    if (latency < 150) return 'Fair';
-    return 'Poor';
+    if (latency < 50) return "Excellent";
+    if (latency < 100) return "Good";
+    if (latency < 150) return "Fair";
+    return "Poor";
   };
 
   const getLoadText = (load: number) => {
-    if (load < 50) return 'Optimal';
-    if (load < 75) return 'Good';
-    if (load < 90) return 'High';
-    return 'Critical';
+    if (load < 50) return "Optimal";
+    if (load < 75) return "Good";
+    if (load < 90) return "High";
+    return "Critical";
   };
 
   const updateTypeColors = {
@@ -307,21 +322,22 @@ const Status = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      
-      <PageHeader 
+
+      <PageHeader
         title="Server Status"
         description="Real-time server statistics and performance metrics"
         badge={
-          serverData.status === 'online' ? '🟢 Live & Operational' :
-          serverData.status === 'maintenance' ? '🟡 Under Maintenance' :
-          '🔴 Server Offline'
+          serverData.status === "online"
+            ? "🟢 Live & Operational"
+            : serverData.status === "maintenance"
+              ? "🟡 Under Maintenance"
+              : "🔴 Server Offline"
         }
         backgroundImage={headerStatus}
       />
-      
+
       <main className="pb-16">
         <div className="container mx-auto px-4">
-
           {/* Scheduled Maintenance Section */}
           {maintenance.length > 0 && (
             <div className="mb-8 animate-fade-in">
@@ -335,25 +351,30 @@ const Status = () => {
                       <h3 className="text-xl font-semibold flex items-center gap-2">
                         <span>Scheduled Maintenance</span>
                         <Badge variant="outline" className="bg-warning/20 text-warning border-warning/30">
-                          {maintenance.length} {maintenance.length === 1 ? 'Event' : 'Events'}
+                          {maintenance.length} {maintenance.length === 1 ? "Event" : "Events"}
                         </Badge>
                       </h3>
                       <div className="space-y-4">
                         {maintenance.map((item) => (
-                          <div key={item.id} className="p-4 rounded-lg bg-background/50 border border-border/50 space-y-2">
+                          <div
+                            key={item.id}
+                            className="p-4 rounded-lg bg-background/50 border border-border/50 space-y-2"
+                          >
                             <div className="flex items-center gap-3 flex-wrap">
-                              <Badge variant={item.status === 'in_progress' ? 'destructive' : 'secondary'} className="text-xs">
-                                {item.status === 'in_progress' ? '🔴 In Progress' : '🟡 Scheduled'}
+                              <Badge
+                                variant={item.status === "in_progress" ? "destructive" : "secondary"}
+                                className="text-xs"
+                              >
+                                {item.status === "in_progress" ? "🔴 In Progress" : "🟡 Scheduled"}
                               </Badge>
                               <h4 className="font-semibold text-foreground">{item.title}</h4>
                             </div>
-                            {item.description && (
-                              <p className="text-sm text-muted-foreground">{item.description}</p>
-                            )}
+                            {item.description && <p className="text-sm text-muted-foreground">{item.description}</p>}
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <Calendar className="h-4 w-4" />
                               <span>
-                                {format(new Date(item.scheduled_start), 'PPp')} - {format(new Date(item.scheduled_end), 'PPp')}
+                                {format(new Date(item.scheduled_start), "PPp")} -{" "}
+                                {format(new Date(item.scheduled_end), "PPp")}
                               </span>
                             </div>
                           </div>
@@ -372,10 +393,12 @@ const Status = () => {
             <div className="relative flex flex-col md:flex-row items-center justify-between gap-6 p-8 rounded-2xl glass-effect border-2 border-primary/40 bg-gradient-to-br from-background/90 via-background/95 to-background/90 animate-fade-in">
               <div className="flex items-center gap-6">
                 <div className="relative">
-                  <div className={`w-20 h-20 bg-gradient-to-br ${getStatusColor(serverData.status)} rounded-full flex items-center justify-center shadow-lg shadow-${serverData.status === 'online' ? 'green' : 'red'}-500/50`}>
+                  <div
+                    className={`w-20 h-20 bg-gradient-to-br ${getStatusColor(serverData.status)} rounded-full flex items-center justify-center shadow-lg shadow-${serverData.status === "online" ? "green" : "red"}-500/50`}
+                  >
                     <Server className="w-10 h-10 text-white" />
                   </div>
-                  {serverData.status === 'online' && (
+                  {serverData.status === "online" && (
                     <>
                       <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full animate-pulse border-4 border-background" />
                       <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full animate-ping" />
@@ -388,7 +411,7 @@ const Status = () => {
                   </h2>
                   <p className="text-muted-foreground mt-2 flex items-center gap-2">
                     <Clock className="w-4 h-4" />
-                    <span>Last updated: Just now • {isLoading ? 'Loading...' : 'Live'}</span>
+                    <span>Last updated: Just now • {isLoading ? "Loading..." : "Live"}</span>
                   </p>
                   {serverData.serverName && (
                     <p className="text-sm text-muted-foreground mt-1">{serverData.serverName}</p>
@@ -396,19 +419,30 @@ const Status = () => {
                 </div>
               </div>
               <div className="flex gap-4">
-                <Badge variant="outline" className={`px-4 py-2 text-sm ${
-                  serverData.status === 'online' ? 'bg-green-500/10 text-green-500 border-green-500/30' :
-                  serverData.status === 'maintenance' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30' :
-                  'bg-red-500/10 text-red-500 border-red-500/30'
-                }`}>
-                  <div className={`w-2 h-2 ${
-                    serverData.status === 'online' ? 'bg-green-500' :
-                    serverData.status === 'maintenance' ? 'bg-yellow-500' :
-                    'bg-red-500'
-                  } rounded-full mr-2 ${serverData.status === 'online' ? 'animate-pulse' : ''}`} />
-                  {serverData.status === 'online' ? 'Online' :
-                   serverData.status === 'maintenance' ? 'Maintenance' :
-                   'Offline'}
+                <Badge
+                  variant="outline"
+                  className={`px-4 py-2 text-sm ${
+                    serverData.status === "online"
+                      ? "bg-green-500/10 text-green-500 border-green-500/30"
+                      : serverData.status === "maintenance"
+                        ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/30"
+                        : "bg-red-500/10 text-red-500 border-red-500/30"
+                  }`}
+                >
+                  <div
+                    className={`w-2 h-2 ${
+                      serverData.status === "online"
+                        ? "bg-green-500"
+                        : serverData.status === "maintenance"
+                          ? "bg-yellow-500"
+                          : "bg-red-500"
+                    } rounded-full mr-2 ${serverData.status === "online" ? "animate-pulse" : ""}`}
+                  />
+                  {serverData.status === "online"
+                    ? "Online"
+                    : serverData.status === "maintenance"
+                      ? "Maintenance"
+                      : "Offline"}
                 </Badge>
               </div>
             </div>
@@ -428,21 +462,25 @@ const Status = () => {
               </CardHeader>
               <CardContent className="relative z-10 px-4 pb-4">
                 <div className="text-3xl font-bold bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent mb-1">
-                  {isLoading ? '--' : serverData.players.current}/{serverData.players.max}
+                  {isLoading ? "--" : serverData.players.current}/{serverData.players.max}
                 </div>
                 <p className="text-[10px] text-muted-foreground mb-2">Online now</p>
                 <div className="relative mb-1.5">
-                  <Progress 
-                    value={(serverData.players.current / serverData.players.max) * 100} 
+                  <Progress
+                    value={(serverData.players.current / serverData.players.max) * 100}
                     className="h-1.5 bg-primary/20"
                   />
                   <div className="absolute inset-0 h-1.5 bg-gradient-to-r from-primary/40 to-secondary/40 blur-sm" />
                 </div>
                 <div className="flex items-center justify-between text-[10px]">
-                  <span className="text-muted-foreground">{Math.round((serverData.players.current / serverData.players.max) * 100)}%</span>
-                  <span className={`font-semibold flex items-center gap-0.5 ${serverData.status === 'online' ? 'text-green-500' : 'text-red-500'}`}>
+                  <span className="text-muted-foreground">
+                    {Math.round((serverData.players.current / serverData.players.max) * 100)}%
+                  </span>
+                  <span
+                    className={`font-semibold flex items-center gap-0.5 ${serverData.status === "online" ? "text-green-500" : "text-red-500"}`}
+                  >
                     <TrendingUp className="w-2.5 h-2.5" />
-                    {serverData.status === 'online' ? 'Active' : 'Inactive'}
+                    {serverData.status === "online" ? "Active" : "Inactive"}
                   </span>
                 </div>
               </CardContent>
@@ -459,16 +497,14 @@ const Status = () => {
                 </div>
               </CardHeader>
               <CardContent className="relative z-10 px-4 pb-4">
-                <div className="text-3xl font-bold text-secondary mb-1">
-                  {isLoading ? '--' : serverData.uptime}
-                </div>
+                <div className="text-3xl font-bold text-secondary mb-1">{isLoading ? "--" : serverData.uptime}</div>
                 <p className="text-[10px] text-green-500 font-semibold flex items-center gap-1 mb-2">
                   <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse" />
-                  {serverData.status === 'online' ? 'Running Stable' : 'Offline'}
+                  {serverData.status === "online" ? "Running Stable" : "Offline"}
                 </p>
                 <div className="p-1.5 rounded-lg bg-secondary/10 border border-secondary/20">
                   <p className="text-[9px] text-muted-foreground text-center">
-                    {serverData.status === 'online' ? 'No Issues' : 'Not Available'}
+                    {serverData.status === "online" ? "No Issues" : "Not Available"}
                   </p>
                 </div>
               </CardContent>
@@ -489,15 +525,13 @@ const Status = () => {
                   <div>
                     <div className="flex items-center justify-between mb-0.5">
                       <span className="text-[9px] font-medium text-muted-foreground uppercase">Load</span>
-                      <span className="text-lg font-bold text-accent">
-                        {isLoading ? '--' : serverData.serverLoad}%
-                      </span>
+                      <span className="text-lg font-bold text-accent">{isLoading ? "--" : serverData.serverLoad}%</span>
                     </div>
                     <Progress value={serverData.serverLoad} className="h-1 bg-accent/20" />
                   </div>
                   <div className="p-1.5 rounded-lg bg-accent/10 border border-accent/20">
                     <p className="text-[9px] text-muted-foreground text-center">
-                      {isLoading ? 'Loading...' : getLoadText(serverData.serverLoad)}
+                      {isLoading ? "Loading..." : getLoadText(serverData.serverLoad)}
                     </p>
                   </div>
                 </div>
@@ -516,23 +550,31 @@ const Status = () => {
               </CardHeader>
               <CardContent className="relative z-10 px-4 pb-4">
                 <div className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-1">
-                  {isLoading ? '--' : serverData.networkLatency}ms
+                  {isLoading ? "--" : serverData.networkLatency}ms
                 </div>
                 <div className="flex items-center gap-1.5 mb-2">
                   <div className="flex gap-0.5">
-                    <div className={`w-0.5 h-3 rounded-full animate-pulse ${serverData.networkLatency < 50 ? 'bg-green-500' : 'bg-yellow-500'}`} />
-                    <div className={`w-0.5 h-3 rounded-full animate-pulse animation-delay-100 ${serverData.networkLatency < 50 ? 'bg-green-500' : 'bg-yellow-500'}`} />
-                    <div className={`w-0.5 h-3 rounded-full animate-pulse animation-delay-200 ${serverData.networkLatency < 50 ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                    <div
+                      className={`w-0.5 h-3 rounded-full animate-pulse ${serverData.networkLatency < 50 ? "bg-green-500" : "bg-yellow-500"}`}
+                    />
+                    <div
+                      className={`w-0.5 h-3 rounded-full animate-pulse animation-delay-100 ${serverData.networkLatency < 50 ? "bg-green-500" : "bg-yellow-500"}`}
+                    />
+                    <div
+                      className={`w-0.5 h-3 rounded-full animate-pulse animation-delay-200 ${serverData.networkLatency < 50 ? "bg-green-500" : "bg-yellow-500"}`}
+                    />
                   </div>
-                  <p className={`text-[10px] font-semibold ${serverData.networkLatency < 50 ? 'text-green-500' : 'text-yellow-500'}`}>
-                    {isLoading ? 'Loading...' : getLatencyText(serverData.networkLatency)}
+                  <p
+                    className={`text-[10px] font-semibold ${serverData.networkLatency < 50 ? "text-green-500" : "text-yellow-500"}`}
+                  >
+                    {isLoading ? "Loading..." : getLatencyText(serverData.networkLatency)}
                   </p>
                 </div>
                 <div className="p-1.5 rounded-lg bg-primary/10 border border-primary/20">
                   <div className="flex items-center gap-1 justify-center">
                     <Network className="w-2.5 h-2.5 text-primary" />
                     <p className="text-[9px] text-muted-foreground">
-                      {serverData.status === 'online' ? 'Stable' : 'Unavailable'}
+                      {serverData.status === "online" ? "Stable" : "Unavailable"}
                     </p>
                   </div>
                 </div>
@@ -554,7 +596,9 @@ const Status = () => {
                     </CardTitle>
                     <CardDescription className="mt-2">Latest server updates and patches</CardDescription>
                   </div>
-                  <Badge variant="outline" className="text-xs">Live</Badge>
+                  <Badge variant="outline" className="text-xs">
+                    Live
+                  </Badge>
                 </div>
               </CardHeader>
               <CardContent className="pt-6">
@@ -563,13 +607,15 @@ const Status = () => {
                     recentUpdates.map((update, index) => {
                       const Icon = updateTypeIcons[update.type];
                       return (
-                        <div 
+                        <div
                           key={update.id}
                           className="relative flex items-start gap-4 p-4 rounded-xl glass-effect border-2 border-border/10 hover:border-primary/30 transition-all duration-300 group hover:shadow-lg animate-fade-in"
                           style={{ animationDelay: `${index * 100}ms` }}
                         >
                           <div className="relative">
-                            <div className={`w-12 h-12 rounded-xl ${updateTypeColors[update.type]} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
+                            <div
+                              className={`w-12 h-12 rounded-xl ${updateTypeColors[update.type]} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}
+                            >
                               <Icon className="w-6 h-6 text-white" />
                             </div>
                             <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
@@ -622,7 +668,7 @@ const Status = () => {
                 <div className="space-y-4">
                   {activeEvents.length > 0 ? (
                     activeEvents.map((event, index) => (
-                      <div 
+                      <div
                         key={event.id}
                         className="relative p-5 rounded-xl glass-effect border-2 border-secondary/20 hover:border-secondary/40 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-secondary/10 animate-fade-in"
                         style={{ animationDelay: `${index * 100}ms` }}
@@ -641,7 +687,9 @@ const Status = () => {
                         <div className="flex items-center justify-between text-sm">
                           <div className="flex items-center gap-2 text-muted-foreground">
                             <Clock className="w-4 h-4 text-secondary" />
-                            <span className="font-medium">Starts: <span className="text-foreground">{event.startTime}</span></span>
+                            <span className="font-medium">
+                              Starts: <span className="text-foreground">{event.startTime}</span>
+                            </span>
                           </div>
                           <div className="text-muted-foreground">
                             Duration: <span className="text-foreground font-medium">{event.endTime}</span>
@@ -654,9 +702,9 @@ const Status = () => {
                       <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
                       <p>No active events right now</p>
                       <p className="text-xs mt-2">Join our Discord for event announcements</p>
-                      <a 
-                        href="https://discord.gg/skylifeindia" 
-                        target="_blank" 
+                      <a
+                        href="https://discord.gg/W2nU97maBh"
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="inline-block mt-4 text-sm text-primary hover:underline"
                       >
