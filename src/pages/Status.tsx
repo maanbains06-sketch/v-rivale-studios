@@ -61,6 +61,8 @@ const Status = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [lastUptimeSeconds, setLastUptimeSeconds] = useState<number | null>(null);
   const [maintenance, setMaintenance] = useState<any[]>([]);
+  const [recentUpdates, setRecentUpdates] = useState<RecentUpdate[]>([]);
+  const [activeEvents, setActiveEvents] = useState<ActiveEvent[]>([]);
 
   const fetchServerStatus = async () => {
     try {
@@ -105,16 +107,148 @@ const Status = () => {
     }
   };
 
+  const fetchRecentUpdates = async () => {
+    try {
+      // Fetch recent maintenance/updates from maintenance_schedules
+      const { data: maintenanceData, error: maintenanceError } = await supabase
+        .from('maintenance_schedules')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      // Fetch recent events
+      const { data: eventsData, error: eventsError } = await supabase
+        .from('events')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      const updates: RecentUpdate[] = [];
+
+      // Add maintenance items
+      if (!maintenanceError && maintenanceData) {
+        maintenanceData.forEach((item, index) => {
+          updates.push({
+            id: index + 1,
+            title: item.title,
+            date: getTimeAgo(new Date(item.created_at)),
+            type: 'maintenance'
+          });
+        });
+      }
+
+      // Add event items
+      if (!eventsError && eventsData) {
+        eventsData.forEach((item, index) => {
+          updates.push({
+            id: updates.length + index + 1,
+            title: item.title,
+            date: getTimeAgo(new Date(item.created_at)),
+            type: 'event'
+          });
+        });
+      }
+
+      // Sort by recency and take top 5
+      updates.sort((a, b) => {
+        const timeA = parseTimeAgo(a.date);
+        const timeB = parseTimeAgo(b.date);
+        return timeA - timeB;
+      });
+
+      setRecentUpdates(updates.slice(0, 5));
+    } catch (error) {
+      console.error('Failed to fetch recent updates:', error);
+    }
+  };
+
+  const fetchActiveEvents = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .in('status', ['upcoming', 'running'])
+        .order('start_date', { ascending: true })
+        .limit(5);
+
+      if (!error && data) {
+        const events: ActiveEvent[] = data.map((event, index) => ({
+          id: index + 1,
+          name: event.title,
+          startTime: getEventStartTime(new Date(event.start_date)),
+          endTime: getEventDuration(new Date(event.start_date), new Date(event.end_date)),
+          participants: event.current_participants || 0
+        }));
+        setActiveEvents(events);
+      }
+    } catch (error) {
+      console.error('Failed to fetch active events:', error);
+    }
+  };
+
+  const getTimeAgo = (date: Date): string => {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 60) return `${diffMins} minutes ago`;
+    if (diffHours < 24) return `${diffHours} hours ago`;
+    if (diffDays === 1) return '1 day ago';
+    return `${diffDays} days ago`;
+  };
+
+  const parseTimeAgo = (timeStr: string): number => {
+    const match = timeStr.match(/(\d+)\s*(minute|hour|day)/);
+    if (!match) return 0;
+    const value = parseInt(match[1]);
+    const unit = match[2];
+    if (unit === 'minute') return value;
+    if (unit === 'hour') return value * 60;
+    if (unit === 'day') return value * 1440;
+    return 0;
+  };
+
+  const getEventStartTime = (startDate: Date): string => {
+    const now = new Date();
+    const diffMs = startDate.getTime() - now.getTime();
+    
+    if (diffMs <= 0) return 'Now';
+    
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+    
+    if (diffHours < 1) return 'Starting soon';
+    if (diffHours < 24) return `In ${diffHours} hours`;
+    return `In ${diffDays} days`;
+  };
+
+  const getEventDuration = (startDate: Date, endDate: Date): string => {
+    const diffMs = endDate.getTime() - startDate.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+    
+    if (diffHours < 24) return `${diffHours} hours`;
+    return `${diffDays} days`;
+  };
+
   useEffect(() => {
     fetchServerStatus();
     fetchMaintenance();
+    fetchRecentUpdates();
+    fetchActiveEvents();
     
     const statusInterval = setInterval(fetchServerStatus, 10000);
     const maintenanceInterval = setInterval(fetchMaintenance, 60000);
+    const updatesInterval = setInterval(fetchRecentUpdates, 60000);
+    const eventsInterval = setInterval(fetchActiveEvents, 60000);
 
     return () => {
       clearInterval(statusInterval);
       clearInterval(maintenanceInterval);
+      clearInterval(updatesInterval);
+      clearInterval(eventsInterval);
     };
   }, [lastUptimeSeconds]);
 
@@ -157,20 +291,6 @@ const Status = () => {
     if (load < 90) return 'High';
     return 'Critical';
   };
-
-  const recentUpdates: RecentUpdate[] = [
-    { id: 1, title: "New Housing System Released", date: "2 hours ago", type: "update" },
-    { id: 2, title: "Bank Heist Event Starting Soon", date: "4 hours ago", type: "event" },
-    { id: 3, title: "Server Optimization Complete", date: "1 day ago", type: "maintenance" },
-    { id: 4, title: "New Vehicle Pack Added", date: "2 days ago", type: "update" },
-    { id: 5, title: "Economy Balance Update", date: "3 days ago", type: "maintenance" },
-  ];
-
-  const activeEvents: ActiveEvent[] = [
-    { id: 1, name: "Double XP Weekend", startTime: "Now", endTime: "2 days", participants: 89 },
-    { id: 2, name: "Street Racing Tournament", startTime: "In 3 hours", endTime: "6 hours", participants: 24 },
-    { id: 3, name: "Police Recruitment Drive", startTime: "Now", endTime: "5 days", participants: 15 },
-  ];
 
   const updateTypeColors = {
     update: "bg-gradient-to-r from-primary/80 to-primary",
@@ -439,35 +559,43 @@ const Status = () => {
               </CardHeader>
               <CardContent className="pt-6">
                 <div className="space-y-3">
-                  {recentUpdates.map((update, index) => {
-                    const Icon = updateTypeIcons[update.type];
-                    return (
-                      <div 
-                        key={update.id}
-                        className="relative flex items-start gap-4 p-4 rounded-xl glass-effect border-2 border-border/10 hover:border-primary/30 transition-all duration-300 group hover:shadow-lg animate-fade-in"
-                        style={{ animationDelay: `${index * 100}ms` }}
-                      >
-                        <div className="relative">
-                          <div className={`w-12 h-12 rounded-xl ${updateTypeColors[update.type]} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
-                            <Icon className="w-6 h-6 text-white" />
+                  {recentUpdates.length > 0 ? (
+                    recentUpdates.map((update, index) => {
+                      const Icon = updateTypeIcons[update.type];
+                      return (
+                        <div 
+                          key={update.id}
+                          className="relative flex items-start gap-4 p-4 rounded-xl glass-effect border-2 border-border/10 hover:border-primary/30 transition-all duration-300 group hover:shadow-lg animate-fade-in"
+                          style={{ animationDelay: `${index * 100}ms` }}
+                        >
+                          <div className="relative">
+                            <div className={`w-12 h-12 rounded-xl ${updateTypeColors[update.type]} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
+                              <Icon className="w-6 h-6 text-white" />
+                            </div>
+                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
                           </div>
-                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-foreground group-hover:text-primary transition-colors mb-1">
+                              {update.title}
+                            </h4>
+                            <p className="text-xs text-muted-foreground flex items-center gap-2">
+                              <Clock className="w-3 h-3" />
+                              {update.date}
+                            </p>
+                          </div>
+                          <Badge variant="outline" className="text-xs capitalize">
+                            {update.type}
+                          </Badge>
                         </div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-foreground group-hover:text-primary transition-colors mb-1">
-                            {update.title}
-                          </h4>
-                          <p className="text-xs text-muted-foreground flex items-center gap-2">
-                            <Clock className="w-3 h-3" />
-                            {update.date}
-                          </p>
-                        </div>
-                        <Badge variant="outline" className="text-xs capitalize">
-                          {update.type}
-                        </Badge>
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <TrendingUp className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                      <p>No recent updates available</p>
+                      <p className="text-xs mt-2">Check back later for server updates</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -492,34 +620,50 @@ const Status = () => {
               </CardHeader>
               <CardContent className="pt-6">
                 <div className="space-y-4">
-                  {activeEvents.map((event, index) => (
-                    <div 
-                      key={event.id}
-                      className="relative p-5 rounded-xl glass-effect border-2 border-secondary/20 hover:border-secondary/40 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-secondary/10 animate-fade-in"
-                      style={{ animationDelay: `${index * 100}ms` }}
-                    >
-                      <div className="absolute top-2 right-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                      </div>
-                      <div className="flex items-start justify-between mb-3">
-                        <h4 className="font-bold text-lg text-foreground">{event.name}</h4>
-                        <Badge variant="secondary" className="text-xs flex items-center gap-1">
-                          <Users className="w-3 h-3" />
-                          {event.participants}
-                        </Badge>
-                      </div>
-                      <Separator className="my-3 bg-border/30" />
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <Clock className="w-4 h-4 text-secondary" />
-                          <span className="font-medium">Starts: <span className="text-foreground">{event.startTime}</span></span>
+                  {activeEvents.length > 0 ? (
+                    activeEvents.map((event, index) => (
+                      <div 
+                        key={event.id}
+                        className="relative p-5 rounded-xl glass-effect border-2 border-secondary/20 hover:border-secondary/40 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-secondary/10 animate-fade-in"
+                        style={{ animationDelay: `${index * 100}ms` }}
+                      >
+                        <div className="absolute top-2 right-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                         </div>
-                        <div className="text-muted-foreground">
-                          Duration: <span className="text-foreground font-medium">{event.endTime}</span>
+                        <div className="flex items-start justify-between mb-3">
+                          <h4 className="font-bold text-lg text-foreground">{event.name}</h4>
+                          <Badge variant="secondary" className="text-xs flex items-center gap-1">
+                            <Users className="w-3 h-3" />
+                            {event.participants}
+                          </Badge>
+                        </div>
+                        <Separator className="my-3 bg-border/30" />
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Clock className="w-4 h-4 text-secondary" />
+                            <span className="font-medium">Starts: <span className="text-foreground">{event.startTime}</span></span>
+                          </div>
+                          <div className="text-muted-foreground">
+                            Duration: <span className="text-foreground font-medium">{event.endTime}</span>
+                          </div>
                         </div>
                       </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                      <p>No active events right now</p>
+                      <p className="text-xs mt-2">Join our Discord for event announcements</p>
+                      <a 
+                        href="https://discord.gg/skylifeindia" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-block mt-4 text-sm text-primary hover:underline"
+                      >
+                        Join Discord Server →
+                      </a>
                     </div>
-                  ))}
+                  )}
                 </div>
               </CardContent>
             </Card>
