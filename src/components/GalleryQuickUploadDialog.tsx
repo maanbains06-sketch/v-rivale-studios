@@ -41,11 +41,15 @@ const GalleryQuickUploadDialog = ({ open, onOpenChange, category, onSuccess }: G
     const validFiles: FileWithPreview[] = [];
 
     for (const file of selectedFiles) {
-      // Validate file size (20MB limit)
-      if (file.size > 20 * 1024 * 1024) {
+      // Validate file size (200MB for videos, 20MB for images)
+      const isVideo = file.type.startsWith('video/');
+      const maxSize = isVideo ? 200 * 1024 * 1024 : 20 * 1024 * 1024;
+      const maxSizeLabel = isVideo ? '200MB' : '20MB';
+      
+      if (file.size > maxSize) {
         toast({
           title: "File Too Large",
-          description: `${file.name} is larger than 20MB and was skipped.`,
+          description: `${file.name} is larger than ${maxSizeLabel} and was skipped.`,
           variant: "destructive",
         });
         continue;
@@ -53,7 +57,6 @@ const GalleryQuickUploadDialog = ({ open, onOpenChange, category, onSuccess }: G
 
       // Validate file type based on category
       const isImage = file.type.startsWith('image/');
-      const isVideo = file.type.startsWith('video/');
       
       if (category === 'screenshot' && !isImage) {
         toast({
@@ -357,7 +360,7 @@ const GalleryQuickUploadDialog = ({ open, onOpenChange, category, onSuccess }: G
                 Click to upload or drag and drop
               </p>
               <p className="text-xs text-muted-foreground mb-4">
-                {category === 'screenshot' ? 'Images: JPEG, PNG, WEBP, GIF' : 'Videos: MP4, WEBM, MOV'} (max 20MB each)<br />
+                {category === 'screenshot' ? 'Images: JPEG, PNG, WEBP, GIF (max 20MB each)' : 'Videos: MP4, WEBM, MOV (max 200MB each)'}<br />
                 Select multiple files for bulk upload
               </p>
               <Input

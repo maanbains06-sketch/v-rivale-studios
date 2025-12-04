@@ -329,7 +329,7 @@ const Index = () => {
                           className="h-20 w-20 p-0 rounded-2xl border-2 border-primary/30 bg-primary/10 hover:bg-primary hover:border-primary transition-all duration-300 hover:scale-110 glow-cyan shadow-lg"
                           asChild
                         >
-                          <a href="https://youtube.com" target="_blank" rel="noopener noreferrer">
+                          <a href="https://www.youtube.com/@Skyliferpindia20" target="_blank" rel="noopener noreferrer">
                             <Youtube
                               className="h-8 w-8 text-primary group-hover:text-primary-foreground transition-colors"
                               strokeWidth={2}
@@ -349,7 +349,7 @@ const Index = () => {
                           className="h-20 w-20 p-0 rounded-2xl border-2 border-primary/30 bg-primary/10 hover:bg-primary hover:border-primary transition-all duration-300 hover:scale-110 glow-purple shadow-lg"
                           asChild
                         >
-                          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+                          <a href="https://www.instagram.com/skyliferpindia/" target="_blank" rel="noopener noreferrer">
                             <Instagram
                               className="h-8 w-8 text-primary group-hover:text-primary-foreground transition-colors"
                               strokeWidth={2}
@@ -369,7 +369,7 @@ const Index = () => {
                           className="h-20 w-20 p-0 rounded-2xl border-2 border-primary/30 bg-primary/10 hover:bg-primary hover:border-primary transition-all duration-300 hover:scale-110 glow-pink shadow-lg"
                           asChild
                         >
-                          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
+                          <a href="https://x.com/Skyliferolp1d" target="_blank" rel="noopener noreferrer">
                             <Twitter
                               className="h-8 w-8 text-primary group-hover:text-primary-foreground transition-colors"
                               strokeWidth={2}
@@ -389,7 +389,7 @@ const Index = () => {
                           className="h-20 w-20 p-0 rounded-2xl border-2 border-primary/30 bg-primary/10 hover:bg-primary hover:border-primary transition-all duration-300 hover:scale-110 glow-cyan shadow-lg"
                           asChild
                         >
-                          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+                          <a href="https://www.facebook.com/profile.php?id=61583338351412" target="_blank" rel="noopener noreferrer">
                             <Facebook
                               className="h-8 w-8 text-primary group-hover:text-primary-foreground transition-colors"
                               strokeWidth={2}
