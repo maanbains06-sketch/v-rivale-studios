@@ -225,7 +225,7 @@ const Index = () => {
             </div>
 
             <p className="text-xl md:text-2xl text-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
-              Immerse yourselfin the stunning, visuals and epic moments from the Skylife Roleplay India.Many players in
+              Immerse yourself in the stunning, visuals and epic moments from the Skylife Roleplay India.Many players in
               a living, breathing city with advanced economy, custom scripts, and a thriving community.
             </p>
 
