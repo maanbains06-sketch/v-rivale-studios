@@ -37,11 +37,15 @@ const GalleryUploadForm = ({ onSuccess }: GalleryUploadFormProps) => {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
 
-    // Validate file size (20MB limit)
-    if (selectedFile.size > 20 * 1024 * 1024) {
+    // Validate file size (200MB limit for videos, 20MB for images)
+    const isVideo = selectedFile.type.startsWith('video/');
+    const maxSize = isVideo ? 200 * 1024 * 1024 : 20 * 1024 * 1024;
+    const maxSizeLabel = isVideo ? '200MB' : '20MB';
+    
+    if (selectedFile.size > maxSize) {
       toast({
         title: "File Too Large",
-        description: "Please select a file smaller than 20MB.",
+        description: `Please select a file smaller than ${maxSizeLabel}.`,
         variant: "destructive",
       });
       return;
@@ -273,7 +277,7 @@ const GalleryUploadForm = ({ onSuccess }: GalleryUploadFormProps) => {
                 </p>
                 <p className="text-xs text-muted-foreground mb-4">
                   Images: JPEG, PNG, WEBP, GIF (max 20MB)<br />
-                  Videos: MP4, WEBM, MOV (max 20MB)
+                  Videos: MP4, WEBM, MOV (max 200MB)
                 </p>
                 <Input
                   id="file"
