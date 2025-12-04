@@ -225,8 +225,8 @@ const Index = () => {
             </div>
 
             <p className="text-xl md:text-2xl text-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
-              Experience the most immersive GTA 5 roleplay server. Join thousands of players in a living, breathing city
-              with advanced economy, custom scripts, and a thriving community.
+              Immerse yourselfin the stunning, visuals and epic moments from the Skylife Roleplay India.Many players in
+              a living, breathing city with advanced economy, custom scripts, and a thriving community.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
@@ -389,7 +389,11 @@ const Index = () => {
                           className="h-20 w-20 p-0 rounded-2xl border-2 border-primary/30 bg-primary/10 hover:bg-primary hover:border-primary transition-all duration-300 hover:scale-110 glow-cyan shadow-lg"
                           asChild
                         >
-                          <a href="https://www.facebook.com/profile.php?id=61583338351412" target="_blank" rel="noopener noreferrer">
+                          <a
+                            href="https://www.facebook.com/profile.php?id=61583338351412"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
                             <Facebook
                               className="h-8 w-8 text-primary group-hover:text-primary-foreground transition-colors"
                               strokeWidth={2}
@@ -494,7 +498,12 @@ const Index = () => {
                     </a>
                   </li>
                   <li>
-                    <a href="https://skylife-roleplay-india.tebex.io" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                    <a
+                      href="https://skylife-roleplay-india.tebex.io"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-primary transition-colors"
+                    >
                       Store
                     </a>
                   </li>
