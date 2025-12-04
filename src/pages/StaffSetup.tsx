@@ -9,12 +9,12 @@ import { useToast } from "@/hooks/use-toast";
 import { UserCheck, Users, Shield, CheckCircle, AlertCircle } from "lucide-react";
 
 interface StaffMember {
-  id: string;
-  name: string;
-  discord_username: string;
-  role_type: string;
+  id: string;833680146510381097
+  name: string;Maan
+  discord_username: string;royalmaan20
+  role_type: string;Leadership Team
   user_id: string | null;
-  email: string | null;
+  email: string | maanbains06@gmail.com;
 }
 
 const StaffSetup = () => {
