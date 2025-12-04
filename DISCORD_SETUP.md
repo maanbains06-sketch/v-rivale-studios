@@ -17,6 +17,7 @@ The system tracks staff members' Discord activity to determine their online stat
 ### 1. Configure Discord Bot
 
 Your Discord bot needs these permissions:
+
 - `GUILD_MEMBERS` intent (to fetch guild member data)
 - Read Members permission in your Discord server
 
@@ -27,10 +28,11 @@ The bot token is already configured in your secrets as `DISCORD_BOT_TOKEN`.
 Edit `src/hooks/useStaffPresence.ts` and replace `YOUR_DISCORD_SERVER_ID` with your actual Discord server ID:
 
 ```typescript
-const DISCORD_GUILD_ID = "1234567890123456789"; // Replace with your server ID
+const DISCORD_GUILD_ID = "1160302312175194164"; // Replace with your server ID
 ```
 
 To find your Discord Server ID:
+
 1. Enable Developer Mode in Discord (User Settings → Advanced → Developer Mode)
 2. Right-click your server icon
 3. Click "Copy Server ID"
@@ -40,6 +42,7 @@ To find your Discord Server ID:
 Ensure all staff members have their `discord_id` field populated in the `staff_members` table. This is the Discord user ID (not username).
 
 To find a Discord User ID:
+
 1. Enable Developer Mode in Discord
 2. Right-click the user
 3. Click "Copy User ID"
@@ -69,11 +72,13 @@ This checks all staff members at once and updates their statuses.
 ## Edge Functions
 
 ### check-discord-activity
+
 - **Purpose**: Check if a specific user is active on Discord
 - **Parameters**: `{ userId, guildId }`
 - **Returns**: `{ isActive, discordId, lastSeen, guildMember }`
 
 ### sync-discord-presence
+
 - **Purpose**: Sync Discord presence for all staff members
 - **Parameters**: `{ guildId }`
 - **Returns**: `{ message, totalStaff, updated, timestamp }`
@@ -81,10 +86,12 @@ This checks all staff members at once and updates their statuses.
 ## Online Status Determination
 
 A staff member is considered **online** if:
+
 - They are a member of the Discord server (guild)
 - Their `last_seen` timestamp is within the last 5 minutes
 
 **Note**: Due to Discord API limitations without Gateway connection, we cannot detect:
+
 - Exact presence status (Online, Idle, DND, Invisible)
 - Real-time status changes
 - Activity details
@@ -104,6 +111,7 @@ The system treats all guild members as "potentially active" and relies on period
 ### Bot Permission Issues
 
 If you get 403 errors:
+
 1. Ensure the bot has "Read Members" permission
 2. Enable the `GUILD_MEMBERS` intent in Discord Developer Portal
 3. Re-invite the bot to your server with updated permissions
