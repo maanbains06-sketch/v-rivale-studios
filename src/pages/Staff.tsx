@@ -5,7 +5,24 @@ import PageHeader from "@/components/PageHeader";
 import headerStaff from "@/assets/header-staff.jpg";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Users, Code, HeadphonesIcon, Star, Trophy, Heart, Target, Clock, Award, UserCheck, Calendar, Loader2, MessageCircle, Mail, UserCircle } from "lucide-react";
+import {
+  Shield,
+  Users,
+  Code,
+  HeadphonesIcon,
+  Star,
+  Trophy,
+  Heart,
+  Target,
+  Clock,
+  Award,
+  UserCheck,
+  Calendar,
+  Loader2,
+  MessageCircle,
+  Mail,
+  UserCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState as useStateAlias } from "react";
 import { StaffApplicationForm } from "@/components/StaffApplicationForm";
@@ -57,7 +74,7 @@ const Staff = () => {
   const [loading, setLoading] = useState(true);
   const { isOnline, getLastSeen, onlineStatus } = useStaffOnlineStatus();
   const { favorites, toggleFavorite, isFavorite } = useFavoriteStaff();
-  
+
   // Enable notifications for favorite staff
   useFavoriteStaffNotifications(favorites, onlineStatus);
 
@@ -87,9 +104,8 @@ const Staff = () => {
       setLoading(false);
     }
   };
-  
-  const getStaffByDepartment = (dept: string) => 
-    staffMembers.filter(m => m.department === dept);
+
+  const getStaffByDepartment = (dept: string) => staffMembers.filter((m) => m.department === dept);
 
   const handleStaffClick = (id: string) => {
     navigate(`/staff/${id}`);
@@ -111,41 +127,39 @@ const Staff = () => {
   const adminStaff = getStaffByDepartment("administration");
   const developerStaff = getStaffByDepartment("development");
   const moderatorStaff = getStaffByDepartment("moderation");
-  
+
   // General staff team (display_order 36-38)
-  const generalStaff = staffMembers.filter(m => 
-    m.display_order >= 36 && m.display_order <= 38 && m.role_type === "staff"
+  const generalStaff = staffMembers.filter(
+    (m) => m.display_order >= 36 && m.display_order <= 38 && m.role_type === "staff",
   );
-  
+
   // Support team (display_order 40-42)
-  const supportStaff = staffMembers.filter(m => 
-    m.display_order >= 40 && m.display_order <= 42
-  );
-  
+  const supportStaff = staffMembers.filter((m) => m.display_order >= 40 && m.display_order <= 42);
+
   const eventStaff = getStaffByDepartment("events");
 
   const hasAnyStaff = staffMembers.length > 0;
 
   const getAchievementBadges = (member: StaffMember) => {
     const badges = [];
-    
+
     // Based on responsibilities or role, add achievement badges
-    if (member.responsibilities.some(r => r.toLowerCase().includes('lead') || r.toLowerCase().includes('manager'))) {
-      badges.push({ label: 'Team Lead', color: 'bg-purple-500' });
+    if (member.responsibilities.some((r) => r.toLowerCase().includes("lead") || r.toLowerCase().includes("manager"))) {
+      badges.push({ label: "Team Lead", color: "bg-purple-500" });
     }
-    if (member.role_type === 'owner') {
-      badges.push({ label: 'Founder', color: 'bg-primary' });
+    if (member.role_type === "owner") {
+      badges.push({ label: "Founder", color: "bg-primary" });
     }
     if (member.responsibilities.length >= 5) {
-      badges.push({ label: 'Multi-Skilled', color: 'bg-blue-500' });
+      badges.push({ label: "Multi-Skilled", color: "bg-blue-500" });
     }
-    if (member.role_type === 'developer') {
-      badges.push({ label: 'Tech Expert', color: 'bg-green-500' });
+    if (member.role_type === "developer") {
+      badges.push({ label: "Tech Expert", color: "bg-green-500" });
     }
-    if (member.department === 'support') {
-      badges.push({ label: 'Helper', color: 'bg-orange-500' });
+    if (member.department === "support") {
+      badges.push({ label: "Helper", color: "bg-orange-500" });
     }
-    
+
     return badges.slice(0, 2); // Max 2 badges per card
   };
 
@@ -155,21 +169,18 @@ const Staff = () => {
     // Online status not available from public view for privacy
     const staffIsOnline = false;
     const lastSeenTime = null;
-    
+
     return (
       <div key={index} className="relative group">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-secondary/20 to-primary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
         <Card className="relative glass-effect border-border/20 hover:border-primary/40 transition-all duration-500 overflow-hidden group-hover:scale-[1.02]">
           <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-secondary to-primary"></div>
-          
+
           {/* Achievement Badges */}
           {achievements.length > 0 && (
             <div className="absolute top-3 right-3 flex flex-col gap-1 z-10">
               {achievements.map((badge, idx) => (
-                <Badge 
-                  key={idx} 
-                  className={`${badge.color} text-white text-xs px-2 py-0.5 shadow-lg border-0`}
-                >
+                <Badge key={idx} className={`${badge.color} text-white text-xs px-2 py-0.5 shadow-lg border-0`}>
                   {badge.label}
                 </Badge>
               ))}
@@ -178,33 +189,30 @@ const Staff = () => {
 
           {/* Favorite Button */}
           <div className="absolute top-3 left-3 z-10">
-            <FavoriteStaffButton 
-              isFavorite={isFavorite(member.id)}
-              onToggle={() => toggleFavorite(member.id)}
-            />
+            <FavoriteStaffButton isFavorite={isFavorite(member.id)} onToggle={() => toggleFavorite(member.id)} />
           </div>
-          
+
           <CardContent className="pt-5 pb-4">
             <div className="flex flex-col items-center text-center">
               <div className="relative mb-4">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-secondary/30 rounded-full blur-lg animate-pulse"></div>
-                <div className={`relative w-20 h-20 rounded-full overflow-hidden border-3 ${roleColors[member.role_type as keyof typeof roleColors]} p-0.5 group-hover:scale-110 transition-transform duration-500`}>
-                  <img 
-                    src={member.discord_avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`} 
+                <div
+                  className={`relative w-20 h-20 rounded-full overflow-hidden border-3 ${roleColors[member.role_type as keyof typeof roleColors]} p-0.5 group-hover:scale-110 transition-transform duration-500`}
+                >
+                  <img
+                    src={member.discord_avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`}
                     alt={member.name}
                     className="w-full h-full rounded-full bg-background"
                   />
                 </div>
-                <div className={`absolute -bottom-1 -right-1 w-9 h-9 ${roleColors[member.role_type as keyof typeof roleColors]} rounded-full flex items-center justify-center border-3 border-background shadow-lg`}>
+                <div
+                  className={`absolute -bottom-1 -right-1 w-9 h-9 ${roleColors[member.role_type as keyof typeof roleColors]} rounded-full flex items-center justify-center border-3 border-background shadow-lg`}
+                >
                   <Icon className="w-4 h-4 text-primary-foreground" />
                 </div>
                 {/* Online Status Indicator */}
                 <div className="absolute -top-1 -left-1">
-                  <StaffOnlineIndicator 
-                    isOnline={staffIsOnline} 
-                    lastSeen={lastSeenTime}
-                    size="lg"
-                  />
+                  <StaffOnlineIndicator isOnline={staffIsOnline} lastSeen={lastSeenTime} size="lg" />
                 </div>
               </div>
 
@@ -216,21 +224,18 @@ const Staff = () => {
                 <Badge variant="secondary" className="text-xs">
                   {member.department.replace("_", " ").toUpperCase()}
                 </Badge>
-                <StaffOnlineIndicator 
-                  isOnline={staffIsOnline} 
-                  lastSeen={lastSeenTime}
-                  showLabel
-                  size="sm"
-                />
+                <StaffOnlineIndicator isOnline={staffIsOnline} lastSeen={lastSeenTime} showLabel size="sm" />
               </div>
 
               {member.bio && (
-                <p className="text-xs text-muted-foreground italic mb-4 max-w-xs leading-relaxed line-clamp-2">&quot;{member.bio}&quot;</p>
+                <p className="text-xs text-muted-foreground italic mb-4 max-w-xs leading-relaxed line-clamp-2">
+                  &quot;{member.bio}&quot;
+                </p>
               )}
 
               <div className="w-full space-y-3">
                 {/* View Profile Button */}
-                <Button 
+                <Button
                   className="w-full bg-primary/10 hover:bg-primary hover:text-primary-foreground text-primary border border-primary/20 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/20"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -252,14 +257,14 @@ const Staff = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       <StaffApplicationForm open={isApplicationOpen} onOpenChange={setIsApplicationOpen} />
-      
-      <PageHeader 
+
+      <PageHeader
         title="Meet Our Elite Team"
         description="Passionate professionals dedicated to creating the most immersive and professional roleplay experience"
         badge="24/7 Available"
         backgroundImage={headerStaff}
       />
-      
+
       <main className="pb-16">
         <div className="container mx-auto px-4">
           {/* Stats Grid */}
@@ -272,7 +277,7 @@ const Staff = () => {
                 <div className="text-sm text-muted-foreground">Team Members</div>
               </div>
             </div>
-            
+
             <div className="relative group">
               <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
               <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-primary/20">
@@ -281,7 +286,7 @@ const Staff = () => {
                 <div className="text-sm text-muted-foreground">Staff Coverage</div>
               </div>
             </div>
-            
+
             <div className="relative group">
               <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
               <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-primary/20">
@@ -290,7 +295,7 @@ const Staff = () => {
                 <div className="text-sm text-muted-foreground">Issues Resolved</div>
               </div>
             </div>
-            
+
             <div className="relative group">
               <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
               <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-primary/20">
@@ -398,7 +403,7 @@ const Staff = () => {
             )}
           </div>
 
-          {/* Administration Team */}
+          {/* Management Team */}
           <div className="mb-16">
             <div className="text-center mb-12">
               <h2 className="text-4xl font-bold text-gradient mb-4">Administration Team</h2>
@@ -438,7 +443,7 @@ const Staff = () => {
             )}
           </div>
 
-          {/* Moderation Team */}
+          {/* Administration Team */}
           <div className="mb-16">
             <div className="text-center mb-12">
               <h2 className="text-4xl font-bold text-gradient mb-4">Moderation Team</h2>
@@ -525,14 +530,10 @@ const Staff = () => {
                 <Shield className="w-16 h-16 text-primary mx-auto mb-6" />
                 <h2 className="text-3xl font-bold mb-4">Want to Join Our Team?</h2>
                 <p className="text-muted-foreground mb-8 leading-relaxed">
-                  We're always looking for passionate individuals to help make SLRP the best roleplay community. 
-                  If you're dedicated, responsible, and love helping others, we'd love to hear from you!
+                  We're always looking for passionate individuals to help make SLRP the best roleplay community. If
+                  you're dedicated, responsible, and love helping others, we'd love to hear from you!
                 </p>
-                <Button 
-                  size="lg" 
-                  onClick={() => setIsApplicationOpen(true)}
-                  className="bg-primary hover:bg-primary/90"
-                >
+                <Button size="lg" onClick={() => setIsApplicationOpen(true)} className="bg-primary hover:bg-primary/90">
                   Apply Now
                 </Button>
               </CardContent>
