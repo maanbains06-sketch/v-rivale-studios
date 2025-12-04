@@ -9,12 +9,12 @@ import { useToast } from "@/hooks/use-toast";
 import { UserCheck, Users, Shield, CheckCircle, AlertCircle } from "lucide-react";
 
 interface StaffMember {
-  id: string;833680146510381097
-  name: string;Maan
-  discord_username: string;royalmaan20
-  role_type: string;Leadership Team
+  id: string;
+  name: string;
+  discord_username: string;
+  role_type: string;
   user_id: string | null;
-  email: string | maanbains06@gmail.com;
+  email: string | null;
 }
 
 const StaffSetup = () => {
@@ -29,19 +29,18 @@ const StaffSetup = () => {
   }, []);
 
   const checkAdminAccess = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       navigate("/auth");
       return;
     }
 
-    const { data: roles } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id);
+    const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
 
-    const hasAccess = roles?.some(r => r.role === "admin");
-    
+    const hasAccess = roles?.some((r) => r.role === "admin");
+
     if (!hasAccess) {
       toast({
         title: "Access Denied",
@@ -81,9 +80,9 @@ const StaffSetup = () => {
 
   const linkStaffMembers = async () => {
     setLoading(true);
-    
+
     try {
-      const { data, error } = await supabase.rpc('manual_link_staff_members');
+      const { data, error } = await supabase.rpc("manual_link_staff_members");
 
       if (error) {
         throw error;
@@ -111,13 +110,13 @@ const StaffSetup = () => {
     return null;
   }
 
-  const linkedCount = staffMembers.filter(s => s.user_id).length;
-  const unlinkedCount = staffMembers.filter(s => !s.user_id).length;
+  const linkedCount = staffMembers.filter((s) => s.user_id).length;
+  const unlinkedCount = staffMembers.filter((s) => !s.user_id).length;
 
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      
+
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           <div className="mb-8">
@@ -179,16 +178,14 @@ const StaffSetup = () => {
                 <Shield className="w-5 h-5 text-primary" />
                 How Staff Account Linking Works
               </CardTitle>
-              <CardDescription>
-                Automatic and manual linking options for staff members
-              </CardDescription>
+              <CardDescription>Automatic and manual linking options for staff members</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <h3 className="font-semibold mb-2">Automatic Linking (New Signups)</h3>
                 <p className="text-sm text-muted-foreground">
-                  When a staff member signs up with a Discord username that matches their staff record, 
-                  they are automatically:
+                  When a staff member signs up with a Discord username that matches their staff record, they are
+                  automatically:
                 </p>
                 <ul className="list-disc list-inside text-sm text-muted-foreground mt-2 space-y-1">
                   <li>Linked to their staff member profile</li>
@@ -203,11 +200,7 @@ const StaffSetup = () => {
                 <p className="text-sm text-muted-foreground">
                   Click the button below to link all existing users whose Discord username matches a staff member.
                 </p>
-                <Button 
-                  onClick={linkStaffMembers}
-                  disabled={loading || unlinkedCount === 0}
-                  className="mt-3"
-                >
+                <Button onClick={linkStaffMembers} disabled={loading || unlinkedCount === 0} className="mt-3">
                   <UserCheck className="w-4 h-4 mr-2" />
                   Link Staff Members
                 </Button>
@@ -219,9 +212,7 @@ const StaffSetup = () => {
           <Card className="glass-effect border-border/20">
             <CardHeader>
               <CardTitle>Staff Members</CardTitle>
-              <CardDescription>
-                Connection status for all active staff members
-              </CardDescription>
+              <CardDescription>Connection status for all active staff members</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -231,37 +222,27 @@ const StaffSetup = () => {
                     className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:border-primary/50 transition-colors"
                   >
                     <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        staff.user_id 
-                          ? 'bg-green-500/20 text-green-500' 
-                          : 'bg-orange-500/20 text-orange-500'
-                      }`}>
-                        {staff.user_id ? (
-                          <CheckCircle className="w-5 h-5" />
-                        ) : (
-                          <AlertCircle className="w-5 h-5" />
-                        )}
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          staff.user_id ? "bg-green-500/20 text-green-500" : "bg-orange-500/20 text-orange-500"
+                        }`}
+                      >
+                        {staff.user_id ? <CheckCircle className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
                       </div>
                       <div>
                         <p className="font-medium">{staff.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {staff.discord_username}
-                        </p>
-                        {staff.email && (
-                          <p className="text-xs text-muted-foreground">{staff.email}</p>
-                        )}
+                        <p className="text-sm text-muted-foreground">{staff.discord_username}</p>
+                        {staff.email && <p className="text-xs text-muted-foreground">{staff.email}</p>}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant={
-                        staff.role_type === 'owner' || staff.role_type === 'admin' 
-                          ? 'default' 
-                          : 'outline'
-                      }>
+                      <Badge
+                        variant={staff.role_type === "owner" || staff.role_type === "admin" ? "default" : "outline"}
+                      >
                         {staff.role_type}
                       </Badge>
-                      <Badge variant={staff.user_id ? 'default' : 'secondary'}>
-                        {staff.user_id ? 'Linked' : 'Not Linked'}
+                      <Badge variant={staff.user_id ? "default" : "secondary"}>
+                        {staff.user_id ? "Linked" : "Not Linked"}
                       </Badge>
                     </div>
                   </div>
