@@ -1423,6 +1423,7 @@ export type Database = {
           responsibilities: string[] | null
           role: string | null
           role_type: string | null
+          user_id: string | null
         }
         Insert: {
           bio?: string | null
@@ -1436,6 +1437,7 @@ export type Database = {
           responsibilities?: string[] | null
           role?: string | null
           role_type?: string | null
+          user_id?: string | null
         }
         Update: {
           bio?: string | null
@@ -1449,6 +1451,7 @@ export type Database = {
           responsibilities?: string[] | null
           role?: string | null
           role_type?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
