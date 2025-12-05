@@ -126,7 +126,6 @@ const StaffSetup = () => {
             </p>
           </div>
 
-          {/* Stats Cards */}
           <div className="grid md:grid-cols-3 gap-6 mb-8">
             <Card className="glass-effect border-border/20">
               <CardContent className="pt-6">
@@ -171,7 +170,6 @@ const StaffSetup = () => {
             </Card>
           </div>
 
-          {/* Instructions Card */}
           <Card className="glass-effect border-primary/20 mb-8 bg-gradient-to-br from-primary/5 to-transparent">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -208,7 +206,6 @@ const StaffSetup = () => {
             </CardContent>
           </Card>
 
-          {/* Staff Members List */}
           <Card className="glass-effect border-border/20">
             <CardHeader>
               <CardTitle>Staff Members</CardTitle>
