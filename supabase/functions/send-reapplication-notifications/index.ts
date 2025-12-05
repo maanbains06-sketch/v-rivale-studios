@@ -22,10 +22,40 @@ interface UserProfile {
   discord_username: string | null;
 }
 
+// Verify the cron secret for scheduled function calls
+function verifyCronSecret(req: Request): boolean {
+  const authHeader = req.headers.get("authorization");
+  const cronSecret = Deno.env.get("CRON_SECRET");
+  
+  if (!cronSecret) {
+    console.error("CRON_SECRET not configured");
+    return false;
+  }
+  
+  // Accept Bearer token or direct secret in header
+  if (authHeader === `Bearer ${cronSecret}` || authHeader === cronSecret) {
+    return true;
+  }
+  
+  return false;
+}
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Verify cron secret for security
+  if (!verifyCronSecret(req)) {
+    console.error("Unauthorized: Invalid or missing cron secret");
+    return new Response(
+      JSON.stringify({ error: "Unauthorized" }),
+      {
+        status: 401,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
   }
 
   try {
@@ -204,7 +234,7 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("Error in send-reapplication-notifications function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Internal server error" }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

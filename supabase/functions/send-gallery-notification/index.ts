@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -14,9 +13,39 @@ interface NotificationRequest {
   rejectionReason?: string;
 }
 
+// Verify the cron secret for scheduled function calls
+function verifyCronSecret(req: Request): boolean {
+  const authHeader = req.headers.get("authorization");
+  const cronSecret = Deno.env.get("CRON_SECRET");
+  
+  if (!cronSecret) {
+    console.error("CRON_SECRET not configured");
+    return false;
+  }
+  
+  // Accept Bearer token or direct secret in header
+  if (authHeader === `Bearer ${cronSecret}` || authHeader === cronSecret) {
+    return true;
+  }
+  
+  return false;
+}
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Verify cron secret for security
+  if (!verifyCronSecret(req)) {
+    console.error("Unauthorized: Invalid or missing cron secret");
+    return new Response(
+      JSON.stringify({ error: "Unauthorized" }),
+      {
+        status: 401,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
   }
 
   try {
@@ -183,7 +212,7 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("Error in send-gallery-notification function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Internal server error" }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
