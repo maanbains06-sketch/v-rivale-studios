@@ -12,8 +12,6 @@ interface ContactRequest {
   message: string;
 }
 
-const OWNER_DISCORD_ID = "YOUR_OWNER_DISCORD_ID"; // Replace with actual owner Discord ID
-
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -37,7 +35,33 @@ const handler = async (req: Request): Promise<Response> => {
     // Get the Discord bot token
     const DISCORD_BOT_TOKEN = Deno.env.get("DISCORD_BOT_TOKEN");
     if (!DISCORD_BOT_TOKEN) {
-      throw new Error("Discord bot token not configured");
+      console.error("Discord bot token not configured");
+      return new Response(
+        JSON.stringify({ 
+          error: "Service temporarily unavailable",
+          details: "Contact feature is not configured"
+        }),
+        {
+          status: 503,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    // Get owner Discord ID from environment secret
+    const OWNER_DISCORD_ID = Deno.env.get("OWNER_DISCORD_ID");
+    if (!OWNER_DISCORD_ID) {
+      console.error("Owner Discord ID not configured");
+      return new Response(
+        JSON.stringify({ 
+          error: "Service temporarily unavailable",
+          details: "Contact feature is not configured"
+        }),
+        {
+          status: 503,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
     }
 
     // Create DM channel with owner
@@ -57,9 +81,17 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     if (!dmChannelResponse.ok) {
-      const errorText = await dmChannelResponse.text();
-      console.error("Failed to create DM channel:", errorText);
-      throw new Error(`Failed to create DM channel: ${dmChannelResponse.status}`);
+      console.error("Failed to create DM channel:", dmChannelResponse.status);
+      return new Response(
+        JSON.stringify({ 
+          error: "Unable to deliver message",
+          details: "Please try again later or contact us through Discord"
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
     }
 
     const dmChannel = await dmChannelResponse.json();
@@ -111,9 +143,17 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     if (!sendMessageResponse.ok) {
-      const errorText = await sendMessageResponse.text();
-      console.error("Failed to send message:", errorText);
-      throw new Error(`Failed to send message: ${sendMessageResponse.status}`);
+      console.error("Failed to send message:", sendMessageResponse.status);
+      return new Response(
+        JSON.stringify({ 
+          error: "Unable to deliver message",
+          details: "Please try again later or contact us through Discord"
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
     }
 
     console.log("Message sent successfully to owner");
@@ -135,8 +175,8 @@ const handler = async (req: Request): Promise<Response> => {
     console.error("Error in send-owner-message function:", error);
     return new Response(
       JSON.stringify({ 
-        error: error.message,
-        details: "Failed to deliver message to server owner"
+        error: "Unable to process your request",
+        details: "Please try again later"
       }),
       {
         status: 500,

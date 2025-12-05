@@ -5,9 +5,39 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Verify the cron secret for scheduled function calls
+function verifyCronSecret(req: Request): boolean {
+  const authHeader = req.headers.get("authorization");
+  const cronSecret = Deno.env.get("CRON_SECRET");
+  
+  if (!cronSecret) {
+    console.error("CRON_SECRET not configured");
+    return false;
+  }
+  
+  // Accept Bearer token or direct secret in header
+  if (authHeader === `Bearer ${cronSecret}` || authHeader === cronSecret) {
+    return true;
+  }
+  
+  return false;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Verify cron secret for security
+  if (!verifyCronSecret(req)) {
+    console.error("Unauthorized: Invalid or missing cron secret");
+    return new Response(
+      JSON.stringify({ error: "Unauthorized" }),
+      {
+        status: 401,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
   }
 
   try {
@@ -60,9 +90,8 @@ Deno.serve(async (req) => {
     );
   } catch (error) {
     console.error('Error in auto-assign-chats function:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: "Internal server error" }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
