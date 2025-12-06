@@ -48,7 +48,7 @@ const Navigation = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass-effect border-b-2 border-primary/40 shadow-[0_0_50px_rgba(var(--primary),0.3),0_0_100px_rgba(var(--primary),0.15)] before:absolute before:inset-0 before:bg-gradient-to-r before:from-neon-cyan/5 before:via-primary/10 before:to-neon-purple/5 before:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-[2px] after:bg-gradient-to-r after:from-neon-cyan/60 after:via-primary after:to-neon-purple/60 after:animate-pulse">
+    <nav className="fixed top-0 left-0 right-0 z-50 glass-effect nav-glow border-b-2 border-primary/30 shadow-[0_0_60px_rgba(var(--primary),0.25),0_0_120px_rgba(var(--primary),0.1)]">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
