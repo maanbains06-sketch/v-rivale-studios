@@ -3,13 +3,14 @@ import PageHeader from "@/components/PageHeader";
 import headerGuides from "@/assets/header-guides-new.jpg";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserCircle2, BookOpen, AlertCircle, HelpCircle } from "lucide-react";
+import { UserCircle2, BookOpen, AlertCircle, HelpCircle, Image, Shield, MessageSquare, Heart, Flag } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Link } from "react-router-dom";
 
 const RPTerm = ({ term, definition }: { term: string; definition: string }) => (
   <Tooltip>
@@ -41,7 +42,7 @@ const Guides = () => {
         <div className="container mx-auto px-4">
 
           <Tabs defaultValue="character" className="max-w-5xl mx-auto">
-            <TabsList className="grid w-full grid-cols-3 mb-8">
+            <TabsList className="grid w-full grid-cols-4 mb-8">
               <TabsTrigger value="character" className="gap-2">
                 <UserCircle2 className="w-4 h-4" />
                 Character
@@ -53,6 +54,10 @@ const Guides = () => {
               <TabsTrigger value="tips" className="gap-2">
                 <AlertCircle className="w-4 h-4" />
                 RP Tips
+              </TabsTrigger>
+              <TabsTrigger value="gallery" className="gap-2">
+                <Image className="w-4 h-4" />
+                Gallery Guidelines
               </TabsTrigger>
             </TabsList>
 
@@ -359,6 +364,103 @@ const Guides = () => {
                       <li>Ask mentors and staff for feedback on your roleplay</li>
                       <li>Study real-world professions you want to RP (cops, doctors, lawyers)</li>
                     </ul>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="gallery" className="space-y-6">
+              <Card className="glass-effect border-border/20">
+                <CardHeader>
+                  <CardTitle className="text-2xl text-primary flex items-center gap-3">
+                    <Image className="w-7 h-7" />
+                    Community Gallery Guidelines
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6 text-foreground/90">
+
+                  <div className="p-4 border border-primary/30 rounded-lg bg-primary/5">
+                    <p className="text-foreground/90">
+                      Our community gallery is a place to showcase your best SLRP moments, creative screenshots, 
+                      and memorable roleplay scenes. Follow these guidelines to ensure a positive experience for everyone.
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-semibold mb-3 text-foreground flex items-center gap-2">
+                      <Shield className="w-5 h-5 text-primary" />
+                      Content Standards
+                    </h3>
+                    <ul className="list-disc list-inside space-y-2 ml-4">
+                      <li><strong>Quality First:</strong> Submit clear, high-quality screenshots. Blurry or low-resolution images may be rejected.</li>
+                      <li><strong>Original Content:</strong> Only submit content you've captured yourself. No stolen or reposted content.</li>
+                      <li><strong>Appropriate Content:</strong> No explicit, violent, or offensive imagery. Content must be suitable for all ages.</li>
+                      <li><strong>No UI Clutter:</strong> Hide HUD elements when possible for cleaner screenshots.</li>
+                      <li><strong>Relevant to SLRP:</strong> All submissions must be from the SLRP server. No external content.</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-semibold mb-3 text-foreground flex items-center gap-2">
+                      <MessageSquare className="w-5 h-5 text-primary" />
+                      Titles & Descriptions
+                    </h3>
+                    <ul className="list-disc list-inside space-y-2 ml-4">
+                      <li><strong>Descriptive Titles:</strong> Give your submission a meaningful title that describes the scene or moment.</li>
+                      <li><strong>Add Context:</strong> Use descriptions to share the story behind the screenshot.</li>
+                      <li><strong>Appropriate Language:</strong> No profanity, slurs, or offensive language in titles/descriptions.</li>
+                      <li><strong>Proper Categories:</strong> Select the appropriate category for your submission (Vehicles, Roleplay, Scenery, etc.).</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-semibold mb-3 text-foreground flex items-center gap-2">
+                      <Heart className="w-5 h-5 text-primary" />
+                      Community Interaction
+                    </h3>
+                    <ul className="list-disc list-inside space-y-2 ml-4">
+                      <li><strong>Respectful Comments:</strong> Keep comments positive and constructive. No harassment or negativity.</li>
+                      <li><strong>Credit Others:</strong> If other players are featured, consider mentioning them in the description.</li>
+                      <li><strong>Support Fellow Players:</strong> Like and engage with content you enjoy!</li>
+                      <li><strong>Report Issues:</strong> Use the report feature for inappropriate content instead of engaging.</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-semibold mb-3 text-foreground flex items-center gap-2">
+                      <Flag className="w-5 h-5 text-primary" />
+                      Prohibited Content
+                    </h3>
+                    <ul className="list-disc list-inside space-y-2 ml-4 text-destructive/90">
+                      <li>Explicit or sexual content of any kind</li>
+                      <li>Real-world violence, gore, or disturbing imagery</li>
+                      <li>Racist, sexist, homophobic, or discriminatory content</li>
+                      <li>Content that reveals personal information (doxxing)</li>
+                      <li>Spam, advertisements, or promotional content</li>
+                      <li>Content that mocks or harasses other players</li>
+                      <li>Screenshots showing exploits, cheats, or rule-breaking</li>
+                    </ul>
+                  </div>
+
+                  <div className="p-4 border border-neon-cyan/30 rounded-lg bg-neon-cyan/5 mt-6">
+                    <h4 className="font-semibold text-neon-cyan mb-2">📸 Pro Tips for Great Screenshots</h4>
+                    <ul className="list-disc list-inside space-y-1 text-sm">
+                      <li>Use the in-game photo mode for cinematic shots</li>
+                      <li>Golden hour (sunrise/sunset) provides beautiful lighting</li>
+                      <li>Experiment with different camera angles</li>
+                      <li>Capture action moments and candid roleplay scenes</li>
+                      <li>Weather effects like rain or fog add atmosphere</li>
+                    </ul>
+                  </div>
+
+                  <div className="flex justify-center mt-6">
+                    <Link 
+                      to="/gallery" 
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-semibold transition-all hover:scale-105 shadow-[0_0_20px_rgba(var(--primary),0.3)]"
+                    >
+                      <Image className="w-5 h-5" />
+                      Visit the Gallery
+                    </Link>
                   </div>
                 </CardContent>
               </Card>
