@@ -252,7 +252,7 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
           <img 
             src={jobImage} 
             alt={`${jobType} Career`}
-            className="w-full h-full object-cover opacity-50"
+            className="w-full h-full object-cover object-top opacity-50"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/90 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-8">
@@ -291,7 +291,7 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
         <img 
           src={jobImage} 
           alt={`${jobType} Career`}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+          className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-8">
