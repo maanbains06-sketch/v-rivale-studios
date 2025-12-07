@@ -18,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useRef } from "react";
 import Navigation from "@/components/Navigation";
 import AnimatedLogo from "@/components/AnimatedLogo";
+import LaunchingBanner from "@/components/LaunchingBanner";
 import heroBg from "@/assets/hero-home-gta-thunder.jpg";
 
 const stats = [
@@ -102,6 +103,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <LaunchingBanner />
       <Navigation />
 
       {/* Hero Section */}

@@ -252,6 +252,54 @@ export type Database = {
           },
         ]
       }
+      firefighter_applications: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          discord_id: string
+          id: string
+          in_game_name: string
+          real_name: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          steam_id: string
+          updated_at: string
+          user_id: string
+          weekly_availability: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          discord_id: string
+          id?: string
+          in_game_name: string
+          real_name: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          steam_id: string
+          updated_at?: string
+          user_id: string
+          weekly_availability: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          discord_id?: string
+          id?: string
+          in_game_name?: string
+          real_name?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          steam_id?: string
+          updated_at?: string
+          user_id?: string
+          weekly_availability?: string
+        }
+        Relationships: []
+      }
       gallery_comments: {
         Row: {
           comment: string
@@ -697,6 +745,36 @@ export type Database = {
           referred_user_id?: string | null
           referrer_user_id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: string
         }
         Relationships: []
       }
