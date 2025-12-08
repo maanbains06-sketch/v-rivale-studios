@@ -3,8 +3,9 @@ import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
 import JobApplicationForm from "@/components/JobApplicationForm";
 import FirefighterApplicationForm from "@/components/FirefighterApplicationForm";
+import PDMApplicationForm from "@/components/PDMApplicationForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Heart, Wrench, Flame, Loader2, AlertCircle, CheckCircle2, Clock } from "lucide-react";
+import { Shield, Heart, Wrench, Flame, Loader2, AlertCircle, CheckCircle2, Clock, Car } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -15,6 +16,7 @@ import jobPoliceImg from "@/assets/job-police.jpg";
 import jobEmsImg from "@/assets/job-ems.jpg";
 import jobMechanicImg from "@/assets/job-mechanic.jpg";
 import jobFirefighterImg from "@/assets/job-firefighter.jpg";
+import jobPdmImg from "@/assets/job-pdm.jpg";
 
 const JobApplication = () => {
   const navigate = useNavigate();
@@ -133,13 +135,13 @@ const JobApplication = () => {
               </div>
 
               {/* Job Overview Cards */}
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
                 <Card className="glass-effect border-border/20 hover:border-primary/50 transition-all overflow-hidden group">
                   <div className="relative h-48 overflow-hidden">
                     <img 
                       src={jobPoliceImg} 
                       alt="Police Department" 
-                      className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500"
+                      className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
                     <div className="absolute bottom-4 left-4 right-4">
@@ -173,7 +175,7 @@ const JobApplication = () => {
                     <img 
                       src={jobEmsImg} 
                       alt="EMS Department" 
-                      className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500"
+                      className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
                     <div className="absolute bottom-4 left-4 right-4">
@@ -207,7 +209,7 @@ const JobApplication = () => {
                     <img 
                       src={jobFirefighterImg} 
                       alt="Fire Department" 
-                      className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500"
+                      className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
                     <div className="absolute bottom-4 left-4 right-4">
@@ -241,7 +243,7 @@ const JobApplication = () => {
                     <img 
                       src={jobMechanicImg} 
                       alt="Mechanic" 
-                      className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500"
+                      className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
                     <div className="absolute bottom-4 left-4 right-4">
@@ -269,10 +271,44 @@ const JobApplication = () => {
                     </div>
                   </CardContent>
                 </Card>
+
+                <Card className="glass-effect border-border/20 hover:border-cyan-500/50 transition-all overflow-hidden group">
+                  <div className="relative h-48 overflow-hidden">
+                    <img 
+                      src={jobPdmImg} 
+                      alt="PDM Car Dealership" 
+                      className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+                    <div className="absolute bottom-4 left-4 right-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Car className="w-5 h-5 text-cyan-500" />
+                        <h3 className="text-lg font-bold text-foreground">PDM Dealership</h3>
+                      </div>
+                    </div>
+                  </div>
+                  <CardContent className="pt-4 space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      Sell luxury vehicles and help customers find their dream cars.
+                    </p>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      <span>Commission Pay</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      <span>Sales Training</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Clock className="w-4 h-4 text-blue-500" />
+                      <span>Premium Environment</span>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
 
               <Tabs defaultValue="police" className="w-full">
-                <TabsList className="grid w-full grid-cols-4 glass-effect p-1">
+                <TabsList className="grid w-full grid-cols-5 glass-effect p-1">
                   <TabsTrigger value="police" className="flex items-center gap-2 data-[state=active]:bg-primary/20">
                     <Shield className="w-4 h-4" />
                     <span className="hidden sm:inline">Police</span>
@@ -283,11 +319,15 @@ const JobApplication = () => {
                   </TabsTrigger>
                   <TabsTrigger value="firefighter" className="flex items-center gap-2 data-[state=active]:bg-orange-500/20">
                     <Flame className="w-4 h-4 text-orange-500" />
-                    <span className="hidden sm:inline">Firefighter</span>
+                    <span className="hidden sm:inline">Fire</span>
                   </TabsTrigger>
                   <TabsTrigger value="mechanic" className="flex items-center gap-2 data-[state=active]:bg-primary/20">
                     <Wrench className="w-4 h-4" />
                     <span className="hidden sm:inline">Mechanic</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="pdm" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20">
+                    <Car className="w-4 h-4 text-cyan-500" />
+                    <span className="hidden sm:inline">PDM</span>
                   </TabsTrigger>
                 </TabsList>
                 
@@ -306,6 +346,10 @@ const JobApplication = () => {
                   
                   <TabsContent value="mechanic" className="space-y-6 mt-0">
                     <JobApplicationForm jobType="Mechanic" jobImage={jobMechanicImg} />
+                  </TabsContent>
+
+                  <TabsContent value="pdm" className="space-y-6 mt-0">
+                    <PDMApplicationForm jobImage={jobPdmImg} />
                   </TabsContent>
                 </div>
               </Tabs>

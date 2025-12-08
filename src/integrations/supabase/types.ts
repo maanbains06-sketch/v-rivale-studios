@@ -595,6 +595,72 @@ export type Database = {
         }
         Relationships: []
       }
+      pdm_applications: {
+        Row: {
+          additional_info: string | null
+          admin_notes: string | null
+          age: number
+          availability: string
+          character_background: string
+          character_name: string
+          created_at: string
+          customer_scenario: string
+          id: string
+          phone_number: string
+          previous_experience: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          sales_experience: string
+          status: string
+          updated_at: string
+          user_id: string
+          vehicle_knowledge: string
+          why_join: string
+        }
+        Insert: {
+          additional_info?: string | null
+          admin_notes?: string | null
+          age: number
+          availability: string
+          character_background: string
+          character_name: string
+          created_at?: string
+          customer_scenario: string
+          id?: string
+          phone_number: string
+          previous_experience: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          sales_experience: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          vehicle_knowledge: string
+          why_join: string
+        }
+        Update: {
+          additional_info?: string | null
+          admin_notes?: string | null
+          age?: number
+          availability?: string
+          character_background?: string
+          character_name?: string
+          created_at?: string
+          customer_scenario?: string
+          id?: string
+          phone_number?: string
+          previous_experience?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          sales_experience?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          vehicle_knowledge?: string
+          why_join?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: number | null

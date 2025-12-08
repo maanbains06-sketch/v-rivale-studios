@@ -329,6 +329,9 @@ const Admin = () => {
   ) => {
     const { data: { user } } = await supabase.auth.getUser();
     
+    // Get the application details for Discord role assignment
+    const application = applications.find(a => a.id === appId);
+    
     const { error } = await supabase
       .from("whitelist_applications")
       .update({
@@ -348,10 +351,48 @@ const Admin = () => {
       return;
     }
 
-    toast({
-      title: "Success",
-      description: `Application ${status} successfully.`,
-    });
+    // If approved, try to assign Discord role
+    if (status === "approved" && application) {
+      try {
+        // Extract Discord ID from the discord field (could be username or ID)
+        const discordValue = application.discord;
+        
+        // Try to assign the Discord role
+        const { error: roleError } = await supabase.functions.invoke('assign-discord-role', {
+          body: {
+            userId: application.user_id,
+            discordUserId: discordValue,
+            action: 'add'
+          }
+        });
+
+        if (roleError) {
+          console.error("Error assigning Discord role:", roleError);
+          toast({
+            title: "Partial Success",
+            description: "Application approved, but Discord role assignment failed. Please assign the role manually.",
+            variant: "default",
+          });
+        } else {
+          toast({
+            title: "Success",
+            description: "Application approved and Discord role assigned successfully.",
+          });
+        }
+      } catch (roleError) {
+        console.error("Error invoking Discord role function:", roleError);
+        toast({
+          title: "Partial Success",
+          description: "Application approved, but Discord role assignment failed.",
+          variant: "default",
+        });
+      }
+    } else {
+      toast({
+        title: "Success",
+        description: `Application ${status} successfully.`,
+      });
+    }
 
     setSelectedApp(null);
     setAdminNotes("");
