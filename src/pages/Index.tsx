@@ -18,7 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useRef } from "react";
 import Navigation from "@/components/Navigation";
 import AnimatedLogo from "@/components/AnimatedLogo";
-import LaunchingBanner from "@/components/LaunchingBanner";
+import LaunchingSoonButton from "@/components/LaunchingSoonButton";
 import heroBg from "@/assets/hero-home-gta-thunder.jpg";
 
 const stats = [
@@ -103,7 +103,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <LaunchingBanner />
       <Navigation />
 
       {/* Hero Section */}
@@ -222,6 +221,11 @@ const Index = () => {
 
         <div className="container mx-auto px-4 relative z-10" style={{ zIndex: 30 }}>
           <div className="text-center animate-fade-in">
+            {/* Launching Soon Button - positioned above logo */}
+            <div className="mb-6 flex justify-center">
+              <LaunchingSoonButton />
+            </div>
+            
             <div className="mb-8 flex justify-center">
               <AnimatedLogo size="lg" />
             </div>

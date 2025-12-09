@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail, Ban, Briefcase, Gift, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, Ticket, ExternalLink } from "lucide-react";
+import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail, Ban, Briefcase, Gift, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, Ticket, ExternalLink, Crown } from "lucide-react";
 import { Button } from "./ui/button";
 import AnimatedLogoIcon from "./AnimatedLogoIcon";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,7 +48,7 @@ const Navigation = () => {
   };
 
   return (
-    <nav className="fixed top-12 left-0 right-0 z-50 glass-effect nav-glow border-b-2 border-primary/30 shadow-[0_0_60px_rgba(var(--primary),0.25),0_0_120px_rgba(var(--primary),0.1)]">
+    <nav className="fixed top-0 left-0 right-0 z-50 glass-effect nav-glow border-b-2 border-primary/30 shadow-[0_0_60px_rgba(var(--primary),0.25),0_0_120px_rgba(var(--primary),0.1)]">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -332,6 +332,17 @@ const Navigation = () => {
                       </Button>
                     </>
                   )}
+                  <Button 
+                    variant="outline"
+                    className="justify-start glass-effect border-primary/30"
+                    onClick={() => {
+                      navigate("/owner-panel");
+                      setIsMenuOpen(false);
+                    }}
+                  >
+                    <Crown className="w-4 h-4 mr-2 text-primary" />
+                    Owner Panel
+                  </Button>
                   <Button 
                     variant="outline"
                     className="justify-start glass-effect"
