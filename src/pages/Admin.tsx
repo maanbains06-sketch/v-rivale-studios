@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Shield, FileText, Image, Ban, Users as UsersIcon, Pencil, Trash2, Briefcase } from "lucide-react";
+import { Loader2, Shield, FileText, Image, Ban, Users as UsersIcon, Pencil, Trash2, Briefcase, Car } from "lucide-react";
 import { StaffManagementDialog } from "@/components/StaffManagementDialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import headerAdminBg from "@/assets/header-staff.jpg";
@@ -95,6 +95,25 @@ interface JobApplication {
   admin_notes?: string;
 }
 
+interface PDMApplication {
+  id: string;
+  user_id: string;
+  character_name: string;
+  age: number;
+  phone_number: string;
+  previous_experience: string;
+  why_join: string;
+  character_background: string;
+  availability: string;
+  sales_experience: string;
+  vehicle_knowledge: string;
+  customer_scenario: string;
+  additional_info?: string;
+  status: string;
+  created_at: string;
+  admin_notes?: string;
+}
+
 const Admin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -107,6 +126,7 @@ const Admin = () => {
   const [banAppeals, setBanAppeals] = useState<BanAppeal[]>([]);
   const [staffMembers, setStaffMembers] = useState<StaffMemberData[]>([]);
   const [jobApplications, setJobApplications] = useState<JobApplication[]>([]);
+  const [pdmApplications, setPdmApplications] = useState<PDMApplication[]>([]);
   
   const [selectedApp, setSelectedApp] = useState<WhitelistApplication | null>(null);
   const [adminNotes, setAdminNotes] = useState("");
@@ -119,6 +139,9 @@ const Admin = () => {
   
   const [selectedJobApp, setSelectedJobApp] = useState<JobApplication | null>(null);
   const [jobAdminNotes, setJobAdminNotes] = useState("");
+  
+  const [selectedPdmApp, setSelectedPdmApp] = useState<PDMApplication | null>(null);
+  const [pdmAdminNotes, setPdmAdminNotes] = useState("");
   
   const [isStaffDialogOpen, setIsStaffDialogOpen] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<StaffMemberData | null>(null);
@@ -173,7 +196,22 @@ const Admin = () => {
       loadBanAppeals(),
       loadStaffMembers(),
       loadJobApplications(),
+      loadPdmApplications(),
     ]);
+  };
+
+  const loadPdmApplications = async () => {
+    const { data, error } = await supabase
+      .from("pdm_applications")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error loading PDM applications:", error);
+      return;
+    }
+
+    setPdmApplications(data || []);
   };
 
   const loadUserRoles = async () => {
@@ -537,6 +575,41 @@ const Admin = () => {
     setSelectedJobApp(null);
     setJobAdminNotes("");
     loadJobApplications();
+  };
+
+  const updatePdmApplicationStatus = async (
+    pdmAppId: string,
+    status: "approved" | "rejected"
+  ) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    const { error } = await supabase
+      .from("pdm_applications")
+      .update({
+        status,
+        reviewed_by: user?.id,
+        reviewed_at: new Date().toISOString(),
+        admin_notes: pdmAdminNotes || null,
+      })
+      .eq("id", pdmAppId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update PDM application.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Success",
+      description: `PDM application ${status} successfully.`,
+    });
+
+    setSelectedPdmApp(null);
+    setPdmAdminNotes("");
+    loadPdmApplications();
   };
 
   if (loading) {
