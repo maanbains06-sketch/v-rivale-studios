@@ -23,7 +23,6 @@ import {
   Mail,
   UserCircle,
   Briefcase,
-  Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState as useStateAlias } from "react";
@@ -319,9 +318,9 @@ const Staff = () => {
             <div className="relative group">
               <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
               <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-primary/20">
-                <Globe className="w-8 h-8 text-primary mx-auto mb-3" />
-                <div className="text-4xl font-bold text-gradient mb-1">100%</div>
-                <div className="text-sm text-muted-foreground">Remote Work</div>
+                <Award className="w-8 h-8 text-primary mx-auto mb-3" />
+                <div className="text-4xl font-bold text-gradient mb-1">Pro</div>
+                <div className="text-sm text-muted-foreground">Team</div>
               </div>
             </div>
           </div>

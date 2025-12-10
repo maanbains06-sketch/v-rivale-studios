@@ -438,6 +438,41 @@ const OwnerPanel = () => {
                     </div>
                     <p className="text-xs text-muted-foreground">Number displayed on the staff page</p>
                   </div>
+
+                  <div className="space-y-2">
+                    <Label>Enabled Staff Positions (comma-separated)</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={editedSettings["staff_positions_enabled"] || "administrator,moderator,support_staff,event_coordinator"}
+                        onChange={(e) => setEditedSettings({...editedSettings, staff_positions_enabled: e.target.value})}
+                        placeholder="administrator,moderator,support_staff"
+                      />
+                      <Button onClick={() => saveSetting("staff_positions_enabled")}>
+                        <Save className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Available: administrator, moderator, developer, support_staff, event_coordinator, content_creator</p>
+                  </div>
+                </div>
+
+                {/* Server Settings */}
+                <div className="space-y-4 pt-6 border-t border-border/20">
+                  <h3 className="text-lg font-semibold text-gradient">Server Settings</h3>
+                  
+                  <div className="space-y-2">
+                    <Label>FiveM Server Connect URL</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={editedSettings["fivem_server_connect"] || "fivem://connect/cfx.re/join/abc123"}
+                        onChange={(e) => setEditedSettings({...editedSettings, fivem_server_connect: e.target.value})}
+                        placeholder="fivem://connect/cfx.re/join/YOUR_CODE"
+                      />
+                      <Button onClick={() => saveSetting("fivem_server_connect")}>
+                        <Save className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Direct connect URL for the "Join Server" button</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
