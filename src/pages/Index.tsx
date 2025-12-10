@@ -225,14 +225,14 @@ const Index = () => {
             <div className="mb-6 flex justify-center">
               <LaunchingSoonButton />
             </div>
-            
+
             <div className="mb-8 flex justify-center">
               <AnimatedLogo size="lg" />
             </div>
 
             <p className="text-xl md:text-2xl text-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
-              Immerse yourself in the stunning, visuals and epic moments from the Skylife Roleplay India.Many players in
-              a living, breathing city with advanced economy, custom scripts, and a thriving community.
+              Immerse yourself in the stunning, visuals and epic moments from the Skylife Roleplay India.Many players
+              are in a living, breathing city with advanced economy, custom scripts, and a thriving community.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
