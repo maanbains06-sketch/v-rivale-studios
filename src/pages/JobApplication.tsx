@@ -4,8 +4,8 @@ import PageHeader from "@/components/PageHeader";
 import JobApplicationForm from "@/components/JobApplicationForm";
 import FirefighterApplicationForm from "@/components/FirefighterApplicationForm";
 import PDMApplicationForm from "@/components/PDMApplicationForm";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Heart, Wrench, Flame, Loader2, AlertCircle, CheckCircle2, Clock, Car } from "lucide-react";
+import DOJApplicationForm from "@/components/DOJApplicationForm";
+import { Shield, Heart, Wrench, Flame, Loader2, AlertCircle, CheckCircle2, Clock, Car, Scale, Gavel } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -23,6 +23,7 @@ const JobApplication = () => {
   const [loading, setLoading] = useState(true);
   const [whitelistStatus, setWhitelistStatus] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [selectedForm, setSelectedForm] = useState<string | null>(null);
 
   useEffect(() => {
     checkWhitelistStatus();
@@ -57,13 +58,79 @@ const JobApplication = () => {
     }
   };
 
+  const jobCategories = [
+    {
+      id: "police",
+      name: "Police Department",
+      icon: Shield,
+      color: "primary",
+      image: jobPoliceImg,
+      description: "Join LSPD and uphold justice in San Andreas. Protect, serve, and maintain order.",
+      benefits: ["Competitive Pay", "Career Advancement", "Full Training Provided"],
+    },
+    {
+      id: "ems",
+      name: "EMS",
+      icon: Heart,
+      color: "primary",
+      image: jobEmsImg,
+      description: "Save lives and provide critical emergency care when every second counts.",
+      benefits: ["Life-Saving Impact", "Medical Training", "24/7 Operations"],
+    },
+    {
+      id: "firefighter",
+      name: "Fire Department",
+      icon: Flame,
+      color: "orange-500",
+      image: jobFirefighterImg,
+      description: "Battle blazes and rescue citizens. Be a hero in the fire department.",
+      benefits: ["Hero Status", "Team Environment", "Exciting Missions"],
+    },
+    {
+      id: "mechanic",
+      name: "Mechanic",
+      icon: Wrench,
+      color: "primary",
+      image: jobMechanicImg,
+      description: "Master automotive excellence and keep the city's vehicles running smoothly.",
+      benefits: ["Hands-On Work", "Technical Skills", "Flexible Hours"],
+    },
+    {
+      id: "pdm",
+      name: "PDM Dealership",
+      icon: Car,
+      color: "cyan-500",
+      image: jobPdmImg,
+      description: "Sell luxury vehicles and help customers find their dream cars.",
+      benefits: ["Commission Pay", "Sales Training", "Premium Environment"],
+    },
+    {
+      id: "judge",
+      name: "DOJ - Judge",
+      icon: Gavel,
+      color: "amber-500",
+      image: jobPoliceImg,
+      description: "Preside over court cases and deliver justice in San Andreas courts.",
+      benefits: ["High Authority", "Legal Expertise", "Important Decisions"],
+    },
+    {
+      id: "lawyer",
+      name: "DOJ - Attorney",
+      icon: Scale,
+      color: "emerald-500",
+      image: jobPoliceImg,
+      description: "Represent clients in court and fight for justice as a defense attorney.",
+      benefits: ["Legal Career", "Court Appearances", "Client Advocacy"],
+    },
+  ];
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
         <PageHeader 
           title="Job Applications"
-          description="Apply for Police Department, EMS, or Mechanic positions"
+          description="Apply for various positions in San Andreas"
           badge="Join Our Team"
           backgroundImage={headerJobs}
         />
@@ -74,19 +141,40 @@ const JobApplication = () => {
     );
   }
 
+  const renderForm = () => {
+    switch (selectedForm) {
+      case "police":
+        return <JobApplicationForm jobType="Police Department" jobImage={jobPoliceImg} />;
+      case "ems":
+        return <JobApplicationForm jobType="EMS" jobImage={jobEmsImg} />;
+      case "firefighter":
+        return <FirefighterApplicationForm jobImage={jobFirefighterImg} />;
+      case "mechanic":
+        return <JobApplicationForm jobType="Mechanic" jobImage={jobMechanicImg} />;
+      case "pdm":
+        return <PDMApplicationForm jobImage={jobPdmImg} />;
+      case "judge":
+        return <DOJApplicationForm applicationType="judge" jobImage={jobPoliceImg} />;
+      case "lawyer":
+        return <DOJApplicationForm applicationType="lawyer" jobImage={jobPoliceImg} />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
       
       <PageHeader 
         title="Job Applications"
-        description="Apply for Police Department, EMS, or Mechanic positions"
+        description="Apply for various positions in San Andreas"
         badge="Join Our Team"
         backgroundImage={headerJobs}
       />
       
       <main className="container mx-auto px-4 pb-16">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           {!user ? (
             <Alert className="glass-effect border-border/20">
               <AlertCircle className="h-4 w-4" />
@@ -125,234 +213,73 @@ const JobApplication = () => {
                 )}
               </AlertDescription>
             </Alert>
+          ) : selectedForm ? (
+            <div className="space-y-6">
+              <Button 
+                variant="outline" 
+                onClick={() => setSelectedForm(null)}
+                className="mb-4"
+              >
+                ← Back to Job Categories
+              </Button>
+              {renderForm()}
+            </div>
           ) : (
             <>
-              <div className="text-center mb-8">
+              <div className="text-center mb-10">
                 <h2 className="text-3xl font-bold text-gradient mb-3">Choose Your Career Path</h2>
                 <p className="text-muted-foreground max-w-2xl mx-auto">
-                  Join one of San Andreas' most prestigious departments. Each position offers unique opportunities for growth, competitive benefits, and the chance to make a real difference in our community.
+                  Join one of San Andreas' most prestigious departments. Each position offers unique opportunities for growth and the chance to make a real difference.
                 </p>
               </div>
 
-              {/* Job Overview Cards */}
-              <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-                <Card className="glass-effect border-border/20 hover:border-primary/50 transition-all overflow-hidden group">
-                  <div className="relative h-48 overflow-hidden">
-                    <img 
-                      src={jobPoliceImg} 
-                      alt="Police Department" 
-                      className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Shield className="w-5 h-5 text-primary" />
-                        <h3 className="text-lg font-bold text-foreground">Police Department</h3>
+              {/* Job Category Cards */}
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {jobCategories.map((job) => {
+                  const Icon = job.icon;
+                  return (
+                    <Card 
+                      key={job.id}
+                      className="glass-effect border-border/20 hover:border-primary/50 transition-all cursor-pointer overflow-hidden group"
+                      onClick={() => setSelectedForm(job.id)}
+                    >
+                      <div className="relative h-36 overflow-hidden">
+                        <img 
+                          src={job.image} 
+                          alt={job.name} 
+                          className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+                        <div className="absolute bottom-3 left-4 right-4">
+                          <div className="flex items-center gap-2">
+                            <Icon className={`w-5 h-5 text-${job.color}`} />
+                            <h3 className="text-base font-bold text-foreground">{job.name}</h3>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                  <CardContent className="pt-4 space-y-2">
-                    <p className="text-sm text-muted-foreground">
-                      Join LSPD and uphold justice in San Andreas. Protect, serve, and maintain order.
-                    </p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <CheckCircle2 className="w-4 h-4 text-green-500" />
-                      <span>Competitive Pay</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <CheckCircle2 className="w-4 h-4 text-green-500" />
-                      <span>Career Advancement</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Clock className="w-4 h-4 text-blue-500" />
-                      <span>Full Training Provided</span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="glass-effect border-border/20 hover:border-primary/50 transition-all overflow-hidden group">
-                  <div className="relative h-48 overflow-hidden">
-                    <img 
-                      src={jobEmsImg} 
-                      alt="EMS Department" 
-                      className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Heart className="w-5 h-5 text-primary" />
-                        <h3 className="text-lg font-bold text-foreground">EMS</h3>
-                      </div>
-                    </div>
-                  </div>
-                  <CardContent className="pt-4 space-y-2">
-                    <p className="text-sm text-muted-foreground">
-                      Save lives and provide critical emergency care when every second counts.
-                    </p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <CheckCircle2 className="w-4 h-4 text-green-500" />
-                      <span>Life-Saving Impact</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <CheckCircle2 className="w-4 h-4 text-green-500" />
-                      <span>Medical Training</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Clock className="w-4 h-4 text-blue-500" />
-                      <span>24/7 Operations</span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="glass-effect border-border/20 hover:border-orange-500/50 transition-all overflow-hidden group">
-                  <div className="relative h-48 overflow-hidden">
-                    <img 
-                      src={jobFirefighterImg} 
-                      alt="Fire Department" 
-                      className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Flame className="w-5 h-5 text-orange-500" />
-                        <h3 className="text-lg font-bold text-foreground">Firefighter</h3>
-                      </div>
-                    </div>
-                  </div>
-                  <CardContent className="pt-4 space-y-2">
-                    <p className="text-sm text-muted-foreground">
-                      Battle blazes and rescue citizens. Be a hero in the fire department.
-                    </p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <CheckCircle2 className="w-4 h-4 text-green-500" />
-                      <span>Hero Status</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <CheckCircle2 className="w-4 h-4 text-green-500" />
-                      <span>Team Environment</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Clock className="w-4 h-4 text-blue-500" />
-                      <span>Exciting Missions</span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="glass-effect border-border/20 hover:border-primary/50 transition-all overflow-hidden group">
-                  <div className="relative h-48 overflow-hidden">
-                    <img 
-                      src={jobMechanicImg} 
-                      alt="Mechanic" 
-                      className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Wrench className="w-5 h-5 text-primary" />
-                        <h3 className="text-lg font-bold text-foreground">Mechanic</h3>
-                      </div>
-                    </div>
-                  </div>
-                  <CardContent className="pt-4 space-y-2">
-                    <p className="text-sm text-muted-foreground">
-                      Master automotive excellence and keep the city's vehicles running smoothly.
-                    </p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <CheckCircle2 className="w-4 h-4 text-green-500" />
-                      <span>Hands-On Work</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <CheckCircle2 className="w-4 h-4 text-green-500" />
-                      <span>Technical Skills</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Clock className="w-4 h-4 text-blue-500" />
-                      <span>Flexible Hours</span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="glass-effect border-border/20 hover:border-cyan-500/50 transition-all overflow-hidden group">
-                  <div className="relative h-48 overflow-hidden">
-                    <img 
-                      src={jobPdmImg} 
-                      alt="PDM Car Dealership" 
-                      className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Car className="w-5 h-5 text-cyan-500" />
-                        <h3 className="text-lg font-bold text-foreground">PDM Dealership</h3>
-                      </div>
-                    </div>
-                  </div>
-                  <CardContent className="pt-4 space-y-2">
-                    <p className="text-sm text-muted-foreground">
-                      Sell luxury vehicles and help customers find their dream cars.
-                    </p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <CheckCircle2 className="w-4 h-4 text-green-500" />
-                      <span>Commission Pay</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <CheckCircle2 className="w-4 h-4 text-green-500" />
-                      <span>Sales Training</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Clock className="w-4 h-4 text-blue-500" />
-                      <span>Premium Environment</span>
-                    </div>
-                  </CardContent>
-                </Card>
+                      <CardContent className="pt-3 pb-4 space-y-2">
+                        <p className="text-xs text-muted-foreground line-clamp-2">
+                          {job.description}
+                        </p>
+                        <div className="space-y-1">
+                          {job.benefits.map((benefit, idx) => (
+                            <div key={idx} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <CheckCircle2 className="w-3 h-3 text-green-500 flex-shrink-0" />
+                              <span>{benefit}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <Button 
+                          size="sm" 
+                          className="w-full mt-3 bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground border border-primary/20"
+                        >
+                          Apply Now
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
-
-              <Tabs defaultValue="police" className="w-full">
-                <TabsList className="grid w-full grid-cols-5 glass-effect p-1">
-                  <TabsTrigger value="police" className="flex items-center gap-2 data-[state=active]:bg-primary/20">
-                    <Shield className="w-4 h-4" />
-                    <span className="hidden sm:inline">Police</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="ems" className="flex items-center gap-2 data-[state=active]:bg-primary/20">
-                    <Heart className="w-4 h-4" />
-                    <span className="hidden sm:inline">EMS</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="firefighter" className="flex items-center gap-2 data-[state=active]:bg-orange-500/20">
-                    <Flame className="w-4 h-4 text-orange-500" />
-                    <span className="hidden sm:inline">Fire</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="mechanic" className="flex items-center gap-2 data-[state=active]:bg-primary/20">
-                    <Wrench className="w-4 h-4" />
-                    <span className="hidden sm:inline">Mechanic</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="pdm" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20">
-                    <Car className="w-4 h-4 text-cyan-500" />
-                    <span className="hidden sm:inline">PDM</span>
-                  </TabsTrigger>
-                </TabsList>
-                
-                <div className="mt-8">
-                  <TabsContent value="police" className="space-y-6 mt-0">
-                    <JobApplicationForm jobType="Police Department" jobImage={jobPoliceImg} />
-                  </TabsContent>
-                  
-                  <TabsContent value="ems" className="space-y-6 mt-0">
-                    <JobApplicationForm jobType="EMS" jobImage={jobEmsImg} />
-                  </TabsContent>
-
-                  <TabsContent value="firefighter" className="space-y-6 mt-0">
-                    <FirefighterApplicationForm jobImage={jobFirefighterImg} />
-                  </TabsContent>
-                  
-                  <TabsContent value="mechanic" className="space-y-6 mt-0">
-                    <JobApplicationForm jobType="Mechanic" jobImage={jobMechanicImg} />
-                  </TabsContent>
-
-                  <TabsContent value="pdm" className="space-y-6 mt-0">
-                    <PDMApplicationForm jobImage={jobPdmImg} />
-                  </TabsContent>
-                </div>
-              </Tabs>
             </>
           )}
         </div>

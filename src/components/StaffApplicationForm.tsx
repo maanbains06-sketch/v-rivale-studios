@@ -33,14 +33,7 @@ const staffApplicationSchema = z.object({
     .trim()
     .min(2, { message: "In-game name must be at least 2 characters" })
     .max(50, { message: "In-game name must be less than 50 characters" }),
-  position: z.enum([
-    "administrator",
-    "moderator", 
-    "developer", 
-    "support_staff",
-    "event_coordinator",
-    "content_creator"
-  ]),
+  position: z.string().min(1, { message: "Please select a position" }),
   playtime: z.string()
     .trim()
     .min(1, { message: "Please specify your playtime" })
@@ -70,15 +63,31 @@ interface StaffApplicationFormProps {
   onOpenChange: (open: boolean) => void;
 }
 
+interface PositionOption {
+  value: string;
+  label: string;
+  description: string;
+}
+
+const allPositions: PositionOption[] = [
+  { value: "administrator", label: "Administrator", description: "Server management, policy enforcement, staff coordination" },
+  { value: "moderator", label: "Moderator", description: "Community safety, rule enforcement, player reports" },
+  { value: "developer", label: "Developer", description: "Feature development, bug fixes, technical support" },
+  { value: "support_staff", label: "Support Staff", description: "Player assistance, ticket management, issue resolution" },
+  { value: "event_coordinator", label: "Event Coordinator", description: "Event planning, hosting, community engagement" },
+  { value: "content_creator", label: "Content Creator", description: "Media production, social presence, community outreach" },
+];
+
 export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCheckingEligibility, setIsCheckingEligibility] = useState(true);
   const [isEligible, setIsEligible] = useState(false);
   const [eligibilityMessage, setEligibilityMessage] = useState("");
+  const [enabledPositions, setEnabledPositions] = useState<PositionOption[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
-    async function checkWhitelistStatus() {
+    async function checkWhitelistAndLoadPositions() {
       if (!open) return;
       
       setIsCheckingEligibility(true);
@@ -93,6 +102,7 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
           return;
         }
 
+        // Check whitelist status
         const { data: whitelistApp, error } = await supabase
           .from("whitelist_applications")
           .select("status")
@@ -104,13 +114,34 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
           console.error("Error checking whitelist status:", error);
           setIsEligible(false);
           setEligibilityMessage("Unable to verify your whitelist status. Please try again later.");
-        } else if (!whitelistApp) {
+          setIsCheckingEligibility(false);
+          return;
+        }
+        
+        if (!whitelistApp) {
           setIsEligible(false);
           setEligibilityMessage("You must have an approved whitelist application before applying for staff positions. Please complete the whitelist application first.");
-        } else {
-          setIsEligible(true);
-          setEligibilityMessage("");
+          setIsCheckingEligibility(false);
+          return;
         }
+
+        // Load enabled positions from settings
+        const { data: positionsSetting } = await supabase
+          .from("site_settings")
+          .select("value")
+          .eq("key", "staff_positions_enabled")
+          .single();
+
+        if (positionsSetting?.value) {
+          const enabledValues = positionsSetting.value.split(",").map((p: string) => p.trim());
+          const filtered = allPositions.filter(p => enabledValues.includes(p.value));
+          setEnabledPositions(filtered.length > 0 ? filtered : allPositions);
+        } else {
+          setEnabledPositions(allPositions);
+        }
+
+        setIsEligible(true);
+        setEligibilityMessage("");
       } catch (error) {
         console.error("Error:", error);
         setIsEligible(false);
@@ -120,7 +151,7 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
       }
     }
 
-    checkWhitelistStatus();
+    checkWhitelistAndLoadPositions();
   }, [open]);
 
   const form = useForm<StaffApplicationFormData>({
@@ -130,6 +161,7 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
       age: "",
       discordUsername: "",
       inGameName: "",
+      position: "",
       playtime: "",
       experience: "",
       whyJoin: "",
@@ -304,42 +336,14 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="administrator">
-                        <div className="flex flex-col">
-                          <span className="font-semibold">Administrator</span>
-                          <span className="text-xs text-muted-foreground">Server management, policy enforcement, staff coordination</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="moderator">
-                        <div className="flex flex-col">
-                          <span className="font-semibold">Moderator</span>
-                          <span className="text-xs text-muted-foreground">Community safety, rule enforcement, player reports</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="developer">
-                        <div className="flex flex-col">
-                          <span className="font-semibold">Developer</span>
-                          <span className="text-xs text-muted-foreground">Feature development, bug fixes, technical support</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="support_staff">
-                        <div className="flex flex-col">
-                          <span className="font-semibold">Support Staff</span>
-                          <span className="text-xs text-muted-foreground">Player assistance, ticket management, issue resolution</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="event_coordinator">
-                        <div className="flex flex-col">
-                          <span className="font-semibold">Event Coordinator</span>
-                          <span className="text-xs text-muted-foreground">Event planning, hosting, community engagement</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="content_creator">
-                        <div className="flex flex-col">
-                          <span className="font-semibold">Content Creator</span>
-                          <span className="text-xs text-muted-foreground">Media production, social presence, community outreach</span>
-                        </div>
-                      </SelectItem>
+                      {enabledPositions.map((position) => (
+                        <SelectItem key={position.value} value={position.value}>
+                          <div className="flex flex-col">
+                            <span className="font-semibold">{position.label}</span>
+                            <span className="text-xs text-muted-foreground">{position.description}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormDescription>
@@ -435,49 +439,31 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
               name="previousExperience"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Previous Staff/Leadership Experience (Optional)</FormLabel>
+                  <FormLabel>Previous Staff Experience (Optional)</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Have you been staff on other servers or held leadership roles? Describe your positions, responsibilities, achievements, and lessons learned..."
+                      placeholder="If you have previous experience as staff on other servers, please describe your role, duration, and what you learned..."
                       className="min-h-[80px]"
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>Leave blank if none. This helps us understand your background.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* Application Notice */}
-            <div className="bg-muted/30 rounded-lg p-4 border border-border/20">
-              <p className="text-sm text-muted-foreground">
-                <strong className="text-foreground">Application Process:</strong> After submission, your application will be reviewed by our management team. If selected, you'll be contacted on Discord for an interview within 3-5 business days. All applications are kept confidential.
-              </p>
-            </div>
-
-            <div className="flex gap-3 justify-end pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting} className="bg-primary hover:bg-primary/90">
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  "Submit Application"
-                )}
-              </Button>
-            </div>
-            </form>
-          </Form>
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Submitting Application...
+                </>
+              ) : (
+                "Submit Staff Application"
+              )}
+            </Button>
+          </form>
+        </Form>
         )}
       </DialogContent>
     </Dialog>

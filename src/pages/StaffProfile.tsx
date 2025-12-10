@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, Shield, Calendar, UserCheck, Loader2 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
@@ -139,120 +139,73 @@ const StaffProfile = () => {
           Back to Staff
         </Button>
 
-        <div className="grid gap-6 md:grid-cols-3">
-          {/* Profile Card */}
-          <Card className="md:col-span-1 glass-effect border-border/20">
-            <CardHeader className="text-center">
-              <Avatar className="w-32 h-32 mx-auto mb-4 border-4 border-primary/20">
+        <div className="max-w-2xl mx-auto">
+          {/* Simple Profile Card */}
+          <Card className="glass-effect border-border/20 overflow-hidden">
+            <div className="h-2 bg-gradient-to-r from-primary via-secondary to-primary"></div>
+            <CardHeader className="text-center pb-4">
+              <Avatar className="w-28 h-28 mx-auto mb-4 border-4 border-primary/30 shadow-xl">
                 <AvatarImage 
                   src={staffMember.discord_avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${staffMember.name}`} 
                   alt={staffMember.name} 
                 />
-                <AvatarFallback>{staffMember.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+                <AvatarFallback className="text-2xl font-bold">{staffMember.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
               </Avatar>
-              <CardTitle className="text-2xl">{staffMember.name}</CardTitle>
-              <CardDescription className="text-lg">{staffMember.role}</CardDescription>
-              <Badge className={`${roleColors[staffMember.role_type as keyof typeof roleColors]} w-fit mx-auto mt-2 border`}>
-                <RoleIcon className="w-3 h-3 mr-1" />
+              <CardTitle className="text-3xl mb-2">{staffMember.name}</CardTitle>
+              <p className="text-lg text-muted-foreground mb-3">{staffMember.role}</p>
+              <Badge className={`${roleColors[staffMember.role_type as keyof typeof roleColors]} w-fit mx-auto border text-sm px-4 py-1`}>
+                <RoleIcon className="w-4 h-4 mr-2" />
                 {staffMember.role_type.replace("_", " ").toUpperCase()}
               </Badge>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-4 rounded-lg bg-muted/30">
-                <h4 className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">Department</h4>
-                <Badge variant="outline" className="w-full justify-center capitalize">
-                  {staffMember.department.replace("_", " ")}
+            <CardContent className="space-y-6 pt-0">
+              {/* Department */}
+              <div className="text-center">
+                <Badge variant="outline" className="capitalize text-base px-4 py-1">
+                  {staffMember.department.replace("_", " ")} Department
                 </Badge>
+              </div>
+
+              {/* Bio */}
+              {staffMember.bio && (
+                <div className="p-4 rounded-lg bg-muted/30 text-center">
+                  <p className="text-muted-foreground italic leading-relaxed">
+                    "{staffMember.bio}"
+                  </p>
+                </div>
+              )}
+
+              {/* Responsibilities */}
+              {staffMember.responsibilities && staffMember.responsibilities.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold text-primary uppercase tracking-wide mb-3 text-center">Responsibilities</h4>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {staffMember.responsibilities.map((responsibility, index) => (
+                      <Badge key={index} variant="secondary" className="text-sm">
+                        {responsibility}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Contact Info */}
+              <div className="pt-4 border-t border-border/20">
+                <div className="flex items-center gap-3 p-4 rounded-lg bg-primary/5 border border-primary/20">
+                  <Shield className="w-6 h-6 text-primary flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">Need Help?</p>
+                    <p className="text-xs text-muted-foreground">
+                      Contact via support ticket system for assistance
+                    </p>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={() => navigate("/support")}>
+                    Open Ticket
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
-
-          {/* Details Cards */}
-          <div className="md:col-span-2 space-y-6">
-            {staffMember.bio && (
-              <Card className="glass-effect border-border/20">
-                <CardHeader>
-                  <CardTitle>About</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground leading-relaxed">
-                    {staffMember.bio}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
-            <Card className="glass-effect border-border/20">
-              <CardHeader>
-                <CardTitle>Responsibilities</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {staffMember.responsibilities?.map((responsibility, index) => (
-                    <Badge key={index} variant="outline" className="text-sm">
-                      {responsibility}
-                    </Badge>
-                  )) || (
-                    <p className="text-muted-foreground">No responsibilities listed.</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="glass-effect border-border/20">
-              <CardHeader>
-                <CardTitle>Profile Information</CardTitle>
-                <CardDescription>
-                  Details about {staffMember.name}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                    <UserCheck className="w-4 h-4 text-primary" />
-                    Staff Details
-                  </h4>
-                  <div className="grid gap-3">
-                    <div className="flex items-start justify-between p-3 rounded-lg bg-muted/50">
-                      <span className="text-sm text-muted-foreground">Full Name</span>
-                      <span className="text-sm font-semibold text-right">{staffMember.name}</span>
-                    </div>
-                    <div className="flex items-start justify-between p-3 rounded-lg bg-muted/50">
-                      <span className="text-sm text-muted-foreground">Role</span>
-                      <Badge className={`${roleColors[staffMember.role_type as keyof typeof roleColors]} border shrink-0`}>
-                        {staffMember.role}
-                      </Badge>
-                    </div>
-                    <div className="flex items-start justify-between p-3 rounded-lg bg-muted/50">
-                      <span className="text-sm text-muted-foreground">Department</span>
-                      <span className="text-sm font-semibold capitalize">{staffMember.department.replace("_", " ")}</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="glass-effect border-border/20">
-              <CardHeader>
-                <CardTitle>Contact</CardTitle>
-                <CardDescription>
-                  How to reach {staffMember.name.split(" ")[0]}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50">
-                  <Shield className="w-5 h-5 text-primary mt-0.5" />
-                  <div className="flex-1">
-                    <p className="font-medium mb-1">Support Tickets</p>
-                    <p className="text-sm text-muted-foreground">
-                      For assistance, please create a support ticket through our support system. 
-                      Staff members will respond to your inquiries there.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </div>
     </div>
