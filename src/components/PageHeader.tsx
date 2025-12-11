@@ -3,16 +3,17 @@ interface PageHeaderProps {
   description?: string;
   badge?: string;
   backgroundImage?: string;
+  backgroundPosition?: string;
 }
 
-const PageHeader = ({ title, description, badge, backgroundImage }: PageHeaderProps) => {
+const PageHeader = ({ title, description, badge, backgroundImage, backgroundPosition = 'center 25%' }: PageHeaderProps) => {
   return (
     <section 
       className="relative min-h-[40vh] flex items-center justify-center overflow-hidden mb-12"
       style={{
         backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
         backgroundSize: 'cover',
-        backgroundPosition: 'center 25%',
+        backgroundPosition: backgroundPosition,
       }}
     >
       {/* Gradient overlay - reduced opacity for better image visibility */}
