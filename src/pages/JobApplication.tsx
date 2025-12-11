@@ -241,7 +241,7 @@ const JobApplication = () => {
                   return (
                     <Card 
                       key={job.id}
-                      className="glass-effect border-border/20 hover:border-primary/50 transition-all cursor-pointer overflow-hidden group"
+                      className="glass-effect border-border/20 hover:border-primary/50 transition-all duration-300 cursor-pointer overflow-hidden group hover:scale-[1.02] hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-1"
                       onClick={() => setSelectedForm(job.id)}
                     >
                       <div className="relative h-36 overflow-hidden">
@@ -250,31 +250,38 @@ const JobApplication = () => {
                           alt={job.name} 
                           className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent group-hover:via-background/40 transition-all duration-300" />
+                        <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/10 transition-colors duration-300" />
                         <div className="absolute bottom-3 left-4 right-4">
                           <div className="flex items-center gap-2">
-                            <Icon className={`w-5 h-5 text-${job.color}`} />
-                            <h3 className="text-base font-bold text-foreground">{job.name}</h3>
+                            <div className="p-1.5 rounded-md bg-background/80 backdrop-blur-sm group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
+                              <Icon className={`w-4 h-4 text-${job.color} group-hover:text-primary transition-colors duration-300`} />
+                            </div>
+                            <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors duration-300">{job.name}</h3>
                           </div>
                         </div>
                       </div>
                       <CardContent className="pt-3 pb-4 space-y-2">
-                        <p className="text-xs text-muted-foreground line-clamp-2">
+                        <p className="text-xs text-muted-foreground line-clamp-2 group-hover:text-foreground/80 transition-colors duration-300">
                           {job.description}
                         </p>
                         <div className="space-y-1">
                           {job.benefits.map((benefit, idx) => (
-                            <div key={idx} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                              <CheckCircle2 className="w-3 h-3 text-green-500 flex-shrink-0" />
-                              <span>{benefit}</span>
+                            <div 
+                              key={idx} 
+                              className="flex items-center gap-1.5 text-xs text-muted-foreground group-hover:text-foreground/70 transition-all duration-300"
+                              style={{ transitionDelay: `${idx * 50}ms` }}
+                            >
+                              <CheckCircle2 className="w-3 h-3 text-green-500 flex-shrink-0 group-hover:scale-110 transition-transform duration-300" />
+                              <span className="group-hover:translate-x-0.5 transition-transform duration-300">{benefit}</span>
                             </div>
                           ))}
                         </div>
                         <Button 
                           size="sm" 
-                          className="w-full mt-3 bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground border border-primary/20"
+                          className="w-full mt-3 bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground border border-primary/20 group-hover:bg-primary/20 group-hover:border-primary/40 transition-all duration-300"
                         >
-                          Apply Now
+                          <span className="group-hover:scale-105 transition-transform duration-300">Apply Now</span>
                         </Button>
                       </CardContent>
                     </Card>
