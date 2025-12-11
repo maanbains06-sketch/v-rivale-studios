@@ -89,16 +89,18 @@ const GlowingText = ({ children, delay = 0 }: { children: string; delay?: number
   );
 };
 
-// Floating particles component
+// Epic floating particles with trails and glow
 const FloatingParticles = () => {
   const particles = useMemo(() => 
-    Array.from({ length: 30 }, (_, i) => ({
+    Array.from({ length: 50 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
-      size: Math.random() * 4 + 2,
-      duration: Math.random() * 20 + 15,
-      delay: Math.random() * 5,
+      size: Math.random() * 6 + 3,
+      duration: Math.random() * 15 + 10,
+      delay: Math.random() * 3,
+      hue: 185 + Math.random() * 90,
+      type: Math.random() > 0.7 ? 'orb' : 'particle',
     })), []
   );
 
@@ -107,26 +109,82 @@ const FloatingParticles = () => {
       {particles.map((particle) => (
         <motion.div
           key={particle.id}
-          className="absolute rounded-full"
+          className="absolute"
           style={{
             left: `${particle.x}%`,
             top: `${particle.y}%`,
-            width: particle.size,
-            height: particle.size,
-            background: `radial-gradient(circle, hsl(${185 + Math.random() * 90} 90% 65% / 0.6), transparent)`,
-            boxShadow: `0 0 ${particle.size * 2}px hsl(185 90% 65% / 0.4)`,
+            width: particle.type === 'orb' ? particle.size * 2 : particle.size,
+            height: particle.type === 'orb' ? particle.size * 2 : particle.size,
+          }}
+        >
+          {/* Main particle */}
+          <motion.div
+            className="w-full h-full rounded-full"
+            style={{
+              background: particle.type === 'orb' 
+                ? `radial-gradient(circle, hsl(${particle.hue} 90% 70% / 0.9), hsl(${particle.hue} 90% 50% / 0.3), transparent)`
+                : `radial-gradient(circle, hsl(${particle.hue} 90% 65% / 0.8), transparent)`,
+              boxShadow: particle.type === 'orb'
+                ? `0 0 ${particle.size * 4}px hsl(${particle.hue} 90% 65% / 0.6), 0 0 ${particle.size * 8}px hsl(${particle.hue} 90% 65% / 0.3)`
+                : `0 0 ${particle.size * 2}px hsl(${particle.hue} 90% 65% / 0.4)`,
+            }}
+            animate={{
+              y: [-20, -150, -20],
+              x: [0, Math.sin(particle.id) * 80, 0],
+              opacity: [0, 1, 1, 0],
+              scale: [0, 1.2, 1, 0],
+              rotate: [0, 360],
+            }}
+            transition={{
+              duration: particle.duration,
+              delay: particle.delay,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+          {/* Particle trail */}
+          {particle.type === 'orb' && (
+            <motion.div
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 rounded-full"
+              style={{
+                background: `linear-gradient(to bottom, hsl(${particle.hue} 90% 65% / 0.6), transparent)`,
+              }}
+              animate={{
+                height: [0, 30, 0],
+                opacity: [0, 0.6, 0],
+              }}
+              transition={{
+                duration: particle.duration,
+                delay: particle.delay,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+          )}
+        </motion.div>
+      ))}
+      
+      {/* Shooting stars */}
+      {[1, 2, 3].map((i) => (
+        <motion.div
+          key={`star-${i}`}
+          className="absolute w-1 h-20 bg-gradient-to-b from-white via-primary/50 to-transparent rounded-full"
+          style={{
+            left: `${20 + i * 30}%`,
+            top: '-5%',
+            transform: 'rotate(45deg)',
           }}
           animate={{
-            y: [-20, -100, -20],
-            x: [0, Math.random() * 50 - 25, 0],
-            opacity: [0, 1, 0],
-            scale: [0, 1, 0],
+            x: ['0%', '300%'],
+            y: ['-100%', '300%'],
+            opacity: [0, 1, 1, 0],
           }}
           transition={{
-            duration: particle.duration,
-            delay: particle.delay,
+            duration: 2,
+            delay: i * 4 + 2,
             repeat: Infinity,
-            ease: "easeInOut",
+            repeatDelay: 8,
+            ease: "easeIn",
           }}
         />
       ))}
@@ -575,7 +633,7 @@ const Index = () => {
             {/* Launching Soon Button - with dramatic entrance */}
             <motion.div 
               variants={itemVariants} 
-              className="mb-6 flex justify-center"
+              className="mb-6 flex justify-center relative z-10"
             >
               <motion.div
                 initial={{ scale: 0, rotate: -180 }}
@@ -627,17 +685,41 @@ const Index = () => {
               variants={itemVariants}
               className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
             >
-              <TooltipProvider>
+              <TooltipProvider delayDuration={100}>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <motion.div
                       variants={buttonVariants}
                       whileHover="hover"
                       whileTap="tap"
+                      className="relative"
                     >
+                      {/* Pulsing ring animation for locked state */}
+                      {!allRequirementsMet && (
+                        <motion.div
+                          className="absolute -inset-1 rounded-lg bg-gradient-to-r from-red-500/50 via-orange-500/50 to-red-500/50 blur-sm"
+                          animate={{
+                            opacity: [0.3, 0.7, 0.3],
+                            scale: [1, 1.05, 1],
+                          }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        />
+                      )}
+                      {/* Epic glow for unlocked state */}
+                      {allRequirementsMet && (
+                        <motion.div
+                          className="absolute -inset-2 rounded-lg bg-gradient-to-r from-primary via-secondary to-primary blur-md"
+                          animate={{
+                            opacity: [0.4, 0.8, 0.4],
+                            backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+                          }}
+                          transition={{ duration: 3, repeat: Infinity }}
+                          style={{ backgroundSize: "200% 200%" }}
+                        />
+                      )}
                       <Button
                         size="lg"
-                        className={`text-lg px-8 ${
+                        className={`relative text-lg px-8 ${
                           allRequirementsMet
                             ? "bg-primary hover:bg-primary/90 text-primary-foreground glow-cyan animate-glow"
                             : "bg-muted/80 hover:bg-muted text-muted-foreground border border-border/50"
@@ -647,7 +729,7 @@ const Index = () => {
                         {allRequirementsMet ? (
                           <Play className="w-5 h-5 mr-2" />
                         ) : (
-                          <Lock className="w-5 h-5 mr-2" />
+                          <Lock className="w-5 h-5 mr-2 animate-pulse" />
                         )}
                         Join Server
                       </Button>
@@ -655,34 +737,74 @@ const Index = () => {
                   </TooltipTrigger>
                   <TooltipContent 
                     side="bottom" 
-                    className="p-4 glass-effect border-border/30 max-w-xs"
+                    sideOffset={10}
+                    className="p-4 bg-background/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl max-w-xs z-[100]"
+                    style={{ zIndex: 100 }}
                   >
-                    <div className="space-y-2">
-                      <p className="font-semibold text-foreground mb-3">
-                        {allRequirementsMet ? "Ready to Play!" : "Requirements to Join:"}
-                      </p>
-                      {getMissingRequirements().map((req) => (
-                        <div 
-                          key={req.label}
-                          className={`flex items-center gap-2 text-sm ${
-                            req.met ? "text-green-400" : "text-red-400"
-                          }`}
+                    <motion.div 
+                      className="space-y-3"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <div className="flex items-center gap-2 mb-3">
+                        <motion.div
+                          animate={{ rotate: allRequirementsMet ? 0 : [0, -10, 10, 0] }}
+                          transition={{ duration: 0.5, repeat: allRequirementsMet ? 0 : Infinity, repeatDelay: 2 }}
                         >
-                          {req.met ? (
-                            <Check className="w-4 h-4" />
+                          {allRequirementsMet ? (
+                            <Sparkles className="w-5 h-5 text-primary" />
                           ) : (
-                            <X className="w-4 h-4" />
+                            <Lock className="w-5 h-5 text-destructive" />
                           )}
-                          <req.icon className="w-4 h-4" />
-                          <span>{req.label}</span>
-                        </div>
-                      ))}
-                      {!allRequirementsMet && (
-                        <p className="text-xs text-muted-foreground mt-2 pt-2 border-t border-border/30">
-                          Complete all requirements to join the server
+                        </motion.div>
+                        <p className="font-bold text-foreground">
+                          {allRequirementsMet ? "Ready to Play!" : "Requirements to Join"}
                         </p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        {getMissingRequirements().map((req, index) => (
+                          <motion.div 
+                            key={req.label}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.1 }}
+                            className={`flex items-center gap-3 p-2 rounded-lg ${
+                              req.met 
+                                ? "bg-green-500/10 border border-green-500/30" 
+                                : "bg-red-500/10 border border-red-500/30"
+                            }`}
+                          >
+                            <motion.div
+                              animate={req.met ? { scale: [1, 1.2, 1] } : {}}
+                              transition={{ duration: 0.3 }}
+                            >
+                              {req.met ? (
+                                <Check className="w-5 h-5 text-green-400" />
+                              ) : (
+                                <X className="w-5 h-5 text-red-400" />
+                              )}
+                            </motion.div>
+                            <req.icon className={`w-4 h-4 ${req.met ? "text-green-400" : "text-red-400"}`} />
+                            <span className={`text-sm font-medium ${req.met ? "text-green-400" : "text-red-400"}`}>
+                              {req.label}
+                            </span>
+                          </motion.div>
+                        ))}
+                      </div>
+                      
+                      {!allRequirementsMet && (
+                        <motion.p 
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.3 }}
+                          className="text-xs text-muted-foreground mt-3 pt-3 border-t border-border/30 text-center"
+                        >
+                          Complete all requirements to unlock server access
+                        </motion.p>
                       )}
-                    </div>
+                    </motion.div>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>

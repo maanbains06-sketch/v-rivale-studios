@@ -713,4 +713,162 @@ All colors MUST be HSL.
       0 20px 40px -15px hsl(185 90% 65% / 0.3),
       0 0 20px hsl(185 90% 65% / 0.1);
   }
+
+  /* Epic aurora effect */
+  .aurora-bg {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .aurora-bg::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: 
+      conic-gradient(
+        from 0deg at 50% 50%,
+        hsl(185 90% 65% / 0) 0deg,
+        hsl(185 90% 65% / 0.15) 60deg,
+        hsl(275 80% 68% / 0.15) 120deg,
+        hsl(325 85% 70% / 0.15) 180deg,
+        hsl(185 90% 65% / 0.15) 240deg,
+        hsl(275 80% 68% / 0.15) 300deg,
+        hsl(185 90% 65% / 0) 360deg
+      );
+    animation: aurora-rotate 20s linear infinite;
+    pointer-events: none;
+  }
+
+  @keyframes aurora-rotate {
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Morphing blob */
+  .morphing-blob {
+    animation: morph 15s ease-in-out infinite;
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  }
+
+  @keyframes morph {
+    0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+    25% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+    50% { border-radius: 50% 60% 30% 60% / 30% 60% 70% 40%; }
+    75% { border-radius: 40% 60% 70% 30% / 60% 40% 30% 70%; }
+  }
+
+  /* Dramatic entrance animation */
+  .dramatic-entrance {
+    animation: dramatic-in 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+  }
+
+  @keyframes dramatic-in {
+    0% {
+      opacity: 0;
+      transform: scale(0.8) translateY(100px) rotateX(15deg);
+      filter: blur(20px);
+    }
+    50% {
+      opacity: 0.8;
+      filter: blur(5px);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0) rotateX(0);
+      filter: blur(0);
+    }
+  }
+
+  /* Electric pulse effect */
+  .electric-pulse {
+    animation: electric 0.15s ease-in-out infinite alternate;
+  }
+
+  @keyframes electric {
+    0% { 
+      text-shadow: 
+        0 0 4px hsl(185 90% 65%),
+        0 0 11px hsl(185 90% 65%),
+        0 0 19px hsl(185 90% 65%);
+    }
+    100% { 
+      text-shadow: 
+        0 0 4px hsl(185 90% 65%),
+        0 0 22px hsl(185 90% 65%),
+        0 0 38px hsl(185 90% 65%),
+        0 0 66px hsl(185 90% 65%);
+    }
+  }
+
+  /* Matrix rain text effect */
+  .matrix-text {
+    background: linear-gradient(180deg, 
+      hsl(185 90% 65%) 0%,
+      hsl(185 90% 45%) 50%,
+      hsl(185 90% 25%) 100%
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    animation: matrix-fall 2s linear infinite;
+  }
+
+  @keyframes matrix-fall {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 100px; }
+  }
+
+  /* Cyber grid */
+  .cyber-grid {
+    background-image: 
+      linear-gradient(hsl(185 90% 65% / 0.1) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(185 90% 65% / 0.1) 1px, transparent 1px);
+    background-size: 50px 50px;
+    animation: grid-move 10s linear infinite;
+  }
+
+  @keyframes grid-move {
+    0% { background-position: 0 0; }
+    100% { background-position: 50px 50px; }
+  }
+
+  /* Liquid glass */
+  .liquid-glass {
+    backdrop-filter: blur(20px);
+    background: linear-gradient(
+      135deg,
+      hsl(230 25% 8% / 0.7) 0%,
+      hsl(230 25% 12% / 0.5) 50%,
+      hsl(230 25% 8% / 0.7) 100%
+    );
+    border: 1px solid hsl(185 90% 65% / 0.2);
+    box-shadow: 
+      inset 0 1px 0 hsl(185 90% 65% / 0.1),
+      inset 0 -1px 0 hsl(275 80% 68% / 0.1),
+      0 20px 40px hsl(0 0% 0% / 0.5);
+  }
+
+  /* Breathing glow */
+  .breathing-glow {
+    animation: breathe 4s ease-in-out infinite;
+  }
+
+  @keyframes breathe {
+    0%, 100% { 
+      box-shadow: 0 0 20px hsl(185 90% 65% / 0.3);
+      transform: scale(1);
+    }
+    50% { 
+      box-shadow: 0 0 40px hsl(185 90% 65% / 0.6), 0 0 60px hsl(275 80% 68% / 0.3);
+      transform: scale(1.02);
+    }
+  }
+
+  /* Tooltip z-index override */
+  [data-radix-popper-content-wrapper] {
+    z-index: 100 !important;
+  }
 }
