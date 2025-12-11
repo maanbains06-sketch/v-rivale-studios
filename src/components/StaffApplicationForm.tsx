@@ -9,9 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import headerStaff from "@/assets/header-staff.jpg";
 
 const staffApplicationSchema = z.object({
   fullName: z.string()
@@ -224,26 +225,41 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl text-gradient">Join Our Elite Staff Team</DialogTitle>
-          <DialogDescription className="text-base">
-            Apply to become part of our professional team. Staff members get access to advanced tools including real-time presence tracking, activity logs, and priority support systems.
-          </DialogDescription>
-        </DialogHeader>
-
-        {/* Staff Benefits Section */}
-        <div className="glass-effect rounded-lg p-4 border border-primary/20 mb-4">
-          <h3 className="font-semibold text-primary mb-2">Staff Member Benefits</h3>
-          <ul className="text-sm text-muted-foreground space-y-1">
-            <li>• Real-time presence system with online status tracking</li>
-            <li>• Comprehensive activity logging and performance metrics</li>
-            <li>• Direct communication with server management</li>
-            <li>• Access to staff-only tools and resources</li>
-            <li>• Recognition through achievement badges</li>
-            <li>• Professional development and training opportunities</li>
-          </ul>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0">
+        {/* Staff Header Image */}
+        <div className="relative h-40 overflow-hidden rounded-t-lg">
+          <img 
+            src={headerStaff} 
+            alt="Staff Application"
+            className="w-full h-full object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
+          <div className="absolute bottom-4 left-6 right-6">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-xl bg-primary/20 backdrop-blur-sm border border-primary/30">
+                <Users className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-foreground">Join Our Elite Staff Team</h2>
+                <p className="text-sm text-muted-foreground">Apply to become part of our professional team</p>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <div className="p-6">
+          {/* Staff Benefits Section */}
+          <div className="glass-effect rounded-lg p-4 border border-primary/20 mb-4">
+            <h3 className="font-semibold text-primary mb-2">Staff Member Benefits</h3>
+            <ul className="text-sm text-muted-foreground space-y-1">
+              <li>• Real-time presence system with online status tracking</li>
+              <li>• Comprehensive activity logging and performance metrics</li>
+              <li>• Direct communication with server management</li>
+              <li>• Access to staff-only tools and resources</li>
+              <li>• Recognition through achievement badges</li>
+              <li>• Professional development and training opportunities</li>
+            </ul>
+          </div>
 
         {isCheckingEligibility ? (
           <div className="flex items-center justify-center py-12">
@@ -465,6 +481,7 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
           </form>
         </Form>
         )}
+        </div>
       </DialogContent>
     </Dialog>
   );
