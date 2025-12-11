@@ -23,11 +23,10 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState, useMemo } from "react";
-import { motion, AnimatePresence, useMotionValue, useTransform, useSpring, useScroll } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
 import Navigation from "@/components/Navigation";
 import AnimatedLogo from "@/components/AnimatedLogo";
 import LaunchingSoonButton from "@/components/LaunchingSoonButton";
-import CustomCursor from "@/components/CustomCursor";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import heroBg from "@/assets/hero-home-gta-thunder.jpg";
@@ -329,23 +328,10 @@ const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const rainContainerRef = useRef<HTMLDivElement>(null);
-  const heroRef = useRef<HTMLDivElement>(null);
   const [isWhitelisted, setIsWhitelisted] = useState(false);
   const [hasDiscord, setHasDiscord] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [serverConnectUrl, setServerConnectUrl] = useState("fivem://connect/cfx.re/join/abc123");
-
-  // Parallax scrolling
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"]
-  });
-
-  const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
-  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
-  const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [1, 0.5, 0]);
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 1.2]);
-  const blur = useTransform(scrollYProgress, [0, 1], [0, 10]);
 
   // Check user whitelist and Discord status
   useEffect(() => {
@@ -509,41 +495,23 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <CustomCursor />
       <Navigation />
 
-      {/* Hero Section with Parallax */}
+      {/* Hero Section */}
       <section
-        ref={heroRef}
         className="relative min-h-screen flex items-center justify-center overflow-hidden"
+        style={{
+          backgroundImage: `url(${heroBg})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundAttachment: "fixed",
+        }}
       >
-        {/* Parallax Background */}
-        <motion.div 
-          className="absolute inset-0 z-[0]"
-          style={{ 
-            y: backgroundY,
-            scale: scale,
-          }}
-        >
-          <motion.div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `url(${heroBg})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              filter: `blur(${blur}px)`,
-            }}
-          />
-        </motion.div>
-
         {/* Rain Animation Layer */}
         <div ref={rainContainerRef} className="absolute inset-0 z-[4] pointer-events-none overflow-hidden" />
         
-        {/* Animated Cloud Layers with Parallax */}
-        <motion.div 
-          className="absolute inset-0 z-[1] pointer-events-none overflow-hidden"
-          style={{ y: useTransform(scrollYProgress, [0, 1], ["0%", "25%"]) }}
-        >
+        {/* Animated Cloud Layers */}
+        <div className="absolute inset-0 z-[1] pointer-events-none overflow-hidden">
           <div
             className="clouds-animation absolute w-[200%] h-full opacity-20"
             style={{
@@ -551,7 +519,7 @@ const Index = () => {
                 "linear-gradient(90deg, transparent 0%, rgba(139, 92, 246, 0.3) 25%, transparent 50%, rgba(59, 130, 246, 0.3) 75%, transparent 100%)",
             }}
           />
-        </motion.div>
+        </div>
 
         {/* Animated Lightning Bolts */}
         <div className="absolute inset-0 z-[2] pointer-events-none">
@@ -656,14 +624,7 @@ const Index = () => {
           />
         </div>
 
-        <motion.div 
-          className="container mx-auto px-4 relative z-10" 
-          style={{ 
-            zIndex: 30,
-            y: contentY,
-            opacity: opacity,
-          }}
-        >
+        <div className="container mx-auto px-4 relative z-10" style={{ zIndex: 30 }}>
           <motion.div 
             className="text-center"
             variants={containerVariants}
@@ -976,7 +937,7 @@ const Index = () => {
               ))}
             </div>
           </motion.div>
-        </motion.div>
+        </div>
       </section>
 
       {/* Quick Info Section */}
