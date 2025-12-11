@@ -5,7 +5,8 @@ import JobApplicationForm from "@/components/JobApplicationForm";
 import FirefighterApplicationForm from "@/components/FirefighterApplicationForm";
 import PDMApplicationForm from "@/components/PDMApplicationForm";
 import DOJApplicationForm from "@/components/DOJApplicationForm";
-import { Shield, Heart, Wrench, Flame, Loader2, AlertCircle, CheckCircle2, Clock, Car, Scale, Gavel } from "lucide-react";
+import { JobCardsSkeletonGrid } from "@/components/JobCardSkeleton";
+import { Shield, Heart, Wrench, Flame, AlertCircle, CheckCircle2, Car, Scale, Gavel } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -135,9 +136,17 @@ const JobApplication = () => {
           badge="Join Our Team"
           backgroundImage={headerJobs}
         />
-        <div className="container mx-auto px-4 pb-16 flex justify-center items-center min-h-[40vh]">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
+        <main className="container mx-auto px-4 pb-16">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl font-bold text-gradient mb-3">Choose Your Career Path</h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Join one of San Andreas' most prestigious departments. Each position offers unique opportunities for growth and the chance to make a real difference.
+              </p>
+            </div>
+            <JobCardsSkeletonGrid />
+          </div>
+        </main>
       </div>
     );
   }

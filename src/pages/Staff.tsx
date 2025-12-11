@@ -190,16 +190,20 @@ const Staff = () => {
     const lastSeenTime = null;
 
     return (
-      <div key={index} className="relative group">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-secondary/20 to-primary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-        <Card className="relative glass-effect border-border/20 hover:border-primary/40 transition-all duration-500 overflow-hidden group-hover:scale-[1.02]">
-          <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-secondary to-primary"></div>
+      <div key={index} className="relative group" style={{ animationDelay: `${index * 100}ms` }}>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-secondary/20 to-primary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500 group-hover:scale-105"></div>
+        <Card className="relative glass-effect border-border/20 hover:border-primary/50 transition-all duration-300 overflow-hidden group-hover:scale-[1.03] group-hover:shadow-xl group-hover:shadow-primary/20 group-hover:-translate-y-2 cursor-pointer">
+          <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-secondary to-primary group-hover:h-2 transition-all duration-300"></div>
 
           {/* Achievement Badges */}
           {achievements.length > 0 && (
             <div className="absolute top-3 right-3 flex flex-col gap-1 z-10">
               {achievements.map((badge, idx) => (
-                <Badge key={idx} className={`${badge.color} text-white text-xs px-2 py-0.5 shadow-lg border-0`}>
+                <Badge 
+                  key={idx} 
+                  className={`${badge.color} text-white text-xs px-2 py-0.5 shadow-lg border-0 group-hover:scale-110 transition-transform duration-300`}
+                  style={{ transitionDelay: `${idx * 50}ms` }}
+                >
                   {badge.label}
                 </Badge>
               ))}
@@ -214,18 +218,18 @@ const Staff = () => {
           <CardContent className="pt-5 pb-4">
             <div className="flex flex-col items-center text-center">
               <div className="relative mb-4">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-secondary/30 rounded-full blur-lg animate-pulse"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-secondary/30 rounded-full blur-lg animate-pulse group-hover:blur-xl group-hover:scale-110 transition-all duration-500"></div>
                 <div
-                  className={`relative w-20 h-20 rounded-full overflow-hidden border-3 ${roleColors[member.role_type as keyof typeof roleColors]} p-0.5 group-hover:scale-110 transition-transform duration-500`}
+                  className={`relative w-20 h-20 rounded-full overflow-hidden border-3 ${roleColors[member.role_type as keyof typeof roleColors]} p-0.5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500`}
                 >
                   <img
                     src={member.discord_avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`}
                     alt={member.name}
-                    className="w-full h-full rounded-full bg-background"
+                    className="w-full h-full rounded-full bg-background group-hover:scale-110 transition-transform duration-500"
                   />
                 </div>
                 <div
-                  className={`absolute -bottom-1 -right-1 w-9 h-9 ${roleColors[member.role_type as keyof typeof roleColors]} rounded-full flex items-center justify-center border-3 border-background shadow-lg`}
+                  className={`absolute -bottom-1 -right-1 w-9 h-9 ${roleColors[member.role_type as keyof typeof roleColors]} rounded-full flex items-center justify-center border-3 border-background shadow-lg group-hover:scale-125 group-hover:rotate-12 transition-all duration-300`}
                 >
                   <Icon className="w-4 h-4 text-primary-foreground" />
                 </div>
@@ -235,19 +239,19 @@ const Staff = () => {
                 </div>
               </div>
 
-              <h3 className="text-lg font-bold mb-1.5">{member.name}</h3>
-              <Badge variant="outline" className="mb-1.5 border-primary text-primary px-3 py-0.5 text-xs">
+              <h3 className="text-lg font-bold mb-1.5 group-hover:text-primary transition-colors duration-300">{member.name}</h3>
+              <Badge variant="outline" className="mb-1.5 border-primary text-primary px-3 py-0.5 text-xs group-hover:bg-primary/10 group-hover:scale-105 transition-all duration-300">
                 {member.role}
               </Badge>
               <div className="flex items-center gap-2 mb-3">
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant="secondary" className="text-xs group-hover:bg-secondary/80 transition-colors duration-300">
                   {member.department.replace("_", " ").toUpperCase()}
                 </Badge>
                 <StaffOnlineIndicator isOnline={staffIsOnline} lastSeen={lastSeenTime} showLabel size="sm" />
               </div>
 
               {member.bio && (
-                <p className="text-xs text-muted-foreground italic mb-4 max-w-xs leading-relaxed line-clamp-2">
+                <p className="text-xs text-muted-foreground italic mb-4 max-w-xs leading-relaxed line-clamp-2 group-hover:text-foreground/70 transition-colors duration-300">
                   &quot;{member.bio}&quot;
                 </p>
               )}
@@ -255,14 +259,14 @@ const Staff = () => {
               <div className="w-full space-y-3">
                 {/* View Profile Button */}
                 <Button
-                  className="w-full bg-primary/10 hover:bg-primary hover:text-primary-foreground text-primary border border-primary/20 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/20"
+                  className="w-full bg-primary/10 hover:bg-primary hover:text-primary-foreground text-primary border border-primary/20 transition-all duration-300 group-hover:bg-primary/20 group-hover:border-primary/40 group-hover:shadow-lg group-hover:shadow-primary/20"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleStaffClick(member.id);
                   }}
                 >
-                  <UserCircle className="w-4 h-4 mr-2" />
-                  View Full Profile
+                  <UserCircle className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
+                  <span className="group-hover:tracking-wide transition-all duration-300">View Full Profile</span>
                 </Button>
               </div>
             </div>
