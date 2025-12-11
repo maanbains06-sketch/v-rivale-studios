@@ -17,12 +17,13 @@ import {
   Shield,
   Check,
   X,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useRef, useState, useMemo } from "react";
+import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
 import Navigation from "@/components/Navigation";
 import AnimatedLogo from "@/components/AnimatedLogo";
 import LaunchingSoonButton from "@/components/LaunchingSoonButton";
@@ -30,69 +31,163 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import heroBg from "@/assets/hero-home-gta-thunder.jpg";
 
-// Animation variants
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.15,
-      delayChildren: 0.2,
-    },
-  },
-} as const;
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 30, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      type: "spring" as const,
-      stiffness: 100,
-      damping: 12,
-    },
-  },
+// Cinematic text animation - word by word with blur
+const WordReveal = ({ text, className, delay = 0 }: { text: string; className?: string; delay?: number }) => {
+  const words = text.split(" ");
+  return (
+    <span className={className}>
+      {words.map((word, i) => (
+        <motion.span
+          key={i}
+          className="inline-block mr-[0.25em]"
+          initial={{ opacity: 0, y: 20, filter: "blur(10px)", rotateX: 90 }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)", rotateX: 0 }}
+          transition={{
+            duration: 0.6,
+            delay: delay + i * 0.08,
+            ease: [0.25, 0.46, 0.45, 0.94],
+          }}
+        >
+          {word}
+        </motion.span>
+      ))}
+    </span>
+  );
 };
 
-const buttonVariants = {
-  hidden: { opacity: 0, x: -20 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: {
-      type: "spring" as const,
-      stiffness: 120,
-      damping: 14,
-    },
-  },
-  hover: {
-    scale: 1.05,
-    transition: { type: "spring" as const, stiffness: 400, damping: 10 },
-  },
-  tap: { scale: 0.95 },
+// Glowing character reveal
+const GlowingText = ({ children, delay = 0 }: { children: string; delay?: number }) => {
+  return (
+    <motion.span
+      className="relative inline-block"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay }}
+    >
+      {children.split("").map((char, i) => (
+        <motion.span
+          key={i}
+          className="inline-block relative"
+          initial={{ opacity: 0, y: -50, scale: 0 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{
+            delay: delay + i * 0.03,
+            type: "spring" as const,
+            stiffness: 200,
+            damping: 12,
+          }}
+          whileHover={{
+            color: "hsl(185, 90%, 65%)",
+            textShadow: "0 0 20px hsl(185 90% 65% / 0.8)",
+            scale: 1.2,
+          }}
+        >
+          {char === " " ? "\u00A0" : char}
+        </motion.span>
+      ))}
+    </motion.span>
+  );
 };
 
-const statsVariants = {
-  hidden: { opacity: 0, y: 40, rotateX: -15 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    rotateX: 0,
-    transition: {
-      delay: i * 0.1 + 0.5,
-      type: "spring" as const,
-      stiffness: 100,
-      damping: 12,
-    },
-  }),
+// Floating particles component
+const FloatingParticles = () => {
+  const particles = useMemo(() => 
+    Array.from({ length: 30 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 4 + 2,
+      duration: Math.random() * 20 + 15,
+      delay: Math.random() * 5,
+    })), []
+  );
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-[6]">
+      {particles.map((particle) => (
+        <motion.div
+          key={particle.id}
+          className="absolute rounded-full"
+          style={{
+            left: `${particle.x}%`,
+            top: `${particle.y}%`,
+            width: particle.size,
+            height: particle.size,
+            background: `radial-gradient(circle, hsl(${185 + Math.random() * 90} 90% 65% / 0.6), transparent)`,
+            boxShadow: `0 0 ${particle.size * 2}px hsl(185 90% 65% / 0.4)`,
+          }}
+          animate={{
+            y: [-20, -100, -20],
+            x: [0, Math.random() * 50 - 25, 0],
+            opacity: [0, 1, 0],
+            scale: [0, 1, 0],
+          }}
+          transition={{
+            duration: particle.duration,
+            delay: particle.delay,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
+// Magnetic button effect hook
+const useMagneticEffect = () => {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const springX = useSpring(x, { stiffness: 150, damping: 15 });
+  const springY = useSpring(y, { stiffness: 150, damping: 15 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    x.set((e.clientX - centerX) * 0.3);
+    y.set((e.clientY - centerY) * 0.3);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return { springX, springY, handleMouseMove, handleMouseLeave };
+};
+
+// Animated counter for stats
+const AnimatedCounter = ({ value, delay }: { value: string; delay: number }) => {
+  const isNumber = /^\d+$/.test(value);
+  
+  if (!isNumber) {
+    return (
+      <motion.span
+        initial={{ opacity: 0, scale: 0.5, rotateY: -90 }}
+        animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+        transition={{ delay, type: "spring" as const, stiffness: 100 }}
+      >
+        {value}
+      </motion.span>
+    );
+  }
+
+  return (
+    <motion.span
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay }}
+    >
+      {value}
+    </motion.span>
+  );
 };
 
 const stats = [
   {
     icon: Users,
-    value: "Comming soon",
+    value: "Coming soon",
     label: "Active Players",
   },
   {
@@ -106,6 +201,70 @@ const stats = [
     label: "Server Status",
   },
 ];
+
+// Enhanced animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2,
+      delayChildren: 0.3,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 50, scale: 0.8, filter: "blur(10px)" },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    filter: "blur(0px)",
+    transition: {
+      type: "spring" as const,
+      stiffness: 80,
+      damping: 15,
+      duration: 0.8,
+    },
+  },
+};
+
+const buttonVariants = {
+  hidden: { opacity: 0, x: -30, scale: 0.9 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    scale: 1,
+    transition: {
+      type: "spring" as const,
+      stiffness: 100,
+      damping: 12,
+    },
+  },
+  hover: {
+    scale: 1.08,
+    boxShadow: "0 0 30px hsl(185 90% 65% / 0.5)",
+    transition: { type: "spring" as const, stiffness: 400, damping: 10 },
+  },
+  tap: { scale: 0.95 },
+};
+
+const statsVariants = {
+  hidden: { opacity: 0, y: 60, rotateX: -30, scale: 0.8 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    rotateX: 0,
+    scale: 1,
+    transition: {
+      delay: i * 0.15 + 0.8,
+      type: "spring" as const,
+      stiffness: 80,
+      damping: 12,
+    },
+  }),
+};
 
 const Index = () => {
   const navigate = useNavigate();
@@ -394,6 +553,18 @@ const Index = () => {
 
         <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/30 to-background/60 z-[5]"></div>
 
+        {/* Floating Particles */}
+        <FloatingParticles />
+
+        {/* Animated scan lines */}
+        <div className="absolute inset-0 z-[7] pointer-events-none overflow-hidden opacity-20">
+          <motion.div
+            className="absolute w-full h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent"
+            animate={{ y: ["-100vh", "100vh"] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+          />
+        </div>
+
         <div className="container mx-auto px-4 relative z-10" style={{ zIndex: 30 }}>
           <motion.div 
             className="text-center"
@@ -401,22 +572,56 @@ const Index = () => {
             initial="hidden"
             animate="visible"
           >
-            {/* Launching Soon Button - positioned above logo */}
-            <motion.div variants={itemVariants} className="mb-6 flex justify-center">
-              <LaunchingSoonButton />
+            {/* Launching Soon Button - with dramatic entrance */}
+            <motion.div 
+              variants={itemVariants} 
+              className="mb-6 flex justify-center"
+            >
+              <motion.div
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ delay: 0.2, type: "spring", stiffness: 200, damping: 15 }}
+              >
+                <LaunchingSoonButton />
+              </motion.div>
             </motion.div>
 
-            <motion.div variants={itemVariants} className="mb-8 flex justify-center">
-              <AnimatedLogo size="lg" />
+            {/* Logo with epic reveal */}
+            <motion.div 
+              variants={itemVariants} 
+              className="mb-8 flex justify-center"
+              whileHover={{ scale: 1.05 }}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.5, filter: "blur(20px)" }}
+                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                transition={{ delay: 0.4, duration: 1, ease: "easeOut" }}
+              >
+                <AnimatedLogo size="lg" />
+              </motion.div>
             </motion.div>
 
-            <motion.p 
+            {/* Cinematic text reveal */}
+            <motion.div
               variants={itemVariants}
               className="text-xl md:text-2xl text-foreground mb-12 max-w-3xl mx-auto leading-relaxed"
             >
-              Immerse yourself in the stunning, visuals and epic moments from the Skylife Roleplay India. Many players
-              are in a living, breathing city with advanced economy, custom scripts, and a thriving community.
-            </motion.p>
+              <WordReveal 
+                text="Immerse yourself in the stunning visuals and epic moments from the Skylife Roleplay India." 
+                delay={0.6}
+              />
+              <br />
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.8 }}
+              >
+                <WordReveal 
+                  text="Many players are in a living, breathing city with advanced economy, custom scripts, and a thriving community." 
+                  delay={1.8}
+                />
+              </motion.span>
+            </motion.div>
 
             <motion.div 
               variants={itemVariants}
@@ -509,7 +714,8 @@ const Index = () => {
               </motion.div>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            {/* Stats with epic 3D entrance */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto perspective-1000">
               {stats.map((stat, index) => (
                 <motion.div
                   key={stat.label}
@@ -518,29 +724,92 @@ const Index = () => {
                   initial="hidden"
                   animate="visible"
                   whileHover={{ 
-                    scale: 1.05, 
-                    rotateY: 5,
-                    boxShadow: "0 20px 40px -15px rgba(139, 92, 246, 0.3)"
+                    scale: 1.08, 
+                    rotateY: 8,
+                    rotateX: -5,
+                    z: 50,
+                    boxShadow: "0 25px 50px -15px hsl(185 90% 65% / 0.4), 0 0 30px hsl(185 90% 65% / 0.2)"
                   }}
-                  className="glass-effect rounded-2xl p-6 transition-all duration-300 cursor-pointer"
-                  style={{ perspective: "1000px" }}
+                  className="glass-effect rounded-2xl p-6 cursor-pointer relative overflow-hidden group"
+                  style={{ 
+                    perspective: "1000px",
+                    transformStyle: "preserve-3d",
+                  }}
                 >
+                  {/* Animated border glow */}
                   <motion.div
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ delay: index * 0.1 + 0.8, type: "spring", stiffness: 200 }}
-                  >
-                    <stat.icon className="w-10 h-10 text-primary mx-auto mb-3" />
-                  </motion.div>
-                  <motion.div 
-                    className="text-4xl font-bold text-gradient mb-2"
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: index * 0.1 + 0.9 }}
-                  >
-                    {stat.value}
-                  </motion.div>
-                  <div className="text-muted-foreground">{stat.label}</div>
+                    className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                    style={{
+                      background: "linear-gradient(90deg, hsl(185 90% 65% / 0.3), hsl(275 80% 68% / 0.3), hsl(185 90% 65% / 0.3))",
+                      backgroundSize: "200% 100%",
+                    }}
+                    animate={{
+                      backgroundPosition: ["0% 0%", "200% 0%"],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                  />
+                  
+                  {/* Shimmer effect on hover */}
+                  <motion.div
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100"
+                    style={{
+                      background: "linear-gradient(110deg, transparent 25%, hsl(185 90% 65% / 0.1) 50%, transparent 75%)",
+                      backgroundSize: "200% 100%",
+                    }}
+                    animate={{
+                      backgroundPosition: ["-100% 0%", "200% 0%"],
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      repeatDelay: 0.5,
+                    }}
+                  />
+
+                  <div className="relative z-10">
+                    <motion.div
+                      initial={{ scale: 0, rotate: -180, y: -30 }}
+                      animate={{ scale: 1, rotate: 0, y: 0 }}
+                      transition={{ 
+                        delay: index * 0.2 + 1.2, 
+                        type: "spring", 
+                        stiffness: 200,
+                        damping: 12,
+                      }}
+                      whileHover={{ 
+                        rotate: [0, -10, 10, 0],
+                        transition: { duration: 0.5 }
+                      }}
+                    >
+                      <stat.icon className="w-12 h-12 text-primary mx-auto mb-4 drop-shadow-[0_0_10px_hsl(185_90%_65%/0.5)]" />
+                    </motion.div>
+                    
+                    <motion.div 
+                      className="text-4xl font-bold text-gradient mb-2"
+                      initial={{ opacity: 0, scale: 0, filter: "blur(10px)" }}
+                      animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                      transition={{ 
+                        delay: index * 0.2 + 1.4, 
+                        type: "spring",
+                        stiffness: 100,
+                      }}
+                    >
+                      <AnimatedCounter value={stat.value} delay={index * 0.2 + 1.4} />
+                    </motion.div>
+                    
+                    <motion.div 
+                      className="text-muted-foreground"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.2 + 1.6 }}
+                    >
+                      {stat.label}
+                    </motion.div>
+                  </div>
                 </motion.div>
               ))}
             </div>
