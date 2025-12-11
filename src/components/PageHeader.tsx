@@ -4,16 +4,18 @@ interface PageHeaderProps {
   badge?: string;
   backgroundImage?: string;
   backgroundPosition?: string;
+  minHeight?: string;
 }
 
-const PageHeader = ({ title, description, badge, backgroundImage, backgroundPosition = 'center 25%' }: PageHeaderProps) => {
+const PageHeader = ({ title, description, badge, backgroundImage, backgroundPosition = 'center 25%', minHeight = '40vh' }: PageHeaderProps) => {
   return (
     <section 
-      className="relative min-h-[40vh] flex items-center justify-center overflow-hidden mb-12"
+      className="relative flex items-center justify-center overflow-hidden mb-12"
       style={{
         backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
         backgroundSize: 'cover',
         backgroundPosition: backgroundPosition,
+        minHeight: minHeight,
       }}
     >
       {/* Gradient overlay - reduced opacity for better image visibility */}
