@@ -4,6 +4,7 @@ import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useOwnerAuditLog } from "@/hooks/useOwnerAuditLog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Owner2FAVerification } from "@/components/Owner2FAVerification";
+import { OwnerAuditLog } from "@/components/OwnerAuditLog";
 import { 
   Loader2, 
   Shield, 
@@ -22,7 +25,8 @@ import {
   Crown,
   Save,
   Eye,
-  Car
+  Car,
+  History
 } from "lucide-react";
 import headerAdminBg from "@/assets/header-staff.jpg";
 
@@ -62,8 +66,11 @@ interface PDMApplication {
 const OwnerPanel = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { logAction } = useOwnerAuditLog();
   const [loading, setLoading] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
   const [settings, setSettings] = useState<SiteSetting[]>([]);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [pdmApplications, setPdmApplications] = useState<PDMApplication[]>([]);
@@ -83,6 +90,8 @@ const OwnerPanel = () => {
         navigate("/auth");
         return;
       }
+
+      setUserEmail(user.email || "");
 
       // Use server-side is_owner() function for secure verification
       const { data: isOwnerResult, error } = await supabase
@@ -110,7 +119,14 @@ const OwnerPanel = () => {
       }
 
       setIsOwner(true);
-      await loadAllData();
+
+      // Check if session is already verified (within 30 minutes)
+      const { data: sessionVerified } = await supabase.rpc('is_owner_session_verified');
+      
+      if (sessionVerified) {
+        setIsVerified(true);
+        await loadAllData();
+      }
     } catch (error) {
       console.error("Error checking owner access:", error);
       toast({
@@ -122,6 +138,17 @@ const OwnerPanel = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleVerificationComplete = async () => {
+    setIsVerified(true);
+    await loadAllData();
+    
+    // Log the access
+    await logAction({
+      actionType: 'security_change',
+      actionDescription: 'Owner panel access verified via 2FA'
+    });
   };
 
   const loadAllData = async () => {
@@ -194,6 +221,7 @@ const OwnerPanel = () => {
 
   const saveSetting = async (key: string) => {
     const { data: { user } } = await supabase.auth.getUser();
+    const oldValue = settings.find(s => s.key === key)?.value;
     
     const { error } = await supabase
       .from("site_settings")
@@ -213,6 +241,15 @@ const OwnerPanel = () => {
       return;
     }
 
+    // Log the action
+    await logAction({
+      actionType: 'setting_update',
+      actionDescription: `Updated setting "${key}"`,
+      targetTable: 'site_settings',
+      oldValue: { key, value: oldValue },
+      newValue: { key, value: editedSettings[key] }
+    });
+
     toast({
       title: "Success",
       description: "Setting saved successfully.",
@@ -221,6 +258,9 @@ const OwnerPanel = () => {
   };
 
   const updateUserRole = async (userId: string, newRole: "admin" | "moderator" | "user") => {
+    const oldRole = userRoles.find(r => r.user_id === userId)?.role;
+    const username = userRoles.find(r => r.user_id === userId)?.discord_username;
+    
     const { error } = await supabase
       .from("user_roles")
       .update({ role: newRole })
@@ -235,6 +275,16 @@ const OwnerPanel = () => {
       return;
     }
 
+    // Log the action
+    await logAction({
+      actionType: 'role_update',
+      actionDescription: `Changed role for user "${username || userId}" from "${oldRole}" to "${newRole}"`,
+      targetTable: 'user_roles',
+      targetId: userId,
+      oldValue: { role: oldRole },
+      newValue: { role: newRole }
+    });
+
     toast({
       title: "Success",
       description: "User role updated successfully.",
@@ -244,6 +294,7 @@ const OwnerPanel = () => {
 
   const updatePdmApplicationStatus = async (appId: string, status: "approved" | "rejected") => {
     const { data: { user } } = await supabase.auth.getUser();
+    const app = pdmApplications.find(a => a.id === appId);
     
     const { error } = await supabase
       .from("pdm_applications")
@@ -264,6 +315,16 @@ const OwnerPanel = () => {
       return;
     }
 
+    // Log the action
+    await logAction({
+      actionType: 'application_update',
+      actionDescription: `${status === 'approved' ? 'Approved' : 'Rejected'} PDM application for "${app?.character_name}"`,
+      targetTable: 'pdm_applications',
+      targetId: appId,
+      oldValue: { status: app?.status },
+      newValue: { status, admin_notes: pdmAdminNotes }
+    });
+
     toast({
       title: "Success",
       description: `PDM application ${status} successfully.`,
@@ -282,8 +343,14 @@ const OwnerPanel = () => {
     );
   }
 
-  if (!isOwner) {
-    return null;
+  // Show 2FA verification if not verified
+  if (!isVerified) {
+    return (
+      <Owner2FAVerification 
+        userEmail={userEmail} 
+        onVerified={handleVerificationComplete} 
+      />
+    );
   }
 
   return (
@@ -298,7 +365,7 @@ const OwnerPanel = () => {
       
       <div className="container mx-auto px-4 py-12">
         <Tabs defaultValue="settings" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-flex">
+          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-flex">
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
               <span className="hidden sm:inline">Site Settings</span>
@@ -310,6 +377,10 @@ const OwnerPanel = () => {
             <TabsTrigger value="pdm" className="flex items-center gap-2">
               <Car className="w-4 h-4" />
               <span className="hidden sm:inline">PDM Applications</span>
+            </TabsTrigger>
+            <TabsTrigger value="audit" className="flex items-center gap-2">
+              <History className="w-4 h-4" />
+              <span className="hidden sm:inline">Audit Log</span>
             </TabsTrigger>
             <TabsTrigger value="permissions" className="flex items-center gap-2">
               <Crown className="w-4 h-4" />
@@ -598,6 +669,11 @@ const OwnerPanel = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Audit Log Tab */}
+          <TabsContent value="audit">
+            <OwnerAuditLog />
           </TabsContent>
 
           {/* Permissions Tab */}
