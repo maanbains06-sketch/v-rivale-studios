@@ -29,6 +29,7 @@ import AnimatedLogo from "@/components/AnimatedLogo";
 import LaunchingSoonButton from "@/components/LaunchingSoonButton";
 import LiveVisitorCounter from "@/components/LiveVisitorCounter";
 import LiveFeedbackMarquee from "@/components/LiveFeedbackMarquee";
+import FeedbackDialog from "@/components/FeedbackDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import heroBg from "@/assets/hero-home-gta-thunder.jpg";
@@ -1000,6 +1001,11 @@ const Index = () => {
 
                 {/* Live Feedback Marquee */}
                 <LiveFeedbackMarquee />
+
+                {/* Feedback Button */}
+                <div className="flex justify-center mb-10">
+                  <FeedbackDialog />
+                </div>
 
                 <TooltipProvider>
                   <div className="flex justify-center gap-6 flex-wrap mb-8">
