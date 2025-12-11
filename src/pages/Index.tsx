@@ -28,6 +28,7 @@ import Navigation from "@/components/Navigation";
 import AnimatedLogo from "@/components/AnimatedLogo";
 import LaunchingSoonButton from "@/components/LaunchingSoonButton";
 import LiveVisitorCounter from "@/components/LiveVisitorCounter";
+import LiveFeedbackMarquee from "@/components/LiveFeedbackMarquee";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import heroBg from "@/assets/hero-home-gta-thunder.jpg";
@@ -991,11 +992,14 @@ const Index = () => {
 
                 <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gradient">Join Our Thriving Community</h2>
 
-                <p className="text-xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
+                <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
                   Connect with thousands of players, share your experiences, and be part of something special. Follow us
                   on social media for the latest updates, community highlights, event announcements, and exclusive
                   content.
                 </p>
+
+                {/* Live Feedback Marquee */}
+                <LiveFeedbackMarquee />
 
                 <TooltipProvider>
                   <div className="flex justify-center gap-6 flex-wrap mb-8">
