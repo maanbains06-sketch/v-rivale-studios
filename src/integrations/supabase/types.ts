@@ -595,6 +595,108 @@ export type Database = {
         }
         Relationships: []
       }
+      owner_2fa_sessions: {
+        Row: {
+          backup_codes: string[] | null
+          created_at: string
+          id: string
+          is_enabled: boolean | null
+          last_verified_at: string | null
+          secret_key: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          backup_codes?: string[] | null
+          created_at?: string
+          id?: string
+          is_enabled?: boolean | null
+          last_verified_at?: string | null
+          secret_key?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          backup_codes?: string[] | null
+          created_at?: string
+          id?: string
+          is_enabled?: boolean | null
+          last_verified_at?: string | null
+          secret_key?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      owner_audit_log: {
+        Row: {
+          action_description: string
+          action_type: string
+          created_at: string
+          id: string
+          ip_address: string | null
+          new_value: Json | null
+          old_value: Json | null
+          owner_user_id: string
+          target_id: string | null
+          target_table: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action_description: string
+          action_type: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          new_value?: Json | null
+          old_value?: Json | null
+          owner_user_id: string
+          target_id?: string | null
+          target_table?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action_description?: string
+          action_type?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          new_value?: Json | null
+          old_value?: Json | null
+          owner_user_id?: string
+          target_id?: string | null
+          target_table?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      owner_verification_tokens: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          token: string
+          used: boolean | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          token: string
+          used?: boolean | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          token?: string
+          used?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       pdm_applications: {
         Row: {
           additional_info: string | null
@@ -1611,6 +1713,7 @@ export type Database = {
         }[]
       }
       check_sla_breach: { Args: never; Returns: undefined }
+      generate_owner_2fa_token: { Args: never; Returns: string }
       generate_promo_code: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
       get_gallery_like_count: {
@@ -1625,6 +1728,18 @@ export type Database = {
         Returns: boolean
       }
       is_owner: { Args: { _user_id: string }; Returns: boolean }
+      is_owner_session_verified: { Args: never; Returns: boolean }
+      log_owner_action: {
+        Args: {
+          p_action_description: string
+          p_action_type: string
+          p_new_value?: Json
+          p_old_value?: Json
+          p_target_id?: string
+          p_target_table?: string
+        }
+        Returns: string
+      }
       log_staff_activity: {
         Args: {
           p_action_description: string
@@ -1652,6 +1767,7 @@ export type Database = {
           rebalanced_count: number
         }[]
       }
+      verify_owner_2fa: { Args: { p_token: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
