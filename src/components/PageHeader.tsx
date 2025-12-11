@@ -23,9 +23,9 @@ const PageHeader = ({ title, description, badge, backgroundImage, backgroundPosi
       
       
       <div className="container mx-auto px-4 relative z-10">
-        <div className="text-center animate-fade-in">
+        <div className="text-center animate-fade-in flex flex-col items-center">
           {badge && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 border border-primary/30 mb-6 backdrop-blur-sm shadow-[0_0_20px_rgba(var(--primary),0.3)] animate-pulse">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 border border-primary/30 mb-4 backdrop-blur-sm shadow-[0_0_20px_rgba(var(--primary),0.3)] animate-pulse">
               <span className="text-sm font-semibold text-primary">{badge}</span>
             </div>
           )}
