@@ -195,7 +195,8 @@ const GangRP = () => {
         description="Join the criminal underworld of San Andreas - Rules, Guidelines & Applications"
         badge="Criminal RP"
         backgroundImage={headerGang}
-        backgroundPosition="top center"
+        backgroundPosition="center center"
+        minHeight="70vh"
       />
       
       <main className="container mx-auto px-4 pb-16">
