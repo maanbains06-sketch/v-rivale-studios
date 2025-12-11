@@ -21,6 +21,7 @@ const TEBEX_STORE_URL = "https://skylife-roleplay-india.tebex.io";
 const Navigation = () => {
   const [user, setUser] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAdmin, department, loading } = useStaffRole();
@@ -36,6 +37,14 @@ const Navigation = () => {
   const checkUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     setUser(user);
+    
+    // Check if user is owner
+    if (user) {
+      const { data: ownerResult } = await supabase.rpc('is_owner', { _user_id: user.id });
+      setIsOwner(ownerResult || false);
+    } else {
+      setIsOwner(false);
+    }
   };
 
   const handleLogout = async () => {
@@ -339,17 +348,19 @@ const Navigation = () => {
                       </Button>
                     </>
                   )}
-                  <Button 
-                    variant="outline"
-                    className="justify-start glass-effect border-primary/30"
-                    onClick={() => {
-                      navigate("/owner-panel");
-                      setIsMenuOpen(false);
-                    }}
-                  >
-                    <Crown className="w-4 h-4 mr-2 text-primary" />
-                    Owner Panel
-                  </Button>
+                  {isOwner && (
+                    <Button 
+                      variant="outline"
+                      className="justify-start glass-effect border-primary/30"
+                      onClick={() => {
+                        navigate("/owner-panel");
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      <Crown className="w-4 h-4 mr-2 text-primary" />
+                      Owner Panel
+                    </Button>
+                  )}
                   <Button 
                     variant="outline"
                     className="justify-start glass-effect"
