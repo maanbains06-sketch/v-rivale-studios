@@ -70,6 +70,20 @@ const FeedbackDialog = () => {
 
       if (error) throw error;
 
+      // Send email notification to owner
+      try {
+        await supabase.functions.invoke("send-feedback-notification", {
+          body: {
+            player_name: formData.player_name.trim(),
+            player_role: formData.player_role.trim() || null,
+            testimonial: formData.testimonial.trim(),
+            rating,
+          },
+        });
+      } catch (notifyError) {
+        console.error("Failed to send notification:", notifyError);
+      }
+
       toast({
         title: "Feedback Submitted!",
         description: "Thank you for your feedback. It will appear after review.",
