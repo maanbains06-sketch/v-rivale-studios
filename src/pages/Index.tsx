@@ -11,14 +11,17 @@ import {
   Image,
   Calendar,
   Trophy,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Navigation from "@/components/Navigation";
 import AnimatedLogo from "@/components/AnimatedLogo";
 import LaunchingSoonButton from "@/components/LaunchingSoonButton";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import heroBg from "@/assets/hero-home-gta-thunder.jpg";
 
 const stats = [
@@ -41,7 +44,102 @@ const stats = [
 
 const Index = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const rainContainerRef = useRef<HTMLDivElement>(null);
+  const [isWhitelisted, setIsWhitelisted] = useState(false);
+  const [hasDiscord, setHasDiscord] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [serverConnectUrl, setServerConnectUrl] = useState("fivem://connect/cfx.re/join/abc123");
+
+  // Check user whitelist and Discord status
+  useEffect(() => {
+    const checkUserStatus = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        setIsLoggedIn(false);
+        setIsWhitelisted(false);
+        setHasDiscord(false);
+        return;
+      }
+
+      setIsLoggedIn(true);
+
+      // Check if user has Discord connected (via profile)
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("discord_username")
+        .eq("id", user.id)
+        .single();
+
+      const discordConnected = !!(profile?.discord_username && profile.discord_username.trim() !== "");
+      setHasDiscord(discordConnected);
+
+      // Check if user has approved whitelist application
+      const { data: whitelistApp } = await supabase
+        .from("whitelist_applications")
+        .select("status")
+        .eq("user_id", user.id)
+        .eq("status", "approved")
+        .maybeSingle();
+
+      setIsWhitelisted(!!whitelistApp);
+
+      // Get server connect URL from settings
+      const { data: connectSetting } = await supabase
+        .from("site_settings")
+        .select("value")
+        .eq("key", "fivem_server_connect")
+        .single();
+
+      if (connectSetting?.value) {
+        setServerConnectUrl(connectSetting.value);
+      }
+    };
+
+    checkUserStatus();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      checkUserStatus();
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleJoinServer = () => {
+    if (!isLoggedIn) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to join the server.",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
+
+    if (!hasDiscord) {
+      toast({
+        title: "Discord Required",
+        description: "Please connect your Discord account to join the server.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!isWhitelisted) {
+      toast({
+        title: "Whitelist Required",
+        description: "Get whitelisted first to join the server!",
+        variant: "destructive",
+      });
+      navigate("/whitelist");
+      return;
+    }
+
+    // If all checks pass, open the FiveM connect URL
+    window.open(serverConnectUrl, "_blank");
+  };
 
   useEffect(() => {
     const container = rainContainerRef.current;
@@ -238,13 +336,19 @@ const Index = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
               <Button
                 size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 glow-cyan animate-glow"
-                asChild
+                className={`text-lg px-8 ${
+                  isWhitelisted && hasDiscord
+                    ? "bg-primary hover:bg-primary/90 text-primary-foreground glow-cyan animate-glow"
+                    : "bg-muted hover:bg-muted/90 text-muted-foreground"
+                }`}
+                onClick={handleJoinServer}
               >
-                <a href="fivem://connect/cfx.re/join/abc123" target="_blank" rel="noopener noreferrer">
+                {isWhitelisted && hasDiscord ? (
                   <Play className="w-5 h-5 mr-2" />
-                  Join Server
-                </a>
+                ) : (
+                  <Lock className="w-5 h-5 mr-2" />
+                )}
+                Join Server
               </Button>
               <Button
                 size="lg"
