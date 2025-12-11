@@ -91,44 +91,30 @@ const OwnerPanel = () => {
         .eq("key", "owner_discord_id")
         .single();
 
-      // Get user's profile to check discord ID
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("discord_username")
-        .eq("id", user.id)
-        .single();
+      const ownerDiscordId = ownerSetting?.value?.trim();
 
-      // Also check staff_members for discord_id match
+      // If no owner Discord ID is configured, deny access
+      if (!ownerDiscordId || ownerDiscordId === "") {
+        toast({
+          title: "Access Denied",
+          description: "Owner Panel is not configured. Please set the owner_discord_id in site settings.",
+          variant: "destructive",
+        });
+        navigate("/");
+        return;
+      }
+
+      // Get user's Discord ID from staff_members table
       const { data: staffMember } = await supabase
         .from("staff_members")
-        .select("discord_id, role_type")
+        .select("discord_id")
         .eq("user_id", user.id)
         .single();
 
-      const ownerDiscordId = ownerSetting?.value;
-      const userDiscordId = staffMember?.discord_id;
-      const isOwnerRole = staffMember?.role_type === "owner";
+      const userDiscordId = staffMember?.discord_id?.trim();
 
-      // Check if user is the owner (by discord ID or by role_type)
-      if (!ownerDiscordId || ownerDiscordId === "") {
-        // If no owner ID set, allow admins to set it up initially
-        const { data: roleData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", user.id)
-          .eq("role", "admin")
-          .maybeSingle();
-
-        if (!roleData) {
-          toast({
-            title: "Access Denied",
-            description: "Owner Panel is not yet configured. Contact the server owner.",
-            variant: "destructive",
-          });
-          navigate("/");
-          return;
-        }
-      } else if (userDiscordId !== ownerDiscordId && !isOwnerRole) {
+      // Strictly verify: user's Discord ID must match owner Discord ID
+      if (!userDiscordId || userDiscordId !== ownerDiscordId) {
         toast({
           title: "Access Denied",
           description: "Only the server owner can access this panel.",
@@ -142,6 +128,11 @@ const OwnerPanel = () => {
       await loadAllData();
     } catch (error) {
       console.error("Error checking owner access:", error);
+      toast({
+        title: "Error",
+        description: "Failed to verify owner access.",
+        variant: "destructive",
+      });
       navigate("/");
     } finally {
       setLoading(false);
