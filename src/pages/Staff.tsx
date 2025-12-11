@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
 import headerStaff from "@/assets/header-staff.jpg";
@@ -18,7 +19,6 @@ import {
   Award,
   UserCheck,
   Calendar,
-  Loader2,
   MessageCircle,
   Mail,
   UserCircle,
@@ -34,6 +34,7 @@ import { StaffOnlineIndicator } from "@/components/StaffOnlineIndicator";
 import { useFavoriteStaff } from "@/hooks/useFavoriteStaff";
 import { useFavoriteStaffNotifications } from "@/hooks/useFavoriteStaffNotifications";
 import { FavoriteStaffButton } from "@/components/FavoriteStaffButton";
+import { StaffCardsSkeletonGrid } from "@/components/StaffCardSkeleton";
 
 interface StaffMember {
   id: string;
@@ -134,9 +135,20 @@ const Staff = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
+        <PageHeader
+          title="Meet Our Elite Team"
+          description="Passionate professionals dedicated to creating the most immersive and professional roleplay experience"
+          badge="24/7 Available"
+          backgroundImage={headerStaff}
+        />
+        <main className="pb-16">
+          <div className="container mx-auto px-4">
+            <div className="mb-12">
+              <h2 className="text-3xl font-bold text-gradient mb-8 text-center">Loading Team Members...</h2>
+              <StaffCardsSkeletonGrid count={6} />
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
@@ -182,6 +194,21 @@ const Staff = () => {
     return badges.slice(0, 2); // Max 2 badges per card
   };
 
+  const cardVariants = {
+    hidden: { opacity: 0, y: 30, scale: 0.95 },
+    visible: (index: number) => ({
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        type: "spring" as const,
+        stiffness: 100,
+        damping: 15,
+        delay: index * 0.1,
+      },
+    }),
+  };
+
   const renderStaffCard = (member: StaffMember, index: number) => {
     const Icon = roleIcons[member.role_type as keyof typeof roleIcons] || UserCheck;
     const achievements = getAchievementBadges(member);
@@ -190,7 +217,15 @@ const Staff = () => {
     const lastSeenTime = null;
 
     return (
-      <div key={index} className="relative group" style={{ animationDelay: `${index * 100}ms` }}>
+      <motion.div
+        key={member.id}
+        className="relative group"
+        variants={cardVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-50px" }}
+        custom={index}
+      >
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-secondary/20 to-primary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500 group-hover:scale-105"></div>
         <Card className="relative glass-effect border-border/20 hover:border-primary/50 transition-all duration-300 overflow-hidden group-hover:scale-[1.03] group-hover:shadow-xl group-hover:shadow-primary/20 group-hover:-translate-y-2 cursor-pointer">
           <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-secondary to-primary group-hover:h-2 transition-all duration-300"></div>
@@ -272,7 +307,7 @@ const Staff = () => {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </motion.div>
     );
   };
 
