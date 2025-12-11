@@ -12,17 +12,82 @@ import {
   Calendar,
   Trophy,
   Lock,
+  LogIn,
+  MessageSquare,
+  Shield,
+  Check,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Navigation from "@/components/Navigation";
 import AnimatedLogo from "@/components/AnimatedLogo";
 import LaunchingSoonButton from "@/components/LaunchingSoonButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import heroBg from "@/assets/hero-home-gta-thunder.jpg";
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15,
+      delayChildren: 0.2,
+    },
+  },
+} as const;
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 30, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: "spring" as const,
+      stiffness: 100,
+      damping: 12,
+    },
+  },
+};
+
+const buttonVariants = {
+  hidden: { opacity: 0, x: -20 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      type: "spring" as const,
+      stiffness: 120,
+      damping: 14,
+    },
+  },
+  hover: {
+    scale: 1.05,
+    transition: { type: "spring" as const, stiffness: 400, damping: 10 },
+  },
+  tap: { scale: 0.95 },
+};
+
+const statsVariants = {
+  hidden: { opacity: 0, y: 40, rotateX: -15 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    rotateX: 0,
+    transition: {
+      delay: i * 0.1 + 0.5,
+      type: "spring" as const,
+      stiffness: 100,
+      damping: 12,
+    },
+  }),
+};
 
 const stats = [
   {
@@ -140,6 +205,18 @@ const Index = () => {
     // If all checks pass, open the FiveM connect URL
     window.open(serverConnectUrl, "_blank");
   };
+
+  // Get missing requirements for tooltip
+  const getMissingRequirements = () => {
+    const requirements = [
+      { label: "Logged In", met: isLoggedIn, icon: LogIn },
+      { label: "Discord Connected", met: hasDiscord, icon: MessageSquare },
+      { label: "Whitelisted", met: isWhitelisted, icon: Shield },
+    ];
+    return requirements;
+  };
+
+  const allRequirementsMet = isLoggedIn && hasDiscord && isWhitelisted;
 
   useEffect(() => {
     const container = rainContainerRef.current;
@@ -318,74 +395,156 @@ const Index = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/30 to-background/60 z-[5]"></div>
 
         <div className="container mx-auto px-4 relative z-10" style={{ zIndex: 30 }}>
-          <div className="text-center animate-fade-in">
+          <motion.div 
+            className="text-center"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
             {/* Launching Soon Button - positioned above logo */}
-            <div className="mb-6 flex justify-center">
+            <motion.div variants={itemVariants} className="mb-6 flex justify-center">
               <LaunchingSoonButton />
-            </div>
+            </motion.div>
 
-            <div className="mb-8 flex justify-center">
+            <motion.div variants={itemVariants} className="mb-8 flex justify-center">
               <AnimatedLogo size="lg" />
-            </div>
+            </motion.div>
 
-            <p className="text-xl md:text-2xl text-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
-              Immerse yourself in the stunning, visuals and epic moments from the Skylife Roleplay India.Many players
+            <motion.p 
+              variants={itemVariants}
+              className="text-xl md:text-2xl text-foreground mb-12 max-w-3xl mx-auto leading-relaxed"
+            >
+              Immerse yourself in the stunning, visuals and epic moments from the Skylife Roleplay India. Many players
               are in a living, breathing city with advanced economy, custom scripts, and a thriving community.
-            </p>
+            </motion.p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-              <Button
-                size="lg"
-                className={`text-lg px-8 ${
-                  isWhitelisted && hasDiscord
-                    ? "bg-primary hover:bg-primary/90 text-primary-foreground glow-cyan animate-glow"
-                    : "bg-muted hover:bg-muted/90 text-muted-foreground"
-                }`}
-                onClick={handleJoinServer}
-              >
-                {isWhitelisted && hasDiscord ? (
+            <motion.div 
+              variants={itemVariants}
+              className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
+            >
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <motion.div
+                      variants={buttonVariants}
+                      whileHover="hover"
+                      whileTap="tap"
+                    >
+                      <Button
+                        size="lg"
+                        className={`text-lg px-8 ${
+                          allRequirementsMet
+                            ? "bg-primary hover:bg-primary/90 text-primary-foreground glow-cyan animate-glow"
+                            : "bg-muted/80 hover:bg-muted text-muted-foreground border border-border/50"
+                        }`}
+                        onClick={handleJoinServer}
+                      >
+                        {allRequirementsMet ? (
+                          <Play className="w-5 h-5 mr-2" />
+                        ) : (
+                          <Lock className="w-5 h-5 mr-2" />
+                        )}
+                        Join Server
+                      </Button>
+                    </motion.div>
+                  </TooltipTrigger>
+                  <TooltipContent 
+                    side="bottom" 
+                    className="p-4 glass-effect border-border/30 max-w-xs"
+                  >
+                    <div className="space-y-2">
+                      <p className="font-semibold text-foreground mb-3">
+                        {allRequirementsMet ? "Ready to Play!" : "Requirements to Join:"}
+                      </p>
+                      {getMissingRequirements().map((req) => (
+                        <div 
+                          key={req.label}
+                          className={`flex items-center gap-2 text-sm ${
+                            req.met ? "text-green-400" : "text-red-400"
+                          }`}
+                        >
+                          {req.met ? (
+                            <Check className="w-4 h-4" />
+                          ) : (
+                            <X className="w-4 h-4" />
+                          )}
+                          <req.icon className="w-4 h-4" />
+                          <span>{req.label}</span>
+                        </div>
+                      ))}
+                      {!allRequirementsMet && (
+                        <p className="text-xs text-muted-foreground mt-2 pt-2 border-t border-border/30">
+                          Complete all requirements to join the server
+                        </p>
+                      )}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-primary text-primary hover:bg-primary/10 text-lg px-8"
+                  onClick={() => navigate("/whitelist")}
+                >
                   <Play className="w-5 h-5 mr-2" />
-                ) : (
-                  <Lock className="w-5 h-5 mr-2" />
-                )}
-                Join Server
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-primary text-primary hover:bg-primary/10 text-lg px-8"
-                onClick={() => navigate("/whitelist")}
-              >
-                <Play className="w-5 h-5 mr-2" />
-                Get Whitelisted
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-secondary text-secondary hover:bg-secondary/10 text-lg px-8"
-                asChild
-              >
-                <a href="https://www.youtube.com/@Skyliferpindia20" target="_blank" rel="noopener noreferrer">
-                  <Youtube className="w-5 h-5 mr-2" />
-                  Watch Trailer
-                </a>
-              </Button>
-            </div>
+                  Get Whitelisted
+                </Button>
+              </motion.div>
+
+              <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-secondary text-secondary hover:bg-secondary/10 text-lg px-8"
+                  asChild
+                >
+                  <a href="https://www.youtube.com/@Skyliferpindia20" target="_blank" rel="noopener noreferrer">
+                    <Youtube className="w-5 h-5 mr-2" />
+                    Watch Trailer
+                  </a>
+                </Button>
+              </motion.div>
+            </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
               {stats.map((stat, index) => (
-                <div
+                <motion.div
                   key={stat.label}
-                  className="glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 animate-fade-in"
-                  style={{ animationDelay: `${index * 100}ms` }}
+                  custom={index}
+                  variants={statsVariants}
+                  initial="hidden"
+                  animate="visible"
+                  whileHover={{ 
+                    scale: 1.05, 
+                    rotateY: 5,
+                    boxShadow: "0 20px 40px -15px rgba(139, 92, 246, 0.3)"
+                  }}
+                  className="glass-effect rounded-2xl p-6 transition-all duration-300 cursor-pointer"
+                  style={{ perspective: "1000px" }}
                 >
-                  <stat.icon className="w-10 h-10 text-primary mx-auto mb-3" />
-                  <div className="text-4xl font-bold text-gradient mb-2">{stat.value}</div>
+                  <motion.div
+                    initial={{ scale: 0, rotate: -180 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ delay: index * 0.1 + 0.8, type: "spring", stiffness: 200 }}
+                  >
+                    <stat.icon className="w-10 h-10 text-primary mx-auto mb-3" />
+                  </motion.div>
+                  <motion.div 
+                    className="text-4xl font-bold text-gradient mb-2"
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.1 + 0.9 }}
+                  >
+                    {stat.value}
+                  </motion.div>
                   <div className="text-muted-foreground">{stat.label}</div>
-                </div>
+                </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
