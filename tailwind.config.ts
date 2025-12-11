@@ -136,6 +136,11 @@ export default {
             opacity: "0.3",
           },
         },
+        shimmer: {
+          "100%": {
+            transform: "translateX(100%)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -146,6 +151,7 @@ export default {
         "orbit-1": "orbit-1 8s linear infinite",
         "orbit-2": "orbit-2 10s linear infinite",
         "orbit-3": "orbit-3 12s linear infinite",
+        shimmer: "shimmer 2s infinite",
       },
     },
   },

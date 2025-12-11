@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export const JobCardSkeleton = () => {
   return (
-    <Card className="glass-effect border-border/20 overflow-hidden animate-pulse">
+    <Card className="glass-effect border-border/20 overflow-hidden">
       {/* Image skeleton */}
       <div className="relative h-36 overflow-hidden">
         <Skeleton className="w-full h-full" />
