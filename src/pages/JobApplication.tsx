@@ -17,6 +17,7 @@ import jobEmsImg from "@/assets/job-ems.jpg";
 import jobMechanicImg from "@/assets/job-mechanic.jpg";
 import jobFirefighterImg from "@/assets/job-firefighter.jpg";
 import jobPdmImg from "@/assets/job-pdm.jpg";
+import headerDoj from "@/assets/header-doj.jpg";
 
 const JobApplication = () => {
   const navigate = useNavigate();
@@ -109,7 +110,7 @@ const JobApplication = () => {
       name: "DOJ - Judge",
       icon: Gavel,
       color: "amber-500",
-      image: jobPoliceImg,
+      image: headerDoj,
       description: "Preside over court cases and deliver justice in San Andreas courts.",
       benefits: ["High Authority", "Legal Expertise", "Important Decisions"],
     },
@@ -118,7 +119,7 @@ const JobApplication = () => {
       name: "DOJ - Attorney",
       icon: Scale,
       color: "emerald-500",
-      image: jobPoliceImg,
+      image: headerDoj,
       description: "Represent clients in court and fight for justice as a defense attorney.",
       benefits: ["Legal Career", "Court Appearances", "Client Advocacy"],
     },
@@ -154,9 +155,9 @@ const JobApplication = () => {
       case "pdm":
         return <PDMApplicationForm jobImage={jobPdmImg} />;
       case "judge":
-        return <DOJApplicationForm applicationType="judge" jobImage={jobPoliceImg} />;
+        return <DOJApplicationForm applicationType="judge" jobImage={headerDoj} />;
       case "lawyer":
-        return <DOJApplicationForm applicationType="lawyer" jobImage={jobPoliceImg} />;
+        return <DOJApplicationForm applicationType="lawyer" jobImage={headerDoj} />;
       default:
         return null;
     }
