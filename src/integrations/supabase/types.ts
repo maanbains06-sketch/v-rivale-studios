@@ -1624,6 +1624,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_owner: { Args: { _user_id: string }; Returns: boolean }
       log_staff_activity: {
         Args: {
           p_action_description: string
