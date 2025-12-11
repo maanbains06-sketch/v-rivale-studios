@@ -84,37 +84,22 @@ const OwnerPanel = () => {
         return;
       }
 
-      // Get owner discord ID from settings
-      const { data: ownerSetting } = await supabase
-        .from("site_settings")
-        .select("value")
-        .eq("key", "owner_discord_id")
-        .single();
+      // Use server-side is_owner() function for secure verification
+      const { data: isOwnerResult, error } = await supabase
+        .rpc('is_owner', { _user_id: user.id });
 
-      const ownerDiscordId = ownerSetting?.value?.trim();
-
-      // If no owner Discord ID is configured, deny access
-      if (!ownerDiscordId || ownerDiscordId === "") {
+      if (error) {
+        console.error("Error checking owner status:", error);
         toast({
-          title: "Access Denied",
-          description: "Owner Panel is not configured. Please set the owner_discord_id in site settings.",
+          title: "Error",
+          description: "Failed to verify owner access.",
           variant: "destructive",
         });
         navigate("/");
         return;
       }
 
-      // Get user's Discord ID from staff_members table
-      const { data: staffMember } = await supabase
-        .from("staff_members")
-        .select("discord_id")
-        .eq("user_id", user.id)
-        .single();
-
-      const userDiscordId = staffMember?.discord_id?.trim();
-
-      // Strictly verify: user's Discord ID must match owner Discord ID
-      if (!userDiscordId || userDiscordId !== ownerDiscordId) {
+      if (!isOwnerResult) {
         toast({
           title: "Access Denied",
           description: "Only the server owner can access this panel.",
