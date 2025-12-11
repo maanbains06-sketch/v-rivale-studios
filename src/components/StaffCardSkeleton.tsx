@@ -5,7 +5,7 @@ export const StaffCardSkeleton = () => {
   return (
     <div className="relative group">
       <Card className="relative glass-effect border-border/20 overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary/30 via-secondary/30 to-primary/30 animate-pulse"></div>
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary/30 via-secondary/30 to-primary/30"></div>
         
         {/* Fake achievement badges */}
         <div className="absolute top-3 right-3 flex flex-col gap-1 z-10">
