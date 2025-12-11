@@ -239,6 +239,17 @@ const Index = () => {
               <Button
                 size="lg"
                 className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 glow-cyan animate-glow"
+                asChild
+              >
+                <a href="fivem://connect/cfx.re/join/abc123" target="_blank" rel="noopener noreferrer">
+                  <Play className="w-5 h-5 mr-2" />
+                  Join Server
+                </a>
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-primary text-primary hover:bg-primary/10 text-lg px-8"
                 onClick={() => navigate("/whitelist")}
               >
                 <Play className="w-5 h-5 mr-2" />
@@ -247,12 +258,12 @@ const Index = () => {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-primary text-primary hover:bg-primary/10 text-lg px-8"
+                className="border-secondary text-secondary hover:bg-secondary/10 text-lg px-8"
                 asChild
               >
-                <a href="fivem://connect/cfx.re/join/abc123" target="_blank" rel="noopener noreferrer">
-                  <Play className="w-5 h-5 mr-2" />
-                  Join Server
+                <a href="https://www.youtube.com/@Skyliferpindia20" target="_blank" rel="noopener noreferrer">
+                  <Youtube className="w-5 h-5 mr-2" />
+                  Watch Trailer
                 </a>
               </Button>
             </div>
