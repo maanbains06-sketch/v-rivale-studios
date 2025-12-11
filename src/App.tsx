@@ -44,6 +44,7 @@ import RefundPolicy from "./pages/RefundPolicy";
 import DiscordSignupForm from "./pages/DiscordSignupForm";
 import DiscordProfile from "./pages/DiscordProfile";
 import OwnerPanel from "./pages/OwnerPanel";
+import GangRP from "./pages/GangRP";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -95,6 +96,7 @@ const AppRoutes = () => {
         <Route path="/terms-of-service" element={<PageTransition><TermsOfService /></PageTransition>} />
         <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
         <Route path="/owner-panel" element={<PageTransition><OwnerPanel /></PageTransition>} />
+        <Route path="/gang-rp" element={<PageTransition><GangRP /></PageTransition>} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>

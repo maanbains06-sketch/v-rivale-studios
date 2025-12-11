@@ -286,8 +286,8 @@ const Staff = () => {
 
       <main className="pb-16">
         <div className="container mx-auto px-4">
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mb-20">
+          {/* Stats Grid - Only 3 stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto mb-20">
             <div className="relative group">
               <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
               <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-primary/20">
@@ -312,15 +312,6 @@ const Staff = () => {
                 <Briefcase className="w-8 h-8 text-primary mx-auto mb-3" />
                 <div className="text-4xl font-bold text-gradient mb-1">{openPositions}</div>
                 <div className="text-sm text-muted-foreground">Open Positions</div>
-              </div>
-            </div>
-
-            <div className="relative group">
-              <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-              <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-primary/20">
-                <Award className="w-8 h-8 text-primary mx-auto mb-3" />
-                <div className="text-4xl font-bold text-gradient mb-1">Pro</div>
-                <div className="text-sm text-muted-foreground">Team</div>
               </div>
             </div>
           </div>
@@ -425,7 +416,7 @@ const Staff = () => {
           {/* Management Team */}
           <div className="mb-16">
             <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-gradient mb-4">Administration Team</h2>
+              <h2 className="text-4xl font-bold text-gradient mb-4">Management Team</h2>
               <p className="text-lg text-muted-foreground">Ensuring smooth server operations</p>
             </div>
             {adminStaff.length > 0 ? (
@@ -436,7 +427,7 @@ const Staff = () => {
               <Card className="glass-effect border-border/20 max-w-2xl mx-auto">
                 <CardContent className="p-8 text-center">
                   <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                  <p className="text-muted-foreground">No administration team members added yet</p>
+                  <p className="text-muted-foreground">No management team members added yet</p>
                 </CardContent>
               </Card>
             )}
@@ -462,10 +453,10 @@ const Staff = () => {
             )}
           </div>
 
-          {/* Administration Team */}
+          {/* Administration Team (formerly Moderation) */}
           <div className="mb-16">
             <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-gradient mb-4">Moderation Team</h2>
+              <h2 className="text-4xl font-bold text-gradient mb-4">Administration Team</h2>
               <p className="text-lg text-muted-foreground">Keeping the community safe and fair</p>
             </div>
             {moderatorStaff.length > 0 ? (
@@ -476,7 +467,7 @@ const Staff = () => {
               <Card className="glass-effect border-border/20 max-w-2xl mx-auto">
                 <CardContent className="p-8 text-center">
                   <HeadphonesIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                  <p className="text-muted-foreground">No moderation team members added yet</p>
+                  <p className="text-muted-foreground">No administration team members added yet</p>
                 </CardContent>
               </Card>
             )}
