@@ -12,7 +12,7 @@ const PageHeader = ({ title, description, badge, backgroundImage }: PageHeaderPr
       style={{
         backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
         backgroundSize: 'cover',
-        backgroundPosition: 'center',
+        backgroundPosition: 'center top',
       }}
     >
       {/* Gradient overlay */}
