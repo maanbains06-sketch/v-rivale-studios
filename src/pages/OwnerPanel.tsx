@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
@@ -26,9 +26,13 @@ import {
   Save,
   Eye,
   Car,
-  History
+  History,
+  Clock
 } from "lucide-react";
 import headerAdminBg from "@/assets/header-staff.jpg";
+
+const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
+const WARNING_BEFORE_LOGOUT = 2 * 60 * 1000; // 2 minutes warning
 
 interface SiteSetting {
   id: string;
@@ -77,6 +81,90 @@ const OwnerPanel = () => {
   const [editedSettings, setEditedSettings] = useState<Record<string, string>>({});
   const [selectedPdmApp, setSelectedPdmApp] = useState<PDMApplication | null>(null);
   const [pdmAdminNotes, setPdmAdminNotes] = useState("");
+  const [showInactivityWarning, setShowInactivityWarning] = useState(false);
+  const [remainingTime, setRemainingTime] = useState(0);
+  
+  const lastActivityRef = useRef<number>(Date.now());
+  const warningTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const logoutTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const countdownRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Reset activity timer
+  const resetActivityTimer = useCallback(() => {
+    lastActivityRef.current = Date.now();
+    setShowInactivityWarning(false);
+    
+    // Clear existing timeouts
+    if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current);
+    if (logoutTimeoutRef.current) clearTimeout(logoutTimeoutRef.current);
+    if (countdownRef.current) clearInterval(countdownRef.current);
+    
+    // Set warning timeout (28 minutes)
+    warningTimeoutRef.current = setTimeout(() => {
+      setShowInactivityWarning(true);
+      setRemainingTime(WARNING_BEFORE_LOGOUT / 1000);
+      
+      // Start countdown
+      countdownRef.current = setInterval(() => {
+        setRemainingTime(prev => {
+          if (prev <= 1) {
+            if (countdownRef.current) clearInterval(countdownRef.current);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }, INACTIVITY_TIMEOUT - WARNING_BEFORE_LOGOUT);
+    
+    // Set logout timeout (30 minutes)
+    logoutTimeoutRef.current = setTimeout(() => {
+      handleInactivityLogout();
+    }, INACTIVITY_TIMEOUT);
+  }, []);
+
+  // Handle inactivity logout
+  const handleInactivityLogout = useCallback(async () => {
+    await logAction({
+      actionType: 'security_change',
+      actionDescription: 'Session ended due to 30 minutes of inactivity'
+    });
+    
+    setIsVerified(false);
+    setShowInactivityWarning(false);
+    
+    toast({
+      title: "Session Expired",
+      description: "You have been logged out due to 30 minutes of inactivity.",
+      variant: "destructive",
+    });
+  }, [logAction, toast]);
+
+  // Set up activity listeners
+  useEffect(() => {
+    if (!isVerified) return;
+    
+    const activityEvents = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'];
+    
+    const handleActivity = () => {
+      resetActivityTimer();
+    };
+    
+    activityEvents.forEach(event => {
+      document.addEventListener(event, handleActivity);
+    });
+    
+    // Initial timer setup
+    resetActivityTimer();
+    
+    return () => {
+      activityEvents.forEach(event => {
+        document.removeEventListener(event, handleActivity);
+      });
+      if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current);
+      if (logoutTimeoutRef.current) clearTimeout(logoutTimeoutRef.current);
+      if (countdownRef.current) clearInterval(countdownRef.current);
+    };
+  }, [isVerified, resetActivityTimer]);
 
   useEffect(() => {
     checkOwnerAccess();
@@ -355,6 +443,37 @@ const OwnerPanel = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Inactivity Warning Modal */}
+      {showInactivityWarning && (
+        <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md glass-effect border-destructive/50 animate-pulse">
+            <CardHeader className="text-center">
+              <div className="mx-auto w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mb-4">
+                <Clock className="w-8 h-8 text-destructive" />
+              </div>
+              <CardTitle className="text-xl text-destructive">Session Timeout Warning</CardTitle>
+              <CardDescription>
+                You will be logged out due to inactivity
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center space-y-4">
+              <div className="text-4xl font-mono font-bold text-destructive">
+                {Math.floor(remainingTime / 60)}:{(remainingTime % 60).toString().padStart(2, '0')}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Move your mouse or press any key to stay logged in
+              </p>
+              <Button 
+                onClick={resetActivityTimer} 
+                className="w-full"
+              >
+                I'm Still Here - Keep Me Logged In
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       <Navigation />
       <PageHeader 
         title="Owner Panel"
