@@ -27,7 +27,11 @@ import {
   Eye,
   Car,
   History,
-  Clock
+  Clock,
+  MessageSquare,
+  Star,
+  Check,
+  X
 } from "lucide-react";
 import headerAdminBg from "@/assets/header-staff.jpg";
 
@@ -67,6 +71,16 @@ interface PDMApplication {
   admin_notes?: string;
 }
 
+interface Testimonial {
+  id: string;
+  player_name: string;
+  player_role: string | null;
+  testimonial: string;
+  rating: number;
+  is_featured: boolean;
+  created_at: string;
+}
+
 const OwnerPanel = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -78,6 +92,7 @@ const OwnerPanel = () => {
   const [settings, setSettings] = useState<SiteSetting[]>([]);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [pdmApplications, setPdmApplications] = useState<PDMApplication[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [editedSettings, setEditedSettings] = useState<Record<string, string>>({});
   const [selectedPdmApp, setSelectedPdmApp] = useState<PDMApplication | null>(null);
   const [pdmAdminNotes, setPdmAdminNotes] = useState("");
@@ -263,6 +278,7 @@ const OwnerPanel = () => {
       loadSettings(),
       loadUserRoles(),
       loadPdmApplications(),
+      loadTestimonials(),
     ]);
   };
 
@@ -324,6 +340,84 @@ const OwnerPanel = () => {
     }
 
     setPdmApplications(data || []);
+  };
+
+  const loadTestimonials = async () => {
+    const { data, error } = await supabase
+      .from("testimonials")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error loading testimonials:", error);
+      return;
+    }
+
+    setTestimonials(data || []);
+  };
+
+  const updateTestimonialStatus = async (id: string, isFeatured: boolean) => {
+    const testimonial = testimonials.find(t => t.id === id);
+    
+    const { error } = await supabase
+      .from("testimonials")
+      .update({ is_featured: isFeatured })
+      .eq("id", id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update testimonial.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    await logAction({
+      actionType: 'feedback_update',
+      actionDescription: `${isFeatured ? 'Approved' : 'Rejected'} feedback from "${testimonial?.player_name}"`,
+      targetTable: 'testimonials',
+      targetId: id,
+      oldValue: { is_featured: testimonial?.is_featured },
+      newValue: { is_featured: isFeatured }
+    });
+
+    toast({
+      title: "Success",
+      description: `Feedback ${isFeatured ? 'approved and featured' : 'hidden'} successfully.`,
+    });
+    loadTestimonials();
+  };
+
+  const deleteTestimonial = async (id: string) => {
+    const testimonial = testimonials.find(t => t.id === id);
+    
+    const { error } = await supabase
+      .from("testimonials")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete testimonial.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    await logAction({
+      actionType: 'feedback_delete',
+      actionDescription: `Deleted feedback from "${testimonial?.player_name}"`,
+      targetTable: 'testimonials',
+      targetId: id,
+    });
+
+    toast({
+      title: "Success",
+      description: "Feedback deleted successfully.",
+    });
+    loadTestimonials();
   };
 
   const saveSetting = async (key: string) => {
@@ -503,7 +597,7 @@ const OwnerPanel = () => {
       
       <div className="container mx-auto px-4 py-12">
         <Tabs defaultValue="settings" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-flex">
+          <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-flex">
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
               <span className="hidden sm:inline">Site Settings</span>
@@ -511,6 +605,10 @@ const OwnerPanel = () => {
             <TabsTrigger value="roles" className="flex items-center gap-2">
               <Shield className="w-4 h-4" />
               <span className="hidden sm:inline">User Roles</span>
+            </TabsTrigger>
+            <TabsTrigger value="feedback" className="flex items-center gap-2">
+              <MessageSquare className="w-4 h-4" />
+              <span className="hidden sm:inline">Feedback</span>
             </TabsTrigger>
             <TabsTrigger value="pdm" className="flex items-center gap-2">
               <Car className="w-4 h-4" />
@@ -714,6 +812,132 @@ const OwnerPanel = () => {
                     ))}
                   </TableBody>
                 </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Community Feedback Tab */}
+          <TabsContent value="feedback">
+            <Card className="glass-effect border-border/20">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-primary" />
+                  <CardTitle className="text-gradient">Community Feedback</CardTitle>
+                </div>
+                <CardDescription>Review and manage community testimonials and feedback submissions</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Pending Feedback */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <Badge variant="secondary">{testimonials.filter(t => !t.is_featured).length}</Badge>
+                    Pending Review
+                  </h3>
+                  {testimonials.filter(t => !t.is_featured).length === 0 ? (
+                    <p className="text-center text-muted-foreground py-4">No pending feedback</p>
+                  ) : (
+                    testimonials.filter(t => !t.is_featured).map((feedback) => (
+                      <Card key={feedback.id} className="border-border/20 bg-background/30">
+                        <CardContent className="pt-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="font-semibold">{feedback.player_name}</span>
+                                {feedback.player_role && (
+                                  <Badge variant="outline" className="text-xs">{feedback.player_role}</Badge>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1 mb-2">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star
+                                    key={star}
+                                    className={`w-4 h-4 ${star <= feedback.rating ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground/30"}`}
+                                  />
+                                ))}
+                              </div>
+                              <p className="text-sm text-muted-foreground italic">"{feedback.testimonial}"</p>
+                              <p className="text-xs text-muted-foreground mt-2">
+                                Submitted: {new Date(feedback.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => updateTestimonialStatus(feedback.id, true)}
+                                className="bg-primary hover:bg-primary/90"
+                              >
+                                <Check className="w-4 h-4 mr-1" />
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => deleteTestimonial(feedback.id)}
+                              >
+                                <X className="w-4 h-4 mr-1" />
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
+                </div>
+
+                {/* Approved/Featured Feedback */}
+                <div className="space-y-4 pt-6 border-t border-border/20">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <Badge>{testimonials.filter(t => t.is_featured).length}</Badge>
+                    Featured Feedback
+                  </h3>
+                  {testimonials.filter(t => t.is_featured).length === 0 ? (
+                    <p className="text-center text-muted-foreground py-4">No featured feedback yet</p>
+                  ) : (
+                    testimonials.filter(t => t.is_featured).map((feedback) => (
+                      <Card key={feedback.id} className="border-border/20 bg-primary/5">
+                        <CardContent className="pt-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="font-semibold">{feedback.player_name}</span>
+                                {feedback.player_role && (
+                                  <Badge variant="outline" className="text-xs">{feedback.player_role}</Badge>
+                                )}
+                                <Badge className="text-xs bg-primary/20 text-primary">Featured</Badge>
+                              </div>
+                              <div className="flex items-center gap-1 mb-2">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star
+                                    key={star}
+                                    className={`w-4 h-4 ${star <= feedback.rating ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground/30"}`}
+                                  />
+                                ))}
+                              </div>
+                              <p className="text-sm text-muted-foreground italic">"{feedback.testimonial}"</p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateTestimonialStatus(feedback.id, false)}
+                              >
+                                Hide
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => deleteTestimonial(feedback.id)}
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

@@ -29,3 +29,6 @@ verify_jwt = true
 
 [functions.notify-unauthorized-owner-access]
 verify_jwt = true
+
+[functions.send-feedback-notification]
+verify_jwt = false
