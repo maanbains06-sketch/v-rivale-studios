@@ -27,6 +27,7 @@ import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from
 import Navigation from "@/components/Navigation";
 import AnimatedLogo from "@/components/AnimatedLogo";
 import LaunchingSoonButton from "@/components/LaunchingSoonButton";
+import LiveVisitorCounter from "@/components/LiveVisitorCounter";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import heroBg from "@/assets/hero-home-gta-thunder.jpg";
@@ -496,6 +497,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
+      <LiveVisitorCounter />
 
       {/* Hero Section */}
       <section
