@@ -29,7 +29,7 @@ import AnimatedLogo from "@/components/AnimatedLogo";
 import LaunchingSoonButton from "@/components/LaunchingSoonButton";
 import LiveVisitorCounter from "@/components/LiveVisitorCounter";
 import LiveFeedbackMarquee from "@/components/LiveFeedbackMarquee";
-import FeedbackDialog from "@/components/FeedbackDialog";
+import { MessageSquarePlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import heroBg from "@/assets/hero-home-gta-thunder.jpg";
@@ -1004,7 +1004,15 @@ const Index = () => {
 
                 {/* Feedback Button */}
                 <div className="flex justify-center mb-10">
-                  <FeedbackDialog />
+                  <Button
+                    size="lg"
+                    onClick={() => navigate("/feedback")}
+                    className="group relative overflow-hidden bg-gradient-to-r from-primary/80 to-secondary/80 hover:from-primary hover:to-secondary border-0 text-primary-foreground font-bold px-8 py-6 rounded-2xl shadow-[0_0_30px_rgba(var(--primary),0.3)] hover:shadow-[0_0_40px_rgba(var(--primary),0.5)] transition-all duration-300"
+                  >
+                    <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></span>
+                    <MessageSquarePlus className="w-5 h-5 mr-2" />
+                    Share Your Feedback
+                  </Button>
                 </div>
 
                 <TooltipProvider>
