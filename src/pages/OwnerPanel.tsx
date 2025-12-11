@@ -197,6 +197,25 @@ const OwnerPanel = () => {
       }
 
       if (!isOwnerResult) {
+        // Send notification to owner about unauthorized access
+        try {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("discord_username")
+            .eq("id", user.id)
+            .single();
+
+          await supabase.functions.invoke("notify-unauthorized-owner-access", {
+            body: {
+              attempted_user_id: user.id,
+              attempted_user_email: user.email,
+              attempted_discord_username: profile?.discord_username,
+            },
+          });
+        } catch (notifyError) {
+          console.error("Failed to send unauthorized access notification:", notifyError);
+        }
+
         toast({
           title: "Access Denied",
           description: "Only the server owner can access this panel.",
