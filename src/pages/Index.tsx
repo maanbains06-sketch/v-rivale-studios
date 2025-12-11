@@ -684,7 +684,7 @@ const Index = () => {
 
             <motion.div 
               variants={itemVariants}
-              className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
+              className="flex flex-col sm:flex-row gap-4 justify-center mb-16 relative z-[60]"
             >
               <TooltipProvider delayDuration={100}>
                 <Tooltip>
@@ -941,7 +941,7 @@ const Index = () => {
       </section>
 
       {/* Quick Info Section */}
-      <section className="py-20 relative">
+      <section className="py-20 relative z-[10]">
         <div className="container mx-auto px-4">
           <div className="glass-effect rounded-3xl p-8 md:p-12 text-center animate-fade-in">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gradient">Why Choose SLRP?</h2>
