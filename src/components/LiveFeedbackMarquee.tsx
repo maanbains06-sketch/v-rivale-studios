@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { motion, AnimatePresence } from "framer-motion";
 import { Star, Quote, MessageCircle } from "lucide-react";
 
 interface Feedback {
@@ -105,120 +104,91 @@ const LiveFeedbackMarquee = () => {
 
   if (isLoading) {
     return (
-      <div className="w-full py-6">
+      <div className="w-full py-4 md:py-6">
         <div className="flex items-center justify-center gap-2 text-muted-foreground">
           <MessageCircle className="w-5 h-5 animate-pulse" />
-          <span>Loading community feedback...</span>
+          <span className="text-sm">Loading feedback...</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full py-8 overflow-hidden">
+    <div className="w-full py-6 md:py-8 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-center gap-3 mb-6">
-        <div className="h-px w-16 bg-gradient-to-r from-transparent to-primary/50"></div>
-        <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/30">
+      <div className="flex items-center justify-center gap-2 md:gap-3 mb-4 md:mb-6">
+        <div className="h-px w-8 md:w-16 bg-gradient-to-r from-transparent to-primary/50" />
+        <div className="flex items-center gap-2 px-3 md:px-4 py-1 md:py-1.5 rounded-full bg-primary/10 border border-primary/30">
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
           </span>
-          <span className="text-xs font-semibold text-primary uppercase tracking-wider">Live Community Feedback</span>
+          <span className="text-[10px] md:text-xs font-semibold text-primary uppercase tracking-wider">Live Feedback</span>
         </div>
-        <div className="h-px w-16 bg-gradient-to-l from-transparent to-primary/50"></div>
+        <div className="h-px w-8 md:w-16 bg-gradient-to-l from-transparent to-primary/50" />
       </div>
 
-      {/* Marquee Container */}
+      {/* Marquee Container - CSS animation for better performance */}
       <div className="relative">
-        {/* Gradient Masks */}
-        <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none"></div>
-        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none"></div>
+        <div className="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
         
-        {/* Scrolling Content */}
-        <motion.div
-          className="flex gap-6"
-          animate={{
-            x: [0, -50 * displayFeedbacks.length + '%'],
-          }}
-          transition={{
-            x: {
-              duration: displayFeedbacks.length * 8,
-              repeat: Infinity,
-              ease: "linear",
-            },
+        <div 
+          className="flex gap-4 md:gap-6 animate-marquee"
+          style={{ 
+            width: 'max-content',
+            animation: `marquee ${displayFeedbacks.length * 6}s linear infinite`
           }}
         >
           {duplicatedFeedbacks.map((feedback, index) => (
             <FeedbackCard key={`${feedback.id}-${index}`} feedback={feedback} />
           ))}
-        </motion.div>
+        </div>
       </div>
+
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+      `}</style>
     </div>
   );
 };
 
 const FeedbackCard = ({ feedback }: { feedback: Feedback }) => {
-  const getInitials = (name: string) => {
-    return name.slice(0, 2).toUpperCase();
-  };
+  const getInitials = (name: string) => name.slice(0, 2).toUpperCase();
 
   return (
-    <div className="flex-shrink-0 w-[350px] group">
-      <div className="relative h-full">
-        {/* Glow effect on hover */}
-        <div className="absolute inset-0 bg-primary/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+    <div className="flex-shrink-0 w-[280px] md:w-[350px]">
+      <div className="glass-effect rounded-xl md:rounded-2xl p-4 md:p-5 border border-border/30 h-full">
+        <Quote className="absolute top-3 right-3 md:top-4 md:right-4 w-6 h-6 md:w-8 md:h-8 text-primary/20" />
         
-        {/* Card */}
-        <div className="relative glass-effect rounded-2xl p-5 border border-border/30 hover:border-primary/40 transition-all duration-300 h-full">
-          {/* Quote icon */}
-          <Quote className="absolute top-4 right-4 w-8 h-8 text-primary/20" />
-          
-          {/* Header */}
-          <div className="flex items-center gap-3 mb-4">
-            {/* Avatar */}
-            <div className="relative">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 flex items-center justify-center border border-primary/30">
-                {feedback.avatar_url ? (
-                  <img 
-                    src={feedback.avatar_url} 
-                    alt={feedback.player_name}
-                    className="w-full h-full rounded-full object-cover"
-                  />
-                ) : (
-                  <span className="text-sm font-bold text-primary">{getInitials(feedback.player_name)}</span>
-                )}
-              </div>
-              {/* Online indicator */}
-              <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-card"></span>
-            </div>
-            
-            {/* Name & Role */}
-            <div className="flex-1 min-w-0">
-              <h4 className="font-bold text-foreground truncate">{feedback.player_name}</h4>
-              {feedback.player_role && (
-                <p className="text-xs text-primary/80 truncate">{feedback.player_role}</p>
+        <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
+          <div className="relative">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 flex items-center justify-center border border-primary/30">
+              {feedback.avatar_url ? (
+                <img src={feedback.avatar_url} alt={feedback.player_name} className="w-full h-full rounded-full object-cover" loading="lazy" />
+              ) : (
+                <span className="text-xs md:text-sm font-bold text-primary">{getInitials(feedback.player_name)}</span>
               )}
             </div>
-            
-            {/* Rating */}
-            <div className="flex items-center gap-0.5">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className={`w-3.5 h-3.5 ${
-                    i < feedback.rating ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground/30'
-                  }`}
-                />
-              ))}
-            </div>
+            <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-card" />
           </div>
           
-          {/* Testimonial */}
-          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
-            "{feedback.testimonial}"
-          </p>
+          <div className="flex-1 min-w-0">
+            <h4 className="font-bold text-foreground truncate text-sm md:text-base">{feedback.player_name}</h4>
+            {feedback.player_role && <p className="text-[10px] md:text-xs text-primary/80 truncate">{feedback.player_role}</p>}
+          </div>
+          
+          <div className="flex items-center gap-0.5">
+            {[...Array(5)].map((_, i) => (
+              <Star key={i} className={`w-3 h-3 md:w-3.5 md:h-3.5 ${i < feedback.rating ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground/30'}`} />
+            ))}
+          </div>
         </div>
+        
+        <p className="text-xs md:text-sm text-muted-foreground leading-relaxed line-clamp-3">"{feedback.testimonial}"</p>
       </div>
     </div>
   );
