@@ -200,16 +200,65 @@ const Navigation = () => {
                 <Button 
                   variant="outline"
                   size="sm"
-                  className="glass-effect"
+                  className="glass-effect md:hidden"
                 >
                   <Menu className="w-5 h-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent className="w-[300px] bg-background/95 backdrop-blur-xl border-border/20">
+              <SheetContent className="w-[300px] bg-background/95 backdrop-blur-xl border-border/20 overflow-y-auto">
                 <SheetHeader>
                   <SheetTitle className="text-gradient">Menu</SheetTitle>
                 </SheetHeader>
-                <div className="flex flex-col gap-3 mt-6">
+                <div className="flex flex-col gap-2 mt-6">
+                  {/* Main Navigation Links - Mobile Only */}
+                  <div className="flex flex-col gap-1 pb-4 border-b border-border/30">
+                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/"); setIsMenuOpen(false); }}>
+                      Home
+                    </Button>
+                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/about"); setIsMenuOpen(false); }}>
+                      About
+                    </Button>
+                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/features"); setIsMenuOpen(false); }}>
+                      Features
+                    </Button>
+                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/guides"); setIsMenuOpen(false); }}>
+                      Guides
+                    </Button>
+                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/gallery"); setIsMenuOpen(false); }}>
+                      Gallery
+                    </Button>
+                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/staff"); setIsMenuOpen(false); }}>
+                      Staff
+                    </Button>
+                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/job-application"); setIsMenuOpen(false); }}>
+                      Jobs
+                    </Button>
+                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/gang-rp"); setIsMenuOpen(false); }}>
+                      Gang RP
+                    </Button>
+                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/status"); setIsMenuOpen(false); }}>
+                      Status
+                    </Button>
+                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/support"); setIsMenuOpen(false); }}>
+                      Support
+                    </Button>
+                    <Button variant="ghost" className="justify-start" asChild>
+                      <a href={TEBEX_STORE_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                        Store <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </Button>
+                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/privacy-policy"); setIsMenuOpen(false); }}>
+                      Privacy Policy
+                    </Button>
+                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/terms-of-service"); setIsMenuOpen(false); }}>
+                      Terms of Service
+                    </Button>
+                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/refund-policy"); setIsMenuOpen(false); }}>
+                      Refund Policy
+                    </Button>
+                  </div>
+
+                  {/* Admin & User Options */}
                   {hasAdminAccess && (
                     <Button 
                       variant="outline"
@@ -413,6 +462,54 @@ const Navigation = () => {
                 </div>
               </SheetContent>
             </Sheet>
+            
+            {/* Desktop User Menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  className="glass-effect hidden md:flex"
+                >
+                  <Menu className="w-5 h-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 bg-background/95 backdrop-blur-xl border border-border/20 shadow-xl z-50">
+                {hasAdminAccess && (
+                  <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/admin")}>
+                    <Shield className="w-4 h-4 mr-2" />
+                    Admin Panel
+                  </DropdownMenuItem>
+                )}
+                {isOwner && (
+                  <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/owner-panel")}>
+                    <Crown className="w-4 h-4 mr-2 text-primary" />
+                    Owner Panel
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/contact-owner")}>
+                  <Mail className="w-4 h-4 mr-2" />
+                  Contact Owner
+                </DropdownMenuItem>
+                {user ? (
+                  <>
+                    <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/dashboard")}>
+                      <UserCircle className="w-4 h-4 mr-2" />
+                      My Dashboard
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer" onClick={handleLogout}>
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Logout
+                    </DropdownMenuItem>
+                  </>
+                ) : (
+                  <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/auth")}>
+                    <Users className="w-4 h-4 mr-2" />
+                    Join Now
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
