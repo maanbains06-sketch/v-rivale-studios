@@ -16,6 +16,17 @@ interface FeedbackNotificationRequest {
   rating: number;
 }
 
+// HTML escape function to prevent XSS/injection attacks
+const escapeHtml = (str: string): string => {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+};
+
 const handler = async (req: Request): Promise<Response> => {
   console.log("Feedback notification function called");
   
@@ -25,13 +36,43 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Verify JWT - the function now requires authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error("No authorization header provided");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Verify the user's JWT token
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      console.error("Invalid token:", authError?.message);
+      return new Response(
+        JSON.stringify({ error: "Invalid authentication token" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    console.log("Authenticated user:", user.id);
+
     const { player_name, player_role, testimonial, rating }: FeedbackNotificationRequest = await req.json();
     
-    console.log("Received feedback from:", player_name);
+    // Validate and sanitize inputs
+    const safeName = escapeHtml(player_name?.substring(0, 50) || 'Anonymous');
+    const safeRole = player_role ? escapeHtml(player_role.substring(0, 50)) : '';
+    const safeTestimonial = escapeHtml(testimonial?.substring(0, 500) || '');
+    const safeRating = Math.min(5, Math.max(1, Number(rating) || 5));
+    
+    console.log("Received feedback from:", safeName);
 
     // Get owner email from staff_members
     const { data: ownerSetting } = await supabase
@@ -67,14 +108,14 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Generate star rating HTML
     const starsHtml = Array(5).fill(0).map((_, i) => 
-      `<span style="color: ${i < rating ? '#FFD700' : '#ccc'}; font-size: 24px;">★</span>`
+      `<span style="color: ${i < safeRating ? '#FFD700' : '#ccc'}; font-size: 24px;">★</span>`
     ).join('');
 
-    // Send email notification
+    // Send email notification with sanitized content
     const emailResponse = await resend.emails.send({
       from: "SLRP Feedback <onboarding@resend.dev>",
       to: [ownerStaff.email],
-      subject: `New Community Feedback from ${player_name}`,
+      subject: `New Community Feedback from ${safeName}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -103,18 +144,18 @@ const handler = async (req: Request): Promise<Response> => {
             
             <div class="content">
               <div class="label">Player Name</div>
-              <div class="value">${player_name}</div>
+              <div class="value">${safeName}</div>
               
-              ${player_role ? `
+              ${safeRole ? `
               <div class="label">Role</div>
-              <div class="value">${player_role}</div>
+              <div class="value">${safeRole}</div>
               ` : ''}
               
               <div class="label">Rating</div>
               <div class="rating">${starsHtml}</div>
               
               <div class="label">Feedback</div>
-              <div class="testimonial">"${testimonial}"</div>
+              <div class="testimonial">"${safeTestimonial}"</div>
             </div>
             
             <div class="cta">

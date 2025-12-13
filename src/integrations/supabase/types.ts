@@ -1760,6 +1760,7 @@ export type Database = {
         }[]
       }
       notify_staff_sla_breach: { Args: never; Returns: undefined }
+      purge_old_rejected_applications: { Args: never; Returns: undefined }
       rebalance_staff_workload: {
         Args: never
         Returns: {
