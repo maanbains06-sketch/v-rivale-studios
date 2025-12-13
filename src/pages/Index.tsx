@@ -30,7 +30,6 @@ import { useToast } from "@/hooks/use-toast";
 import heroBg from "@/assets/hero-home-gta-thunder.jpg";
 
 // Lazy load heavy components
-const LiveVisitorCounter = lazy(() => import("@/components/LiveVisitorCounter"));
 const LiveFeedbackMarquee = lazy(() => import("@/components/LiveFeedbackMarquee"));
 
 // Simplified word reveal - uses CSS instead of per-word motion
@@ -196,9 +195,6 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      <Suspense fallback={null}>
-        <LiveVisitorCounter />
-      </Suspense>
 
       {/* Hero Section - Optimized */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden hero-section">

@@ -6,6 +6,9 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useReferralTracking } from "@/hooks/useReferralTracking";
 import { useStaffPresence } from "@/hooks/useStaffPresence";
 import { AnimatePresence } from "framer-motion";
+import { lazy, Suspense } from "react";
+
+const LiveVisitorCounter = lazy(() => import("@/components/LiveVisitorCounter"));
 import { PageTransition } from "@/components/PageTransition";
 import Index from "./pages/Index";
 import About from "./pages/About";
@@ -112,6 +115,9 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <Suspense fallback={null}>
+          <LiveVisitorCounter />
+        </Suspense>
         <AppRoutes />
       </BrowserRouter>
     </TooltipProvider>
