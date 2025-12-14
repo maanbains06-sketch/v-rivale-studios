@@ -85,7 +85,7 @@ const Navigation = () => {
                 SKYLIFE ROLEPLAY
               </motion.span>
               <motion.span 
-                className="text-[10px] md:text-xs font-bold tracking-[0.25em] text-center flex gap-0.5"
+                className="text-[10px] md:text-xs font-bold tracking-[0.25em] flex gap-0.5 justify-center w-full"
                 style={{
                   fontStyle: 'italic',
                   transform: 'skewX(-8deg)',
