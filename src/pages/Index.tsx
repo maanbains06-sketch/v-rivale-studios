@@ -883,14 +883,14 @@ const Index = () => {
       )}
 
       {/* Footer */}
-      <footer className="border-t border-primary/20 py-6 relative z-10 bg-background/95">
+      <footer className="border-t border-primary/20 py-10 relative z-10 bg-background/95">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col items-center text-center gap-4">
             {/* Logo */}
             <div className="flex items-center gap-2">
-              <span className="text-lg font-bold italic">
+              <span className="text-xl font-bold italic">
                 <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">SKYLIFE</span>
-                <span className="text-foreground ml-1">RP</span>
+                <span className="text-foreground ml-1">ROLEPLAY</span>
               </span>
               <span className="flex gap-0.5 text-xs font-medium tracking-wider">
                 <motion.span 
@@ -916,10 +916,12 @@ const Index = () => {
               </span>
             </div>
             
+            {/* Divider */}
+            <div className="w-24 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
+            
             {/* Copyright & Credits */}
-            <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-xs text-muted-foreground">
-              <span>© 2026 Skylife Roleplay India</span>
-              <span className="hidden md:inline">•</span>
+            <div className="flex flex-col items-center gap-1 text-sm text-muted-foreground">
+              <span>© 2026 Skylife Roleplay India. All rights reserved.</span>
               <span>
                 Developed By{" "}
                 <a 
