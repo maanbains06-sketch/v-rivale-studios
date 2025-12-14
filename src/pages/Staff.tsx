@@ -338,6 +338,21 @@ const Staff = () => {
     return duties[roleType] || "Community support and assistance";
   };
 
+  // Get exactly 4 responsibilities - custom if available, otherwise role defaults
+  const getStaffResponsibilities = (member: StaffMember): string[] => {
+    const custom = member.responsibilities || [];
+    const defaults = getRoleResponsibilities(member);
+    
+    if (custom.length >= 4) return custom.slice(0, 4);
+    if (custom.length > 0) {
+      // Pad with defaults if less than 4
+      const needed = 4 - custom.length;
+      const additional = defaults.filter(d => !custom.includes(d)).slice(0, needed);
+      return [...custom, ...additional];
+    }
+    return defaults.slice(0, 4);
+  };
+
   const getTimezoneInfo = (timezone?: string) => {
     if (!timezone) return null;
     
@@ -550,7 +565,7 @@ const Staff = () => {
                 </p>
               )}
 
-              {/* Role Duties & Responsibilities */}
+              {/* Role Duties & Responsibilities - Always show exactly 4 */}
               <div className="w-full mb-3 space-y-2">
                 {/* Role duties description */}
                 <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground/80 uppercase tracking-wider">
@@ -558,24 +573,19 @@ const Staff = () => {
                   <span>{getRoleDuties(member.role_type)}</span>
                 </div>
                 
-                {/* Responsibilities tags */}
-                <div className="flex flex-wrap justify-center gap-1.5">
-                  {getRoleResponsibilities(member).slice(0, 4).map((resp, idx) => (
+                {/* Responsibilities tags - Always 4 */}
+                <div className="grid grid-cols-2 gap-1.5">
+                  {getStaffResponsibilities(member).map((resp, idx) => (
                     <motion.span 
                       key={idx}
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: idx * 0.05 + 0.2 }}
-                      className="text-[10px] px-2.5 py-1 bg-primary/5 text-primary/80 rounded-full border border-primary/20 font-medium group-hover:bg-primary/10 group-hover:text-primary group-hover:border-primary/30 transition-all duration-300"
+                      className="text-[10px] px-2 py-1.5 bg-primary/5 text-primary/80 rounded-md border border-primary/20 font-medium text-center truncate group-hover:bg-primary/10 group-hover:text-primary group-hover:border-primary/30 transition-all duration-300"
                     >
                       {resp}
                     </motion.span>
                   ))}
-                  {getRoleResponsibilities(member).length > 4 && (
-                    <span className="text-[10px] px-2.5 py-1 bg-secondary/50 text-secondary-foreground rounded-full border border-secondary/30 font-medium">
-                      +{getRoleResponsibilities(member).length - 4} more
-                    </span>
-                  )}
                 </div>
               </div>
 
