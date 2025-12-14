@@ -262,7 +262,9 @@ const StaffProfile = () => {
                       <h1 className="text-3xl font-bold text-foreground">{staffMember.name}</h1>
                       <StaffOnlineIndicator isOnline={staffIsOnline} lastSeen={lastSeenTime} size="lg" showLabel />
                     </div>
-                    <p className="text-xl text-primary font-semibold mb-3">{staffMember.role}</p>
+                    <p className="text-xl text-primary font-semibold mb-3">
+                      {staffMember.role}{staffMember.department === "leadership" && " / Founder"}
+                    </p>
                     <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
                       <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 px-3 py-1">
                         <RoleIcon className="w-3 h-3 mr-1.5" />
