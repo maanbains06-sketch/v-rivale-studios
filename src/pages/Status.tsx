@@ -732,28 +732,36 @@ const Status = () => {
             </CardHeader>
             <CardContent className="pt-8">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="p-6 rounded-xl glass-effect border-2 border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
+                <a 
+                  href="fivem://connect/connect.skylifeindia.com:30120" 
+                  className="block p-6 rounded-xl glass-effect border-2 border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 cursor-pointer group"
+                >
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 rounded-lg bg-primary/20">
+                    <div className="p-2 rounded-lg bg-primary/20 group-hover:bg-primary/30 transition-colors">
                       <Server className="w-5 h-5 text-primary" />
                     </div>
                     <h4 className="font-bold text-sm text-primary">Connect IP Address</h4>
                   </div>
-                  <p className="text-base font-mono font-semibold bg-background/80 p-4 rounded-lg border-2 border-primary/20 text-foreground hover:bg-primary/5 transition-colors">
+                  <p className="text-base font-mono font-semibold bg-background/80 p-4 rounded-lg border-2 border-primary/20 text-foreground group-hover:bg-primary/10 transition-colors">
                     connect.skylifeindia.com:30120
                   </p>
-                </div>
-                <div className="p-6 rounded-xl glass-effect border-2 border-secondary/20 hover:border-secondary/40 transition-all duration-300 hover:shadow-lg hover:shadow-secondary/10 hover:-translate-y-1">
+                </a>
+                <a 
+                  href="https://discord.gg/W2nU97maBh" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block p-6 rounded-xl glass-effect border-2 border-secondary/20 hover:border-secondary/40 transition-all duration-300 hover:shadow-lg hover:shadow-secondary/10 hover:-translate-y-1 cursor-pointer group"
+                >
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 rounded-lg bg-secondary/20">
+                    <div className="p-2 rounded-lg bg-secondary/20 group-hover:bg-secondary/30 transition-colors">
                       <Network className="w-5 h-5 text-secondary" />
                     </div>
                     <h4 className="font-bold text-sm text-secondary">Discord Community</h4>
                   </div>
-                  <p className="text-base font-mono font-semibold bg-background/80 p-4 rounded-lg border-2 border-secondary/20 text-foreground hover:bg-secondary/5 transition-colors">
+                  <p className="text-base font-mono font-semibold bg-background/80 p-4 rounded-lg border-2 border-secondary/20 text-foreground group-hover:bg-secondary/10 transition-colors">
                     https://discord.gg/W2nU97maBh
                   </p>
-                </div>
+                </a>
                 <div className="p-6 rounded-xl glass-effect border-2 border-accent/20 hover:border-accent/40 transition-all duration-300 hover:shadow-lg hover:shadow-accent/10 hover:-translate-y-1">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 rounded-lg bg-accent/20">
