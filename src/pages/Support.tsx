@@ -391,7 +391,7 @@ const Support = () => {
               </CardHeader>
               <CardContent>
                 <Button variant="outline" className="w-full" asChild>
-                  <a href="https://discord.gg/W2nU97maBh" target="_blank" rel="noopener noreferrer">
+                  <a href="https://discord.com/channels/1160302312175194164/1277506857166049300" target="_blank" rel="noopener noreferrer">
                     <FileText className="w-4 h-4 mr-2" />
                     Create Ticket
                   </a>
