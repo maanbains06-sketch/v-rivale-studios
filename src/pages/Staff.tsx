@@ -645,22 +645,25 @@ const Staff = () => {
             
             <div className="grid md:grid-cols-4 gap-4">
               {[
-                { icon: Star, title: "Excellence", desc: "Striving for the highest quality" },
-                { icon: Heart, title: "Community First", desc: "Your experience is our priority" },
-                { icon: Trophy, title: "Fair Play", desc: "Maintaining integrity for all" },
-                { icon: Target, title: "Innovation", desc: "Constantly improving" },
+                { icon: Star, title: "Excellence", desc: "Striving for the highest quality", gradient: "from-amber-500/20 via-orange-500/10 to-yellow-500/20", border: "border-amber-500/30 hover:border-amber-400/50", iconColor: "text-amber-400", glow: "group-hover:shadow-amber-500/20" },
+                { icon: Heart, title: "Community First", desc: "Your experience is our priority", gradient: "from-rose-500/20 via-pink-500/10 to-red-500/20", border: "border-rose-500/30 hover:border-rose-400/50", iconColor: "text-rose-400", glow: "group-hover:shadow-rose-500/20" },
+                { icon: Trophy, title: "Fair Play", desc: "Maintaining integrity for all", gradient: "from-emerald-500/20 via-green-500/10 to-teal-500/20", border: "border-emerald-500/30 hover:border-emerald-400/50", iconColor: "text-emerald-400", glow: "group-hover:shadow-emerald-500/20" },
+                { icon: Target, title: "Innovation", desc: "Constantly improving", gradient: "from-violet-500/20 via-purple-500/10 to-fuchsia-500/20", border: "border-violet-500/30 hover:border-violet-400/50", iconColor: "text-violet-400", glow: "group-hover:shadow-violet-500/20" },
               ].map((value, idx) => (
                 <motion.div
                   key={value.title}
-                  whileHover={{ y: -4 }}
+                  whileHover={{ y: -6, scale: 1.02 }}
                   className="group cursor-pointer"
                 >
-                  <div className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl p-6 text-center group-hover:border-primary/30 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/5">
-                    <div className="w-12 h-12 mx-auto mb-4 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
-                      <value.icon className="w-6 h-6 text-primary" />
+                  <div className={`relative bg-gradient-to-br ${value.gradient} backdrop-blur-sm border ${value.border} rounded-xl p-6 text-center transition-all duration-300 group-hover:shadow-lg ${value.glow} overflow-hidden`}>
+                    <div className="absolute inset-0 bg-card/60" />
+                    <div className="relative">
+                      <div className={`w-14 h-14 mx-auto mb-4 bg-gradient-to-br ${value.gradient} rounded-xl flex items-center justify-center border ${value.border} transition-all duration-300`}>
+                        <value.icon className={`w-7 h-7 ${value.iconColor}`} />
+                      </div>
+                      <h3 className="font-bold text-lg text-foreground mb-1">{value.title}</h3>
+                      <p className="text-sm text-muted-foreground">{value.desc}</p>
                     </div>
-                    <h3 className="font-semibold text-foreground mb-1">{value.title}</h3>
-                    <p className="text-xs text-muted-foreground">{value.desc}</p>
                   </div>
                 </motion.div>
               ))}
