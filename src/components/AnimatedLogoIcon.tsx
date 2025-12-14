@@ -51,16 +51,16 @@ const AnimatedLogoIcon = ({ className = "" }: AnimatedLogoIconProps) => {
           
           {/* S Letter */}
           <motion.text
-            x="5"
-            y="23"
+            x="4"
+            y="24"
             fill="url(#textGradient)"
-            fontSize="22"
-            fontWeight="900"
-            fontFamily="Arial Black, sans-serif"
+            fontSize="26"
+            fontFamily="'Bebas Neue', sans-serif"
+            letterSpacing="1"
             filter="url(#textGlow)"
-            initial={{ opacity: 0, x: -5 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
           >
             S
           </motion.text>
@@ -68,15 +68,15 @@ const AnimatedLogoIcon = ({ className = "" }: AnimatedLogoIconProps) => {
           {/* L Letter */}
           <motion.text
             x="22"
-            y="23"
+            y="24"
             fill="url(#textGradient)"
-            fontSize="22"
-            fontWeight="900"
-            fontFamily="Arial Black, sans-serif"
+            fontSize="26"
+            fontFamily="'Bebas Neue', sans-serif"
+            letterSpacing="1"
             filter="url(#textGlow)"
-            initial={{ opacity: 0, x: 5 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.15 }}
           >
             L
           </motion.text>
