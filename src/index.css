@@ -166,9 +166,10 @@ All colors MUST be HSL.
     text-shadow: 0 2px 8px hsl(199 100% 50% / 0.35);
   }
 
-  /* Global italic styling */
+  /* Global italic styling and slightly bolder body text */
   p, span, a, li, label, button {
     font-style: italic;
+    font-weight: 500;
   }
 
   /* Inputs keep normal style for readability */
