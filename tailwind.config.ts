@@ -15,6 +15,7 @@ export default {
     extend: {
       fontFamily: {
         italiana: ['Italiana', 'serif'],
+        playfair: ['Playfair Display', 'serif'],
       },
       colors: {
         border: "hsl(var(--border))",
