@@ -199,8 +199,11 @@ const Index = () => {
       try {
         const { data, error } = await supabase.functions.invoke('fivem-server-status');
         if (!error && data) {
-          setServerPlayers(data.players || 0);
-          setMaxPlayers(data.maxPlayers || 64);
+          // Handle players as object {current, max} or as number
+          const playerCount = typeof data.players === 'object' ? data.players.current : (data.players || 0);
+          const maxCount = typeof data.players === 'object' ? data.players.max : (data.maxPlayers || 64);
+          setServerPlayers(playerCount);
+          setMaxPlayers(maxCount);
         }
       } catch (e) {
         console.log('Server status fetch failed');
