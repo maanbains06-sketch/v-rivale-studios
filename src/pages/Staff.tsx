@@ -364,7 +364,7 @@ const Staff = () => {
           </div>
           
           {/* Top decorative banner - role-based premium design */}
-          <div className={`relative h-24 ${bannerClass} overflow-hidden`}>
+          <div className={`relative h-16 ${bannerClass} overflow-hidden`}>
             {/* Animated shine effect */}
             <div className="absolute inset-0 bg-[linear-gradient(110deg,transparent_20%,rgba(255,255,255,0.4)_50%,transparent_80%)] bg-[length:200%_100%] animate-[shimmer_3s_ease-in-out_infinite] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             
@@ -432,11 +432,11 @@ const Staff = () => {
             </motion.div>
           </div>
 
-          <div className="relative px-5 pb-5 -mt-8">
+          <div className="relative px-4 pb-4 -mt-6">
             <div className="flex flex-col items-center text-center">
               {/* Avatar with premium enhanced design */}
               <motion.div 
-                className="relative mb-4 cursor-pointer"
+                className="relative mb-2 cursor-pointer"
                 whileHover={{ scale: 1.08 }}
                 transition={{ type: "spring", stiffness: 300 }}
                 onClick={(e) => {
@@ -454,7 +454,7 @@ const Staff = () => {
                 <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-primary via-primary/50 to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-spin-slow" style={{ animationDuration: '8s' }} />
                 
                 {/* Avatar ring with premium gradient */}
-                <div className="relative w-20 h-20 rounded-full p-1 bg-gradient-to-b from-primary via-primary/80 to-primary/50 shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-all duration-500">
+                <div className="relative w-16 h-16 rounded-full p-0.5 bg-gradient-to-b from-primary via-primary/80 to-primary/50 shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-all duration-500">
                   <div className="w-full h-full rounded-full overflow-hidden bg-background ring-2 ring-background relative">
                     <img
                       src={member.discord_avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`}
@@ -468,22 +468,22 @@ const Staff = () => {
                 
                 {/* Role Icon Badge with premium styling */}
                 <motion.div 
-                  className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-8 h-8 bg-gradient-to-b from-primary via-primary to-primary/80 rounded-lg flex items-center justify-center border-2 border-background shadow-lg shadow-primary/20"
+                  className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-6 bg-gradient-to-b from-primary via-primary to-primary/80 rounded-md flex items-center justify-center border-2 border-background shadow-lg shadow-primary/20"
                   whileHover={{ scale: 1.15, rotate: 5 }}
                 >
-                  <Icon className="w-4 h-4 text-primary-foreground" />
+                  <Icon className="w-3 h-3 text-primary-foreground" />
                   {/* Badge glow */}
                   <div className="absolute inset-0 rounded-lg bg-primary/50 blur-sm -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </motion.div>
               </motion.div>
 
               {/* Name with premium styling */}
-              <h3 className="text-lg font-bold text-foreground mb-0.5 group-hover:text-primary transition-colors duration-300 tracking-tight">
+              <h3 className="text-sm font-bold text-foreground mb-0.5 group-hover:text-primary transition-colors duration-300 tracking-tight">
                 {member.name}
               </h3>
               
               {/* Role with gradient text effect */}
-              <span className="text-sm font-semibold bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent mb-2">
+              <span className="text-xs font-semibold bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent mb-1.5">
                 {member.role}{member.department === "leadership" && " / Founder"}
               </span>
 
@@ -498,13 +498,13 @@ const Staff = () => {
               )}
 
               {/* Department Badge with premium styling */}
-              <Badge variant="outline" className="bg-gradient-to-r from-muted/30 to-muted/10 text-muted-foreground text-[10px] px-2.5 py-0.5 border-border/30 mb-3 uppercase tracking-wider font-medium backdrop-blur-sm">
+              <Badge variant="outline" className="bg-gradient-to-r from-muted/30 to-muted/10 text-muted-foreground text-[9px] px-2 py-0.5 border-border/30 mb-2 uppercase tracking-wider font-medium backdrop-blur-sm">
                 {member.department.replace("_", " ")}
               </Badge>
               
               {/* Achievement Badges */}
               {achievements.length > 0 && (
-                <div className="flex flex-wrap justify-center gap-1.5 mb-3">
+                <div className="flex flex-wrap justify-center gap-1 mb-2">
                   {achievements.map((badge, idx) => (
                     <motion.div
                       key={idx}
@@ -525,26 +525,26 @@ const Staff = () => {
 
               {/* Bio */}
               {member.bio && (
-                <p className="text-xs text-muted-foreground italic mb-3 max-w-[200px] leading-relaxed line-clamp-2 opacity-80 group-hover:opacity-100 transition-opacity duration-300">
+                <p className="text-[10px] text-muted-foreground italic mb-2 max-w-[180px] leading-relaxed line-clamp-2 opacity-80 group-hover:opacity-100 transition-opacity duration-300">
                   &quot;{member.bio}&quot;
                 </p>
               )}
 
               {/* Responsibilities */}
               {member.responsibilities && member.responsibilities.length > 0 && (
-                <div className="w-full mb-3">
-                  <div className="flex flex-wrap justify-center gap-1.5">
-                    {member.responsibilities.slice(0, 4).map((resp, idx) => (
+                <div className="w-full mb-2">
+                  <div className="flex flex-wrap justify-center gap-1">
+                    {member.responsibilities.slice(0, 3).map((resp, idx) => (
                       <span 
                         key={idx}
-                        className="text-xs px-3 py-1 bg-background/50 text-muted-foreground rounded-full border border-border/30 font-medium"
+                        className="text-[10px] px-2 py-0.5 bg-background/50 text-muted-foreground rounded-full border border-border/30 font-medium"
                       >
                         {resp}
                       </span>
                     ))}
-                    {member.responsibilities.length > 4 && (
-                      <span className="text-xs px-3 py-1 bg-primary/10 text-primary rounded-full border border-primary/20 font-medium">
-                        +{member.responsibilities.length - 4} more
+                    {member.responsibilities.length > 3 && (
+                      <span className="text-[10px] px-2 py-0.5 bg-primary/10 text-primary rounded-full border border-primary/20 font-medium">
+                        +{member.responsibilities.length - 3} more
                       </span>
                     )}
                   </div>
