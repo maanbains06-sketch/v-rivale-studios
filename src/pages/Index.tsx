@@ -820,7 +820,33 @@ const Index = () => {
             >
               <span className="bg-gradient-to-r from-sky-400 to-cyan-500 bg-clip-text text-transparent">SKYLIFE</span>
               <span className="text-white ml-3">ROLEPLAY</span>
-              <span className="block text-sm font-medium tracking-[0.4em] text-sky-400/80 mt-2">INDIA</span>
+              <span className="flex gap-0.5 justify-center text-sm font-medium tracking-[0.4em] mt-2">
+                <motion.span 
+                  animate={{ color: ['#FF9933', '#FFFFFF', '#138808', '#FF9933'] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                  style={{ textShadow: '0 0 6px currentColor' }}
+                >I</motion.span>
+                <motion.span 
+                  animate={{ color: ['#FFFFFF', '#138808', '#FF9933', '#FFFFFF'] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.15 }}
+                  style={{ textShadow: '0 0 6px currentColor' }}
+                >N</motion.span>
+                <motion.span 
+                  animate={{ color: ['#138808', '#FF9933', '#FFFFFF', '#138808'] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
+                  style={{ textShadow: '0 0 6px currentColor' }}
+                >D</motion.span>
+                <motion.span 
+                  animate={{ color: ['#FF9933', '#FFFFFF', '#138808', '#FF9933'] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.45 }}
+                  style={{ textShadow: '0 0 6px currentColor' }}
+                >I</motion.span>
+                <motion.span 
+                  animate={{ color: ['#FFFFFF', '#138808', '#FF9933', '#FFFFFF'] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
+                  style={{ textShadow: '0 0 6px currentColor' }}
+                >A</motion.span>
+              </span>
             </motion.h3>
             
             {/* Divider */}
