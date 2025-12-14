@@ -816,7 +816,7 @@ const Index = () => {
                 href="https://discord.com/users/833680146510381097" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-purple-400 hover:text-purple-300 hover:underline transition-colors"
+                className="text-red-500 hover:text-red-400 hover:underline transition-colors font-semibold"
               >
                 Maan
               </a>
