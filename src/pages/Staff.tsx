@@ -97,6 +97,16 @@ const departmentThemes = {
     accent: "from-red-500 to-rose-600",
     textAccent: "text-red-400",
     icon: "🛡️",
+    title: "Administration Team",
+    subtitle: "Keeping the community safe and fair"
+  },
+  management: {
+    gradient: "from-violet-950/50 via-purple-900/40 to-fuchsia-900/30",
+    border: "border-violet-500/20 hover:border-violet-400/40",
+    glow: "hover:shadow-[0_0_40px_rgba(139,92,246,0.15)]",
+    accent: "from-violet-500 to-purple-600",
+    textAccent: "text-violet-400",
+    icon: "📋",
     title: "Management Team",
     subtitle: "Ensuring smooth server operations"
   },
@@ -117,7 +127,7 @@ const departmentThemes = {
     accent: "from-blue-500 to-indigo-600",
     textAccent: "text-blue-400",
     icon: "⚖️",
-    title: "Administration Team",
+    title: "Moderation Team",
     subtitle: "Keeping the community safe and fair"
   },
   staff: {
