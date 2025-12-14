@@ -756,12 +756,12 @@ const Index = () => {
             <p className="text-muted-foreground text-sm">
               Developed By{" "}
               <a 
-                href="https://discord.gg/skyliferp" 
+                href="https://discord.com/users/833680146510381097" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-purple-400 hover:text-purple-300 hover:underline transition-colors"
               >
-                SLRP Development Team
+                Maan
               </a>
             </p>
           </div>
