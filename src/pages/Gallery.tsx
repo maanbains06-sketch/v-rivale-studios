@@ -160,128 +160,216 @@ const Gallery = () => {
           )}
 
           {/* Gallery Categories */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
             {/* Screenshots */}
-            <div className="relative group w-full transform hover:scale-105 transition-all duration-300">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative glass-effect rounded-2xl p-8 border border-border/20 hover:border-primary/40 transition-all duration-300 text-center overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700"></div>
-                <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/30 transition-colors relative z-10">
-                  <ImageIcon className="w-8 h-8 text-primary" />
+            <div 
+              className="group cursor-pointer"
+              onClick={() => handleCategoryClick('screenshot')}
+            >
+              <div className="relative overflow-hidden rounded-2xl bg-card border border-border/30 hover:border-primary/50 transition-all duration-500 h-full">
+                {/* Animated gradient border on hover */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5" />
                 </div>
-                <h3 className="text-xl font-bold mb-2 relative z-10">Screenshots</h3>
-                <p className="text-sm text-muted-foreground mb-4 relative z-10">Beautiful moments captured</p>
-                <Badge variant="secondary" className="text-xs mb-4 relative z-10">
-                  {getSubmissionsByCategory('screenshot').length} photos
-                </Badge>
-                <div className="space-y-2 relative z-10">
-                  <Button 
-                    onClick={() => handleCategoryClick('screenshot')}
-                    size="sm"
-                    className="w-full bg-primary/20 hover:bg-primary text-foreground hover:text-primary-foreground"
-                  >
-                    View Gallery
-                  </Button>
-                  {(isStaff || isAdmin) && (
-                    <Button 
-                      onClick={() => {
-                        setQuickUploadCategory('screenshot');
-                        setQuickUploadOpen(true);
-                      }}
-                      size="sm"
-                      variant="outline"
-                      className="w-full border-primary/40 hover:bg-primary/10"
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      Quick Upload
-                    </Button>
-                  )}
+                
+                {/* Content */}
+                <div className="relative p-8 flex flex-col items-center text-center h-full">
+                  {/* Icon with glow effect */}
+                  <div className="relative mb-6">
+                    <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/20 flex items-center justify-center group-hover:scale-110 group-hover:border-primary/40 transition-all duration-300">
+                      <ImageIcon className="w-10 h-10 text-primary" />
+                    </div>
+                  </div>
+                  
+                  <h3 className="text-2xl font-bold mb-2 group-hover:text-primary transition-colors">Screenshots</h3>
+                  <p className="text-muted-foreground text-sm mb-4 leading-relaxed">Capture your best roleplay moments</p>
+                  
+                  <div className="mt-auto pt-4 w-full">
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                      <span className="text-3xl font-bold text-primary">{getSubmissionsByCategory('screenshot').length}</span>
+                      <span className="text-muted-foreground text-sm">photos</span>
+                    </div>
+                    <div className="h-1 w-full bg-muted/30 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full w-3/4 group-hover:w-full transition-all duration-700" />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Hover arrow indicator */}
+                <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-300">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
                 </div>
               </div>
+              
+              {/* Quick Upload for Staff */}
+              {(isStaff || isAdmin) && (
+                <Button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setQuickUploadCategory('screenshot');
+                    setQuickUploadOpen(true);
+                  }}
+                  size="sm"
+                  variant="ghost"
+                  className="w-full mt-3 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Quick Upload
+                </Button>
+              )}
             </div>
 
             {/* Videos */}
-            <div className="relative group w-full transform hover:scale-105 transition-all duration-300">
-              <div className="absolute inset-0 bg-gradient-to-br from-secondary/20 to-primary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative glass-effect rounded-2xl p-8 border border-border/20 hover:border-secondary/40 transition-all duration-300 text-center overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700"></div>
-                <div className="w-16 h-16 rounded-full bg-secondary/20 flex items-center justify-center mx-auto mb-4 group-hover:bg-secondary/30 transition-colors relative z-10">
-                  <Video className="w-8 h-8 text-secondary" />
+            <div 
+              className="group cursor-pointer"
+              onClick={() => handleCategoryClick('video')}
+            >
+              <div className="relative overflow-hidden rounded-2xl bg-card border border-border/30 hover:border-primary/50 transition-all duration-500 h-full">
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5" />
                 </div>
-                <h3 className="text-xl font-bold mb-2 relative z-10">Videos</h3>
-                <p className="text-sm text-muted-foreground mb-4 relative z-10">Epic roleplay moments</p>
-                <Badge variant="secondary" className="text-xs mb-4 relative z-10">
-                  {getSubmissionsByCategory('video').length} videos
-                </Badge>
-                <div className="space-y-2 relative z-10">
-                  <Button 
-                    onClick={() => handleCategoryClick('video')}
-                    size="sm"
-                    className="w-full bg-secondary/20 hover:bg-secondary text-foreground hover:text-secondary-foreground"
-                  >
-                    View Gallery
-                  </Button>
-                  {(isStaff || isAdmin) && (
-                    <Button 
-                      onClick={() => {
-                        setQuickUploadCategory('video');
-                        setQuickUploadOpen(true);
-                      }}
-                      size="sm"
-                      variant="outline"
-                      className="w-full border-secondary/40 hover:bg-secondary/10"
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      Quick Upload
-                    </Button>
-                  )}
+                
+                <div className="relative p-8 flex flex-col items-center text-center h-full">
+                  <div className="relative mb-6">
+                    <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/20 flex items-center justify-center group-hover:scale-110 group-hover:border-primary/40 transition-all duration-300">
+                      <Video className="w-10 h-10 text-primary" />
+                    </div>
+                  </div>
+                  
+                  <h3 className="text-2xl font-bold mb-2 group-hover:text-primary transition-colors">Videos</h3>
+                  <p className="text-muted-foreground text-sm mb-4 leading-relaxed">Epic roleplay cinematics</p>
+                  
+                  <div className="mt-auto pt-4 w-full">
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                      <span className="text-3xl font-bold text-primary">{getSubmissionsByCategory('video').length}</span>
+                      <span className="text-muted-foreground text-sm">videos</span>
+                    </div>
+                    <div className="h-1 w-full bg-muted/30 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full w-1/2 group-hover:w-full transition-all duration-700" />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-300">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
                 </div>
               </div>
+              
+              {(isStaff || isAdmin) && (
+                <Button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setQuickUploadCategory('video');
+                    setQuickUploadOpen(true);
+                  }}
+                  size="sm"
+                  variant="ghost"
+                  className="w-full mt-3 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Quick Upload
+                </Button>
+              )}
             </div>
 
             {/* Events */}
-            <div className="relative group w-full transform hover:scale-105 transition-all duration-300">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative glass-effect rounded-2xl p-8 border border-border/20 hover:border-primary/40 transition-all duration-300 text-center overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700"></div>
-                <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/30 transition-colors relative z-10">
-                  <Calendar className="w-8 h-8 text-primary" />
+            <div 
+              className="group cursor-pointer"
+              onClick={() => handleCategoryClick('event')}
+            >
+              <div className="relative overflow-hidden rounded-2xl bg-card border border-border/30 hover:border-primary/50 transition-all duration-500 h-full">
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5" />
                 </div>
-                <h3 className="text-xl font-bold mb-2 relative z-10">Events</h3>
-                <p className="text-sm text-muted-foreground mb-4 relative z-10">Community gatherings</p>
-                <Badge variant="secondary" className="text-xs mb-4 relative z-10">
-                  {getRunningEvents().length} Running · {getUpcomingEvents().length} Upcoming
-                </Badge>
-                <Button 
-                  onClick={() => handleCategoryClick('event')}
-                  size="sm"
-                  className="relative z-10 w-full bg-primary/20 hover:bg-primary text-foreground hover:text-primary-foreground"
-                >
-                  View Events
-                </Button>
+                
+                <div className="relative p-8 flex flex-col items-center text-center h-full">
+                  <div className="relative mb-6">
+                    <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/20 flex items-center justify-center group-hover:scale-110 group-hover:border-primary/40 transition-all duration-300">
+                      <Calendar className="w-10 h-10 text-primary" />
+                    </div>
+                  </div>
+                  
+                  <h3 className="text-2xl font-bold mb-2 group-hover:text-primary transition-colors">Events</h3>
+                  <p className="text-muted-foreground text-sm mb-4 leading-relaxed">Join community gatherings</p>
+                  
+                  <div className="mt-auto pt-4 w-full">
+                    <div className="flex items-center justify-center gap-4 mb-4">
+                      <div className="text-center">
+                        <span className="text-2xl font-bold text-primary">{getRunningEvents().length}</span>
+                        <span className="text-muted-foreground text-xs block">Running</span>
+                      </div>
+                      <div className="w-px h-8 bg-border/50" />
+                      <div className="text-center">
+                        <span className="text-2xl font-bold text-primary">{getUpcomingEvents().length}</span>
+                        <span className="text-muted-foreground text-xs block">Upcoming</span>
+                      </div>
+                    </div>
+                    <div className="h-1 w-full bg-muted/30 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full w-1/3 group-hover:w-full transition-all duration-700" />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-300">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Community */}
-            <div className="relative group w-full transform hover:scale-105 transition-all duration-300">
-              <div className="absolute inset-0 bg-gradient-to-br from-secondary/20 to-primary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative glass-effect rounded-2xl p-8 border border-border/20 hover:border-secondary/40 transition-all duration-300 text-center overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700"></div>
-                <div className="w-16 h-16 rounded-full bg-secondary/20 flex items-center justify-center mx-auto mb-4 group-hover:bg-secondary/30 transition-colors relative z-10">
-                  <Users className="w-8 h-8 text-secondary" />
+            <div 
+              className="group cursor-pointer"
+              onClick={() => handleCategoryClick('community')}
+            >
+              <div className="relative overflow-hidden rounded-2xl bg-card border border-border/30 hover:border-primary/50 transition-all duration-500 h-full">
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5" />
                 </div>
-                <h3 className="text-xl font-bold mb-2 relative z-10">Community</h3>
-                <p className="text-sm text-muted-foreground mb-4 relative z-10">Fan art & creations</p>
-                <Badge variant="secondary" className="text-xs mb-4 relative z-10">
-                  {getSubmissionsByCategory('community').length} items
-                </Badge>
-                <Button 
-                  onClick={() => handleCategoryClick('community')}
-                  size="sm"
-                  className="relative z-10 w-full bg-secondary/20 hover:bg-secondary text-foreground hover:text-secondary-foreground"
-                >
-                  View Gallery
-                </Button>
+                
+                <div className="relative p-8 flex flex-col items-center text-center h-full">
+                  <div className="relative mb-6">
+                    <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/20 flex items-center justify-center group-hover:scale-110 group-hover:border-primary/40 transition-all duration-300">
+                      <Users className="w-10 h-10 text-primary" />
+                    </div>
+                  </div>
+                  
+                  <h3 className="text-2xl font-bold mb-2 group-hover:text-primary transition-colors">Community</h3>
+                  <p className="text-muted-foreground text-sm mb-4 leading-relaxed">Fan art & player creations</p>
+                  
+                  <div className="mt-auto pt-4 w-full">
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                      <span className="text-3xl font-bold text-primary">{getSubmissionsByCategory('community').length}</span>
+                      <span className="text-muted-foreground text-sm">items</span>
+                    </div>
+                    <div className="h-1 w-full bg-muted/30 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full w-1/4 group-hover:w-full transition-all duration-700" />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-300">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
