@@ -193,7 +193,7 @@ All colors MUST be HSL.
 
 @layer utilities {
   .text-gradient {
-    background: linear-gradient(135deg, hsl(185 100% 70%), hsl(275 90% 75%), hsl(325 95% 75%));
+    background: linear-gradient(135deg, hsl(270 80% 70%), hsl(280 90% 75%), hsl(290 85% 72%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -201,29 +201,70 @@ All colors MUST be HSL.
     padding-top: 0.05em;
     line-height: 1.2;
     display: inline-block;
-    filter: drop-shadow(0 2px 4px hsl(0 0% 0% / 0.5));
+    filter: drop-shadow(0 2px 8px hsl(270 80% 50% / 0.4));
   }
   
   .glass-effect {
-    background: linear-gradient(135deg, hsl(230 18% 10% / 0.75), hsl(230 15% 14% / 0.6));
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid hsl(230 15% 22% / 0.3);
-    box-shadow: 0 4px 20px 0 hsl(185 75% 55% / 0.08);
+    background: linear-gradient(135deg, hsl(230 18% 8% / 0.85), hsl(230 15% 12% / 0.7));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid hsl(270 50% 40% / 0.2);
+    box-shadow: 
+      0 4px 30px 0 hsl(270 70% 50% / 0.1),
+      inset 0 1px 0 0 hsl(270 50% 60% / 0.1);
     position: relative;
     z-index: 1;
   }
   
+  .glass-effect:hover {
+    border-color: hsl(270 50% 50% / 0.3);
+    box-shadow: 
+      0 8px 40px 0 hsl(270 70% 50% / 0.15),
+      inset 0 1px 0 0 hsl(270 50% 60% / 0.15);
+  }
+  
   .glow-cyan {
-    box-shadow: 0 0 15px hsl(185 75% 55% / 0.25), 0 0 30px hsl(185 75% 55% / 0.12);
+    box-shadow: 0 0 20px hsl(270 70% 55% / 0.3), 0 0 40px hsl(270 70% 55% / 0.15);
   }
   
   .glow-purple {
-    box-shadow: 0 0 15px hsl(275 65% 60% / 0.25), 0 0 30px hsl(275 65% 60% / 0.12);
+    box-shadow: 0 0 20px hsl(275 70% 60% / 0.3), 0 0 40px hsl(275 70% 60% / 0.15);
   }
   
   .glow-pink {
-    box-shadow: 0 0 15px hsl(325 75% 63% / 0.25), 0 0 30px hsl(325 75% 63% / 0.12);
+    box-shadow: 0 0 20px hsl(290 75% 63% / 0.3), 0 0 40px hsl(290 75% 63% / 0.15);
+  }
+  
+  /* Card hover effect */
+  .card-hover {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .card-hover:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px hsl(270 70% 50% / 0.2);
+  }
+  
+  /* Button glow effect */
+  .btn-glow {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .btn-glow::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(90deg, hsl(270 80% 60%), hsl(290 80% 65%), hsl(270 80% 60%));
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+    filter: blur(8px);
+  }
+  
+  .btn-glow:hover::before {
+    opacity: 0.6;
   }
   
   .animate-glow {
@@ -232,14 +273,38 @@ All colors MUST be HSL.
   
   @keyframes glow {
     0% {
-      box-shadow: 0 0 12px hsl(185 75% 55% / 0.3), 0 0 25px hsl(185 75% 55% / 0.15);
+      box-shadow: 0 0 15px hsl(270 70% 55% / 0.35), 0 0 30px hsl(270 70% 55% / 0.18);
     }
     50% {
-      box-shadow: 0 0 18px hsl(275 65% 60% / 0.4), 0 0 35px hsl(275 65% 60% / 0.2);
+      box-shadow: 0 0 25px hsl(280 70% 60% / 0.45), 0 0 50px hsl(280 70% 60% / 0.25);
     }
     100% {
-      box-shadow: 0 0 15px hsl(185 75% 55% / 0.35), 0 0 30px hsl(185 75% 55% / 0.18);
+      box-shadow: 0 0 20px hsl(270 70% 55% / 0.4), 0 0 40px hsl(270 70% 55% / 0.22);
     }
+  }
+  
+  /* Floating animation */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+  
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  /* Pulse glow animation */
+  @keyframes pulse-glow {
+    0%, 100% { 
+      box-shadow: 0 0 20px hsl(270 70% 55% / 0.4);
+    }
+    50% { 
+      box-shadow: 0 0 40px hsl(270 70% 55% / 0.6), 0 0 60px hsl(280 70% 60% / 0.3);
+    }
+  }
+  
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
   }
 
   /* Navigation header glow with cyan/purple gradient */
