@@ -49,6 +49,7 @@ import DiscordProfile from "./pages/DiscordProfile";
 import OwnerPanel from "./pages/OwnerPanel";
 import GangRP from "./pages/GangRP";
 import Feedback from "./pages/Feedback";
+import AdminYoutubers from "./pages/AdminYoutubers";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -90,6 +91,7 @@ const AppRoutes = () => {
         <Route path="/admin/support-analytics" element={<PageTransition><SupportAnalytics /></PageTransition>} />
         <Route path="/admin/staff-stats" element={<PageTransition><AdminStaffStats /></PageTransition>} />
         <Route path="/admin/players-active" element={<PageTransition><AdminPlayers /></PageTransition>} />
+        <Route path="/admin/youtubers" element={<PageTransition><AdminYoutubers /></PageTransition>} />
         <Route path="/support-chat" element={<PageTransition><SupportChat /></PageTransition>} />
         <Route path="/job-application" element={<PageTransition><JobApplication /></PageTransition>} />
         <Route path="/dashboard" element={<PageTransition><Dashboard /></PageTransition>} />

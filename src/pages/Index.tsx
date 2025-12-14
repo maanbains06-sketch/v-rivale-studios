@@ -433,42 +433,80 @@ const Index = () => {
               </Button>
             </motion.div>
 
-            {/* Enhanced Live Server Status */}
-            <motion.div variants={itemVariants} className="flex justify-center">
-              <div className="relative group">
-                {/* Glow effect behind status */}
-                <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 via-primary/20 to-green-500/20 blur-xl rounded-full opacity-60 group-hover:opacity-100 transition-opacity"></div>
+            {/* Unique Hexagonal Live Server Status */}
+            <motion.div variants={itemVariants} className="flex justify-center mt-6">
+              <div className="relative group cursor-pointer" onClick={handleJoinServer}>
+                {/* Animated background rings */}
+                <div className="absolute inset-[-20px] flex items-center justify-center pointer-events-none">
+                  <div className="absolute w-[300px] h-[120px] rounded-[60px] border border-primary/20 animate-pulse"></div>
+                  <div className="absolute w-[320px] h-[130px] rounded-[65px] border border-primary/10 animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                </div>
                 
-                <div className="relative glass-effect rounded-full px-8 py-5 inline-flex items-center gap-6 border border-green-500/30 hover:border-green-500/50 transition-all duration-300 hover:scale-105">
-                  {/* Live indicator */}
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <div className="w-4 h-4 rounded-full bg-green-500 shadow-[0_0_20px_rgba(34,197,94,0.8)]"></div>
-                      <div className="absolute inset-0 w-4 h-4 rounded-full bg-green-400 animate-ping opacity-75"></div>
-                      <div className="absolute inset-[-4px] w-6 h-6 rounded-full border-2 border-green-500/50 animate-pulse"></div>
+                {/* Main container with unique shape */}
+                <div className="relative overflow-hidden">
+                  {/* Gradient background */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-black via-primary/20 to-black rounded-2xl"></div>
+                  
+                  {/* Animated scan line */}
+                  <div className="absolute inset-0 overflow-hidden rounded-2xl">
+                    <div className="absolute w-full h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent animate-scan-line"></div>
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="relative flex items-center gap-4 px-6 py-4 md:px-8 md:py-5 border border-primary/30 rounded-2xl backdrop-blur-xl bg-black/60 group-hover:border-primary/60 transition-all duration-500">
+                    {/* Status indicator with unique design */}
+                    <div className="relative flex items-center gap-3">
+                      <div className="relative w-12 h-12 flex items-center justify-center">
+                        {/* Outer rotating ring */}
+                        <div className="absolute inset-0 border-2 border-dashed border-green-500/40 rounded-full animate-spin-slow"></div>
+                        {/* Inner pulsing core */}
+                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-green-600 shadow-[0_0_20px_rgba(34,197,94,0.8),0_0_40px_rgba(34,197,94,0.4)]">
+                          <div className="absolute inset-0 w-6 h-6 rounded-full bg-green-400 animate-ping opacity-50"></div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] uppercase tracking-[0.3em] text-green-400/70 font-medium">Server Status</span>
+                        <span className="text-sm font-bold text-green-400 tracking-wider flex items-center gap-1">
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                          </span>
+                          ONLINE
+                        </span>
+                      </div>
                     </div>
-                    <span className="text-green-400 font-bold text-base tracking-wider">Players Online</span>
+                    
+                    {/* Vertical divider with glow */}
+                    <div className="h-12 w-[1px] bg-gradient-to-b from-transparent via-primary/50 to-transparent"></div>
+                    
+                    {/* Player count display */}
+                    <div className="flex flex-col items-center px-4">
+                      <span className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/70 font-medium">Players</span>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-4xl md:text-5xl font-black bg-gradient-to-b from-white to-white/60 bg-clip-text text-transparent" style={{ textShadow: '0 0 30px rgba(139,92,246,0.5)' }}>
+                          {serverPlayers !== null ? serverPlayers : "0"}
+                        </span>
+                        <span className="text-lg text-muted-foreground/50">/</span>
+                        <span className="text-lg font-medium text-muted-foreground/70">{maxPlayers}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Vertical divider */}
+                    <div className="h-12 w-[1px] bg-gradient-to-b from-transparent via-primary/50 to-transparent hidden md:block"></div>
+                    
+                    {/* Action button with unique style */}
+                    <Button
+                      size="lg"
+                      className="hidden md:flex relative overflow-hidden bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-700 text-white font-bold px-8 rounded-xl shadow-[0_0_30px_rgba(139,92,246,0.5)] border-0 group/btn"
+                    >
+                      <span className="relative z-10 flex items-center gap-2">
+                        <Play className="w-5 h-5" />
+                        CONNECT
+                      </span>
+                      {/* Shine effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700"></div>
+                    </Button>
                   </div>
-                  
-                  <div className="h-8 w-px bg-gradient-to-b from-transparent via-green-500/50 to-transparent"></div>
-                  
-                  {/* Player count */}
-                  <div className="flex items-center gap-3">
-                    <span className="text-3xl md:text-4xl font-black text-white" style={{ textShadow: '0 0 20px rgba(255,255,255,0.5)' }}>
-                      {serverPlayers !== null ? serverPlayers : "--"}
-                    </span>
-                    <span className="text-xl text-muted-foreground font-medium">/</span>
-                    <span className="text-xl text-muted-foreground font-medium">{maxPlayers}</span>
-                  </div>
-
-                  {/* Play Now button integrated */}
-                  <Button
-                    size="sm"
-                    className="bg-white text-black hover:bg-white/90 font-bold px-6 rounded-full shadow-[0_0_20px_rgba(255,255,255,0.3)]"
-                    onClick={handleJoinServer}
-                  >
-                    Play Now
-                  </Button>
                 </div>
               </div>
             </motion.div>
