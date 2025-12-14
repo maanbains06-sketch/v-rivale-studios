@@ -291,7 +291,7 @@ const Index = () => {
             >
               {/* Glow effect behind text */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-[600px] h-[300px] bg-gradient-to-r from-fuchsia-400/50 via-violet-400/60 to-fuchsia-400/50 blur-[120px] rounded-full gpu-accelerated"></div>
+                <div className="w-[600px] h-[300px] bg-gradient-to-r from-purple-300/60 via-violet-300/70 to-purple-300/60 blur-[120px] rounded-full gpu-accelerated"></div>
               </div>
               
               {/* Main Title */}
@@ -305,8 +305,8 @@ const Index = () => {
                   }}
                 >
                   <span 
-                    className="bg-gradient-to-b from-fuchsia-300 via-violet-400 to-purple-500 bg-clip-text text-transparent"
-                    style={{ filter: 'drop-shadow(0 4px 30px hsl(280 80% 65% / 0.6))' }}
+                    className="bg-gradient-to-b from-purple-200 via-violet-300 to-purple-400 bg-clip-text text-transparent"
+                    style={{ filter: 'drop-shadow(0 4px 30px hsl(270 90% 80% / 0.7))' }}
                   >
                     SK
                   </span>
@@ -314,15 +314,15 @@ const Index = () => {
                   <Cloud 
                     className="inline-block w-16 h-16 md:w-28 md:h-28 lg:w-36 lg:h-36 -mx-1 md:-mx-2"
                     style={{ 
-                      color: 'hsl(280 85% 70%)',
-                      filter: 'drop-shadow(0 0 25px hsl(280 85% 65% / 0.9))'
+                      color: 'hsl(270 90% 85%)',
+                      filter: 'drop-shadow(0 0 25px hsl(270 90% 80% / 1))'
                     }}
                     strokeWidth={2.5}
-                    fill="hsl(275 75% 60%)"
+                    fill="hsl(270 80% 75%)"
                   />
                   <span 
-                    className="bg-gradient-to-b from-fuchsia-300 via-violet-400 to-purple-500 bg-clip-text text-transparent"
-                    style={{ filter: 'drop-shadow(0 4px 30px hsl(280 80% 65% / 0.6))' }}
+                    className="bg-gradient-to-b from-purple-200 via-violet-300 to-purple-400 bg-clip-text text-transparent"
+                    style={{ filter: 'drop-shadow(0 4px 30px hsl(270 90% 80% / 0.7))' }}
                   >
                     LIFE
                   </span>
@@ -339,13 +339,13 @@ const Index = () => {
                   ROLEPLAY
                 </span>
                 
-                {/* INDIA - Small accent in vibrant purple */}
+                {/* INDIA - Small accent in light purple */}
                 <span 
                   className="block text-sm md:text-base lg:text-lg font-medium tracking-[0.3em] mt-3"
                   style={{ 
                     fontStyle: 'normal',
                     letterSpacing: '0.3em',
-                    color: 'hsl(280 85% 75%)'
+                    color: 'hsl(270 90% 85%)'
                   }}
                 >
                   INDIA
