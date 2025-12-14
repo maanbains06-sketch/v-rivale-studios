@@ -5,9 +5,8 @@ import JobApplicationForm from "@/components/JobApplicationForm";
 import FirefighterApplicationForm from "@/components/FirefighterApplicationForm";
 import PDMApplicationForm from "@/components/PDMApplicationForm";
 import DOJApplicationForm from "@/components/DOJApplicationForm";
-import DOTApplicationForm from "@/components/DOTApplicationForm";
 import { JobCardsSkeletonGrid } from "@/components/JobCardSkeleton";
-import { Shield, Heart, Wrench, Flame, AlertCircle, CheckCircle2, Car, Scale, Gavel, HardHat } from "lucide-react";
+import { Shield, Heart, Wrench, Flame, AlertCircle, CheckCircle2, Car, Scale, Gavel } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -20,7 +19,6 @@ import jobMechanicImg from "@/assets/job-mechanic.jpg";
 import jobFirefighterImg from "@/assets/job-firefighter.jpg";
 import jobPdmImg from "@/assets/job-pdm.jpg";
 import headerDoj from "@/assets/header-doj.jpg";
-import jobDotImg from "@/assets/job-dot.jpg";
 
 const JobApplication = () => {
   const navigate = useNavigate();
@@ -109,15 +107,6 @@ const JobApplication = () => {
       benefits: ["Commission Pay", "Sales Training", "Premium Environment"],
     },
     {
-      id: "dot",
-      name: "DOT",
-      icon: HardHat,
-      color: "amber-500",
-      image: jobDotImg,
-      description: "Maintain roads, manage traffic, and keep San Andreas infrastructure running.",
-      benefits: ["City Impact", "Team Work", "Essential Service"],
-    },
-    {
       id: "judge",
       name: "DOJ - Judge",
       icon: Gavel,
@@ -174,8 +163,6 @@ const JobApplication = () => {
         return <JobApplicationForm jobType="Mechanic" jobImage={jobMechanicImg} />;
       case "pdm":
         return <PDMApplicationForm jobImage={jobPdmImg} />;
-      case "dot":
-        return <DOTApplicationForm jobImage={jobDotImg} />;
       case "judge":
         return <DOJApplicationForm applicationType="judge" jobImage={headerDoj} />;
       case "lawyer":
