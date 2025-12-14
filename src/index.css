@@ -8,7 +8,7 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Refined Light Blue Theme - Balanced for comfort */
+    /* Dark Theme - Light Blue Palette */
     --background: 210 25% 8%;
     --foreground: 200 15% 95%;
 
@@ -18,59 +18,123 @@ All colors MUST be HSL.
     --popover: 210 24% 10%;
     --popover-foreground: 200 12% 92%;
 
-    --primary: 200 75% 50%;
+    --primary: 200 70% 48%;
     --primary-foreground: 210 25% 8%;
 
-    --secondary: 195 60% 45%;
+    --secondary: 195 55% 42%;
     --secondary-foreground: 200 15% 95%;
 
     --muted: 210 20% 18%;
-    --muted-foreground: 200 10% 70%;
+    --muted-foreground: 200 10% 65%;
 
-    --accent: 200 70% 48%;
+    --accent: 200 65% 45%;
     --accent-foreground: 210 25% 8%;
 
-    --destructive: 0 70% 55%;
+    --destructive: 0 65% 50%;
     --destructive-foreground: 200 15% 95%;
 
-    --border: 210 20% 22%;
-    --input: 210 20% 22%;
-    --ring: 200 70% 50%;
+    --border: 210 18% 20%;
+    --input: 210 18% 20%;
+    --ring: 200 65% 48%;
 
     --radius: 0.75rem;
 
-    /* Headline color - Darker, more visible */
-    --headline: 200 80% 65%;
-    --headline-dark: 200 65% 55%;
+    /* Headline color - Visible and balanced */
+    --headline: 200 70% 60%;
+    --headline-dark: 200 60% 52%;
 
-    /* Light Blue Neon colors - Softer for comfort */
-    --neon-cyan: 200 70% 52%;
-    --neon-purple: 210 65% 58%;
-    --neon-pink: 195 60% 62%;
-    --neon-blue: 200 75% 55%;
-    --neon-orange: 190 70% 48%;
+    /* Light Blue accent colors - Balanced */
+    --neon-cyan: 200 65% 48%;
+    --neon-purple: 210 55% 52%;
+    --neon-pink: 195 50% 55%;
+    --neon-blue: 200 65% 50%;
+    --neon-orange: 190 60% 45%;
     --dark-bg: 210 25% 8%;
     --glass-bg: 210 22% 11%;
     
-    /* Gradients - Refined Light Blue */
-    --gradient-hero: linear-gradient(135deg, hsl(200 70% 50%), hsl(210 65% 55%), hsl(195 60% 58%));
-    --gradient-secondary: linear-gradient(135deg, hsl(195 60% 48%), hsl(210 65% 55%));
+    /* Gradients - Subtle */
+    --gradient-hero: linear-gradient(135deg, hsl(200 65% 48%), hsl(210 55% 50%), hsl(195 50% 52%));
+    --gradient-secondary: linear-gradient(135deg, hsl(195 55% 45%), hsl(210 55% 50%));
     --gradient-card: linear-gradient(135deg, hsl(210 22% 11% / 0.95), hsl(210 20% 14% / 0.9));
-    --gradient-glow: radial-gradient(circle at 50% 50%, hsl(200 70% 50% / 0.12), transparent 70%);
+    --gradient-glow: radial-gradient(circle at 50% 50%, hsl(200 65% 48% / 0.08), transparent 70%);
     
-    /* Glow Effects - Softer for eye comfort */
-    --glow-cyan: 0 0 20px hsl(200 70% 50% / 0.3), 0 0 40px hsl(200 70% 50% / 0.15);
-    --glow-purple: 0 0 20px hsl(210 65% 55% / 0.3), 0 0 40px hsl(210 65% 55% / 0.15);
-    --glow-pink: 0 0 20px hsl(195 60% 60% / 0.3), 0 0 40px hsl(195 60% 60% / 0.15);
+    /* Glow Effects - Minimal */
+    --glow-cyan: 0 0 12px hsl(200 65% 48% / 0.2);
+    --glow-purple: 0 0 12px hsl(210 55% 52% / 0.2);
+    --glow-pink: 0 0 12px hsl(195 50% 55% / 0.2);
     
     --sidebar-background: 210 22% 12%;
     --sidebar-foreground: 200 15% 92%;
-    --sidebar-primary: 200 70% 50%;
+    --sidebar-primary: 200 65% 48%;
     --sidebar-primary-foreground: 210 22% 10%;
     --sidebar-accent: 210 20% 18%;
     --sidebar-accent-foreground: 200 15% 92%;
-    --sidebar-border: 210 20% 22%;
-    --sidebar-ring: 200 70% 50%;
+    --sidebar-border: 210 18% 20%;
+    --sidebar-ring: 200 65% 48%;
+  }
+
+  /* Light Theme */
+  :root.light {
+    --background: 200 20% 97%;
+    --foreground: 210 25% 15%;
+
+    --card: 200 15% 95%;
+    --card-foreground: 210 22% 18%;
+
+    --popover: 200 18% 96%;
+    --popover-foreground: 210 22% 18%;
+
+    --primary: 200 70% 42%;
+    --primary-foreground: 200 15% 98%;
+
+    --secondary: 195 55% 38%;
+    --secondary-foreground: 200 15% 98%;
+
+    --muted: 200 12% 90%;
+    --muted-foreground: 210 15% 40%;
+
+    --accent: 200 65% 40%;
+    --accent-foreground: 200 15% 98%;
+
+    --destructive: 0 65% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 200 15% 85%;
+    --input: 200 15% 85%;
+    --ring: 200 70% 42%;
+
+    /* Headline color for light mode */
+    --headline: 200 70% 35%;
+    --headline-dark: 200 65% 30%;
+
+    /* Light Blue accent colors for light mode */
+    --neon-cyan: 200 65% 40%;
+    --neon-purple: 210 55% 45%;
+    --neon-pink: 195 50% 48%;
+    --neon-blue: 200 65% 42%;
+    --neon-orange: 190 60% 40%;
+    --dark-bg: 200 20% 97%;
+    --glass-bg: 200 15% 95%;
+    
+    /* Gradients for light mode */
+    --gradient-hero: linear-gradient(135deg, hsl(200 65% 42%), hsl(210 55% 45%), hsl(195 50% 48%));
+    --gradient-secondary: linear-gradient(135deg, hsl(195 55% 40%), hsl(210 55% 45%));
+    --gradient-card: linear-gradient(135deg, hsl(200 15% 95% / 0.95), hsl(200 12% 92% / 0.9));
+    --gradient-glow: radial-gradient(circle at 50% 50%, hsl(200 65% 42% / 0.06), transparent 70%);
+    
+    /* Glow Effects - Very subtle for light mode */
+    --glow-cyan: 0 0 8px hsl(200 65% 42% / 0.15);
+    --glow-purple: 0 0 8px hsl(210 55% 45% / 0.15);
+    --glow-pink: 0 0 8px hsl(195 50% 48% / 0.15);
+    
+    --sidebar-background: 200 15% 95%;
+    --sidebar-foreground: 210 22% 18%;
+    --sidebar-primary: 200 70% 42%;
+    --sidebar-primary-foreground: 200 15% 98%;
+    --sidebar-accent: 200 12% 90%;
+    --sidebar-accent-foreground: 210 22% 18%;
+    --sidebar-border: 200 15% 85%;
+    --sidebar-ring: 200 70% 42%;
   }
 }
 
@@ -81,14 +145,15 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
-    background-color: hsl(210 30% 4%);
+    background-color: hsl(var(--background));
     overflow-x: hidden;
     overflow-y: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
   
-  /* Background overlay with light blue accents */
+  /* Background overlay - subtle */
   body::before {
     content: '';
     position: fixed;
@@ -97,8 +162,8 @@ All colors MUST be HSL.
     right: 0;
     bottom: 0;
     background: 
-      radial-gradient(circle at 20% 20%, hsl(200 85% 60% / 0.08), transparent 40%),
-      radial-gradient(circle at 80% 80%, hsl(210 80% 65% / 0.08), transparent 40%);
+      radial-gradient(circle at 20% 20%, hsl(var(--primary) / 0.04), transparent 40%),
+      radial-gradient(circle at 80% 80%, hsl(var(--secondary) / 0.04), transparent 40%);
     pointer-events: none;
     z-index: 0;
   }
