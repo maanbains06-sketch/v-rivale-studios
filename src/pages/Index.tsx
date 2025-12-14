@@ -289,25 +289,58 @@ const Index = () => {
             </motion.div>
 
             {/* Impressive Server Name */}
-            <motion.div variants={itemVariants} className="mb-10 relative">
-              {/* Glow effects behind text */}
+            <motion.div 
+              variants={itemVariants} 
+              className="mb-10 relative"
+            >
+              {/* Multi-layer glow effects */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-[500px] h-[200px] bg-primary/30 blur-[100px] rounded-full"></div>
+                <div className="w-[600px] h-[300px] bg-gradient-to-r from-primary/40 via-purple-500/30 to-secondary/40 blur-[120px] rounded-full animate-pulse"></div>
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-[400px] h-[150px] bg-primary/50 blur-[80px] rounded-full"></div>
               </div>
               
               {/* Main Title */}
               <h1 className="relative">
-                <span className="block text-5xl md:text-7xl lg:text-8xl font-black italic tracking-tight">
-                  <span className="bg-gradient-to-r from-primary via-purple-400 to-primary bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(139,92,246,0.5)]">
+                {/* Animated shimmer overlay */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 animate-shimmer"></div>
+                
+                <span className="block text-6xl md:text-8xl lg:text-9xl font-black italic tracking-tight text-center">
+                  <span 
+                    className="relative inline-block bg-gradient-to-br from-primary via-purple-400 via-50% to-pink-500 bg-clip-text text-transparent animate-gradient-shift bg-[length:200%_200%]"
+                    style={{ 
+                      textShadow: '0 0 80px rgba(139,92,246,0.8), 0 0 120px rgba(139,92,246,0.4)',
+                      filter: 'drop-shadow(0 0 40px rgba(139,92,246,0.6))'
+                    }}
+                  >
                     SKYLIFE
                   </span>
-                  <span className="text-white ml-3 md:ml-4 drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+                  <span 
+                    className="relative inline-block text-white ml-3 md:ml-5"
+                    style={{ 
+                      textShadow: '0 0 60px rgba(255,255,255,0.5), 0 4px 20px rgba(0,0,0,0.8)',
+                      filter: 'drop-shadow(0 0 30px rgba(255,255,255,0.3))'
+                    }}
+                  >
                     ROLEPLAY
                   </span>
                 </span>
-                <span className="block text-xl md:text-2xl lg:text-3xl font-bold tracking-[0.4em] text-center mt-2 text-white/80">
+                
+                {/* INDIA subtitle with enhanced styling */}
+                <span 
+                  className="block text-2xl md:text-3xl lg:text-4xl font-bold tracking-[0.5em] text-center mt-4 bg-gradient-to-r from-white/60 via-white to-white/60 bg-clip-text text-transparent"
+                  style={{ textShadow: '0 0 30px rgba(255,255,255,0.3)' }}
+                >
                   INDIA
                 </span>
+
+                {/* Decorative lines */}
+                <div className="flex items-center justify-center gap-4 mt-4">
+                  <div className="h-[2px] w-16 md:w-24 bg-gradient-to-r from-transparent via-primary to-transparent"></div>
+                  <Sparkles className="w-5 h-5 text-primary animate-pulse" />
+                  <div className="h-[2px] w-16 md:w-24 bg-gradient-to-r from-transparent via-primary to-transparent"></div>
+                </div>
               </h1>
             </motion.div>
 
@@ -376,23 +409,42 @@ const Index = () => {
               </Button>
             </motion.div>
 
-            {/* Live Server Status */}
+            {/* Enhanced Live Server Status */}
             <motion.div variants={itemVariants} className="flex justify-center">
-              <div className="glass-effect rounded-2xl px-6 py-4 inline-flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <div className="relative">
-                    <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
-                    <div className="absolute inset-0 w-3 h-3 rounded-full bg-green-500 animate-ping opacity-75"></div>
+              <div className="relative group">
+                {/* Glow effect behind status */}
+                <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 via-primary/20 to-green-500/20 blur-xl rounded-full opacity-60 group-hover:opacity-100 transition-opacity"></div>
+                
+                <div className="relative glass-effect rounded-full px-8 py-5 inline-flex items-center gap-6 border border-green-500/30 hover:border-green-500/50 transition-all duration-300 hover:scale-105">
+                  {/* Live indicator */}
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <div className="w-4 h-4 rounded-full bg-green-500 shadow-[0_0_20px_rgba(34,197,94,0.8)]"></div>
+                      <div className="absolute inset-0 w-4 h-4 rounded-full bg-green-400 animate-ping opacity-75"></div>
+                      <div className="absolute inset-[-4px] w-6 h-6 rounded-full border-2 border-green-500/50 animate-pulse"></div>
+                    </div>
+                    <span className="text-green-400 font-bold text-base tracking-wider">Players Online</span>
                   </div>
-                  <span className="text-green-400 font-semibold text-sm">LIVE</span>
-                </div>
-                <div className="h-6 w-px bg-border/50"></div>
-                <div className="flex items-center gap-2">
-                  <Users className="w-5 h-5 text-primary" />
-                  <span className="text-foreground font-bold text-lg">
-                    {serverPlayers !== null ? serverPlayers : "--"}
-                  </span>
-                  <span className="text-muted-foreground text-sm">/ {maxPlayers} Players</span>
+                  
+                  <div className="h-8 w-px bg-gradient-to-b from-transparent via-green-500/50 to-transparent"></div>
+                  
+                  {/* Player count */}
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl md:text-4xl font-black text-white" style={{ textShadow: '0 0 20px rgba(255,255,255,0.5)' }}>
+                      {serverPlayers !== null ? serverPlayers : "--"}
+                    </span>
+                    <span className="text-xl text-muted-foreground font-medium">/</span>
+                    <span className="text-xl text-muted-foreground font-medium">{maxPlayers}</span>
+                  </div>
+
+                  {/* Play Now button integrated */}
+                  <Button
+                    size="sm"
+                    className="bg-white text-black hover:bg-white/90 font-bold px-6 rounded-full shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                    onClick={handleJoinServer}
+                  >
+                    Play Now
+                  </Button>
                 </div>
               </div>
             </motion.div>

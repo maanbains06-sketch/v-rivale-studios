@@ -173,6 +173,26 @@ All colors MUST be HSL.
   .animate-pulse-slow {
     animation: pulse-slow 8s ease-in-out infinite;
   }
+
+  /* Shimmer animation for title */
+  @keyframes shimmer {
+    0% { transform: translateX(-200%) skewX(-12deg); }
+    100% { transform: translateX(200%) skewX(-12deg); }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 3s ease-in-out infinite;
+  }
+
+  /* Gradient shift animation */
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  .animate-gradient-shift {
+    animation: gradient-shift 4s ease-in-out infinite;
+  }
 }
 
 @layer utilities {
