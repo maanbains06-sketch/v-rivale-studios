@@ -63,6 +63,15 @@ const roleColors = {
   event_manager: "bg-gradient-to-r from-secondary to-primary",
 };
 
+const roleBanners = {
+  owner: "bg-gradient-to-r from-amber-500 via-yellow-400 to-orange-500",
+  admin: "bg-gradient-to-r from-red-500 via-rose-500 to-pink-500",
+  moderator: "bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500",
+  developer: "bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500",
+  staff: "bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500",
+  event_manager: "bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500",
+};
+
 const roleIcons = {
   owner: Shield,
   admin: Users,
@@ -308,6 +317,7 @@ const Staff = () => {
 
   const renderStaffCard = (member: StaffMember, index: number) => {
     const Icon = roleIcons[member.role_type as keyof typeof roleIcons] || UserCheck;
+    const bannerClass = roleBanners[member.role_type as keyof typeof roleBanners] || "bg-gradient-to-r from-primary to-primary/70";
     const achievements = getAchievementBadges(member);
     const staffIsOnline = isOnline(member.id);
     const lastSeenTime = getLastSeen(member.id);
@@ -339,12 +349,18 @@ const Staff = () => {
             <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-primary/5 to-transparent" />
           </div>
           
-          {/* Top decorative element */}
-          <div className="relative h-16 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent overflow-hidden">
-            <div className="absolute inset-0 bg-[linear-gradient(135deg,transparent_25%,hsl(var(--primary)/0.1)_50%,transparent_75%)] bg-[length:200%_200%] group-hover:animate-shimmer" />
-            {/* Corner accents */}
-            <div className="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-primary/20 to-transparent rounded-br-full" />
-            <div className="absolute top-0 right-0 w-12 h-12 bg-gradient-to-bl from-primary/15 to-transparent rounded-bl-full" />
+          {/* Top decorative banner - role-based */}
+          <div className={`relative h-20 ${bannerClass} overflow-hidden`}>
+            <div className="absolute inset-0 bg-[linear-gradient(135deg,transparent_25%,rgba(255,255,255,0.2)_50%,transparent_75%)] bg-[length:200%_200%] group-hover:animate-shimmer" />
+            {/* Decorative pattern overlay */}
+            <div className="absolute inset-0 opacity-20">
+              <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.3),transparent_40%)]" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(circle,rgba(255,255,255,0.2),transparent_60%)]" />
+            </div>
+            {/* Role label */}
+            <div className="absolute bottom-2 left-3 px-2 py-0.5 bg-black/20 backdrop-blur-sm rounded text-[10px] font-bold text-white uppercase tracking-wider">
+              {member.role_type.replace("_", " ")}
+            </div>
           </div>
           
           {/* Online Status Badge - Top Right */}
