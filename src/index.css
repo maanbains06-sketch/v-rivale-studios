@@ -8,65 +8,65 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Original Cyan/Purple Theme - Restored */
-    --background: 230 25% 3%;
+    /* Light Blue Theme */
+    --background: 210 30% 4%;
     --foreground: 0 0% 100%;
 
-    --card: 230 22% 5%;
+    --card: 210 28% 6%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 230 25% 4%;
+    --popover: 210 30% 5%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 185 90% 65%;
-    --primary-foreground: 230 25% 3%;
+    --primary: 200 85% 60%;
+    --primary-foreground: 210 30% 4%;
 
-    --secondary: 275 80% 68%;
+    --secondary: 195 75% 55%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 230 20% 15%;
+    --muted: 210 25% 15%;
     --muted-foreground: 0 0% 85%;
 
-    --accent: 185 90% 65%;
-    --accent-foreground: 230 25% 3%;
+    --accent: 200 85% 60%;
+    --accent-foreground: 210 30% 4%;
 
     --destructive: 0 85% 60%;
     --destructive-foreground: 180 40% 98%;
 
-    --border: 230 20% 18%;
-    --input: 230 20% 18%;
-    --ring: 185 90% 65%;
+    --border: 210 25% 20%;
+    --input: 210 25% 20%;
+    --ring: 200 85% 60%;
 
     --radius: 0.75rem;
 
-    /* Neon colors */
-    --neon-cyan: 185 90% 65%;
-    --neon-purple: 275 80% 68%;
-    --neon-pink: 325 85% 70%;
-    --neon-blue: 210 90% 68%;
-    --neon-orange: 25 95% 65%;
-    --dark-bg: 230 25% 3%;
-    --glass-bg: 230 22% 5%;
+    /* Light Blue Neon colors */
+    --neon-cyan: 200 85% 60%;
+    --neon-purple: 210 80% 65%;
+    --neon-pink: 195 80% 70%;
+    --neon-blue: 200 90% 68%;
+    --neon-orange: 190 85% 55%;
+    --dark-bg: 210 30% 4%;
+    --glass-bg: 210 28% 6%;
     
-    /* Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(185 90% 65%), hsl(275 80% 68%), hsl(325 85% 70%));
-    --gradient-secondary: linear-gradient(135deg, hsl(210 90% 68%), hsl(275 80% 68%));
-    --gradient-card: linear-gradient(135deg, hsl(230 22% 5% / 0.9), hsl(230 20% 8% / 0.8));
-    --gradient-glow: radial-gradient(circle at 50% 50%, hsl(185 90% 65% / 0.15), transparent 70%);
+    /* Gradients - Light Blue */
+    --gradient-hero: linear-gradient(135deg, hsl(200 85% 60%), hsl(210 80% 65%), hsl(195 80% 70%));
+    --gradient-secondary: linear-gradient(135deg, hsl(195 75% 55%), hsl(210 80% 65%));
+    --gradient-card: linear-gradient(135deg, hsl(210 28% 6% / 0.9), hsl(210 25% 10% / 0.8));
+    --gradient-glow: radial-gradient(circle at 50% 50%, hsl(200 85% 60% / 0.15), transparent 70%);
     
-    /* Glow Effects */
-    --glow-cyan: 0 0 25px hsl(185 90% 65% / 0.4), 0 0 50px hsl(185 90% 65% / 0.2);
-    --glow-purple: 0 0 25px hsl(275 80% 68% / 0.4), 0 0 50px hsl(275 80% 68% / 0.2);
-    --glow-pink: 0 0 25px hsl(325 85% 70% / 0.4), 0 0 50px hsl(325 85% 70% / 0.2);
+    /* Glow Effects - Light Blue */
+    --glow-cyan: 0 0 25px hsl(200 85% 60% / 0.4), 0 0 50px hsl(200 85% 60% / 0.2);
+    --glow-purple: 0 0 25px hsl(210 80% 65% / 0.4), 0 0 50px hsl(210 80% 65% / 0.2);
+    --glow-pink: 0 0 25px hsl(195 80% 70% / 0.4), 0 0 50px hsl(195 80% 70% / 0.2);
     
-    --sidebar-background: 240 10% 10%;
-    --sidebar-foreground: 180 100% 95%;
-    --sidebar-primary: 180 90% 55%;
-    --sidebar-primary-foreground: 240 10% 8%;
-    --sidebar-accent: 240 10% 15%;
-    --sidebar-accent-foreground: 180 100% 95%;
-    --sidebar-border: 240 10% 20%;
-    --sidebar-ring: 180 90% 55%;
+    --sidebar-background: 210 25% 10%;
+    --sidebar-foreground: 200 100% 95%;
+    --sidebar-primary: 200 85% 60%;
+    --sidebar-primary-foreground: 210 25% 8%;
+    --sidebar-accent: 210 25% 15%;
+    --sidebar-accent-foreground: 200 100% 95%;
+    --sidebar-border: 210 25% 20%;
+    --sidebar-ring: 200 85% 60%;
   }
 }
 
@@ -77,14 +77,14 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
-    background-color: hsl(230 25% 3%);
+    background-color: hsl(210 30% 4%);
     overflow-x: hidden;
     overflow-y: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
   
-  /* Background overlay with cyan/purple accents */
+  /* Background overlay with light blue accents */
   body::before {
     content: '';
     position: fixed;
@@ -93,8 +93,8 @@ All colors MUST be HSL.
     right: 0;
     bottom: 0;
     background: 
-      radial-gradient(circle at 20% 20%, hsl(185 90% 65% / 0.08), transparent 40%),
-      radial-gradient(circle at 80% 80%, hsl(275 80% 68% / 0.08), transparent 40%);
+      radial-gradient(circle at 20% 20%, hsl(200 85% 60% / 0.08), transparent 40%),
+      radial-gradient(circle at 80% 80%, hsl(210 80% 65% / 0.08), transparent 40%);
     pointer-events: none;
     z-index: 0;
   }
@@ -193,7 +193,7 @@ All colors MUST be HSL.
 
 @layer utilities {
   .text-gradient {
-    background: linear-gradient(135deg, hsl(270 70% 80%), hsl(280 80% 85%), hsl(290 75% 83%));
+    background: linear-gradient(135deg, hsl(200 80% 70%), hsl(210 85% 75%), hsl(195 80% 73%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -201,38 +201,38 @@ All colors MUST be HSL.
     padding-top: 0.05em;
     line-height: 1.2;
     display: inline-block;
-    filter: drop-shadow(0 2px 8px hsl(270 60% 65% / 0.4));
+    filter: drop-shadow(0 2px 8px hsl(200 70% 60% / 0.4));
   }
   
   .glass-effect {
-    background: linear-gradient(135deg, hsl(230 18% 8% / 0.8), hsl(230 15% 12% / 0.65));
+    background: linear-gradient(135deg, hsl(210 22% 8% / 0.8), hsl(210 20% 12% / 0.65));
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-    border: 1px solid hsl(270 40% 50% / 0.15);
+    border: 1px solid hsl(200 50% 50% / 0.15);
     box-shadow: 
-      0 4px 25px 0 hsl(270 60% 60% / 0.08),
-      inset 0 1px 0 0 hsl(270 40% 70% / 0.08);
+      0 4px 25px 0 hsl(200 70% 60% / 0.08),
+      inset 0 1px 0 0 hsl(200 50% 70% / 0.08);
     position: relative;
     z-index: 1;
   }
   
   .glass-effect:hover {
-    border-color: hsl(270 40% 60% / 0.25);
+    border-color: hsl(200 50% 60% / 0.25);
     box-shadow: 
-      0 8px 35px 0 hsl(270 60% 60% / 0.12),
-      inset 0 1px 0 0 hsl(270 40% 70% / 0.1);
+      0 8px 35px 0 hsl(200 70% 60% / 0.12),
+      inset 0 1px 0 0 hsl(200 50% 70% / 0.1);
   }
   
   .glow-cyan {
-    box-shadow: 0 0 15px hsl(270 60% 65% / 0.2), 0 0 30px hsl(270 60% 65% / 0.1);
+    box-shadow: 0 0 15px hsl(200 70% 60% / 0.2), 0 0 30px hsl(200 70% 60% / 0.1);
   }
   
   .glow-purple {
-    box-shadow: 0 0 15px hsl(275 60% 70% / 0.2), 0 0 30px hsl(275 60% 70% / 0.1);
+    box-shadow: 0 0 15px hsl(210 70% 65% / 0.2), 0 0 30px hsl(210 70% 65% / 0.1);
   }
   
   .glow-pink {
-    box-shadow: 0 0 15px hsl(290 65% 73% / 0.2), 0 0 30px hsl(290 65% 73% / 0.1);
+    box-shadow: 0 0 15px hsl(195 70% 68% / 0.2), 0 0 30px hsl(195 70% 68% / 0.1);
   }
   
   /* Card hover effect */
@@ -242,7 +242,7 @@ All colors MUST be HSL.
   
   .card-hover:hover {
     transform: translateY(-6px);
-    box-shadow: 0 15px 30px hsl(270 60% 60% / 0.15);
+    box-shadow: 0 15px 30px hsl(200 70% 60% / 0.15);
   }
   
   /* Button glow effect */
@@ -255,7 +255,7 @@ All colors MUST be HSL.
     content: '';
     position: absolute;
     inset: -2px;
-    background: linear-gradient(90deg, hsl(270 70% 70%), hsl(290 70% 75%), hsl(270 70% 70%));
+    background: linear-gradient(90deg, hsl(200 75% 65%), hsl(210 75% 70%), hsl(200 75% 65%));
     border-radius: inherit;
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -273,13 +273,13 @@ All colors MUST be HSL.
   
   @keyframes glow {
     0% {
-      box-shadow: 0 0 12px hsl(270 60% 65% / 0.25), 0 0 25px hsl(270 60% 65% / 0.12);
+      box-shadow: 0 0 12px hsl(200 70% 60% / 0.25), 0 0 25px hsl(200 70% 60% / 0.12);
     }
     50% {
-      box-shadow: 0 0 18px hsl(280 60% 70% / 0.3), 0 0 40px hsl(280 60% 70% / 0.15);
+      box-shadow: 0 0 18px hsl(210 70% 65% / 0.3), 0 0 40px hsl(210 70% 65% / 0.15);
     }
     100% {
-      box-shadow: 0 0 15px hsl(270 60% 65% / 0.28), 0 0 32px hsl(270 60% 65% / 0.14);
+      box-shadow: 0 0 15px hsl(200 70% 60% / 0.28), 0 0 32px hsl(200 70% 60% / 0.14);
     }
   }
   
@@ -296,10 +296,10 @@ All colors MUST be HSL.
   /* Pulse glow animation */
   @keyframes pulse-glow {
     0%, 100% { 
-      box-shadow: 0 0 15px hsl(270 60% 65% / 0.3);
+      box-shadow: 0 0 15px hsl(200 70% 60% / 0.3);
     }
     50% { 
-      box-shadow: 0 0 30px hsl(270 60% 65% / 0.45), 0 0 50px hsl(280 60% 70% / 0.2);
+      box-shadow: 0 0 30px hsl(200 70% 60% / 0.45), 0 0 50px hsl(210 70% 65% / 0.2);
     }
   }
   
@@ -307,7 +307,7 @@ All colors MUST be HSL.
     animation: pulse-glow 2s ease-in-out infinite;
   }
 
-  /* Navigation header glow with cyan/purple gradient */
+  /* Navigation header glow with light blue gradient */
   .nav-glow {
     position: relative;
     overflow: hidden;
@@ -320,10 +320,10 @@ All colors MUST be HSL.
     background: linear-gradient(
       90deg,
       transparent 0%,
-      hsl(185 90% 65% / 0.08) 20%,
-      hsl(275 80% 68% / 0.12) 40%,
-      hsl(325 85% 70% / 0.08) 60%,
-      hsl(185 90% 65% / 0.12) 80%,
+      hsl(200 85% 60% / 0.08) 20%,
+      hsl(210 80% 65% / 0.12) 40%,
+      hsl(195 80% 70% / 0.08) 60%,
+      hsl(200 85% 60% / 0.12) 80%,
       transparent 100%
     );
     background-size: 200% 100%;
@@ -341,14 +341,14 @@ All colors MUST be HSL.
     background: linear-gradient(
       90deg,
       transparent 0%,
-      hsl(185 90% 65% / 0.8) 25%,
-      hsl(275 80% 68%) 50%,
-      hsl(325 85% 70% / 0.8) 75%,
+      hsl(200 85% 60% / 0.8) 25%,
+      hsl(210 80% 65%) 50%,
+      hsl(195 80% 70% / 0.8) 75%,
       transparent 100%
     );
     background-size: 200% 100%;
     animation: nav-gradient-move 3s linear infinite;
-    box-shadow: 0 0 15px hsl(185 90% 65% / 0.5), 0 0 30px hsl(275 80% 68% / 0.3);
+    box-shadow: 0 0 15px hsl(200 85% 60% / 0.5), 0 0 30px hsl(210 80% 65% / 0.3);
   }
   
   @keyframes nav-gradient-move {
@@ -361,7 +361,7 @@ All colors MUST be HSL.
   }
   
   .bg-gradient-radial {
-    background: radial-gradient(circle at 50% 50%, hsl(185 75% 55% / 0.12), transparent 70%);
+    background: radial-gradient(circle at 50% 50%, hsl(200 80% 55% / 0.12), transparent 70%);
   }
 
   /* Logo Animation Utilities */
