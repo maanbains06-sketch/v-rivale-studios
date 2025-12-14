@@ -5,6 +5,7 @@ import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
 import headerStaff from "@/assets/header-staff.jpg";
 import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import {
   Shield,
@@ -23,6 +24,7 @@ import {
   Mail,
   UserCircle,
   Briefcase,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState as useStateAlias } from "react";
@@ -169,6 +171,7 @@ const Staff = () => {
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [openPositions, setOpenPositions] = useState("7");
+  const [selectedAvatar, setSelectedAvatar] = useState<{ url: string; name: string } | null>(null);
   const { isOnline, getLastSeen, getStatus, onlineStatus, onlineCount } = useStaffOnlineStatus();
   const { favorites, toggleFavorite, isFavorite } = useFavoriteStaff();
 
@@ -370,9 +373,16 @@ const Staff = () => {
             <div className="flex flex-col items-center text-center">
               {/* Avatar with enhanced design */}
               <motion.div 
-                className="relative mb-4"
+                className="relative mb-4 cursor-pointer"
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedAvatar({
+                    url: member.discord_avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`,
+                    name: member.name
+                  });
+                }}
               >
                 {/* Outer ring with animation */}
                 <div className="absolute -inset-2 bg-gradient-to-b from-primary/30 to-primary/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -698,6 +708,37 @@ const Staff = () => {
           </motion.div>
         </div>
       </main>
+
+      {/* Profile Picture Lightbox Modal */}
+      <Dialog open={!!selectedAvatar} onOpenChange={() => setSelectedAvatar(null)}>
+        <DialogContent className="max-w-md p-0 bg-transparent border-none shadow-none">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="relative"
+          >
+            <button
+              onClick={() => setSelectedAvatar(null)}
+              className="absolute -top-10 right-0 p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border hover:bg-background transition-colors"
+            >
+              <X className="w-5 h-5 text-foreground" />
+            </button>
+            <div className="rounded-2xl overflow-hidden border-4 border-primary/30 shadow-2xl shadow-primary/20">
+              <img
+                src={selectedAvatar?.url}
+                alt={selectedAvatar?.name || "Staff member"}
+                className="w-full h-auto max-h-[80vh] object-contain bg-background"
+              />
+            </div>
+            {selectedAvatar?.name && (
+              <p className="text-center mt-4 text-lg font-semibold text-foreground bg-background/80 backdrop-blur-sm py-2 px-4 rounded-lg mx-auto w-fit">
+                {selectedAvatar.name}
+              </p>
+            )}
+          </motion.div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
