@@ -176,6 +176,7 @@ export default {
         shimmer: "shimmer 3s ease-in-out infinite",
         "float-slow": "float-slow 4s ease-in-out infinite",
         "sparkle": "sparkle 2s ease-in-out infinite",
+        "spin-slow": "spin 8s linear infinite",
       },
     },
   },
