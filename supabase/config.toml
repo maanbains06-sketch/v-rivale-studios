@@ -7,7 +7,7 @@ verify_jwt = false
 verify_jwt = true
 
 [functions.fetch-discord-user]
-verify_jwt = true
+verify_jwt = false
 
 [functions.send-gallery-notification]
 verify_jwt = false
