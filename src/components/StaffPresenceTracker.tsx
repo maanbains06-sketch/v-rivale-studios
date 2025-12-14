@@ -12,7 +12,7 @@ export const StaffPresenceTracker = () => {
 
   const updatePresence = async (discordIdToUpdate: string, isOnline: boolean, status: string = 'online') => {
     try {
-      const response = await fetch(
+      await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-discord-presence`,
         {
           method: 'POST',
@@ -24,22 +24,14 @@ export const StaffPresenceTracker = () => {
           }),
         }
       );
-      
-      if (!response.ok) {
-        console.error('Presence update failed:', await response.text());
-      } else {
-        console.log(`Presence updated: ${discordIdToUpdate} is ${isOnline ? status : 'offline'}`);
-      }
-    } catch (err) {
-      console.error('Error updating presence:', err);
+    } catch {
+      // Silently ignore presence errors
     }
   };
 
   const startTracking = async (discordIdToTrack: string) => {
     if (isTrackingRef.current) return;
     isTrackingRef.current = true;
-
-    console.log('Starting presence tracking for discord_id:', discordIdToTrack);
     
     // Set online immediately
     await updatePresence(discordIdToTrack, true, 'online');
@@ -167,7 +159,6 @@ export const StaffPresenceTracker = () => {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      console.log('Auth state changed:', event);
       if (event === 'SIGNED_OUT' && currentDiscordId) {
         // User signed out - set offline immediately
         navigator.sendBeacon(
