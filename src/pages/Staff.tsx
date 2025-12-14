@@ -291,12 +291,37 @@ const Staff = () => {
     }),
   };
 
+  const getRoleGradient = (roleType: string) => {
+    const gradients: Record<string, string> = {
+      owner: "from-amber-500 via-orange-500 to-yellow-500",
+      admin: "from-red-500 via-rose-500 to-pink-500",
+      moderator: "from-blue-500 via-indigo-500 to-violet-500",
+      developer: "from-emerald-500 via-green-500 to-teal-500",
+      staff: "from-purple-500 via-violet-500 to-fuchsia-500",
+      event_manager: "from-pink-500 via-rose-500 to-orange-500",
+    };
+    return gradients[roleType] || "from-primary via-secondary to-primary";
+  };
+
+  const getRoleBgGradient = (roleType: string) => {
+    const gradients: Record<string, string> = {
+      owner: "from-amber-950/80 via-orange-950/60 to-yellow-950/40",
+      admin: "from-red-950/80 via-rose-950/60 to-pink-950/40",
+      moderator: "from-blue-950/80 via-indigo-950/60 to-violet-950/40",
+      developer: "from-emerald-950/80 via-green-950/60 to-teal-950/40",
+      staff: "from-purple-950/80 via-violet-950/60 to-fuchsia-950/40",
+      event_manager: "from-pink-950/80 via-rose-950/60 to-orange-950/40",
+    };
+    return gradients[roleType] || "from-slate-950 via-slate-900 to-slate-950";
+  };
+
   const renderStaffCard = (member: StaffMember, index: number) => {
     const Icon = roleIcons[member.role_type as keyof typeof roleIcons] || UserCheck;
     const achievements = getAchievementBadges(member);
-    // Online status not available from public view for privacy
     const staffIsOnline = false;
     const lastSeenTime = null;
+    const roleGradient = getRoleGradient(member.role_type);
+    const roleBgGradient = getRoleBgGradient(member.role_type);
 
     return (
       <motion.div
@@ -307,94 +332,171 @@ const Staff = () => {
         whileInView="visible"
         viewport={{ once: true, margin: "-50px" }}
         custom={index}
+        whileHover={{ y: -8, scale: 1.02 }}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-secondary/20 to-primary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500 group-hover:scale-105"></div>
-        <Card className="relative glass-effect border-border/20 hover:border-primary/50 transition-all duration-300 overflow-hidden group-hover:scale-[1.03] group-hover:shadow-xl group-hover:shadow-primary/20 group-hover:-translate-y-2 cursor-pointer">
-          <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-secondary to-primary group-hover:h-2 transition-all duration-300"></div>
-
-          {/* Achievement Badges */}
-          {achievements.length > 0 && (
-            <div className="absolute top-3 right-3 flex flex-col gap-1 z-10">
-              {achievements.map((badge, idx) => (
-                <Badge 
-                  key={idx} 
-                  className={`${badge.color} text-white text-xs px-2 py-0.5 shadow-lg border-0 group-hover:scale-110 transition-transform duration-300`}
-                  style={{ transitionDelay: `${idx * 50}ms` }}
-                >
-                  {badge.label}
-                </Badge>
-              ))}
+        {/* Outer glow effect */}
+        <div className={`absolute -inset-1 bg-gradient-to-r ${roleGradient} rounded-3xl blur-xl opacity-0 group-hover:opacity-40 transition-all duration-500`} />
+        
+        {/* Card Border Gradient */}
+        <div className={`relative p-[2px] rounded-2xl bg-gradient-to-br ${roleGradient} shadow-xl group-hover:shadow-2xl transition-shadow duration-300`}>
+          <div className={`bg-gradient-to-br ${roleBgGradient} rounded-[14px] overflow-hidden relative`}>
+            {/* Animated Background Pattern */}
+            <div className="absolute inset-0 opacity-20">
+              <div className="absolute inset-0" style={{
+                backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255,255,255,0.1) 1px, transparent 0)`,
+                backgroundSize: '20px 20px'
+              }} />
             </div>
-          )}
+            
+            {/* Shine effect on hover */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
 
-          {/* Favorite Button */}
-          <div className="absolute top-3 left-3 z-10">
-            <FavoriteStaffButton isFavorite={isFavorite(member.id)} onToggle={() => toggleFavorite(member.id)} />
-          </div>
+            {/* Achievement Badges - Floating style */}
+            {achievements.length > 0 && (
+              <div className="absolute top-3 right-3 flex flex-col gap-1.5 z-10">
+                {achievements.map((badge, idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ x: 20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: idx * 0.1 + 0.3 }}
+                  >
+                    <Badge 
+                      className={`${badge.color} text-white text-[10px] px-2 py-1 shadow-lg border-0 backdrop-blur-sm group-hover:scale-110 transition-transform duration-300`}
+                    >
+                      ✨ {badge.label}
+                    </Badge>
+                  </motion.div>
+                ))}
+              </div>
+            )}
 
-          <CardContent className="pt-5 pb-4">
-            <div className="flex flex-col items-center text-center">
-              <div className="relative mb-4">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-secondary/30 rounded-full blur-lg animate-pulse group-hover:blur-xl group-hover:scale-110 transition-all duration-500"></div>
-                <div
-                  className={`relative w-20 h-20 rounded-full overflow-hidden border-3 ${roleColors[member.role_type as keyof typeof roleColors]} p-0.5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500`}
-                >
-                  <img
-                    src={member.discord_avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`}
-                    alt={member.name}
-                    className="w-full h-full rounded-full bg-background group-hover:scale-110 transition-transform duration-500"
+            {/* Favorite Button with glow */}
+            <div className="absolute top-3 left-3 z-10">
+              <div className="relative">
+                <div className="absolute inset-0 bg-white/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
+                <FavoriteStaffButton isFavorite={isFavorite(member.id)} onToggle={() => toggleFavorite(member.id)} />
+              </div>
+            </div>
+
+            <div className="pt-8 pb-6 px-4">
+              <div className="flex flex-col items-center text-center">
+                {/* Avatar with animated ring */}
+                <div className="relative mb-5">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                    className={`absolute -inset-2 bg-gradient-to-r ${roleGradient} rounded-full opacity-50 blur-sm`}
                   />
+                  <div className={`relative w-24 h-24 rounded-full p-1 bg-gradient-to-br ${roleGradient}`}>
+                    <div className="w-full h-full rounded-full overflow-hidden bg-background">
+                      <img
+                        src={member.discord_avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`}
+                        alt={member.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Role Icon Badge */}
+                  <motion.div
+                    whileHover={{ scale: 1.2, rotate: 15 }}
+                    className={`absolute -bottom-1 -right-1 w-10 h-10 bg-gradient-to-br ${roleGradient} rounded-xl flex items-center justify-center border-2 border-background shadow-lg`}
+                  >
+                    <Icon className="w-5 h-5 text-white" />
+                  </motion.div>
+                  
+                  {/* Online Indicator */}
+                  <div className="absolute -top-1 -left-1">
+                    <StaffOnlineIndicator isOnline={staffIsOnline} lastSeen={lastSeenTime} size="lg" />
+                  </div>
                 </div>
-                <div
-                  className={`absolute -bottom-1 -right-1 w-9 h-9 ${roleColors[member.role_type as keyof typeof roleColors]} rounded-full flex items-center justify-center border-3 border-background shadow-lg group-hover:scale-125 group-hover:rotate-12 transition-all duration-300`}
-                >
-                  <Icon className="w-4 h-4 text-primary-foreground" />
-                </div>
-                {/* Online Status Indicator */}
-                <div className="absolute -top-1 -left-1">
-                  <StaffOnlineIndicator isOnline={staffIsOnline} lastSeen={lastSeenTime} size="lg" />
-                </div>
-              </div>
 
-              <h3 className="text-lg font-bold mb-1.5 group-hover:text-primary transition-colors duration-300">{member.name}</h3>
-              <Badge variant="outline" className="mb-1.5 border-primary text-primary px-3 py-0.5 text-xs group-hover:bg-primary/10 group-hover:scale-105 transition-all duration-300">
-                {member.role}
-              </Badge>
-              <div className="flex items-center gap-2 mb-3">
-                <Badge variant="secondary" className="text-xs group-hover:bg-secondary/80 transition-colors duration-300">
-                  {member.department.replace("_", " ").toUpperCase()}
+                {/* Name with gradient */}
+                <h3 className={`text-xl font-black mb-2 bg-gradient-to-r ${roleGradient} bg-clip-text text-transparent`}>
+                  {member.name}
+                </h3>
+                
+                {/* Role Badge */}
+                <div className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r ${roleGradient} bg-opacity-20 border border-white/10 mb-3`}>
+                  <span className="text-xs font-bold text-white/90">{member.role}</span>
+                </div>
+                
+                {/* Department Tag */}
+                <Badge variant="secondary" className="text-[10px] tracking-wider uppercase mb-4 bg-white/5 border-white/10 text-white/70">
+                  {member.department.replace("_", " ")}
                 </Badge>
-                <StaffOnlineIndicator isOnline={staffIsOnline} lastSeen={lastSeenTime} showLabel size="sm" />
-              </div>
 
-              {member.bio && (
-                <p className="text-xs text-muted-foreground italic mb-4 max-w-xs leading-relaxed line-clamp-2 group-hover:text-foreground/70 transition-colors duration-300">
-                  &quot;{member.bio}&quot;
-                </p>
-              )}
+                {member.bio && (
+                  <p className="text-xs text-white/50 italic mb-5 max-w-xs leading-relaxed line-clamp-2 group-hover:text-white/70 transition-colors duration-300">
+                    &quot;{member.bio}&quot;
+                  </p>
+                )}
 
-              <div className="w-full space-y-3">
                 {/* View Profile Button */}
-                <Button
-                  className="w-full bg-primary/10 hover:bg-primary hover:text-primary-foreground text-primary border border-primary/20 transition-all duration-300 group-hover:bg-primary/20 group-hover:border-primary/40 group-hover:shadow-lg group-hover:shadow-primary/20"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleStaffClick(member.id);
-                  }}
-                >
-                  <UserCircle className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
-                  <span className="group-hover:tracking-wide transition-all duration-300">View Full Profile</span>
-                </Button>
+                <motion.div className="w-full" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+                  <Button
+                    className={`w-full bg-gradient-to-r ${roleGradient} hover:opacity-90 text-white font-bold shadow-lg border-0 transition-all duration-300`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleStaffClick(member.id);
+                    }}
+                  >
+                    <UserCircle className="w-4 h-4 mr-2" />
+                    View Profile
+                  </Button>
+                </motion.div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </motion.div>
     );
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        {/* Floating Orbs */}
+        <motion.div
+          animate={{ 
+            y: [0, -30, 0],
+            x: [0, 15, 0],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-1/4 left-10 w-72 h-72 bg-gradient-to-br from-violet-600/20 to-fuchsia-600/10 rounded-full blur-3xl"
+        />
+        <motion.div
+          animate={{ 
+            y: [0, 40, 0],
+            x: [0, -20, 0],
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          className="absolute top-1/2 right-20 w-96 h-96 bg-gradient-to-br from-amber-500/15 to-orange-600/10 rounded-full blur-3xl"
+        />
+        <motion.div
+          animate={{ 
+            y: [0, 25, 0],
+            x: [0, 10, 0],
+          }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-gradient-to-br from-cyan-500/15 to-blue-600/10 rounded-full blur-3xl"
+        />
+        
+        {/* Grid Pattern Overlay */}
+        <div className="absolute inset-0 opacity-[0.02]" style={{
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+          backgroundSize: '50px 50px'
+        }} />
+        
+        {/* Diagonal Lines */}
+        <div className="absolute inset-0 opacity-[0.015]" style={{
+          backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 100px, rgba(255,255,255,0.05) 100px, rgba(255,255,255,0.05) 101px)`
+        }} />
+      </div>
+
       <Navigation />
       <StaffApplicationForm open={isApplicationOpen} onOpenChange={setIsApplicationOpen} />
 
@@ -405,102 +507,9 @@ const Staff = () => {
         backgroundImage={headerStaff}
       />
 
-      <main className="pb-16">
+      <main className="pb-16 relative z-10">
         <div className="container mx-auto px-4">
-          {/* Hero Stats Section */}
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={scrollRevealVariants}
-            className="mb-16"
-          >
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-950/60 via-purple-900/50 to-fuchsia-900/40 p-8 md:p-12 border border-violet-500/20">
-              <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-fuchsia-500/5 opacity-50"></div>
-              <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-amber-500/10 to-transparent rounded-full blur-3xl"></div>
-              <div className="absolute bottom-0 left-0 w-72 h-72 bg-gradient-to-tr from-cyan-500/10 to-transparent rounded-full blur-3xl"></div>
-              
-              <div className="relative z-10">
-                <div className="text-center mb-10">
-                  <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.5 }}
-                    className="inline-block mb-4"
-                  >
-                    <span className="text-7xl">👥</span>
-                  </motion.div>
-                  <h2 className="text-3xl md:text-4xl font-black mb-4 bg-gradient-to-r from-violet-400 via-fuchsia-400 to-amber-400 bg-clip-text text-transparent">
-                    The Team Behind SLRP
-                  </h2>
-                  <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                    Meet our dedicated team of professionals working around the clock to bring you the best roleplay experience
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.1 }}
-                    className="group"
-                  >
-                    <div className="relative bg-gradient-to-br from-amber-950/60 to-orange-900/40 rounded-2xl p-6 border border-amber-500/30 hover:border-amber-400/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(251,191,36,0.2)] hover:scale-105">
-                      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                      <div className="relative">
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-2xl shadow-lg shadow-amber-500/25 mx-auto mb-4 group-hover:scale-110 transition-transform">
-                          <Users className="w-7 h-7 text-white" />
-                        </div>
-                        <div className="text-4xl font-black bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent mb-1">{staffMembers.length}+</div>
-                        <div className="text-sm text-amber-300/80">Team Members</div>
-                      </div>
-                    </div>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.2 }}
-                    className="group"
-                  >
-                    <div className="relative bg-gradient-to-br from-emerald-950/60 to-green-900/40 rounded-2xl p-6 border border-emerald-500/30 hover:border-emerald-400/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.2)] hover:scale-105">
-                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                      <div className="relative">
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-2xl shadow-lg shadow-emerald-500/25 mx-auto mb-4 group-hover:scale-110 transition-transform">
-                          <Clock className="w-7 h-7 text-white" />
-                        </div>
-                        <div className="text-4xl font-black bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent mb-1">24/7</div>
-                        <div className="text-sm text-emerald-300/80">Staff Coverage</div>
-                      </div>
-                    </div>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.3 }}
-                    className="group"
-                  >
-                    <div className="relative bg-gradient-to-br from-cyan-950/60 to-sky-900/40 rounded-2xl p-6 border border-cyan-500/30 hover:border-cyan-400/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(6,182,212,0.2)] hover:scale-105">
-                      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                      <div className="relative">
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-sky-600 flex items-center justify-center text-2xl shadow-lg shadow-cyan-500/25 mx-auto mb-4 group-hover:scale-110 transition-transform">
-                          <Briefcase className="w-7 h-7 text-white" />
-                        </div>
-                        <div className="text-4xl font-black bg-gradient-to-r from-cyan-400 to-sky-400 bg-clip-text text-transparent mb-1">{openPositions}</div>
-                        <div className="text-sm text-cyan-300/80">Open Positions</div>
-                      </div>
-                    </div>
-                  </motion.div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Team Values */}
+          {/* Hero Stats Section - Unique Hexagonal Design */}
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -508,94 +517,375 @@ const Staff = () => {
             variants={scrollRevealVariants}
             className="mb-20"
           >
-            <div className="text-center mb-12">
-              <span className="text-5xl mb-4 block">✨</span>
-              <h2 className="text-4xl font-black bg-gradient-to-r from-amber-400 via-pink-400 to-violet-400 bg-clip-text text-transparent mb-4">Our Core Values</h2>
-              <p className="text-lg text-muted-foreground">The principles that guide our team every day</p>
+            <div className="relative">
+              {/* Decorative Corner Elements */}
+              <div className="absolute -top-4 -left-4 w-20 h-20 border-l-4 border-t-4 border-violet-500/30 rounded-tl-3xl" />
+              <div className="absolute -top-4 -right-4 w-20 h-20 border-r-4 border-t-4 border-fuchsia-500/30 rounded-tr-3xl" />
+              <div className="absolute -bottom-4 -left-4 w-20 h-20 border-l-4 border-b-4 border-amber-500/30 rounded-bl-3xl" />
+              <div className="absolute -bottom-4 -right-4 w-20 h-20 border-r-4 border-b-4 border-cyan-500/30 rounded-br-3xl" />
+              
+              <div className="relative overflow-hidden rounded-3xl p-1 bg-gradient-to-r from-violet-500/50 via-fuchsia-500/50 to-amber-500/50">
+                <div className="bg-gradient-to-br from-slate-950/98 via-violet-950/95 to-slate-950/98 rounded-[22px] p-8 md:p-12">
+                  {/* Animated Background Pattern */}
+                  <div className="absolute inset-0 opacity-10">
+                    <div className="absolute inset-0" style={{
+                      backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)`,
+                      backgroundSize: '32px 32px'
+                    }} />
+                  </div>
+                  
+                  {/* Glowing Orbs */}
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px]"
+                  >
+                    <div className="absolute top-0 left-1/2 w-32 h-32 bg-violet-500/20 rounded-full blur-2xl" />
+                    <div className="absolute bottom-0 left-1/2 w-32 h-32 bg-fuchsia-500/20 rounded-full blur-2xl" />
+                    <div className="absolute top-1/2 left-0 w-32 h-32 bg-amber-500/20 rounded-full blur-2xl" />
+                    <div className="absolute top-1/2 right-0 w-32 h-32 bg-cyan-500/20 rounded-full blur-2xl" />
+                  </motion.div>
+                  
+                  <div className="relative z-10">
+                    <div className="text-center mb-12">
+                      <motion.div
+                        initial={{ scale: 0, rotate: -180 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        transition={{ type: "spring", duration: 1, bounce: 0.5 }}
+                        className="inline-block mb-6"
+                      >
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-500 rounded-3xl blur-xl opacity-60 animate-pulse" />
+                          <div className="relative w-24 h-24 bg-gradient-to-br from-violet-600 via-fuchsia-600 to-amber-600 rounded-3xl flex items-center justify-center shadow-2xl border border-white/20">
+                            <span className="text-5xl">👥</span>
+                          </div>
+                        </div>
+                      </motion.div>
+                      
+                      <motion.h2 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="text-4xl md:text-5xl font-black mb-4"
+                      >
+                        <span className="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-amber-400 bg-clip-text text-transparent">
+                          The Team Behind SLRP
+                        </span>
+                      </motion.h2>
+                      <motion.p 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.5 }}
+                        className="text-lg text-muted-foreground max-w-2xl mx-auto"
+                      >
+                        Meet our dedicated team of professionals working around the clock to bring you the best roleplay experience
+                      </motion.p>
+                    </div>
+
+                    {/* Stats with Unique Hexagonal Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+                      {/* Team Members Stat */}
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8, rotateY: -30 }}
+                        whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.2, type: "spring" }}
+                        whileHover={{ scale: 1.05, rotateY: 5 }}
+                        className="group perspective-1000"
+                      >
+                        <div className="relative p-1 rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-yellow-500 shadow-lg shadow-amber-500/25 group-hover:shadow-amber-500/40 transition-shadow duration-300">
+                          <div className="bg-gradient-to-br from-amber-950 via-orange-950 to-amber-950 rounded-xl p-6 text-center relative overflow-hidden">
+                            {/* Animated shine effect */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                            <div className="absolute top-0 right-0 w-20 h-20 bg-amber-500/20 rounded-full blur-2xl" />
+                            
+                            <div className="relative">
+                              <motion.div
+                                animate={{ rotate: [0, 10, -10, 0] }}
+                                transition={{ duration: 4, repeat: Infinity }}
+                                className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/30 border border-amber-300/30"
+                              >
+                                <Users className="w-8 h-8 text-white" />
+                              </motion.div>
+                              <div className="text-5xl font-black bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent mb-2">{staffMembers.length}+</div>
+                              <div className="text-sm font-semibold text-amber-300/90 tracking-wider uppercase">Team Members</div>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+
+                      {/* 24/7 Coverage Stat */}
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8, rotateY: 0 }}
+                        whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.3, type: "spring" }}
+                        whileHover={{ scale: 1.05, rotateY: -5 }}
+                        className="group perspective-1000"
+                      >
+                        <div className="relative p-1 rounded-2xl bg-gradient-to-br from-emerald-500 via-green-500 to-teal-500 shadow-lg shadow-emerald-500/25 group-hover:shadow-emerald-500/40 transition-shadow duration-300">
+                          <div className="bg-gradient-to-br from-emerald-950 via-green-950 to-emerald-950 rounded-xl p-6 text-center relative overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                            <div className="absolute top-0 left-0 w-20 h-20 bg-emerald-500/20 rounded-full blur-2xl" />
+                            
+                            <div className="relative">
+                              <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                                className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-emerald-400 to-green-500 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/30 border border-emerald-300/30"
+                              >
+                                <Clock className="w-8 h-8 text-white" />
+                              </motion.div>
+                              <div className="text-5xl font-black bg-gradient-to-r from-emerald-300 to-green-300 bg-clip-text text-transparent mb-2">24/7</div>
+                              <div className="text-sm font-semibold text-emerald-300/90 tracking-wider uppercase">Staff Coverage</div>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+
+                      {/* Open Positions Stat */}
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8, rotateY: 30 }}
+                        whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.4, type: "spring" }}
+                        whileHover={{ scale: 1.05, rotateY: 5 }}
+                        className="group perspective-1000"
+                      >
+                        <div className="relative p-1 rounded-2xl bg-gradient-to-br from-cyan-500 via-sky-500 to-blue-500 shadow-lg shadow-cyan-500/25 group-hover:shadow-cyan-500/40 transition-shadow duration-300">
+                          <div className="bg-gradient-to-br from-cyan-950 via-sky-950 to-cyan-950 rounded-xl p-6 text-center relative overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                            <div className="absolute bottom-0 right-0 w-20 h-20 bg-cyan-500/20 rounded-full blur-2xl" />
+                            
+                            <div className="relative">
+                              <motion.div
+                                animate={{ y: [0, -5, 0] }}
+                                transition={{ duration: 2, repeat: Infinity }}
+                                className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-cyan-400 to-sky-500 rounded-2xl flex items-center justify-center shadow-lg shadow-cyan-500/30 border border-cyan-300/30"
+                              >
+                                <Briefcase className="w-8 h-8 text-white" />
+                              </motion.div>
+                              <div className="text-5xl font-black bg-gradient-to-r from-cyan-300 to-sky-300 bg-clip-text text-transparent mb-2">{openPositions}</div>
+                              <div className="text-sm font-semibold text-cyan-300/90 tracking-wider uppercase">Open Positions</div>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="grid md:grid-cols-4 gap-6">
+          </motion.div>
+
+          {/* Team Values - Unique Floating Cards */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={scrollRevealVariants}
+            className="mb-24"
+          >
+            <div className="text-center mb-16">
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                initial={{ scale: 0, rotate: -180 }}
+                whileInView={{ scale: 1, rotate: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: 0.1 }}
+                transition={{ type: "spring", bounce: 0.5 }}
+                className="inline-block mb-6"
+              >
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-amber-500 via-pink-500 to-violet-500 rounded-2xl blur-xl opacity-50 animate-pulse" />
+                  <div className="relative w-20 h-20 bg-gradient-to-br from-amber-500 via-pink-500 to-violet-500 rounded-2xl flex items-center justify-center shadow-2xl border border-white/20">
+                    <span className="text-4xl">✨</span>
+                  </div>
+                </div>
+              </motion.div>
+              <h2 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-amber-400 via-pink-400 to-violet-400 bg-clip-text text-transparent mb-4">Our Core Values</h2>
+              <p className="text-lg text-muted-foreground max-w-xl mx-auto">The principles that guide our team every day</p>
+            </div>
+            
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {/* Excellence */}
+              <motion.div
+                initial={{ opacity: 0, y: 50, rotateX: -20 }}
+                whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1, type: "spring" }}
+                whileHover={{ y: -10, scale: 1.03 }}
                 className="group"
               >
-                <Card className="h-full bg-gradient-to-br from-amber-950/50 to-orange-900/30 border-amber-500/20 hover:border-amber-400/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(251,191,36,0.15)] overflow-hidden">
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
-                  <CardContent className="pt-8 pb-6 text-center">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-2xl shadow-lg shadow-amber-500/25 mx-auto mb-4 group-hover:scale-110 transition-transform">
-                      <Star className="w-8 h-8 text-white" />
+                <div className="relative p-[2px] rounded-3xl bg-gradient-to-br from-amber-500 via-orange-500 to-yellow-500 shadow-xl shadow-amber-500/20 group-hover:shadow-amber-500/40 transition-all duration-500">
+                  <div className="bg-gradient-to-br from-amber-950 via-orange-950 to-slate-950 rounded-[22px] p-8 text-center relative overflow-hidden h-full">
+                    {/* Animated particles */}
+                    <div className="absolute inset-0 overflow-hidden">
+                      {[...Array(5)].map((_, i) => (
+                        <motion.div
+                          key={i}
+                          animate={{
+                            y: [100, -20],
+                            x: [Math.random() * 100, Math.random() * 100],
+                            opacity: [0, 1, 0],
+                          }}
+                          transition={{
+                            duration: 3 + Math.random() * 2,
+                            repeat: Infinity,
+                            delay: Math.random() * 2,
+                          }}
+                          className="absolute w-1 h-1 bg-amber-400 rounded-full"
+                          style={{ left: `${Math.random() * 100}%` }}
+                        />
+                      ))}
                     </div>
-                    <h3 className="text-xl font-bold mb-3 text-amber-300">Excellence</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
+                    
+                    <motion.div
+                      animate={{ rotate: [0, 5, -5, 0] }}
+                      transition={{ duration: 4, repeat: Infinity }}
+                      className="relative w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/40 border border-amber-300/30"
+                    >
+                      <Star className="w-10 h-10 text-white" />
+                    </motion.div>
+                    <h3 className="text-2xl font-black text-amber-300 mb-3">Excellence</h3>
+                    <p className="text-sm text-amber-200/60 leading-relaxed">
                       Striving for the highest quality in everything we do
                     </p>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </motion.div>
 
+              {/* Community First */}
               <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 50, rotateX: -20 }}
+                whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: 0.2 }}
+                transition={{ delay: 0.2, type: "spring" }}
+                whileHover={{ y: -10, scale: 1.03 }}
                 className="group"
               >
-                <Card className="h-full bg-gradient-to-br from-pink-950/50 to-rose-900/30 border-pink-500/20 hover:border-pink-400/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(236,72,153,0.15)] overflow-hidden">
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-500 to-rose-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
-                  <CardContent className="pt-8 pb-6 text-center">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center text-2xl shadow-lg shadow-pink-500/25 mx-auto mb-4 group-hover:scale-110 transition-transform">
-                      <Heart className="w-8 h-8 text-white" />
+                <div className="relative p-[2px] rounded-3xl bg-gradient-to-br from-pink-500 via-rose-500 to-red-500 shadow-xl shadow-pink-500/20 group-hover:shadow-pink-500/40 transition-all duration-500">
+                  <div className="bg-gradient-to-br from-pink-950 via-rose-950 to-slate-950 rounded-[22px] p-8 text-center relative overflow-hidden h-full">
+                    <div className="absolute inset-0 overflow-hidden">
+                      {[...Array(5)].map((_, i) => (
+                        <motion.div
+                          key={i}
+                          animate={{
+                            y: [100, -20],
+                            opacity: [0, 1, 0],
+                          }}
+                          transition={{
+                            duration: 3 + Math.random() * 2,
+                            repeat: Infinity,
+                            delay: Math.random() * 2,
+                          }}
+                          className="absolute w-1 h-1 bg-pink-400 rounded-full"
+                          style={{ left: `${Math.random() * 100}%` }}
+                        />
+                      ))}
                     </div>
-                    <h3 className="text-xl font-bold mb-3 text-pink-300">Community First</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
+                    
+                    <motion.div
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="relative w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-pink-400 to-rose-500 rounded-2xl flex items-center justify-center shadow-lg shadow-pink-500/40 border border-pink-300/30"
+                    >
+                      <Heart className="w-10 h-10 text-white" />
+                    </motion.div>
+                    <h3 className="text-2xl font-black text-pink-300 mb-3">Community First</h3>
+                    <p className="text-sm text-pink-200/60 leading-relaxed">
                       Your experience and satisfaction is our priority
                     </p>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </motion.div>
 
+              {/* Fair Play */}
               <motion.div
-                initial={{ opacity: 0, x: 10 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 50, rotateX: -20 }}
+                whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: 0.3 }}
+                transition={{ delay: 0.3, type: "spring" }}
+                whileHover={{ y: -10, scale: 1.03 }}
                 className="group"
               >
-                <Card className="h-full bg-gradient-to-br from-emerald-950/50 to-green-900/30 border-emerald-500/20 hover:border-emerald-400/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.15)] overflow-hidden">
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-green-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
-                  <CardContent className="pt-8 pb-6 text-center">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-2xl shadow-lg shadow-emerald-500/25 mx-auto mb-4 group-hover:scale-110 transition-transform">
-                      <Trophy className="w-8 h-8 text-white" />
+                <div className="relative p-[2px] rounded-3xl bg-gradient-to-br from-emerald-500 via-green-500 to-teal-500 shadow-xl shadow-emerald-500/20 group-hover:shadow-emerald-500/40 transition-all duration-500">
+                  <div className="bg-gradient-to-br from-emerald-950 via-green-950 to-slate-950 rounded-[22px] p-8 text-center relative overflow-hidden h-full">
+                    <div className="absolute inset-0 overflow-hidden">
+                      {[...Array(5)].map((_, i) => (
+                        <motion.div
+                          key={i}
+                          animate={{
+                            y: [100, -20],
+                            opacity: [0, 1, 0],
+                          }}
+                          transition={{
+                            duration: 3 + Math.random() * 2,
+                            repeat: Infinity,
+                            delay: Math.random() * 2,
+                          }}
+                          className="absolute w-1 h-1 bg-emerald-400 rounded-full"
+                          style={{ left: `${Math.random() * 100}%` }}
+                        />
+                      ))}
                     </div>
-                    <h3 className="text-xl font-bold mb-3 text-emerald-300">Fair Play</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
+                    
+                    <motion.div
+                      animate={{ y: [0, -5, 0] }}
+                      transition={{ duration: 2.5, repeat: Infinity }}
+                      className="relative w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-emerald-400 to-green-500 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/40 border border-emerald-300/30"
+                    >
+                      <Trophy className="w-10 h-10 text-white" />
+                    </motion.div>
+                    <h3 className="text-2xl font-black text-emerald-300 mb-3">Fair Play</h3>
+                    <p className="text-sm text-emerald-200/60 leading-relaxed">
                       Maintaining integrity and fairness for all players
                     </p>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </motion.div>
 
+              {/* Innovation */}
               <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 50, rotateX: -20 }}
+                whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: 0.4 }}
+                transition={{ delay: 0.4, type: "spring" }}
+                whileHover={{ y: -10, scale: 1.03 }}
                 className="group"
               >
-                <Card className="h-full bg-gradient-to-br from-violet-950/50 to-purple-900/30 border-violet-500/20 hover:border-violet-400/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(139,92,246,0.15)] overflow-hidden">
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
-                  <CardContent className="pt-8 pb-6 text-center">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-2xl shadow-lg shadow-violet-500/25 mx-auto mb-4 group-hover:scale-110 transition-transform">
-                      <Target className="w-8 h-8 text-white" />
+                <div className="relative p-[2px] rounded-3xl bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 shadow-xl shadow-violet-500/20 group-hover:shadow-violet-500/40 transition-all duration-500">
+                  <div className="bg-gradient-to-br from-violet-950 via-purple-950 to-slate-950 rounded-[22px] p-8 text-center relative overflow-hidden h-full">
+                    <div className="absolute inset-0 overflow-hidden">
+                      {[...Array(5)].map((_, i) => (
+                        <motion.div
+                          key={i}
+                          animate={{
+                            y: [100, -20],
+                            opacity: [0, 1, 0],
+                          }}
+                          transition={{
+                            duration: 3 + Math.random() * 2,
+                            repeat: Infinity,
+                            delay: Math.random() * 2,
+                          }}
+                          className="absolute w-1 h-1 bg-violet-400 rounded-full"
+                          style={{ left: `${Math.random() * 100}%` }}
+                        />
+                      ))}
                     </div>
-                    <h3 className="text-xl font-bold mb-3 text-violet-300">Innovation</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
+                    
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                      className="relative w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-violet-400 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg shadow-violet-500/40 border border-violet-300/30"
+                    >
+                      <Target className="w-10 h-10 text-white" />
+                    </motion.div>
+                    <h3 className="text-2xl font-black text-violet-300 mb-3">Innovation</h3>
+                    <p className="text-sm text-violet-200/60 leading-relaxed">
                       Constantly improving with new features and updates
                     </p>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </motion.div>
             </div>
           </motion.div>
