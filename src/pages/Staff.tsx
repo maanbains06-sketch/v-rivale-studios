@@ -239,7 +239,7 @@ const Staff = () => {
 
   // If no staff in database, show all sections with placeholder message
   const leadershipStaff = getStaffByDepartment("leadership");
-  const adminStaff = getStaffByDepartment("administration");
+  const adminStaff = getStaffByDepartment("management");
   const developerStaff = getStaffByDepartment("development");
   const moderatorStaff = getStaffByDepartment("moderation");
 
