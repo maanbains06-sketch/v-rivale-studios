@@ -105,23 +105,16 @@ All colors MUST be HSL.
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-playfair font-bold italic;
+    @apply font-bold italic;
   }
 
-  /* Global Playfair Display italic styling */
-  body {
-    font-family: 'Playfair Display', serif;
-    font-style: italic;
-  }
-
+  /* Global italic styling */
   p, span, a, li, label, button {
-    font-family: 'Playfair Display', serif;
     font-style: italic;
   }
 
   /* Inputs keep normal style for readability */
   input, textarea, select {
-    font-family: 'Playfair Display', serif;
     font-style: normal;
   }
 
