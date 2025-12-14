@@ -288,16 +288,28 @@ const Index = () => {
               <LaunchingSoonButton />
             </motion.div>
 
-            <motion.div variants={itemVariants} className="mb-8 flex justify-center">
-              <AnimatedLogo size="lg" />
+            {/* Impressive Server Name */}
+            <motion.div variants={itemVariants} className="mb-10 relative">
+              {/* Glow effects behind text */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-[500px] h-[200px] bg-primary/30 blur-[100px] rounded-full"></div>
+              </div>
+              
+              {/* Main Title */}
+              <h1 className="relative">
+                <span className="block text-5xl md:text-7xl lg:text-8xl font-black italic tracking-tight">
+                  <span className="bg-gradient-to-r from-primary via-purple-400 to-primary bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(139,92,246,0.5)]">
+                    SKYLIFE
+                  </span>
+                  <span className="text-white ml-3 md:ml-4 drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+                    ROLEPLAY
+                  </span>
+                </span>
+                <span className="block text-xl md:text-2xl lg:text-3xl font-bold tracking-[0.4em] text-center mt-2 text-white/80">
+                  INDIA
+                </span>
+              </h1>
             </motion.div>
-
-            <motion.h1 
-              variants={itemVariants} 
-              className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-gradient"
-            >
-              Skylife Roleplay India
-            </motion.h1>
 
             <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center mb-8 px-4">
               <TooltipProvider delayDuration={100}>
