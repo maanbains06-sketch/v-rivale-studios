@@ -349,16 +349,16 @@ const Staff = () => {
             <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-primary/5 to-transparent" />
           </div>
           
-          {/* Top decorative banner - neutral */}
-          <div className="relative h-20 bg-muted/50 overflow-hidden">
-            <div className="absolute inset-0 bg-[linear-gradient(135deg,transparent_25%,rgba(255,255,255,0.05)_50%,transparent_75%)] bg-[length:200%_200%] group-hover:animate-shimmer" />
+          {/* Top decorative banner - subtle theme colors */}
+          <div className="relative h-20 bg-gradient-to-r from-primary/15 via-secondary/10 to-primary/15 overflow-hidden">
+            <div className="absolute inset-0 bg-[linear-gradient(135deg,transparent_25%,hsl(var(--primary)/0.08)_50%,transparent_75%)] bg-[length:200%_200%] group-hover:animate-shimmer" />
             {/* Decorative pattern overlay */}
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_30%_20%,hsl(var(--foreground)/0.1),transparent_40%)]" />
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(circle,hsl(var(--foreground)/0.05),transparent_60%)]" />
+            <div className="absolute inset-0 opacity-30">
+              <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_30%_20%,hsl(var(--primary)/0.2),transparent_40%)]" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(circle,hsl(var(--accent)/0.15),transparent_60%)]" />
             </div>
             {/* Role label */}
-            <div className="absolute bottom-2 left-3 px-2 py-0.5 bg-background/40 backdrop-blur-sm rounded text-[10px] font-bold text-muted-foreground uppercase tracking-wider border border-border/30">
+            <div className="absolute bottom-2 left-3 px-2 py-0.5 bg-background/50 backdrop-blur-sm rounded text-[10px] font-bold text-primary/80 uppercase tracking-wider border border-primary/20">
               {member.role_type.replace("_", " ")}
             </div>
           </div>
