@@ -554,35 +554,302 @@ const Guides = () => {
                       </ul>
                     </div>
 
+                    {/* Section 10: Police & Law Enforcement */}
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
+                        <span className="text-2xl">👮</span> 10. Police & Law Enforcement Rules
+                      </h3>
+                      <p className="text-muted-foreground mb-4">Rules governing interactions with and conduct of law enforcement officers.</p>
+                      <ul className="space-y-3 ml-4">
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">10.1</span>
+                          <div>
+                            <strong className="text-primary">Police Procedures:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Law enforcement officers must follow proper procedures including reading Miranda rights during arrests, establishing probable cause before searches, and using appropriate force escalation. Officers cannot shoot on sight unless there is an immediate threat to life. Verbal warnings must always come first when possible.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">10.2</span>
+                          <div>
+                            <strong className="text-primary">Corrupt Cop RP:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Corrupt police officer roleplay requires explicit staff approval before beginning. It must be subtle, story-driven, and cannot involve mass murder, terrorism, or helping criminals escape major crimes. Corruption should be discovered gradually through investigation, not obvious misconduct.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">10.3</span>
+                          <div>
+                            <strong className="text-primary">Arrest & Detention:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">When arrested, comply with officer instructions and roleplay accordingly. You have the right to remain silent, request a lawyer, and receive fair treatment. Maximum detention without charges is 30 minutes. If no charges are filed, you must be released. Police brutality without roleplay reason is prohibited.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">10.4</span>
+                          <div>
+                            <strong className="text-primary">Police Chases:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">During police pursuits, both parties must drive realistically. No driving into water to escape, no repeatedly ramming police vehicles, and no using unrealistic routes (off cliffs, through buildings). Spike strips can only be deployed with supervisor approval. Air support requires serious felony crimes.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">10.5</span>
+                          <div>
+                            <strong className="text-primary">Jail & Prison:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Jail sentences must be served unless reduced through roleplay (good behavior, lawyer negotiations). Maximum jail time is 60 minutes for most crimes. You can roleplay activities in jail. Prison breaks require 6+ officers online and staff approval. Logging off while in jail to avoid time is combat logging.</p>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+
+                    {/* Section 11: Property & Business */}
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
+                        <span className="text-2xl">🏠</span> 11. Property & Business Rules
+                      </h3>
+                      <p className="text-muted-foreground mb-4">Guidelines for property ownership, business operations, and real estate transactions.</p>
+                      <ul className="space-y-3 ml-4">
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">11.1</span>
+                          <div>
+                            <strong className="text-primary">Home Invasions:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Breaking into player-owned properties requires the owner to be online and present (or recently present within 30 minutes). You cannot break into empty homes just to steal items. There must be roleplay reasoning such as ongoing conflict, debt collection, or investigation. Lock-picking takes time and makes noise.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">11.2</span>
+                          <div>
+                            <strong className="text-primary">Business Operations:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Business owners must operate their establishments realistically. Prices should be reasonable, employees must be paid fairly, and illegal activities from legitimate businesses require subtlety. Using a business purely as a front for crime without any legitimate operations is not allowed.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">11.3</span>
+                          <div>
+                            <strong className="text-primary">Property Camping:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Camping outside player properties waiting for them to exit is limited to 20 minutes. You cannot camp the same property repeatedly. If your target does not emerge, you must leave and return later. Staking out a location requires active roleplay reason, not just waiting to attack someone.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">11.4</span>
+                          <div>
+                            <strong className="text-primary">Storage & Stashing:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Items stored in properties and storage units are generally safe but can be seized during police raids with warrants. You cannot store unlimited illegal items - be realistic about what fits. Stash houses can be discovered through investigation roleplay. Always maintain some evidence trail for immersion.</p>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+
+                    {/* Section 12: Streaming & Recording */}
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
+                        <span className="text-2xl">📺</span> 12. Streaming & Recording Rules
+                      </h3>
+                      <p className="text-muted-foreground mb-4">Guidelines for content creators and protecting player privacy.</p>
+                      <ul className="space-y-3 ml-4">
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">12.1</span>
+                          <div>
+                            <strong className="text-primary">Stream Sniping:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Watching a player's stream or video to gain information about their location, activities, or plans is strictly prohibited metagaming. This includes using stream information to hunt, avoid, or interfere with streamers. If caught stream sniping, you will face immediate permanent ban.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">12.2</span>
+                          <div>
+                            <strong className="text-primary">Streamer Protection:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Streamers are encouraged to use stream delays (minimum 3 minutes recommended). While we cannot guarantee complete protection, deliberately targeting streamers for content or harassment is punishable. Streamers should report suspected stream sniping with evidence.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">12.3</span>
+                          <div>
+                            <strong className="text-primary">Recording for Reports:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Players are encouraged to record their gameplay for reporting rule violations. Video evidence is the strongest form of proof in staff reports. However, you cannot reference recordings in-character or use them to threaten other players. Recordings are for out-of-character reports only.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">12.4</span>
+                          <div>
+                            <strong className="text-primary">Content Guidelines:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">When streaming or uploading content from the server, represent the community positively. Do not upload clips that show other players in a negative light without context. Toxic compilations, harassment montages, or content designed to shame other players will result in punishment.</p>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+
+                    {/* Section 13: Economy & Trading */}
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
+                        <span className="text-2xl">💰</span> 13. Economy & Trading Rules
+                      </h3>
+                      <p className="text-muted-foreground mb-4">Rules to maintain a balanced and fair in-game economy.</p>
+                      <ul className="space-y-3 ml-4">
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">13.1</span>
+                          <div>
+                            <strong className="text-primary">No Real Money Trading (RMT):</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Trading in-game items, money, vehicles, or properties for real-world currency is strictly prohibited. This includes PayPal, cryptocurrency, gift cards, or any form of real payment. Both parties involved in RMT will be permanently banned. Report any RMT offers to staff immediately.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">13.2</span>
+                          <div>
+                            <strong className="text-primary">Money Transfers:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Large money transfers between characters must have roleplay justification. Gifting millions to new players or transferring wealth between your own characters without proper roleplay is not allowed. Business transactions, loans, and payments should be documented in-character.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">13.3</span>
+                          <div>
+                            <strong className="text-primary">Scamming Limits:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">In-character scamming is allowed but limited to reasonable amounts. Maximum scam value is ₹100,000 per incident. You cannot scam the same player repeatedly. New players (under 48 hours) cannot be scammed. All scams must have roleplay buildup - quick scams are considered FailRP.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">13.4</span>
+                          <div>
+                            <strong className="text-primary">Job Exploitation:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Using AFK methods, macros, or exploits to earn money from jobs is prohibited. You must actively roleplay your job activities. Farming jobs without any interaction or roleplay is not allowed. Job hopping (switching jobs repeatedly to maximize income) should be done realistically with time between changes.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">13.5</span>
+                          <div>
+                            <strong className="text-primary">Gambling:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">In-game gambling at designated locations is permitted. Private gambling games between players are allowed but must be fair with no rigged outcomes. Maximum bet per game is ₹50,000. Operating illegal gambling operations requires proper criminal roleplay setup.</p>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+
+                    {/* Section 14: Combat & Conflict */}
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
+                        <span className="text-2xl">⚔️</span> 14. Combat & Conflict Rules
+                      </h3>
+                      <p className="text-muted-foreground mb-4">Detailed guidelines for combat situations and player conflicts.</p>
+                      <ul className="space-y-3 ml-4">
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">14.1</span>
+                          <div>
+                            <strong className="text-primary">Combat Initiation:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Before any combat, there must be clear verbal initiation giving the other party a chance to comply or respond. Simply pulling out a weapon is not enough. State your demands clearly: "Put your hands up or I will shoot" while aiming is proper initiation. The other party must have at least 3 seconds to react.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">14.2</span>
+                          <div>
+                            <strong className="text-primary">Third-Party Involvement:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">You can only join an active combat scenario if you have direct involvement or witness the initiation. Random players cannot join fights they stumble upon. If your friend is in a gunfight, you can only help if you were present from the beginning or if enemies shoot at you first. Maximum group size in combat is 6 players per side.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">14.3</span>
+                          <div>
+                            <strong className="text-primary">Weapon Restrictions:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Military-grade weapons (RPGs, miniguns, explosives) are restricted and require staff approval for use in scenarios. Automatic weapons should be rare and obtained through proper criminal roleplay. Carrying visible heavy weapons in public will attract police attention. Store weapons appropriately when not needed.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">14.4</span>
+                          <div>
+                            <strong className="text-primary">Combat Healing:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Using medical items during active combat must be roleplayed. You cannot instantly heal while being shot at. Find cover, roleplay bandaging or using first aid, and take appropriate time. Spamming healing items without roleplay is powergaming. Serious injuries require EMS attention, not just bandages.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">14.5</span>
+                          <div>
+                            <strong className="text-primary">Execution Rules:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Executing a downed player requires significant roleplay reason such as ongoing war, betrayal, or serious conflict. Random executions are not allowed. Give the downed player a chance to say final words. Execution should be meaningful story moments, not casual killings. Consider if execution truly serves the narrative.</p>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+
+                    {/* Section 15: Punishment Guidelines */}
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
+                        <span className="text-2xl">⚠️</span> 15. Punishment Guidelines
+                      </h3>
+                      <p className="text-muted-foreground mb-4">Understanding consequences for rule violations helps maintain server integrity.</p>
+                      <ul className="space-y-3 ml-4">
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                          <span className="text-xl">15.1</span>
+                          <div>
+                            <strong className="text-yellow-400">Verbal Warning:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">First-time minor offenses may result in a verbal warning with explanation. These are educational and give players a chance to correct behavior. Verbal warnings are logged and considered in future incidents. Examples: Minor FailRP, forgetting to stay in character, minor traffic violations.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-orange-500/10 border border-orange-500/20">
+                          <span className="text-xl">15.2</span>
+                          <div>
+                            <strong className="text-orange-400">Written Warning:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Moderate offenses or repeated minor violations result in official written warnings. Three written warnings may lead to temporary ban. Written warnings remain on your record permanently. Examples: Repeated FailRP, minor metagaming, poor roleplay quality consistently.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-orange-600/10 border border-orange-600/20">
+                          <span className="text-xl">15.3</span>
+                          <div>
+                            <strong className="text-orange-500">Kick:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Immediate removal from the server for disruption or moderate rule breaks. You may rejoin after being kicked but must correct behavior. Multiple kicks lead to temporary bans. Examples: Mic spam, minor trolling, refusing staff instructions, causing drama.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                          <span className="text-xl">15.4</span>
+                          <div>
+                            <strong className="text-red-400">Temporary Ban:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Serious violations result in temporary bans ranging from 24 hours to 30 days depending on severity. Ban length increases with repeat offenses. Examples: RDM, VDM, combat logging, metagaming, powergaming, harassment. After ban expires, you are on probation for 30 days.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-red-700/10 border border-red-700/20">
+                          <span className="text-xl">15.5</span>
+                          <div>
+                            <strong className="text-red-500">Permanent Ban:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Reserved for the most serious offenses or repeated major violations. Permanent bans can be appealed after 30 days with a detailed appeal. Examples: Cheating/hacking, RMT, severe harassment, doxxing, threats, repeated major rule breaks, ban evasion. Some offenses are unappealable.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">15.6</span>
+                          <div>
+                            <strong className="text-primary">Appeal Process:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">All punishments can be appealed through Discord tickets. Appeals must include: what happened, why you believe the punishment was wrong, what you will do differently. Staff will review within 48-72 hours. Lying in appeals results in appeal denial and potential extended punishment. Stay respectful during appeals.</p>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+
                     {/* Important Notes */}
                     <div className="p-5 border-2 border-primary/40 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10 mt-6">
                       <h4 className="font-bold text-primary mb-3 flex items-center gap-2 text-lg">
-                        <span className="text-2xl">⚠️</span> Important Reminders
+                        <span className="text-2xl">📋</span> Important Reminders
                       </h4>
                       <ul className="space-y-2 text-sm">
                         <li className="flex items-start gap-2">
                           <span>📌</span>
-                          <span><strong>Rule Intent:</strong> Staff reserve the right to interpret rules based on intent and context. Loopholes are not acceptable.</span>
+                          <span><strong>Rule Intent:</strong> Staff reserve the right to interpret rules based on intent and context. Finding loopholes is not acceptable and will be punished as if you broke the rule directly.</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span>📖</span>
-                          <span><strong>Your Responsibility:</strong> Not knowing the rules is not an excuse. Read them thoroughly before playing.</span>
+                          <span><strong>Your Responsibility:</strong> Not knowing the rules is not an excuse. You agreed to follow all rules when you joined the server. Ignorance will not reduce punishments.</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span>🔄</span>
-                          <span><strong>Rule Updates:</strong> Rules may change. Check Discord announcements regularly for updates.</span>
+                          <span><strong>Rule Updates:</strong> Rules may change at any time. Check Discord announcements regularly for updates. Continued play after updates implies acceptance of new rules.</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span>❓</span>
-                          <span><strong>When In Doubt:</strong> Create a support ticket and ask staff before proceeding with questionable actions.</span>
+                          <span><strong>When In Doubt:</strong> Create a support ticket and ask staff before proceeding with questionable actions. It is better to ask and wait than to break rules accidentally.</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span>⚖️</span>
-                          <span><strong>Punishments:</strong> All punishments are at staff discretion based on severity, context, and history.</span>
+                          <span><strong>Fair Enforcement:</strong> All punishments are at staff discretion based on severity, context, player history, and intent. We aim to be fair and consistent.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span>🤝</span>
+                          <span><strong>Community First:</strong> These rules exist to create a fun, immersive experience for everyone. Help us maintain this by reporting violations and being a positive community member.</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span>🎮</span>
-                          <span><strong>Have Fun:</strong> Remember, we're all here to have fun and create stories together. Be the player you'd want to interact with!</span>
+                          <span><strong>Have Fun:</strong> Remember, we are all here to have fun and create stories together. Be the player you would want to interact with. Respect breeds respect!</span>
                         </li>
                       </ul>
                     </div>
