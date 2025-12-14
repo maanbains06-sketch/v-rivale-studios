@@ -83,27 +83,16 @@ const Navigation = () => {
                 SKYLIFE ROLEPLAY
               </motion.span>
               <motion.span 
-                className="text-[10px] md:text-xs font-semibold tracking-[0.25em] text-center italic"
-                style={{
-                  background: 'linear-gradient(90deg, #FF6600, #FFAA00, #FFFFFF, #00CC00, #006600)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  backgroundSize: '200% 100%',
-                }}
+                className="text-[10px] md:text-xs font-bold tracking-[0.25em] text-center italic flex gap-0.5"
                 initial={{ opacity: 0, y: 5 }}
-                animate={{ 
-                  opacity: 1, 
-                  y: 0,
-                  backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-                }}
-                transition={{ 
-                  opacity: { duration: 0.4, delay: 0.1 },
-                  y: { duration: 0.4, delay: 0.1 },
-                  backgroundPosition: { duration: 3, repeat: Infinity, ease: "linear" }
-                }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.1 }}
               >
-                INDIA
+                <span style={{ color: '#FF6B00' }}>I</span>
+                <span style={{ color: '#FF8C00' }}>N</span>
+                <span style={{ color: '#FFFFFF' }}>D</span>
+                <span style={{ color: '#00DD00' }}>I</span>
+                <span style={{ color: '#00AA00' }}>A</span>
               </motion.span>
             </motion.div>
           </div>
