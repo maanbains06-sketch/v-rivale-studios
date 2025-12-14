@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useMemo, lazy, Suspense } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
@@ -481,8 +481,8 @@ const Index = () => {
             </motion.div>
 
             <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center mb-8 px-4">
-              <Popover>
-                <PopoverTrigger asChild>
+              <HoverCard openDelay={100} closeDelay={200}>
+                <HoverCardTrigger asChild>
                   <Button
                     size="lg"
                     className={`text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 ${
@@ -490,12 +490,13 @@ const Index = () => {
                         ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30 hover:shadow-green-500/50 hover:scale-105 cursor-pointer"
                         : "bg-muted/50 text-muted-foreground border border-border/50 hover:bg-muted/70"
                     }`}
+                    onClick={allRequirementsMet ? handleJoinServer : undefined}
                   >
                     {allRequirementsMet ? <Play className="w-5 h-5 mr-2 fill-current" /> : <Lock className="w-5 h-5 mr-2" />}
                     {allRequirementsMet ? "Join Server" : "Complete Requirements"}
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent side="bottom" sideOffset={10} className="p-5 bg-background/95 backdrop-blur-xl border border-sky-500/30 rounded-xl shadow-2xl w-80 z-[100]">
+                </HoverCardTrigger>
+                <HoverCardContent side="bottom" sideOffset={10} className="p-5 bg-background/95 backdrop-blur-xl border border-sky-500/30 rounded-xl shadow-2xl w-80 z-[100]">
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
                       {allRequirementsMet ? <Sparkles className="w-5 h-5 text-green-400" /> : <Lock className="w-5 h-5 text-destructive" />}
@@ -564,8 +565,8 @@ const Index = () => {
                       </div>
                     )}
                   </div>
-                </PopoverContent>
-              </Popover>
+                </HoverCardContent>
+              </HoverCard>
 
               <Button
                 size="lg"
