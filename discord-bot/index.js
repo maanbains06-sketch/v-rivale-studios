@@ -6,8 +6,9 @@
  * SETUP:
  * 1. Install Node.js from https://nodejs.org
  * 2. Run: npm install
- * 3. Set your bot token below or use environment variable
- * 4. Run: npm start
+ * 3. Set your bot token as environment variable: DISCORD_BOT_TOKEN
+ * 4. Set your Discord server ID as environment variable: DISCORD_SERVER_ID  
+ * 5. Run: npm start
  * 
  * DISCORD DEVELOPER PORTAL SETUP:
  * 1. Go to https://discord.com/developers/applications
@@ -20,33 +21,27 @@
 const { Client, GatewayIntentBits, Events } = require('discord.js');
 
 // ============================================
-// CONFIGURATION - UPDATE THESE VALUES
+// CONFIGURATION
 // ============================================
 
 // Your Discord Bot Token (from Discord Developer Portal)
-// Set this as an environment variable: DISCORD_BOT_TOKEN
 const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 
-// Your Supabase Edge Function URL
+// Your Supabase Edge Function URL for syncing presence
 const SYNC_URL = 'https://obirpzwvnqveddyuulsb.supabase.co/functions/v1/sync-discord-presence';
 
+// Supabase URL for fetching staff IDs
+const SUPABASE_URL = 'https://obirpzwvnqveddyuulsb.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iaXJwend2bnF2ZWRkeXV1bHNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1OTA3OTcsImV4cCI6MjA3OTE2Njc5N30.23nOCIh06oFPW5TTHC6jhiBOkvd6GrXBn-pjZAYiXpY';
+
 // Your Discord Server ID
-// Set this as an environment variable: DISCORD_SERVER_ID
 const GUILD_ID = process.env.DISCORD_SERVER_ID;
 
-// Staff Discord IDs to monitor - ADD YOUR STAFF IDS HERE
-const STAFF_DISCORD_IDS = [
-  '833680146510381097',  // Maan
-  '727581954408710272',  // ASCENDOR
-  '1417622059617357824', // Sexy
-  '407091450560643073',  // TheKid
-  '1055766042871349248', // DagoBato
-  '000000000000000001',  // NewStaff (placeholder)
-  // Add more staff Discord IDs here
-];
+// Staff Discord IDs - will be auto-fetched from database
+let STAFF_DISCORD_IDS = [];
 
 // ============================================
-// BOT CODE - NO NEED TO MODIFY BELOW
+// BOT CODE
 // ============================================
 
 const client = new Client({
@@ -57,13 +52,47 @@ const client = new Client({
   ],
 });
 
+// Fetch staff Discord IDs from database
+async function fetchStaffIds() {
+  try {
+    console.log('📡 Fetching staff Discord IDs from database...');
+    
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/staff_members?select=discord_id,name&is_active=eq.true`,
+      {
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        },
+      }
+    );
+    
+    if (response.ok) {
+      const staffMembers = await response.json();
+      STAFF_DISCORD_IDS = staffMembers
+        .filter(s => s.discord_id && s.discord_id !== '000000000000000001')
+        .map(s => s.discord_id);
+      
+      console.log(`✅ Found ${STAFF_DISCORD_IDS.length} staff members to monitor:`);
+      staffMembers.forEach(s => {
+        if (s.discord_id && s.discord_id !== '000000000000000001') {
+          console.log(`   - ${s.name} (${s.discord_id})`);
+        }
+      });
+    } else {
+      console.error('❌ Failed to fetch staff IDs:', response.status);
+    }
+  } catch (error) {
+    console.error('❌ Error fetching staff IDs:', error.message);
+  }
+}
+
 // Helper to send presence update to edge function
 async function syncPresence(updates) {
   try {
-    // Normalize to array format
     const presenceUpdates = Array.isArray(updates) ? updates : [updates];
     
-    console.log(`Sending ${presenceUpdates.length} presence update(s) to edge function...`);
+    console.log(`📤 Sending ${presenceUpdates.length} presence update(s)...`);
     
     const response = await fetch(SYNC_URL, {
       method: 'POST',
@@ -73,17 +102,17 @@ async function syncPresence(updates) {
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Sync failed:', response.status, errorText);
+      console.error('❌ Sync failed:', response.status, errorText);
     } else {
       const result = await response.json();
-      console.log('✅ Sync successful:', result.message, `(mode: ${result.mode})`);
+      console.log('✅ Sync successful:', result.message);
     }
   } catch (error) {
     console.error('❌ Error syncing presence:', error.message);
   }
 }
 
-// Handle presence updates
+// Handle real-time presence updates
 client.on(Events.PresenceUpdate, async (oldPresence, newPresence) => {
   if (!newPresence?.userId) return;
   
@@ -94,15 +123,11 @@ client.on(Events.PresenceUpdate, async (oldPresence, newPresence) => {
   
   const oldStatus = oldPresence?.status || 'offline';
   const newStatus = newPresence.status || 'offline';
-  
   const isOnline = newStatus !== 'offline';
   const username = newPresence.user?.username || newPresence.userId;
   
-  console.log(`\n🔄 [${new Date().toISOString()}]`);
-  console.log(`   User: ${username} (${newPresence.userId})`);
-  console.log(`   Status: ${oldStatus} -> ${newStatus}`);
+  console.log(`\n🔄 [${new Date().toLocaleTimeString()}] ${username}: ${oldStatus} → ${newStatus}`);
   
-  // Always sync to ensure database is updated (even if status appears same)
   await syncPresence({
     discord_id: newPresence.userId,
     is_online: isOnline,
@@ -110,26 +135,33 @@ client.on(Events.PresenceUpdate, async (oldPresence, newPresence) => {
   });
 });
 
-// Sync all staff presences on startup and periodically
+// Bot ready event
 client.on(Events.ClientReady, async () => {
-  console.log('=========================================');
+  console.log('\n=========================================');
   console.log(`🤖 Bot ready as ${client.user.tag}`);
-  console.log(`📋 Monitoring ${STAFF_DISCORD_IDS.length} staff members`);
-  console.log(`🔗 Sync URL: ${SYNC_URL}`);
   console.log('=========================================\n');
+  
+  // Fetch staff IDs from database
+  await fetchStaffIds();
   
   const guild = client.guilds.cache.get(GUILD_ID) || client.guilds.cache.first();
   
   if (!guild) {
-    console.error('❌ ERROR: Bot is not in any guild! Invite the bot to your server.');
+    console.error('❌ ERROR: Bot is not in any guild!');
+    console.error('   Invite the bot to your server first.');
     return;
   }
   
-  console.log(`✅ Connected to guild: ${guild.name} (${guild.id})`);
+  console.log(`\n✅ Connected to: ${guild.name} (${guild.id})`);
   
   // Function to sync all staff presences
   async function syncAllPresences() {
-    console.log('\n📡 Fetching staff presences...');
+    if (STAFF_DISCORD_IDS.length === 0) {
+      console.log('⚠️  No staff IDs to monitor');
+      return;
+    }
+    
+    console.log(`\n📡 [${new Date().toLocaleTimeString()}] Syncing all presences...`);
     const presenceUpdates = [];
     
     for (const discordId of STAFF_DISCORD_IDS) {
@@ -144,10 +176,10 @@ client.on(Events.ClientReady, async () => {
           status: status,
         });
         
-        const statusEmoji = isOnline ? '🟢' : '⚫';
-        console.log(`   ${statusEmoji} ${member.user.username} (@${member.user.tag}): ${status}`);
+        const emoji = status === 'online' ? '🟢' : status === 'idle' ? '🟡' : status === 'dnd' ? '🔴' : '⚫';
+        console.log(`   ${emoji} ${member.user.username}: ${status}`);
       } catch (error) {
-        console.log(`   ⚠️  Could not fetch ${discordId}: ${error.message}`);
+        console.log(`   ⚠️  ${discordId}: not found in server`);
         presenceUpdates.push({
           discord_id: discordId,
           is_online: false,
@@ -162,13 +194,16 @@ client.on(Events.ClientReady, async () => {
   // Initial sync
   await syncAllPresences();
   
-  // Sync every 2 minutes to ensure consistency
-  setInterval(syncAllPresences, 2 * 60 * 1000);
+  // Sync every 30 seconds for faster updates
+  setInterval(syncAllPresences, 30 * 1000);
+  
+  // Refresh staff IDs every 5 minutes
+  setInterval(fetchStaffIds, 5 * 60 * 1000);
   
   console.log('\n=========================================');
-  console.log('🎯 Bot is now monitoring presence changes!');
-  console.log('⏰ Auto-sync every 2 minutes');
-  console.log('📌 Keep this terminal open to maintain sync.');
+  console.log('🎯 Now monitoring presence changes!');
+  console.log('⏰ Auto-sync every 30 seconds');
+  console.log('📌 Keep this running to maintain sync');
   console.log('=========================================\n');
 });
 
@@ -178,19 +213,29 @@ client.on(Events.Error, (error) => {
 });
 
 process.on('unhandledRejection', (error) => {
-  console.error('Unhandled promise rejection:', error);
+  console.error('Unhandled rejection:', error);
 });
 
 // Login
-console.log('Starting SLRP Presence Bot...\n');
+console.log('🚀 Starting SLRP Presence Bot...\n');
 
-if (BOT_TOKEN === 'YOUR_BOT_TOKEN_HERE') {
-  console.error('ERROR: Please set your bot token in index.js or as DISCORD_BOT_TOKEN environment variable');
+if (!BOT_TOKEN) {
+  console.error('❌ ERROR: DISCORD_BOT_TOKEN environment variable not set!');
+  console.error('   Set it with: export DISCORD_BOT_TOKEN="your-token-here"');
+  process.exit(1);
+}
+
+if (!GUILD_ID) {
+  console.error('❌ ERROR: DISCORD_SERVER_ID environment variable not set!');
+  console.error('   Set it with: export DISCORD_SERVER_ID="your-server-id"');
   process.exit(1);
 }
 
 client.login(BOT_TOKEN).catch((error) => {
-  console.error('Failed to login:', error.message);
-  console.error('\nMake sure your bot token is correct and the bot has the required intents enabled.');
+  console.error('❌ Failed to login:', error.message);
+  console.error('\nCheck that:');
+  console.error('  1. Your bot token is correct');
+  console.error('  2. PRESENCE INTENT is enabled in Discord Developer Portal');
+  console.error('  3. SERVER MEMBERS INTENT is enabled');
   process.exit(1);
 });
