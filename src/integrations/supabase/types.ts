@@ -1258,6 +1258,7 @@ export type Database = {
           role: string
           role_type: string
           steam_id: string | null
+          timezone: string | null
           updated_at: string | null
           user_id: string | null
         }
@@ -1278,6 +1279,7 @@ export type Database = {
           role: string
           role_type: string
           steam_id?: string | null
+          timezone?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -1298,6 +1300,7 @@ export type Database = {
           role?: string
           role_type?: string
           steam_id?: string | null
+          timezone?: string | null
           updated_at?: string | null
           user_id?: string | null
         }

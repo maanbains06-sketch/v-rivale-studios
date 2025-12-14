@@ -25,6 +25,7 @@ import {
   UserCircle,
   Briefcase,
   X,
+  Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState as useStateAlias } from "react";
@@ -51,6 +52,7 @@ interface StaffMember {
   responsibilities: string[];
   is_active: boolean;
   display_order: number;
+  timezone?: string;
   // Note: user_id not available from public view - online status won't work
 }
 
@@ -300,6 +302,41 @@ const Staff = () => {
     return badges.slice(0, 2); // Max 2 badges per card
   };
 
+  const getTimezoneInfo = (timezone?: string) => {
+    if (!timezone) return null;
+    
+    try {
+      const now = new Date();
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: timezone,
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      });
+      const localTime = formatter.format(now);
+      
+      // Get the hour to determine if it's working hours (9 AM - 6 PM)
+      const hourFormatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: timezone,
+        hour: 'numeric',
+        hour12: false,
+      });
+      const hour = parseInt(hourFormatter.format(now));
+      const isWorkingHours = hour >= 9 && hour < 18;
+      
+      // Get short timezone abbreviation
+      const tzAbbr = timezone.split('/').pop()?.replace('_', ' ') || timezone;
+      
+      return {
+        localTime,
+        isWorkingHours,
+        tzAbbr,
+      };
+    } catch {
+      return null;
+    }
+  };
+
   const cardVariants = {
     hidden: { opacity: 0, y: 30, scale: 0.95 },
     visible: (index: number) => ({
@@ -322,6 +359,7 @@ const Staff = () => {
     const staffIsOnline = isOnline(member.id);
     const lastSeenTime = getLastSeen(member.id);
     const staffStatus = getStatus(member.id);
+    const timezoneInfo = getTimezoneInfo(member.timezone);
 
     return (
       <motion.div
@@ -444,9 +482,30 @@ const Staff = () => {
               )}
 
               {/* Department Badge */}
-              <Badge variant="outline" className="bg-muted/30 text-muted-foreground text-[10px] px-2.5 py-0.5 border-border/50 mb-3 uppercase tracking-wider">
+              <Badge variant="outline" className="bg-muted/30 text-muted-foreground text-[10px] px-2.5 py-0.5 border-border/50 mb-2 uppercase tracking-wider">
                 {member.department.replace("_", " ")}
               </Badge>
+
+              {/* Timezone & Availability Indicator */}
+              {timezoneInfo && (
+                <div className="flex items-center gap-1.5 mb-3">
+                  <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border ${
+                    timezoneInfo.isWorkingHours 
+                      ? 'bg-green-500/10 text-green-500 border-green-500/30' 
+                      : 'bg-muted/30 text-muted-foreground border-border/50'
+                  }`}>
+                    <Globe className="w-3 h-3" />
+                    <span>{timezoneInfo.localTime}</span>
+                    <span className="opacity-70">•</span>
+                    <span className="truncate max-w-[60px]">{timezoneInfo.tzAbbr}</span>
+                  </div>
+                  {timezoneInfo.isWorkingHours && (
+                    <span className="text-[9px] text-green-500 font-medium uppercase tracking-wider">
+                      Active Hours
+                    </span>
+                  )}
+                </div>
+              )}
               
               {/* Achievement Badges */}
               {achievements.length > 0 && (
