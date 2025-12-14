@@ -69,7 +69,7 @@ const Navigation = () => {
               onClick={() => navigate("/")}
             >
               <motion.span 
-                className="text-base md:text-lg font-semibold tracking-wide"
+                className="text-base md:text-lg font-semibold tracking-wide italic"
                 style={{
                   background: 'linear-gradient(135deg, hsl(185 100% 50%), hsl(199 89% 48%), hsl(260 90% 60%))',
                   WebkitBackgroundClip: 'text',
@@ -83,7 +83,7 @@ const Navigation = () => {
                 SKYLIFE ROLEPLAY
               </motion.span>
               <motion.span 
-                className="text-[10px] md:text-xs font-medium tracking-[0.2em] text-center"
+                className="text-[10px] md:text-xs font-medium tracking-[0.2em] text-center italic"
                 style={{
                   background: 'linear-gradient(90deg, #FF9933, #FFFFFF, #138808)',
                   WebkitBackgroundClip: 'text',
