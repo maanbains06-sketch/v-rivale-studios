@@ -94,11 +94,31 @@ const Navigation = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.1 }}
               >
-                <span style={{ color: '#FF6B00', textShadow: '0 0 8px rgba(255, 107, 0, 0.5)' }}>I</span>
-                <span style={{ color: '#FF8C00', textShadow: '0 0 8px rgba(255, 140, 0, 0.5)' }}>N</span>
-                <span style={{ color: '#FFD700', textShadow: '0 0 8px rgba(255, 215, 0, 0.5)' }}>D</span>
-                <span style={{ color: '#00CC00', textShadow: '0 0 8px rgba(0, 204, 0, 0.5)' }}>I</span>
-                <span style={{ color: '#008800', textShadow: '0 0 8px rgba(0, 136, 0, 0.5)' }}>A</span>
+                <motion.span 
+                  animate={{ color: ['#FF9933', '#FFFFFF', '#138808', '#FF9933'] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                  style={{ textShadow: '0 0 6px currentColor' }}
+                >I</motion.span>
+                <motion.span 
+                  animate={{ color: ['#FFFFFF', '#138808', '#FF9933', '#FFFFFF'] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.15 }}
+                  style={{ textShadow: '0 0 6px currentColor' }}
+                >N</motion.span>
+                <motion.span 
+                  animate={{ color: ['#138808', '#FF9933', '#FFFFFF', '#138808'] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
+                  style={{ textShadow: '0 0 6px currentColor' }}
+                >D</motion.span>
+                <motion.span 
+                  animate={{ color: ['#FF9933', '#FFFFFF', '#138808', '#FF9933'] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.45 }}
+                  style={{ textShadow: '0 0 6px currentColor' }}
+                >I</motion.span>
+                <motion.span 
+                  animate={{ color: ['#FFFFFF', '#138808', '#FF9933', '#FFFFFF'] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
+                  style={{ textShadow: '0 0 6px currentColor' }}
+                >A</motion.span>
               </motion.span>
             </motion.div>
           </div>
