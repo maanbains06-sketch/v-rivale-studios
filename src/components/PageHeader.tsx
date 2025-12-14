@@ -30,12 +30,12 @@ const PageHeader = ({ title, description, badge, backgroundImage, backgroundPosi
             </div>
           )}
           
-          <h1 className="text-5xl md:text-7xl font-bold text-gradient mb-6 leading-tight drop-shadow-[0_0_30px_rgba(var(--primary),0.4)] py-2">
+          <h1 className="text-3xl md:text-5xl font-bold text-gradient mb-4 leading-tight drop-shadow-[0_0_30px_rgba(var(--primary),0.4)] py-2">
             {title}
           </h1>
           
           {description && (
-            <p className="text-xl md:text-2xl text-foreground/90 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl text-foreground/90 max-w-3xl mx-auto leading-relaxed">
               {description}
             </p>
           )}
