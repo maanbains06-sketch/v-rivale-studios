@@ -503,7 +503,16 @@ const Index = () => {
                     </div>
                     <div className="space-y-2">
                       {getMissingRequirements().map((req) => (
-                        <div key={req.label} className={`flex items-center gap-3 p-3 rounded-lg transition-all ${req.met ? "bg-green-500/15 border border-green-500/40" : "bg-red-500/10 border border-red-500/30"}`}>
+                        <div 
+                          key={req.label} 
+                          className={`flex items-center gap-3 p-3 rounded-lg transition-all ${req.met ? "bg-green-500/15 border border-green-500/40" : "bg-red-500/10 border border-red-500/30 cursor-pointer hover:bg-red-500/20"}`}
+                          onClick={() => {
+                            if (req.met) return;
+                            if (req.label === "Logged In") navigate("/auth");
+                            else if (req.label === "In Discord Server") window.open("https://discord.gg/W2nU97maBh", "_blank");
+                            else if (req.label === "Whitelisted Role") navigate("/whitelist");
+                          }}
+                        >
                           {req.met ? (
                             <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center shrink-0">
                               <Check className="w-4 h-4 text-white" />
@@ -515,6 +524,7 @@ const Index = () => {
                           )}
                           <req.icon className={`w-5 h-5 ${req.met ? "text-green-400" : "text-red-400"}`} />
                           <span className={`text-sm font-medium ${req.met ? "text-green-400" : "text-red-400"}`}>{req.label}</span>
+                          {!req.met && <ExternalLink className="w-4 h-4 text-red-400/70 ml-auto" />}
                         </div>
                       ))}
                     </div>
