@@ -280,34 +280,34 @@ const Index = () => {
   const allRequirementsMet = isLoggedIn && hasDiscord && isWhitelisted;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      {/* YouTube Video Background - Covers entire page */}
+      <div className="fixed inset-0 z-0 overflow-hidden">
+        <div className="absolute inset-0 scale-[1.5] pointer-events-none">
+          <iframe
+            src={`https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?autoplay=1&mute=1&loop=1&playlist=${YOUTUBE_VIDEO_ID}&controls=0&showinfo=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&playsinline=1&enablejsapi=1`}
+            title="Background Video"
+            className="absolute top-1/2 left-1/2 w-[300vw] h-[300vh] -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+            style={{ 
+              minWidth: '100%',
+              minHeight: '100%',
+              objectFit: 'cover',
+            }}
+            allow="autoplay; encrypted-media"
+            allowFullScreen={false}
+            frameBorder="0"
+          />
+        </div>
+        {/* Dark overlay to ensure text readability */}
+        <div className="absolute inset-0 bg-background/65" />
+      </div>
+
       <Navigation />
 
       {/* Hero Section */}
       <section 
         className="relative min-h-screen flex items-center justify-center overflow-hidden hero-section"
       >
-        {/* YouTube Video Background */}
-        <div className="absolute inset-0 z-0 overflow-hidden">
-          <div className="absolute inset-0 scale-[1.5] pointer-events-none">
-            <iframe
-              src={`https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?autoplay=1&mute=1&loop=1&playlist=${YOUTUBE_VIDEO_ID}&controls=0&showinfo=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&playsinline=1&enablejsapi=1`}
-              title="Background Video"
-              className="absolute top-1/2 left-1/2 w-[200vw] h-[200vh] -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-              style={{ 
-                minWidth: '100%',
-                minHeight: '100%',
-                objectFit: 'cover',
-              }}
-              allow="autoplay; encrypted-media"
-              allowFullScreen={false}
-              frameBorder="0"
-            />
-          </div>
-          {/* Dark overlay to ensure text readability */}
-          <div className="absolute inset-0 bg-background/70" />
-        </div>
-        
         <div className="absolute inset-0 z-[4] pointer-events-none rain-effect" />
         
         <div className="absolute inset-0 z-[3] pointer-events-none">
@@ -315,7 +315,7 @@ const Index = () => {
           <div className="absolute top-[15%] right-[20%] w-48 h-48 md:w-64 md:h-64 rounded-full blur-3xl bg-secondary/8 gpu-accelerated" />
         </div>
 
-        <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-transparent to-background/80 z-[5]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-background/60 z-[5]" />
 
         <FloatingParticles />
 
