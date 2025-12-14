@@ -17,6 +17,7 @@ import {
   ExternalLink,
   Eye,
   Heart,
+  Cloud,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -290,26 +291,46 @@ const Index = () => {
             >
               {/* Glow effect behind text */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-[600px] h-[300px] bg-gradient-to-r from-primary/50 via-neon-purple/40 to-secondary/50 blur-[120px] rounded-full gpu-accelerated"></div>
+                <div className="w-[600px] h-[300px] bg-gradient-to-r from-violet-500/40 via-purple-500/50 to-violet-500/40 blur-[120px] rounded-full gpu-accelerated"></div>
               </div>
               
               {/* Main Title */}
               <h1 className="relative flex flex-col items-center">
-                {/* SKYLIFE - Large bold italic like FlameCity style */}
+                {/* SKYLIFE with integrated cloud icon */}
                 <span 
-                  className="block text-7xl md:text-9xl lg:text-[11rem] font-black leading-none bg-gradient-to-r from-primary via-neon-purple to-secondary bg-clip-text text-transparent"
+                  className="flex items-center text-7xl md:text-9xl lg:text-[11rem] font-black leading-none"
                   style={{ 
                     fontStyle: 'italic',
                     letterSpacing: '-0.02em',
-                    filter: 'drop-shadow(0 4px 30px hsl(185 90% 65% / 0.4))'
                   }}
                 >
-                  SKYLIFE
+                  <span 
+                    className="bg-gradient-to-b from-violet-400 via-purple-500 to-purple-700 bg-clip-text text-transparent"
+                    style={{ filter: 'drop-shadow(0 4px 30px hsl(270 70% 50% / 0.5))' }}
+                  >
+                    SK
+                  </span>
+                  {/* Cloud Icon replacing Y */}
+                  <Cloud 
+                    className="inline-block w-16 h-16 md:w-28 md:h-28 lg:w-36 lg:h-36 -mx-1 md:-mx-2"
+                    style={{ 
+                      color: 'hsl(270 70% 60%)',
+                      filter: 'drop-shadow(0 0 20px hsl(270 70% 50% / 0.8))'
+                    }}
+                    strokeWidth={2.5}
+                    fill="hsl(270 60% 55%)"
+                  />
+                  <span 
+                    className="bg-gradient-to-b from-violet-400 via-purple-500 to-purple-700 bg-clip-text text-transparent"
+                    style={{ filter: 'drop-shadow(0 4px 30px hsl(270 70% 50% / 0.5))' }}
+                  >
+                    LIFE
+                  </span>
                 </span>
                 
-                {/* ROLEPLAY - Wide letter spacing like reference */}
+                {/* ROLEPLAY - Wide letter spacing */}
                 <span 
-                  className="block text-2xl md:text-4xl lg:text-5xl font-medium tracking-[0.3em] md:tracking-[0.4em] text-foreground mt-2"
+                  className="block text-2xl md:text-4xl lg:text-5xl font-medium tracking-[0.3em] md:tracking-[0.4em] text-foreground/90 mt-2"
                   style={{ 
                     fontStyle: 'normal',
                     letterSpacing: '0.4em'
@@ -318,12 +339,13 @@ const Index = () => {
                   ROLEPLAY
                 </span>
                 
-                {/* INDIA - Small accent */}
+                {/* INDIA - Small accent in purple */}
                 <span 
-                  className="block text-sm md:text-base lg:text-lg font-medium tracking-[0.3em] text-primary/80 mt-3"
+                  className="block text-sm md:text-base lg:text-lg font-medium tracking-[0.3em] mt-3"
                   style={{ 
                     fontStyle: 'normal',
-                    letterSpacing: '0.3em'
+                    letterSpacing: '0.3em',
+                    color: 'hsl(270 70% 65%)'
                   }}
                 >
                   INDIA
