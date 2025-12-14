@@ -75,66 +75,66 @@ All colors MUST be HSL.
 
   /* Light Theme */
   :root.light {
-    --background: 0 0% 100%;
-    --foreground: 220 15% 10%;
+    --background: 210 25% 97%;
+    --foreground: 220 20% 15%;
 
-    --card: 210 20% 98%;
-    --card-foreground: 220 15% 12%;
+    --card: 210 30% 94%;
+    --card-foreground: 220 20% 12%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 12%;
+    --popover: 210 25% 96%;
+    --popover-foreground: 220 20% 12%;
 
-    --primary: 199 89% 42%;
+    --primary: 199 85% 35%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 199 75% 35%;
+    --secondary: 199 70% 28%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 15% 92%;
-    --muted-foreground: 220 10% 35%;
+    --muted: 210 20% 88%;
+    --muted-foreground: 220 15% 40%;
 
-    --accent: 199 85% 45%;
+    --accent: 199 80% 38%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 72% 48%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 85%;
-    --input: 220 15% 88%;
-    --ring: 199 89% 42%;
+    --border: 220 20% 78%;
+    --input: 220 20% 82%;
+    --ring: 199 85% 35%;
 
     /* Headline color for light mode */
-    --headline: 199 90% 35%;
-    --headline-dark: 199 85% 28%;
+    --headline: 199 85% 30%;
+    --headline-dark: 199 80% 22%;
 
     /* Accent colors for light mode */
-    --neon-cyan: 185 90% 38%;
-    --neon-purple: 260 80% 50%;
-    --neon-pink: 330 80% 50%;
-    --neon-blue: 199 90% 40%;
-    --neon-orange: 25 90% 48%;
-    --dark-bg: 0 0% 100%;
-    --glass-bg: 210 20% 98%;
+    --neon-cyan: 185 85% 32%;
+    --neon-purple: 260 75% 45%;
+    --neon-pink: 330 75% 45%;
+    --neon-blue: 199 85% 35%;
+    --neon-orange: 25 85% 42%;
+    --dark-bg: 210 25% 97%;
+    --glass-bg: 210 30% 94%;
     
     /* Gradients for light mode */
-    --gradient-hero: linear-gradient(135deg, hsl(199 89% 42%), hsl(210 80% 48%), hsl(185 85% 45%));
-    --gradient-secondary: linear-gradient(135deg, hsl(199 80% 38%), hsl(210 75% 45%));
-    --gradient-card: linear-gradient(135deg, hsl(210 20% 98%), hsl(210 18% 95%));
-    --gradient-glow: radial-gradient(circle at 50% 50%, hsl(199 89% 42% / 0.08), transparent 70%);
+    --gradient-hero: linear-gradient(135deg, hsl(199 85% 35%), hsl(210 75% 40%), hsl(185 80% 38%));
+    --gradient-secondary: linear-gradient(135deg, hsl(199 75% 32%), hsl(210 70% 38%));
+    --gradient-card: linear-gradient(135deg, hsl(210 30% 94%), hsl(210 25% 90%));
+    --gradient-glow: radial-gradient(circle at 50% 50%, hsl(199 85% 35% / 0.12), transparent 70%);
     
     /* Glow Effects for light mode */
-    --glow-cyan: 0 0 12px hsl(185 90% 38% / 0.25);
-    --glow-purple: 0 0 12px hsl(260 80% 50% / 0.25);
-    --glow-pink: 0 0 12px hsl(330 80% 50% / 0.25);
+    --glow-cyan: 0 0 12px hsl(185 85% 32% / 0.3);
+    --glow-purple: 0 0 12px hsl(260 75% 45% / 0.3);
+    --glow-pink: 0 0 12px hsl(330 75% 45% / 0.3);
     
-    --sidebar-background: 210 20% 98%;
-    --sidebar-foreground: 220 15% 12%;
-    --sidebar-primary: 199 89% 42%;
+    --sidebar-background: 210 30% 94%;
+    --sidebar-foreground: 220 20% 12%;
+    --sidebar-primary: 199 85% 35%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 15% 92%;
-    --sidebar-accent-foreground: 220 15% 12%;
-    --sidebar-border: 220 15% 85%;
-    --sidebar-ring: 199 89% 42%;
+    --sidebar-accent: 210 20% 88%;
+    --sidebar-accent-foreground: 220 20% 12%;
+    --sidebar-border: 220 20% 78%;
+    --sidebar-ring: 199 85% 35%;
   }
 }
 
