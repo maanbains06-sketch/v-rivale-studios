@@ -69,12 +69,14 @@ const Navigation = () => {
               onClick={() => navigate("/")}
             >
               <motion.span 
-                className="text-base md:text-lg font-semibold tracking-wide italic"
+                className="text-base md:text-lg font-semibold tracking-wide"
                 style={{
                   background: 'linear-gradient(135deg, hsl(185 100% 50%), hsl(199 89% 48%), hsl(260 90% 60%))',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
+                  fontStyle: 'italic',
+                  transform: 'skewX(-8deg)',
                 }}
                 initial={{ opacity: 0, y: -5 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -83,7 +85,11 @@ const Navigation = () => {
                 SKYLIFE ROLEPLAY
               </motion.span>
               <motion.span 
-                className="text-[10px] md:text-xs font-bold tracking-[0.25em] text-center italic flex gap-0.5"
+                className="text-[10px] md:text-xs font-bold tracking-[0.25em] text-center flex gap-0.5"
+                style={{
+                  fontStyle: 'italic',
+                  transform: 'skewX(-8deg)',
+                }}
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.1 }}
