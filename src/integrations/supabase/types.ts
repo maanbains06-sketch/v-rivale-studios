@@ -1957,6 +1957,15 @@ export type Database = {
           rebalanced_count: number
         }[]
       }
+      sync_all_staff_user_ids: {
+        Args: never
+        Returns: {
+          discord_username: string
+          linked: boolean
+          message: string
+          staff_name: string
+        }[]
+      }
       verify_owner_2fa: { Args: { p_token: string }; Returns: boolean }
     }
     Enums: {
