@@ -140,7 +140,7 @@ const Support = () => {
     {
       id: "item-2",
       question: "What are the server requirements?",
-      answer: "You need: GTA V (legal copy), FiveM installed, a working microphone, Discord account, age 18+, and ability to roleplay in English. Basic PC specs: Intel i5/Ryzen 5, 8GB RAM, GTX 1060 or equivalent."
+      answer: "You need: GTA V (legal copy), FiveM installed, a working microphone, Discord account, age 16+, and ability to roleplay in English/Hindi. Basic PC specs: Intel i5/Ryzen 5, 8GB RAM, GTX 1060 or equivalent."
     },
     {
       id: "item-3",
@@ -149,28 +149,68 @@ const Support = () => {
     },
     {
       id: "item-4",
-      question: "What happens if I break server rules?",
-      answer: "Rule violations result in warnings, temporary bans, or permanent bans depending on severity. Minor offenses get warnings, while serious violations (RDM, VDM, metagaming) may result in immediate bans. All punishments can be appealed through our ticket system."
+      question: "What is RDM and VDM?",
+      answer: "RDM (Random Deathmatch) is killing players without any roleplay reason or interaction. VDM (Vehicle Deathmatch) is using your vehicle as a weapon to kill or injure players. Both are strictly prohibited and result in bans."
     },
     {
       id: "item-5",
-      question: "Can I play without a microphone?",
-      answer: "No, a working microphone is mandatory for SLRP. Roleplay requires voice communication for immersion. Text-only roleplay is not permitted except for characters approved as mute, which requires special staff approval before joining."
+      question: "What is metagaming and powergaming?",
+      answer: "Metagaming is using out-of-character information (like Discord, streams, or OOC chat) in roleplay. Powergaming is forcing actions on others without giving them a chance to respond, or doing unrealistic things like surviving impossible scenarios."
     },
     {
       id: "item-6",
-      question: "How do I report a player?",
-      answer: "To report a player: 1) Use /report in-game for immediate issues, 2) Create a ticket in Discord with evidence (video/screenshots), 3) Include player names, timestamps, and detailed description. Never take matters into your own hands - let staff handle it."
+      question: "Can I play without a microphone?",
+      answer: "No, a working microphone is mandatory for SLRP. Roleplay requires voice communication for immersion. Text-only roleplay is not permitted except for characters approved as mute, which requires special staff approval."
     },
     {
       id: "item-7",
-      question: "What jobs can I do on the server?",
-      answer: "SLRP offers 30+ jobs including: Police, EMS, Mechanics, Real Estate, Taxi drivers, Lawyers, Miners, Fishermen, and various business opportunities. Criminal activities include gang operations, drug dealing, and heists. Check our Guides page for detailed job information."
+      question: "How do I report a player?",
+      answer: "To report a player: 1) Use /report in-game for immediate issues, 2) Create a ticket in Discord with evidence (video/screenshots), 3) Include player names, timestamps, and detailed description. Never take matters into your own hands."
     },
     {
       id: "item-8",
-      question: "Is there a character limit?",
-      answer: "Yes, you can create up to 3 characters per account. Each character has separate inventory, money, and storyline. You cannot transfer items or money between your own characters as this violates metagaming rules."
+      question: "What jobs can I do on the server?",
+      answer: "SLRP offers many legal jobs: Police, EMS, Mechanics, Taxi, Trucking, Fishing, Mining, Real Estate, and more. Illegal activities include gang operations, drug dealing, and heists. Check our Guides page for detailed job info."
+    },
+    {
+      id: "item-9",
+      question: "How many characters can I create?",
+      answer: "You can create up to 3 characters per account. Each character has separate inventory, money, and storyline. You cannot transfer items or money between your own characters as this violates server rules."
+    },
+    {
+      id: "item-10",
+      question: "What is NLR (New Life Rule)?",
+      answer: "NLR means after your character dies, you forget everything that happened leading to your death. You cannot return to the location of your death for 15 minutes or seek revenge on the person who killed you."
+    },
+    {
+      id: "item-11",
+      question: "How do I earn money in-game?",
+      answer: "You can earn money through legal jobs (police, EMS, mechanic, taxi, trucking), businesses, or illegal activities (with proper RP). Starting players get a small amount and can work their way up through various jobs."
+    },
+    {
+      id: "item-12",
+      question: "What is Fear RP?",
+      answer: "Fear RP means your character must realistically fear for their life when threatened. If someone points a gun at you, you must comply with their demands. You cannot pull out weapons or run away when at gunpoint."
+    },
+    {
+      id: "item-13",
+      question: "How do I join a gang or organization?",
+      answer: "Gangs and organizations recruit through in-character interactions. Build relationships, prove yourself through RP, and you may get invited. Some gangs have application processes - check with current members in-game."
+    },
+    {
+      id: "item-14",
+      question: "What happens if I break server rules?",
+      answer: "Rule violations result in warnings, kicks, temporary bans, or permanent bans depending on severity. Minor offenses get warnings, serious violations (RDM, VDM, hacking) result in immediate bans. All bans can be appealed."
+    },
+    {
+      id: "item-15",
+      question: "How do I appeal a ban?",
+      answer: "Visit our Support page and click 'Submit Ban Appeal'. Provide your Steam ID, Discord username, reason for ban, and why you should be unbanned. Appeals are reviewed within 48-72 hours. Be honest and respectful."
+    },
+    {
+      id: "item-16",
+      question: "What is FailRP?",
+      answer: "FailRP is any action that breaks the immersion of roleplay or is unrealistic. Examples: talking about game mechanics in-character, not valuing your life, unrealistic driving/actions, or breaking character without reason."
     }
   ];
 
@@ -413,7 +453,11 @@ const Support = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => document.getElementById('faq-section')?.scrollIntoView({ behavior: 'smooth' })}
+                >
                   <HelpCircle className="w-4 h-4 mr-2" />
                   View FAQ
                 </Button>
@@ -426,7 +470,7 @@ const Support = () => {
         </div>
 
         {/* FAQ Section */}
-        <div className="max-w-4xl mx-auto mb-16">
+        <div id="faq-section" className="max-w-4xl mx-auto mb-16">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold mb-4 text-foreground">Frequently Asked Questions</h2>
             <p className="text-muted-foreground mb-6">Search through our knowledge base to find instant answers</p>
