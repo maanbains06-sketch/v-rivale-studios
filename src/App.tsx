@@ -9,6 +9,7 @@ import { AnimatePresence } from "framer-motion";
 import { lazy, Suspense } from "react";
 
 const LiveVisitorCounter = lazy(() => import("@/components/LiveVisitorCounter"));
+const StaffPresenceTracker = lazy(() => import("@/components/StaffPresenceTracker"));
 import { PageTransition } from "@/components/PageTransition";
 import Index from "./pages/Index";
 import About from "./pages/About";
@@ -119,6 +120,7 @@ const App = () => (
       <BrowserRouter>
         <Suspense fallback={null}>
           <LiveVisitorCounter />
+          <StaffPresenceTracker />
         </Suspense>
         <AppRoutes />
       </BrowserRouter>
