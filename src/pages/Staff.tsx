@@ -349,17 +349,50 @@ const Staff = () => {
             <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-primary/5 to-transparent" />
           </div>
           
-          {/* Top decorative banner - role-based */}
-          <div className={`relative h-20 ${bannerClass} overflow-hidden`}>
-            <div className="absolute inset-0 bg-[linear-gradient(135deg,transparent_25%,rgba(255,255,255,0.2)_50%,transparent_75%)] bg-[length:200%_200%] group-hover:animate-shimmer" />
-            {/* Decorative pattern overlay */}
-            <div className="absolute inset-0 opacity-20">
-              <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.3),transparent_40%)]" />
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(circle,rgba(255,255,255,0.2),transparent_60%)]" />
+          {/* Top decorative banner - role-based premium design */}
+          <div className={`relative h-24 ${bannerClass} overflow-hidden`}>
+            {/* Animated shine effect */}
+            <div className="absolute inset-0 bg-[linear-gradient(110deg,transparent_20%,rgba(255,255,255,0.4)_50%,transparent_80%)] bg-[length:200%_100%] animate-[shimmer_3s_ease-in-out_infinite] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            
+            {/* Mesh gradient overlay */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(255,255,255,0.3)_0%,transparent_50%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(0,0,0,0.2)_0%,transparent_50%)]" />
+            
+            {/* Geometric pattern overlay */}
+            <div className="absolute inset-0 opacity-10">
+              <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="white" strokeWidth="0.5"/>
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#grid)" />
+              </svg>
             </div>
-            {/* Role label */}
-            <div className="absolute bottom-2 left-3 px-2 py-0.5 bg-black/20 backdrop-blur-sm rounded text-[10px] font-bold text-white uppercase tracking-wider">
-              {member.role_type.replace("_", " ")}
+            
+            {/* Floating orbs */}
+            <div className="absolute top-2 right-8 w-16 h-16 bg-white/20 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700" />
+            <div className="absolute -bottom-4 left-4 w-20 h-20 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-500" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-8 bg-white/10 rounded-full blur-xl rotate-12" />
+            
+            {/* Sparkle effects */}
+            <div className="absolute top-3 left-1/4 w-1 h-1 bg-white rounded-full animate-pulse" />
+            <div className="absolute top-5 right-1/3 w-1.5 h-1.5 bg-white/80 rounded-full animate-pulse delay-100" />
+            <div className="absolute bottom-4 left-1/2 w-1 h-1 bg-white/60 rounded-full animate-pulse delay-200" />
+            
+            {/* Bottom gradient fade */}
+            <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black/20 to-transparent" />
+            
+            {/* Role label with premium styling */}
+            <div className="absolute bottom-2 left-3 px-3 py-1 bg-black/30 backdrop-blur-md rounded-full border border-white/20 shadow-lg">
+              <span className="text-[10px] font-bold text-white uppercase tracking-widest drop-shadow-sm">
+                {member.role_type.replace("_", " ")}
+              </span>
+            </div>
+            
+            {/* Corner accent */}
+            <div className="absolute top-0 right-0 w-16 h-16">
+              <div className="absolute top-0 right-0 w-0 h-0 border-t-[40px] border-t-white/10 border-l-[40px] border-l-transparent" />
             </div>
           </div>
           
