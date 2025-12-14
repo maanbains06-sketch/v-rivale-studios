@@ -52,12 +52,52 @@ const roleIcons = {
   event_manager: Calendar
 };
 
+// Standard 4 responsibilities per role type
+const roleResponsibilities: Record<string, string[]> = {
+  owner: ["Server Management", "Community Leadership", "Strategic Planning", "Team Oversight"],
+  admin: ["Staff Management", "Rule Enforcement", "Player Support", "Server Moderation"],
+  moderator: ["Community Support", "Rule Enforcement", "Ticket Handling", "Player Assistance"],
+  developer: ["Script Development", "Bug Fixes", "Feature Implementation", "Technical Support"],
+  staff: ["Player Support", "Community Help", "Ticket Assistance", "General Moderation"],
+  event_manager: ["Event Planning", "Community Events", "Player Engagement", "Event Coordination"],
+};
+
+// Get responsibilities - custom if available, otherwise role defaults (always 4)
+const getStaffResponsibilities = (member: StaffMember): string[] => {
+  const custom = member.responsibilities || [];
+  if (custom.length >= 4) return custom.slice(0, 4);
+  if (custom.length > 0) {
+    // Pad with defaults if less than 4
+    const defaults = roleResponsibilities[member.role_type] || roleResponsibilities.staff;
+    const needed = 4 - custom.length;
+    const additional = defaults.filter(d => !custom.includes(d)).slice(0, needed);
+    return [...custom, ...additional];
+  }
+  return roleResponsibilities[member.role_type] || roleResponsibilities.staff;
+};
+
 // Detailed responsibility descriptions based on common roles
 const getResponsibilityDetails = (responsibility: string) => {
   const details: { [key: string]: { icon: any; description: string } } = {
     "Server Management": { 
       icon: Shield, 
       description: "Oversees server infrastructure, ensures stability, and manages server-wide settings and configurations." 
+    },
+    "Community Leadership": { 
+      icon: Users, 
+      description: "Guides the community vision, makes strategic decisions, and ensures a positive environment for all." 
+    },
+    "Strategic Planning": { 
+      icon: Target, 
+      description: "Plans long-term goals, coordinates major initiatives, and drives server growth strategies." 
+    },
+    "Team Oversight": { 
+      icon: UserCheck, 
+      description: "Supervises all team members, ensures quality standards, and provides guidance to staff." 
+    },
+    "Staff Management": { 
+      icon: Users, 
+      description: "Manages staff schedules, handles team coordination, and ensures effective communication." 
     },
     "Community Relations": { 
       icon: Users, 
@@ -67,9 +107,29 @@ const getResponsibilityDetails = (responsibility: string) => {
       icon: HeadphonesIcon, 
       description: "Provides assistance to players with in-game issues, questions, and technical problems." 
     },
+    "Community Support": { 
+      icon: HeadphonesIcon, 
+      description: "Assists community members with questions, concerns, and general help requests." 
+    },
+    "Community Help": { 
+      icon: HeadphonesIcon, 
+      description: "Provides friendly assistance to community members and helps resolve issues." 
+    },
     "Event Planning": { 
       icon: Calendar, 
       description: "Organizes and coordinates community events, roleplay scenarios, and special activities." 
+    },
+    "Community Events": { 
+      icon: Calendar, 
+      description: "Hosts and manages community-wide events to enhance player engagement." 
+    },
+    "Player Engagement": { 
+      icon: Star, 
+      description: "Keeps players active and engaged through activities, announcements, and interactions." 
+    },
+    "Event Coordination": { 
+      icon: Calendar, 
+      description: "Coordinates event logistics, schedules, and participant management." 
     },
     "Staff Training": { 
       icon: Award, 
@@ -79,13 +139,41 @@ const getResponsibilityDetails = (responsibility: string) => {
       icon: Shield, 
       description: "Monitors player behavior, enforces server rules, and handles rule violations fairly." 
     },
-    "Development": { 
+    "Server Moderation": { 
+      icon: Shield, 
+      description: "Maintains server order, monitors activities, and ensures fair gameplay." 
+    },
+    "Script Development": { 
       icon: Code, 
       description: "Creates and maintains server scripts, custom features, and technical improvements." 
     },
     "Bug Fixes": { 
       icon: Target, 
       description: "Identifies, troubleshoots, and resolves technical issues and bugs in the server." 
+    },
+    "Feature Implementation": { 
+      icon: Code, 
+      description: "Develops and implements new features to enhance the server experience." 
+    },
+    "Technical Support": { 
+      icon: Code, 
+      description: "Provides technical assistance and troubleshooting for server-related issues." 
+    },
+    "Ticket Handling": { 
+      icon: MessageCircle, 
+      description: "Processes and responds to support tickets efficiently and professionally." 
+    },
+    "Ticket Assistance": { 
+      icon: MessageCircle, 
+      description: "Helps process and resolve support tickets from community members." 
+    },
+    "Player Assistance": { 
+      icon: HeadphonesIcon, 
+      description: "Directly assists players with their needs, questions, and in-game problems." 
+    },
+    "General Moderation": { 
+      icon: Shield, 
+      description: "Performs general moderation duties to maintain a positive community." 
     },
     "Content Creation": { 
       icon: Star, 
@@ -404,44 +492,35 @@ const StaffProfile = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {staffMember.responsibilities && staffMember.responsibilities.length > 0 ? (
-                    <div className="space-y-4">
-                      {staffMember.responsibilities.map((responsibility, index) => {
-                        const details = getResponsibilityDetails(responsibility);
-                        const IconComponent = details.icon;
-                        return (
-                          <motion.div
-                            key={index}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.3, delay: index * 0.1 }}
-                            className="group p-4 rounded-xl bg-gradient-to-r from-muted/50 to-muted/30 border border-border/30 hover:border-primary/30 transition-all duration-300"
-                          >
-                            <div className="flex items-start gap-4">
-                              <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                                <IconComponent className="w-5 h-5 text-primary" />
-                              </div>
-                              <div className="flex-1">
-                                <h4 className="text-sm font-bold text-foreground mb-1 group-hover:text-primary transition-colors leading-snug">
-                                  {responsibility}
-                                </h4>
-                                <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-                                  {details.description}
-                                </p>
-                              </div>
+                  <div className="space-y-4">
+                    {getStaffResponsibilities(staffMember).map((responsibility, index) => {
+                      const details = getResponsibilityDetails(responsibility);
+                      const IconComponent = details.icon;
+                      return (
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.3, delay: index * 0.1 }}
+                          className="group p-4 rounded-xl bg-gradient-to-r from-muted/50 to-muted/30 border border-border/30 hover:border-primary/30 transition-all duration-300"
+                        >
+                          <div className="flex items-start gap-4">
+                            <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                              <IconComponent className="w-5 h-5 text-primary" />
                             </div>
-                          </motion.div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <Target className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-                      <p className="text-muted-foreground">
-                        No specific responsibilities listed for this staff member.
-                      </p>
-                    </div>
-                  )}
+                            <div className="flex-1">
+                              <h4 className="text-sm font-bold text-foreground mb-1 group-hover:text-primary transition-colors leading-snug">
+                                {responsibility}
+                              </h4>
+                              <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                                {details.description}
+                              </p>
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
