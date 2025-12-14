@@ -422,10 +422,10 @@ const StaffProfile = () => {
                                 <IconComponent className="w-5 h-5 text-primary" />
                               </div>
                               <div className="flex-1">
-                                <h4 className="text-sm font-semibold text-foreground mb-1 group-hover:text-primary transition-colors leading-snug">
+                                <h4 className="text-sm font-bold text-foreground mb-1 group-hover:text-primary transition-colors leading-snug">
                                   {responsibility}
                                 </h4>
-                                <p className="text-xs text-muted-foreground leading-relaxed">
+                                <p className="text-xs text-muted-foreground leading-relaxed font-medium">
                                   {details.description}
                                 </p>
                               </div>
