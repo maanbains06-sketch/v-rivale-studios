@@ -7,9 +7,8 @@ interface OnlineStatusData {
   lastSeen: string | null;
 }
 
-interface DiscordPresence {
+interface DiscordPresencePublic {
   id: string;
-  discord_id: string;
   staff_member_id: string;
   is_online: boolean;
   status: string;
@@ -24,10 +23,10 @@ export const useStaffOnlineStatus = () => {
 
   const fetchStaffStatus = useCallback(async () => {
     try {
-      // Fetch all active staff members with their Discord IDs
+      // Fetch all active staff members
       const { data: staffMembers, error: staffError } = await supabase
         .from("staff_members")
-        .select("id, user_id, last_seen, discord_id")
+        .select("id, user_id, last_seen")
         .eq("is_active", true);
 
       if (staffError) throw staffError;
@@ -38,22 +37,23 @@ export const useStaffOnlineStatus = () => {
         return;
       }
 
-      // Fetch Discord presence data
-      const discordIds = staffMembers
-        .filter(m => m.discord_id)
-        .map(m => m.discord_id!);
+      // Fetch Discord presence data using staff_member_id (public view without discord_id)
+      const staffIds = staffMembers.map(m => m.id);
 
-      let presenceMap = new Map<string, DiscordPresence>();
+      let presenceMap = new Map<string, DiscordPresencePublic>();
       
-      if (discordIds.length > 0) {
+      if (staffIds.length > 0) {
+        // Use the public view that doesn't expose discord_id
         const { data: presenceData, error: presenceError } = await supabase
-          .from("discord_presence")
+          .from("discord_presence_public")
           .select("*")
-          .in("discord_id", discordIds);
+          .in("staff_member_id", staffIds);
 
         if (!presenceError && presenceData) {
-          presenceData.forEach((presence: DiscordPresence) => {
-            presenceMap.set(presence.discord_id, presence);
+          presenceData.forEach((presence: DiscordPresencePublic) => {
+            if (presence.staff_member_id) {
+              presenceMap.set(presence.staff_member_id, presence);
+            }
           });
         }
       }
@@ -82,32 +82,28 @@ export const useStaffOnlineStatus = () => {
         let presenceStatus = 'offline';
         let lastSeenTime = member.last_seen;
 
-        // Check Discord presence first (primary source)
-        if (member.discord_id) {
-          const presence = presenceMap.get(member.discord_id);
-          if (presence) {
-            isOnline = presence.is_online;
-            presenceStatus = presence.status || 'offline';
-            
-            // Use Discord's last_online_at if available
-            if (presence.last_online_at) {
-              lastSeenTime = presence.last_online_at;
-            }
-
-            // Check if presence data is stale (more than 10 minutes old)
-            const updatedAt = new Date(presence.updated_at);
-            const minutesSinceUpdate = (now.getTime() - updatedAt.getTime()) / 1000 / 60;
-            
-            if (minutesSinceUpdate > 10) {
-              // Presence data is stale, mark as potentially offline
-              isOnline = false;
-              presenceStatus = 'unknown';
-            }
+        // Check Discord presence first using staff_member_id (primary source)
+        const presence = presenceMap.get(member.id);
+        if (presence) {
+          isOnline = presence.is_online;
+          presenceStatus = presence.status || 'offline';
+          
+          // Use Discord's last_online_at if available
+          if (presence.last_online_at) {
+            lastSeenTime = presence.last_online_at;
           }
-        }
 
-        // Fallback: Check last_seen for staff without Discord presence
-        if (!member.discord_id && member.last_seen) {
+          // Check if presence data is stale (more than 10 minutes old)
+          const updatedAt = new Date(presence.updated_at);
+          const minutesSinceUpdate = (now.getTime() - updatedAt.getTime()) / 1000 / 60;
+          
+          if (minutesSinceUpdate > 10) {
+            // Presence data is stale, mark as potentially offline
+            isOnline = false;
+            presenceStatus = 'unknown';
+          }
+        } else if (member.last_seen) {
+          // Fallback: Check last_seen for staff without Discord presence
           const lastSeenDate = new Date(member.last_seen);
           const minutesSinceLastSeen = (now.getTime() - lastSeenDate.getTime()) / 1000 / 60;
           
