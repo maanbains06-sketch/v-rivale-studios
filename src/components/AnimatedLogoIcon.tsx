@@ -17,12 +17,12 @@ const AnimatedLogoIcon = ({ className = "" }: AnimatedLogoIconProps) => {
         <svg viewBox="0 0 60 52" className="absolute inset-0 w-full h-full">
           <defs>
             <linearGradient id="hexBg" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#0f172a" />
-              <stop offset="100%" stopColor="#1e293b" />
+              <stop offset="0%" stopColor="hsl(220 20% 6%)" />
+              <stop offset="100%" stopColor="hsl(220 18% 10%)" />
             </linearGradient>
             <linearGradient id="hexBorder" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#f59e0b" />
-              <stop offset="100%" stopColor="#d97706" />
+              <stop offset="0%" stopColor="hsl(199 89% 48%)" />
+              <stop offset="100%" stopColor="hsl(185 100% 50%)" />
             </linearGradient>
           </defs>
           
@@ -41,7 +41,7 @@ const AnimatedLogoIcon = ({ className = "" }: AnimatedLogoIconProps) => {
           <polygon
             points="30,8 50,18 50,34 30,44 10,34 10,18"
             fill="none"
-            stroke="rgba(245, 158, 11, 0.2)"
+            stroke="hsl(199 89% 48% / 0.2)"
             strokeWidth="1"
           />
         </svg>
@@ -50,9 +50,16 @@ const AnimatedLogoIcon = ({ className = "" }: AnimatedLogoIconProps) => {
         <svg viewBox="0 0 40 34" className="relative z-10 w-[65%] h-[65%]">
           <defs>
             <linearGradient id="letterGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#fbbf24" />
-              <stop offset="100%" stopColor="#f59e0b" />
+              <stop offset="0%" stopColor="hsl(185 100% 50%)" />
+              <stop offset="100%" stopColor="hsl(199 89% 48%)" />
             </linearGradient>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="1" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
           </defs>
           
           {/* S letter */}
@@ -62,6 +69,7 @@ const AnimatedLogoIcon = ({ className = "" }: AnimatedLogoIconProps) => {
             stroke="url(#letterGrad)"
             strokeWidth="3"
             strokeLinecap="round"
+            filter="url(#glow)"
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1 }}
             transition={{ duration: 1, ease: "easeOut" }}
@@ -75,6 +83,7 @@ const AnimatedLogoIcon = ({ className = "" }: AnimatedLogoIconProps) => {
             strokeWidth="3"
             strokeLinecap="round"
             strokeLinejoin="round"
+            filter="url(#glow)"
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1 }}
             transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
@@ -83,8 +92,8 @@ const AnimatedLogoIcon = ({ className = "" }: AnimatedLogoIconProps) => {
 
         {/* Animated corner glow */}
         <motion.div
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full"
-          style={{ background: '#f59e0b', boxShadow: '0 0 10px #f59e0b' }}
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-primary"
+          style={{ boxShadow: '0 0 10px hsl(199 89% 48%)' }}
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 2, repeat: Infinity }}
         />
