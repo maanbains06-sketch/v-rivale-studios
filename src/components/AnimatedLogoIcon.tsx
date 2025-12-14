@@ -47,9 +47,9 @@ const AnimatedLogoIcon = ({ className = "" }: AnimatedLogoIconProps) => {
               </linearGradient>
             </defs>
             
-            {/* Intertwined SL monogram */}
+            {/* Clean S letter */}
             <motion.path
-              d="M10 12 C10 9, 13 8, 17 8 C21 8, 23 10, 23 13 C23 16, 20 17, 16 17 C12 17, 10 19, 10 22 C10 26, 13 28, 17 28 C21 28, 23 26, 23 24"
+              d="M22 10 L14 10 C11 10, 10 11, 10 13 C10 15, 11 16, 14 16 L18 16 C21 16, 23 17, 23 20 C23 23, 21 24, 18 24 L10 24"
               fill="none"
               stroke="url(#blueGrad)"
               strokeWidth="3"
