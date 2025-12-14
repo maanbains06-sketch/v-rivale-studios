@@ -281,15 +281,16 @@ const Staff = () => {
 
   const getAchievementBadges = (member: StaffMember) => {
     const badges = [];
+    const responsibilities = member.responsibilities || [];
 
     // Based on responsibilities or role, add achievement badges
-    if (member.responsibilities.some((r) => r.toLowerCase().includes("lead") || r.toLowerCase().includes("manager"))) {
+    if (responsibilities.some((r) => r.toLowerCase().includes("lead") || r.toLowerCase().includes("manager"))) {
       badges.push({ label: "Team Lead", color: "bg-purple-500" });
     }
     if (member.role_type === "owner") {
       badges.push({ label: "Founder", color: "bg-primary" });
     }
-    if (member.responsibilities.length >= 5) {
+    if (responsibilities.length >= 5) {
       badges.push({ label: "Multi-Skilled", color: "bg-blue-500" });
     }
     if (member.role_type === "developer") {
