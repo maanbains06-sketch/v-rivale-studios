@@ -390,9 +390,11 @@ const Support = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button variant="outline" className="w-full">
-                  <FileText className="w-4 h-4 mr-2" />
-                  Create Ticket
+                <Button variant="outline" className="w-full" asChild>
+                  <a href="https://discord.gg/W2nU97maBh" target="_blank" rel="noopener noreferrer">
+                    <FileText className="w-4 h-4 mr-2" />
+                    Create Ticket
+                  </a>
                 </Button>
                 <p className="text-xs text-muted-foreground mt-3 text-center">
                   Tracked until resolved
