@@ -83,16 +83,25 @@ const Navigation = () => {
                 SKYLIFE ROLEPLAY
               </motion.span>
               <motion.span 
-                className="text-[10px] md:text-xs font-medium tracking-[0.2em] text-center italic"
+                className="text-[10px] md:text-xs font-semibold tracking-[0.25em] text-center italic"
                 style={{
-                  background: 'linear-gradient(90deg, #FF9933, #FFFFFF, #138808)',
+                  background: 'linear-gradient(90deg, #FF6600, #FFAA00, #FFFFFF, #00CC00, #006600)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
+                  backgroundSize: '200% 100%',
                 }}
                 initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.1 }}
+                animate={{ 
+                  opacity: 1, 
+                  y: 0,
+                  backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                }}
+                transition={{ 
+                  opacity: { duration: 0.4, delay: 0.1 },
+                  y: { duration: 0.4, delay: 0.1 },
+                  backgroundPosition: { duration: 3, repeat: Infinity, ease: "linear" }
+                }}
               >
                 INDIA
               </motion.span>
