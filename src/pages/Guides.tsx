@@ -1434,59 +1434,396 @@ const Guides = () => {
                       Community Gallery Guidelines
                     </h2>
                     <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                      Showcase your best moments, creative screenshots, and memorable roleplay scenes. Follow these guidelines for a positive experience.
+                      Our gallery is a showcase of the incredible moments, creativity, and artistry from our community. 
+                      Follow these comprehensive guidelines to ensure your submissions are approved and celebrated.
                     </p>
                   </div>
                 </div>
 
-                {/* Guidelines Grid */}
+                {/* Main Guidelines Grid */}
                 <div className="grid md:grid-cols-2 gap-6 mb-8">
-                  <Card className="bg-gradient-to-br from-rose-950/50 to-pink-900/30 border-rose-500/20">
-                    <CardHeader>
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-2xl">🛡️</div>
-                        <CardTitle className="text-xl text-rose-300">Content Standards</CardTitle>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                      <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20"><span className="text-lg mr-2">📷</span><strong>Quality First:</strong> Submit clear, high-quality screenshots</div>
-                      <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20"><span className="text-lg mr-2">✅</span><strong>Original Only:</strong> Content you captured yourself</div>
-                      <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20"><span className="text-lg mr-2">👍</span><strong>Appropriate:</strong> No explicit or offensive imagery</div>
-                    </CardContent>
-                  </Card>
+                  {/* Content Standards Card */}
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.1 }}
+                    className="group"
+                  >
+                    <Card className="h-full bg-gradient-to-br from-rose-950/50 to-pink-900/30 border-rose-500/20 hover:border-rose-400/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(244,63,94,0.15)]">
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center gap-4">
+                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-2xl shadow-lg shadow-rose-500/25 group-hover:scale-110 transition-transform">
+                            <Shield className="w-7 h-7 text-white" />
+                          </div>
+                          <div>
+                            <span className="text-xs font-bold text-rose-400 tracking-widest">ESSENTIAL</span>
+                            <CardTitle className="text-xl text-foreground">Content Standards</CardTitle>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <p className="text-muted-foreground text-sm">Every submission must meet these quality and content requirements to be approved.</p>
+                        <div className="space-y-2">
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20">
+                            <span className="text-xl">📷</span>
+                            <div>
+                              <strong className="text-rose-300">High Quality Only</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Minimum resolution of 1280x720. Clear, sharp images with no blur, pixelation, or compression artifacts. Screenshots should be visually appealing.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20">
+                            <span className="text-xl">✅</span>
+                            <div>
+                              <strong className="text-rose-300">Original Content</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Only submit screenshots and videos that YOU captured in-game. No stolen content, reposts from others, or heavily edited/AI-generated images.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20">
+                            <span className="text-xl">🚫</span>
+                            <div>
+                              <strong className="text-rose-300">Appropriate Content</strong>
+                              <p className="text-xs text-muted-foreground mt-1">No nudity, excessive gore, hate symbols, real-world violence references, or any content that violates our community standards.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20">
+                            <span className="text-xl">🎮</span>
+                            <div>
+                              <strong className="text-rose-300">SLRP Content Only</strong>
+                              <p className="text-xs text-muted-foreground mt-1">All submissions must be from Skylife Roleplay India server. Content from other servers, games, or platforms will be rejected.</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
 
-                  <Card className="bg-gradient-to-br from-orange-950/50 to-amber-900/30 border-orange-500/20">
-                    <CardHeader>
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-2xl">💬</div>
-                        <CardTitle className="text-xl text-orange-300">Titles & Descriptions</CardTitle>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                      <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/20"><span className="text-lg mr-2">📝</span><strong>Descriptive:</strong> Give meaningful titles</div>
-                      <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/20"><span className="text-lg mr-2">📖</span><strong>Context:</strong> Share the story behind it</div>
-                      <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/20"><span className="text-lg mr-2">🗣️</span><strong>Language:</strong> Keep it clean and respectful</div>
-                    </CardContent>
-                  </Card>
+                  {/* Titles & Descriptions Card */}
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.2 }}
+                    className="group"
+                  >
+                    <Card className="h-full bg-gradient-to-br from-orange-950/50 to-amber-900/30 border-orange-500/20 hover:border-orange-400/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(249,115,22,0.15)]">
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center gap-4">
+                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-2xl shadow-lg shadow-orange-500/25 group-hover:scale-110 transition-transform">
+                            <MessageSquare className="w-7 h-7 text-white" />
+                          </div>
+                          <div>
+                            <span className="text-xs font-bold text-orange-400 tracking-widest">IMPORTANT</span>
+                            <CardTitle className="text-xl text-foreground">Titles & Descriptions</CardTitle>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <p className="text-muted-foreground text-sm">How you present your content matters as much as the content itself.</p>
+                        <div className="space-y-2">
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                            <span className="text-xl">📝</span>
+                            <div>
+                              <strong className="text-orange-300">Descriptive Titles</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Use clear, meaningful titles that describe the moment. Avoid generic titles like &quot;Cool pic&quot; or &quot;Screenshot 1&quot;. Example: &quot;Sunset over Legion Square&quot;</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                            <span className="text-xl">📖</span>
+                            <div>
+                              <strong className="text-orange-300">Tell the Story</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Add context in your description. What was happening? Who was there? What makes this moment special? Stories make images memorable.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                            <span className="text-xl">🗣️</span>
+                            <div>
+                              <strong className="text-orange-300">Respectful Language</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Keep titles and descriptions clean. No profanity, slurs, harassment, or offensive language. Be respectful of other players mentioned.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                            <span className="text-xl">🏷️</span>
+                            <div>
+                              <strong className="text-orange-300">Proper Categorization</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Select the correct category for your submission: Screenshots, Videos, Cinematic, Events, Vehicles, or Artwork.</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+
+                  {/* What Gets Approved Card */}
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.3 }}
+                    className="group"
+                  >
+                    <Card className="h-full bg-gradient-to-br from-emerald-950/50 to-teal-900/30 border-emerald-500/20 hover:border-emerald-400/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.15)]">
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center gap-4">
+                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-2xl shadow-lg shadow-emerald-500/25 group-hover:scale-110 transition-transform">
+                            <Heart className="w-7 h-7 text-white" />
+                          </div>
+                          <div>
+                            <span className="text-xs font-bold text-emerald-400 tracking-widest">BEST PRACTICES</span>
+                            <CardTitle className="text-xl text-foreground">What Gets Approved</CardTitle>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <p className="text-muted-foreground text-sm">These types of content are highly encouraged and will likely be featured.</p>
+                        <div className="space-y-2">
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                            <span className="text-xl">🌅</span>
+                            <div>
+                              <strong className="text-emerald-300">Scenic & Cinematic Shots</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Beautiful landscapes, golden hour lighting, creative camera angles, and atmospheric moments that showcase the city.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                            <span className="text-xl">🎭</span>
+                            <div>
+                              <strong className="text-emerald-300">Roleplay Moments</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Memorable RP scenes, emotional interactions, group activities, and story-driven moments that capture the essence of roleplay.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                            <span className="text-xl">🚗</span>
+                            <div>
+                              <strong className="text-emerald-300">Vehicle Photography</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Well-composed car meets, custom rides, racing moments, and automotive artistry with good lighting and angles.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                            <span className="text-xl">🎉</span>
+                            <div>
+                              <strong className="text-emerald-300">Community Events</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Server events, community gatherings, celebrations, and group photos that showcase our amazing community.</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+
+                  {/* What Gets Rejected Card */}
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.4 }}
+                    className="group"
+                  >
+                    <Card className="h-full bg-gradient-to-br from-red-950/50 to-rose-900/30 border-red-500/20 hover:border-red-400/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(239,68,68,0.15)]">
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center gap-4">
+                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center text-2xl shadow-lg shadow-red-500/25 group-hover:scale-110 transition-transform">
+                            <Flag className="w-7 h-7 text-white" />
+                          </div>
+                          <div>
+                            <span className="text-xs font-bold text-red-400 tracking-widest">AVOID</span>
+                            <CardTitle className="text-xl text-foreground">What Gets Rejected</CardTitle>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <p className="text-muted-foreground text-sm">These submissions will be automatically rejected. Repeated violations may result in gallery restrictions.</p>
+                        <div className="space-y-2">
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                            <span className="text-xl">📱</span>
+                            <div>
+                              <strong className="text-red-300">Phone Photos of Screens</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Never photograph your monitor. Use proper screenshot tools (F12, Steam overlay, OBS, or game capture software).</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                            <span className="text-xl">🐛</span>
+                            <div>
+                              <strong className="text-red-300">Bug Exploits & Glitches</strong>
+                              <p className="text-xs text-muted-foreground mt-1">No screenshots showcasing bugs, exploits, or game-breaking glitches. Report bugs to staff instead of posting them.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                            <span className="text-xl">💀</span>
+                            <div>
+                              <strong className="text-red-300">Rule Violations</strong>
+                              <p className="text-xs text-muted-foreground mt-1">No evidence of rulebreaking (RDM, VDM, metagaming, etc.). These should be reported, not celebrated in the gallery.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                            <span className="text-xl">🔄</span>
+                            <div>
+                              <strong className="text-red-300">Spam & Duplicates</strong>
+                              <p className="text-xs text-muted-foreground mt-1">No mass uploads of similar shots. Select your best 2-3 from a session. Quality over quantity always wins.</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
                 </div>
 
-                {/* Pro Tips & CTA */}
-                <Card className="border-2 border-dashed border-rose-500/30 bg-gradient-to-r from-rose-500/5 to-orange-500/5">
-                  <CardContent className="p-6">
-                    <h3 className="text-xl font-bold text-rose-300 mb-4 flex items-center gap-2"><span className="text-2xl">📸</span> Pro Screenshot Tips</h3>
-                    <div className="grid md:grid-cols-4 gap-4 mb-6">
-                      <div className="text-center p-3 rounded-lg bg-background/50"><span className="text-2xl block mb-2">🎥</span><span className="text-sm">Use photo mode</span></div>
-                      <div className="text-center p-3 rounded-lg bg-background/50"><span className="text-2xl block mb-2">🌅</span><span className="text-sm">Golden hour lighting</span></div>
-                      <div className="text-center p-3 rounded-lg bg-background/50"><span className="text-2xl block mb-2">📐</span><span className="text-sm">Creative angles</span></div>
-                      <div className="text-center p-3 rounded-lg bg-background/50"><span className="text-2xl block mb-2">🌧️</span><span className="text-sm">Weather effects</span></div>
-                    </div>
-                    <div className="flex justify-center">
-                      <Link to="/gallery" className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 text-white rounded-xl font-bold transition-all hover:scale-105 shadow-lg shadow-rose-500/25">
-                        <span className="text-xl">🖼️</span> Visit the Gallery
-                      </Link>
-                    </div>
-                  </CardContent>
-                </Card>
+                {/* File Requirements Section */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <Card className="bg-gradient-to-br from-violet-950/50 to-purple-900/30 border-violet-500/20 mb-8">
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-2xl shadow-lg shadow-violet-500/25">
+                          📁
+                        </div>
+                        <CardTitle className="text-xl text-violet-300">File Requirements & Specifications</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid md:grid-cols-3 gap-4">
+                        <div className="p-4 rounded-xl bg-violet-500/10 border border-violet-500/20 text-center">
+                          <span className="text-3xl block mb-3">🖼️</span>
+                          <strong className="text-violet-300 block mb-2">Image Files</strong>
+                          <div className="text-xs text-muted-foreground space-y-1">
+                            <p>Formats: JPG, PNG, WebP</p>
+                            <p>Max Size: 10MB per file</p>
+                            <p>Min Resolution: 1280x720</p>
+                            <p>Recommended: 1920x1080+</p>
+                          </div>
+                        </div>
+                        <div className="p-4 rounded-xl bg-violet-500/10 border border-violet-500/20 text-center">
+                          <span className="text-3xl block mb-3">🎬</span>
+                          <strong className="text-violet-300 block mb-2">Video Files</strong>
+                          <div className="text-xs text-muted-foreground space-y-1">
+                            <p>Formats: MP4, WebM</p>
+                            <p>Max Size: 50MB per file</p>
+                            <p>Max Duration: 2 minutes</p>
+                            <p>Recommended: 1080p 30fps+</p>
+                          </div>
+                        </div>
+                        <div className="p-4 rounded-xl bg-violet-500/10 border border-violet-500/20 text-center">
+                          <span className="text-3xl block mb-3">⚠️</span>
+                          <strong className="text-violet-300 block mb-2">Not Accepted</strong>
+                          <div className="text-xs text-muted-foreground space-y-1">
+                            <p>GIF files (static images only)</p>
+                            <p>BMP, TIFF formats</p>
+                            <p>Files over size limits</p>
+                            <p>Corrupted or broken files</p>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
+                {/* Pro Tips Section */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <Card className="border-2 border-dashed border-rose-500/30 bg-gradient-to-r from-rose-500/5 via-pink-500/5 to-orange-500/5 mb-8">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-rose-500/20 to-orange-500/20 flex items-center justify-center border border-rose-500/30">
+                          <span className="text-3xl">📸</span>
+                        </div>
+                        <div>
+                          <h3 className="text-2xl font-bold bg-gradient-to-r from-rose-400 to-orange-400 bg-clip-text text-transparent">Pro Screenshot Tips</h3>
+                          <p className="text-sm text-muted-foreground">Master the art of in-game photography</p>
+                        </div>
+                      </div>
+                      <div className="grid md:grid-cols-4 gap-4">
+                        <div className="p-4 rounded-xl bg-background/50 border border-rose-500/20 hover:border-rose-500/40 transition-colors text-center">
+                          <span className="text-3xl mb-3 block">🎥</span>
+                          <strong className="text-foreground block mb-1">Use Photo Mode</strong>
+                          <p className="text-xs text-muted-foreground">Pause the game and use the built-in photo mode for perfect compositions and camera control.</p>
+                        </div>
+                        <div className="p-4 rounded-xl bg-background/50 border border-pink-500/20 hover:border-pink-500/40 transition-colors text-center">
+                          <span className="text-3xl mb-3 block">🌅</span>
+                          <strong className="text-foreground block mb-1">Golden Hour Magic</strong>
+                          <p className="text-xs text-muted-foreground">Sunrise and sunset provide the most cinematic lighting. Plan your shots around these times.</p>
+                        </div>
+                        <div className="p-4 rounded-xl bg-background/50 border border-orange-500/20 hover:border-orange-500/40 transition-colors text-center">
+                          <span className="text-3xl mb-3 block">📐</span>
+                          <strong className="text-foreground block mb-1">Rule of Thirds</strong>
+                          <p className="text-xs text-muted-foreground">Place subjects off-center for more dynamic and visually interesting compositions.</p>
+                        </div>
+                        <div className="p-4 rounded-xl bg-background/50 border border-amber-500/20 hover:border-amber-500/40 transition-colors text-center">
+                          <span className="text-3xl mb-3 block">🌧️</span>
+                          <strong className="text-foreground block mb-1">Weather Effects</strong>
+                          <p className="text-xs text-muted-foreground">Rain, fog, and stormy weather add atmosphere and mood to your shots.</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
+                {/* Review Process Section */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.7 }}
+                >
+                  <Card className="bg-gradient-to-br from-cyan-950/50 to-blue-900/30 border-cyan-500/20 mb-8">
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-2xl shadow-lg shadow-cyan-500/25">
+                          ⏱️
+                        </div>
+                        <CardTitle className="text-xl text-cyan-300">Review Process & Timeline</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid md:grid-cols-4 gap-4">
+                        <div className="text-center p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
+                          <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center mx-auto mb-3 text-cyan-400 font-bold">1</div>
+                          <strong className="text-cyan-300 block mb-2">Submit</strong>
+                          <p className="text-xs text-muted-foreground">Upload your content with a proper title and description.</p>
+                        </div>
+                        <div className="text-center p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
+                          <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center mx-auto mb-3 text-cyan-400 font-bold">2</div>
+                          <strong className="text-cyan-300 block mb-2">Queue</strong>
+                          <p className="text-xs text-muted-foreground">Your submission enters the moderation queue for review.</p>
+                        </div>
+                        <div className="text-center p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
+                          <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center mx-auto mb-3 text-cyan-400 font-bold">3</div>
+                          <strong className="text-cyan-300 block mb-2">Review</strong>
+                          <p className="text-xs text-muted-foreground">Staff reviews within 24-48 hours. You will be notified of the decision.</p>
+                        </div>
+                        <div className="text-center p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
+                          <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center mx-auto mb-3 text-cyan-400 font-bold">4</div>
+                          <strong className="text-cyan-300 block mb-2">Published</strong>
+                          <p className="text-xs text-muted-foreground">Approved content goes live for the community to enjoy!</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
+                {/* CTA Section */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.8 }}
+                  className="text-center"
+                >
+                  <div className="inline-block p-8 rounded-2xl bg-gradient-to-br from-rose-500/10 via-pink-500/10 to-orange-500/10 border border-rose-500/20">
+                    <span className="text-5xl block mb-4">🖼️</span>
+                    <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-rose-400 to-orange-400 bg-clip-text text-transparent">Ready to Share Your Moments?</h3>
+                    <p className="text-muted-foreground mb-6 max-w-md">Follow these guidelines and become a featured contributor in our community gallery!</p>
+                    <Link to="/gallery" className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 text-white rounded-xl font-bold transition-all hover:scale-105 shadow-lg shadow-rose-500/25">
+                      <Image className="w-5 h-5" /> Visit the Gallery
+                    </Link>
+                  </div>
+                </motion.div>
               </motion.div>
             </TabsContent>
           </Tabs>
