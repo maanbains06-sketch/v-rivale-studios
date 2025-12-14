@@ -134,12 +134,14 @@ const Index = () => {
   const { toast } = useToast();
   const [isWhitelisted, setIsWhitelisted] = useState(false);
   const [hasDiscord, setHasDiscord] = useState(false);
+  const [isInDiscordServer, setIsInDiscordServer] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [serverConnectUrl, setServerConnectUrl] = useState("fivem://connect/cfx.re/join/abc123");
   const [serverPlayers, setServerPlayers] = useState<number | null>(null);
   const [maxPlayers, setMaxPlayers] = useState<number>(64);
   const [featuredYoutubers, setFeaturedYoutubers] = useState<FeaturedYoutuber[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isCheckingDiscord, setIsCheckingDiscord] = useState(false);
 
   // Simplified scroll - removed heavy transforms
   const { scrollYProgress } = useScroll();
@@ -152,6 +154,7 @@ const Index = () => {
         setIsLoggedIn(false);
         setIsWhitelisted(false);
         setHasDiscord(false);
+        setIsInDiscordServer(false);
         return;
       }
 
@@ -163,16 +166,56 @@ const Index = () => {
         .eq("id", user.id)
         .single();
 
-      setHasDiscord(!!(profile?.discord_username && profile.discord_username.trim() !== ""));
+      const discordUsername = profile?.discord_username?.trim() || "";
+      setHasDiscord(!!discordUsername);
 
-      const { data: whitelistApp } = await supabase
-        .from("whitelist_applications")
-        .select("status")
-        .eq("user_id", user.id)
-        .eq("status", "approved")
-        .maybeSingle();
+      // If user has Discord username, check if they're in the server and have whitelist role
+      if (discordUsername) {
+        setIsCheckingDiscord(true);
+        try {
+          // Extract Discord ID from username if it's in the format "username#1234" or just the ID
+          // The profile should store the Discord ID for API lookups
+          const { data: discordData, error: discordError } = await supabase.functions.invoke('verify-discord-requirements', {
+            body: { discordId: discordUsername }
+          });
 
-      setIsWhitelisted(!!whitelistApp);
+          if (!discordError && discordData) {
+            setIsInDiscordServer(discordData.isInServer || false);
+            setIsWhitelisted(discordData.hasWhitelistRole || false);
+          } else {
+            console.log('Discord verification failed:', discordError);
+            // Fall back to database check for whitelist
+            const { data: whitelistApp } = await supabase
+              .from("whitelist_applications")
+              .select("status")
+              .eq("user_id", user.id)
+              .eq("status", "approved")
+              .maybeSingle();
+            setIsWhitelisted(!!whitelistApp);
+          }
+        } catch (e) {
+          console.log('Discord check failed, using database fallback');
+          // Fall back to database check
+          const { data: whitelistApp } = await supabase
+            .from("whitelist_applications")
+            .select("status")
+            .eq("user_id", user.id)
+            .eq("status", "approved")
+            .maybeSingle();
+          setIsWhitelisted(!!whitelistApp);
+        } finally {
+          setIsCheckingDiscord(false);
+        }
+      } else {
+        // No Discord, check whitelist from database
+        const { data: whitelistApp } = await supabase
+          .from("whitelist_applications")
+          .select("status")
+          .eq("user_id", user.id)
+          .eq("status", "approved")
+          .maybeSingle();
+        setIsWhitelisted(!!whitelistApp);
+      }
 
       const { data: connectSetting } = await supabase
         .from("site_settings")
@@ -258,14 +301,14 @@ const Index = () => {
       return;
     }
 
-    if (!hasDiscord) {
-      toast({ title: "Discord Required", description: "Please connect your Discord account to join the server.", variant: "destructive" });
+    if (!isInDiscordServer) {
+      toast({ title: "Discord Server Required", description: "Please join our Discord server to play.", variant: "destructive" });
+      window.open("https://discord.gg/W2nU97maBh", "_blank");
       return;
     }
 
     if (!isWhitelisted) {
-      toast({ title: "Whitelist Required", description: "Get whitelisted first to join the server!", variant: "destructive" });
-      navigate("/whitelist");
+      toast({ title: "Whitelist Role Required", description: "You need the Whitelisted role on Discord to join the server.", variant: "destructive" });
       return;
     }
 
@@ -274,11 +317,11 @@ const Index = () => {
 
   const getMissingRequirements = () => [
     { label: "Logged In", met: isLoggedIn, icon: LogIn },
-    { label: "Discord Connected", met: hasDiscord, icon: MessageSquare },
-    { label: "Whitelisted", met: isWhitelisted, icon: Shield },
+    { label: "In Discord Server", met: isInDiscordServer, icon: MessageSquare },
+    { label: "Whitelisted Role", met: isWhitelisted, icon: Shield },
   ];
 
-  const allRequirementsMet = isLoggedIn && hasDiscord && isWhitelisted;
+  const allRequirementsMet = isLoggedIn && isInDiscordServer && isWhitelisted;
 
   return (
     <div className="min-h-screen bg-background relative">
