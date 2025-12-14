@@ -344,9 +344,11 @@ const Support = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button className="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white">
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Join Discord
+                <Button className="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white" asChild>
+                  <a href="https://discord.gg/W2nU97maBh" target="_blank" rel="noopener noreferrer">
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Join Discord
+                  </a>
                 </Button>
                 <p className="text-xs text-muted-foreground mt-3 text-center">
                   Average response: &lt; 5 minutes
