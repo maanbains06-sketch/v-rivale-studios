@@ -105,7 +105,17 @@ All colors MUST be HSL.
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold;
+    @apply font-bold italic;
+  }
+
+  /* Global italic styling */
+  p, span, a, li, label, button {
+    font-style: italic;
+  }
+
+  /* Inputs keep normal style for readability */
+  input, textarea, select {
+    font-style: normal;
   }
 
   /* GPU acceleration utility */
