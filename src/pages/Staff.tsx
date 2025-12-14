@@ -639,8 +639,8 @@ const Staff = () => {
             className="mb-20"
           >
             <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold text-foreground mb-2">Our Core Values</h2>
-              <p className="text-muted-foreground">The principles that guide our team every day</p>
+              <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-purple-400 to-pink-400 bg-clip-text text-transparent mb-3">Our Core Values</h2>
+              <p className="text-lg text-muted-foreground">The principles that guide our team every day</p>
             </div>
             
             <div className="grid md:grid-cols-4 gap-4">
@@ -686,11 +686,11 @@ const Staff = () => {
               className="mb-12"
             >
               <div className="text-center mb-8">
-                <div className="inline-flex items-center justify-center w-14 h-14 bg-primary/10 rounded-xl mb-4">
-                  <dept.icon className="w-7 h-7 text-primary" />
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-2xl mb-4 border border-primary/30">
+                  <dept.icon className="w-8 h-8 text-primary" />
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">{dept.title}</h2>
-                <p className="text-muted-foreground">{dept.subtitle}</p>
+                <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-violet-400 to-fuchsia-400 bg-clip-text text-transparent mb-3">{dept.title}</h2>
+                <p className="text-lg text-muted-foreground">{dept.subtitle}</p>
               </div>
               
               {dept.staff.length > 0 ? (
@@ -722,11 +722,11 @@ const Staff = () => {
               className="relative bg-card/60 backdrop-blur-sm border border-border/50 rounded-2xl p-8 md:p-12 text-center cursor-pointer group hover:border-primary/30 transition-all duration-300"
               onClick={() => setIsApplicationOpen(true)}
             >
-              <div className="w-16 h-16 mx-auto mb-6 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
-                <Award className="w-8 h-8 text-primary" />
+              <div className="w-18 h-18 mx-auto mb-6 bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-2xl flex items-center justify-center group-hover:bg-primary/30 transition-colors duration-300 border border-primary/30">
+                <Award className="w-10 h-10 text-primary" />
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">Want to Join Our Team?</h2>
-              <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
+              <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-violet-400 to-pink-400 bg-clip-text text-transparent mb-4">Want to Join Our Team?</h2>
+              <p className="text-lg text-muted-foreground mb-6 max-w-lg mx-auto">
                 We're always looking for passionate individuals to help make SLRP the best roleplay community.
               </p>
               <Button size="lg" className="group-hover:scale-105 transition-transform duration-300">
