@@ -18,6 +18,7 @@ import {
   Eye,
   Heart,
   Cloud,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -130,6 +131,7 @@ const Index = () => {
   const [serverPlayers, setServerPlayers] = useState<number | null>(null);
   const [maxPlayers, setMaxPlayers] = useState<number>(64);
   const [featuredYoutubers, setFeaturedYoutubers] = useState<FeaturedYoutuber[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Simplified scroll - removed heavy transforms
   const { scrollYProgress } = useScroll();
@@ -179,6 +181,7 @@ const Index = () => {
 
     // Fetch server status
     const fetchServerStatus = async () => {
+      setIsRefreshing(true);
       try {
         const { data, error } = await supabase.functions.invoke('fivem-server-status');
         if (!error && data) {
@@ -190,6 +193,8 @@ const Index = () => {
         }
       } catch (e) {
         console.log('Server status fetch failed');
+      } finally {
+        setIsRefreshing(false);
       }
     };
 
@@ -219,6 +224,24 @@ const Index = () => {
       clearInterval(interval);
     };
   }, []);
+
+  const handleRefreshStatus = async () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('fivem-server-status');
+      if (!error && data) {
+        const playerCount = typeof data.players === 'object' ? data.players.current : (data.players || 0);
+        const maxCount = typeof data.players === 'object' ? data.players.max : (data.maxPlayers || 64);
+        setServerPlayers(playerCount);
+        setMaxPlayers(maxCount);
+      }
+    } catch (e) {
+      console.log('Server status refresh failed');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const handleJoinServer = () => {
     if (!isLoggedIn) {
@@ -433,7 +456,7 @@ const Index = () => {
             </motion.div>
 
             {/* Compact Live Server Status */}
-            <motion.div variants={itemVariants} className="flex justify-center mt-6">
+            <motion.div variants={itemVariants} className="flex justify-center items-center gap-3 mt-6">
               <div 
                 className="relative group cursor-pointer"
                 onClick={handleJoinServer}
@@ -466,6 +489,18 @@ const Index = () => {
                   </div>
                 </div>
               </div>
+              
+              {/* Refresh Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRefreshStatus();
+                }}
+                className="p-3 rounded-full border border-purple-500/40 bg-background/80 backdrop-blur-sm hover:border-purple-400/60 hover:bg-purple-500/10 transition-all duration-300 group"
+                title="Refresh server status"
+              >
+                <RefreshCw className={`w-4 h-4 text-purple-400 group-hover:text-purple-300 transition-colors ${isRefreshing ? 'animate-spin' : ''}`} />
+              </button>
             </motion.div>
           </motion.div>
         </div>
