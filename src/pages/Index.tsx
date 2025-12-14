@@ -62,8 +62,7 @@ const FloatingParticles = () => {
             top: `${particle.y}%`,
             width: particle.size,
             height: particle.size,
-            background: `hsl(var(--primary) / 0.5)`,
-            boxShadow: `0 0 8px hsl(var(--primary) / 0.3)`,
+            background: `hsl(var(--primary) / 0.3)`,
             animation: `float-particle ${particle.duration}s ease-in-out infinite`,
             animationDelay: `${particle.delay}s`,
           }}
@@ -288,11 +287,11 @@ const Index = () => {
         <div className="absolute inset-0 z-[4] pointer-events-none rain-effect" />
         
         <div className="absolute inset-0 z-[3] pointer-events-none">
-          <div className="absolute top-[10%] left-[30%] w-64 h-64 md:w-80 md:h-80 rounded-full blur-2xl bg-primary/20 gpu-accelerated" />
-          <div className="absolute top-[15%] right-[20%] w-48 h-48 md:w-64 md:h-64 rounded-full blur-2xl bg-secondary/15 gpu-accelerated" />
+          <div className="absolute top-[10%] left-[30%] w-64 h-64 md:w-80 md:h-80 rounded-full blur-3xl bg-primary/10 gpu-accelerated" />
+          <div className="absolute top-[15%] right-[20%] w-48 h-48 md:w-64 md:h-64 rounded-full blur-3xl bg-secondary/8 gpu-accelerated" />
         </div>
 
-        <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/40 to-background/70 z-[5]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/50 to-background/80 z-[5]" />
 
         <FloatingParticles />
 
@@ -312,9 +311,9 @@ const Index = () => {
               variants={itemVariants} 
               className="mb-10 relative"
             >
-              {/* Glow effect behind text - lighter */}
+              {/* Glow effect behind text - minimal */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-[600px] h-[300px] bg-gradient-to-r from-sky-400/30 via-cyan-400/40 to-sky-400/30 blur-[120px] rounded-full gpu-accelerated"></div>
+                <div className="w-[500px] h-[250px] bg-gradient-to-r from-primary/15 via-primary/20 to-primary/15 blur-[100px] rounded-full gpu-accelerated"></div>
               </div>
               
               {/* Main Title */}
@@ -329,8 +328,8 @@ const Index = () => {
                   }}
                 >
                   <span 
-                    className="bg-gradient-to-b from-sky-300 via-cyan-400 to-sky-500 bg-clip-text text-transparent"
-                    style={{ filter: 'drop-shadow(0 4px 25px hsl(200 70% 55% / 0.4))' }}
+                    className="bg-gradient-to-b from-primary via-accent to-secondary bg-clip-text text-transparent"
+                    style={{ filter: 'drop-shadow(0 2px 12px hsl(var(--primary) / 0.25))' }}
                   >
                     SK
                   </span>
@@ -348,18 +347,17 @@ const Index = () => {
                     style={{ transform: 'skewX(8deg)' }}
                   >
                     <Cloud 
-                      className="w-16 h-16 md:w-28 md:h-28 lg:w-36 lg:h-36 -mx-1 md:-mx-2"
+                      className="w-16 h-16 md:w-28 md:h-28 lg:w-36 lg:h-36 -mx-1 md:-mx-2 text-primary"
                       style={{ 
-                        color: 'hsl(200 70% 65%)',
-                        filter: 'drop-shadow(0 0 15px hsl(200 70% 55% / 0.6))'
+                        filter: 'drop-shadow(0 0 8px hsl(var(--primary) / 0.35))'
                       }}
                       strokeWidth={2.5}
-                      fill="hsl(200 65% 60%)"
+                      fill="hsl(var(--accent))"
                     />
                   </motion.div>
                   <span 
-                    className="bg-gradient-to-b from-sky-300 via-cyan-400 to-sky-500 bg-clip-text text-transparent"
-                    style={{ filter: 'drop-shadow(0 4px 25px hsl(200 70% 55% / 0.4))' }}
+                    className="bg-gradient-to-b from-primary via-accent to-secondary bg-clip-text text-transparent"
+                    style={{ filter: 'drop-shadow(0 2px 12px hsl(var(--primary) / 0.25))' }}
                   >
                     LIFE
                   </span>
@@ -461,8 +459,8 @@ const Index = () => {
                 className="relative group cursor-pointer"
                 onClick={handleJoinServer}
               >
-                <div className="absolute -inset-1 bg-gradient-to-r from-sky-500/50 via-cyan-500/50 to-sky-500/50 rounded-full blur-md opacity-60 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="relative flex items-center gap-4 px-6 py-3 rounded-full border border-sky-500/40 bg-background/80 backdrop-blur-sm hover:border-sky-400/60 transition-all duration-300">
+                <div className="absolute -inset-1 bg-gradient-to-r from-primary/25 via-accent/30 to-primary/25 rounded-full blur-sm opacity-50 group-hover:opacity-80 transition-opacity duration-300"></div>
+                <div className="relative flex items-center gap-4 px-6 py-3 rounded-full border border-primary/30 bg-background/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300">
                   {/* Live dot */}
                   <div className="relative">
                     <div className="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_12px_hsl(120_70%_50%_/_0.8)]"></div>
