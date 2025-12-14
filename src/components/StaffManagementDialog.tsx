@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, UserPlus } from "lucide-react";
+import { Loader2, UserPlus, Check, RefreshCw } from "lucide-react";
 
 interface StaffMember {
   id?: string;
@@ -55,47 +55,88 @@ export const StaffManagementDialog = ({ open, onOpenChange, staffMember, onSucce
   });
 
   const [responsibilityInput, setResponsibilityInput] = useState("");
+  const [discordFetched, setDiscordFetched] = useState(false);
+  const fetchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastFetchedIdRef = useRef<string>("");
 
-  const fetchDiscordInfo = async () => {
-    if (!formData.discord_id) {
-      toast({
-        title: "Error",
-        description: "Please enter a Discord ID first",
-        variant: "destructive",
-      });
+  // Auto-fetch Discord info when a valid Discord ID is entered
+  const isValidDiscordId = (id: string) => /^\d{17,19}$/.test(id);
+
+  const fetchDiscordInfo = async (discordId: string, showToast = true) => {
+    if (!discordId || !isValidDiscordId(discordId)) {
+      return;
+    }
+
+    // Don't fetch if we already fetched this ID
+    if (lastFetchedIdRef.current === discordId && discordFetched) {
       return;
     }
 
     setFetchingDiscord(true);
+    setDiscordFetched(false);
     try {
       const { data, error } = await supabase.functions.invoke('fetch-discord-user', {
-        body: { discordId: formData.discord_id }
+        body: { discordId }
       });
 
       if (error) throw error;
 
-      setFormData({
-        ...formData,
-        name: formData.name || data.globalName,
-        discord_username: data.displayName,
-        discord_avatar: data.avatar,
-      });
+      lastFetchedIdRef.current = discordId;
+      setDiscordFetched(true);
 
-      toast({
-        title: "Success",
-        description: "Discord information fetched successfully",
-      });
+      setFormData(prev => ({
+        ...prev,
+        name: prev.name || data.globalName || data.displayName,
+        discord_username: data.username,
+        discord_avatar: data.avatar,
+      }));
+
+      if (showToast) {
+        toast({
+          title: "Discord Info Synced",
+          description: `Found: ${data.displayName}`,
+        });
+      }
     } catch (error: any) {
       console.error("Error fetching Discord info:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to fetch Discord information. Make sure the Discord ID is valid.",
-        variant: "destructive",
-      });
+      if (showToast) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to fetch Discord information. Make sure the Discord ID is valid.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setFetchingDiscord(false);
     }
   };
+
+  // Auto-fetch when Discord ID changes (with debounce)
+  useEffect(() => {
+    if (fetchTimeoutRef.current) {
+      clearTimeout(fetchTimeoutRef.current);
+    }
+
+    if (isValidDiscordId(formData.discord_id) && formData.discord_id !== lastFetchedIdRef.current) {
+      fetchTimeoutRef.current = setTimeout(() => {
+        fetchDiscordInfo(formData.discord_id);
+      }, 500);
+    }
+
+    return () => {
+      if (fetchTimeoutRef.current) {
+        clearTimeout(fetchTimeoutRef.current);
+      }
+    };
+  }, [formData.discord_id]);
+
+  // Reset state when dialog opens with new/different staff member
+  useEffect(() => {
+    if (open) {
+      setDiscordFetched(!!staffMember?.discord_avatar);
+      lastFetchedIdRef.current = staffMember?.discord_id || "";
+    }
+  }, [open, staffMember]);
 
   const addResponsibility = () => {
     if (responsibilityInput.trim()) {
@@ -174,48 +215,48 @@ export const StaffManagementDialog = ({ open, onOpenChange, staffMember, onSucce
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Discord ID with Fetch Button */}
+          {/* Discord ID - Auto-fetches info */}
           <div className="space-y-2">
             <Label htmlFor="discord_id">Discord ID *</Label>
             <p className="text-xs text-muted-foreground">
-              Enter the Discord ID and click "Fetch Info" to automatically populate username and avatar
+              Just paste the Discord ID - name & avatar will sync automatically
             </p>
             <div className="flex gap-2">
-              <Input
-                id="discord_id"
-                value={formData.discord_id}
-                onChange={(e) => setFormData({ ...formData, discord_id: e.target.value })}
-                placeholder="123456789012345678"
-                required
-                className="flex-1"
-              />
+              <div className="relative flex-1">
+                <Input
+                  id="discord_id"
+                  value={formData.discord_id}
+                  onChange={(e) => setFormData({ ...formData, discord_id: e.target.value })}
+                  placeholder="Paste Discord ID here..."
+                  required
+                  className={`pr-10 ${discordFetched ? 'border-green-500 bg-green-500/5' : ''}`}
+                />
+                {fetchingDiscord && (
+                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
+                )}
+                {discordFetched && !fetchingDiscord && (
+                  <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
+                )}
+              </div>
               <Button
                 type="button"
-                onClick={fetchDiscordInfo}
-                disabled={fetchingDiscord || !formData.discord_id}
-                variant="secondary"
-                className="whitespace-nowrap"
+                onClick={() => fetchDiscordInfo(formData.discord_id)}
+                disabled={fetchingDiscord || !isValidDiscordId(formData.discord_id)}
+                variant="outline"
+                size="icon"
+                title="Refresh Discord info"
               >
-                {fetchingDiscord ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                    Fetching...
-                  </>
-                ) : (
-                  <>
-                    <UserPlus className="w-4 h-4 mr-2" />
-                    Fetch Info
-                  </>
-                )}
+                <RefreshCw className={`w-4 h-4 ${fetchingDiscord ? 'animate-spin' : ''}`} />
               </Button>
             </div>
             {formData.discord_avatar && (
-              <div className="flex items-center gap-2 mt-2 p-2 bg-muted rounded-lg">
-                <img src={formData.discord_avatar} alt="Discord Avatar" className="w-10 h-10 rounded-full" />
-                <div className="text-sm">
-                  <p className="font-medium">{formData.discord_username}</p>
-                  <p className="text-xs text-muted-foreground">Avatar fetched from Discord</p>
+              <div className="flex items-center gap-3 mt-2 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                <img src={formData.discord_avatar} alt="Discord Avatar" className="w-12 h-12 rounded-full ring-2 ring-green-500/30" />
+                <div className="text-sm flex-1">
+                  <p className="font-semibold text-foreground">{formData.name || formData.discord_username}</p>
+                  <p className="text-xs text-muted-foreground">@{formData.discord_username}</p>
                 </div>
+                <Check className="w-5 h-5 text-green-500" />
               </div>
             )}
           </div>
