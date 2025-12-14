@@ -164,26 +164,26 @@ const handler = async (req: Request): Promise<Response> => {
           
           // Update staff member's Discord profile info if we have data
           if (discordUser) {
-            const newUsername = discordUser.global_name || discordUser.username;
+            const newDisplayName = discordUser.global_name || discordUser.username;
+            const newUsername = discordUser.username;
             const newAvatar = getAvatarUrl(discordUser);
             
-            // Only update if data has changed
-            if (staffInfo.discord_username !== newUsername || staffInfo.discord_avatar !== newAvatar) {
-              const { error: updateError } = await supabase
-                .from("staff_members")
-                .update({
-                  discord_username: newUsername,
-                  discord_avatar: newAvatar,
-                  last_seen: isInGuild ? now : undefined,
-                })
-                .eq("id", staffInfo.id);
-              
-              if (!updateError) {
-                profilesUpdated++;
-                console.log(`Updated Discord profile for ${staffInfo.name}: ${newUsername}`);
-              } else {
-                console.error(`Error updating profile for ${staffInfo.name}:`, updateError);
-              }
+            // Update name, username, and avatar from Discord
+            const { error: updateError } = await supabase
+              .from("staff_members")
+              .update({
+                name: newDisplayName,
+                discord_username: newUsername,
+                discord_avatar: newAvatar,
+                last_seen: isInGuild ? now : undefined,
+              })
+              .eq("id", staffInfo.id);
+            
+            if (!updateError) {
+              profilesUpdated++;
+              console.log(`Updated Discord profile for ${staffInfo.name} -> ${newDisplayName}`);
+            } else {
+              console.error(`Error updating profile for ${staffInfo.name}:`, updateError);
             }
           }
           
@@ -255,23 +255,23 @@ const handler = async (req: Request): Promise<Response> => {
 
           if (userResponse.ok) {
             const discordUser: DiscordUser = await userResponse.json();
-            const newUsername = discordUser.global_name || discordUser.username;
+            const newDisplayName = discordUser.global_name || discordUser.username;
+            const newUsername = discordUser.username;
             const newAvatar = getAvatarUrl(discordUser);
             
-            // Update staff member's Discord profile info
-            if (staffInfo.discord_username !== newUsername || staffInfo.discord_avatar !== newAvatar) {
-              await supabase
-                .from("staff_members")
-                .update({
-                  discord_username: newUsername,
-                  discord_avatar: newAvatar,
-                  last_seen: update.is_online ? now : undefined,
-                })
-                .eq("id", staffInfo.id);
-              
-              profilesUpdated++;
-              console.log(`Updated Discord profile for ${staffInfo.name}: ${newUsername}`);
-            }
+            // Update staff member's name, username, and avatar from Discord
+            await supabase
+              .from("staff_members")
+              .update({
+                name: newDisplayName,
+                discord_username: newUsername,
+                discord_avatar: newAvatar,
+                last_seen: update.is_online ? now : undefined,
+              })
+              .eq("id", staffInfo.id);
+            
+            profilesUpdated++;
+            console.log(`Updated Discord profile for ${staffInfo.name} -> ${newDisplayName}`);
           }
         } catch (error) {
           console.error(`Error fetching user info for ${update.discord_id}:`, error);
