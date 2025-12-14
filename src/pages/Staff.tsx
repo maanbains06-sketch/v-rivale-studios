@@ -64,12 +64,12 @@ const roleColors = {
 };
 
 const roleBanners = {
-  owner: "bg-gradient-to-br from-zinc-900 via-neutral-800 to-stone-900",
-  admin: "bg-gradient-to-br from-slate-900 via-zinc-800 to-neutral-900",
-  moderator: "bg-gradient-to-br from-neutral-900 via-stone-800 to-zinc-900",
-  developer: "bg-gradient-to-br from-stone-900 via-zinc-800 to-slate-900",
-  staff: "bg-gradient-to-br from-zinc-900 via-slate-800 to-neutral-900",
-  event_manager: "bg-gradient-to-br from-slate-900 via-neutral-800 to-stone-900",
+  owner: "bg-gradient-to-r from-amber-500 via-yellow-400 to-orange-500",
+  admin: "bg-gradient-to-r from-red-500 via-rose-500 to-pink-500",
+  moderator: "bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500",
+  developer: "bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500",
+  staff: "bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500",
+  event_manager: "bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500",
 };
 
 const roleIcons = {
@@ -317,7 +317,7 @@ const Staff = () => {
 
   const renderStaffCard = (member: StaffMember, index: number) => {
     const Icon = roleIcons[member.role_type as keyof typeof roleIcons] || UserCheck;
-    const roleColor = roleColors[member.role_type as keyof typeof roleColors] || "bg-primary";
+    const bannerClass = roleBanners[member.role_type as keyof typeof roleBanners] || "bg-gradient-to-r from-primary to-primary/70";
     const achievements = getAchievementBadges(member);
     const staffIsOnline = isOnline(member.id);
     const lastSeenTime = getLastSeen(member.id);
@@ -332,36 +332,99 @@ const Staff = () => {
         whileInView="visible"
         viewport={{ once: true, margin: "-50px" }}
         custom={index}
-        whileHover={{ y: -8 }}
+        whileHover={{ y: -8, rotateY: 2 }}
         whileTap={{ scale: 0.98 }}
         onClick={() => handleStaffClick(member.id)}
+        style={{ perspective: 1000 }}
       >
-        <Card className="h-full bg-card/80 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all duration-300 overflow-hidden group-hover:shadow-lg group-hover:shadow-primary/10">
-          {/* Role Banner */}
-          <div className={`h-16 ${roleColor} relative overflow-hidden`}>
-            <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent" />
-            <div className="absolute bottom-2 left-3">
-              <Badge variant="secondary" className="bg-background/90 text-foreground text-[10px]">
-                {member.role_type.replace("_", " ").toUpperCase()}
-              </Badge>
+        {/* Outer glow effect */}
+        <div className="absolute -inset-1 bg-gradient-to-b from-primary/20 via-transparent to-primary/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
+        
+        {/* Card Container */}
+        <div className="relative h-full bg-gradient-to-b from-card via-card/95 to-card/90 backdrop-blur-xl border border-border/40 rounded-2xl overflow-hidden group-hover:border-primary/40 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-primary/10">
+          
+          {/* Animated background pattern */}
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,hsl(var(--primary)/0.15),transparent_50%)]" />
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-primary/5 to-transparent" />
+          </div>
+          
+          {/* Top decorative banner - role-based premium design */}
+          <div className={`relative h-24 ${bannerClass} overflow-hidden`}>
+            {/* Animated shine effect */}
+            <div className="absolute inset-0 bg-[linear-gradient(110deg,transparent_20%,rgba(255,255,255,0.4)_50%,transparent_80%)] bg-[length:200%_100%] animate-[shimmer_3s_ease-in-out_infinite] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            
+            {/* Mesh gradient overlay */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(255,255,255,0.3)_0%,transparent_50%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(0,0,0,0.2)_0%,transparent_50%)]" />
+            
+            {/* Geometric pattern overlay */}
+            <div className="absolute inset-0 opacity-10">
+              <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="white" strokeWidth="0.5"/>
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#grid)" />
+              </svg>
+            </div>
+            
+            {/* Floating orbs */}
+            <div className="absolute top-2 right-8 w-16 h-16 bg-white/20 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700" />
+            <div className="absolute -bottom-4 left-4 w-20 h-20 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-500" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-8 bg-white/10 rounded-full blur-xl rotate-12" />
+            
+            {/* Sparkle effects */}
+            <div className="absolute top-3 left-1/4 w-1 h-1 bg-white rounded-full animate-pulse" />
+            <div className="absolute top-5 right-1/3 w-1.5 h-1.5 bg-white/80 rounded-full animate-pulse delay-100" />
+            <div className="absolute bottom-4 left-1/2 w-1 h-1 bg-white/60 rounded-full animate-pulse delay-200" />
+            
+            {/* Bottom gradient fade */}
+            <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black/20 to-transparent" />
+            
+            {/* Role label with premium styling */}
+            <div className="absolute bottom-2 left-3 px-3 py-1 bg-black/30 backdrop-blur-md rounded-full border border-white/20 shadow-lg">
+              <span className="text-[10px] font-bold text-white uppercase tracking-widest drop-shadow-sm">
+                {member.role_type.replace("_", " ")}
+              </span>
+            </div>
+            
+            {/* Corner accent */}
+            <div className="absolute top-0 right-0 w-16 h-16">
+              <div className="absolute top-0 right-0 w-0 h-0 border-t-[40px] border-t-white/10 border-l-[40px] border-l-transparent" />
             </div>
           </div>
           
-          {/* Online Status Badge */}
-          <div className="absolute top-2 right-2 z-10">
-            <StaffOnlineIndicator isOnline={staffIsOnline} lastSeen={lastSeenTime} status={staffStatus} size="md" showLabel />
+          {/* Online Status Badge - Top Right */}
+          <div className="absolute top-3 right-3 z-20">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: index * 0.05 + 0.2 }}
+            >
+              <StaffOnlineIndicator isOnline={staffIsOnline} lastSeen={lastSeenTime} status={staffStatus} size="lg" showLabel />
+            </motion.div>
           </div>
           
-          {/* Favorite Button */}
-          <div className="absolute top-2 left-2 z-10" onClick={(e) => e.stopPropagation()}>
-            <FavoriteStaffButton isFavorite={isFavorite(member.id)} onToggle={() => toggleFavorite(member.id)} />
+          {/* Favorite Button - Top Left */}
+          <div className="absolute top-3 left-3 z-20" onClick={(e) => e.stopPropagation()}>
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: index * 0.05 + 0.1 }}
+            >
+              <FavoriteStaffButton isFavorite={isFavorite(member.id)} onToggle={() => toggleFavorite(member.id)} />
+            </motion.div>
           </div>
 
-          <CardContent className="pt-0 px-4 pb-4 -mt-8 relative">
+          <div className="relative px-5 pb-5 -mt-8">
             <div className="flex flex-col items-center text-center">
-              {/* Avatar */}
-              <div 
-                className="relative mb-3 cursor-pointer"
+              {/* Avatar with enhanced design */}
+              <motion.div 
+                className="relative mb-4 cursor-pointer"
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 300 }}
                 onClick={(e) => {
                   e.stopPropagation();
                   setSelectedAvatar({
@@ -370,86 +433,124 @@ const Staff = () => {
                   });
                 }}
               >
-                <div className="w-16 h-16 rounded-full border-4 border-background overflow-hidden shadow-lg bg-muted">
-                  <img
-                    src={member.discord_avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`}
-                    alt={member.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
+                {/* Outer ring with animation */}
+                <div className="absolute -inset-2 bg-gradient-to-b from-primary/30 to-primary/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                
+                {/* Avatar ring */}
+                <div className="relative w-20 h-20 rounded-full p-1 bg-gradient-to-b from-primary via-primary/70 to-primary/40 shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-shadow duration-300">
+                  <div className="w-full h-full rounded-full overflow-hidden bg-background ring-2 ring-background">
+                    <img
+                      src={member.discord_avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`}
+                      alt={member.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                  </div>
                 </div>
-                <div className={`absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-6 ${roleColor} rounded-full flex items-center justify-center border-2 border-background`}>
-                  <Icon className="w-3 h-3 text-white" />
-                </div>
-              </div>
+                
+                {/* Role Icon Badge */}
+                <motion.div 
+                  className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-8 h-8 bg-gradient-to-b from-primary to-primary/80 rounded-lg flex items-center justify-center border-2 border-background shadow-lg"
+                  whileHover={{ scale: 1.15, rotate: 5 }}
+                >
+                  <Icon className="w-4 h-4 text-primary-foreground" />
+                </motion.div>
+              </motion.div>
 
               {/* Name */}
-              <h3 className="text-base font-semibold text-foreground mb-0.5">
+              <h3 className="text-lg font-bold text-foreground mb-0.5 group-hover:text-primary transition-colors duration-300 tracking-tight">
                 {member.name}
               </h3>
               
               {/* Role */}
-              <span className="text-sm text-muted-foreground mb-2">
-                {member.role}
+              <span className="text-sm font-semibold text-primary/90 mb-2 group-hover:text-primary transition-colors duration-300">
+                {member.role}{member.department === "leadership" && " / Founder"}
               </span>
 
               {/* Discord Username */}
               {member.discord_username && (
-                <div className="flex items-center gap-1.5 px-2 py-1 bg-muted/50 rounded-md mb-2">
-                  <svg className="w-3 h-3 text-muted-foreground" viewBox="0 0 24 24" fill="currentColor">
+                <div className="flex items-center gap-1.5 text-[11px] text-[#5865F2] mb-1.5">
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
                   </svg>
-                  <span className="text-xs text-muted-foreground">{member.discord_username}</span>
+                  <span className="truncate max-w-[120px]">{member.discord_username}</span>
                 </div>
               )}
 
               {/* Department Badge */}
-              <Badge variant="outline" className="mb-3 text-xs">
+              <Badge variant="outline" className="bg-muted/30 text-muted-foreground text-[10px] px-2.5 py-0.5 border-border/50 mb-3 uppercase tracking-wider">
                 {member.department.replace("_", " ")}
               </Badge>
               
               {/* Achievement Badges */}
               {achievements.length > 0 && (
-                <div className="flex flex-wrap justify-center gap-1 mb-3">
+                <div className="flex flex-wrap justify-center gap-1.5 mb-3">
                   {achievements.map((badge, idx) => (
-                    <Badge key={idx} className={`${badge.color} text-white text-[10px]`}>
-                      {badge.label}
-                    </Badge>
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: idx * 0.1 + 0.3 }}
+                    >
+                      <Badge 
+                        variant="outline"
+                        className="bg-primary/10 text-primary text-[10px] px-2 py-0.5 border-primary/30 font-medium"
+                      >
+                        {badge.label}
+                      </Badge>
+                    </motion.div>
                   ))}
                 </div>
               )}
 
               {/* Bio */}
               {member.bio && (
-                <p className="text-xs text-muted-foreground italic mb-3 line-clamp-2">
-                  "{member.bio}"
+                <p className="text-xs text-muted-foreground italic mb-3 max-w-[200px] leading-relaxed line-clamp-2 opacity-80 group-hover:opacity-100 transition-opacity duration-300">
+                  &quot;{member.bio}&quot;
                 </p>
               )}
 
               {/* Responsibilities */}
               {member.responsibilities && member.responsibilities.length > 0 && (
                 <div className="w-full mb-3">
-                  <div className="flex flex-wrap justify-center gap-1">
-                    {member.responsibilities.slice(0, 3).map((resp, idx) => (
-                      <span key={idx} className="text-[10px] px-2 py-0.5 bg-muted rounded-full text-muted-foreground">
+                  <div className="flex flex-wrap justify-center gap-1.5">
+                    {member.responsibilities.slice(0, 4).map((resp, idx) => (
+                      <span 
+                        key={idx}
+                        className="text-xs px-3 py-1 bg-background/50 text-muted-foreground rounded-full border border-border/30 font-medium"
+                      >
                         {resp}
                       </span>
                     ))}
-                    {member.responsibilities.length > 3 && (
-                      <span className="text-[10px] px-2 py-0.5 bg-primary/10 text-primary rounded-full">
-                        +{member.responsibilities.length - 3}
+                    {member.responsibilities.length > 4 && (
+                      <span className="text-xs px-3 py-1 bg-primary/10 text-primary rounded-full border border-primary/20 font-medium">
+                        +{member.responsibilities.length - 4} more
                       </span>
                     )}
                   </div>
                 </div>
               )}
 
-              {/* View Profile */}
-              <Button variant="ghost" size="sm" className="w-full mt-auto text-xs group-hover:bg-primary/10 group-hover:text-primary">
-                View Profile →
-              </Button>
+              {/* View Profile Button */}
+              <motion.div 
+                className="mt-auto pt-3 w-full border-t border-border/30"
+                initial={{ opacity: 0.7 }}
+                whileHover={{ opacity: 1 }}
+              >
+                <div className="flex items-center justify-center gap-2 text-xs font-medium text-muted-foreground group-hover:text-primary transition-all duration-300">
+                  <UserCircle className="w-4 h-4" />
+                  <span>View Full Profile</span>
+                  <motion.span
+                    className="text-primary"
+                    animate={{ x: [0, 4, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    →
+                  </motion.span>
+                </div>
+              </motion.div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </motion.div>
     );
   };
@@ -558,8 +659,8 @@ const Staff = () => {
             className="mb-20"
           >
             <div className="text-center mb-10">
-              <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-purple-400 to-pink-400 bg-clip-text text-transparent mb-3">Our Core Values</h2>
-              <p className="text-lg text-muted-foreground">The principles that guide our team every day</p>
+              <h2 className="text-3xl font-bold text-foreground mb-2">Our Core Values</h2>
+              <p className="text-muted-foreground">The principles that guide our team every day</p>
             </div>
             
             <div className="grid md:grid-cols-4 gap-4">
@@ -574,22 +675,19 @@ const Staff = () => {
                   whileHover={{ y: -4 }}
                   className="group cursor-pointer"
                 >
-                  <div className="relative bg-gradient-to-b from-card to-card/80 backdrop-blur-sm border border-border/40 rounded-xl p-6 text-center group-hover:border-primary/40 transition-all duration-300 overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="relative">
-                      <div className="w-14 h-14 mx-auto mb-4 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl flex items-center justify-center group-hover:from-primary/30 group-hover:to-primary/10 transition-colors duration-300 border border-primary/20">
-                        <value.icon className="w-7 h-7 text-primary" />
-                      </div>
-                      <h3 className="font-bold text-lg text-foreground mb-1">{value.title}</h3>
-                      <p className="text-sm text-muted-foreground">{value.desc}</p>
+                  <div className="bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl p-6 text-center group-hover:border-primary/30 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/5">
+                    <div className="w-12 h-12 mx-auto mb-4 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
+                      <value.icon className="w-6 h-6 text-primary" />
                     </div>
+                    <h3 className="font-semibold text-foreground mb-1">{value.title}</h3>
+                    <p className="text-xs text-muted-foreground">{value.desc}</p>
                   </div>
                 </motion.div>
               ))}
             </div>
           </motion.div>
 
-          {/* Department Sections */}
+          {/* Department Sections - Clean unified design */}
           {[
             { key: "leadership", title: "Leadership Team", subtitle: "The visionaries guiding SLRP to excellence", icon: Shield, staff: leadershipStaff, centerSingle: true },
             { key: "management", title: "Management Team", subtitle: "Ensuring smooth server operations", icon: Users, staff: adminStaff, centerSingle: false },
@@ -608,11 +706,11 @@ const Staff = () => {
               className="mb-12"
             >
               <div className="text-center mb-8">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl mb-4 border border-primary/20">
-                  <dept.icon className="w-8 h-8 text-primary" />
+                <div className="inline-flex items-center justify-center w-14 h-14 bg-primary/10 rounded-xl mb-4">
+                  <dept.icon className="w-7 h-7 text-primary" />
                 </div>
-                <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-purple-400 to-pink-400 bg-clip-text text-transparent mb-3">{dept.title}</h2>
-                <p className="text-lg text-muted-foreground">{dept.subtitle}</p>
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">{dept.title}</h2>
+                <p className="text-muted-foreground">{dept.subtitle}</p>
               </div>
               
               {dept.staff.length > 0 ? (
@@ -644,11 +742,11 @@ const Staff = () => {
               className="relative bg-card/60 backdrop-blur-sm border border-border/50 rounded-2xl p-8 md:p-12 text-center cursor-pointer group hover:border-primary/30 transition-all duration-300"
               onClick={() => setIsApplicationOpen(true)}
             >
-              <div className="w-18 h-18 mx-auto mb-6 bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-2xl flex items-center justify-center group-hover:bg-primary/30 transition-colors duration-300 border border-primary/30">
-                <Award className="w-10 h-10 text-primary" />
+              <div className="w-16 h-16 mx-auto mb-6 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
+                <Award className="w-8 h-8 text-primary" />
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-violet-400 to-pink-400 bg-clip-text text-transparent mb-4">Want to Join Our Team?</h2>
-              <p className="text-lg text-muted-foreground mb-6 max-w-lg mx-auto">
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">Want to Join Our Team?</h2>
+              <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
                 We're always looking for passionate individuals to help make SLRP the best roleplay community.
               </p>
               <Button size="lg" className="group-hover:scale-105 transition-transform duration-300">
