@@ -622,7 +622,7 @@ const Staff = () => {
           {[
             { key: "leadership", title: "Leadership Team", subtitle: "The visionaries guiding SLRP to excellence", icon: Shield, staff: leadershipStaff, centerSingle: true },
             { key: "management", title: "Management Team", subtitle: "Ensuring smooth server operations", icon: Users, staff: adminStaff, centerSingle: false },
-            { key: "development", title: "Development Team", subtitle: "Building innovative features", icon: Code, staff: developerStaff, centerSingle: false },
+            { key: "development", title: "Development Team", subtitle: "Building innovative features", icon: Code, staff: developerStaff, centerSingle: true },
             { key: "moderation", title: "Administration Team", subtitle: "Keeping the community safe and fair", icon: HeadphonesIcon, staff: moderatorStaff, centerSingle: false },
             { key: "staff", title: "Staff Team", subtitle: "Core team members providing essential services", icon: UserCheck, staff: generalStaff, centerSingle: false },
             { key: "support", title: "Support Team", subtitle: "Always here to help you succeed", icon: HeadphonesIcon, staff: supportStaff, centerSingle: false },
