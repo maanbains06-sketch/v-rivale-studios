@@ -303,6 +303,41 @@ const Staff = () => {
     return badges.slice(0, 2); // Max 2 badges per card
   };
 
+  // Get default responsibilities based on role type if none are set
+  const getRoleResponsibilities = (member: StaffMember): string[] => {
+    const customResponsibilities = member.responsibilities || [];
+    
+    // If member has custom responsibilities, use those
+    if (customResponsibilities.length > 0) {
+      return customResponsibilities;
+    }
+
+    // Default responsibilities based on role type
+    const roleDefaults: Record<string, string[]> = {
+      owner: ["Server Management", "Community Leadership", "Strategic Planning", "Team Oversight"],
+      admin: ["Staff Management", "Rule Enforcement", "Player Support", "Server Moderation"],
+      moderator: ["Community Support", "Rule Enforcement", "Ticket Handling", "Player Assistance"],
+      developer: ["Script Development", "Bug Fixes", "Feature Implementation", "Technical Support"],
+      staff: ["Player Support", "Community Help", "Ticket Assistance", "General Moderation"],
+      event_manager: ["Event Planning", "Community Events", "Player Engagement", "Event Coordination"],
+    };
+
+    return roleDefaults[member.role_type] || ["Community Support", "Player Assistance"];
+  };
+
+  // Get role-specific duties description
+  const getRoleDuties = (roleType: string): string => {
+    const duties: Record<string, string> = {
+      owner: "Overall server management and community leadership",
+      admin: "Administration, staff oversight, and server management",
+      moderator: "Community moderation and player support",
+      developer: "Technical development and script maintenance",
+      staff: "General community support and assistance",
+      event_manager: "Planning and executing community events",
+    };
+    return duties[roleType] || "Community support and assistance";
+  };
+
   const getTimezoneInfo = (timezone?: string) => {
     if (!timezone) return null;
     
@@ -515,26 +550,34 @@ const Staff = () => {
                 </p>
               )}
 
-              {/* Responsibilities */}
-              {member.responsibilities && member.responsibilities.length > 0 && (
-                <div className="w-full mb-3">
-                  <div className="flex flex-wrap justify-center gap-1.5">
-                    {member.responsibilities.slice(0, 4).map((resp, idx) => (
-                      <span 
-                        key={idx}
-                        className="text-xs px-3 py-1 bg-background/50 text-muted-foreground rounded-full border border-border/30 font-medium"
-                      >
-                        {resp}
-                      </span>
-                    ))}
-                    {member.responsibilities.length > 4 && (
-                      <span className="text-xs px-3 py-1 bg-primary/10 text-primary rounded-full border border-primary/20 font-medium">
-                        +{member.responsibilities.length - 4} more
-                      </span>
-                    )}
-                  </div>
+              {/* Role Duties & Responsibilities */}
+              <div className="w-full mb-3 space-y-2">
+                {/* Role duties description */}
+                <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground/80 uppercase tracking-wider">
+                  <Briefcase className="w-3 h-3" />
+                  <span>{getRoleDuties(member.role_type)}</span>
                 </div>
-              )}
+                
+                {/* Responsibilities tags */}
+                <div className="flex flex-wrap justify-center gap-1.5">
+                  {getRoleResponsibilities(member).slice(0, 4).map((resp, idx) => (
+                    <motion.span 
+                      key={idx}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: idx * 0.05 + 0.2 }}
+                      className="text-[10px] px-2.5 py-1 bg-primary/5 text-primary/80 rounded-full border border-primary/20 font-medium group-hover:bg-primary/10 group-hover:text-primary group-hover:border-primary/30 transition-all duration-300"
+                    >
+                      {resp}
+                    </motion.span>
+                  ))}
+                  {getRoleResponsibilities(member).length > 4 && (
+                    <span className="text-[10px] px-2.5 py-1 bg-secondary/50 text-secondary-foreground rounded-full border border-secondary/30 font-medium">
+                      +{getRoleResponsibilities(member).length - 4} more
+                    </span>
+                  )}
+                </div>
+              </div>
 
               {/* View Profile Button */}
               <motion.div 
