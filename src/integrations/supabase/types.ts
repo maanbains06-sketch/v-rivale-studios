@@ -133,6 +133,54 @@ export type Database = {
         }
         Relationships: []
       }
+      discord_presence: {
+        Row: {
+          created_at: string
+          discord_id: string
+          id: string
+          is_online: boolean
+          last_online_at: string | null
+          staff_member_id: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discord_id: string
+          id?: string
+          is_online?: boolean
+          last_online_at?: string | null
+          staff_member_id?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discord_id?: string
+          id?: string
+          is_online?: boolean
+          last_online_at?: string | null
+          staff_member_id?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discord_presence_staff_member_id_fkey"
+            columns: ["staff_member_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "discord_presence_staff_member_id_fkey"
+            columns: ["staff_member_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dot_applications: {
         Row: {
           admin_notes: string | null

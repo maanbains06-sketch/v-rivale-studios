@@ -157,7 +157,7 @@ const Staff = () => {
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [openPositions, setOpenPositions] = useState("7");
-  const { isOnline, getLastSeen, onlineStatus, onlineCount } = useStaffOnlineStatus();
+  const { isOnline, getLastSeen, getStatus, onlineStatus, onlineCount } = useStaffOnlineStatus();
   const { favorites, toggleFavorite, isFavorite } = useFavoriteStaff();
 
   // Enable notifications for favorite staff
@@ -296,6 +296,7 @@ const Staff = () => {
     const achievements = getAchievementBadges(member);
     const staffIsOnline = isOnline(member.id);
     const lastSeenTime = getLastSeen(member.id);
+    const staffStatus = getStatus(member.id);
 
     return (
       <motion.div
@@ -338,7 +339,7 @@ const Staff = () => {
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: index * 0.05 + 0.2 }}
             >
-              <StaffOnlineIndicator isOnline={staffIsOnline} lastSeen={lastSeenTime} size="lg" showLabel />
+              <StaffOnlineIndicator isOnline={staffIsOnline} lastSeen={lastSeenTime} status={staffStatus} size="lg" showLabel />
             </motion.div>
           </div>
           

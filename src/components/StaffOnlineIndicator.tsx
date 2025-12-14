@@ -5,13 +5,53 @@ import { cn } from "@/lib/utils";
 interface StaffOnlineIndicatorProps {
   isOnline: boolean;
   lastSeen?: string | null;
+  status?: string; // online, idle, dnd, offline, unknown
   size?: "sm" | "md" | "lg";
   showLabel?: boolean;
 }
 
+const statusConfig = {
+  online: {
+    color: "bg-green-500",
+    shadow: "shadow-green-500/50",
+    badgeBg: "bg-green-500 hover:bg-green-600",
+    label: "Online",
+    dotColor: "bg-white",
+  },
+  idle: {
+    color: "bg-yellow-500",
+    shadow: "shadow-yellow-500/50",
+    badgeBg: "bg-yellow-500 hover:bg-yellow-600",
+    label: "Idle",
+    dotColor: "bg-white",
+  },
+  dnd: {
+    color: "bg-red-500",
+    shadow: "shadow-red-500/50",
+    badgeBg: "bg-red-500 hover:bg-red-600",
+    label: "Do Not Disturb",
+    dotColor: "bg-white",
+  },
+  offline: {
+    color: "bg-gray-400",
+    shadow: "",
+    badgeBg: "bg-muted",
+    label: "Offline",
+    dotColor: "bg-muted-foreground",
+  },
+  unknown: {
+    color: "bg-gray-400",
+    shadow: "",
+    badgeBg: "bg-muted",
+    label: "Unknown",
+    dotColor: "bg-muted-foreground",
+  },
+};
+
 export const StaffOnlineIndicator = ({ 
   isOnline, 
-  lastSeen, 
+  lastSeen,
+  status = isOnline ? "online" : "offline",
   size = "md",
   showLabel = false 
 }: StaffOnlineIndicatorProps) => {
@@ -20,6 +60,13 @@ export const StaffOnlineIndicator = ({
     md: "w-3 h-3",
     lg: "w-4 h-4",
   };
+
+  // Normalize status - if online but status is 'unknown', treat as online
+  const normalizedStatus = isOnline && status === 'offline' ? 'online' : 
+                          !isOnline && status === 'online' ? 'offline' : 
+                          status;
+  
+  const config = statusConfig[normalizedStatus as keyof typeof statusConfig] || statusConfig.offline;
 
   const formatLastSeen = (lastSeenDate: string | null) => {
     if (!lastSeenDate) return "Never";
@@ -38,7 +85,11 @@ export const StaffOnlineIndicator = ({
   };
 
   const getTooltipText = () => {
-    if (isOnline) return "Online now";
+    if (isOnline) {
+      if (normalizedStatus === 'idle') return "Away / Idle";
+      if (normalizedStatus === 'dnd') return "Do Not Disturb";
+      return "Online now (Discord)";
+    }
     return `Last seen ${formatLastSeen(lastSeen)}`;
   };
 
@@ -52,16 +103,16 @@ export const StaffOnlineIndicator = ({
               className={cn(
                 "flex items-center gap-1.5 text-xs",
                 isOnline 
-                  ? "bg-green-500 hover:bg-green-600 text-white" 
+                  ? `${config.badgeBg} text-white` 
                   : "bg-muted text-muted-foreground"
               )}
             >
               <div className={cn(
-                "rounded-full animate-pulse",
+                "rounded-full",
                 sizeClasses[size],
-                isOnline ? "bg-white" : "bg-muted-foreground"
+                isOnline ? `${config.dotColor} animate-pulse` : config.dotColor
               )} />
-              {isOnline ? "Online" : "Offline"}
+              {config.label}
             </Badge>
           </TooltipTrigger>
           <TooltipContent>
@@ -80,9 +131,9 @@ export const StaffOnlineIndicator = ({
             className={cn(
               "rounded-full border-2 border-background",
               sizeClasses[size],
-              isOnline 
-                ? "bg-green-500 animate-pulse shadow-lg shadow-green-500/50" 
-                : "bg-gray-400"
+              config.color,
+              isOnline && "animate-pulse shadow-lg",
+              isOnline && config.shadow
             )}
           />
         </TooltipTrigger>

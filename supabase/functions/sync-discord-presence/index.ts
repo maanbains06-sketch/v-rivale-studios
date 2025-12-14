@@ -7,19 +7,13 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-interface DiscordGuildMember {
-  user?: {
-    id: string;
-  };
-  status?: string;
-  activities?: Array<{
-    type: number;
-    name: string;
-  }>;
+interface PresenceUpdate {
+  discord_id: string;
+  is_online: boolean;
+  status?: string; // online, idle, dnd, offline
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -28,26 +22,46 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const discordBotToken = Deno.env.get("DISCORD_BOT_TOKEN");
-    
+    const guildId = Deno.env.get("DISCORD_SERVER_ID");
+
     if (!discordBotToken) {
       throw new Error("Discord Bot Token not configured");
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Get the guild ID from the request body (you'll need to provide this)
-    const { guildId } = await req.json();
-    
     if (!guildId) {
-      throw new Error("Discord Guild ID is required");
+      throw new Error("Discord Server ID not configured");
     }
 
-    console.log("Syncing Discord presence for guild:", guildId);
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Check if this is a webhook call from a Discord bot with presence updates
+    let presenceUpdates: PresenceUpdate[] = [];
+    let isBulkSync = false;
+
+    try {
+      const body = await req.json();
+      if (body.presenceUpdates && Array.isArray(body.presenceUpdates)) {
+        presenceUpdates = body.presenceUpdates;
+        console.log(`Received ${presenceUpdates.length} presence updates from Discord bot`);
+      } else if (body.discord_id && typeof body.is_online === 'boolean') {
+        // Single presence update
+        presenceUpdates = [{ 
+          discord_id: body.discord_id, 
+          is_online: body.is_online,
+          status: body.status || (body.is_online ? 'online' : 'offline')
+        }];
+        console.log(`Received single presence update for ${body.discord_id}: ${body.is_online ? 'online' : 'offline'}`);
+      } else {
+        isBulkSync = true;
+      }
+    } catch {
+      isBulkSync = true;
+    }
 
     // Fetch all staff members with Discord IDs
     const { data: staffMembers, error: staffError } = await supabase
       .from("staff_members")
-      .select("id, discord_id, user_id")
+      .select("id, discord_id, name")
       .eq("is_active", true)
       .not("discord_id", "is", null);
 
@@ -68,62 +82,139 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Found ${staffMembers.length} staff members with Discord IDs`);
 
-    // Fetch guild members to get presence data
-    // Note: This requires the bot to have appropriate permissions in the guild
-    const guildResponse = await fetch(
-      `https://discord.com/api/v10/guilds/${guildId}/members?limit=1000`,
-      {
-        headers: {
-          Authorization: `Bot ${discordBotToken}`,
-        },
-      }
-    );
-
-    if (!guildResponse.ok) {
-      throw new Error(
-        `Discord API error: ${guildResponse.status} ${guildResponse.statusText}`
-      );
-    }
-
-    const guildMembers: DiscordGuildMember[] = await guildResponse.json();
-    console.log(`Retrieved ${guildMembers.length} guild members from Discord`);
-
-    // Create a map of Discord ID to presence status
-    const presenceMap = new Map<string, boolean>();
-    
-    guildMembers.forEach((member) => {
-      if (member.user?.id) {
-        // Consider user "online" if they have any status or activity
-        // Discord doesn't expose detailed presence without Gateway, so we check if they're in the guild
-        // In a real implementation with Gateway, you'd check member.status
-        presenceMap.set(member.user.id, true);
+    // Create a map of discord_id to staff member
+    const staffByDiscordId = new Map<string, { id: string; name: string }>();
+    staffMembers.forEach((staff) => {
+      if (staff.discord_id) {
+        staffByDiscordId.set(staff.discord_id, { id: staff.id, name: staff.name });
       }
     });
 
-    // Update staff members' online status
     let updatedCount = 0;
     const now = new Date().toISOString();
 
-    for (const staff of staffMembers) {
-      if (!staff.discord_id) continue;
-
-      const isOnline = presenceMap.has(staff.discord_id);
+    if (isBulkSync) {
+      // Bulk sync - fetch guild members from Discord API
+      console.log("Performing bulk sync from Discord API...");
       
-      // Update last_seen if user is online
-      if (isOnline) {
-        const { error: updateError } = await supabase
-          .from("staff_members")
-          .update({ last_seen: now })
-          .eq("id", staff.id);
+      try {
+        const guildResponse = await fetch(
+          `https://discord.com/api/v10/guilds/${guildId}/members?limit=1000`,
+          {
+            headers: {
+              Authorization: `Bot ${discordBotToken}`,
+            },
+          }
+        );
 
-        if (!updateError) {
+        if (!guildResponse.ok) {
+          const errorText = await guildResponse.text();
+          console.error(`Discord API error: ${guildResponse.status} - ${errorText}`);
+          throw new Error(`Discord API error: ${guildResponse.status}`);
+        }
+
+        const guildMembers = await guildResponse.json();
+        console.log(`Retrieved ${guildMembers.length} guild members from Discord`);
+
+        // Get Discord IDs of members in the guild
+        const guildMemberIds = new Set<string>();
+        guildMembers.forEach((member: any) => {
+          if (member.user?.id) {
+            guildMemberIds.add(member.user.id);
+          }
+        });
+
+        // Update presence for each staff member
+        for (const [discordId, staffInfo] of staffByDiscordId) {
+          const isInGuild = guildMemberIds.has(discordId);
+          
+          // Upsert presence record
+          const { error: upsertError } = await supabase
+            .from("discord_presence")
+            .upsert({
+              discord_id: discordId,
+              staff_member_id: staffInfo.id,
+              is_online: isInGuild, // Consider them potentially online if in guild
+              status: isInGuild ? 'online' : 'offline',
+              last_online_at: isInGuild ? now : undefined,
+              updated_at: now,
+            }, {
+              onConflict: 'discord_id'
+            });
+
+          if (!upsertError) {
+            updatedCount++;
+          } else {
+            console.error(`Error upserting presence for ${discordId}:`, upsertError);
+          }
+
+          // Also update staff_members.last_seen
+          if (isInGuild) {
+            await supabase
+              .from("staff_members")
+              .update({ last_seen: now })
+              .eq("id", staffInfo.id);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching from Discord API:", error);
+        // Set all staff to offline if we can't reach Discord
+        for (const [discordId, staffInfo] of staffByDiscordId) {
+          await supabase
+            .from("discord_presence")
+            .upsert({
+              discord_id: discordId,
+              staff_member_id: staffInfo.id,
+              is_online: false,
+              status: 'offline',
+              updated_at: now,
+            }, {
+              onConflict: 'discord_id'
+            });
+        }
+      }
+    } else {
+      // Process individual presence updates (from Discord bot webhook)
+      for (const update of presenceUpdates) {
+        const staffInfo = staffByDiscordId.get(update.discord_id);
+        
+        if (!staffInfo) {
+          console.log(`Discord ID ${update.discord_id} not found in staff members`);
+          continue;
+        }
+
+        // Upsert presence record
+        const { error: upsertError } = await supabase
+          .from("discord_presence")
+          .upsert({
+            discord_id: update.discord_id,
+            staff_member_id: staffInfo.id,
+            is_online: update.is_online,
+            status: update.status || (update.is_online ? 'online' : 'offline'),
+            last_online_at: update.is_online ? now : undefined,
+            updated_at: now,
+          }, {
+            onConflict: 'discord_id'
+          });
+
+        if (!upsertError) {
           updatedCount++;
-          console.log(`Updated presence for staff member ${staff.discord_id}: online`);
+          console.log(`Updated presence for ${staffInfo.name} (${update.discord_id}): ${update.status || (update.is_online ? 'online' : 'offline')}`);
+        } else {
+          console.error(`Error upserting presence for ${update.discord_id}:`, upsertError);
+        }
+
+        // Update staff_members.last_seen if online
+        if (update.is_online) {
+          await supabase
+            .from("staff_members")
+            .update({ last_seen: now })
+            .eq("id", staffInfo.id);
         }
       }
     }
 
-    console.log(`Successfully updated ${updatedCount} staff members`);
+    console.log(`Successfully updated ${updatedCount} presence records`);
 
     return new Response(
       JSON.stringify({
@@ -131,6 +222,7 @@ const handler = async (req: Request): Promise<Response> => {
         totalStaff: staffMembers.length,
         updated: updatedCount,
         timestamp: now,
+        mode: isBulkSync ? 'bulk' : 'webhook',
       }),
       {
         status: 200,
@@ -142,7 +234,7 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(
       JSON.stringify({
         error: error.message,
-        details: "Failed to sync Discord presence. Make sure the Discord bot is configured with proper permissions.",
+        details: "Failed to sync Discord presence",
       }),
       {
         status: 500,
