@@ -670,15 +670,15 @@ const Staff = () => {
             </div>
           </motion.div>
 
-          {/* Department Sections - Clean unified design */}
+          {/* Department Sections - Colorful unique design */}
           {[
-            { key: "leadership", title: "Leadership Team", subtitle: "The visionaries guiding SLRP to excellence", icon: Shield, staff: leadershipStaff, centerSingle: true },
-            { key: "management", title: "Management Team", subtitle: "Ensuring smooth server operations", icon: Users, staff: adminStaff, centerSingle: false },
-            { key: "development", title: "Development Team", subtitle: "Building innovative features", icon: Code, staff: developerStaff, centerSingle: true },
-            { key: "moderation", title: "Administration Team", subtitle: "Keeping the community safe and fair", icon: HeadphonesIcon, staff: moderatorStaff, centerSingle: false },
-            { key: "staff", title: "Staff Team", subtitle: "Core team members providing essential services", icon: UserCheck, staff: generalStaff, centerSingle: false },
-            { key: "support", title: "Support Team", subtitle: "Always here to help you succeed", icon: HeadphonesIcon, staff: supportStaff, centerSingle: false },
-            { key: "events", title: "Events Team", subtitle: "Creating unforgettable experiences", icon: Calendar, staff: eventStaff, centerSingle: false },
+            { key: "leadership", title: "Leadership Team", subtitle: "The visionaries guiding SLRP to excellence", icon: Shield, staff: leadershipStaff, centerSingle: true, gradient: "from-amber-500/20 via-orange-500/10 to-yellow-500/20", border: "border-amber-500/40", iconColor: "text-amber-400", titleGradient: "from-amber-400 via-orange-400 to-yellow-400" },
+            { key: "management", title: "Management Team", subtitle: "Ensuring smooth server operations", icon: Users, staff: adminStaff, centerSingle: false, gradient: "from-violet-500/20 via-purple-500/10 to-fuchsia-500/20", border: "border-violet-500/40", iconColor: "text-violet-400", titleGradient: "from-violet-400 via-purple-400 to-fuchsia-400" },
+            { key: "development", title: "Development Team", subtitle: "Building innovative features", icon: Code, staff: developerStaff, centerSingle: true, gradient: "from-emerald-500/20 via-green-500/10 to-teal-500/20", border: "border-emerald-500/40", iconColor: "text-emerald-400", titleGradient: "from-emerald-400 via-green-400 to-teal-400" },
+            { key: "moderation", title: "Administration Team", subtitle: "Keeping the community safe and fair", icon: HeadphonesIcon, staff: moderatorStaff, centerSingle: false, gradient: "from-red-500/20 via-rose-500/10 to-pink-500/20", border: "border-red-500/40", iconColor: "text-red-400", titleGradient: "from-red-400 via-rose-400 to-pink-400" },
+            { key: "staff", title: "Staff Team", subtitle: "Core team members providing essential services", icon: UserCheck, staff: generalStaff, centerSingle: false, gradient: "from-blue-500/20 via-indigo-500/10 to-violet-500/20", border: "border-blue-500/40", iconColor: "text-blue-400", titleGradient: "from-blue-400 via-indigo-400 to-violet-400" },
+            { key: "support", title: "Support Team", subtitle: "Always here to help you succeed", icon: HeadphonesIcon, staff: supportStaff, centerSingle: false, gradient: "from-cyan-500/20 via-sky-500/10 to-blue-500/20", border: "border-cyan-500/40", iconColor: "text-cyan-400", titleGradient: "from-cyan-400 via-sky-400 to-blue-400" },
+            { key: "events", title: "Events Team", subtitle: "Creating unforgettable experiences", icon: Calendar, staff: eventStaff, centerSingle: false, gradient: "from-pink-500/20 via-rose-500/10 to-orange-500/20", border: "border-pink-500/40", iconColor: "text-pink-400", titleGradient: "from-pink-400 via-rose-400 to-orange-400" },
           ].map((dept, deptIdx) => (
             <motion.div
               key={dept.key}
@@ -689,10 +689,10 @@ const Staff = () => {
               className="mb-12"
             >
               <div className="text-center mb-8">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-2xl mb-4 border border-primary/30">
-                  <dept.icon className="w-8 h-8 text-primary" />
+                <div className={`inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br ${dept.gradient} rounded-2xl mb-4 border ${dept.border}`}>
+                  <dept.icon className={`w-8 h-8 ${dept.iconColor}`} />
                 </div>
-                <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-violet-400 to-fuchsia-400 bg-clip-text text-transparent mb-3">{dept.title}</h2>
+                <h2 className={`text-3xl md:text-4xl font-bold bg-gradient-to-r ${dept.titleGradient} bg-clip-text text-transparent mb-3`}>{dept.title}</h2>
                 <p className="text-lg text-muted-foreground">{dept.subtitle}</p>
               </div>
               
