@@ -69,14 +69,14 @@ const Navigation = () => {
               onClick={() => navigate("/")}
             >
               <motion.span 
-                className="text-base md:text-lg font-semibold tracking-wide"
+                className="text-base md:text-lg font-bold tracking-wide"
                 style={{
                   background: 'linear-gradient(135deg, hsl(185 100% 50%), hsl(199 89% 48%), hsl(260 90% 60%))',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
                   fontStyle: 'italic',
-                  transform: 'skewX(-8deg)',
+                  transform: 'skewX(-12deg)',
                 }}
                 initial={{ opacity: 0, y: -5 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -88,7 +88,7 @@ const Navigation = () => {
                 className="text-[10px] md:text-xs font-bold tracking-[0.25em] flex gap-0.5 justify-center w-full"
                 style={{
                   fontStyle: 'italic',
-                  transform: 'skewX(-8deg)',
+                  transform: 'skewX(-12deg)',
                 }}
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
