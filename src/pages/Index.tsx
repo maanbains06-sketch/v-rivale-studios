@@ -283,61 +283,53 @@ const Index = () => {
               <LaunchingSoonButton />
             </motion.div>
 
-            {/* Impressive Server Name */}
+            {/* Impressive Server Name - FlameCity Style */}
             <motion.div 
               variants={itemVariants} 
               className="mb-10 relative"
             >
-              {/* Glow effect */}
+              {/* Glow effect behind text */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-[500px] h-[250px] bg-gradient-to-r from-primary/40 via-secondary/30 to-primary/40 blur-[100px] rounded-full gpu-accelerated"></div>
+                <div className="w-[600px] h-[300px] bg-gradient-to-r from-primary/50 via-neon-purple/40 to-secondary/50 blur-[120px] rounded-full gpu-accelerated"></div>
               </div>
               
               {/* Main Title */}
-              <h1 className="relative">
-                {/* SKYLIFE */}
-                <span className="block text-center">
-                  <span 
-                    className="inline-block text-7xl md:text-9xl lg:text-[10rem] font-black italic tracking-tighter bg-gradient-to-r from-primary via-neon-purple to-secondary bg-clip-text text-transparent drop-shadow-2xl"
-                    style={{ 
-                      fontStyle: 'italic',
-                      letterSpacing: '-0.05em',
-                      textShadow: '0 0 60px hsl(185 90% 65% / 0.5)'
-                    }}
-                  >
-                    SKYLIFE
-                  </span>
-                </span>
-                
-                {/* ROLEPLAY */}
-                <span className="block text-center -mt-2 md:-mt-4">
-                  <span 
-                    className="inline-block text-5xl md:text-7xl lg:text-8xl font-black italic tracking-wide text-foreground/90"
-                    style={{ 
-                      fontStyle: 'italic',
-                      letterSpacing: '0.1em',
-                      textShadow: '0 4px 30px hsl(0 0% 0% / 0.5)'
-                    }}
-                  >
-                    ROLEPLAY
-                  </span>
-                </span>
-                
-                {/* Decorative line */}
-                <div className="flex items-center justify-center gap-3 mt-4">
-                  <div className="h-[1px] w-20 md:w-32 bg-gradient-to-r from-transparent via-primary/60 to-transparent"></div>
-                  <Sparkles className="w-4 h-4 text-primary" />
-                  <div className="h-[1px] w-20 md:w-32 bg-gradient-to-r from-transparent via-primary/60 to-transparent"></div>
-                </div>
-                
-                {/* INDIA subtitle */}
+              <h1 className="relative flex flex-col items-center">
+                {/* SKYLIFE - Large bold italic with gradient */}
                 <span 
-                  className="block text-xl md:text-2xl lg:text-3xl font-bold tracking-[0.4em] text-center mt-3 italic"
+                  className="block text-8xl md:text-[10rem] lg:text-[12rem] font-black tracking-tight leading-none"
                   style={{ 
-                    background: 'linear-gradient(90deg, hsl(185 90% 65% / 0.7), hsl(275 80% 68%), hsl(185 90% 65% / 0.7))',
+                    fontStyle: 'italic',
+                    background: 'linear-gradient(135deg, hsl(185 90% 65%) 0%, hsl(275 80% 60%) 50%, hsl(275 90% 75%) 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
-                    fontStyle: 'italic'
+                    filter: 'drop-shadow(0 0 40px hsl(275 80% 60% / 0.6)) drop-shadow(0 4px 20px hsl(0 0% 0% / 0.8))',
+                    letterSpacing: '-0.02em'
+                  }}
+                >
+                  SKYLIFE
+                </span>
+                
+                {/* ROLEPLAY - Spaced out professional style */}
+                <span 
+                  className="block text-3xl md:text-5xl lg:text-6xl font-bold tracking-[0.35em] md:tracking-[0.4em] text-foreground/95 -mt-2 md:-mt-4"
+                  style={{ 
+                    fontStyle: 'italic',
+                    textShadow: '0 2px 20px hsl(0 0% 0% / 0.7), 0 0 40px hsl(275 80% 60% / 0.3)',
+                    letterSpacing: '0.35em'
+                  }}
+                >
+                  ROLEPLAY
+                </span>
+                
+                {/* INDIA - Subtle accent below */}
+                <span 
+                  className="block text-lg md:text-xl lg:text-2xl font-semibold tracking-[0.5em] mt-4"
+                  style={{ 
+                    fontStyle: 'italic',
+                    color: 'hsl(275 80% 68%)',
+                    textShadow: '0 0 20px hsl(275 80% 60% / 0.5)',
+                    letterSpacing: '0.5em'
                   }}
                 >
                   INDIA
