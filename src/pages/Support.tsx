@@ -368,7 +368,7 @@ const Support = () => {
               </CardHeader>
               <CardContent>
                 <Button variant="outline" className="w-full" asChild>
-                  <a href="mailto:support@skylifeindia.com">
+                  <a href="mailto:skyliferoleplay0@gmail.com">
                     <Mail className="w-4 h-4 mr-2" />
                     Email Us
                   </a>
