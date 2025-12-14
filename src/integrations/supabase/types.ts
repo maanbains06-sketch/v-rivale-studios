@@ -1800,6 +1800,8 @@ export type Database = {
           created_at: string | null
           department: string | null
           discord_avatar: string | null
+          discord_id: string | null
+          discord_username: string | null
           display_order: number | null
           id: string | null
           is_active: boolean | null
@@ -1814,6 +1816,8 @@ export type Database = {
           created_at?: string | null
           department?: string | null
           discord_avatar?: string | null
+          discord_id?: string | null
+          discord_username?: string | null
           display_order?: number | null
           id?: string | null
           is_active?: boolean | null
@@ -1828,6 +1832,8 @@ export type Database = {
           created_at?: string | null
           department?: string | null
           discord_avatar?: string | null
+          discord_id?: string | null
+          discord_username?: string | null
           display_order?: number | null
           id?: string | null
           is_active?: boolean | null
