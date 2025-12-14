@@ -417,15 +417,15 @@ const StaffProfile = () => {
                             transition={{ duration: 0.3, delay: index * 0.1 }}
                             className="group p-4 rounded-xl bg-gradient-to-r from-muted/50 to-muted/30 border border-border/30 hover:border-primary/30 transition-all duration-300"
                           >
-                            <div className="flex items-start gap-3">
-                              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                                <IconComponent className="w-4 h-4 text-primary" />
+                            <div className="flex items-start gap-4">
+                              <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                                <IconComponent className="w-5 h-5 text-primary" />
                               </div>
                               <div className="flex-1">
-                                <h4 className="text-xs font-medium text-foreground mb-0.5 group-hover:text-primary transition-colors leading-snug">
+                                <h4 className="text-sm font-semibold text-foreground mb-1 group-hover:text-primary transition-colors leading-snug">
                                   {responsibility}
                                 </h4>
-                                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                                <p className="text-xs text-muted-foreground leading-relaxed">
                                   {details.description}
                                 </p>
                               </div>
