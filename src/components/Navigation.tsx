@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { NavLink } from "./NavLink";
 import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail, Ban, Briefcase, Gift, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, Ticket, ExternalLink, Crown } from "lucide-react";
 import { Button } from "./ui/button";
-import AnimatedLogoIcon from "./AnimatedLogoIcon";
+import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -61,16 +61,43 @@ const Navigation = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 glass-effect nav-glow border-b-2 border-primary/30 shadow-[0_0_60px_rgba(var(--primary),0.25),0_0_120px_rgba(var(--primary),0.1)]">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {/* Animated Logo Icon */}
-            <AnimatedLogoIcon className="w-10 h-10" />
-            
-            {/* Logo Text */}
-            <h1 className="text-2xl font-bold relative z-10">
-              <span className="inline-block text-gradient bg-gradient-to-r from-neon-cyan to-neon-purple bg-clip-text text-transparent animate-gradient-shift">
-                SLRP
-              </span>
-            </h1>
+          <div className="flex items-center gap-2">
+            {/* Animated Brand Text */}
+            <motion.div 
+              className="flex flex-col leading-none cursor-pointer"
+              whileHover={{ scale: 1.02 }}
+              onClick={() => navigate("/")}
+            >
+              <motion.span 
+                className="text-xl md:text-2xl font-black tracking-wider"
+                style={{
+                  background: 'linear-gradient(135deg, hsl(185 100% 50%), hsl(199 89% 48%), hsl(260 90% 60%))',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  textShadow: '0 0 30px hsl(199 89% 48% / 0.3)',
+                }}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                SKYLIFE ROLEPLAY
+              </motion.span>
+              <motion.span 
+                className="text-xs md:text-sm font-bold tracking-[0.3em] text-center"
+                style={{
+                  background: 'linear-gradient(90deg, #FF9933, #FFFFFF, #138808)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                INDIA
+              </motion.span>
+            </motion.div>
           </div>
           
           <div className="hidden md:flex items-center gap-6">
