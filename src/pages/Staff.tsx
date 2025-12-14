@@ -463,18 +463,18 @@ const Staff = () => {
               {/* Responsibilities */}
               {member.responsibilities && member.responsibilities.length > 0 && (
                 <div className="w-full mb-3">
-                  <div className="flex flex-wrap justify-center gap-1">
-                    {member.responsibilities.slice(0, 3).map((resp, idx) => (
+                  <div className="flex flex-wrap justify-center gap-1.5">
+                    {member.responsibilities.slice(0, 4).map((resp, idx) => (
                       <span 
                         key={idx}
-                        className="text-[9px] px-2 py-0.5 bg-background/50 text-muted-foreground rounded-full border border-border/30"
+                        className="text-xs px-3 py-1 bg-background/50 text-muted-foreground rounded-full border border-border/30 font-medium"
                       >
                         {resp}
                       </span>
                     ))}
-                    {member.responsibilities.length > 3 && (
-                      <span className="text-[9px] px-2 py-0.5 bg-primary/10 text-primary rounded-full border border-primary/20">
-                        +{member.responsibilities.length - 3} more
+                    {member.responsibilities.length > 4 && (
+                      <span className="text-xs px-3 py-1 bg-primary/10 text-primary rounded-full border border-primary/20 font-medium">
+                        +{member.responsibilities.length - 4} more
                       </span>
                     )}
                   </div>
