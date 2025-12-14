@@ -300,6 +300,48 @@ export type Database = {
           },
         ]
       }
+      featured_youtubers: {
+        Row: {
+          avatar_url: string | null
+          channel_url: string
+          created_at: string
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          is_live: boolean | null
+          live_stream_url: string | null
+          name: string
+          role: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          channel_url: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_live?: boolean | null
+          live_stream_url?: string | null
+          name: string
+          role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          channel_url?: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_live?: boolean | null
+          live_stream_url?: string | null
+          name?: string
+          role?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       firefighter_applications: {
         Row: {
           admin_notes: string | null

@@ -72,37 +72,45 @@ const FloatingParticles = () => {
   );
 };
 
-// Featured YouTubers data
-const featuredYoutubers = [
-  {
-    id: "rakazone",
-    name: "RakaZone Gaming",
-    channelUrl: "https://www.youtube.com/@RakaZoneGaming",
-    avatar: "https://yt3.googleusercontent.com/ytc/AIdro_nxq9pChN9pNpOyM9Ub0Y2_cZG7yJN2cNKvElQy=s176-c-k-c0x00ffffff-no-rj",
-    role: "Streamer",
-  },
-  {
-    id: "tbone",
-    name: "TbOne",
-    channelUrl: "https://www.youtube.com/@TbOneGaming",
-    avatar: "https://yt3.googleusercontent.com/dE-h3VfrQYjQGDKqQUaR_Y8KNsaX80Wr1SgNR9EBgFxqsZhMHIb8EqQw_YmqXGkTGEwFBlrT=s176-c-k-c0x00ffffff-no-rj",
-    role: "Streamer",
-  },
-  {
-    id: "qayzer",
-    name: "QAYZER GAMING",
-    channelUrl: "https://www.youtube.com/@QAYZERGAMING",
-    avatar: "https://yt3.googleusercontent.com/ytc/AIdro_kM3mNWDxVRyEq3OoQGN8xmHbJXyxz2NbCEDdyYUw=s176-c-k-c0x00ffffff-no-rj",
-    role: "Streamer",
-  },
-  {
-    id: "raman",
-    name: "Raman Chopra",
-    channelUrl: "https://www.youtube.com/@RamanChopraLive",
-    avatar: "https://yt3.googleusercontent.com/ytc/AIdro_nBxP7xHzk1Fv3bUMkhk4x8WQD2_Y4wL5tZYKLr=s176-c-k-c0x00ffffff-no-rj",
-    role: "Streamer",
-  },
-];
+// Typing animation component
+const TypeWriter = ({ text, className, delay = 0 }: { text: string; className?: string; delay?: number }) => {
+  const [displayedText, setDisplayedText] = useState("");
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [started, setStarted] = useState(false);
+
+  useEffect(() => {
+    const startTimer = setTimeout(() => setStarted(true), delay);
+    return () => clearTimeout(startTimer);
+  }, [delay]);
+
+  useEffect(() => {
+    if (!started) return;
+    if (currentIndex < text.length) {
+      const timer = setTimeout(() => {
+        setDisplayedText(prev => prev + text[currentIndex]);
+        setCurrentIndex(prev => prev + 1);
+      }, 80);
+      return () => clearTimeout(timer);
+    }
+  }, [currentIndex, text, started]);
+
+  return (
+    <span className={className}>
+      {displayedText}
+      {currentIndex < text.length && <span className="animate-pulse">|</span>}
+    </span>
+  );
+};
+
+interface FeaturedYoutuber {
+  id: string;
+  name: string;
+  channel_url: string;
+  avatar_url: string | null;
+  role: string;
+  is_live: boolean;
+  live_stream_url: string | null;
+}
 
 // Scroll animation variants
 const scrollRevealVariants = {
@@ -146,6 +154,8 @@ const Index = () => {
   const [serverConnectUrl, setServerConnectUrl] = useState("fivem://connect/cfx.re/join/abc123");
   const [serverPlayers, setServerPlayers] = useState<number | null>(null);
   const [maxPlayers, setMaxPlayers] = useState<number>(64);
+  const [featuredYoutubers, setFeaturedYoutubers] = useState<FeaturedYoutuber[]>([]);
+  const [showTyping, setShowTyping] = useState(true);
 
   const { scrollYProgress } = useScroll();
   const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
@@ -212,6 +222,20 @@ const Index = () => {
 
     fetchServerStatus();
     const interval = setInterval(fetchServerStatus, 60000);
+
+    // Fetch featured YouTubers
+    const fetchYoutubers = async () => {
+      const { data, error } = await supabase
+        .from('featured_youtubers')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+      
+      if (!error && data) {
+        setFeaturedYoutubers(data);
+      }
+    };
+    fetchYoutubers();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
       checkUserStatus();
@@ -314,7 +338,7 @@ const Index = () => {
                       filter: 'drop-shadow(0 0 40px rgba(139,92,246,0.6))'
                     }}
                   >
-                    SKYLIFE
+                    {showTyping ? <TypeWriter text="SKYLIFE" delay={500} /> : "SKYLIFE"}
                   </span>
                   <span 
                     className="relative inline-block text-white ml-3 md:ml-5"
@@ -323,7 +347,7 @@ const Index = () => {
                       filter: 'drop-shadow(0 0 30px rgba(255,255,255,0.3))'
                     }}
                   >
-                    ROLEPLAY
+                    {showTyping ? <TypeWriter text="ROLEPLAY" delay={1200} /> : "ROLEPLAY"}
                   </span>
                 </span>
                 
@@ -332,7 +356,7 @@ const Index = () => {
                   className="block text-2xl md:text-3xl lg:text-4xl font-bold tracking-[0.5em] text-center mt-4 bg-gradient-to-r from-white/60 via-white to-white/60 bg-clip-text text-transparent"
                   style={{ textShadow: '0 0 30px rgba(255,255,255,0.3)' }}
                 >
-                  INDIA
+                  {showTyping ? <TypeWriter text="INDIA" delay={2000} /> : "INDIA"}
                 </span>
 
                 {/* Decorative lines */}
@@ -564,66 +588,119 @@ const Index = () => {
         </div>
       </motion.section>
 
-      {/* Featured Streamers Section */}
-      <motion.section 
-        className="py-16 md:py-24 relative"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        variants={scrollRevealVariants}
-      >
-        <div className="container mx-auto px-4">
-          <div className="mb-12 text-left">
-            <h2 className="text-4xl md:text-6xl font-bold italic text-gradient mb-4">
-              FEATURED STREAMERS
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl">
-              Watch the most talented Skylife Roleplay India roleplayers showcase their skills. From thrilling heists to immersive roleplay moments, discover what makes our community exceptional.
-            </p>
-          </div>
-
-          <motion.div 
-            className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8"
-            variants={staggerContainerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-          >
-            {featuredYoutubers.map((youtuber, index) => (
-              <motion.div
-                key={youtuber.id}
-                variants={itemVariants}
-                className="flex flex-col items-center text-center group"
-              >
-                <div className="relative mb-4">
-                  <div className="absolute -inset-2 rounded-full bg-gradient-to-br from-secondary via-primary to-secondary opacity-60 blur-lg group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="relative w-28 h-28 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-secondary/50 group-hover:border-secondary transition-colors duration-300">
-                    <img
-                      src={youtuber.avatar}
-                      alt={youtuber.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                  </div>
+      {/* Featured Streamers Section - Only show if there are YouTubers */}
+      {featuredYoutubers.length > 0 && (
+        <motion.section 
+          className="py-16 md:py-24 relative"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={scrollRevealVariants}
+        >
+          <div className="container mx-auto px-4">
+            {/* Currently Live Section */}
+            {featuredYoutubers.some(y => y.is_live) && (
+              <div className="mb-16">
+                <h2 className="text-4xl md:text-6xl font-bold italic text-gradient mb-8">
+                  CURRENTLY LIVE
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {featuredYoutubers.filter(y => y.is_live).map((youtuber) => (
+                    <a 
+                      key={youtuber.id} 
+                      href={youtuber.live_stream_url || youtuber.channel_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group relative rounded-2xl overflow-hidden border border-destructive/30 hover:border-destructive transition-colors"
+                    >
+                      <div className="absolute top-3 left-3 z-10">
+                        <Badge className="bg-destructive text-destructive-foreground font-bold">LIVE</Badge>
+                      </div>
+                      <div className="aspect-video bg-card">
+                        <img
+                          src={youtuber.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${youtuber.name}`}
+                          alt={youtuber.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="p-4 bg-card/80">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary">
+                            <img
+                              src={youtuber.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${youtuber.name}`}
+                              alt={youtuber.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div>
+                            <h4 className="font-bold group-hover:text-primary transition-colors">{youtuber.name}</h4>
+                            <p className="text-sm text-muted-foreground">{youtuber.role}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </a>
+                  ))}
                 </div>
-                <h3 className="font-bold text-lg md:text-xl mb-1 group-hover:text-primary transition-colors duration-300">
-                  {youtuber.name}
-                </h3>
-                <p className="text-muted-foreground text-sm mb-4">{youtuber.role}</p>
-                <Button
-                  size="sm"
-                  className="bg-destructive hover:bg-destructive/80 text-destructive-foreground rounded-full px-6"
-                  asChild
+              </div>
+            )}
+
+            <div className="mb-12 text-left">
+              <h2 className="text-4xl md:text-6xl font-bold italic text-gradient mb-4">
+                FEATURED STREAMERS
+              </h2>
+              <p className="text-muted-foreground text-lg max-w-2xl">
+                Watch the most talented Skylife Roleplay India roleplayers showcase their skills.
+              </p>
+            </div>
+
+            <motion.div 
+              className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8"
+              variants={staggerContainerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+            >
+              {featuredYoutubers.map((youtuber) => (
+                <motion.div
+                  key={youtuber.id}
+                  variants={itemVariants}
+                  className="flex flex-col items-center text-center group"
                 >
-                  <a href={youtuber.channelUrl} target="_blank" rel="noopener noreferrer">
-                    <Youtube className="w-4 h-4 mr-2" />
-                    YouTube
-                  </a>
-                </Button>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </motion.section>
+                  <div className="relative mb-4">
+                    {youtuber.is_live && (
+                      <div className="absolute -top-2 -right-2 z-10">
+                        <Badge className="bg-destructive text-destructive-foreground animate-pulse">LIVE</Badge>
+                      </div>
+                    )}
+                    <div className="absolute -inset-2 rounded-full bg-gradient-to-br from-secondary via-primary to-secondary opacity-60 blur-lg group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="relative w-28 h-28 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-secondary/50 group-hover:border-secondary transition-colors duration-300">
+                      <img
+                        src={youtuber.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${youtuber.name}`}
+                        alt={youtuber.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                    </div>
+                  </div>
+                  <h3 className="font-bold text-lg md:text-xl mb-1 group-hover:text-primary transition-colors duration-300">
+                    {youtuber.name}
+                  </h3>
+                  <p className="text-muted-foreground text-sm mb-4">{youtuber.role}</p>
+                  <Button
+                    size="sm"
+                    className="bg-destructive hover:bg-destructive/80 text-destructive-foreground rounded-full px-6"
+                    asChild
+                  >
+                    <a href={youtuber.is_live && youtuber.live_stream_url ? youtuber.live_stream_url : youtuber.channel_url} target="_blank" rel="noopener noreferrer">
+                      <Youtube className="w-4 h-4 mr-2" />
+                      {youtuber.is_live ? "Watch Live" : "YouTube"}
+                    </a>
+                  </Button>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </motion.section>
+      )}
 
       {/* Footer */}
       <footer className="border-t border-border/20 py-12 md:py-16 relative z-10 bg-background">
