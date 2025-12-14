@@ -482,30 +482,9 @@ const Staff = () => {
               )}
 
               {/* Department Badge */}
-              <Badge variant="outline" className="bg-muted/30 text-muted-foreground text-[10px] px-2.5 py-0.5 border-border/50 mb-2 uppercase tracking-wider">
+              <Badge variant="outline" className="bg-muted/30 text-muted-foreground text-[10px] px-2.5 py-0.5 border-border/50 mb-3 uppercase tracking-wider">
                 {member.department.replace("_", " ")}
               </Badge>
-
-              {/* Timezone & Availability Indicator */}
-              {timezoneInfo && (
-                <div className="flex items-center gap-1.5 mb-3">
-                  <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border ${
-                    timezoneInfo.isWorkingHours 
-                      ? 'bg-green-500/10 text-green-500 border-green-500/30' 
-                      : 'bg-muted/30 text-muted-foreground border-border/50'
-                  }`}>
-                    <Globe className="w-3 h-3" />
-                    <span>{timezoneInfo.localTime}</span>
-                    <span className="opacity-70">•</span>
-                    <span className="truncate max-w-[60px]">{timezoneInfo.tzAbbr}</span>
-                  </div>
-                  {timezoneInfo.isWorkingHours && (
-                    <span className="text-[9px] text-green-500 font-medium uppercase tracking-wider">
-                      Active Hours
-                    </span>
-                  )}
-                </div>
-              )}
               
               {/* Achievement Badges */}
               {achievements.length > 0 && (
@@ -719,6 +698,7 @@ const Staff = () => {
             { key: "management", title: "Management Team", subtitle: "Ensuring smooth server operations", icon: Users, staff: adminStaff, centerSingle: false },
             { key: "development", title: "Development Team", subtitle: "Building innovative features", icon: Code, staff: developerStaff, centerSingle: true },
             { key: "moderation", title: "Administration Team", subtitle: "Keeping the community safe and fair", icon: HeadphonesIcon, staff: moderatorStaff, centerSingle: false },
+            { key: "staff", title: "Staff Team", subtitle: "Core team members providing essential services", icon: UserCheck, staff: generalStaff, centerSingle: false },
             { key: "support", title: "Support Team", subtitle: "Always here to help you succeed", icon: HeadphonesIcon, staff: supportStaff, centerSingle: false },
             { key: "events", title: "Events Team", subtitle: "Creating unforgettable experiences", icon: Calendar, staff: eventStaff, centerSingle: false },
           ].map((dept, deptIdx) => (
