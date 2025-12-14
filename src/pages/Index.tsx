@@ -291,7 +291,7 @@ const Index = () => {
             >
               {/* Glow effect behind text */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-[600px] h-[300px] bg-gradient-to-r from-purple-300/60 via-violet-300/70 to-purple-300/60 blur-[120px] rounded-full gpu-accelerated"></div>
+                <div className="w-[600px] h-[300px] bg-gradient-to-r from-violet-500/40 via-purple-500/50 to-violet-500/40 blur-[120px] rounded-full gpu-accelerated"></div>
               </div>
               
               {/* Main Title */}
@@ -306,25 +306,37 @@ const Index = () => {
                   }}
                 >
                   <span 
-                    className="bg-gradient-to-b from-purple-200 via-violet-300 to-purple-400 bg-clip-text text-transparent"
-                    style={{ filter: 'drop-shadow(0 4px 30px hsl(270 90% 80% / 0.7))' }}
+                    className="bg-gradient-to-b from-violet-400 via-purple-500 to-purple-600 bg-clip-text text-transparent"
+                    style={{ filter: 'drop-shadow(0 4px 30px hsl(270 70% 50% / 0.5))' }}
                   >
                     SK
                   </span>
-                  {/* Cloud Icon replacing Y */}
-                  <Cloud 
-                    className="inline-block w-16 h-16 md:w-28 md:h-28 lg:w-36 lg:h-36 -mx-1 md:-mx-2"
-                    style={{ 
-                      color: 'hsl(270 90% 85%)',
-                      filter: 'drop-shadow(0 0 25px hsl(270 90% 80% / 1))',
-                      transform: 'skewX(8deg)',
+                  {/* Cloud Icon replacing Y with floating animation */}
+                  <motion.div
+                    animate={{ 
+                      y: [0, -8, 0],
                     }}
-                    strokeWidth={2.5}
-                    fill="hsl(270 80% 75%)"
-                  />
+                    transition={{ 
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                    className="inline-flex"
+                    style={{ transform: 'skewX(8deg)' }}
+                  >
+                    <Cloud 
+                      className="w-16 h-16 md:w-28 md:h-28 lg:w-36 lg:h-36 -mx-1 md:-mx-2"
+                      style={{ 
+                        color: 'hsl(270 70% 60%)',
+                        filter: 'drop-shadow(0 0 20px hsl(270 70% 50% / 0.8))'
+                      }}
+                      strokeWidth={2.5}
+                      fill="hsl(270 60% 55%)"
+                    />
+                  </motion.div>
                   <span 
-                    className="bg-gradient-to-b from-purple-200 via-violet-300 to-purple-400 bg-clip-text text-transparent"
-                    style={{ filter: 'drop-shadow(0 4px 30px hsl(270 90% 80% / 0.7))' }}
+                    className="bg-gradient-to-b from-violet-400 via-purple-500 to-purple-600 bg-clip-text text-transparent"
+                    style={{ filter: 'drop-shadow(0 4px 30px hsl(270 70% 50% / 0.5))' }}
                   >
                     LIFE
                   </span>
@@ -342,13 +354,13 @@ const Index = () => {
                   ROLEPLAY
                 </span>
                 
-                {/* INDIA - Small accent in light purple, italic */}
+                {/* INDIA - Small accent in purple, italic */}
                 <span 
                   className="block text-sm md:text-base lg:text-lg font-semibold tracking-[0.3em] mt-3 italic"
                   style={{ 
                     fontStyle: 'italic',
                     letterSpacing: '0.3em',
-                    color: 'hsl(270 90% 85%)',
+                    color: 'hsl(270 70% 65%)',
                     transform: 'skewX(-5deg)',
                   }}
                 >
