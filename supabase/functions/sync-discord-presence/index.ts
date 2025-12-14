@@ -68,9 +68,29 @@ const handler = async (req: Request): Promise<Response> => {
     try {
       const body = await req.json();
       if (body.presenceUpdates && Array.isArray(body.presenceUpdates)) {
-        presenceUpdates = body.presenceUpdates;
+        // Handle website presence updates (staff_member_id based)
+        for (const update of body.presenceUpdates) {
+          if (update.staff_member_id && !update.discord_id) {
+            // Website presence - lookup discord_id from staff_member_id
+            const { data: staff } = await supabase
+              .from("staff_members")
+              .select("discord_id")
+              .eq("id", update.staff_member_id)
+              .single();
+            
+            if (staff?.discord_id) {
+              presenceUpdates.push({
+                discord_id: staff.discord_id,
+                is_online: update.is_online,
+                status: update.status || (update.is_online ? 'online' : 'offline')
+              });
+            }
+          } else if (update.discord_id) {
+            presenceUpdates.push(update);
+          }
+        }
         isWebhookUpdate = true;
-        console.log(`Received ${presenceUpdates.length} presence updates from Discord bot`);
+        console.log(`Received ${presenceUpdates.length} presence updates`);
       } else if (body.discord_id && typeof body.is_online === 'boolean') {
         // Single presence update
         presenceUpdates = [{ 
@@ -80,6 +100,23 @@ const handler = async (req: Request): Promise<Response> => {
         }];
         isWebhookUpdate = true;
         console.log(`Received single presence update for ${body.discord_id}: ${body.is_online ? 'online' : 'offline'}`);
+      } else if (body.staff_member_id && typeof body.is_online === 'boolean') {
+        // Website presence update via staff_member_id
+        const { data: staff } = await supabase
+          .from("staff_members")
+          .select("discord_id")
+          .eq("id", body.staff_member_id)
+          .single();
+        
+        if (staff?.discord_id) {
+          presenceUpdates = [{
+            discord_id: staff.discord_id,
+            is_online: body.is_online,
+            status: body.status || (body.is_online ? 'online' : 'offline')
+          }];
+          isWebhookUpdate = true;
+          console.log(`Received website presence update for staff ${body.staff_member_id}: ${body.is_online ? 'online' : 'offline'}`);
+        }
       }
     } catch {
       // No body or invalid JSON - proceed with widget sync
