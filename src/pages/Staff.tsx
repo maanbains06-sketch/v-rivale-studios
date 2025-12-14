@@ -353,11 +353,11 @@ const Staff = () => {
             </motion.div>
           </div>
 
-          <div className="relative px-6 pb-6 -mt-8">
+          <div className="relative px-5 pb-5 -mt-8">
             <div className="flex flex-col items-center text-center">
               {/* Avatar with enhanced design */}
               <motion.div 
-                className="relative mb-5"
+                className="relative mb-4"
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
@@ -365,7 +365,7 @@ const Staff = () => {
                 <div className="absolute -inset-2 bg-gradient-to-b from-primary/30 to-primary/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 
                 {/* Avatar ring */}
-                <div className="relative w-24 h-24 rounded-full p-1 bg-gradient-to-b from-primary via-primary/70 to-primary/40 shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-shadow duration-300">
+                <div className="relative w-20 h-20 rounded-full p-1 bg-gradient-to-b from-primary via-primary/70 to-primary/40 shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-shadow duration-300">
                   <div className="w-full h-full rounded-full overflow-hidden bg-background ring-2 ring-background">
                     <img
                       src={member.discord_avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`}
@@ -377,22 +377,27 @@ const Staff = () => {
                 
                 {/* Role Icon Badge */}
                 <motion.div 
-                  className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-10 h-10 bg-gradient-to-b from-primary to-primary/80 rounded-xl flex items-center justify-center border-3 border-background shadow-lg"
+                  className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-8 h-8 bg-gradient-to-b from-primary to-primary/80 rounded-lg flex items-center justify-center border-2 border-background shadow-lg"
                   whileHover={{ scale: 1.15, rotate: 5 }}
                 >
-                  <Icon className="w-5 h-5 text-primary-foreground" />
+                  <Icon className="w-4 h-4 text-primary-foreground" />
                 </motion.div>
               </motion.div>
 
-              {/* Name with hover effect */}
-              <h3 className="text-xl font-bold text-foreground mb-1 group-hover:text-primary transition-colors duration-300 tracking-tight">
+              {/* Name */}
+              <h3 className="text-lg font-bold text-foreground mb-0.5 group-hover:text-primary transition-colors duration-300 tracking-tight">
                 {member.name}
               </h3>
               
-              {/* Role with gradient on hover */}
-              <span className="text-sm font-semibold text-primary/90 mb-3 group-hover:text-primary transition-colors duration-300">
+              {/* Role */}
+              <span className="text-sm font-semibold text-primary/90 mb-2 group-hover:text-primary transition-colors duration-300">
                 {member.role}
               </span>
+
+              {/* Department Badge */}
+              <Badge variant="outline" className="bg-muted/30 text-muted-foreground text-[10px] px-2.5 py-0.5 border-border/50 mb-3 uppercase tracking-wider">
+                {member.department.replace("_", " ")}
+              </Badge>
               
               {/* Achievement Badges */}
               {achievements.length > 0 && (
@@ -406,7 +411,7 @@ const Staff = () => {
                     >
                       <Badge 
                         variant="outline"
-                        className="bg-primary/10 text-primary text-[10px] px-2.5 py-0.5 border-primary/30 font-medium"
+                        className="bg-primary/10 text-primary text-[10px] px-2 py-0.5 border-primary/30 font-medium"
                       >
                         {badge.label}
                       </Badge>
@@ -415,11 +420,49 @@ const Staff = () => {
                 </div>
               )}
 
+              {/* Bio */}
               {member.bio && (
-                <p className="text-xs text-muted-foreground italic mb-4 max-w-[220px] leading-relaxed line-clamp-2 opacity-80 group-hover:opacity-100 transition-opacity duration-300">
+                <p className="text-xs text-muted-foreground italic mb-3 max-w-[200px] leading-relaxed line-clamp-2 opacity-80 group-hover:opacity-100 transition-opacity duration-300">
                   &quot;{member.bio}&quot;
                 </p>
               )}
+
+              {/* Responsibilities */}
+              {member.responsibilities && member.responsibilities.length > 0 && (
+                <div className="w-full mb-3">
+                  <div className="flex flex-wrap justify-center gap-1">
+                    {member.responsibilities.slice(0, 3).map((resp, idx) => (
+                      <span 
+                        key={idx}
+                        className="text-[9px] px-2 py-0.5 bg-background/50 text-muted-foreground rounded-full border border-border/30"
+                      >
+                        {resp}
+                      </span>
+                    ))}
+                    {member.responsibilities.length > 3 && (
+                      <span className="text-[9px] px-2 py-0.5 bg-primary/10 text-primary rounded-full border border-primary/20">
+                        +{member.responsibilities.length - 3} more
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Quick Stats */}
+              <div className="w-full grid grid-cols-2 gap-2 mb-3">
+                <div className="bg-background/40 rounded-lg p-2 border border-border/20">
+                  <div className="flex items-center justify-center gap-1.5">
+                    <MessageCircle className="w-3 h-3 text-primary/70" />
+                    <span className="text-[10px] text-muted-foreground">Support</span>
+                  </div>
+                </div>
+                <div className="bg-background/40 rounded-lg p-2 border border-border/20">
+                  <div className="flex items-center justify-center gap-1.5">
+                    <Mail className="w-3 h-3 text-primary/70" />
+                    <span className="text-[10px] text-muted-foreground">Contact</span>
+                  </div>
+                </div>
+              </div>
 
               {/* View Profile Button */}
               <motion.div 
@@ -429,7 +472,7 @@ const Staff = () => {
               >
                 <div className="flex items-center justify-center gap-2 text-xs font-medium text-muted-foreground group-hover:text-primary transition-all duration-300">
                   <UserCircle className="w-4 h-4" />
-                  <span>View Profile</span>
+                  <span>View Full Profile</span>
                   <motion.span
                     className="text-primary"
                     animate={{ x: [0, 4, 0] }}
