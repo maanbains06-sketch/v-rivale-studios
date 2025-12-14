@@ -21,11 +21,19 @@ interface DiscordUser {
   avatar?: string;
 }
 
+interface WidgetMember {
+  id: string;
+  username: string;
+  discriminator: string;
+  avatar: string | null;
+  status: string; // online, idle, dnd
+  avatar_url: string;
+}
+
 const getAvatarUrl = (user: DiscordUser): string => {
   if (user.avatar) {
     return `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=256`;
   }
-  // Default avatar based on discriminator or user ID
   const defaultIndex = user.discriminator === '0' 
     ? (BigInt(user.id) >> BigInt(22)) % BigInt(6)
     : parseInt(user.discriminator) % 5;
@@ -55,12 +63,13 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Check if this is a webhook call from a Discord bot with presence updates
     let presenceUpdates: PresenceUpdate[] = [];
-    let isBulkSync = false;
+    let isWebhookUpdate = false;
 
     try {
       const body = await req.json();
       if (body.presenceUpdates && Array.isArray(body.presenceUpdates)) {
         presenceUpdates = body.presenceUpdates;
+        isWebhookUpdate = true;
         console.log(`Received ${presenceUpdates.length} presence updates from Discord bot`);
       } else if (body.discord_id && typeof body.is_online === 'boolean') {
         // Single presence update
@@ -69,12 +78,11 @@ const handler = async (req: Request): Promise<Response> => {
           is_online: body.is_online,
           status: body.status || (body.is_online ? 'online' : 'offline')
         }];
+        isWebhookUpdate = true;
         console.log(`Received single presence update for ${body.discord_id}: ${body.is_online ? 'online' : 'offline'}`);
-      } else {
-        isBulkSync = true;
       }
     } catch {
-      isBulkSync = true;
+      // No body or invalid JSON - proceed with widget sync
     }
 
     // Fetch all staff members with Discord IDs
@@ -118,122 +126,8 @@ const handler = async (req: Request): Promise<Response> => {
     let profilesUpdated = 0;
     const now = new Date().toISOString();
 
-    if (isBulkSync) {
-      // Bulk sync - fetch guild members from Discord API
-      console.log("Performing bulk sync from Discord API...");
-      
-      try {
-        const guildResponse = await fetch(
-          `https://discord.com/api/v10/guilds/${guildId}/members?limit=1000`,
-          {
-            headers: {
-              Authorization: `Bot ${discordBotToken}`,
-            },
-          }
-        );
-
-        if (!guildResponse.ok) {
-          const errorText = await guildResponse.text();
-          console.error(`Discord API error: ${guildResponse.status} - ${errorText}`);
-          throw new Error(`Discord API error: ${guildResponse.status}`);
-        }
-
-        const guildMembers = await guildResponse.json();
-        console.log(`Retrieved ${guildMembers.length} guild members from Discord`);
-
-        // Create a map of Discord user data
-        const discordUserData = new Map<string, DiscordUser>();
-        guildMembers.forEach((member: any) => {
-          if (member.user?.id) {
-            discordUserData.set(member.user.id, member.user);
-          }
-        });
-
-        // Get Discord IDs of members in the guild
-        const guildMemberIds = new Set<string>();
-        guildMembers.forEach((member: any) => {
-          if (member.user?.id) {
-            guildMemberIds.add(member.user.id);
-          }
-        });
-
-        // Update presence and profile info for each staff member
-        for (const [discordId, staffInfo] of staffByDiscordId) {
-          const isInGuild = guildMemberIds.has(discordId);
-          const discordUser = discordUserData.get(discordId);
-          
-          // Update staff member's Discord profile info if we have data
-          if (discordUser) {
-            const newDisplayName = discordUser.global_name || discordUser.username;
-            const newUsername = discordUser.username;
-            const newAvatar = getAvatarUrl(discordUser);
-            
-            // Update name, username, and avatar from Discord
-            const { error: updateError } = await supabase
-              .from("staff_members")
-              .update({
-                name: newDisplayName,
-                discord_username: newUsername,
-                discord_avatar: newAvatar,
-                last_seen: isInGuild ? now : undefined,
-              })
-              .eq("id", staffInfo.id);
-            
-            if (!updateError) {
-              profilesUpdated++;
-              console.log(`Updated Discord profile for ${staffInfo.name} -> ${newDisplayName}`);
-            } else {
-              console.error(`Error updating profile for ${staffInfo.name}:`, updateError);
-            }
-          }
-          
-          // Upsert presence record
-          const { error: upsertError } = await supabase
-            .from("discord_presence")
-            .upsert({
-              discord_id: discordId,
-              staff_member_id: staffInfo.id,
-              is_online: isInGuild, // Consider them potentially online if in guild
-              status: isInGuild ? 'online' : 'offline',
-              last_online_at: isInGuild ? now : undefined,
-              updated_at: now,
-            }, {
-              onConflict: 'discord_id'
-            });
-
-          if (!upsertError) {
-            updatedCount++;
-          } else {
-            console.error(`Error upserting presence for ${discordId}:`, upsertError);
-          }
-
-          // Also update staff_members.last_seen
-          if (isInGuild && !discordUser) {
-            await supabase
-              .from("staff_members")
-              .update({ last_seen: now })
-              .eq("id", staffInfo.id);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching from Discord API:", error);
-        // Set all staff to offline if we can't reach Discord
-        for (const [discordId, staffInfo] of staffByDiscordId) {
-          await supabase
-            .from("discord_presence")
-            .upsert({
-              discord_id: discordId,
-              staff_member_id: staffInfo.id,
-              is_online: false,
-              status: 'offline',
-              updated_at: now,
-            }, {
-              onConflict: 'discord_id'
-            });
-        }
-      }
-    } else {
-      // Process individual presence updates (from Discord bot webhook)
+    if (isWebhookUpdate) {
+      // Process webhook presence updates from Discord bot
       for (const update of presenceUpdates) {
         const staffInfo = staffByDiscordId.get(update.discord_id);
         
@@ -242,42 +136,7 @@ const handler = async (req: Request): Promise<Response> => {
           continue;
         }
 
-        // Fetch user info from Discord API for profile sync
-        try {
-          const userResponse = await fetch(
-            `https://discord.com/api/v10/users/${update.discord_id}`,
-            {
-              headers: {
-                Authorization: `Bot ${discordBotToken}`,
-              },
-            }
-          );
-
-          if (userResponse.ok) {
-            const discordUser: DiscordUser = await userResponse.json();
-            const newDisplayName = discordUser.global_name || discordUser.username;
-            const newUsername = discordUser.username;
-            const newAvatar = getAvatarUrl(discordUser);
-            
-            // Update staff member's name, username, and avatar from Discord
-            await supabase
-              .from("staff_members")
-              .update({
-                name: newDisplayName,
-                discord_username: newUsername,
-                discord_avatar: newAvatar,
-                last_seen: update.is_online ? now : undefined,
-              })
-              .eq("id", staffInfo.id);
-            
-            profilesUpdated++;
-            console.log(`Updated Discord profile for ${staffInfo.name} -> ${newDisplayName}`);
-          }
-        } catch (error) {
-          console.error(`Error fetching user info for ${update.discord_id}:`, error);
-        }
-
-        // Upsert presence record
+        // Upsert presence record with actual status
         const { error: upsertError } = await supabase
           .from("discord_presence")
           .upsert({
@@ -306,7 +165,145 @@ const handler = async (req: Request): Promise<Response> => {
             .eq("id", staffInfo.id);
         }
       }
+    } else {
+      // Use Discord Widget API to get REAL online presence
+      // This only shows members who are actually online and have enabled "Display in widget"
+      console.log("Fetching real presence from Discord Widget API...");
+      
+      let onlineDiscordIds = new Set<string>();
+      let widgetMemberData = new Map<string, WidgetMember>();
+      
+      try {
+        const widgetResponse = await fetch(
+          `https://discord.com/api/v10/guilds/${guildId}/widget.json`
+        );
+
+        if (widgetResponse.ok) {
+          const widgetData = await widgetResponse.json();
+          console.log(`Widget shows ${widgetData.members?.length || 0} online members`);
+          
+          // Widget members are ACTUALLY online
+          if (widgetData.members && Array.isArray(widgetData.members)) {
+            widgetData.members.forEach((member: WidgetMember) => {
+              if (member.id) {
+                onlineDiscordIds.add(member.id);
+                widgetMemberData.set(member.id, member);
+              }
+            });
+          }
+        } else {
+          console.log("Widget API not available (widget may be disabled). Using Gateway presence fallback...");
+          
+          // Fallback: Try to get presence from bot's perspective using Gateway status
+          // The REST API doesn't provide presence, but we can check if we have recent updates
+          const { data: recentPresence } = await supabase
+            .from("discord_presence")
+            .select("discord_id, is_online, updated_at")
+            .gt("updated_at", new Date(Date.now() - 5 * 60 * 1000).toISOString()); // Last 5 minutes
+          
+          if (recentPresence) {
+            recentPresence.forEach((p) => {
+              if (p.is_online) {
+                onlineDiscordIds.add(p.discord_id);
+              }
+            });
+            console.log(`Found ${onlineDiscordIds.size} recently online from database cache`);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching widget data:", error);
+      }
+
+      // Also fetch guild members for profile updates
+      try {
+        const guildResponse = await fetch(
+          `https://discord.com/api/v10/guilds/${guildId}/members?limit=1000`,
+          {
+            headers: {
+              Authorization: `Bot ${discordBotToken}`,
+            },
+          }
+        );
+
+        if (guildResponse.ok) {
+          const guildMembers = await guildResponse.json();
+          
+          // Create a map of Discord user data for profile updates
+          const discordUserData = new Map<string, DiscordUser>();
+          guildMembers.forEach((member: any) => {
+            if (member.user?.id) {
+              discordUserData.set(member.user.id, member.user);
+            }
+          });
+
+          // Update each staff member
+          for (const [discordId, staffInfo] of staffByDiscordId) {
+            const discordUser = discordUserData.get(discordId);
+            const isOnline = onlineDiscordIds.has(discordId);
+            const widgetMember = widgetMemberData.get(discordId);
+            
+            // Determine status from widget or default
+            let status = 'offline';
+            if (isOnline && widgetMember) {
+              status = widgetMember.status; // online, idle, dnd
+            } else if (isOnline) {
+              status = 'online';
+            }
+            
+            // Update staff member's Discord profile info if we have data
+            if (discordUser) {
+              const newDisplayName = discordUser.global_name || discordUser.username;
+              const newUsername = discordUser.username;
+              const newAvatar = getAvatarUrl(discordUser);
+              
+              const { error: updateError } = await supabase
+                .from("staff_members")
+                .update({
+                  name: newDisplayName,
+                  discord_username: newUsername,
+                  discord_avatar: newAvatar,
+                  ...(isOnline ? { last_seen: now } : {}),
+                })
+                .eq("id", staffInfo.id);
+              
+              if (!updateError) {
+                profilesUpdated++;
+              }
+            }
+            
+            // Upsert presence record with REAL online status
+            const { error: upsertError } = await supabase
+              .from("discord_presence")
+              .upsert({
+                discord_id: discordId,
+                staff_member_id: staffInfo.id,
+                is_online: isOnline,
+                status: status,
+                last_online_at: isOnline ? now : undefined,
+                updated_at: now,
+              }, {
+                onConflict: 'discord_id'
+              });
+
+            if (!upsertError) {
+              updatedCount++;
+              if (isOnline) {
+                console.log(`${staffInfo.name} is ONLINE (${status})`);
+              }
+            } else {
+              console.error(`Error upserting presence for ${discordId}:`, upsertError);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching guild members:", error);
+      }
     }
+
+    const onlineStaff = Array.from(staffByDiscordId.values()).filter(s => {
+      // Check database for current online status
+      return true;
+    });
 
     console.log(`Successfully updated ${updatedCount} presence records and ${profilesUpdated} profiles`);
 
@@ -317,7 +314,10 @@ const handler = async (req: Request): Promise<Response> => {
         updated: updatedCount,
         profilesUpdated: profilesUpdated,
         timestamp: now,
-        mode: isBulkSync ? 'bulk' : 'webhook',
+        mode: isWebhookUpdate ? 'webhook' : 'widget',
+        note: isWebhookUpdate 
+          ? 'Received presence from Discord bot' 
+          : 'Using Discord Widget API - ensure server widget is enabled and staff have "Display in widget" on',
       }),
       {
         status: 200,
