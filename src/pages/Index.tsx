@@ -299,7 +299,7 @@ const Index = () => {
           />
         </div>
         {/* Dark overlay to ensure text readability */}
-        <div className="absolute inset-0 bg-background/65" />
+        <div className="absolute inset-0 bg-background/75" />
       </div>
 
       <Navigation />
