@@ -13,6 +13,25 @@ interface PresenceUpdate {
   status?: string; // online, idle, dnd, offline
 }
 
+interface DiscordUser {
+  id: string;
+  username: string;
+  discriminator: string;
+  global_name?: string;
+  avatar?: string;
+}
+
+const getAvatarUrl = (user: DiscordUser): string => {
+  if (user.avatar) {
+    return `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=256`;
+  }
+  // Default avatar based on discriminator or user ID
+  const defaultIndex = user.discriminator === '0' 
+    ? (BigInt(user.id) >> BigInt(22)) % BigInt(6)
+    : parseInt(user.discriminator) % 5;
+  return `https://cdn.discordapp.com/embed/avatars/${defaultIndex}.png`;
+};
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -61,7 +80,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Fetch all staff members with Discord IDs
     const { data: staffMembers, error: staffError } = await supabase
       .from("staff_members")
-      .select("id, discord_id, name")
+      .select("id, discord_id, name, discord_username, discord_avatar")
       .eq("is_active", true)
       .not("discord_id", "is", null);
 
@@ -83,14 +102,20 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Found ${staffMembers.length} staff members with Discord IDs`);
 
     // Create a map of discord_id to staff member
-    const staffByDiscordId = new Map<string, { id: string; name: string }>();
+    const staffByDiscordId = new Map<string, { id: string; name: string; discord_username?: string; discord_avatar?: string }>();
     staffMembers.forEach((staff) => {
       if (staff.discord_id) {
-        staffByDiscordId.set(staff.discord_id, { id: staff.id, name: staff.name });
+        staffByDiscordId.set(staff.discord_id, { 
+          id: staff.id, 
+          name: staff.name,
+          discord_username: staff.discord_username,
+          discord_avatar: staff.discord_avatar
+        });
       }
     });
 
     let updatedCount = 0;
+    let profilesUpdated = 0;
     const now = new Date().toISOString();
 
     if (isBulkSync) {
@@ -116,6 +141,14 @@ const handler = async (req: Request): Promise<Response> => {
         const guildMembers = await guildResponse.json();
         console.log(`Retrieved ${guildMembers.length} guild members from Discord`);
 
+        // Create a map of Discord user data
+        const discordUserData = new Map<string, DiscordUser>();
+        guildMembers.forEach((member: any) => {
+          if (member.user?.id) {
+            discordUserData.set(member.user.id, member.user);
+          }
+        });
+
         // Get Discord IDs of members in the guild
         const guildMemberIds = new Set<string>();
         guildMembers.forEach((member: any) => {
@@ -124,9 +157,35 @@ const handler = async (req: Request): Promise<Response> => {
           }
         });
 
-        // Update presence for each staff member
+        // Update presence and profile info for each staff member
         for (const [discordId, staffInfo] of staffByDiscordId) {
           const isInGuild = guildMemberIds.has(discordId);
+          const discordUser = discordUserData.get(discordId);
+          
+          // Update staff member's Discord profile info if we have data
+          if (discordUser) {
+            const newUsername = discordUser.global_name || discordUser.username;
+            const newAvatar = getAvatarUrl(discordUser);
+            
+            // Only update if data has changed
+            if (staffInfo.discord_username !== newUsername || staffInfo.discord_avatar !== newAvatar) {
+              const { error: updateError } = await supabase
+                .from("staff_members")
+                .update({
+                  discord_username: newUsername,
+                  discord_avatar: newAvatar,
+                  last_seen: isInGuild ? now : undefined,
+                })
+                .eq("id", staffInfo.id);
+              
+              if (!updateError) {
+                profilesUpdated++;
+                console.log(`Updated Discord profile for ${staffInfo.name}: ${newUsername}`);
+              } else {
+                console.error(`Error updating profile for ${staffInfo.name}:`, updateError);
+              }
+            }
+          }
           
           // Upsert presence record
           const { error: upsertError } = await supabase
@@ -149,7 +208,7 @@ const handler = async (req: Request): Promise<Response> => {
           }
 
           // Also update staff_members.last_seen
-          if (isInGuild) {
+          if (isInGuild && !discordUser) {
             await supabase
               .from("staff_members")
               .update({ last_seen: now })
@@ -183,6 +242,41 @@ const handler = async (req: Request): Promise<Response> => {
           continue;
         }
 
+        // Fetch user info from Discord API for profile sync
+        try {
+          const userResponse = await fetch(
+            `https://discord.com/api/v10/users/${update.discord_id}`,
+            {
+              headers: {
+                Authorization: `Bot ${discordBotToken}`,
+              },
+            }
+          );
+
+          if (userResponse.ok) {
+            const discordUser: DiscordUser = await userResponse.json();
+            const newUsername = discordUser.global_name || discordUser.username;
+            const newAvatar = getAvatarUrl(discordUser);
+            
+            // Update staff member's Discord profile info
+            if (staffInfo.discord_username !== newUsername || staffInfo.discord_avatar !== newAvatar) {
+              await supabase
+                .from("staff_members")
+                .update({
+                  discord_username: newUsername,
+                  discord_avatar: newAvatar,
+                  last_seen: update.is_online ? now : undefined,
+                })
+                .eq("id", staffInfo.id);
+              
+              profilesUpdated++;
+              console.log(`Updated Discord profile for ${staffInfo.name}: ${newUsername}`);
+            }
+          }
+        } catch (error) {
+          console.error(`Error fetching user info for ${update.discord_id}:`, error);
+        }
+
         // Upsert presence record
         const { error: upsertError } = await supabase
           .from("discord_presence")
@@ -214,13 +308,14 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    console.log(`Successfully updated ${updatedCount} presence records`);
+    console.log(`Successfully updated ${updatedCount} presence records and ${profilesUpdated} profiles`);
 
     return new Response(
       JSON.stringify({
         message: "Discord presence synced successfully",
         totalStaff: staffMembers.length,
         updated: updatedCount,
+        profilesUpdated: profilesUpdated,
         timestamp: now,
         mode: isBulkSync ? 'bulk' : 'webhook',
       }),
