@@ -369,15 +369,15 @@ const Index = () => {
               </h1>
             </motion.div>
 
-            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center mb-8 px-4">
+            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center mb-8 px-4">
               <TooltipProvider delayDuration={100}>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       size="lg"
-                      className={`text-base md:text-lg px-6 md:px-8 ${
+                      className={`text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 ${
                         allRequirementsMet
-                      ? "bg-primary hover:bg-primary/90 text-primary-foreground glow-cyan"
+                          ? "bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 hover:scale-105"
                           : "bg-muted/80 hover:bg-muted text-muted-foreground border border-border/50"
                       }`}
                       onClick={handleJoinServer}
@@ -386,10 +386,10 @@ const Index = () => {
                       Join Server
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="bottom" sideOffset={10} className="p-4 bg-background/95 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl max-w-xs z-[100]">
+                  <TooltipContent side="bottom" sideOffset={10} className="p-4 bg-background/95 backdrop-blur-xl border border-purple-500/30 rounded-xl shadow-2xl max-w-xs z-[100]">
                     <div className="space-y-3">
                       <div className="flex items-center gap-2 mb-3">
-                        {allRequirementsMet ? <Sparkles className="w-5 h-5 text-primary" /> : <Lock className="w-5 h-5 text-destructive" />}
+                        {allRequirementsMet ? <Sparkles className="w-5 h-5 text-purple-400" /> : <Lock className="w-5 h-5 text-destructive" />}
                         <p className="font-bold text-foreground">{allRequirementsMet ? "Ready to Play!" : "Requirements to Join"}</p>
                       </div>
                       <div className="space-y-2">
@@ -413,8 +413,7 @@ const Index = () => {
 
               <Button
                 size="lg"
-                variant="outline"
-                className="border-primary text-primary hover:bg-primary/10 text-base md:text-lg px-6 md:px-8"
+                className="bg-transparent border-2 border-purple-500/50 text-purple-400 hover:bg-purple-500/10 hover:border-purple-400 text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 hover:scale-105"
                 onClick={() => navigate("/whitelist")}
               >
                 <Play className="w-5 h-5 mr-2" />
@@ -423,8 +422,7 @@ const Index = () => {
 
               <Button
                 size="lg"
-                variant="outline"
-                className="border-secondary text-secondary hover:bg-secondary/10 text-base md:text-lg px-6 md:px-8"
+                className="bg-transparent border-2 border-violet-500/50 text-violet-400 hover:bg-violet-500/10 hover:border-violet-400 text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 hover:scale-105"
                 asChild
               >
                 <a href="https://www.youtube.com/@Skyliferpindia20" target="_blank" rel="noopener noreferrer">
@@ -435,35 +433,36 @@ const Index = () => {
             </motion.div>
 
             {/* Compact Live Server Status */}
-            <motion.div variants={itemVariants} className="flex justify-center mt-4">
+            <motion.div variants={itemVariants} className="flex justify-center mt-6">
               <div 
                 className="relative group cursor-pointer"
                 onClick={handleJoinServer}
               >
-                <div className="flex items-center gap-3 px-4 py-2 rounded-full border border-primary/50 bg-background/60 backdrop-blur-sm hover:border-primary/80 transition-all duration-300 hover:bg-background/80 glow-cyan">
+                <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/50 via-violet-500/50 to-purple-500/50 rounded-full blur-md opacity-60 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative flex items-center gap-4 px-6 py-3 rounded-full border border-purple-500/40 bg-background/80 backdrop-blur-sm hover:border-purple-400/60 transition-all duration-300">
                   {/* Live dot */}
                   <div className="relative">
-                    <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_10px_hsl(185_90%_65%_/_0.8)]"></div>
-                    <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-primary animate-ping opacity-60"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_12px_hsl(120_70%_50%_/_0.8)]"></div>
+                    <div className="absolute inset-0 w-3 h-3 rounded-full bg-green-400 animate-ping opacity-60"></div>
                   </div>
                   
                   {/* Player count */}
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-lg font-bold text-foreground">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl font-bold text-foreground">
                       {serverPlayers !== null ? serverPlayers : "0"}
                     </span>
                     <span className="text-sm text-muted-foreground/70">/</span>
                     <span className="text-sm text-muted-foreground/70">{maxPlayers}</span>
-                    <span className="text-xs text-primary/90 ml-1 uppercase tracking-wide">Online</span>
+                    <span className="text-xs text-purple-400 ml-1 uppercase tracking-wide font-semibold">Online</span>
                   </div>
                   
                   {/* Divider */}
-                  <div className="h-4 w-px bg-border/50"></div>
+                  <div className="h-5 w-px bg-purple-500/30"></div>
                   
                   {/* Play button */}
-                  <div className="flex items-center gap-1.5 text-primary hover:text-primary/80 transition-colors">
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                    <span className="text-sm font-semibold">Play</span>
+                  <div className="flex items-center gap-2 text-purple-400 group-hover:text-purple-300 transition-colors font-bold">
+                    <Play className="w-4 h-4 fill-current" />
+                    <span className="text-sm">Play Now</span>
                   </div>
                 </div>
               </div>
@@ -474,36 +473,59 @@ const Index = () => {
 
       {/* Quick Info Section */}
       <motion.section 
-        className="py-12 md:py-20 relative z-[10]"
+        className="py-16 md:py-24 relative z-[10]"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
         variants={scrollRevealVariants}
       >
         <div className="container mx-auto px-4">
-          <div className="glass-effect rounded-2xl md:rounded-3xl p-6 md:p-12 text-center">
-            <h2 className="text-2xl md:text-4xl font-bold mb-4 text-gradient">Why Choose SLRP?</h2>
-            <p className="text-base md:text-lg text-muted-foreground mb-6 md:mb-8 max-w-3xl mx-auto">
+          <div className="glass-effect rounded-3xl p-8 md:p-14 text-center">
+            <motion.h2 
+              className="text-3xl md:text-5xl font-bold mb-4 text-gradient italic"
+              style={{ transform: 'skewX(-3deg)' }}
+            >
+              Why Choose SLRP?
+            </motion.h2>
+            <p className="text-base md:text-lg text-muted-foreground mb-10 max-w-3xl mx-auto">
               We offer an unparalleled roleplay experience with custom features, dedicated staff, and a passionate community.
             </p>
             <motion.div 
-              className="grid md:grid-cols-3 gap-4 md:gap-6 text-left"
+              className="grid md:grid-cols-3 gap-6"
               variants={staggerContainerVariants}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
             >
-              <motion.div variants={itemVariants} className="p-4 md:p-6 rounded-xl bg-card/50 hover:bg-card/70 transition-colors duration-300">
-                <h3 className="text-lg md:text-xl font-bold mb-2 text-primary">🎮 Professional Development</h3>
-                <p className="text-sm md:text-base text-muted-foreground">Custom scripts developed by experienced programmers for optimal performance.</p>
+              <motion.div 
+                variants={itemVariants} 
+                className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-purple-500/10 to-violet-500/5 border border-purple-500/20 card-hover group"
+              >
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform duration-300">
+                  <span className="text-2xl">🎮</span>
+                </div>
+                <h3 className="text-xl md:text-2xl font-bold mb-3 text-purple-400 italic">Professional Development</h3>
+                <p className="text-muted-foreground">Custom scripts developed by experienced programmers for optimal performance.</p>
               </motion.div>
-              <motion.div variants={itemVariants} className="p-4 md:p-6 rounded-xl bg-card/50 hover:bg-card/70 transition-colors duration-300">
-                <h3 className="text-lg md:text-xl font-bold mb-2 text-secondary">🛡️ Active Staff</h3>
-                <p className="text-sm md:text-base text-muted-foreground">24/7 support team ready to assist with any issues and ensure fair gameplay.</p>
+              <motion.div 
+                variants={itemVariants} 
+                className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-violet-500/10 to-purple-500/5 border border-violet-500/20 card-hover group"
+              >
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform duration-300">
+                  <span className="text-2xl">🛡️</span>
+                </div>
+                <h3 className="text-xl md:text-2xl font-bold mb-3 text-violet-400 italic">Active Staff</h3>
+                <p className="text-muted-foreground">24/7 support team ready to assist with any issues and ensure fair gameplay.</p>
               </motion.div>
-              <motion.div variants={itemVariants} className="p-4 md:p-6 rounded-xl bg-card/50 hover:bg-card/70 transition-colors duration-300">
-                <h3 className="text-lg md:text-xl font-bold mb-2 text-primary">🚀 Regular Updates</h3>
-                <p className="text-sm md:text-base text-muted-foreground">Constant improvements and new features based on community feedback.</p>
+              <motion.div 
+                variants={itemVariants} 
+                className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-fuchsia-500/10 to-purple-500/5 border border-fuchsia-500/20 card-hover group"
+              >
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-fuchsia-500 to-purple-600 flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform duration-300">
+                  <span className="text-2xl">🚀</span>
+                </div>
+                <h3 className="text-xl md:text-2xl font-bold mb-3 text-fuchsia-400 italic">Regular Updates</h3>
+                <p className="text-muted-foreground">Constant improvements and new features based on community feedback.</p>
               </motion.div>
             </motion.div>
           </div>
@@ -512,7 +534,7 @@ const Index = () => {
 
       {/* Community Section */}
       <motion.section 
-        className="py-16 md:py-32 relative"
+        className="py-20 md:py-32 relative"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
@@ -520,17 +542,23 @@ const Index = () => {
       >
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
-            <div className="glass-effect rounded-2xl md:rounded-3xl p-8 md:p-16 text-center relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary/5 to-primary/5" />
+            <div className="glass-effect rounded-3xl p-10 md:p-16 text-center relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-violet-500/5 to-fuchsia-500/5" />
               
               <div className="relative z-10">
-                <div className="inline-flex items-center justify-center w-16 h-16 md:w-24 md:h-24 rounded-2xl md:rounded-3xl bg-gradient-to-br from-primary via-secondary to-primary mb-6 md:mb-8 shadow-xl">
-                  <MessageCircle className="w-8 h-8 md:w-12 md:h-12 text-background" strokeWidth={2.5} />
-                </div>
+                <motion.div 
+                  className="inline-flex items-center justify-center w-20 h-20 md:w-28 md:h-28 rounded-3xl bg-gradient-to-br from-purple-500 via-violet-500 to-fuchsia-500 mb-8 shadow-2xl shadow-purple-500/30"
+                  whileHover={{ scale: 1.05, rotate: 5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <MessageCircle className="w-10 h-10 md:w-14 md:h-14 text-white" strokeWidth={2} />
+                </motion.div>
 
-                <h2 className="text-2xl md:text-5xl font-bold mb-4 md:mb-6 text-gradient">Join Our Thriving Community</h2>
+                <h2 className="text-3xl md:text-5xl font-bold mb-6 text-gradient italic" style={{ transform: 'skewX(-3deg)' }}>
+                  Join Our Thriving Community
+                </h2>
 
-                <p className="text-base md:text-xl text-muted-foreground mb-6 md:mb-8 max-w-3xl mx-auto leading-relaxed">
+                <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
                   Connect with thousands of players, share your experiences, and be part of something special.
                 </p>
 
@@ -538,11 +566,11 @@ const Index = () => {
                   <LiveFeedbackMarquee />
                 </Suspense>
 
-                <div className="flex justify-center mb-8 md:mb-10">
+                <div className="flex justify-center mb-10">
                   <Button
                     size="lg"
                     onClick={() => navigate("/feedback")}
-                    className="bg-gradient-to-r from-primary/80 to-secondary/80 hover:from-primary hover:to-secondary text-primary-foreground font-bold px-6 md:px-8 py-5 md:py-6 rounded-xl md:rounded-2xl shadow-lg"
+                    className="bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white font-bold px-10 py-6 rounded-2xl shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 transition-all duration-300 hover:scale-105"
                   >
                     <MessageSquarePlus className="w-5 h-5 mr-2" />
                     Share Your Feedback
@@ -550,32 +578,34 @@ const Index = () => {
                 </div>
 
                 <TooltipProvider>
-                  <div className="flex justify-center gap-4 md:gap-6 flex-wrap mb-6 md:mb-8">
+                  <div className="flex justify-center gap-5 md:gap-6 flex-wrap mb-8">
                     {[
-                      { href: "https://www.youtube.com/@Skyliferpindia20", icon: Youtube, label: "YouTube" },
-                      { href: "https://www.instagram.com/skyliferpindia/", icon: Instagram, label: "Instagram" },
-                      { href: "https://x.com/Skyliferolp1d", icon: Twitter, label: "Twitter" },
-                      { href: "https://www.facebook.com/profile.php?id=61583338351412", icon: Facebook, label: "Facebook" },
+                      { href: "https://www.youtube.com/@Skyliferpindia20", icon: Youtube, label: "YouTube", color: "from-red-500 to-red-600" },
+                      { href: "https://www.instagram.com/skyliferpindia/", icon: Instagram, label: "Instagram", color: "from-pink-500 to-purple-600" },
+                      { href: "https://x.com/Skyliferolp1d", icon: Twitter, label: "Twitter", color: "from-blue-400 to-blue-500" },
+                      { href: "https://www.facebook.com/profile.php?id=61583338351412", icon: Facebook, label: "Facebook", color: "from-blue-600 to-blue-700" },
                     ].map((social) => (
                       <Tooltip key={social.label}>
                         <TooltipTrigger asChild>
-                          <Button
-                            size="lg"
-                            className="h-14 w-14 md:h-20 md:w-20 p-0 rounded-xl md:rounded-2xl border-2 border-primary/30 bg-primary/10 hover:bg-primary hover:border-primary transition-all duration-300 hover:scale-105"
-                            asChild
-                          >
-                            <a href={social.href} target="_blank" rel="noopener noreferrer">
-                              <social.icon className="h-6 w-6 md:h-8 md:w-8 text-primary" strokeWidth={2} />
-                            </a>
-                          </Button>
+                          <motion.div whileHover={{ scale: 1.1, y: -5 }} transition={{ type: "spring", stiffness: 400 }}>
+                            <Button
+                              size="lg"
+                              className={`h-16 w-16 md:h-20 md:w-20 p-0 rounded-2xl border-2 border-purple-500/30 bg-purple-500/10 hover:bg-gradient-to-br hover:${social.color} hover:border-transparent transition-all duration-300`}
+                              asChild
+                            >
+                              <a href={social.href} target="_blank" rel="noopener noreferrer">
+                                <social.icon className="h-7 w-7 md:h-9 md:w-9 text-purple-400 group-hover:text-white" strokeWidth={1.5} />
+                              </a>
+                            </Button>
+                          </motion.div>
                         </TooltipTrigger>
-                        <TooltipContent side="bottom">{social.label}</TooltipContent>
+                        <TooltipContent side="bottom" className="bg-background/90 border-purple-500/30">{social.label}</TooltipContent>
                       </Tooltip>
                     ))}
                   </div>
                 </TooltipProvider>
 
-                <p className="text-xs md:text-sm text-muted-foreground/80">
+                <p className="text-sm text-muted-foreground/80">
                   Stay updated with exclusive content, server news, and community events
                 </p>
               </div>
@@ -699,15 +729,23 @@ const Index = () => {
       )}
 
       {/* Footer */}
-      <footer className="border-t border-border/20 py-12 md:py-16 relative z-10 bg-background">
+      <footer className="border-t border-purple-500/20 py-16 relative z-10 bg-gradient-to-b from-background to-background/95">
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center text-center">
             {/* Logo */}
-            <h3 className="text-2xl md:text-3xl font-bold italic tracking-wide mb-6">
-              <span className="text-primary">SKYLIFE</span>
-              <span className="text-white ml-2">ROLEPLAY</span>
-              <span className="block text-xs md:text-sm font-normal tracking-[0.3em] text-muted-foreground mt-1">INDIA</span>
-            </h3>
+            <motion.h3 
+              className="text-3xl md:text-4xl font-black italic tracking-wide mb-6"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <span className="bg-gradient-to-r from-purple-400 to-violet-500 bg-clip-text text-transparent">SKYLIFE</span>
+              <span className="text-white ml-3">ROLEPLAY</span>
+              <span className="block text-sm font-medium tracking-[0.4em] text-purple-400/80 mt-2">INDIA</span>
+            </motion.h3>
+            
+            {/* Divider */}
+            <div className="w-32 h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent mb-6"></div>
             
             {/* Copyright */}
             <p className="text-muted-foreground text-sm mb-2">
@@ -721,7 +759,7 @@ const Index = () => {
                 href="https://discord.gg/skyliferp" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-primary hover:underline transition-colors"
+                className="text-purple-400 hover:text-purple-300 hover:underline transition-colors"
               >
                 SLRP Development Team
               </a>
