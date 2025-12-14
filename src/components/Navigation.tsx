@@ -240,7 +240,6 @@ const Navigation = () => {
           </div>
           
           <div className="flex items-center gap-2">
-            <ThemeToggle />
             {user && <NotificationBell />}
             <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <SheetTrigger asChild>
