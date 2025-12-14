@@ -883,67 +883,55 @@ const Index = () => {
       )}
 
       {/* Footer */}
-      <footer className="border-t border-sky-500/20 py-16 relative z-10 bg-gradient-to-b from-background to-background/95">
+      <footer className="border-t border-primary/20 py-6 relative z-10 bg-background/95">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col items-center text-center">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             {/* Logo */}
-            <motion.h3 
-              className="text-3xl md:text-4xl font-black italic tracking-wide mb-6"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <span className="bg-gradient-to-r from-sky-400 to-cyan-500 bg-clip-text text-transparent">SKYLIFE</span>
-              <span className="text-white ml-3">ROLEPLAY</span>
-              <span className="flex gap-0.5 justify-center text-sm font-medium tracking-[0.4em] mt-2">
+            <div className="flex items-center gap-2">
+              <span className="text-lg font-bold italic">
+                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">SKYLIFE</span>
+                <span className="text-foreground ml-1">RP</span>
+              </span>
+              <span className="flex gap-0.5 text-xs font-medium tracking-wider">
                 <motion.span 
                   animate={{ color: ['#FF9933', '#FFFFFF', '#138808', '#FF9933'] }}
                   transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                  style={{ textShadow: '0 0 6px currentColor' }}
                 >I</motion.span>
                 <motion.span 
                   animate={{ color: ['#FFFFFF', '#138808', '#FF9933', '#FFFFFF'] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.15 }}
-                  style={{ textShadow: '0 0 6px currentColor' }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.1 }}
                 >N</motion.span>
                 <motion.span 
                   animate={{ color: ['#138808', '#FF9933', '#FFFFFF', '#138808'] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
-                  style={{ textShadow: '0 0 6px currentColor' }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
                 >D</motion.span>
                 <motion.span 
                   animate={{ color: ['#FF9933', '#FFFFFF', '#138808', '#FF9933'] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.45 }}
-                  style={{ textShadow: '0 0 6px currentColor' }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
                 >I</motion.span>
                 <motion.span 
                   animate={{ color: ['#FFFFFF', '#138808', '#FF9933', '#FFFFFF'] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
-                  style={{ textShadow: '0 0 6px currentColor' }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
                 >A</motion.span>
               </span>
-            </motion.h3>
+            </div>
             
-            {/* Divider */}
-            <div className="w-32 h-px bg-gradient-to-r from-transparent via-sky-500/50 to-transparent mb-6"></div>
-            
-            {/* Copyright */}
-            <p className="text-muted-foreground text-sm mb-2">
-              © 2026 Skylife Roleplay India. All rights reserved.
-            </p>
-            
-            {/* Developer Credit */}
-            <p className="text-muted-foreground text-sm">
-              Developed By{" "}
-              <a 
-                href="https://discord.com/users/833680146510381097" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-red-500 hover:text-red-400 hover:underline transition-all font-semibold drop-shadow-[0_0_10px_rgba(239,68,68,0.8)] hover:drop-shadow-[0_0_15px_rgba(239,68,68,1)]"
-              >
-                Maan
-              </a>
-            </p>
+            {/* Copyright & Credits */}
+            <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-xs text-muted-foreground">
+              <span>© 2026 Skylife Roleplay India</span>
+              <span className="hidden md:inline">•</span>
+              <span>
+                Developed By{" "}
+                <a 
+                  href="https://discord.com/users/833680146510381097" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-destructive hover:text-destructive/80 hover:underline transition-all font-semibold"
+                >
+                  Maan
+                </a>
+              </span>
+            </div>
           </div>
         </div>
       </footer>
