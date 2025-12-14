@@ -157,7 +157,7 @@ const Staff = () => {
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [openPositions, setOpenPositions] = useState("7");
-  const { isOnline, getLastSeen, onlineStatus } = useStaffOnlineStatus();
+  const { isOnline, getLastSeen, onlineStatus, onlineCount } = useStaffOnlineStatus();
   const { favorites, toggleFavorite, isFavorite } = useFavoriteStaff();
 
   // Enable notifications for favorite staff
@@ -294,105 +294,151 @@ const Staff = () => {
   const renderStaffCard = (member: StaffMember, index: number) => {
     const Icon = roleIcons[member.role_type as keyof typeof roleIcons] || UserCheck;
     const achievements = getAchievementBadges(member);
-    const staffIsOnline = false;
-    const lastSeenTime = null;
+    const staffIsOnline = isOnline(member.id);
+    const lastSeenTime = getLastSeen(member.id);
 
     return (
       <motion.div
         key={member.id}
-        className="relative group cursor-pointer"
+        className="relative group cursor-pointer h-full"
         variants={cardVariants}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-50px" }}
         custom={index}
-        whileHover={{ y: -6 }}
+        whileHover={{ y: -8, rotateY: 2 }}
         whileTap={{ scale: 0.98 }}
         onClick={() => handleStaffClick(member.id)}
+        style={{ perspective: 1000 }}
       >
-        {/* Subtle glow on hover */}
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/40 to-primary/20 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        {/* Outer glow effect */}
+        <div className="absolute -inset-1 bg-gradient-to-b from-primary/20 via-transparent to-primary/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
         
-        {/* Card */}
-        <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden group-hover:border-primary/30 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/10">
-          {/* Top accent line */}
-          <div className="h-1 bg-gradient-to-r from-primary via-primary/80 to-primary/60 group-hover:from-primary group-hover:to-primary transition-all duration-300" />
+        {/* Card Container */}
+        <div className="relative h-full bg-gradient-to-b from-card via-card/95 to-card/90 backdrop-blur-xl border border-border/40 rounded-2xl overflow-hidden group-hover:border-primary/40 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-primary/10">
           
-          {/* Achievement Badges */}
-          {achievements.length > 0 && (
-            <div className="absolute top-4 right-3 flex flex-col gap-1 z-10">
-              {achievements.map((badge, idx) => (
-                <Badge 
-                  key={idx}
-                  className="bg-primary/20 text-primary text-[10px] px-2 py-0.5 border-primary/30"
-                >
-                  {badge.label}
-                </Badge>
-              ))}
-            </div>
-          )}
-
-          {/* Favorite Button */}
-          <div className="absolute top-4 left-3 z-10" onClick={(e) => e.stopPropagation()}>
-            <FavoriteStaffButton isFavorite={isFavorite(member.id)} onToggle={() => toggleFavorite(member.id)} />
+          {/* Animated background pattern */}
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,hsl(var(--primary)/0.15),transparent_50%)]" />
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-primary/5 to-transparent" />
+          </div>
+          
+          {/* Top decorative element */}
+          <div className="relative h-16 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent overflow-hidden">
+            <div className="absolute inset-0 bg-[linear-gradient(135deg,transparent_25%,hsl(var(--primary)/0.1)_50%,transparent_75%)] bg-[length:200%_200%] group-hover:animate-shimmer" />
+            {/* Corner accents */}
+            <div className="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-primary/20 to-transparent rounded-br-full" />
+            <div className="absolute top-0 right-0 w-12 h-12 bg-gradient-to-bl from-primary/15 to-transparent rounded-bl-full" />
+          </div>
+          
+          {/* Online Status Badge - Top Right */}
+          <div className="absolute top-3 right-3 z-20">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: index * 0.05 + 0.2 }}
+            >
+              <StaffOnlineIndicator isOnline={staffIsOnline} lastSeen={lastSeenTime} size="lg" showLabel />
+            </motion.div>
+          </div>
+          
+          {/* Favorite Button - Top Left */}
+          <div className="absolute top-3 left-3 z-20" onClick={(e) => e.stopPropagation()}>
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: index * 0.05 + 0.1 }}
+            >
+              <FavoriteStaffButton isFavorite={isFavorite(member.id)} onToggle={() => toggleFavorite(member.id)} />
+            </motion.div>
           </div>
 
-          <div className="p-6 pt-8">
+          <div className="relative px-6 pb-6 -mt-8">
             <div className="flex flex-col items-center text-center">
-              {/* Avatar */}
-              <div className="relative mb-4">
-                <div className="w-20 h-20 rounded-full p-0.5 bg-gradient-to-br from-primary to-primary/60 group-hover:from-primary group-hover:to-primary/80 transition-all duration-300">
-                  <div className="w-full h-full rounded-full overflow-hidden bg-background">
+              {/* Avatar with enhanced design */}
+              <motion.div 
+                className="relative mb-5"
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                {/* Outer ring with animation */}
+                <div className="absolute -inset-2 bg-gradient-to-b from-primary/30 to-primary/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                
+                {/* Avatar ring */}
+                <div className="relative w-24 h-24 rounded-full p-1 bg-gradient-to-b from-primary via-primary/70 to-primary/40 shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-shadow duration-300">
+                  <div className="w-full h-full rounded-full overflow-hidden bg-background ring-2 ring-background">
                     <img
                       src={member.discord_avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`}
                       alt={member.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                   </div>
                 </div>
                 
-                {/* Role Icon */}
-                <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-primary rounded-lg flex items-center justify-center border-2 border-background shadow-md group-hover:scale-110 transition-transform duration-300">
-                  <Icon className="w-4 h-4 text-primary-foreground" />
-                </div>
-                
-                {/* Online Indicator */}
-                <div className="absolute -top-1 -left-1">
-                  <StaffOnlineIndicator isOnline={staffIsOnline} lastSeen={lastSeenTime} size="lg" />
-                </div>
-              </div>
+                {/* Role Icon Badge */}
+                <motion.div 
+                  className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-10 h-10 bg-gradient-to-b from-primary to-primary/80 rounded-xl flex items-center justify-center border-3 border-background shadow-lg"
+                  whileHover={{ scale: 1.15, rotate: 5 }}
+                >
+                  <Icon className="w-5 h-5 text-primary-foreground" />
+                </motion.div>
+              </motion.div>
 
-              {/* Name */}
-              <h3 className="text-lg font-bold text-foreground mb-1 group-hover:text-primary transition-colors duration-300">
+              {/* Name with hover effect */}
+              <h3 className="text-xl font-bold text-foreground mb-1 group-hover:text-primary transition-colors duration-300 tracking-tight">
                 {member.name}
               </h3>
               
-              {/* Role */}
-              <span className="text-sm text-primary font-medium mb-2">{member.role}</span>
+              {/* Role with gradient on hover */}
+              <span className="text-sm font-semibold text-primary/90 mb-3 group-hover:text-primary transition-colors duration-300">
+                {member.role}
+              </span>
               
-              {/* Department */}
-              <Badge variant="secondary" className="text-[10px] tracking-wider uppercase mb-3 bg-muted/50">
-                {member.department.replace("_", " ")}
-              </Badge>
+              {/* Achievement Badges */}
+              {achievements.length > 0 && (
+                <div className="flex flex-wrap justify-center gap-1.5 mb-3">
+                  {achievements.map((badge, idx) => (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: idx * 0.1 + 0.3 }}
+                    >
+                      <Badge 
+                        variant="outline"
+                        className="bg-primary/10 text-primary text-[10px] px-2.5 py-0.5 border-primary/30 font-medium"
+                      >
+                        {badge.label}
+                      </Badge>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
 
               {member.bio && (
-                <p className="text-xs text-muted-foreground italic mb-4 max-w-[200px] leading-relaxed line-clamp-2">
+                <p className="text-xs text-muted-foreground italic mb-4 max-w-[220px] leading-relaxed line-clamp-2 opacity-80 group-hover:opacity-100 transition-opacity duration-300">
                   &quot;{member.bio}&quot;
                 </p>
               )}
 
-              {/* View Profile indicator */}
-              <div className="flex items-center gap-2 text-xs text-muted-foreground group-hover:text-primary transition-colors duration-300">
-                <UserCircle className="w-4 h-4" />
-                <span>View Profile</span>
-                <motion.span
-                  initial={{ x: 0 }}
-                  animate={{ x: [0, 4, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                >
-                  →
-                </motion.span>
-              </div>
+              {/* View Profile Button */}
+              <motion.div 
+                className="mt-auto pt-3 w-full border-t border-border/30"
+                initial={{ opacity: 0.7 }}
+                whileHover={{ opacity: 1 }}
+              >
+                <div className="flex items-center justify-center gap-2 text-xs font-medium text-muted-foreground group-hover:text-primary transition-all duration-300">
+                  <UserCircle className="w-4 h-4" />
+                  <span>View Profile</span>
+                  <motion.span
+                    className="text-primary"
+                    animate={{ x: [0, 4, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    →
+                  </motion.span>
+                </div>
+              </motion.div>
             </div>
           </div>
         </div>
@@ -422,47 +468,74 @@ const Staff = () => {
             variants={scrollRevealVariants}
             className="mb-16"
           >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
               {/* Team Members */}
               <motion.div
-                whileHover={{ y: -4 }}
+                whileHover={{ y: -4, scale: 1.02 }}
                 className="group cursor-pointer"
               >
-                <div className="relative bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl p-6 text-center group-hover:border-primary/30 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/5">
-                  <div className="w-12 h-12 mx-auto mb-4 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
-                    <Users className="w-6 h-6 text-primary" />
+                <div className="relative bg-gradient-to-b from-card to-card/80 backdrop-blur-sm border border-border/40 rounded-2xl p-5 text-center group-hover:border-primary/40 transition-all duration-300 overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="relative">
+                    <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl flex items-center justify-center group-hover:from-primary/30 group-hover:to-primary/10 transition-colors duration-300 border border-primary/20">
+                      <Users className="w-6 h-6 text-primary" />
+                    </div>
+                    <div className="text-3xl font-bold text-foreground mb-0.5">{staffMembers.length}+</div>
+                    <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Team Members</div>
                   </div>
-                  <div className="text-3xl font-bold text-foreground mb-1">{staffMembers.length}+</div>
-                  <div className="text-sm text-muted-foreground">Team Members</div>
+                </div>
+              </motion.div>
+
+              {/* Staff Online */}
+              <motion.div
+                whileHover={{ y: -4, scale: 1.02 }}
+                className="group cursor-pointer"
+              >
+                <div className="relative bg-gradient-to-b from-card to-card/80 backdrop-blur-sm border border-border/40 rounded-2xl p-5 text-center group-hover:border-primary/40 transition-all duration-300 overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="relative">
+                    <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl flex items-center justify-center group-hover:from-primary/30 group-hover:to-primary/10 transition-colors duration-300 border border-primary/20 relative">
+                      <UserCheck className="w-6 h-6 text-primary" />
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse border-2 border-card" />
+                    </div>
+                    <div className="text-3xl font-bold text-foreground mb-0.5">{onlineCount}</div>
+                    <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Online Now</div>
+                  </div>
                 </div>
               </motion.div>
 
               {/* 24/7 Coverage */}
               <motion.div
-                whileHover={{ y: -4 }}
+                whileHover={{ y: -4, scale: 1.02 }}
                 className="group cursor-pointer"
               >
-                <div className="relative bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl p-6 text-center group-hover:border-primary/30 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/5">
-                  <div className="w-12 h-12 mx-auto mb-4 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
-                    <Clock className="w-6 h-6 text-primary" />
+                <div className="relative bg-gradient-to-b from-card to-card/80 backdrop-blur-sm border border-border/40 rounded-2xl p-5 text-center group-hover:border-primary/40 transition-all duration-300 overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="relative">
+                    <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl flex items-center justify-center group-hover:from-primary/30 group-hover:to-primary/10 transition-colors duration-300 border border-primary/20">
+                      <Clock className="w-6 h-6 text-primary" />
+                    </div>
+                    <div className="text-3xl font-bold text-foreground mb-0.5">24/7</div>
+                    <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Staff Coverage</div>
                   </div>
-                  <div className="text-3xl font-bold text-foreground mb-1">24/7</div>
-                  <div className="text-sm text-muted-foreground">Staff Coverage</div>
                 </div>
               </motion.div>
 
               {/* Open Positions */}
               <motion.div
-                whileHover={{ y: -4 }}
+                whileHover={{ y: -4, scale: 1.02 }}
                 className="group cursor-pointer"
                 onClick={() => setIsApplicationOpen(true)}
               >
-                <div className="relative bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl p-6 text-center group-hover:border-primary/30 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/5">
-                  <div className="w-12 h-12 mx-auto mb-4 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
-                    <Briefcase className="w-6 h-6 text-primary" />
+                <div className="relative bg-gradient-to-b from-card to-card/80 backdrop-blur-sm border border-border/40 rounded-2xl p-5 text-center group-hover:border-primary/40 transition-all duration-300 overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="relative">
+                    <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl flex items-center justify-center group-hover:from-primary/30 group-hover:to-primary/10 transition-colors duration-300 border border-primary/20">
+                      <Briefcase className="w-6 h-6 text-primary" />
+                    </div>
+                    <div className="text-3xl font-bold text-foreground mb-0.5">{openPositions}</div>
+                    <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Open Positions</div>
                   </div>
-                  <div className="text-3xl font-bold text-foreground mb-1">{openPositions}</div>
-                  <div className="text-sm text-muted-foreground">Open Positions</div>
                 </div>
               </motion.div>
             </div>
