@@ -68,6 +68,88 @@ const roleIcons = {
   event_manager: Calendar,
 };
 
+const scrollRevealVariants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const }
+  }
+};
+
+const departmentThemes = {
+  leadership: {
+    gradient: "from-amber-950/50 via-orange-900/40 to-yellow-900/30",
+    border: "border-amber-500/20 hover:border-amber-400/40",
+    glow: "hover:shadow-[0_0_40px_rgba(251,191,36,0.15)]",
+    accent: "from-amber-500 to-orange-600",
+    textAccent: "text-amber-400",
+    icon: "👑",
+    title: "Leadership Team",
+    subtitle: "The visionaries guiding SLRP to excellence"
+  },
+  administration: {
+    gradient: "from-red-950/50 via-rose-900/40 to-pink-900/30",
+    border: "border-red-500/20 hover:border-red-400/40",
+    glow: "hover:shadow-[0_0_40px_rgba(239,68,68,0.15)]",
+    accent: "from-red-500 to-rose-600",
+    textAccent: "text-red-400",
+    icon: "🛡️",
+    title: "Management Team",
+    subtitle: "Ensuring smooth server operations"
+  },
+  development: {
+    gradient: "from-emerald-950/50 via-green-900/40 to-teal-900/30",
+    border: "border-emerald-500/20 hover:border-emerald-400/40",
+    glow: "hover:shadow-[0_0_40px_rgba(16,185,129,0.15)]",
+    accent: "from-emerald-500 to-green-600",
+    textAccent: "text-emerald-400",
+    icon: "💻",
+    title: "Development Team",
+    subtitle: "Building innovative features and experiences"
+  },
+  moderation: {
+    gradient: "from-blue-950/50 via-indigo-900/40 to-violet-900/30",
+    border: "border-blue-500/20 hover:border-blue-400/40",
+    glow: "hover:shadow-[0_0_40px_rgba(59,130,246,0.15)]",
+    accent: "from-blue-500 to-indigo-600",
+    textAccent: "text-blue-400",
+    icon: "⚖️",
+    title: "Administration Team",
+    subtitle: "Keeping the community safe and fair"
+  },
+  staff: {
+    gradient: "from-purple-950/50 via-violet-900/40 to-fuchsia-900/30",
+    border: "border-purple-500/20 hover:border-purple-400/40",
+    glow: "hover:shadow-[0_0_40px_rgba(168,85,247,0.15)]",
+    accent: "from-purple-500 to-violet-600",
+    textAccent: "text-purple-400",
+    icon: "⭐",
+    title: "Staff Team",
+    subtitle: "Core team members providing essential services"
+  },
+  support: {
+    gradient: "from-cyan-950/50 via-sky-900/40 to-blue-900/30",
+    border: "border-cyan-500/20 hover:border-cyan-400/40",
+    glow: "hover:shadow-[0_0_40px_rgba(6,182,212,0.15)]",
+    accent: "from-cyan-500 to-sky-600",
+    textAccent: "text-cyan-400",
+    icon: "🎧",
+    title: "Support Team",
+    subtitle: "Always here to help you succeed"
+  },
+  events: {
+    gradient: "from-pink-950/50 via-rose-900/40 to-orange-900/30",
+    border: "border-pink-500/20 hover:border-pink-400/40",
+    glow: "hover:shadow-[0_0_40px_rgba(236,72,153,0.15)]",
+    accent: "from-pink-500 to-rose-600",
+    textAccent: "text-pink-400",
+    icon: "🎉",
+    title: "Events Team",
+    subtitle: "Creating unforgettable experiences"
+  }
+};
+
 const Staff = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -325,269 +407,449 @@ const Staff = () => {
 
       <main className="pb-16">
         <div className="container mx-auto px-4">
-          {/* Stats Grid - Only 3 stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto mb-20">
-            <div className="relative group">
-              <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-              <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-primary/20">
-                <Users className="w-8 h-8 text-primary mx-auto mb-3" />
-                <div className="text-4xl font-bold text-gradient mb-1">{staffMembers.length}+</div>
-                <div className="text-sm text-muted-foreground">Team Members</div>
-              </div>
-            </div>
+          {/* Hero Stats Section */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={scrollRevealVariants}
+            className="mb-16"
+          >
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-950/60 via-purple-900/50 to-fuchsia-900/40 p-8 md:p-12 border border-violet-500/20">
+              <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-fuchsia-500/5 opacity-50"></div>
+              <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-amber-500/10 to-transparent rounded-full blur-3xl"></div>
+              <div className="absolute bottom-0 left-0 w-72 h-72 bg-gradient-to-tr from-cyan-500/10 to-transparent rounded-full blur-3xl"></div>
+              
+              <div className="relative z-10">
+                <div className="text-center mb-10">
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                    className="inline-block mb-4"
+                  >
+                    <span className="text-7xl">👥</span>
+                  </motion.div>
+                  <h2 className="text-3xl md:text-4xl font-black mb-4 bg-gradient-to-r from-violet-400 via-fuchsia-400 to-amber-400 bg-clip-text text-transparent">
+                    The Team Behind SLRP
+                  </h2>
+                  <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                    Meet our dedicated team of professionals working around the clock to bring you the best roleplay experience
+                  </p>
+                </div>
 
-            <div className="relative group">
-              <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-              <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-primary/20">
-                <Clock className="w-8 h-8 text-primary mx-auto mb-3" />
-                <div className="text-4xl font-bold text-gradient mb-1">24/7</div>
-                <div className="text-sm text-muted-foreground">Staff Coverage</div>
-              </div>
-            </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.1 }}
+                    className="group"
+                  >
+                    <div className="relative bg-gradient-to-br from-amber-950/60 to-orange-900/40 rounded-2xl p-6 border border-amber-500/30 hover:border-amber-400/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(251,191,36,0.2)] hover:scale-105">
+                      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      <div className="relative">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-2xl shadow-lg shadow-amber-500/25 mx-auto mb-4 group-hover:scale-110 transition-transform">
+                          <Users className="w-7 h-7 text-white" />
+                        </div>
+                        <div className="text-4xl font-black bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent mb-1">{staffMembers.length}+</div>
+                        <div className="text-sm text-amber-300/80">Team Members</div>
+                      </div>
+                    </div>
+                  </motion.div>
 
-            <div className="relative group">
-              <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-              <div className="relative glass-effect rounded-2xl p-6 hover:scale-105 transition-all duration-300 border border-primary/20">
-                <Briefcase className="w-8 h-8 text-primary mx-auto mb-3" />
-                <div className="text-4xl font-bold text-gradient mb-1">{openPositions}</div>
-                <div className="text-sm text-muted-foreground">Open Positions</div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.2 }}
+                    className="group"
+                  >
+                    <div className="relative bg-gradient-to-br from-emerald-950/60 to-green-900/40 rounded-2xl p-6 border border-emerald-500/30 hover:border-emerald-400/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.2)] hover:scale-105">
+                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      <div className="relative">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-2xl shadow-lg shadow-emerald-500/25 mx-auto mb-4 group-hover:scale-110 transition-transform">
+                          <Clock className="w-7 h-7 text-white" />
+                        </div>
+                        <div className="text-4xl font-black bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent mb-1">24/7</div>
+                        <div className="text-sm text-emerald-300/80">Staff Coverage</div>
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.3 }}
+                    className="group"
+                  >
+                    <div className="relative bg-gradient-to-br from-cyan-950/60 to-sky-900/40 rounded-2xl p-6 border border-cyan-500/30 hover:border-cyan-400/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(6,182,212,0.2)] hover:scale-105">
+                      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      <div className="relative">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-sky-600 flex items-center justify-center text-2xl shadow-lg shadow-cyan-500/25 mx-auto mb-4 group-hover:scale-110 transition-transform">
+                          <Briefcase className="w-7 h-7 text-white" />
+                        </div>
+                        <div className="text-4xl font-black bg-gradient-to-r from-cyan-400 to-sky-400 bg-clip-text text-transparent mb-1">{openPositions}</div>
+                        <div className="text-sm text-cyan-300/80">Open Positions</div>
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Team Values */}
-          <div className="mb-20">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={scrollRevealVariants}
+            className="mb-20"
+          >
             <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-gradient mb-4">Our Core Values</h2>
+              <span className="text-5xl mb-4 block">✨</span>
+              <h2 className="text-4xl font-black bg-gradient-to-r from-amber-400 via-pink-400 to-violet-400 bg-clip-text text-transparent mb-4">Our Core Values</h2>
               <p className="text-lg text-muted-foreground">The principles that guide our team every day</p>
             </div>
             <div className="grid md:grid-cols-4 gap-6">
-              <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <Card className="relative glass-effect border-border/20 text-center hover:border-primary/40 transition-all duration-300 overflow-hidden">
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
-                  <CardContent className="pt-8 pb-6">
-                    <div className="relative mb-4">
-                      <div className="absolute inset-0 bg-primary/20 rounded-full blur-lg"></div>
-                      <Star className="relative w-14 h-14 text-primary mx-auto group-hover:scale-110 transition-transform duration-300" />
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                className="group"
+              >
+                <Card className="h-full bg-gradient-to-br from-amber-950/50 to-orange-900/30 border-amber-500/20 hover:border-amber-400/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(251,191,36,0.15)] overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                  <CardContent className="pt-8 pb-6 text-center">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-2xl shadow-lg shadow-amber-500/25 mx-auto mb-4 group-hover:scale-110 transition-transform">
+                      <Star className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className="text-xl font-bold mb-3">Excellence</h3>
+                    <h3 className="text-xl font-bold mb-3 text-amber-300">Excellence</h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">
                       Striving for the highest quality in everything we do
                     </p>
                   </CardContent>
                 </Card>
-              </div>
+              </motion.div>
 
-              <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <Card className="relative glass-effect border-border/20 text-center hover:border-primary/40 transition-all duration-300 overflow-hidden">
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
-                  <CardContent className="pt-8 pb-6">
-                    <div className="relative mb-4">
-                      <div className="absolute inset-0 bg-primary/20 rounded-full blur-lg"></div>
-                      <Heart className="relative w-14 h-14 text-primary mx-auto group-hover:scale-110 transition-transform duration-300" />
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+                className="group"
+              >
+                <Card className="h-full bg-gradient-to-br from-pink-950/50 to-rose-900/30 border-pink-500/20 hover:border-pink-400/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(236,72,153,0.15)] overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-500 to-rose-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                  <CardContent className="pt-8 pb-6 text-center">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center text-2xl shadow-lg shadow-pink-500/25 mx-auto mb-4 group-hover:scale-110 transition-transform">
+                      <Heart className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className="text-xl font-bold mb-3">Community First</h3>
+                    <h3 className="text-xl font-bold mb-3 text-pink-300">Community First</h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">
                       Your experience and satisfaction is our priority
                     </p>
                   </CardContent>
                 </Card>
-              </div>
+              </motion.div>
 
-              <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <Card className="relative glass-effect border-border/20 text-center hover:border-primary/40 transition-all duration-300 overflow-hidden">
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
-                  <CardContent className="pt-8 pb-6">
-                    <div className="relative mb-4">
-                      <div className="absolute inset-0 bg-primary/20 rounded-full blur-lg"></div>
-                      <Trophy className="relative w-14 h-14 text-primary mx-auto group-hover:scale-110 transition-transform duration-300" />
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 }}
+                className="group"
+              >
+                <Card className="h-full bg-gradient-to-br from-emerald-950/50 to-green-900/30 border-emerald-500/20 hover:border-emerald-400/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.15)] overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-green-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                  <CardContent className="pt-8 pb-6 text-center">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-2xl shadow-lg shadow-emerald-500/25 mx-auto mb-4 group-hover:scale-110 transition-transform">
+                      <Trophy className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className="text-xl font-bold mb-3">Fair Play</h3>
+                    <h3 className="text-xl font-bold mb-3 text-emerald-300">Fair Play</h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">
                       Maintaining integrity and fairness for all players
                     </p>
                   </CardContent>
                 </Card>
-              </div>
+              </motion.div>
 
-              <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <Card className="relative glass-effect border-border/20 text-center hover:border-primary/40 transition-all duration-300 overflow-hidden">
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
-                  <CardContent className="pt-8 pb-6">
-                    <div className="relative mb-4">
-                      <div className="absolute inset-0 bg-primary/20 rounded-full blur-lg"></div>
-                      <Target className="relative w-14 h-14 text-primary mx-auto group-hover:scale-110 transition-transform duration-300" />
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4 }}
+                className="group"
+              >
+                <Card className="h-full bg-gradient-to-br from-violet-950/50 to-purple-900/30 border-violet-500/20 hover:border-violet-400/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(139,92,246,0.15)] overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+                  <CardContent className="pt-8 pb-6 text-center">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-2xl shadow-lg shadow-violet-500/25 mx-auto mb-4 group-hover:scale-110 transition-transform">
+                      <Target className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className="text-xl font-bold mb-3">Innovation</h3>
+                    <h3 className="text-xl font-bold mb-3 text-violet-300">Innovation</h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">
                       Constantly improving with new features and updates
                     </p>
                   </CardContent>
                 </Card>
-              </div>
+              </motion.div>
             </div>
-          </div>
-
+          </motion.div>
           {/* Leadership Team */}
-          <div className="mb-16">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-gradient mb-4">Leadership Team</h2>
-              <p className="text-lg text-muted-foreground">The visionaries guiding SLRP to excellence</p>
-            </div>
-            {leadershipStaff.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-                {leadershipStaff.map((member, index) => renderStaffCard(member, index))}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={scrollRevealVariants}
+            className="mb-16"
+          >
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-950/40 via-orange-900/30 to-yellow-900/20 p-8 border border-amber-500/20">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-amber-500/10 to-transparent rounded-full blur-3xl"></div>
+              <div className="text-center mb-10">
+                <span className="text-5xl mb-4 block">👑</span>
+                <h2 className="text-3xl md:text-4xl font-black bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-400 bg-clip-text text-transparent mb-3">Leadership Team</h2>
+                <p className="text-lg text-amber-200/70">The visionaries guiding SLRP to excellence</p>
               </div>
-            ) : (
-              <Card className="glass-effect border-border/20 max-w-2xl mx-auto">
-                <CardContent className="p-8 text-center">
-                  <Shield className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                  <p className="text-muted-foreground">No leadership team members added yet</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+              {leadershipStaff.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                  {leadershipStaff.map((member, index) => renderStaffCard(member, index))}
+                </div>
+              ) : (
+                <Card className="bg-amber-950/30 border-amber-500/20 max-w-2xl mx-auto">
+                  <CardContent className="p-8 text-center">
+                    <Shield className="w-12 h-12 text-amber-400/50 mx-auto mb-4" />
+                    <p className="text-amber-300/60">No leadership team members added yet</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </motion.div>
 
           {/* Management Team */}
-          <div className="mb-16">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-gradient mb-4">Management Team</h2>
-              <p className="text-lg text-muted-foreground">Ensuring smooth server operations</p>
-            </div>
-            {adminStaff.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {adminStaff.map((member, index) => renderStaffCard(member, index))}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={scrollRevealVariants}
+            className="mb-16"
+          >
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-950/40 via-rose-900/30 to-pink-900/20 p-8 border border-red-500/20">
+              <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-red-500/10 to-transparent rounded-full blur-3xl"></div>
+              <div className="text-center mb-10">
+                <span className="text-5xl mb-4 block">🛡️</span>
+                <h2 className="text-3xl md:text-4xl font-black bg-gradient-to-r from-red-400 via-rose-400 to-pink-400 bg-clip-text text-transparent mb-3">Management Team</h2>
+                <p className="text-lg text-red-200/70">Ensuring smooth server operations</p>
               </div>
-            ) : (
-              <Card className="glass-effect border-border/20 max-w-2xl mx-auto">
-                <CardContent className="p-8 text-center">
-                  <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                  <p className="text-muted-foreground">No management team members added yet</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+              {adminStaff.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {adminStaff.map((member, index) => renderStaffCard(member, index))}
+                </div>
+              ) : (
+                <Card className="bg-red-950/30 border-red-500/20 max-w-2xl mx-auto">
+                  <CardContent className="p-8 text-center">
+                    <Users className="w-12 h-12 text-red-400/50 mx-auto mb-4" />
+                    <p className="text-red-300/60">No management team members added yet</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </motion.div>
 
           {/* Development Team */}
-          <div className="mb-16">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-gradient mb-4">Development Team</h2>
-              <p className="text-lg text-muted-foreground">Building innovative features</p>
-            </div>
-            {developerStaff.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {developerStaff.map((member, index) => renderStaffCard(member, index))}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={scrollRevealVariants}
+            className="mb-16"
+          >
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-950/40 via-green-900/30 to-teal-900/20 p-8 border border-emerald-500/20">
+              <div className="absolute bottom-0 right-0 w-64 h-64 bg-gradient-to-tl from-emerald-500/10 to-transparent rounded-full blur-3xl"></div>
+              <div className="text-center mb-10">
+                <span className="text-5xl mb-4 block">💻</span>
+                <h2 className="text-3xl md:text-4xl font-black bg-gradient-to-r from-emerald-400 via-green-400 to-teal-400 bg-clip-text text-transparent mb-3">Development Team</h2>
+                <p className="text-lg text-emerald-200/70">Building innovative features and experiences</p>
               </div>
-            ) : (
-              <Card className="glass-effect border-border/20 max-w-2xl mx-auto">
-                <CardContent className="p-8 text-center">
-                  <Code className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                  <p className="text-muted-foreground">No development team members added yet</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+              {developerStaff.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {developerStaff.map((member, index) => renderStaffCard(member, index))}
+                </div>
+              ) : (
+                <Card className="bg-emerald-950/30 border-emerald-500/20 max-w-2xl mx-auto">
+                  <CardContent className="p-8 text-center">
+                    <Code className="w-12 h-12 text-emerald-400/50 mx-auto mb-4" />
+                    <p className="text-emerald-300/60">No development team members added yet</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </motion.div>
 
-          {/* Administration Team (formerly Moderation) */}
-          <div className="mb-16">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-gradient mb-4">Administration Team</h2>
-              <p className="text-lg text-muted-foreground">Keeping the community safe and fair</p>
-            </div>
-            {moderatorStaff.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {moderatorStaff.map((member, index) => renderStaffCard(member, index))}
+          {/* Administration Team */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={scrollRevealVariants}
+            className="mb-16"
+          >
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-950/40 via-indigo-900/30 to-violet-900/20 p-8 border border-blue-500/20">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-500/10 to-transparent rounded-full blur-3xl"></div>
+              <div className="text-center mb-10">
+                <span className="text-5xl mb-4 block">⚖️</span>
+                <h2 className="text-3xl md:text-4xl font-black bg-gradient-to-r from-blue-400 via-indigo-400 to-violet-400 bg-clip-text text-transparent mb-3">Administration Team</h2>
+                <p className="text-lg text-blue-200/70">Keeping the community safe and fair</p>
               </div>
-            ) : (
-              <Card className="glass-effect border-border/20 max-w-2xl mx-auto">
-                <CardContent className="p-8 text-center">
-                  <HeadphonesIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                  <p className="text-muted-foreground">No administration team members added yet</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+              {moderatorStaff.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {moderatorStaff.map((member, index) => renderStaffCard(member, index))}
+                </div>
+              ) : (
+                <Card className="bg-blue-950/30 border-blue-500/20 max-w-2xl mx-auto">
+                  <CardContent className="p-8 text-center">
+                    <HeadphonesIcon className="w-12 h-12 text-blue-400/50 mx-auto mb-4" />
+                    <p className="text-blue-300/60">No administration team members added yet</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </motion.div>
 
           {/* Staff Team */}
-          <div className="mb-16">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-gradient mb-4">Staff Team</h2>
-              <p className="text-lg text-muted-foreground">Core team members providing essential services</p>
-            </div>
-            {generalStaff.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {generalStaff.map((member, index) => renderStaffCard(member, index))}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={scrollRevealVariants}
+            className="mb-16"
+          >
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-950/40 via-violet-900/30 to-fuchsia-900/20 p-8 border border-purple-500/20">
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-purple-500/10 to-transparent rounded-full blur-3xl"></div>
+              <div className="text-center mb-10">
+                <span className="text-5xl mb-4 block">⭐</span>
+                <h2 className="text-3xl md:text-4xl font-black bg-gradient-to-r from-purple-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent mb-3">Staff Team</h2>
+                <p className="text-lg text-purple-200/70">Core team members providing essential services</p>
               </div>
-            ) : (
-              <Card className="glass-effect border-border/20 max-w-2xl mx-auto">
-                <CardContent className="p-8 text-center">
-                  <UserCheck className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                  <p className="text-muted-foreground">No staff team members added yet</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+              {generalStaff.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {generalStaff.map((member, index) => renderStaffCard(member, index))}
+                </div>
+              ) : (
+                <Card className="bg-purple-950/30 border-purple-500/20 max-w-2xl mx-auto">
+                  <CardContent className="p-8 text-center">
+                    <UserCheck className="w-12 h-12 text-purple-400/50 mx-auto mb-4" />
+                    <p className="text-purple-300/60">No staff team members added yet</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </motion.div>
 
           {/* Support Team */}
-          <div className="mb-16">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-gradient mb-4">Support Team</h2>
-              <p className="text-lg text-muted-foreground">Always here to help</p>
-            </div>
-            {supportStaff.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {supportStaff.map((member, index) => renderStaffCard(member, index))}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={scrollRevealVariants}
+            className="mb-16"
+          >
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-cyan-950/40 via-sky-900/30 to-blue-900/20 p-8 border border-cyan-500/20">
+              <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-cyan-500/10 to-transparent rounded-full blur-3xl"></div>
+              <div className="text-center mb-10">
+                <span className="text-5xl mb-4 block">🎧</span>
+                <h2 className="text-3xl md:text-4xl font-black bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-400 bg-clip-text text-transparent mb-3">Support Team</h2>
+                <p className="text-lg text-cyan-200/70">Always here to help you succeed</p>
               </div>
-            ) : (
-              <Card className="glass-effect border-border/20 max-w-2xl mx-auto">
-                <CardContent className="p-8 text-center">
-                  <UserCheck className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                  <p className="text-muted-foreground">No support team members added yet</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+              {supportStaff.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {supportStaff.map((member, index) => renderStaffCard(member, index))}
+                </div>
+              ) : (
+                <Card className="bg-cyan-950/30 border-cyan-500/20 max-w-2xl mx-auto">
+                  <CardContent className="p-8 text-center">
+                    <HeadphonesIcon className="w-12 h-12 text-cyan-400/50 mx-auto mb-4" />
+                    <p className="text-cyan-300/60">No support team members added yet</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </motion.div>
 
           {/* Events Team */}
-          <div className="mb-16">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-gradient mb-4">Events Team</h2>
-              <p className="text-lg text-muted-foreground">Creating unforgettable experiences</p>
-            </div>
-            {eventStaff.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {eventStaff.map((member, index) => renderStaffCard(member, index))}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={scrollRevealVariants}
+            className="mb-16"
+          >
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-pink-950/40 via-rose-900/30 to-orange-900/20 p-8 border border-pink-500/20">
+              <div className="absolute bottom-0 right-0 w-64 h-64 bg-gradient-to-tl from-pink-500/10 to-transparent rounded-full blur-3xl"></div>
+              <div className="text-center mb-10">
+                <span className="text-5xl mb-4 block">🎉</span>
+                <h2 className="text-3xl md:text-4xl font-black bg-gradient-to-r from-pink-400 via-rose-400 to-orange-400 bg-clip-text text-transparent mb-3">Events Team</h2>
+                <p className="text-lg text-pink-200/70">Creating unforgettable experiences</p>
               </div>
-            ) : (
-              <Card className="glass-effect border-border/20 max-w-2xl mx-auto">
-                <CardContent className="p-8 text-center">
-                  <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                  <p className="text-muted-foreground">No events team members added yet</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+              {eventStaff.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {eventStaff.map((member, index) => renderStaffCard(member, index))}
+                </div>
+              ) : (
+                <Card className="bg-pink-950/30 border-pink-500/20 max-w-2xl mx-auto">
+                  <CardContent className="p-8 text-center">
+                    <Calendar className="w-12 h-12 text-pink-400/50 mx-auto mb-4" />
+                    <p className="text-pink-300/60">No events team members added yet</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </motion.div>
 
           {/* Join the Team CTA */}
-          <div className="mt-20 text-center">
-            <Card className="glass-effect border-border/20 max-w-2xl mx-auto">
-              <CardContent className="p-12">
-                <Shield className="w-16 h-16 text-primary mx-auto mb-6" />
-                <h2 className="text-3xl font-bold mb-4">Want to Join Our Team?</h2>
-                <p className="text-muted-foreground mb-8 leading-relaxed">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={scrollRevealVariants}
+            className="mt-20"
+          >
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-950/60 via-fuchsia-900/50 to-amber-900/40 p-8 md:p-12 border border-violet-500/30">
+              <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-amber-500/5 opacity-50"></div>
+              <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-amber-500/10 to-transparent rounded-full blur-3xl"></div>
+              <div className="absolute bottom-0 right-0 w-72 h-72 bg-gradient-to-tl from-violet-500/10 to-transparent rounded-full blur-3xl"></div>
+              
+              <div className="relative z-10 text-center max-w-2xl mx-auto">
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  whileInView={{ scale: 1, opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5 }}
+                  className="inline-block mb-6"
+                >
+                  <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center text-4xl shadow-lg shadow-violet-500/30 mx-auto group-hover:scale-110 transition-transform">
+                    🚀
+                  </div>
+                </motion.div>
+                <h2 className="text-3xl md:text-4xl font-black bg-gradient-to-r from-violet-400 via-fuchsia-400 to-amber-400 bg-clip-text text-transparent mb-4">Want to Join Our Team?</h2>
+                <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
                   We're always looking for passionate individuals to help make SLRP the best roleplay community. If
                   you're dedicated, responsible, and love helping others, we'd love to hear from you!
                 </p>
-                <Button size="lg" onClick={() => setIsApplicationOpen(true)} className="bg-primary hover:bg-primary/90">
+                <Button 
+                  size="lg" 
+                  onClick={() => setIsApplicationOpen(true)} 
+                  className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 transition-all duration-300 hover:scale-105 px-8"
+                >
+                  <Award className="w-5 h-5 mr-2" />
                   Apply Now
                 </Button>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </main>
     </div>
