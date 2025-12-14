@@ -338,19 +338,28 @@ const Staff = () => {
     return duties[roleType] || "Community support and assistance";
   };
 
-  // Get exactly 4 responsibilities - custom if available, otherwise role defaults
-  const getStaffResponsibilities = (member: StaffMember): string[] => {
+  // Get exactly 4 responsibilities for card display
+  // - If member has custom responsibilities, show first 4
+  // - If member has no responsibilities, show 4 role-based defaults
+  const getCardResponsibilities = (member: StaffMember): string[] => {
     const custom = member.responsibilities || [];
-    const defaults = getRoleResponsibilities(member);
     
-    if (custom.length >= 4) return custom.slice(0, 4);
+    // If has custom responsibilities, show first 4
     if (custom.length > 0) {
-      // Pad with defaults if less than 4
-      const needed = 4 - custom.length;
-      const additional = defaults.filter(d => !custom.includes(d)).slice(0, needed);
-      return [...custom, ...additional];
+      return custom.slice(0, 4);
     }
-    return defaults.slice(0, 4);
+    
+    // Otherwise show 4 role-based defaults
+    const roleDefaults: Record<string, string[]> = {
+      owner: ["Server Management", "Community Leadership", "Strategic Planning", "Team Oversight"],
+      admin: ["Staff Management", "Rule Enforcement", "Player Support", "Server Moderation"],
+      moderator: ["Community Support", "Rule Enforcement", "Ticket Handling", "Player Assistance"],
+      developer: ["Script Development", "Bug Fixes", "Feature Implementation", "Technical Support"],
+      staff: ["Player Support", "Community Help", "Ticket Assistance", "General Moderation"],
+      event_manager: ["Event Planning", "Community Events", "Player Engagement", "Event Coordination"],
+    };
+    
+    return roleDefaults[member.role_type] || ["Community Support", "Player Assistance", "General Help", "Team Support"];
   };
 
   const getTimezoneInfo = (timezone?: string) => {
@@ -573,9 +582,9 @@ const Staff = () => {
                   <span>{getRoleDuties(member.role_type)}</span>
                 </div>
                 
-                {/* Responsibilities tags - Always 4 */}
+                {/* Responsibilities tags - Show 4 on cards */}
                 <div className="grid grid-cols-2 gap-1.5">
-                  {getStaffResponsibilities(member).map((resp, idx) => (
+                  {getCardResponsibilities(member).map((resp, idx) => (
                     <motion.span 
                       key={idx}
                       initial={{ opacity: 0, scale: 0.8 }}
