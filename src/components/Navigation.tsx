@@ -95,7 +95,7 @@ const Navigation = () => {
                 transition={{ duration: 0.4, delay: 0.1 }}
               >
                 <motion.span 
-                  animate={{ color: ['#FF6B00', '#FFFFFF', '#00DD00', '#FF6B00'] }}
+                  animate={{ color: ['#FF6B00', '#FFD700', '#00DD00', '#FF6B00'] }}
                   transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                 >I</motion.span>
                 <motion.span 
@@ -103,15 +103,15 @@ const Navigation = () => {
                   transition={{ duration: 2, repeat: Infinity, ease: "linear", delay: 0.2 }}
                 >N</motion.span>
                 <motion.span 
-                  animate={{ color: ['#FFFFFF', '#FF6B00', '#FFFFFF', '#00DD00'] }}
+                  animate={{ color: ['#FFD700', '#FF6B00', '#FFD700', '#00DD00'] }}
                   transition={{ duration: 2, repeat: Infinity, ease: "linear", delay: 0.4 }}
                 >D</motion.span>
                 <motion.span 
-                  animate={{ color: ['#00DD00', '#FF8C00', '#00DD00', '#FFFFFF'] }}
+                  animate={{ color: ['#00DD00', '#FF8C00', '#00DD00', '#FFD700'] }}
                   transition={{ duration: 2, repeat: Infinity, ease: "linear", delay: 0.6 }}
                 >I</motion.span>
                 <motion.span 
-                  animate={{ color: ['#00AA00', '#FFFFFF', '#FF6B00', '#00AA00'] }}
+                  animate={{ color: ['#00AA00', '#FFD700', '#FF6B00', '#00AA00'] }}
                   transition={{ duration: 2, repeat: Infinity, ease: "linear", delay: 0.8 }}
                 >A</motion.span>
               </motion.span>
