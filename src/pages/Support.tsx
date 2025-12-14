@@ -9,6 +9,7 @@ import { Mail, Clock, Shield, Zap } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -131,90 +132,151 @@ const Support = () => {
     }
   };
 
-  const faqItems = [
-    {
-      id: "item-1",
-      question: "How do I join the SLRP server?",
-      answer: "To join SLRP, you need to: 1) Apply for whitelist on our website, 2) Wait for approval (usually 24-48 hours), 3) Join our Discord for setup instructions, 4) Install FiveM and connect using our server IP: connect.skylifeindia.com:30120"
-    },
-    {
-      id: "item-2",
-      question: "What are the server requirements?",
-      answer: "You need: GTA V (legal copy), FiveM installed, a working microphone, Discord account, age 16+, and ability to roleplay in English/Hindi. Basic PC specs: Intel i5/Ryzen 5, 8GB RAM, GTX 1060 or equivalent."
-    },
-    {
-      id: "item-3",
-      question: "How long does whitelist approval take?",
-      answer: "Whitelist applications are typically reviewed within 24-48 hours. During peak times, it may take up to 72 hours. You'll receive a notification on Discord once your application is reviewed. Make sure to check your Discord DMs!"
-    },
-    {
-      id: "item-4",
-      question: "What is RDM and VDM?",
-      answer: "RDM (Random Deathmatch) is killing players without any roleplay reason or interaction. VDM (Vehicle Deathmatch) is using your vehicle as a weapon to kill or injure players. Both are strictly prohibited and result in bans."
-    },
-    {
-      id: "item-5",
-      question: "What is metagaming and powergaming?",
-      answer: "Metagaming is using out-of-character information (like Discord, streams, or OOC chat) in roleplay. Powergaming is forcing actions on others without giving them a chance to respond, or doing unrealistic things like surviving impossible scenarios."
-    },
-    {
-      id: "item-6",
-      question: "Can I play without a microphone?",
-      answer: "No, a working microphone is mandatory for SLRP. Roleplay requires voice communication for immersion. Text-only roleplay is not permitted except for characters approved as mute, which requires special staff approval."
-    },
-    {
-      id: "item-7",
-      question: "How do I report a player?",
-      answer: "To report a player: 1) Use /report in-game for immediate issues, 2) Create a ticket in Discord with evidence (video/screenshots), 3) Include player names, timestamps, and detailed description. Never take matters into your own hands."
-    },
-    {
-      id: "item-8",
-      question: "What jobs can I do on the server?",
-      answer: "SLRP offers many legal jobs: Police, EMS, Mechanics, Taxi, Trucking, Fishing, Mining, Real Estate, and more. Illegal activities include gang operations, drug dealing, and heists. Check our Guides page for detailed job info."
-    },
-    {
-      id: "item-9",
-      question: "How many characters can I create?",
-      answer: "You can create up to 3 characters per account. Each character has separate inventory, money, and storyline. You cannot transfer items or money between your own characters as this violates server rules."
-    },
-    {
-      id: "item-10",
-      question: "What is NLR (New Life Rule)?",
-      answer: "NLR means after your character dies, you forget everything that happened leading to your death. You cannot return to the location of your death for 15 minutes or seek revenge on the person who killed you."
-    },
-    {
-      id: "item-11",
-      question: "How do I earn money in-game?",
-      answer: "You can earn money through legal jobs (police, EMS, mechanic, taxi, trucking), businesses, or illegal activities (with proper RP). Starting players get a small amount and can work their way up through various jobs."
-    },
-    {
-      id: "item-12",
-      question: "What is Fear RP?",
-      answer: "Fear RP means your character must realistically fear for their life when threatened. If someone points a gun at you, you must comply with their demands. You cannot pull out weapons or run away when at gunpoint."
-    },
-    {
-      id: "item-13",
-      question: "How do I join a gang or organization?",
-      answer: "Gangs and organizations recruit through in-character interactions. Build relationships, prove yourself through RP, and you may get invited. Some gangs have application processes - check with current members in-game."
-    },
-    {
-      id: "item-14",
-      question: "What happens if I break server rules?",
-      answer: "Rule violations result in warnings, kicks, temporary bans, or permanent bans depending on severity. Minor offenses get warnings, serious violations (RDM, VDM, hacking) result in immediate bans. All bans can be appealed."
-    },
-    {
-      id: "item-15",
-      question: "How do I appeal a ban?",
-      answer: "Visit our Support page and click 'Submit Ban Appeal'. Provide your Steam ID, Discord username, reason for ban, and why you should be unbanned. Appeals are reviewed within 48-72 hours. Be honest and respectful."
-    },
-    {
-      id: "item-16",
-      question: "What is FailRP?",
-      answer: "FailRP is any action that breaks the immersion of roleplay or is unrealistic. Examples: talking about game mechanics in-character, not valuing your life, unrealistic driving/actions, or breaking character without reason."
-    }
-  ];
+  const [activeCategory, setActiveCategory] = useState("all");
 
-  const filteredFaqs = faqItems.filter(item =>
+  const faqCategories = {
+    general: {
+      label: "General",
+      icon: HelpCircle,
+      items: [
+        {
+          id: "general-1",
+          question: "How do I join the SLRP server?",
+          answer: "To join SLRP, you need to: 1) Apply for whitelist on our website, 2) Wait for approval (usually 24-48 hours), 3) Join our Discord for setup instructions, 4) Install FiveM and connect using our server IP: connect.skylifeindia.com:30120"
+        },
+        {
+          id: "general-2",
+          question: "What are the server requirements?",
+          answer: "You need: GTA V (legal copy), FiveM installed, a working microphone, Discord account, age 16+, and ability to roleplay in English/Hindi. Basic PC specs: Intel i5/Ryzen 5, 8GB RAM, GTX 1060 or equivalent."
+        },
+        {
+          id: "general-3",
+          question: "How long does whitelist approval take?",
+          answer: "Whitelist applications are typically reviewed within 24-48 hours. During peak times, it may take up to 72 hours. You'll receive a notification on Discord once your application is reviewed."
+        },
+        {
+          id: "general-4",
+          question: "Can I play without a microphone?",
+          answer: "No, a working microphone is mandatory for SLRP. Roleplay requires voice communication for immersion. Text-only roleplay is not permitted except for characters approved as mute."
+        },
+        {
+          id: "general-5",
+          question: "How many characters can I create?",
+          answer: "You can create up to 3 characters per account. Each character has separate inventory, money, and storyline. You cannot transfer items or money between your own characters."
+        },
+        {
+          id: "general-6",
+          question: "How do I report a player?",
+          answer: "To report a player: 1) Use /report in-game for immediate issues, 2) Create a ticket in Discord with evidence (video/screenshots), 3) Include player names, timestamps, and detailed description."
+        }
+      ]
+    },
+    rules: {
+      label: "Rules",
+      icon: Shield,
+      items: [
+        {
+          id: "rules-1",
+          question: "What is RDM and VDM?",
+          answer: "RDM (Random Deathmatch) is killing players without any roleplay reason or interaction. VDM (Vehicle Deathmatch) is using your vehicle as a weapon to kill or injure players. Both are strictly prohibited and result in bans."
+        },
+        {
+          id: "rules-2",
+          question: "What is metagaming and powergaming?",
+          answer: "Metagaming is using out-of-character information (like Discord, streams, or OOC chat) in roleplay. Powergaming is forcing actions on others without giving them a chance to respond."
+        },
+        {
+          id: "rules-3",
+          question: "What is NLR (New Life Rule)?",
+          answer: "NLR means after your character dies, you forget everything that happened leading to your death. You cannot return to the location of your death for 15 minutes or seek revenge."
+        },
+        {
+          id: "rules-4",
+          question: "What is Fear RP?",
+          answer: "Fear RP means your character must realistically fear for their life when threatened. If someone points a gun at you, you must comply with their demands. You cannot pull out weapons at gunpoint."
+        },
+        {
+          id: "rules-5",
+          question: "What is FailRP?",
+          answer: "FailRP is any action that breaks the immersion of roleplay or is unrealistic. Examples: talking about game mechanics in-character, not valuing your life, unrealistic actions, or breaking character."
+        }
+      ]
+    },
+    jobs: {
+      label: "Jobs",
+      icon: Users,
+      items: [
+        {
+          id: "jobs-1",
+          question: "What jobs can I do on the server?",
+          answer: "SLRP offers many legal jobs: Police, EMS, Mechanics, Taxi, Trucking, Fishing, Mining, Real Estate, and more. Illegal activities include gang operations, drug dealing, and heists."
+        },
+        {
+          id: "jobs-2",
+          question: "How do I earn money in-game?",
+          answer: "You can earn money through legal jobs (police, EMS, mechanic, taxi, trucking), businesses, or illegal activities (with proper RP). Starting players get a small amount and can work their way up."
+        },
+        {
+          id: "jobs-3",
+          question: "How do I join a gang or organization?",
+          answer: "Gangs and organizations recruit through in-character interactions. Build relationships, prove yourself through RP, and you may get invited. Some gangs have application processes."
+        },
+        {
+          id: "jobs-4",
+          question: "How do I apply for government jobs?",
+          answer: "Government jobs like Police, EMS, and DOJ require applications on our website. Go to the Jobs page, select the department, and fill out the application form. Applications are reviewed within 48-72 hours."
+        },
+        {
+          id: "jobs-5",
+          question: "Can I own a business?",
+          answer: "Yes! You can purchase or rent businesses in-game. Business types include restaurants, car dealerships, nightclubs, and more. Contact staff for business availability and pricing."
+        }
+      ]
+    },
+    bans: {
+      label: "Bans",
+      icon: Ban,
+      items: [
+        {
+          id: "bans-1",
+          question: "What happens if I break server rules?",
+          answer: "Rule violations result in warnings, kicks, temporary bans, or permanent bans depending on severity. Minor offenses get warnings, serious violations (RDM, VDM, hacking) result in immediate bans."
+        },
+        {
+          id: "bans-2",
+          question: "How do I appeal a ban?",
+          answer: "Visit our Support page and click 'Submit Ban Appeal'. Provide your Steam ID, Discord username, reason for ban, and why you should be unbanned. Appeals are reviewed within 48-72 hours."
+        },
+        {
+          id: "bans-3",
+          question: "How long do bans last?",
+          answer: "Ban duration depends on the offense: Minor violations (1-3 days), Moderate violations (7-14 days), Major violations (30 days to permanent). Repeat offenders face longer bans."
+        },
+        {
+          id: "bans-4",
+          question: "Can I create a new account if banned?",
+          answer: "No, ban evasion is strictly prohibited. Creating new accounts to bypass a ban will result in a permanent ban on all accounts and may prevent any future appeals."
+        },
+        {
+          id: "bans-5",
+          question: "What evidence do I need for a ban appeal?",
+          answer: "For successful appeals, provide: any video evidence, screenshots, witness names, your side of the story, and a sincere apology if you violated rules. Honest appeals are more likely to succeed."
+        }
+      ]
+    }
+  };
+
+  const getAllFaqItems = () => {
+    return Object.values(faqCategories).flatMap(category => category.items);
+  };
+
+  const getFaqItemsByCategory = (category: string) => {
+    if (category === "all") return getAllFaqItems();
+    return faqCategories[category as keyof typeof faqCategories]?.items || [];
+  };
+
+  const currentFaqs = getFaqItemsByCategory(activeCategory);
+  const filteredFaqs = currentFaqs.filter(item =>
     item.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.answer.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -475,7 +537,7 @@ const Support = () => {
             <h2 className="text-3xl font-bold mb-4 text-foreground">Frequently Asked Questions</h2>
             <p className="text-muted-foreground mb-6">Search through our knowledge base to find instant answers</p>
             
-            <div className="relative max-w-xl mx-auto">
+            <div className="relative max-w-xl mx-auto mb-6">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
                 type="text"
@@ -485,6 +547,32 @@ const Support = () => {
                 className="pl-10 h-12 bg-card/50 border-border/50 focus:border-primary/50 transition-colors"
               />
             </div>
+
+            {/* Category Tabs */}
+            <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full">
+              <TabsList className="grid w-full grid-cols-5 mb-6 h-auto p-1">
+                <TabsTrigger 
+                  value="all" 
+                  className="flex items-center gap-2 py-2.5 text-xs sm:text-sm"
+                >
+                  <HelpCircle className="w-4 h-4 hidden sm:block" />
+                  All
+                </TabsTrigger>
+                {Object.entries(faqCategories).map(([key, category]) => {
+                  const Icon = category.icon;
+                  return (
+                    <TabsTrigger 
+                      key={key} 
+                      value={key}
+                      className="flex items-center gap-2 py-2.5 text-xs sm:text-sm"
+                    >
+                      <Icon className="w-4 h-4 hidden sm:block" />
+                      {category.label}
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
+            </Tabs>
           </div>
 
           <Card className="glass-effect border-border/20">
@@ -499,9 +587,12 @@ const Support = () => {
                   <Button 
                     variant="outline" 
                     className="mt-4"
-                    onClick={() => setSearchQuery("")}
+                    onClick={() => {
+                      setSearchQuery("");
+                      setActiveCategory("all");
+                    }}
                   >
-                    Clear Search
+                    Clear Filters
                   </Button>
                 </div>
               ) : (
@@ -521,9 +612,10 @@ const Support = () => {
             </CardContent>
           </Card>
 
-          {searchQuery && filteredFaqs.length > 0 && (
+          {filteredFaqs.length > 0 && (
             <p className="text-center text-sm text-muted-foreground mt-4">
-              Showing {filteredFaqs.length} of {faqItems.length} questions
+              Showing {filteredFaqs.length} of {getAllFaqItems().length} questions
+              {activeCategory !== "all" && ` in ${faqCategories[activeCategory as keyof typeof faqCategories]?.label}`}
             </p>
           )}
         </div>
