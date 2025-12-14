@@ -78,81 +78,293 @@ const Guides = () => {
                 viewport={{ once: true }}
                 variants={scrollRevealVariants}
               >
-                <Card className="glass-effect border-border/20">
-                  <CardHeader>
-                    <CardTitle className="text-2xl text-primary">🎭 Character Creation Guide</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6 text-foreground/90">
-                    <div>
-                      <h3 className="text-xl font-semibold mb-3 text-foreground">🌟 1. Creating Your Identity</h3>
-                      <p className="mb-3">Your character is more than just a name and appearance. Consider:</p>
-                      <ul className="space-y-2 ml-4">
-                        <li className="flex items-start gap-2">
-                          <span className="text-lg">📖</span>
-                          <span><strong>Background story:</strong> Where did they come from?</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="text-lg">💫</span>
-                          <span><strong>Personality traits:</strong> What makes them unique?</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="text-lg">🎯</span>
-                          <span><strong>Goals and motivations:</strong> What do they want to achieve?</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="text-lg">⚖️</span>
-                          <span><strong>Strengths and weaknesses:</strong> Nobody's perfect</span>
-                        </li>
-                      </ul>
-                    </div>
+                {/* Hero Section */}
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-900/40 via-indigo-900/30 to-cyan-900/40 p-8 mb-8 border border-purple-500/20">
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-cyan-500/5 opacity-50"></div>
+                  <div className="relative z-10 text-center">
+                    <motion.div
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ duration: 0.5 }}
+                      className="inline-block mb-4"
+                    >
+                      <span className="text-7xl">🎭</span>
+                    </motion.div>
+                    <h2 className="text-3xl md:text-4xl font-black mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
+                      Character Creation Masterclass
+                    </h2>
+                    <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                      Your character is the vessel through which you experience Skylife. Create someone memorable, 
+                      believable, and most importantly - someone you will enjoy playing for months to come.
+                    </p>
+                  </div>
+                </div>
 
-                    <div>
-                      <h3 className="text-xl font-semibold mb-3 text-foreground">👔 2. Appearance Customization</h3>
-                      <p className="mb-3">Take your time in character creation:</p>
-                      <ul className="space-y-2 ml-4">
-                        <li className="flex items-start gap-2">
-                          <span className="text-lg">🎨</span>
-                          <span>Choose features that match your character's background</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="text-lg">👴</span>
-                          <span>Consider age-appropriate styling</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="text-lg">👕</span>
-                          <span>Think about how clothing reflects personality</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="text-lg">🛍️</span>
-                          <span>Remember: You can visit clothing stores later</span>
-                        </li>
-                      </ul>
-                    </div>
+                {/* Step Cards Grid */}
+                <div className="grid md:grid-cols-2 gap-6 mb-8">
+                  {/* Step 1 */}
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.1 }}
+                    className="group"
+                  >
+                    <Card className="h-full bg-gradient-to-br from-violet-950/50 to-purple-900/30 border-violet-500/20 hover:border-violet-400/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(139,92,246,0.15)]">
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center gap-4">
+                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-2xl shadow-lg shadow-violet-500/25 group-hover:scale-110 transition-transform">
+                            🌟
+                          </div>
+                          <div>
+                            <span className="text-xs font-bold text-violet-400 tracking-widest">STEP 01</span>
+                            <CardTitle className="text-xl text-foreground">Creating Your Identity</CardTitle>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <p className="text-muted-foreground text-sm">Your character is more than pixels - they are a living, breathing person with dreams, fears, and a past.</p>
+                        <div className="space-y-3">
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-violet-500/10 border border-violet-500/20">
+                            <span className="text-xl">📖</span>
+                            <div>
+                              <strong className="text-violet-300">Origin Story</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Where were they born? What was their childhood like? What brought them to Los Santos? Every detail adds depth.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-violet-500/10 border border-violet-500/20">
+                            <span className="text-xl">💫</span>
+                            <div>
+                              <strong className="text-violet-300">Personality Matrix</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Are they introverted or extroverted? Trusting or suspicious? Calm or hot-headed? Define 3-5 core traits.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-violet-500/10 border border-violet-500/20">
+                            <span className="text-xl">🎯</span>
+                            <div>
+                              <strong className="text-violet-300">Goals & Dreams</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Short-term and long-term objectives. Maybe they want to own a business, find love, or escape their past.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-violet-500/10 border border-violet-500/20">
+                            <span className="text-xl">⚖️</span>
+                            <div>
+                              <strong className="text-violet-300">Flaws & Weaknesses</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Perfect characters are boring. Give them an addiction, a phobia, a temper, or a secret they are hiding.</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
 
-                    <div>
-                      <h3 className="text-xl font-semibold mb-3 text-foreground">🚀 3. Starting Your Story</h3>
-                      <p className="mb-3">Once you spawn in Los Santos:</p>
-                      <ul className="space-y-2 ml-4">
-                        <li className="flex items-start gap-2">
-                          <span className="text-lg">🏛️</span>
-                          <span>Visit City Hall to register as a citizen</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="text-lg">📱</span>
-                          <span>Get a phone at the electronics store</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="text-lg">💼</span>
-                          <span>Apply for your first job at the job center</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="text-lg">🤝</span>
-                          <span>Interact with others to build your network</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </CardContent>
-                </Card>
+                  {/* Step 2 */}
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.2 }}
+                    className="group"
+                  >
+                    <Card className="h-full bg-gradient-to-br from-pink-950/50 to-rose-900/30 border-pink-500/20 hover:border-pink-400/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(236,72,153,0.15)]">
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center gap-4">
+                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center text-2xl shadow-lg shadow-pink-500/25 group-hover:scale-110 transition-transform">
+                            👔
+                          </div>
+                          <div>
+                            <span className="text-xs font-bold text-pink-400 tracking-widest">STEP 02</span>
+                            <CardTitle className="text-xl text-foreground">Visual Design</CardTitle>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <p className="text-muted-foreground text-sm">Your appearance tells a story before you speak a word. Every scar, tattoo, and outfit choice matters.</p>
+                        <div className="space-y-3">
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-pink-500/10 border border-pink-500/20">
+                            <span className="text-xl">🎨</span>
+                            <div>
+                              <strong className="text-pink-300">Match Your Background</strong>
+                              <p className="text-xs text-muted-foreground mt-1">A wealthy businessman looks different from a street hustler. Let your appearance reflect your story.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-pink-500/10 border border-pink-500/20">
+                            <span className="text-xl">👴</span>
+                            <div>
+                              <strong className="text-pink-300">Age Appropriately</strong>
+                              <p className="text-xs text-muted-foreground mt-1">If your character is 50, show it. Wrinkles, grey hair, and tired eyes tell stories of experience.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-pink-500/10 border border-pink-500/20">
+                            <span className="text-xl">💀</span>
+                            <div>
+                              <strong className="text-pink-300">Scars & History</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Physical marks can hint at past trauma, fights, or accidents. Each scar has a story to tell.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-pink-500/10 border border-pink-500/20">
+                            <span className="text-xl">🛍️</span>
+                            <div>
+                              <strong className="text-pink-300">Wardrobe Evolution</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Start humble. As your character grows wealthy, upgrade their style. Progression feels rewarding.</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+
+                  {/* Step 3 */}
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.3 }}
+                    className="group"
+                  >
+                    <Card className="h-full bg-gradient-to-br from-cyan-950/50 to-teal-900/30 border-cyan-500/20 hover:border-cyan-400/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)]">
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center gap-4">
+                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center text-2xl shadow-lg shadow-cyan-500/25 group-hover:scale-110 transition-transform">
+                            🚀
+                          </div>
+                          <div>
+                            <span className="text-xs font-bold text-cyan-400 tracking-widest">STEP 03</span>
+                            <CardTitle className="text-xl text-foreground">Starting Your Journey</CardTitle>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <p className="text-muted-foreground text-sm">Your first hours in Los Santos set the tone for your entire story. Make them count.</p>
+                        <div className="space-y-3">
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
+                            <span className="text-xl">🏛️</span>
+                            <div>
+                              <strong className="text-cyan-300">City Hall Registration</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Your first stop. Register as a citizen, get your ID, and officially exist in the city records.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
+                            <span className="text-xl">📱</span>
+                            <div>
+                              <strong className="text-cyan-300">Get Connected</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Purchase a phone at the electronics store. Communication is essential for building connections.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
+                            <span className="text-xl">💼</span>
+                            <div>
+                              <strong className="text-cyan-300">Find Employment</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Visit the job center. Start with honest work - delivery, taxi, fishing. Build your reputation first.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
+                            <span className="text-xl">🤝</span>
+                            <div>
+                              <strong className="text-cyan-300">Make Connections</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Introduce yourself to people. The relationships you build early become the foundation of your story.</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+
+                  {/* Step 4 */}
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.4 }}
+                    className="group"
+                  >
+                    <Card className="h-full bg-gradient-to-br from-amber-950/50 to-orange-900/30 border-amber-500/20 hover:border-amber-400/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(245,158,11,0.15)]">
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center gap-4">
+                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-2xl shadow-lg shadow-amber-500/25 group-hover:scale-110 transition-transform">
+                            🎪
+                          </div>
+                          <div>
+                            <span className="text-xs font-bold text-amber-400 tracking-widest">STEP 04</span>
+                            <CardTitle className="text-xl text-foreground">Voice & Mannerisms</CardTitle>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <p className="text-muted-foreground text-sm">How you speak and act brings your character to life. Consistency creates believability.</p>
+                        <div className="space-y-3">
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                            <span className="text-xl">🗣️</span>
+                            <div>
+                              <strong className="text-amber-300">Develop a Voice</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Accent, pitch, speaking speed - these define how others perceive you. Practice your voice.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                            <span className="text-xl">🎭</span>
+                            <div>
+                              <strong className="text-amber-300">Signature Phrases</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Catchphrases, greetings, or verbal tics make you memorable. How does your character say goodbye?</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                            <span className="text-xl">🚶</span>
+                            <div>
+                              <strong className="text-amber-300">Physical Habits</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Do they smoke? Crack their knuckles? Check their phone constantly? Small details matter.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                            <span className="text-xl">😤</span>
+                            <div>
+                              <strong className="text-amber-300">Emotional Reactions</strong>
+                              <p className="text-xs text-muted-foreground mt-1">How do they react to stress? Anger? Sadness? Prepare your emotional responses in advance.</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </div>
+
+                {/* Pro Tips Section */}
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <Card className="border-2 border-dashed border-primary/30 bg-gradient-to-r from-primary/5 via-secondary/5 to-accent/5">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                          <span className="text-2xl">💡</span>
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-primary">Pro Tips from Veteran Roleplayers</h3>
+                          <p className="text-sm text-muted-foreground">Wisdom gathered from years of experience</p>
+                        </div>
+                      </div>
+                      <div className="grid md:grid-cols-3 gap-4">
+                        <div className="p-4 rounded-xl bg-background/50 border border-border/50">
+                          <span className="text-2xl mb-2 block">📓</span>
+                          <strong className="text-foreground">Keep a Character Journal</strong>
+                          <p className="text-xs text-muted-foreground mt-1">Document relationships, events, and character growth. It helps maintain consistency and creates amazing memories.</p>
+                        </div>
+                        <div className="p-4 rounded-xl bg-background/50 border border-border/50">
+                          <span className="text-2xl mb-2 block">🎬</span>
+                          <strong className="text-foreground">Watch RP Streams</strong>
+                          <p className="text-xs text-muted-foreground mt-1">Learn from experienced roleplayers. Notice how they handle situations, develop characters, and create memorable moments.</p>
+                        </div>
+                        <div className="p-4 rounded-xl bg-background/50 border border-border/50">
+                          <span className="text-2xl mb-2 block">🔄</span>
+                          <strong className="text-foreground">Allow Character Growth</strong>
+                          <p className="text-xs text-muted-foreground mt-1">Characters should evolve based on experiences. Trauma changes people. Success changes people. Let your character grow.</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               </motion.div>
             </TabsContent>
 
@@ -865,137 +1077,337 @@ const Guides = () => {
                 viewport={{ once: true }}
                 variants={scrollRevealVariants}
               >
-                <Card className="glass-effect border-border/20">
-                  <CardHeader>
-                    <CardTitle className="text-2xl text-primary">💡 Roleplay Tips & Best Practices</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-8 text-foreground/90">
+                {/* RP Tips Hero */}
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-900/40 via-teal-900/30 to-cyan-900/40 p-8 mb-8 border border-emerald-500/20">
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 opacity-50"></div>
+                  <div className="relative z-10 text-center">
+                    <motion.div
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ duration: 0.5 }}
+                      className="inline-block mb-4"
+                    >
+                      <span className="text-7xl">💡</span>
+                    </motion.div>
+                    <h2 className="text-3xl md:text-4xl font-black mb-4 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
+                      Roleplay Mastery Guide
+                    </h2>
+                    <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                      Transform from a good roleplayer into a great one. These tips and techniques will elevate your storytelling and create unforgettable experiences.
+                    </p>
+                  </div>
+                </div>
 
-                    <div>
-                      <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
-                        <span className="text-2xl">✨</span> Creating Quality Roleplay
-                      </h3>
-                      <ul className="space-y-3 ml-4">
-                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
-                          <span className="text-xl">🎭</span>
-                          <span><strong>Show, Don't Tell:</strong> Instead of saying "I'm nervous", describe fidgeting, avoiding eye contact, or stuttering</span>
-                        </li>
-                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
-                          <span className="text-xl">🔍</span>
-                          <span><strong>Add Details:</strong> Don't just walk into a store - describe how you walk, what you're wearing, your mood</span>
-                        </li>
-                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
-                          <span className="text-xl">😢</span>
-                          <span><strong>React Realistically:</strong> Getting shot hurts. Losing money is upsetting. Show emotions!</span>
-                        </li>
-                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
-                          <span className="text-xl">🤲</span>
-                          <span><strong>Give Others Opportunities:</strong> Leave room in your RP for others to contribute</span>
-                        </li>
-                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
-                          <span className="text-xl">🎯</span>
-                          <span><strong>Embrace Failure:</strong> Losing, failing, or making mistakes creates great RP opportunities</span>
-                        </li>
-                      </ul>
-                    </div>
+                {/* Main Tips Grid */}
+                <div className="grid md:grid-cols-2 gap-6 mb-8">
+                  {/* Quality RP Card */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.1 }}
+                  >
+                    <Card className="h-full bg-gradient-to-br from-emerald-950/50 to-green-900/30 border-emerald-500/20 hover:border-emerald-400/40 transition-all duration-300">
+                      <CardHeader>
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-2xl shadow-lg shadow-emerald-500/25">
+                            ✨
+                          </div>
+                          <CardTitle className="text-xl text-emerald-300">Creating Quality Roleplay</CardTitle>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/15 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl">🎭</span>
+                            <div>
+                              <strong className="text-emerald-300">Show, Do Not Tell</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Instead of saying "I am nervous", describe fidgeting with your hands, avoiding eye contact, or stuttering over your words. Actions speak louder.</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/15 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl">🔍</span>
+                            <div>
+                              <strong className="text-emerald-300">Add Rich Details</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Do not just walk into a store - describe your posture, glance at your outfit, mention the expression on your face. Small details create immersion.</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/15 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl">😢</span>
+                            <div>
+                              <strong className="text-emerald-300">React Realistically</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Getting shot hurts. Losing money is upsetting. Winning feels amazing. Show genuine emotional responses to events.</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/15 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl">🤲</span>
+                            <div>
+                              <strong className="text-emerald-300">Create Space for Others</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Leave room in your roleplay for others to contribute. Ask questions, pause for reactions, and build stories together.</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/15 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl">🎯</span>
+                            <div>
+                              <strong className="text-emerald-300">Embrace Failure</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Losing, failing, or making mistakes creates the best roleplay opportunities. Some of the best stories come from things going wrong.</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
 
-                    <div>
-                      <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
-                        <span className="text-2xl">👥</span> Building Relationships & Networks
-                      </h3>
-                      <ul className="space-y-3 ml-4">
-                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
-                          <span className="text-xl">📍</span>
-                          <span><strong>Frequent Spots:</strong> Hang out at popular locations like Legion Square or coffee shops</span>
-                        </li>
-                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
-                          <span className="text-xl">📝</span>
-                          <span><strong>Remember Details:</strong> Keep mental notes about characters you meet</span>
-                        </li>
-                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
-                          <span className="text-xl">📱</span>
-                          <span><strong>Exchange Numbers:</strong> Get phone numbers to stay in touch</span>
-                        </li>
-                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
-                          <span className="text-xl">🏢</span>
-                          <span><strong>Join Organizations:</strong> Gangs, businesses provide built-in RP connections</span>
-                        </li>
-                      </ul>
-                    </div>
+                  {/* Building Networks Card */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    <Card className="h-full bg-gradient-to-br from-blue-950/50 to-indigo-900/30 border-blue-500/20 hover:border-blue-400/40 transition-all duration-300">
+                      <CardHeader>
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-2xl shadow-lg shadow-blue-500/25">
+                            👥
+                          </div>
+                          <CardTitle className="text-xl text-blue-300">Building Your Network</CardTitle>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/15 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl">📍</span>
+                            <div>
+                              <strong className="text-blue-300">Know the Hotspots</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Legion Square, Burger Shot, Yellow Jack, the pier - learn where people gather and spend time there. Organic meetings lead to great stories.</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/15 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl">📝</span>
+                            <div>
+                              <strong className="text-blue-300">Remember Everything</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Keep notes about characters you meet - their names, jobs, relationships. Referencing past interactions shows you care about the story.</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/15 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl">📱</span>
+                            <div>
+                              <strong className="text-blue-300">Stay Connected</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Exchange phone numbers with people you meet. Text between sessions. Build relationships that exist beyond random encounters.</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/15 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl">🏢</span>
+                            <div>
+                              <strong className="text-blue-300">Join Organizations</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Jobs, gangs, businesses - these provide built-in roleplay connections and storylines. You are never short of people to interact with.</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/15 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl">🎉</span>
+                            <div>
+                              <strong className="text-blue-300">Attend Events</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Community events, races, parties - these are goldmines for meeting new people and creating shared memories.</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
 
-                    <div>
-                      <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
-                        <span className="text-2xl">🎬</span> Advanced RP Techniques
-                      </h3>
-                      <ul className="space-y-3 ml-4">
-                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
-                          <span className="text-xl">🌟</span>
-                          <span><strong>Unique Mannerisms:</strong> Quirks, habits, speech patterns that make your character memorable</span>
-                        </li>
-                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
-                          <span className="text-xl">📚</span>
-                          <span><strong>Consistent Backstory:</strong> Know your character's history and reference it naturally</span>
-                        </li>
-                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
-                          <span className="text-xl">💔</span>
-                          <span><strong>Play Flawed Characters:</strong> Addictions, fears, biases make characters interesting</span>
-                        </li>
-                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
-                          <span className="text-xl">🔥</span>
-                          <span><strong>Slow Burn Storylines:</strong> Let plots develop over weeks, not hours</span>
-                        </li>
-                      </ul>
-                    </div>
+                  {/* Advanced Techniques Card */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    <Card className="h-full bg-gradient-to-br from-purple-950/50 to-violet-900/30 border-purple-500/20 hover:border-purple-400/40 transition-all duration-300">
+                      <CardHeader>
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center text-2xl shadow-lg shadow-purple-500/25">
+                            🎬
+                          </div>
+                          <CardTitle className="text-xl text-purple-300">Advanced Techniques</CardTitle>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/15 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl">🌟</span>
+                            <div>
+                              <strong className="text-purple-300">Develop Unique Mannerisms</strong>
+                              <p className="text-xs text-muted-foreground mt-1">A nervous laugh, a catchphrase, always adjusting glasses - small quirks make your character instantly recognizable and memorable.</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/15 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl">📚</span>
+                            <div>
+                              <strong className="text-purple-300">Reference Your Past</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Naturally bring up past events, old friends, previous jobs. A character with history feels real and lived-in.</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/15 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl">💔</span>
+                            <div>
+                              <strong className="text-purple-300">Play Flawed Characters</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Addictions, trauma, prejudices, insecurities - flaws create conflict, growth arcs, and deeply compelling stories.</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/15 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl">🔥</span>
+                            <div>
+                              <strong className="text-purple-300">Slow Burn Stories</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Let plots develop over weeks, not hours. Romance, revenge, business empires - the best arcs take time to build.</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/15 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl">🎲</span>
+                            <div>
+                              <strong className="text-purple-300">Embrace Randomness</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Sometimes flip a coin. Let chance decide outcomes. Unpredictability keeps roleplay fresh and surprising for everyone.</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
 
-                    <div>
-                      <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
-                        <span className="text-2xl">⚠️</span> Common Mistakes to Avoid
-                      </h3>
-                      <ul className="space-y-3 ml-4">
-                        <li className="flex items-start gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                          <span className="text-xl">👑</span>
-                          <span><strong>Main Character Syndrome:</strong> Not everyone can be the toughest/richest. Be realistic</span>
-                        </li>
-                        <li className="flex items-start gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                          <span className="text-xl">🏆</span>
-                          <span><strong>Winning Every Situation:</strong> Sometimes you lose fights or get arrested. That's okay!</span>
-                        </li>
-                        <li className="flex items-start gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                          <span className="text-xl">🙈</span>
-                          <span><strong>Ignoring Others:</strong> Acknowledge people trying to RP with you, even if briefly</span>
-                        </li>
-                        <li className="flex items-start gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                          <span className="text-xl">💢</span>
-                          <span><strong>Taking IC Personally:</strong> Your character's enemies aren't YOUR enemies. Separate IC from OOC</span>
-                        </li>
-                      </ul>
-                    </div>
+                  {/* Mistakes to Avoid Card */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.4 }}
+                  >
+                    <Card className="h-full bg-gradient-to-br from-red-950/50 to-rose-900/30 border-red-500/20 hover:border-red-400/40 transition-all duration-300">
+                      <CardHeader>
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center text-2xl shadow-lg shadow-red-500/25">
+                            ⚠️
+                          </div>
+                          <CardTitle className="text-xl text-red-300">Common Mistakes</CardTitle>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/15 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl">👑</span>
+                            <div>
+                              <strong className="text-red-300">Main Character Syndrome</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Not everyone can be the richest, toughest, or most connected. Be realistic about your place in the world. Supporting roles create great stories too.</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/15 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl">🏆</span>
+                            <div>
+                              <strong className="text-red-300">Winning Every Situation</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Sometimes you lose fights. Sometimes you get arrested. Sometimes your plans fail. That is not just okay - it creates the best stories.</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/15 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl">🙈</span>
+                            <div>
+                              <strong className="text-red-300">Ignoring Other Players</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Someone is trying to roleplay with you. Even if you are busy, acknowledge them. A quick response is better than being ignored.</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/15 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl">💢</span>
+                            <div>
+                              <strong className="text-red-300">IC/OOC Bleed</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Your character's enemies are not YOUR enemies. Do not take in-character conflicts personally. Separate the character from the player.</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/15 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <span className="text-2xl">⏰</span>
+                            <div>
+                              <strong className="text-red-300">Rushing Everything</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Do not try to accomplish everything in one session. Let relationships, businesses, and stories develop naturally over time.</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </div>
 
-                    <div className="p-5 border-2 border-primary/40 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10">
-                      <h4 className="font-bold text-primary mb-3 flex items-center gap-2 text-lg">
-                        <span className="text-2xl">🌟</span> Pro Tips from Veterans
-                      </h4>
-                      <ul className="space-y-2 text-sm">
-                        <li className="flex items-start gap-2">
-                          <span>📓</span>
-                          <span><strong>Document Your Story:</strong> Keep notes about your character's journey</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span>👀</span>
-                          <span><strong>Watch and Learn:</strong> Observe experienced roleplayers</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span>🎉</span>
-                          <span><strong>Join Community Events:</strong> Server events create amazing RP opportunities</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span>😊</span>
-                          <span><strong>Have Fun!</strong> Remember this is a game. Enjoy the experience</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </CardContent>
-                </Card>
+                {/* Pro Tips Section */}
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <Card className="border-2 border-dashed border-emerald-500/30 bg-gradient-to-r from-emerald-500/5 via-teal-500/5 to-cyan-500/5">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center border border-emerald-500/30">
+                          <span className="text-3xl">🌟</span>
+                        </div>
+                        <div>
+                          <h3 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">Veteran Wisdom</h3>
+                          <p className="text-sm text-muted-foreground">Insights from experienced roleplayers</p>
+                        </div>
+                      </div>
+                      <div className="grid md:grid-cols-4 gap-4">
+                        <div className="p-4 rounded-xl bg-background/50 border border-emerald-500/20 hover:border-emerald-500/40 transition-colors text-center">
+                          <span className="text-3xl mb-3 block">📓</span>
+                          <strong className="text-foreground block mb-1">Keep a Journal</strong>
+                          <p className="text-xs text-muted-foreground">Document your journey. It helps with consistency and creates amazing memories to look back on.</p>
+                        </div>
+                        <div className="p-4 rounded-xl bg-background/50 border border-teal-500/20 hover:border-teal-500/40 transition-colors text-center">
+                          <span className="text-3xl mb-3 block">👀</span>
+                          <strong className="text-foreground block mb-1">Watch and Learn</strong>
+                          <p className="text-xs text-muted-foreground">Observe how veteran players handle situations. Watch RP streams. Learn from the best.</p>
+                        </div>
+                        <div className="p-4 rounded-xl bg-background/50 border border-cyan-500/20 hover:border-cyan-500/40 transition-colors text-center">
+                          <span className="text-3xl mb-3 block">🎭</span>
+                          <strong className="text-foreground block mb-1">Practice Voices</strong>
+                          <p className="text-xs text-muted-foreground">Work on your character voice. Record yourself. A unique voice makes you instantly memorable.</p>
+                        </div>
+                        <div className="p-4 rounded-xl bg-background/50 border border-green-500/20 hover:border-green-500/40 transition-colors text-center">
+                          <span className="text-3xl mb-3 block">😊</span>
+                          <strong className="text-foreground block mb-1">Have Fun!</strong>
+                          <p className="text-xs text-muted-foreground">At the end of the day, this is a game. If you are not enjoying yourself, step back and reset.</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               </motion.div>
             </TabsContent>
 
@@ -1006,145 +1418,71 @@ const Guides = () => {
                 viewport={{ once: true }}
                 variants={scrollRevealVariants}
               >
-                <Card className="glass-effect border-border/20">
-                  <CardHeader>
-                    <CardTitle className="text-2xl text-primary flex items-center gap-3">
-                      <span className="text-2xl">📸</span>
+                {/* Gallery Hero */}
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-900/40 via-pink-900/30 to-orange-900/40 p-8 mb-8 border border-rose-500/20">
+                  <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-orange-500/5 opacity-50"></div>
+                  <div className="relative z-10 text-center">
+                    <motion.div
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ duration: 0.5 }}
+                      className="inline-block mb-4"
+                    >
+                      <span className="text-7xl">📸</span>
+                    </motion.div>
+                    <h2 className="text-3xl md:text-4xl font-black mb-4 bg-gradient-to-r from-rose-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">
                       Community Gallery Guidelines
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6 text-foreground/90">
+                    </h2>
+                    <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                      Showcase your best moments, creative screenshots, and memorable roleplay scenes. Follow these guidelines for a positive experience.
+                    </p>
+                  </div>
+                </div>
 
-                    <div className="p-4 border border-primary/30 rounded-lg bg-primary/5">
-                      <p className="text-foreground/90 flex items-start gap-2">
-                        <span className="text-xl">ℹ️</span>
-                        <span>Our community gallery is a place to showcase your best SLRP moments, creative screenshots, and memorable roleplay scenes. Follow these guidelines to ensure a positive experience for everyone.</span>
-                      </p>
+                {/* Guidelines Grid */}
+                <div className="grid md:grid-cols-2 gap-6 mb-8">
+                  <Card className="bg-gradient-to-br from-rose-950/50 to-pink-900/30 border-rose-500/20">
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-2xl">🛡️</div>
+                        <CardTitle className="text-xl text-rose-300">Content Standards</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20"><span className="text-lg mr-2">📷</span><strong>Quality First:</strong> Submit clear, high-quality screenshots</div>
+                      <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20"><span className="text-lg mr-2">✅</span><strong>Original Only:</strong> Content you captured yourself</div>
+                      <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20"><span className="text-lg mr-2">👍</span><strong>Appropriate:</strong> No explicit or offensive imagery</div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-gradient-to-br from-orange-950/50 to-amber-900/30 border-orange-500/20">
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-2xl">💬</div>
+                        <CardTitle className="text-xl text-orange-300">Titles & Descriptions</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/20"><span className="text-lg mr-2">📝</span><strong>Descriptive:</strong> Give meaningful titles</div>
+                      <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/20"><span className="text-lg mr-2">📖</span><strong>Context:</strong> Share the story behind it</div>
+                      <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/20"><span className="text-lg mr-2">🗣️</span><strong>Language:</strong> Keep it clean and respectful</div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Pro Tips & CTA */}
+                <Card className="border-2 border-dashed border-rose-500/30 bg-gradient-to-r from-rose-500/5 to-orange-500/5">
+                  <CardContent className="p-6">
+                    <h3 className="text-xl font-bold text-rose-300 mb-4 flex items-center gap-2"><span className="text-2xl">📸</span> Pro Screenshot Tips</h3>
+                    <div className="grid md:grid-cols-4 gap-4 mb-6">
+                      <div className="text-center p-3 rounded-lg bg-background/50"><span className="text-2xl block mb-2">🎥</span><span className="text-sm">Use photo mode</span></div>
+                      <div className="text-center p-3 rounded-lg bg-background/50"><span className="text-2xl block mb-2">🌅</span><span className="text-sm">Golden hour lighting</span></div>
+                      <div className="text-center p-3 rounded-lg bg-background/50"><span className="text-2xl block mb-2">📐</span><span className="text-sm">Creative angles</span></div>
+                      <div className="text-center p-3 rounded-lg bg-background/50"><span className="text-2xl block mb-2">🌧️</span><span className="text-sm">Weather effects</span></div>
                     </div>
-
-                    <div>
-                      <h3 className="text-xl font-semibold mb-3 text-foreground flex items-center gap-2">
-                        <span className="text-xl">🛡️</span>
-                        Content Standards
-                      </h3>
-                      <ul className="space-y-2 ml-4">
-                        <li className="flex items-start gap-2 p-2 rounded-lg bg-card/30">
-                          <span className="text-lg">📷</span>
-                          <span><strong>Quality First:</strong> Submit clear, high-quality screenshots</span>
-                        </li>
-                        <li className="flex items-start gap-2 p-2 rounded-lg bg-card/30">
-                          <span className="text-lg">✅</span>
-                          <span><strong>Original Content:</strong> Only submit content you've captured yourself</span>
-                        </li>
-                        <li className="flex items-start gap-2 p-2 rounded-lg bg-card/30">
-                          <span className="text-lg">👍</span>
-                          <span><strong>Appropriate Content:</strong> No explicit, violent, or offensive imagery</span>
-                        </li>
-                        <li className="flex items-start gap-2 p-2 rounded-lg bg-card/30">
-                          <span className="text-lg">🎮</span>
-                          <span><strong>Relevant to SLRP:</strong> All submissions must be from the SLRP server</span>
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h3 className="text-xl font-semibold mb-3 text-foreground flex items-center gap-2">
-                        <span className="text-xl">💬</span>
-                        Titles & Descriptions
-                      </h3>
-                      <ul className="space-y-2 ml-4">
-                        <li className="flex items-start gap-2 p-2 rounded-lg bg-card/30">
-                          <span className="text-lg">📝</span>
-                          <span><strong>Descriptive Titles:</strong> Give your submission a meaningful title</span>
-                        </li>
-                        <li className="flex items-start gap-2 p-2 rounded-lg bg-card/30">
-                          <span className="text-lg">📖</span>
-                          <span><strong>Add Context:</strong> Use descriptions to share the story behind the screenshot</span>
-                        </li>
-                        <li className="flex items-start gap-2 p-2 rounded-lg bg-card/30">
-                          <span className="text-lg">🗣️</span>
-                          <span><strong>Appropriate Language:</strong> No profanity or offensive language</span>
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h3 className="text-xl font-semibold mb-3 text-foreground flex items-center gap-2">
-                        <span className="text-xl">❤️</span>
-                        Community Interaction
-                      </h3>
-                      <ul className="space-y-2 ml-4">
-                        <li className="flex items-start gap-2 p-2 rounded-lg bg-card/30">
-                          <span className="text-lg">💝</span>
-                          <span><strong>Respectful Comments:</strong> Keep comments positive and constructive</span>
-                        </li>
-                        <li className="flex items-start gap-2 p-2 rounded-lg bg-card/30">
-                          <span className="text-lg">👋</span>
-                          <span><strong>Credit Others:</strong> If other players are featured, mention them</span>
-                        </li>
-                        <li className="flex items-start gap-2 p-2 rounded-lg bg-card/30">
-                          <span className="text-lg">👍</span>
-                          <span><strong>Support Fellow Players:</strong> Like and engage with content you enjoy!</span>
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h3 className="text-xl font-semibold mb-3 text-foreground flex items-center gap-2">
-                        <span className="text-xl">🚫</span>
-                        Prohibited Content
-                      </h3>
-                      <ul className="space-y-2 ml-4 text-destructive/90">
-                        <li className="flex items-start gap-2 p-2 rounded-lg bg-destructive/10 border border-destructive/20">
-                          <span className="text-lg">❌</span>
-                          <span>Explicit or sexual content of any kind</span>
-                        </li>
-                        <li className="flex items-start gap-2 p-2 rounded-lg bg-destructive/10 border border-destructive/20">
-                          <span className="text-lg">❌</span>
-                          <span>Real-world violence, gore, or disturbing imagery</span>
-                        </li>
-                        <li className="flex items-start gap-2 p-2 rounded-lg bg-destructive/10 border border-destructive/20">
-                          <span className="text-lg">❌</span>
-                          <span>Racist, sexist, homophobic, or discriminatory content</span>
-                        </li>
-                        <li className="flex items-start gap-2 p-2 rounded-lg bg-destructive/10 border border-destructive/20">
-                          <span className="text-lg">❌</span>
-                          <span>Spam, advertisements, or promotional content</span>
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div className="p-5 border-2 border-primary/40 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10">
-                      <h4 className="font-bold text-primary mb-3 flex items-center gap-2 text-lg">
-                        <span className="text-2xl">📸</span> Pro Tips for Great Screenshots
-                      </h4>
-                      <ul className="space-y-2 text-sm">
-                        <li className="flex items-start gap-2">
-                          <span>🎥</span>
-                          <span>Use the in-game photo mode for cinematic shots</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span>🌅</span>
-                          <span>Golden hour (sunrise/sunset) provides beautiful lighting</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span>📐</span>
-                          <span>Experiment with different camera angles</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span>🌧️</span>
-                          <span>Weather effects like rain or fog add atmosphere</span>
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div className="flex justify-center mt-6">
-                      <Link 
-                        to="/gallery" 
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-semibold transition-all hover:scale-105 shadow-[0_0_20px_rgba(var(--primary),0.3)]"
-                      >
-                        <span className="text-lg">🖼️</span>
-                        Visit the Gallery
+                    <div className="flex justify-center">
+                      <Link to="/gallery" className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 text-white rounded-xl font-bold transition-all hover:scale-105 shadow-lg shadow-rose-500/25">
+                        <span className="text-xl">🖼️</span> Visit the Gallery
                       </Link>
                     </div>
                   </CardContent>
