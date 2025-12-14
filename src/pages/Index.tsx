@@ -314,7 +314,7 @@ const Index = () => {
             >
               {/* Glow effect behind text - lighter */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-[600px] h-[300px] bg-gradient-to-r from-violet-400/30 via-purple-400/40 to-violet-400/30 blur-[120px] rounded-full gpu-accelerated"></div>
+                <div className="w-[600px] h-[300px] bg-gradient-to-r from-sky-400/30 via-cyan-400/40 to-sky-400/30 blur-[120px] rounded-full gpu-accelerated"></div>
               </div>
               
               {/* Main Title */}
@@ -329,8 +329,8 @@ const Index = () => {
                   }}
                 >
                   <span 
-                    className="bg-gradient-to-b from-violet-300 via-purple-400 to-purple-500 bg-clip-text text-transparent"
-                    style={{ filter: 'drop-shadow(0 4px 25px hsl(270 60% 60% / 0.4))' }}
+                    className="bg-gradient-to-b from-sky-300 via-cyan-400 to-sky-500 bg-clip-text text-transparent"
+                    style={{ filter: 'drop-shadow(0 4px 25px hsl(200 70% 55% / 0.4))' }}
                   >
                     SK
                   </span>
@@ -350,16 +350,16 @@ const Index = () => {
                     <Cloud 
                       className="w-16 h-16 md:w-28 md:h-28 lg:w-36 lg:h-36 -mx-1 md:-mx-2"
                       style={{ 
-                        color: 'hsl(270 60% 70%)',
-                        filter: 'drop-shadow(0 0 15px hsl(270 60% 60% / 0.6))'
+                        color: 'hsl(200 70% 65%)',
+                        filter: 'drop-shadow(0 0 15px hsl(200 70% 55% / 0.6))'
                       }}
                       strokeWidth={2.5}
-                      fill="hsl(270 55% 65%)"
+                      fill="hsl(200 65% 60%)"
                     />
                   </motion.div>
                   <span 
-                    className="bg-gradient-to-b from-violet-300 via-purple-400 to-purple-500 bg-clip-text text-transparent"
-                    style={{ filter: 'drop-shadow(0 4px 25px hsl(270 60% 60% / 0.4))' }}
+                    className="bg-gradient-to-b from-sky-300 via-cyan-400 to-sky-500 bg-clip-text text-transparent"
+                    style={{ filter: 'drop-shadow(0 4px 25px hsl(200 70% 55% / 0.4))' }}
                   >
                     LIFE
                   </span>
@@ -377,13 +377,13 @@ const Index = () => {
                   ROLEPLAY
                 </span>
                 
-                {/* INDIA - Small accent in lighter purple, italic */}
+                {/* INDIA - Small accent in light blue, italic */}
                 <span 
                   className="block text-sm md:text-base lg:text-lg font-semibold tracking-[0.3em] mt-3 italic"
                   style={{ 
                     fontStyle: 'italic',
                     letterSpacing: '0.3em',
-                    color: 'hsl(270 60% 75%)',
+                    color: 'hsl(200 70% 70%)',
                     transform: 'skewX(-5deg)',
                   }}
                 >
@@ -400,7 +400,7 @@ const Index = () => {
                       size="lg"
                       className={`text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 ${
                         allRequirementsMet
-                          ? "bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 hover:scale-105"
+                          ? "bg-gradient-to-r from-sky-500 to-cyan-600 hover:from-sky-600 hover:to-cyan-700 text-white shadow-lg shadow-sky-500/30 hover:shadow-sky-500/50 hover:scale-105"
                           : "bg-muted/80 hover:bg-muted text-muted-foreground border border-border/50"
                       }`}
                       onClick={handleJoinServer}
@@ -409,10 +409,10 @@ const Index = () => {
                       Join Server
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="bottom" sideOffset={10} className="p-4 bg-background/95 backdrop-blur-xl border border-purple-500/30 rounded-xl shadow-2xl max-w-xs z-[100]">
+                  <TooltipContent side="bottom" sideOffset={10} className="p-4 bg-background/95 backdrop-blur-xl border border-sky-500/30 rounded-xl shadow-2xl max-w-xs z-[100]">
                     <div className="space-y-3">
                       <div className="flex items-center gap-2 mb-3">
-                        {allRequirementsMet ? <Sparkles className="w-5 h-5 text-purple-400" /> : <Lock className="w-5 h-5 text-destructive" />}
+                        {allRequirementsMet ? <Sparkles className="w-5 h-5 text-sky-400" /> : <Lock className="w-5 h-5 text-destructive" />}
                         <p className="font-bold text-foreground">{allRequirementsMet ? "Ready to Play!" : "Requirements to Join"}</p>
                       </div>
                       <div className="space-y-2">
@@ -436,7 +436,7 @@ const Index = () => {
 
               <Button
                 size="lg"
-                className="bg-transparent border-2 border-purple-500/50 text-purple-400 hover:bg-purple-500/10 hover:border-purple-400 text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 hover:scale-105"
+                className="bg-transparent border-2 border-sky-500/50 text-sky-400 hover:bg-sky-500/10 hover:border-sky-400 text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 hover:scale-105"
                 onClick={() => navigate("/whitelist")}
               >
                 <Play className="w-5 h-5 mr-2" />
@@ -445,7 +445,7 @@ const Index = () => {
 
               <Button
                 size="lg"
-                className="bg-transparent border-2 border-violet-500/50 text-violet-400 hover:bg-violet-500/10 hover:border-violet-400 text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 hover:scale-105"
+                className="bg-transparent border-2 border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-400 text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 hover:scale-105"
                 asChild
               >
                 <a href="https://www.youtube.com/@Skyliferpindia20" target="_blank" rel="noopener noreferrer">
@@ -461,8 +461,8 @@ const Index = () => {
                 className="relative group cursor-pointer"
                 onClick={handleJoinServer}
               >
-                <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/50 via-violet-500/50 to-purple-500/50 rounded-full blur-md opacity-60 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="relative flex items-center gap-4 px-6 py-3 rounded-full border border-purple-500/40 bg-background/80 backdrop-blur-sm hover:border-purple-400/60 transition-all duration-300">
+                <div className="absolute -inset-1 bg-gradient-to-r from-sky-500/50 via-cyan-500/50 to-sky-500/50 rounded-full blur-md opacity-60 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative flex items-center gap-4 px-6 py-3 rounded-full border border-sky-500/40 bg-background/80 backdrop-blur-sm hover:border-sky-400/60 transition-all duration-300">
                   {/* Live dot */}
                   <div className="relative">
                     <div className="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_12px_hsl(120_70%_50%_/_0.8)]"></div>
@@ -476,14 +476,14 @@ const Index = () => {
                     </span>
                     <span className="text-sm text-muted-foreground/70">/</span>
                     <span className="text-sm text-muted-foreground/70">{maxPlayers}</span>
-                    <span className="text-xs text-purple-400 ml-1 uppercase tracking-wide font-semibold">Online</span>
+                    <span className="text-xs text-sky-400 ml-1 uppercase tracking-wide font-semibold">Online</span>
                   </div>
                   
                   {/* Divider */}
-                  <div className="h-5 w-px bg-purple-500/30"></div>
+                  <div className="h-5 w-px bg-sky-500/30"></div>
                   
                   {/* Play button */}
-                  <div className="flex items-center gap-2 text-purple-400 group-hover:text-purple-300 transition-colors font-bold">
+                  <div className="flex items-center gap-2 text-sky-400 group-hover:text-sky-300 transition-colors font-bold">
                     <Play className="w-4 h-4 fill-current" />
                     <span className="text-sm">Play Now</span>
                   </div>
@@ -496,10 +496,10 @@ const Index = () => {
                   e.stopPropagation();
                   handleRefreshStatus();
                 }}
-                className="p-3 rounded-full border border-purple-500/40 bg-background/80 backdrop-blur-sm hover:border-purple-400/60 hover:bg-purple-500/10 transition-all duration-300 group"
+                className="p-3 rounded-full border border-sky-500/40 bg-background/80 backdrop-blur-sm hover:border-sky-400/60 hover:bg-sky-500/10 transition-all duration-300 group"
                 title="Refresh server status"
               >
-                <RefreshCw className={`w-4 h-4 text-purple-400 group-hover:text-purple-300 transition-colors ${isRefreshing ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 text-sky-400 group-hover:text-sky-300 transition-colors ${isRefreshing ? 'animate-spin' : ''}`} />
               </button>
             </motion.div>
           </motion.div>
@@ -534,32 +534,32 @@ const Index = () => {
             >
               <motion.div 
                 variants={itemVariants} 
-                className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-purple-500/10 to-violet-500/5 border border-purple-500/20 card-hover group"
+                className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-sky-500/10 to-cyan-500/5 border border-sky-500/20 card-hover group"
               >
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform duration-300">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-sky-500 to-cyan-600 flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform duration-300">
                   <span className="text-2xl">🎮</span>
                 </div>
-                <h3 className="text-xl md:text-2xl font-bold mb-3 text-purple-400 italic">Professional Development</h3>
+                <h3 className="text-xl md:text-2xl font-bold mb-3 text-sky-400 italic">Professional Development</h3>
                 <p className="text-muted-foreground">Custom scripts developed by experienced programmers for optimal performance.</p>
               </motion.div>
               <motion.div 
                 variants={itemVariants} 
-                className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-violet-500/10 to-purple-500/5 border border-violet-500/20 card-hover group"
+                className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-sky-500/5 border border-cyan-500/20 card-hover group"
               >
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform duration-300">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-500 to-sky-600 flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform duration-300">
                   <span className="text-2xl">🛡️</span>
                 </div>
-                <h3 className="text-xl md:text-2xl font-bold mb-3 text-violet-400 italic">Active Staff</h3>
+                <h3 className="text-xl md:text-2xl font-bold mb-3 text-cyan-400 italic">Active Staff</h3>
                 <p className="text-muted-foreground">24/7 support team ready to assist with any issues and ensure fair gameplay.</p>
               </motion.div>
               <motion.div 
                 variants={itemVariants} 
-                className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-fuchsia-500/10 to-purple-500/5 border border-fuchsia-500/20 card-hover group"
+                className="p-6 md:p-8 rounded-2xl bg-gradient-to-br from-blue-500/10 to-sky-500/5 border border-blue-500/20 card-hover group"
               >
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-fuchsia-500 to-purple-600 flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform duration-300">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-sky-600 flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform duration-300">
                   <span className="text-2xl">🚀</span>
                 </div>
-                <h3 className="text-xl md:text-2xl font-bold mb-3 text-fuchsia-400 italic">Regular Updates</h3>
+                <h3 className="text-xl md:text-2xl font-bold mb-3 text-blue-400 italic">Regular Updates</h3>
                 <p className="text-muted-foreground">Constant improvements and new features based on community feedback.</p>
               </motion.div>
             </motion.div>
@@ -578,11 +578,11 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
             <div className="glass-effect rounded-3xl p-10 md:p-16 text-center relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-violet-500/5 to-fuchsia-500/5" />
+              <div className="absolute inset-0 bg-gradient-to-br from-sky-500/5 via-cyan-500/5 to-blue-500/5" />
               
               <div className="relative z-10">
                 <motion.div 
-                  className="inline-flex items-center justify-center w-20 h-20 md:w-28 md:h-28 rounded-3xl bg-gradient-to-br from-purple-500 via-violet-500 to-fuchsia-500 mb-8 shadow-2xl shadow-purple-500/30"
+                  className="inline-flex items-center justify-center w-20 h-20 md:w-28 md:h-28 rounded-3xl bg-gradient-to-br from-sky-500 via-cyan-500 to-blue-500 mb-8 shadow-2xl shadow-sky-500/30"
                   whileHover={{ scale: 1.05, rotate: 5 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
@@ -605,7 +605,7 @@ const Index = () => {
                   <Button
                     size="lg"
                     onClick={() => navigate("/feedback")}
-                    className="bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white font-bold px-10 py-6 rounded-2xl shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 transition-all duration-300 hover:scale-105"
+                    className="bg-gradient-to-r from-sky-500 to-cyan-600 hover:from-sky-600 hover:to-cyan-700 text-white font-bold px-10 py-6 rounded-2xl shadow-lg shadow-sky-500/30 hover:shadow-sky-500/50 transition-all duration-300 hover:scale-105"
                   >
                     <MessageSquarePlus className="w-5 h-5 mr-2" />
                     Share Your Feedback
@@ -616,7 +616,7 @@ const Index = () => {
                   <div className="flex justify-center gap-5 md:gap-6 flex-wrap mb-8">
                     {[
                       { href: "https://www.youtube.com/@Skyliferpindia20", icon: Youtube, label: "YouTube", color: "from-red-500 to-red-600" },
-                      { href: "https://www.instagram.com/skyliferpindia/", icon: Instagram, label: "Instagram", color: "from-pink-500 to-purple-600" },
+                      { href: "https://www.instagram.com/skyliferpindia/", icon: Instagram, label: "Instagram", color: "from-pink-500 to-sky-600" },
                       { href: "https://x.com/Skyliferolp1d", icon: Twitter, label: "Twitter", color: "from-blue-400 to-blue-500" },
                       { href: "https://www.facebook.com/profile.php?id=61583338351412", icon: Facebook, label: "Facebook", color: "from-blue-600 to-blue-700" },
                     ].map((social) => (
@@ -625,16 +625,16 @@ const Index = () => {
                           <motion.div whileHover={{ scale: 1.1, y: -5 }} transition={{ type: "spring", stiffness: 400 }}>
                             <Button
                               size="lg"
-                              className={`h-16 w-16 md:h-20 md:w-20 p-0 rounded-2xl border-2 border-purple-500/30 bg-purple-500/10 hover:bg-gradient-to-br hover:${social.color} hover:border-transparent transition-all duration-300`}
+                              className={`h-16 w-16 md:h-20 md:w-20 p-0 rounded-2xl border-2 border-sky-500/30 bg-sky-500/10 hover:bg-gradient-to-br hover:${social.color} hover:border-transparent transition-all duration-300`}
                               asChild
                             >
                               <a href={social.href} target="_blank" rel="noopener noreferrer">
-                                <social.icon className="h-7 w-7 md:h-9 md:w-9 text-purple-400 group-hover:text-white" strokeWidth={1.5} />
+                                <social.icon className="h-7 w-7 md:h-9 md:w-9 text-sky-400 group-hover:text-white" strokeWidth={1.5} />
                               </a>
                             </Button>
                           </motion.div>
                         </TooltipTrigger>
-                        <TooltipContent side="bottom" className="bg-background/90 border-purple-500/30">{social.label}</TooltipContent>
+                        <TooltipContent side="bottom" className="bg-background/90 border-sky-500/30">{social.label}</TooltipContent>
                       </Tooltip>
                     ))}
                   </div>
@@ -764,7 +764,7 @@ const Index = () => {
       )}
 
       {/* Footer */}
-      <footer className="border-t border-purple-500/20 py-16 relative z-10 bg-gradient-to-b from-background to-background/95">
+      <footer className="border-t border-sky-500/20 py-16 relative z-10 bg-gradient-to-b from-background to-background/95">
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center text-center">
             {/* Logo */}
@@ -774,13 +774,13 @@ const Index = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <span className="bg-gradient-to-r from-purple-400 to-violet-500 bg-clip-text text-transparent">SKYLIFE</span>
+              <span className="bg-gradient-to-r from-sky-400 to-cyan-500 bg-clip-text text-transparent">SKYLIFE</span>
               <span className="text-white ml-3">ROLEPLAY</span>
-              <span className="block text-sm font-medium tracking-[0.4em] text-purple-400/80 mt-2">INDIA</span>
+              <span className="block text-sm font-medium tracking-[0.4em] text-sky-400/80 mt-2">INDIA</span>
             </motion.h3>
             
             {/* Divider */}
-            <div className="w-32 h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent mb-6"></div>
+            <div className="w-32 h-px bg-gradient-to-r from-transparent via-sky-500/50 to-transparent mb-6"></div>
             
             {/* Copyright */}
             <p className="text-muted-foreground text-sm mb-2">
