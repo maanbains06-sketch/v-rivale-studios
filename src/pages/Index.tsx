@@ -46,7 +46,8 @@ const FloatingParticles = () => {
       size: Math.random() * 4 + 2,
       duration: Math.random() * 20 + 15,
       delay: Math.random() * 5,
-      hue: 185 + Math.random() * 90,
+      // Golden/warm sunset hues: 30-50 (gold/orange) with some pink/magenta (310-330)
+      hue: Math.random() > 0.5 ? 30 + Math.random() * 20 : 310 + Math.random() * 20,
     })), []
   );
 
@@ -293,8 +294,9 @@ const Index = () => {
         <div className="absolute inset-0 z-[4] pointer-events-none rain-effect" />
         
         <div className="absolute inset-0 z-[3] pointer-events-none">
-          <div className="absolute top-[10%] left-[30%] w-64 h-64 md:w-96 md:h-96 rounded-full blur-3xl bg-primary/20 animate-pulse-slow" />
-          <div className="absolute top-[15%] right-[20%] w-48 h-48 md:w-80 md:h-80 rounded-full blur-3xl bg-secondary/15 animate-pulse-slow animation-delay-200" />
+          <div className="absolute top-[10%] left-[30%] w-64 h-64 md:w-96 md:h-96 rounded-full blur-3xl bg-primary/25 animate-pulse-slow" />
+          <div className="absolute top-[15%] right-[20%] w-48 h-48 md:w-80 md:h-80 rounded-full blur-3xl bg-secondary/20 animate-pulse-slow animation-delay-200" />
+          <div className="absolute bottom-[20%] left-[50%] w-40 h-40 md:w-64 md:h-64 rounded-full blur-3xl bg-accent/15 animate-pulse-slow animation-delay-300" />
         </div>
 
         <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/40 to-background/70 z-[5]" />
@@ -317,12 +319,12 @@ const Index = () => {
               variants={itemVariants} 
               className="mb-10 relative"
             >
-              {/* Multi-layer glow effects */}
+              {/* Multi-layer glow effects with golden sunset tones */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-[600px] h-[300px] bg-gradient-to-r from-primary/40 via-purple-500/30 to-secondary/40 blur-[120px] rounded-full animate-pulse"></div>
+                <div className="w-[600px] h-[300px] bg-gradient-to-r from-primary/50 via-secondary/35 to-accent/40 blur-[120px] rounded-full animate-pulse"></div>
               </div>
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-[400px] h-[150px] bg-primary/50 blur-[80px] rounded-full"></div>
+                <div className="w-[400px] h-[150px] bg-primary/60 blur-[80px] rounded-full"></div>
               </div>
               
               {/* Main Title */}
@@ -332,19 +334,19 @@ const Index = () => {
                 
                 <span className="block text-6xl md:text-8xl lg:text-9xl font-black italic tracking-tight text-center">
                   <span 
-                    className="relative inline-block bg-gradient-to-br from-primary via-purple-400 via-50% to-pink-500 bg-clip-text text-transparent animate-gradient-shift bg-[length:200%_200%]"
+                    className="relative inline-block bg-gradient-to-br from-primary via-secondary via-50% to-accent bg-clip-text text-transparent animate-gradient-shift bg-[length:200%_200%]"
                     style={{ 
-                      textShadow: '0 0 80px rgba(139,92,246,0.8), 0 0 120px rgba(139,92,246,0.4)',
-                      filter: 'drop-shadow(0 0 40px rgba(139,92,246,0.6))'
+                      textShadow: '0 0 80px hsl(38 95% 60% / 0.8), 0 0 120px hsl(320 85% 65% / 0.4)',
+                      filter: 'drop-shadow(0 0 40px hsl(38 95% 60% / 0.6))'
                     }}
                   >
                     {showTyping ? <TypeWriter text="SKYLIFE" delay={500} /> : "SKYLIFE"}
                   </span>
                   <span 
-                    className="relative inline-block text-white ml-3 md:ml-5"
+                    className="relative inline-block text-foreground ml-3 md:ml-5"
                     style={{ 
-                      textShadow: '0 0 60px rgba(255,255,255,0.5), 0 4px 20px rgba(0,0,0,0.8)',
-                      filter: 'drop-shadow(0 0 30px rgba(255,255,255,0.3))'
+                      textShadow: '0 0 60px hsl(45 20% 96% / 0.5), 0 4px 20px hsl(0 0% 0% / 0.8)',
+                      filter: 'drop-shadow(0 0 30px hsl(45 20% 96% / 0.3))'
                     }}
                   >
                     {showTyping ? <TypeWriter text="ROLEPLAY" delay={1200} /> : "ROLEPLAY"}
@@ -353,8 +355,8 @@ const Index = () => {
                 
                 {/* INDIA subtitle with enhanced styling */}
                 <span 
-                  className="block text-2xl md:text-3xl lg:text-4xl font-bold tracking-[0.5em] text-center mt-4 bg-gradient-to-r from-white/60 via-white to-white/60 bg-clip-text text-transparent"
-                  style={{ textShadow: '0 0 30px rgba(255,255,255,0.3)' }}
+                  className="block text-2xl md:text-3xl lg:text-4xl font-bold tracking-[0.5em] text-center mt-4 bg-gradient-to-r from-primary/70 via-foreground to-primary/70 bg-clip-text text-transparent"
+                  style={{ textShadow: '0 0 30px hsl(38 95% 60% / 0.3)' }}
                 >
                   {showTyping ? <TypeWriter text="INDIA" delay={2000} /> : "INDIA"}
                 </span>
@@ -376,7 +378,7 @@ const Index = () => {
                       size="lg"
                       className={`text-base md:text-lg px-6 md:px-8 ${
                         allRequirementsMet
-                          ? "bg-primary hover:bg-primary/90 text-primary-foreground glow-cyan"
+                      ? "bg-primary hover:bg-primary/90 text-primary-foreground glow-gold"
                           : "bg-muted/80 hover:bg-muted text-muted-foreground border border-border/50"
                       }`}
                       onClick={handleJoinServer}
@@ -439,21 +441,21 @@ const Index = () => {
                 className="relative group cursor-pointer"
                 onClick={handleJoinServer}
               >
-                <div className="flex items-center gap-3 px-4 py-2 rounded-full border border-green-500/40 bg-black/50 backdrop-blur-sm hover:border-green-500/70 transition-all duration-300 hover:bg-black/70">
+                <div className="flex items-center gap-3 px-4 py-2 rounded-full border border-primary/50 bg-background/60 backdrop-blur-sm hover:border-primary/80 transition-all duration-300 hover:bg-background/80 glow-gold">
                   {/* Live dot */}
                   <div className="relative">
-                    <div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.8)]"></div>
-                    <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-green-400 animate-ping opacity-60"></div>
+                    <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_10px_hsl(38_95%_60%_/_0.8)]"></div>
+                    <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-primary animate-ping opacity-60"></div>
                   </div>
                   
                   {/* Player count */}
                   <div className="flex items-center gap-1.5">
-                    <span className="text-lg font-bold text-white">
+                    <span className="text-lg font-bold text-foreground">
                       {serverPlayers !== null ? serverPlayers : "0"}
                     </span>
                     <span className="text-sm text-muted-foreground/70">/</span>
                     <span className="text-sm text-muted-foreground/70">{maxPlayers}</span>
-                    <span className="text-xs text-green-400/80 ml-1 uppercase tracking-wide">Online</span>
+                    <span className="text-xs text-primary/90 ml-1 uppercase tracking-wide">Online</span>
                   </div>
                   
                   {/* Divider */}
