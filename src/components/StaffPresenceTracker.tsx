@@ -4,36 +4,67 @@ import { useWebsitePresence } from '@/hooks/useWebsitePresence';
 
 /**
  * This component tracks staff presence on the website.
- * It should be mounted when a staff member is logged in.
- * It will automatically update their online status in the database.
+ * It monitors ALL active staff members and updates their presence when they visit the site.
+ * Uses Discord IDs to track presence.
  */
 export const StaffPresenceTracker = () => {
-  const [staffMemberId, setStaffMemberId] = useState<string | null>(null);
+  const [discordId, setDiscordId] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchStaffMemberId = async () => {
+    const checkIfStaff = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       
-      if (!user) return;
+      if (!user) {
+        // Not logged in - check if we have a stored discord ID in localStorage
+        const storedDiscordId = localStorage.getItem('staff_discord_id');
+        if (storedDiscordId) {
+          setDiscordId(storedDiscordId);
+        }
+        return;
+      }
 
-      // Check if this user is a staff member
+      // Check if this user is linked to a staff member
       const { data: staffMember } = await supabase
         .from('staff_members')
-        .select('id')
+        .select('discord_id')
         .eq('user_id', user.id)
         .eq('is_active', true)
         .single();
 
-      if (staffMember) {
-        setStaffMemberId(staffMember.id);
+      if (staffMember?.discord_id) {
+        setDiscordId(staffMember.discord_id);
+        localStorage.setItem('staff_discord_id', staffMember.discord_id);
+        return;
+      }
+
+      // Alternative: Check by email match in profiles
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('discord_username')
+        .eq('id', user.id)
+        .single();
+
+      if (profile?.discord_username) {
+        // Try to find staff by discord username
+        const { data: staffByUsername } = await supabase
+          .from('staff_members')
+          .select('discord_id')
+          .eq('discord_username', profile.discord_username)
+          .eq('is_active', true)
+          .single();
+
+        if (staffByUsername?.discord_id) {
+          setDiscordId(staffByUsername.discord_id);
+          localStorage.setItem('staff_discord_id', staffByUsername.discord_id);
+        }
       }
     };
 
-    fetchStaffMemberId();
+    checkIfStaff();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      fetchStaffMemberId();
+      checkIfStaff();
     });
 
     return () => {
@@ -41,10 +72,10 @@ export const StaffPresenceTracker = () => {
     };
   }, []);
 
-  // Use the presence hook
+  // Use the presence hook with discord_id
   useWebsitePresence({
-    staffMemberId: staffMemberId || undefined,
-    enabled: !!staffMemberId,
+    visitorId: discordId || undefined,
+    enabled: !!discordId,
   });
 
   // This component doesn't render anything
