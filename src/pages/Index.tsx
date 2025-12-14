@@ -36,18 +36,16 @@ import { Card, CardContent } from "@/components/ui/card";
 // Lazy load heavy components
 const LiveFeedbackMarquee = lazy(() => import("@/components/LiveFeedbackMarquee"));
 
-// Optimized floating particles - reduced count, using CSS transforms
+// Lightweight floating particles - minimal for performance
 const FloatingParticles = () => {
   const particles = useMemo(() => 
-    Array.from({ length: 12 }, (_, i) => ({
+    Array.from({ length: 6 }, (_, i) => ({
       id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 4 + 2,
-      duration: Math.random() * 20 + 15,
-      delay: Math.random() * 5,
-      // Golden/warm sunset hues: 30-50 (gold/orange) with some pink/magenta (310-330)
-      hue: Math.random() > 0.5 ? 30 + Math.random() * 20 : 310 + Math.random() * 20,
+      x: 15 + (i * 15),
+      y: 20 + (i * 12),
+      size: 3 + (i % 2),
+      duration: 25 + (i * 3),
+      delay: i * 0.8,
     })), []
   );
 
@@ -56,15 +54,15 @@ const FloatingParticles = () => {
       {particles.map((particle) => (
         <div
           key={particle.id}
-          className="absolute rounded-full animate-float-particle"
+          className="absolute rounded-full gpu-accelerated"
           style={{
             left: `${particle.x}%`,
             top: `${particle.y}%`,
             width: particle.size,
             height: particle.size,
-            background: `radial-gradient(circle, hsl(${particle.hue} 90% 65% / 0.6), transparent)`,
-            boxShadow: `0 0 ${particle.size * 2}px hsl(${particle.hue} 90% 65% / 0.3)`,
-            animationDuration: `${particle.duration}s`,
+            background: `hsl(var(--primary) / 0.5)`,
+            boxShadow: `0 0 8px hsl(var(--primary) / 0.3)`,
+            animation: `float-particle ${particle.duration}s ease-in-out infinite`,
             animationDelay: `${particle.delay}s`,
           }}
         />
@@ -73,35 +71,10 @@ const FloatingParticles = () => {
   );
 };
 
-// Typing animation component
-const TypeWriter = ({ text, className, delay = 0 }: { text: string; className?: string; delay?: number }) => {
-  const [displayedText, setDisplayedText] = useState("");
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [started, setStarted] = useState(false);
-
-  useEffect(() => {
-    const startTimer = setTimeout(() => setStarted(true), delay);
-    return () => clearTimeout(startTimer);
-  }, [delay]);
-
-  useEffect(() => {
-    if (!started) return;
-    if (currentIndex < text.length) {
-      const timer = setTimeout(() => {
-        setDisplayedText(prev => prev + text[currentIndex]);
-        setCurrentIndex(prev => prev + 1);
-      }, 80);
-      return () => clearTimeout(timer);
-    }
-  }, [currentIndex, text, started]);
-
-  return (
-    <span className={className}>
-      {displayedText}
-      {currentIndex < text.length && <span className="animate-pulse">|</span>}
-    </span>
-  );
-};
+// Static text instead of typing animation for performance
+const StaticTitle = ({ text, className }: { text: string; className?: string }) => (
+  <span className={className}>{text}</span>
+);
 
 interface FeaturedYoutuber {
   id: string;
@@ -156,11 +129,9 @@ const Index = () => {
   const [serverPlayers, setServerPlayers] = useState<number | null>(null);
   const [maxPlayers, setMaxPlayers] = useState<number>(64);
   const [featuredYoutubers, setFeaturedYoutubers] = useState<FeaturedYoutuber[]>([]);
-  const [showTyping, setShowTyping] = useState(true);
 
+  // Simplified scroll - removed heavy transforms
   const { scrollYProgress } = useScroll();
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 0.3], [1, 0.95]);
 
   useEffect(() => {
     const checkUserStatus = async () => {
@@ -282,9 +253,8 @@ const Index = () => {
       <Navigation />
 
       {/* Hero Section */}
-      <motion.section 
+      <section 
         className="relative min-h-screen flex items-center justify-center overflow-hidden hero-section"
-        style={{ opacity: heroOpacity, scale: heroScale }}
       >
         <div 
           className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
@@ -294,9 +264,8 @@ const Index = () => {
         <div className="absolute inset-0 z-[4] pointer-events-none rain-effect" />
         
         <div className="absolute inset-0 z-[3] pointer-events-none">
-          <div className="absolute top-[10%] left-[30%] w-64 h-64 md:w-96 md:h-96 rounded-full blur-3xl bg-primary/25 animate-pulse-slow" />
-          <div className="absolute top-[15%] right-[20%] w-48 h-48 md:w-80 md:h-80 rounded-full blur-3xl bg-secondary/20 animate-pulse-slow animation-delay-200" />
-          <div className="absolute bottom-[20%] left-[50%] w-40 h-40 md:w-64 md:h-64 rounded-full blur-3xl bg-accent/15 animate-pulse-slow animation-delay-300" />
+          <div className="absolute top-[10%] left-[30%] w-64 h-64 md:w-80 md:h-80 rounded-full blur-2xl bg-primary/20 gpu-accelerated" />
+          <div className="absolute top-[15%] right-[20%] w-48 h-48 md:w-64 md:h-64 rounded-full blur-2xl bg-secondary/15 gpu-accelerated" />
         </div>
 
         <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/40 to-background/70 z-[5]" />
@@ -319,52 +288,31 @@ const Index = () => {
               variants={itemVariants} 
               className="mb-10 relative"
             >
-              {/* Multi-layer glow effects with golden sunset tones */}
+              {/* Simplified glow effect */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-[600px] h-[300px] bg-gradient-to-r from-primary/50 via-secondary/35 to-accent/40 blur-[120px] rounded-full animate-pulse"></div>
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-[400px] h-[150px] bg-primary/60 blur-[80px] rounded-full"></div>
+                <div className="w-[400px] h-[200px] bg-primary/30 blur-[80px] rounded-full gpu-accelerated"></div>
               </div>
               
               {/* Main Title */}
               <h1 className="relative">
-                {/* Animated shimmer overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 animate-shimmer"></div>
-                
                 <span className="block text-6xl md:text-8xl lg:text-9xl font-black italic tracking-tight text-center">
-                  <span 
-                    className="relative inline-block bg-gradient-to-br from-primary via-secondary via-50% to-accent bg-clip-text text-transparent animate-gradient-shift bg-[length:200%_200%]"
-                    style={{ 
-                      textShadow: '0 0 80px hsl(38 95% 60% / 0.8), 0 0 120px hsl(320 85% 65% / 0.4)',
-                      filter: 'drop-shadow(0 0 40px hsl(38 95% 60% / 0.6))'
-                    }}
-                  >
-                    {showTyping ? <TypeWriter text="SKYLIFE" delay={500} /> : "SKYLIFE"}
+                  <span className="relative inline-block bg-gradient-to-br from-primary via-secondary to-accent bg-clip-text text-transparent">
+                    SKYLIFE
                   </span>
-                  <span 
-                    className="relative inline-block text-foreground ml-3 md:ml-5"
-                    style={{ 
-                      textShadow: '0 0 60px hsl(45 20% 96% / 0.5), 0 4px 20px hsl(0 0% 0% / 0.8)',
-                      filter: 'drop-shadow(0 0 30px hsl(45 20% 96% / 0.3))'
-                    }}
-                  >
-                    {showTyping ? <TypeWriter text="ROLEPLAY" delay={1200} /> : "ROLEPLAY"}
+                  <span className="relative inline-block text-foreground ml-3 md:ml-5">
+                    ROLEPLAY
                   </span>
                 </span>
                 
-                {/* INDIA subtitle with enhanced styling */}
-                <span 
-                  className="block text-2xl md:text-3xl lg:text-4xl font-bold tracking-[0.5em] text-center mt-4 bg-gradient-to-r from-primary/70 via-foreground to-primary/70 bg-clip-text text-transparent"
-                  style={{ textShadow: '0 0 30px hsl(38 95% 60% / 0.3)' }}
-                >
-                  {showTyping ? <TypeWriter text="INDIA" delay={2000} /> : "INDIA"}
+                {/* INDIA subtitle */}
+                <span className="block text-2xl md:text-3xl lg:text-4xl font-bold tracking-[0.5em] text-center mt-4 text-primary/80">
+                  INDIA
                 </span>
 
                 {/* Decorative lines */}
                 <div className="flex items-center justify-center gap-4 mt-4">
                   <div className="h-[2px] w-16 md:w-24 bg-gradient-to-r from-transparent via-primary to-transparent"></div>
-                  <Sparkles className="w-5 h-5 text-primary animate-pulse" />
+                  <Sparkles className="w-5 h-5 text-primary" />
                   <div className="h-[2px] w-16 md:w-24 bg-gradient-to-r from-transparent via-primary to-transparent"></div>
                 </div>
               </h1>
@@ -471,7 +419,7 @@ const Index = () => {
             </motion.div>
           </motion.div>
         </div>
-      </motion.section>
+      </section>
 
       {/* Quick Info Section */}
       <motion.section 
