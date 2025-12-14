@@ -11,6 +11,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const RPTerm = ({ term, definition }: { term: string; definition: string }) => (
   <Tooltip>
@@ -26,6 +27,15 @@ const RPTerm = ({ term, definition }: { term: string; definition: string }) => (
   </Tooltip>
 );
 
+const scrollRevealVariants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
+  }
+};
+
 const Guides = () => {
   return (
     <TooltipProvider delayDuration={200}>
@@ -33,7 +43,7 @@ const Guides = () => {
         <Navigation />
       
       <PageHeader 
-        title="Player Guides"
+        title="📚 Player Guides"
         description="Everything you need to know to get started on SLRP"
         backgroundImage={headerGuides}
       />
@@ -62,408 +72,670 @@ const Guides = () => {
             </TabsList>
 
             <TabsContent value="character" className="space-y-6">
-              <Card className="glass-effect border-border/20">
-                <CardHeader>
-                  <CardTitle className="text-2xl text-primary">Character Creation Guide</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4 text-foreground/90">
-                  <div>
-                    <h3 className="text-xl font-semibold mb-2 text-foreground">1. Creating Your Identity</h3>
-                    <p className="mb-2">Your character is more than just a name and appearance. Consider:</p>
-                    <ul className="list-disc list-inside space-y-1 ml-4">
-                      <li>Background story: Where did they come from?</li>
-                      <li>Personality traits: What makes them unique?</li>
-                      <li>Goals and motivations: What do they want to achieve?</li>
-                      <li>Strengths and weaknesses: Nobody's perfect</li>
-                    </ul>
-                  </div>
+              <motion.div
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={scrollRevealVariants}
+              >
+                <Card className="glass-effect border-border/20">
+                  <CardHeader>
+                    <CardTitle className="text-2xl text-primary">🎭 Character Creation Guide</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6 text-foreground/90">
+                    <div>
+                      <h3 className="text-xl font-semibold mb-3 text-foreground">🌟 1. Creating Your Identity</h3>
+                      <p className="mb-3">Your character is more than just a name and appearance. Consider:</p>
+                      <ul className="space-y-2 ml-4">
+                        <li className="flex items-start gap-2">
+                          <span className="text-lg">📖</span>
+                          <span><strong>Background story:</strong> Where did they come from?</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-lg">💫</span>
+                          <span><strong>Personality traits:</strong> What makes them unique?</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-lg">🎯</span>
+                          <span><strong>Goals and motivations:</strong> What do they want to achieve?</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-lg">⚖️</span>
+                          <span><strong>Strengths and weaknesses:</strong> Nobody's perfect</span>
+                        </li>
+                      </ul>
+                    </div>
 
-                  <div>
-                    <h3 className="text-xl font-semibold mb-2 text-foreground">2. Appearance Customization</h3>
-                    <p className="mb-2">Take your time in character creation:</p>
-                    <ul className="list-disc list-inside space-y-1 ml-4">
-                      <li>Choose features that match your character's background</li>
-                      <li>Consider age-appropriate styling</li>
-                      <li>Think about how clothing reflects personality</li>
-                      <li>Remember: You can visit clothing stores later</li>
-                    </ul>
-                  </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-3 text-foreground">👔 2. Appearance Customization</h3>
+                      <p className="mb-3">Take your time in character creation:</p>
+                      <ul className="space-y-2 ml-4">
+                        <li className="flex items-start gap-2">
+                          <span className="text-lg">🎨</span>
+                          <span>Choose features that match your character's background</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-lg">👴</span>
+                          <span>Consider age-appropriate styling</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-lg">👕</span>
+                          <span>Think about how clothing reflects personality</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-lg">🛍️</span>
+                          <span>Remember: You can visit clothing stores later</span>
+                        </li>
+                      </ul>
+                    </div>
 
-                  <div>
-                    <h3 className="text-xl font-semibold mb-2 text-foreground">3. Starting Your Story</h3>
-                    <p className="mb-2">Once you spawn in Los Santos:</p>
-                    <ul className="list-disc list-inside space-y-1 ml-4">
-                      <li>Visit City Hall to register as a citizen</li>
-                      <li>Get a phone at the electronics store</li>
-                      <li>Apply for your first job at the job center</li>
-                      <li>Interact with others to build your network</li>
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-3 text-foreground">🚀 3. Starting Your Story</h3>
+                      <p className="mb-3">Once you spawn in Los Santos:</p>
+                      <ul className="space-y-2 ml-4">
+                        <li className="flex items-start gap-2">
+                          <span className="text-lg">🏛️</span>
+                          <span>Visit City Hall to register as a citizen</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-lg">📱</span>
+                          <span>Get a phone at the electronics store</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-lg">💼</span>
+                          <span>Apply for your first job at the job center</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-lg">🤝</span>
+                          <span>Interact with others to build your network</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
             </TabsContent>
 
             <TabsContent value="rules" className="space-y-6">
-              <Card className="glass-effect border-border/20">
-                <CardHeader>
-                  <CardTitle className="text-2xl text-primary">SLRP Server Rules</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6 text-foreground/90">
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground">1. General Roleplay Standards</h3>
-                    <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li><RPTerm term="Fail RP" definition="Acting unrealistically or breaking immersion. Examples: jumping off buildings without injury, ignoring injuries, or performing superhuman feats." />: All roleplay must be realistic and believable. Acting in ways that break immersion or defy reality is prohibited.</li>
-                      <li><RPTerm term="Stay In Character (IC)" definition="Keeping all actions and conversations within your character's perspective. Never reference real-world events or use out-of-game knowledge." />: Keep all roleplay actions and conversations in character at all times. Use /ooc sparingly for out-of-character communication.</li>
-                      <li><RPTerm term="Fear RP" definition="Showing realistic fear and compliance when your life is threatened. You must act as you would in real life when faced with danger." />: Your character must value their life. Show realistic fear when threatened with weapons or outnumbered.</li>
-                      <li><RPTerm term="Value of Life" definition="Treating your character's life as irreplaceable. Avoid unnecessary risks and act with self-preservation in dangerous situations." />: Treat your character&apos;s life as precious. Avoid unnecessary risks and dangerous situations without proper RP justification.</li>
-                      <li><strong>Character Development:</strong> Develop your character naturally over time. Instant wealth or dramatic personality changes must be justified through RP.</li>
-                    </ul>
-                  </div>
+              <motion.div
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={scrollRevealVariants}
+              >
+                <Card className="glass-effect border-border/20">
+                  <CardHeader>
+                    <CardTitle className="text-2xl text-primary">📜 SLRP Server Rules</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-8 text-foreground/90">
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
+                        <span className="text-2xl">🎭</span> 1. General Roleplay Standards
+                      </h3>
+                      <ul className="space-y-3 ml-4">
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">🚫</span>
+                          <span><RPTerm term="Fail RP" definition="Acting unrealistically or breaking immersion. Examples: jumping off buildings without injury, ignoring injuries, or performing superhuman feats." />: All roleplay must be realistic and believable. Acting in ways that break immersion or defy reality is prohibited.</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">🎬</span>
+                          <span><RPTerm term="Stay In Character (IC)" definition="Keeping all actions and conversations within your character's perspective. Never reference real-world events or use out-of-game knowledge." />: Keep all roleplay actions and conversations in character at all times.</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">😨</span>
+                          <span><RPTerm term="Fear RP" definition="Showing realistic fear and compliance when your life is threatened. You must act as you would in real life when faced with danger." />: Your character must value their life. Show realistic fear when threatened.</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">❤️</span>
+                          <span><RPTerm term="Value of Life" definition="Treating your character's life as irreplaceable. Avoid unnecessary risks and act with self-preservation in dangerous situations." />: Treat your character's life as precious. Avoid unnecessary risks.</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">📈</span>
+                          <span><strong>Character Development:</strong> Develop your character naturally over time. Instant wealth must be justified through RP.</span>
+                        </li>
+                      </ul>
+                    </div>
 
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground">2. Prohibited Behaviors</h3>
-                    <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li><RPTerm term="Metagaming" definition="Using information your character wouldn't know (from Discord, streams, previous characters, or other sources) to gain an unfair advantage in roleplay." />: Using out-of-character information (Discord, streams, etc.) in roleplay is strictly forbidden.</li>
-                      <li><RPTerm term="Powergaming" definition="Forcing roleplay outcomes on others without allowing them to react, or performing unrealistic actions that give you an unfair advantage." />: Forcing actions on other players without giving them a chance to respond or performing unrealistic actions.</li>
-                      <li><RPTerm term="Random Deathmatch (RDM)" definition="Killing or attacking another player without any valid roleplay reason or proper initiation of conflict." />: Killing another player without valid roleplay reason or initiation.</li>
-                      <li><RPTerm term="Vehicle Deathmatch (VDM)" definition="Using your vehicle as a weapon to hit, ram, or kill players without proper roleplay justification and escalation." />: Using vehicles as weapons without proper roleplay escalation.</li>
-                      <li><RPTerm term="Combat Logging" definition="Logging out or disconnecting during active roleplay, especially during combat or to avoid arrest/consequences." />: Disconnecting during active roleplay or to avoid consequences of your actions.</li>
-                      <li><strong>Exploiting/Glitching:</strong> Using game bugs or exploits for personal advantage is a bannable offense.</li>
-                    </ul>
-                  </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
+                        <span className="text-2xl">⛔</span> 2. Prohibited Behaviors
+                      </h3>
+                      <ul className="space-y-3 ml-4">
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                          <span className="text-xl">🧠</span>
+                          <span><RPTerm term="Metagaming" definition="Using information your character wouldn't know (from Discord, streams, previous characters, or other sources) to gain an unfair advantage in roleplay." />: Using out-of-character information is strictly forbidden.</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                          <span className="text-xl">💪</span>
+                          <span><RPTerm term="Powergaming" definition="Forcing roleplay outcomes on others without allowing them to react, or performing unrealistic actions that give you an unfair advantage." />: Forcing actions on other players is prohibited.</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                          <span className="text-xl">🔫</span>
+                          <span><RPTerm term="Random Deathmatch (RDM)" definition="Killing or attacking another player without any valid roleplay reason or proper initiation of conflict." />: Killing without valid roleplay reason.</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                          <span className="text-xl">🚗</span>
+                          <span><RPTerm term="Vehicle Deathmatch (VDM)" definition="Using your vehicle as a weapon to hit, ram, or kill players without proper roleplay justification and escalation." />: Using vehicles as weapons without proper RP.</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                          <span className="text-xl">🔌</span>
+                          <span><RPTerm term="Combat Logging" definition="Logging out or disconnecting during active roleplay, especially during combat or to avoid arrest/consequences." />: Disconnecting during active roleplay.</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                          <span className="text-xl">🐛</span>
+                          <span><strong>Exploiting/Glitching:</strong> Using game bugs or exploits is a bannable offense.</span>
+                        </li>
+                      </ul>
+                    </div>
 
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground">3. <RPTerm term="New Life Rule (NLR)" definition="When your character dies, you forget everything about that death and cannot return to the area or seek revenge. Think of it as starting fresh after respawning." /></h3>
-                    <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li>If your character dies, you forget all events leading up to and including your death</li>
-                      <li>You cannot return to the location of your death for 15 minutes</li>
-                      <li>You cannot seek revenge on the people who caused your death</li>
-                      <li>Medical RP that results in revival means you retain memories but may have injuries/trauma</li>
-                      <li>Permanent death scenarios must be approved by staff</li>
-                    </ul>
-                  </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
+                        <span className="text-2xl">💀</span> 3. New Life Rule (NLR)
+                      </h3>
+                      <ul className="space-y-3 ml-4">
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">🧹</span>
+                          <span>If your character dies, you forget all events leading up to and including your death</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">⏱️</span>
+                          <span>You cannot return to the location of your death for 15 minutes</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">🚷</span>
+                          <span>You cannot seek revenge on the people who caused your death</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">🏥</span>
+                          <span>Medical RP that results in revival means you retain memories but may have injuries/trauma</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">☠️</span>
+                          <span>Permanent death scenarios must be approved by staff</span>
+                        </li>
+                      </ul>
+                    </div>
 
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground">4. Criminal Roleplay</h3>
-                    <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li><strong>Crime Initiation:</strong> Provide high-quality roleplay before engaging in criminal activity. Quality over quantity.</li>
-                      <li><RPTerm term="Cop Baiting" definition="Intentionally committing crimes or acting suspiciously in front of police just to provoke a chase or interaction without legitimate roleplay reason." />: Intentionally provoking police without proper RP reason is prohibited.</li>
-                      <li><strong>Major Crimes:</strong> Bank robberies, prison breaks, and gang wars require 4+ LEO online and proper planning RP.</li>
-                      <li><strong>Hostage RP:</strong> Must provide engaging RP for hostages. Don&apos;t use them solely as shields or bargaining chips.</li>
-                      <li><strong>Territory Wars:</strong> Gang conflicts must be pre-approved by staff and follow server conflict guidelines.</li>
-                      <li><strong>Crime Cooldowns:</strong> 30-minute cooldown between major crimes. 60 minutes for the same crime type.</li>
-                    </ul>
-                  </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
+                        <span className="text-2xl">🦹</span> 4. Criminal Roleplay
+                      </h3>
+                      <ul className="space-y-3 ml-4">
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">🎭</span>
+                          <span><strong>Crime Initiation:</strong> Provide high-quality roleplay before engaging in criminal activity.</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">🚔</span>
+                          <span><RPTerm term="Cop Baiting" definition="Intentionally committing crimes or acting suspiciously in front of police just to provoke a chase or interaction without legitimate roleplay reason." />: Intentionally provoking police without proper RP reason is prohibited.</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">🏦</span>
+                          <span><strong>Major Crimes:</strong> Bank robberies and prison breaks require 4+ LEO online and proper planning RP.</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">🙍</span>
+                          <span><strong>Hostage RP:</strong> Must provide engaging RP for hostages. Don't use them solely as shields.</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">⏰</span>
+                          <span><strong>Crime Cooldowns:</strong> 30-minute cooldown between major crimes. 60 minutes for the same crime type.</span>
+                        </li>
+                      </ul>
+                    </div>
 
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground">5. Gang Roleplay</h3>
-                    <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li><strong>Gang Formation:</strong> Official gangs require 5+ active members and staff approval. Submit gang application with backstory, colors, and territory claims.</li>
-                      <li><strong>Gang Colors & Identification:</strong> Gangs must wear recognizable colors/clothing. Cannot claim colors already used by established gangs.</li>
-                      <li><strong>Territory Control:</strong> Territories must be claimed through RP and staff approval. Defending territory requires valid RP escalation, not <RPTerm term="KOS (Kill on Sight)" definition="A policy where anyone entering a specific area can be killed immediately without warning or roleplay. Generally prohibited as it removes roleplay opportunity." />.</li>
-                      <li><strong>Rival Gang Conflicts:</strong> Must initiate proper RP before engaging in gang wars. Minimum 3v3 for gang fights. No ambushing with overwhelming numbers.</li>
-                      <li><strong>Gang Recruitment:</strong> New members must go through proper initiation RP. Cannot recruit players under 1 week on the server without staff approval.</li>
-                      <li><strong>Alliance & Betrayal:</strong> Gang alliances and betrayals must be roleplayed with proper reasoning and story development.</li>
-                      <li><strong>Respect Boundaries:</strong> Cannot force non-gang members into gang conflicts. Civilians and businesses must be allowed to operate without constant harassment.</li>
-                      <li><strong>Gang Meetings & Events:</strong> Major gang events (large meetups, wars, truces) should be coordinated with staff to ensure server stability and fair RP.</li>
-                    </ul>
-                  </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
+                        <span className="text-2xl">🔥</span> 5. Gang Roleplay
+                      </h3>
+                      <ul className="space-y-3 ml-4">
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">👥</span>
+                          <span><strong>Gang Formation:</strong> Official gangs require 5+ active members and staff approval.</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">🎨</span>
+                          <span><strong>Gang Colors:</strong> Gangs must wear recognizable colors. Cannot claim colors already used.</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">🗺️</span>
+                          <span><strong>Territory Control:</strong> Territories must be claimed through RP and staff approval.</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">⚔️</span>
+                          <span><strong>Rival Conflicts:</strong> Must initiate proper RP before engaging in gang wars. Minimum 3v3.</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">🤝</span>
+                          <span><strong>Respect Boundaries:</strong> Cannot force non-gang members into gang conflicts.</span>
+                        </li>
+                      </ul>
+                    </div>
 
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground">6. Law Enforcement & Government</h3>
-                    <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li><RPTerm term="LEO" definition="Law Enforcement Officer - refers to police, sheriff, or any law enforcement role on the server." /> must follow proper procedures: Miranda rights, reasonable suspicion, probable cause</li>
-                      <li>Corrupt cop RP requires staff approval and must be done carefully</li>
-                      <li>Cannot break character to enforce server rules - call staff instead</li>
-                      <li><RPTerm term="EMS" definition="Emergency Medical Services - paramedics and medical personnel who respond to injuries and emergencies." /> cannot be taken hostage or harmed while providing medical services</li>
-                      <li>Government officials must maintain professionalism and serve the community</li>
-                    </ul>
-                  </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
+                        <span className="text-2xl">👮</span> 6. Law Enforcement & Government
+                      </h3>
+                      <ul className="space-y-3 ml-4">
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">📋</span>
+                          <span><RPTerm term="LEO" definition="Law Enforcement Officer - refers to police, sheriff, or any law enforcement role on the server." /> must follow proper procedures: Miranda rights, reasonable suspicion, probable cause</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">🕵️</span>
+                          <span>Corrupt cop RP requires staff approval and must be done carefully</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">🚑</span>
+                          <span><RPTerm term="EMS" definition="Emergency Medical Services - paramedics and medical personnel who respond to injuries and emergencies." /> cannot be taken hostage or harmed while providing medical services</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">🏛️</span>
+                          <span>Government officials must maintain professionalism and serve the community</span>
+                        </li>
+                      </ul>
+                    </div>
 
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground">7. Vehicle & Traffic Rules</h3>
-                    <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li>Drive realistically - obey traffic laws unless in pursuit or fleeing</li>
-                      <li>No NOS/turbo in city limits (school zones, downtown)</li>
-                      <li>Motorcycles cannot jump off mountains or perform extreme stunts without RP reason</li>
-                      <li>Vehicle repairs must be done at mechanic shops or through mechanic RP</li>
-                      <li>Stealing LEO, EMS, or government vehicles is prohibited</li>
-                    </ul>
-                  </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
+                        <span className="text-2xl">🚙</span> 7. Vehicle & Traffic Rules
+                      </h3>
+                      <ul className="space-y-3 ml-4">
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">🚦</span>
+                          <span>Drive realistically - obey traffic laws unless in pursuit or fleeing</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">🚫</span>
+                          <span>No NOS/turbo in city limits (school zones, downtown)</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">🏍️</span>
+                          <span>Motorcycles cannot jump off mountains without RP reason</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">🔧</span>
+                          <span>Vehicle repairs must be done at mechanic shops</span>
+                        </li>
+                      </ul>
+                    </div>
 
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground">8. Communication & Voice</h3>
-                    <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li>Microphone required - text RP only allowed for mute characters with staff approval</li>
-                      <li>No voice changers unless character-appropriate and not used to break immersion</li>
-                      <li>Push-to-talk required - no open mic or background noise</li>
-                      <li>Phone calls and radio require proper use of phone/radio prop and appropriate distance</li>
-                      <li>No excessive yelling, ear-rape, or purposefully annoying sounds</li>
-                    </ul>
-                  </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
+                        <span className="text-2xl">🎤</span> 8. Communication & Voice
+                      </h3>
+                      <ul className="space-y-3 ml-4">
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">🎙️</span>
+                          <span>Microphone required - text RP only allowed for mute characters with staff approval</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">🔇</span>
+                          <span>Push-to-talk required - no open mic or background noise</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">📞</span>
+                          <span>Phone calls and radio require proper use of phone/radio prop</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30">
+                          <span className="text-xl">🔊</span>
+                          <span>No excessive yelling, ear-rape, or annoying sounds</span>
+                        </li>
+                      </ul>
+                    </div>
 
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground">9. Community Standards</h3>
-                    <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li><strong>Respect:</strong> Treat all players and staff with respect. Harassment and toxicity result in immediate bans.</li>
-                      <li><strong>Zero Tolerance:</strong> Racism, sexism, homophobia, transphobia, and discrimination of any kind are not tolerated.</li>
-                      <li><strong>Age Restriction:</strong> Must be 18+ to play. Mature themes and language are present.</li>
-                      <li><strong>Stream Sniping:</strong> Watching someone&apos;s stream to gain info or find them in-game is prohibited.</li>
-                      <li><strong>Advertisement:</strong> Promoting other servers or communities will result in a permanent ban.</li>
-                      <li><strong>Staff Decisions:</strong> Staff decisions are final. Appeals can be made through proper channels.</li>
-                    </ul>
-                  </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
+                        <span className="text-2xl">💝</span> 9. Community Standards
+                      </h3>
+                      <ul className="space-y-3 ml-4">
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-primary/10 border border-primary/20">
+                          <span className="text-xl">🤝</span>
+                          <span><strong>Respect:</strong> Treat all players and staff with respect. Harassment results in immediate bans.</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-primary/10 border border-primary/20">
+                          <span className="text-xl">🚫</span>
+                          <span><strong>Zero Tolerance:</strong> Racism, sexism, homophobia, and discrimination are not tolerated.</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-primary/10 border border-primary/20">
+                          <span className="text-xl">🔞</span>
+                          <span><strong>Age Restriction:</strong> Must be 18+ to play. Mature themes are present.</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-primary/10 border border-primary/20">
+                          <span className="text-xl">📺</span>
+                          <span><strong>Stream Sniping:</strong> Watching someone's stream to find them in-game is prohibited.</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-primary/10 border border-primary/20">
+                          <span className="text-xl">⚖️</span>
+                          <span><strong>Staff Decisions:</strong> Staff decisions are final. Appeals can be made through proper channels.</span>
+                        </li>
+                      </ul>
+                    </div>
 
-                  <div className="p-4 border border-primary/30 rounded-lg bg-primary/5 mt-6">
-                    <h4 className="font-semibold text-primary mb-2">⚠️ Important Notes</h4>
-                    <ul className="list-disc list-inside space-y-1 text-sm">
-                      <li>Staff reserve the right to interpret and enforce rules based on intent and context</li>
-                      <li>Not knowing the rules is not an excuse - read them thoroughly before playing</li>
-                      <li>Rules are subject to change - check Discord announcements regularly</li>
-                      <li>When in doubt, create a ticket and ask staff before proceeding</li>
-                      <li>All punishments are at staff discretion based on severity and history</li>
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
+                    <div className="p-5 border-2 border-primary/40 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10 mt-6">
+                      <h4 className="font-bold text-primary mb-3 flex items-center gap-2 text-lg">
+                        <span className="text-2xl">⚠️</span> Important Notes
+                      </h4>
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-start gap-2">
+                          <span>📌</span>
+                          <span>Staff reserve the right to interpret and enforce rules based on intent and context</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span>📖</span>
+                          <span>Not knowing the rules is not an excuse - read them thoroughly before playing</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span>🔄</span>
+                          <span>Rules are subject to change - check Discord announcements regularly</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span>❓</span>
+                          <span>When in doubt, create a ticket and ask staff before proceeding</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span>⚖️</span>
+                          <span>All punishments are at staff discretion based on severity and history</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
             </TabsContent>
 
             <TabsContent value="tips" className="space-y-6">
-              <Card className="glass-effect border-border/20">
-                <CardHeader>
-                  <CardTitle className="text-2xl text-primary">Roleplay Tips & Best Practices</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6 text-foreground/90">
+              <motion.div
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={scrollRevealVariants}
+              >
+                <Card className="glass-effect border-border/20">
+                  <CardHeader>
+                    <CardTitle className="text-2xl text-primary">💡 Roleplay Tips & Best Practices</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-8 text-foreground/90">
 
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground">✨ Creating Quality Roleplay</h3>
-                    <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li><strong>Show, Don&apos;t Tell:</strong> Instead of saying &quot;I&apos;m nervous&quot;, describe fidgeting, avoiding eye contact, or stuttering</li>
-                      <li><strong>Add Details:</strong> Don&apos;t just walk into a store - describe how you walk, what you&apos;re wearing, your mood</li>
-                      <li><strong>React Realistically:</strong> Getting shot hurts. Losing money is upsetting. Winning feels great. Show emotions!</li>
-                      <li><strong>Give Others Opportunities:</strong> Leave room in your RP for others to contribute and respond</li>
-                      <li><strong>Avoid Shortcuts:</strong> Don&apos;t rush through RP to get to mechanics. The journey is the fun part</li>
-                      <li><strong>Use Voice Variety:</strong> Change your tone, pace, and volume based on situations and emotions</li>
-                      <li><strong>Embrace Failure:</strong> Losing, failing, or making mistakes creates great RP opportunities</li>
-                    </ul>
-                  </div>
-
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground">👥 Building Relationships & Networks</h3>
-                    <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li><strong>Frequent Spots:</strong> Hang out at popular locations like Legion Square, Vanilla Unicorn, or coffee shops</li>
-                      <li><strong>Remember Details:</strong> Keep mental notes about characters you meet - their names, jobs, personalities</li>
-                      <li><strong>Exchange Numbers:</strong> Get phone numbers to stay in touch and create recurring RP</li>
-                      <li><strong>Join Organizations:</strong> Gangs, businesses, and groups provide built-in RP connections</li>
-                      <li><strong>Create History:</strong> Reference past interactions to deepen relationships</li>
-                      <li><strong>Be Approachable:</strong> Don&apos;t always hang with the same people. Meet new characters</li>
-                      <li><strong>Start Conversations:</strong> Ask questions, comment on surroundings, offer help</li>
-                      <li><strong>Follow Through:</strong> If you say you&apos;ll call or meet someone, do it!</li>
-                    </ul>
-                  </div>
-
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground">🎬 Advanced RP Techniques</h3>
-                    <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li><strong>Develop Unique Mannerisms:</strong> Quirks, habits, speech patterns that make your character memorable</li>
-                      <li><strong>Create Consistent Backstory:</strong> Know your character&apos;s history and reference it naturally</li>
-                      <li><strong>Plan Character Arcs:</strong> Have long-term goals and let your character evolve toward them</li>
-                      <li><strong>Play Flawed Characters:</strong> Addictions, fears, biases, bad habits make characters interesting</li>
-                      <li><strong>Internal Conflict:</strong> Struggle with moral dilemmas, tough decisions, conflicting loyalties</li>
-                      <li><strong>Slow Burn Storylines:</strong> Not everything happens in one day. Let plots develop over weeks</li>
-                      <li><strong>Collaborate on Stories:</strong> Work with others to create interconnected character arcs</li>
-                      <li><strong>Use Props Effectively:</strong> Cigarettes, drinks, phones, documents - they add immersion</li>
-                    </ul>
-                  </div>
-
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground">⚠️ Common Mistakes to Avoid</h3>
-                    <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li><strong>Main Character Syndrome:</strong> Not everyone can be the toughest/richest/smartest. Be realistic</li>
-                      <li><strong>Winning Every Situation:</strong> Sometimes you lose fights, get arrested, or fail. That&apos;s okay!</li>
-                      <li><strong>Ignoring Others:</strong> Acknowledge people trying to RP with you, even if briefly</li>
-                      <li><strong>Breaking Character:</strong> Never drop character to argue rules or criticize someone&apos;s RP</li>
-                      <li><strong>Rushing Criminal RP:</strong> Don&apos;t jump into crime immediately. Build your character first</li>
-                      <li><strong>One-Note Characters:</strong> Don&apos;t be ONLY angry, ONLY funny, or ONLY serious all the time</li>
-                      <li><strong>Taking IC Personally:</strong> Your character&apos;s enemies aren&apos;t YOUR enemies. Separate IC from OOC</li>
-                      <li><strong>Forcing Storylines:</strong> Let RP flow naturally. Don&apos;t force people into your pre-planned plot</li>
-                      <li><strong>Neglecting Consequences:</strong> If you get shot, RP injuries. If you go to prison, accept it</li>
-                    </ul>
-                  </div>
-
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground">💬 Specific RP Scenarios</h3>
-                    <div className="space-y-3">
-                      <div className="p-4 bg-card/30 rounded-lg">
-                        <h4 className="font-semibold text-primary mb-2">Traffic Stops (As Civilian)</h4>
-                        <ul className="list-disc list-inside text-sm space-y-1 ml-4">
-                          <li>Pull over safely when signaled</li>
-                          <li>Keep hands visible, be respectful</li>
-                          <li>RP nervousness if appropriate</li>
-                          <li>Have a story ready if carrying illegal items</li>
-                          <li>Accept tickets gracefully or try talking your way out</li>
-                        </ul>
-                      </div>
-
-                      <div className="p-4 bg-card/30 rounded-lg">
-                        <h4 className="font-semibold text-primary mb-2">Medical RP</h4>
-                        <ul className="list-disc list-inside text-sm space-y-1 ml-4">
-                          <li>Describe your injuries when EMS arrives</li>
-                          <li>RP pain, confusion, or unconsciousness appropriately</li>
-                          <li>Follow doctor&apos;s instructions and treatment</li>
-                          <li>Don&apos;t instantly get up and run after being revived</li>
-                          <li>Consider follow-up appointments for serious injuries</li>
-                        </ul>
-                      </div>
-
-                      <div className="p-4 bg-card/30 rounded-lg">
-                        <h4 className="font-semibold text-primary mb-2">Robbery RP (As Victim)</h4>
-                        <ul className="list-disc list-inside text-sm space-y-1 ml-4">
-                          <li>Value your life - comply if outnumbered/outgunned</li>
-                          <li>RP fear - shaking voice, raised hands, cooperation</li>
-                          <li>Don&apos;t be a hero unless it makes sense for your character</li>
-                          <li>Remember details to report to police later</li>
-                          <li>Accept the loss and move forward</li>
-                        </ul>
-                      </div>
-
-                      <div className="p-4 bg-card/30 rounded-lg">
-                        <h4 className="font-semibold text-primary mb-2">Job Interviews</h4>
-                        <ul className="list-disc list-inside text-sm space-y-1 ml-4">
-                          <li>Dress appropriately for the position</li>
-                          <li>Research the company/organization beforehand</li>
-                          <li>Prepare answers about your background and skills</li>
-                          <li>Ask questions about the role and expectations</li>
-                          <li>Follow up afterwards to show interest</li>
-                        </ul>
-                      </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
+                        <span className="text-2xl">✨</span> Creating Quality Roleplay
+                      </h3>
+                      <ul className="space-y-3 ml-4">
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">🎭</span>
+                          <span><strong>Show, Don't Tell:</strong> Instead of saying "I'm nervous", describe fidgeting, avoiding eye contact, or stuttering</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">🔍</span>
+                          <span><strong>Add Details:</strong> Don't just walk into a store - describe how you walk, what you're wearing, your mood</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">😢</span>
+                          <span><strong>React Realistically:</strong> Getting shot hurts. Losing money is upsetting. Show emotions!</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">🤲</span>
+                          <span><strong>Give Others Opportunities:</strong> Leave room in your RP for others to contribute</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">🎯</span>
+                          <span><strong>Embrace Failure:</strong> Losing, failing, or making mistakes creates great RP opportunities</span>
+                        </li>
+                      </ul>
                     </div>
-                  </div>
 
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground">🌟 Pro Tips from Veterans</h3>
-                    <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li><strong>Document Your Story:</strong> Keep notes or a journal about your character&apos;s journey</li>
-                      <li><strong>Watch and Learn:</strong> Observe experienced roleplayers to pick up techniques</li>
-                      <li><strong>Join Community Events:</strong> Server events create amazing RP opportunities</li>
-                      <li><strong>Don&apos;t Chase Mechanics:</strong> RP comes before grinding for money or items</li>
-                      <li><strong>Create Content for Others:</strong> Be the lawyer who helps others, the mechanic who does house calls</li>
-                      <li><strong>Stay Humble:</strong> Everyone started somewhere. Help new players learn</li>
-                      <li><strong>Take Breaks:</strong> Burnout is real. Step away when you need to</li>
-                      <li><strong>Have Fun!</strong> Remember this is a game. Enjoy the experience</li>
-                    </ul>
-                  </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
+                        <span className="text-2xl">👥</span> Building Relationships & Networks
+                      </h3>
+                      <ul className="space-y-3 ml-4">
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">📍</span>
+                          <span><strong>Frequent Spots:</strong> Hang out at popular locations like Legion Square or coffee shops</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">📝</span>
+                          <span><strong>Remember Details:</strong> Keep mental notes about characters you meet</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">📱</span>
+                          <span><strong>Exchange Numbers:</strong> Get phone numbers to stay in touch</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">🏢</span>
+                          <span><strong>Join Organizations:</strong> Gangs, businesses provide built-in RP connections</span>
+                        </li>
+                      </ul>
+                    </div>
 
-                  <div className="p-4 border border-primary/30 rounded-lg bg-primary/5 mt-6">
-                    <h4 className="font-semibold text-primary mb-3">📚 Recommended Learning Resources</h4>
-                    <ul className="list-disc list-inside space-y-1 text-sm">
-                      <li>Watch RP streams and videos to see different styles</li>
-                      <li>Join our Discord to discuss RP scenarios and get advice</li>
-                      <li>Read character backstories shared by other players</li>
-                      <li>Participate in RP workshops and training sessions</li>
-                      <li>Ask mentors and staff for feedback on your roleplay</li>
-                      <li>Study real-world professions you want to RP (cops, doctors, lawyers)</li>
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
+                        <span className="text-2xl">🎬</span> Advanced RP Techniques
+                      </h3>
+                      <ul className="space-y-3 ml-4">
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">🌟</span>
+                          <span><strong>Unique Mannerisms:</strong> Quirks, habits, speech patterns that make your character memorable</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">📚</span>
+                          <span><strong>Consistent Backstory:</strong> Know your character's history and reference it naturally</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">💔</span>
+                          <span><strong>Play Flawed Characters:</strong> Addictions, fears, biases make characters interesting</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">🔥</span>
+                          <span><strong>Slow Burn Storylines:</strong> Let plots develop over weeks, not hours</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
+                        <span className="text-2xl">⚠️</span> Common Mistakes to Avoid
+                      </h3>
+                      <ul className="space-y-3 ml-4">
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                          <span className="text-xl">👑</span>
+                          <span><strong>Main Character Syndrome:</strong> Not everyone can be the toughest/richest. Be realistic</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                          <span className="text-xl">🏆</span>
+                          <span><strong>Winning Every Situation:</strong> Sometimes you lose fights or get arrested. That's okay!</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                          <span className="text-xl">🙈</span>
+                          <span><strong>Ignoring Others:</strong> Acknowledge people trying to RP with you, even if briefly</span>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                          <span className="text-xl">💢</span>
+                          <span><strong>Taking IC Personally:</strong> Your character's enemies aren't YOUR enemies. Separate IC from OOC</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div className="p-5 border-2 border-primary/40 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10">
+                      <h4 className="font-bold text-primary mb-3 flex items-center gap-2 text-lg">
+                        <span className="text-2xl">🌟</span> Pro Tips from Veterans
+                      </h4>
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-start gap-2">
+                          <span>📓</span>
+                          <span><strong>Document Your Story:</strong> Keep notes about your character's journey</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span>👀</span>
+                          <span><strong>Watch and Learn:</strong> Observe experienced roleplayers</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span>🎉</span>
+                          <span><strong>Join Community Events:</strong> Server events create amazing RP opportunities</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span>😊</span>
+                          <span><strong>Have Fun!</strong> Remember this is a game. Enjoy the experience</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
             </TabsContent>
 
             <TabsContent value="gallery" className="space-y-6">
-              <Card className="glass-effect border-border/20">
-                <CardHeader>
-                  <CardTitle className="text-2xl text-primary flex items-center gap-3">
-                    <Image className="w-7 h-7" />
-                    Community Gallery Guidelines
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6 text-foreground/90">
+              <motion.div
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={scrollRevealVariants}
+              >
+                <Card className="glass-effect border-border/20">
+                  <CardHeader>
+                    <CardTitle className="text-2xl text-primary flex items-center gap-3">
+                      <span className="text-2xl">📸</span>
+                      Community Gallery Guidelines
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6 text-foreground/90">
 
-                  <div className="p-4 border border-primary/30 rounded-lg bg-primary/5">
-                    <p className="text-foreground/90">
-                      Our community gallery is a place to showcase your best SLRP moments, creative screenshots, 
-                      and memorable roleplay scenes. Follow these guidelines to ensure a positive experience for everyone.
-                    </p>
-                  </div>
+                    <div className="p-4 border border-primary/30 rounded-lg bg-primary/5">
+                      <p className="text-foreground/90 flex items-start gap-2">
+                        <span className="text-xl">ℹ️</span>
+                        <span>Our community gallery is a place to showcase your best SLRP moments, creative screenshots, and memorable roleplay scenes. Follow these guidelines to ensure a positive experience for everyone.</span>
+                      </p>
+                    </div>
 
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground flex items-center gap-2">
-                      <Shield className="w-5 h-5 text-primary" />
-                      Content Standards
-                    </h3>
-                    <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li><strong>Quality First:</strong> Submit clear, high-quality screenshots. Blurry or low-resolution images may be rejected.</li>
-                      <li><strong>Original Content:</strong> Only submit content you've captured yourself. No stolen or reposted content.</li>
-                      <li><strong>Appropriate Content:</strong> No explicit, violent, or offensive imagery. Content must be suitable for all ages.</li>
-                      <li><strong>No UI Clutter:</strong> Hide HUD elements when possible for cleaner screenshots.</li>
-                      <li><strong>Relevant to SLRP:</strong> All submissions must be from the SLRP server. No external content.</li>
-                    </ul>
-                  </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-3 text-foreground flex items-center gap-2">
+                        <span className="text-xl">🛡️</span>
+                        Content Standards
+                      </h3>
+                      <ul className="space-y-2 ml-4">
+                        <li className="flex items-start gap-2 p-2 rounded-lg bg-card/30">
+                          <span className="text-lg">📷</span>
+                          <span><strong>Quality First:</strong> Submit clear, high-quality screenshots</span>
+                        </li>
+                        <li className="flex items-start gap-2 p-2 rounded-lg bg-card/30">
+                          <span className="text-lg">✅</span>
+                          <span><strong>Original Content:</strong> Only submit content you've captured yourself</span>
+                        </li>
+                        <li className="flex items-start gap-2 p-2 rounded-lg bg-card/30">
+                          <span className="text-lg">👍</span>
+                          <span><strong>Appropriate Content:</strong> No explicit, violent, or offensive imagery</span>
+                        </li>
+                        <li className="flex items-start gap-2 p-2 rounded-lg bg-card/30">
+                          <span className="text-lg">🎮</span>
+                          <span><strong>Relevant to SLRP:</strong> All submissions must be from the SLRP server</span>
+                        </li>
+                      </ul>
+                    </div>
 
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground flex items-center gap-2">
-                      <MessageSquare className="w-5 h-5 text-primary" />
-                      Titles & Descriptions
-                    </h3>
-                    <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li><strong>Descriptive Titles:</strong> Give your submission a meaningful title that describes the scene or moment.</li>
-                      <li><strong>Add Context:</strong> Use descriptions to share the story behind the screenshot.</li>
-                      <li><strong>Appropriate Language:</strong> No profanity, slurs, or offensive language in titles/descriptions.</li>
-                      <li><strong>Proper Categories:</strong> Select the appropriate category for your submission (Vehicles, Roleplay, Scenery, etc.).</li>
-                    </ul>
-                  </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-3 text-foreground flex items-center gap-2">
+                        <span className="text-xl">💬</span>
+                        Titles & Descriptions
+                      </h3>
+                      <ul className="space-y-2 ml-4">
+                        <li className="flex items-start gap-2 p-2 rounded-lg bg-card/30">
+                          <span className="text-lg">📝</span>
+                          <span><strong>Descriptive Titles:</strong> Give your submission a meaningful title</span>
+                        </li>
+                        <li className="flex items-start gap-2 p-2 rounded-lg bg-card/30">
+                          <span className="text-lg">📖</span>
+                          <span><strong>Add Context:</strong> Use descriptions to share the story behind the screenshot</span>
+                        </li>
+                        <li className="flex items-start gap-2 p-2 rounded-lg bg-card/30">
+                          <span className="text-lg">🗣️</span>
+                          <span><strong>Appropriate Language:</strong> No profanity or offensive language</span>
+                        </li>
+                      </ul>
+                    </div>
 
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground flex items-center gap-2">
-                      <Heart className="w-5 h-5 text-primary" />
-                      Community Interaction
-                    </h3>
-                    <ul className="list-disc list-inside space-y-2 ml-4">
-                      <li><strong>Respectful Comments:</strong> Keep comments positive and constructive. No harassment or negativity.</li>
-                      <li><strong>Credit Others:</strong> If other players are featured, consider mentioning them in the description.</li>
-                      <li><strong>Support Fellow Players:</strong> Like and engage with content you enjoy!</li>
-                      <li><strong>Report Issues:</strong> Use the report feature for inappropriate content instead of engaging.</li>
-                    </ul>
-                  </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-3 text-foreground flex items-center gap-2">
+                        <span className="text-xl">❤️</span>
+                        Community Interaction
+                      </h3>
+                      <ul className="space-y-2 ml-4">
+                        <li className="flex items-start gap-2 p-2 rounded-lg bg-card/30">
+                          <span className="text-lg">💝</span>
+                          <span><strong>Respectful Comments:</strong> Keep comments positive and constructive</span>
+                        </li>
+                        <li className="flex items-start gap-2 p-2 rounded-lg bg-card/30">
+                          <span className="text-lg">👋</span>
+                          <span><strong>Credit Others:</strong> If other players are featured, mention them</span>
+                        </li>
+                        <li className="flex items-start gap-2 p-2 rounded-lg bg-card/30">
+                          <span className="text-lg">👍</span>
+                          <span><strong>Support Fellow Players:</strong> Like and engage with content you enjoy!</span>
+                        </li>
+                      </ul>
+                    </div>
 
-                  <div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground flex items-center gap-2">
-                      <Flag className="w-5 h-5 text-primary" />
-                      Prohibited Content
-                    </h3>
-                    <ul className="list-disc list-inside space-y-2 ml-4 text-destructive/90">
-                      <li>Explicit or sexual content of any kind</li>
-                      <li>Real-world violence, gore, or disturbing imagery</li>
-                      <li>Racist, sexist, homophobic, or discriminatory content</li>
-                      <li>Content that reveals personal information (doxxing)</li>
-                      <li>Spam, advertisements, or promotional content</li>
-                      <li>Content that mocks or harasses other players</li>
-                      <li>Screenshots showing exploits, cheats, or rule-breaking</li>
-                    </ul>
-                  </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-3 text-foreground flex items-center gap-2">
+                        <span className="text-xl">🚫</span>
+                        Prohibited Content
+                      </h3>
+                      <ul className="space-y-2 ml-4 text-destructive/90">
+                        <li className="flex items-start gap-2 p-2 rounded-lg bg-destructive/10 border border-destructive/20">
+                          <span className="text-lg">❌</span>
+                          <span>Explicit or sexual content of any kind</span>
+                        </li>
+                        <li className="flex items-start gap-2 p-2 rounded-lg bg-destructive/10 border border-destructive/20">
+                          <span className="text-lg">❌</span>
+                          <span>Real-world violence, gore, or disturbing imagery</span>
+                        </li>
+                        <li className="flex items-start gap-2 p-2 rounded-lg bg-destructive/10 border border-destructive/20">
+                          <span className="text-lg">❌</span>
+                          <span>Racist, sexist, homophobic, or discriminatory content</span>
+                        </li>
+                        <li className="flex items-start gap-2 p-2 rounded-lg bg-destructive/10 border border-destructive/20">
+                          <span className="text-lg">❌</span>
+                          <span>Spam, advertisements, or promotional content</span>
+                        </li>
+                      </ul>
+                    </div>
 
-                  <div className="p-4 border border-neon-cyan/30 rounded-lg bg-neon-cyan/5 mt-6">
-                    <h4 className="font-semibold text-neon-cyan mb-2">📸 Pro Tips for Great Screenshots</h4>
-                    <ul className="list-disc list-inside space-y-1 text-sm">
-                      <li>Use the in-game photo mode for cinematic shots</li>
-                      <li>Golden hour (sunrise/sunset) provides beautiful lighting</li>
-                      <li>Experiment with different camera angles</li>
-                      <li>Capture action moments and candid roleplay scenes</li>
-                      <li>Weather effects like rain or fog add atmosphere</li>
-                    </ul>
-                  </div>
+                    <div className="p-5 border-2 border-primary/40 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10">
+                      <h4 className="font-bold text-primary mb-3 flex items-center gap-2 text-lg">
+                        <span className="text-2xl">📸</span> Pro Tips for Great Screenshots
+                      </h4>
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-start gap-2">
+                          <span>🎥</span>
+                          <span>Use the in-game photo mode for cinematic shots</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span>🌅</span>
+                          <span>Golden hour (sunrise/sunset) provides beautiful lighting</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span>📐</span>
+                          <span>Experiment with different camera angles</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span>🌧️</span>
+                          <span>Weather effects like rain or fog add atmosphere</span>
+                        </li>
+                      </ul>
+                    </div>
 
-                  <div className="flex justify-center mt-6">
-                    <Link 
-                      to="/gallery" 
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-semibold transition-all hover:scale-105 shadow-[0_0_20px_rgba(var(--primary),0.3)]"
-                    >
-                      <Image className="w-5 h-5" />
-                      Visit the Gallery
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
+                    <div className="flex justify-center mt-6">
+                      <Link 
+                        to="/gallery" 
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-semibold transition-all hover:scale-105 shadow-[0_0_20px_rgba(var(--primary),0.3)]"
+                      >
+                        <span className="text-lg">🖼️</span>
+                        Visit the Gallery
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
             </TabsContent>
           </Tabs>
         </div>
