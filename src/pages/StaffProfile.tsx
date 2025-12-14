@@ -52,7 +52,7 @@ const roleIcons = {
   event_manager: Calendar
 };
 
-// Standard 4 responsibilities per role type
+// Default responsibilities per role type (for members without custom responsibilities)
 const roleResponsibilities: Record<string, string[]> = {
   owner: ["Server Management", "Community Leadership", "Strategic Planning", "Team Oversight"],
   admin: ["Staff Management", "Rule Enforcement", "Player Support", "Server Moderation"],
@@ -62,17 +62,16 @@ const roleResponsibilities: Record<string, string[]> = {
   event_manager: ["Event Planning", "Community Events", "Player Engagement", "Event Coordination"],
 };
 
-// Get responsibilities - custom if available, otherwise role defaults (always 4)
+// Get responsibilities - show ALL custom if available, otherwise role defaults
 const getStaffResponsibilities = (member: StaffMember): string[] => {
   const custom = member.responsibilities || [];
-  if (custom.length >= 4) return custom.slice(0, 4);
+  
+  // If has custom responsibilities, show ALL of them
   if (custom.length > 0) {
-    // Pad with defaults if less than 4
-    const defaults = roleResponsibilities[member.role_type] || roleResponsibilities.staff;
-    const needed = 4 - custom.length;
-    const additional = defaults.filter(d => !custom.includes(d)).slice(0, needed);
-    return [...custom, ...additional];
+    return custom;
   }
+  
+  // Otherwise show role-based defaults
   return roleResponsibilities[member.role_type] || roleResponsibilities.staff;
 };
 
