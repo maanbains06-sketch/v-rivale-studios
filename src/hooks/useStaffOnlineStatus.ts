@@ -30,13 +30,15 @@ export const useStaffOnlineStatus = () => {
         .eq("is_active", true);
 
       if (staffError) {
-        console.error("Error fetching staff members:", staffError);
-        throw staffError;
+        // Silently ignore staff-related errors
+        setLoading(false);
+        return;
       }
 
       if (!staffMembers || staffMembers.length === 0) {
         setOnlineStatus({});
         setOnlineCount(0);
+        setLoading(false);
         return;
       }
 
@@ -52,10 +54,7 @@ export const useStaffOnlineStatus = () => {
           .select("*")
           .in("staff_member_id", staffIds);
 
-        if (presenceError) {
-          console.error("Error fetching presence data:", presenceError);
-        }
-
+        // Silently ignore presence errors
         if (!presenceError && presenceData) {
           presenceData.forEach((presence: DiscordPresencePublic) => {
             if (presence.staff_member_id) {
@@ -110,8 +109,8 @@ export const useStaffOnlineStatus = () => {
 
       setOnlineStatus(status);
       setOnlineCount(count);
-    } catch (error) {
-      console.error("Error fetching staff status:", error);
+    } catch {
+      // Silently ignore all staff-related errors
     } finally {
       setLoading(false);
     }
@@ -133,8 +132,7 @@ export const useStaffOnlineStatus = () => {
           schema: "public",
           table: "discord_presence",
         },
-        (payload) => {
-          console.log("Discord presence changed:", payload);
+        () => {
           fetchStaffStatus();
         }
       )
@@ -193,13 +191,12 @@ export const useStaffOnlineStatus = () => {
   const syncPresence = async () => {
     try {
       const { data, error } = await supabase.functions.invoke("sync-discord-presence");
-      if (error) throw error;
-      console.log("Presence sync triggered:", data);
+      if (error) return null;
       await fetchStaffStatus();
       return data;
-    } catch (error) {
-      console.error("Error syncing presence:", error);
-      throw error;
+    } catch {
+      // Silently ignore sync errors
+      return null;
     }
   };
 
