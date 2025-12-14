@@ -10,22 +10,22 @@ All colors MUST be HSL.
   :root {
     /* Original Cyan/Purple Theme - Restored */
     --background: 230 25% 3%;
-    --foreground: 180 40% 98%;
+    --foreground: 0 0% 100%;
 
     --card: 230 22% 5%;
-    --card-foreground: 180 40% 98%;
+    --card-foreground: 0 0% 98%;
 
     --popover: 230 25% 4%;
-    --popover-foreground: 180 40% 98%;
+    --popover-foreground: 0 0% 98%;
 
     --primary: 185 90% 65%;
     --primary-foreground: 230 25% 3%;
 
     --secondary: 275 80% 68%;
-    --secondary-foreground: 180 40% 98%;
+    --secondary-foreground: 0 0% 100%;
 
     --muted: 230 20% 15%;
-    --muted-foreground: 180 30% 75%;
+    --muted-foreground: 0 0% 85%;
 
     --accent: 185 90% 65%;
     --accent-foreground: 230 25% 3%;
@@ -193,7 +193,7 @@ All colors MUST be HSL.
 
 @layer utilities {
   .text-gradient {
-    background: linear-gradient(135deg, hsl(270 70% 75%), hsl(280 80% 80%), hsl(290 75% 78%));
+    background: linear-gradient(135deg, hsl(270 70% 80%), hsl(280 80% 85%), hsl(290 75% 83%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -201,7 +201,7 @@ All colors MUST be HSL.
     padding-top: 0.05em;
     line-height: 1.2;
     display: inline-block;
-    filter: drop-shadow(0 2px 6px hsl(270 60% 60% / 0.3));
+    filter: drop-shadow(0 2px 8px hsl(270 60% 65% / 0.4));
   }
   
   .glass-effect {
