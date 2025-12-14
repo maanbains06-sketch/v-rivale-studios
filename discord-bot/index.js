@@ -60,24 +60,26 @@ const client = new Client({
 // Helper to send presence update to edge function
 async function syncPresence(updates) {
   try {
+    // Normalize to array format
+    const presenceUpdates = Array.isArray(updates) ? updates : [updates];
+    
+    console.log(`Sending ${presenceUpdates.length} presence update(s) to edge function...`);
+    
     const response = await fetch(SYNC_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(
-        Array.isArray(updates) 
-          ? { presenceUpdates: updates } 
-          : updates
-      ),
+      body: JSON.stringify({ presenceUpdates }),
     });
     
     if (!response.ok) {
-      console.error('Sync failed:', await response.text());
+      const errorText = await response.text();
+      console.error('Sync failed:', response.status, errorText);
     } else {
       const result = await response.json();
-      console.log('Sync successful:', result.message);
+      console.log('✅ Sync successful:', result.message, `(mode: ${result.mode})`);
     }
   } catch (error) {
-    console.error('Error syncing presence:', error.message);
+    console.error('❌ Error syncing presence:', error.message);
   }
 }
 
@@ -86,18 +88,21 @@ client.on(Events.PresenceUpdate, async (oldPresence, newPresence) => {
   if (!newPresence?.userId) return;
   
   // Only sync staff members
-  if (!STAFF_DISCORD_IDS.includes(newPresence.userId)) return;
+  if (!STAFF_DISCORD_IDS.includes(newPresence.userId)) {
+    return;
+  }
   
   const oldStatus = oldPresence?.status || 'offline';
   const newStatus = newPresence.status || 'offline';
   
-  // Only sync if status actually changed
-  if (oldStatus === newStatus) return;
-  
   const isOnline = newStatus !== 'offline';
+  const username = newPresence.user?.username || newPresence.userId;
   
-  console.log(`[${new Date().toISOString()}] ${newPresence.user?.username || newPresence.userId}: ${oldStatus} -> ${newStatus}`);
+  console.log(`\n🔄 [${new Date().toISOString()}]`);
+  console.log(`   User: ${username} (${newPresence.userId})`);
+  console.log(`   Status: ${oldStatus} -> ${newStatus}`);
   
+  // Always sync to ensure database is updated (even if status appears same)
   await syncPresence({
     discord_id: newPresence.userId,
     is_online: isOnline,
@@ -105,55 +110,65 @@ client.on(Events.PresenceUpdate, async (oldPresence, newPresence) => {
   });
 });
 
-// Sync all staff presences on startup
+// Sync all staff presences on startup and periodically
 client.on(Events.ClientReady, async () => {
   console.log('=========================================');
-  console.log(`Bot ready as ${client.user.tag}`);
-  console.log(`Monitoring ${STAFF_DISCORD_IDS.length} staff members`);
+  console.log(`🤖 Bot ready as ${client.user.tag}`);
+  console.log(`📋 Monitoring ${STAFF_DISCORD_IDS.length} staff members`);
+  console.log(`🔗 Sync URL: ${SYNC_URL}`);
   console.log('=========================================\n');
   
   const guild = client.guilds.cache.get(GUILD_ID) || client.guilds.cache.first();
   
   if (!guild) {
-    console.error('ERROR: Bot is not in any guild! Invite the bot to your server.');
+    console.error('❌ ERROR: Bot is not in any guild! Invite the bot to your server.');
     return;
   }
   
-  console.log(`Connected to guild: ${guild.name}`);
-  console.log('Fetching initial staff presences...\n');
+  console.log(`✅ Connected to guild: ${guild.name} (${guild.id})`);
   
-  const presenceUpdates = [];
-  
-  for (const discordId of STAFF_DISCORD_IDS) {
-    try {
-      const member = await guild.members.fetch(discordId);
-      const status = member.presence?.status || 'offline';
-      const isOnline = status !== 'offline';
-      
-      presenceUpdates.push({
-        discord_id: discordId,
-        is_online: isOnline,
-        status: status,
-      });
-      
-      const statusEmoji = isOnline ? '🟢' : '⚫';
-      console.log(`${statusEmoji} ${member.user.username}: ${status}`);
-    } catch (error) {
-      console.log(`⚠️  Could not fetch member ${discordId}: ${error.message}`);
-      presenceUpdates.push({
-        discord_id: discordId,
-        is_online: false,
-        status: 'offline',
-      });
+  // Function to sync all staff presences
+  async function syncAllPresences() {
+    console.log('\n📡 Fetching staff presences...');
+    const presenceUpdates = [];
+    
+    for (const discordId of STAFF_DISCORD_IDS) {
+      try {
+        const member = await guild.members.fetch(discordId);
+        const status = member.presence?.status || 'offline';
+        const isOnline = status !== 'offline';
+        
+        presenceUpdates.push({
+          discord_id: discordId,
+          is_online: isOnline,
+          status: status,
+        });
+        
+        const statusEmoji = isOnline ? '🟢' : '⚫';
+        console.log(`   ${statusEmoji} ${member.user.username} (@${member.user.tag}): ${status}`);
+      } catch (error) {
+        console.log(`   ⚠️  Could not fetch ${discordId}: ${error.message}`);
+        presenceUpdates.push({
+          discord_id: discordId,
+          is_online: false,
+          status: 'offline',
+        });
+      }
     }
+    
+    await syncPresence(presenceUpdates);
   }
   
-  console.log(`\nSyncing ${presenceUpdates.length} staff presences to website...`);
-  await syncPresence(presenceUpdates);
+  // Initial sync
+  await syncAllPresences();
+  
+  // Sync every 2 minutes to ensure consistency
+  setInterval(syncAllPresences, 2 * 60 * 1000);
   
   console.log('\n=========================================');
-  console.log('Bot is now monitoring presence changes!');
-  console.log('Keep this terminal open to maintain sync.');
+  console.log('🎯 Bot is now monitoring presence changes!');
+  console.log('⏰ Auto-sync every 2 minutes');
+  console.log('📌 Keep this terminal open to maintain sync.');
   console.log('=========================================\n');
 });
 
