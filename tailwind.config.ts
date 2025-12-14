@@ -138,8 +138,29 @@ export default {
           },
         },
         shimmer: {
+          "0%": {
+            backgroundPosition: "-200% 0",
+          },
           "100%": {
-            transform: "translateX(100%)",
+            backgroundPosition: "200% 0",
+          },
+        },
+        "float-slow": {
+          "0%, 100%": {
+            transform: "translateY(0) scale(1)",
+          },
+          "50%": {
+            transform: "translateY(-5px) scale(1.05)",
+          },
+        },
+        "sparkle": {
+          "0%, 100%": {
+            opacity: "0.3",
+            transform: "scale(0.8)",
+          },
+          "50%": {
+            opacity: "1",
+            transform: "scale(1.2)",
           },
         },
       },
@@ -152,7 +173,9 @@ export default {
         "orbit-1": "orbit-1 8s linear infinite",
         "orbit-2": "orbit-2 10s linear infinite",
         "orbit-3": "orbit-3 12s linear infinite",
-        shimmer: "shimmer 2s infinite",
+        shimmer: "shimmer 3s ease-in-out infinite",
+        "float-slow": "float-slow 4s ease-in-out infinite",
+        "sparkle": "sparkle 2s ease-in-out infinite",
       },
     },
   },
