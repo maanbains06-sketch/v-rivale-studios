@@ -448,22 +448,6 @@ const Staff = () => {
                 </div>
               )}
 
-              {/* Quick Stats */}
-              <div className="w-full grid grid-cols-2 gap-2 mb-3">
-                <div className="bg-background/40 rounded-lg p-2 border border-border/20">
-                  <div className="flex items-center justify-center gap-1.5">
-                    <MessageCircle className="w-3 h-3 text-primary/70" />
-                    <span className="text-[10px] text-muted-foreground">Support</span>
-                  </div>
-                </div>
-                <div className="bg-background/40 rounded-lg p-2 border border-border/20">
-                  <div className="flex items-center justify-center gap-1.5">
-                    <Mail className="w-3 h-3 text-primary/70" />
-                    <span className="text-[10px] text-muted-foreground">Contact</span>
-                  </div>
-                </div>
-              </div>
-
               {/* View Profile Button */}
               <motion.div 
                 className="mt-auto pt-3 w-full border-t border-border/30"
