@@ -557,7 +557,7 @@ const Staff = () => {
                       <Users className="w-6 h-6 text-primary" />
                     </div>
                     <div className="text-3xl font-bold text-foreground mb-0.5">{staffMembers.length}+</div>
-                    <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Team Members</div>
+                    <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider italic">Team Members</div>
                   </div>
                 </div>
               </motion.div>
@@ -575,7 +575,7 @@ const Staff = () => {
                       <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse border-2 border-card" />
                     </div>
                     <div className="text-3xl font-bold text-foreground mb-0.5">{onlineCount}</div>
-                    <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Online Now</div>
+                    <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider italic">Online Now</div>
                   </div>
                 </div>
               </motion.div>
@@ -592,7 +592,7 @@ const Staff = () => {
                       <Clock className="w-6 h-6 text-primary" />
                     </div>
                     <div className="text-3xl font-bold text-foreground mb-0.5">24/7</div>
-                    <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Staff Coverage</div>
+                    <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider italic">Staff Coverage</div>
                   </div>
                 </div>
               </motion.div>
@@ -610,7 +610,7 @@ const Staff = () => {
                       <Briefcase className="w-6 h-6 text-primary" />
                     </div>
                     <div className="text-3xl font-bold text-foreground mb-0.5">{openPositions}</div>
-                    <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Open Positions</div>
+                    <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider italic">Open Positions</div>
                   </div>
                 </div>
               </motion.div>
