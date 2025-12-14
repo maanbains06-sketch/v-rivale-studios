@@ -12,7 +12,7 @@ const AnimatedLogoIcon = ({ className = "" }: AnimatedLogoIconProps) => {
       whileTap={{ scale: 0.97 }}
     >
       <div 
-        className="relative w-full h-full rounded-lg overflow-hidden flex items-center justify-center"
+        className="relative w-full h-full rounded-2xl overflow-hidden flex items-center justify-center"
         style={{
           background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
           boxShadow: '0 4px 24px rgba(0, 0, 0, 0.3)',
@@ -20,7 +20,7 @@ const AnimatedLogoIcon = ({ className = "" }: AnimatedLogoIconProps) => {
       >
         {/* Elegant border */}
         <div 
-          className="absolute inset-0 rounded-lg"
+          className="absolute inset-0 rounded-2xl"
           style={{
             border: '1.5px solid rgba(255, 215, 0, 0.4)',
           }}
