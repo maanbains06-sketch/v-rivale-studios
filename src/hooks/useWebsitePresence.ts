@@ -2,102 +2,67 @@ import { useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface UseWebsitePresenceOptions {
-  staffMemberId?: string;
+  visitorId?: string;
   enabled?: boolean;
 }
 
-export const useWebsitePresence = ({ staffMemberId, enabled = true }: UseWebsitePresenceOptions = {}) => {
-  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+export const useWebsitePresence = ({ visitorId, enabled = true }: UseWebsitePresenceOptions = {}) => {
   const isTrackingRef = useRef(false);
+  const heartbeatRef = useRef<number | null>(null);
 
-  const updatePresenceInDB = useCallback(async (isOnline: boolean, status: string = 'online') => {
-    if (!staffMemberId) return;
+  const updatePresence = useCallback(async (isOnline: boolean, status: string = 'online') => {
+    if (!visitorId) return;
 
     try {
-      // Get the discord_id for this staff member
-      const { data: staffMember } = await supabase
-        .from('staff_members')
-        .select('discord_id')
-        .eq('id', staffMemberId)
-        .single();
-
-      if (!staffMember?.discord_id) return;
-
-      // Update or insert presence
-      const { error } = await supabase
-        .from('discord_presence')
-        .upsert({
-          discord_id: staffMember.discord_id,
-          staff_member_id: staffMemberId,
-          is_online: isOnline,
-          status: isOnline ? status : 'offline',
-          last_online_at: isOnline ? new Date().toISOString() : undefined,
-          updated_at: new Date().toISOString(),
-        }, {
-          onConflict: 'discord_id'
-        });
-
-      if (error) {
-        console.error('Error updating presence:', error);
+      // Call edge function to update presence (has service role access)
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-discord-presence`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            discord_id: visitorId,
+            is_online: isOnline,
+            status: isOnline ? status : 'offline',
+          }),
+        }
+      );
+      
+      if (!response.ok) {
+        console.error('Presence update failed:', await response.text());
       }
     } catch (err) {
-      console.error('Error in updatePresenceInDB:', err);
+      console.error('Error updating presence:', err);
     }
-  }, [staffMemberId]);
+  }, [visitorId]);
 
   const startTracking = useCallback(async () => {
-    if (!staffMemberId || !enabled || isTrackingRef.current) return;
+    if (!visitorId || !enabled || isTrackingRef.current) return;
 
     isTrackingRef.current = true;
-
-    // Create presence channel
-    const channel = supabase.channel(`staff_presence_${staffMemberId}`, {
-      config: {
-        presence: {
-          key: staffMemberId,
-        },
-      },
-    });
-
-    channel
-      .on('presence', { event: 'sync' }, () => {
-        console.log('Presence synced');
-      })
-      .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-          // Track user presence
-          await channel.track({
-            staff_id: staffMemberId,
-            online_at: new Date().toISOString(),
-          });
-          
-          // Update database
-          await updatePresenceInDB(true, 'online');
-        }
-      });
-
-    channelRef.current = channel;
+    console.log('Starting presence tracking for:', visitorId);
+    
+    // Set online immediately
+    await updatePresence(true, 'online');
 
     // Handle visibility change (tab focus/blur)
     const handleVisibilityChange = async () => {
       if (document.visibilityState === 'visible') {
-        await updatePresenceInDB(true, 'online');
+        await updatePresence(true, 'online');
       } else {
-        await updatePresenceInDB(true, 'idle');
+        await updatePresence(true, 'idle');
       }
     };
 
     // Handle before unload (page close)
     const handleBeforeUnload = () => {
-      // Sync call to update offline status
+      // Use sendBeacon for reliable offline status on page close
       navigator.sendBeacon(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-discord-presence`,
         JSON.stringify({
-          presenceUpdates: [{
-            staff_member_id: staffMemberId,
-            is_online: false,
-            status: 'offline',
-          }]
+          discord_id: visitorId,
+          is_online: false,
+          status: 'offline',
         })
       );
     };
@@ -105,26 +70,28 @@ export const useWebsitePresence = ({ staffMemberId, enabled = true }: UseWebsite
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('beforeunload', handleBeforeUnload);
 
-    // Heartbeat to keep presence alive
-    const heartbeatInterval = setInterval(async () => {
-      await updatePresenceInDB(true, document.visibilityState === 'visible' ? 'online' : 'idle');
-    }, 30000); // Every 30 seconds
+    // Heartbeat to keep presence alive every 30 seconds
+    heartbeatRef.current = window.setInterval(async () => {
+      await updatePresence(true, document.visibilityState === 'visible' ? 'online' : 'idle');
+    }, 30000);
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      clearInterval(heartbeatInterval);
+      if (heartbeatRef.current) {
+        clearInterval(heartbeatRef.current);
+      }
     };
-  }, [staffMemberId, enabled, updatePresenceInDB]);
+  }, [visitorId, enabled, updatePresence]);
 
   const stopTracking = useCallback(async () => {
-    if (channelRef.current) {
-      await supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
+    if (heartbeatRef.current) {
+      clearInterval(heartbeatRef.current);
+      heartbeatRef.current = null;
     }
     isTrackingRef.current = false;
-    await updatePresenceInDB(false, 'offline');
-  }, [updatePresenceInDB]);
+    await updatePresence(false, 'offline');
+  }, [updatePresence]);
 
   useEffect(() => {
     let cleanup: (() => void) | undefined;
@@ -133,15 +100,25 @@ export const useWebsitePresence = ({ staffMemberId, enabled = true }: UseWebsite
       cleanup = await startTracking();
     };
 
-    if (enabled && staffMemberId) {
+    if (enabled && visitorId) {
       init();
     }
 
     return () => {
       cleanup?.();
-      stopTracking();
+      if (isTrackingRef.current) {
+        // Send offline status on unmount
+        navigator.sendBeacon(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-discord-presence`,
+          JSON.stringify({
+            discord_id: visitorId,
+            is_online: false,
+            status: 'offline',
+          })
+        );
+      }
     };
-  }, [staffMemberId, enabled, startTracking, stopTracking]);
+  }, [visitorId, enabled, startTracking]);
 
   return {
     startTracking,
