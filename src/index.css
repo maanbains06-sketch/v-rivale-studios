@@ -8,133 +8,133 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Dark Theme - Light Blue Palette */
-    --background: 210 25% 8%;
-    --foreground: 200 15% 95%;
+    /* Dark Theme - High Contrast */
+    --background: 220 20% 6%;
+    --foreground: 0 0% 98%;
 
-    --card: 210 22% 11%;
-    --card-foreground: 200 12% 92%;
+    --card: 220 18% 10%;
+    --card-foreground: 0 0% 96%;
 
-    --popover: 210 24% 10%;
-    --popover-foreground: 200 12% 92%;
+    --popover: 220 20% 8%;
+    --popover-foreground: 0 0% 96%;
 
-    --primary: 200 70% 48%;
-    --primary-foreground: 210 25% 8%;
+    --primary: 199 89% 48%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 195 55% 42%;
-    --secondary-foreground: 200 15% 95%;
+    --secondary: 199 75% 40%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 20% 18%;
-    --muted-foreground: 200 10% 65%;
+    --muted: 220 15% 16%;
+    --muted-foreground: 220 10% 60%;
 
-    --accent: 200 65% 45%;
-    --accent-foreground: 210 25% 8%;
+    --accent: 199 85% 52%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 65% 50%;
-    --destructive-foreground: 200 15% 95%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 210 18% 20%;
-    --input: 210 18% 20%;
-    --ring: 200 65% 48%;
+    --border: 220 15% 22%;
+    --input: 220 15% 18%;
+    --ring: 199 89% 48%;
 
     --radius: 0.75rem;
 
-    /* Headline color - Visible and balanced */
-    --headline: 200 70% 60%;
-    --headline-dark: 200 60% 52%;
+    /* Headline color - High visibility */
+    --headline: 199 90% 65%;
+    --headline-dark: 199 85% 55%;
 
-    /* Light Blue accent colors - Balanced */
-    --neon-cyan: 200 65% 48%;
-    --neon-purple: 210 55% 52%;
-    --neon-pink: 195 50% 55%;
-    --neon-blue: 200 65% 50%;
-    --neon-orange: 190 60% 45%;
-    --dark-bg: 210 25% 8%;
-    --glass-bg: 210 22% 11%;
+    /* Accent colors - Vibrant */
+    --neon-cyan: 185 100% 50%;
+    --neon-purple: 260 90% 60%;
+    --neon-pink: 330 90% 60%;
+    --neon-blue: 199 100% 55%;
+    --neon-orange: 25 95% 55%;
+    --dark-bg: 220 20% 6%;
+    --glass-bg: 220 18% 10%;
     
-    /* Gradients - Subtle */
-    --gradient-hero: linear-gradient(135deg, hsl(200 65% 48%), hsl(210 55% 50%), hsl(195 50% 52%));
-    --gradient-secondary: linear-gradient(135deg, hsl(195 55% 45%), hsl(210 55% 50%));
-    --gradient-card: linear-gradient(135deg, hsl(210 22% 11% / 0.95), hsl(210 20% 14% / 0.9));
-    --gradient-glow: radial-gradient(circle at 50% 50%, hsl(200 65% 48% / 0.08), transparent 70%);
+    /* Gradients - Vivid */
+    --gradient-hero: linear-gradient(135deg, hsl(199 89% 48%), hsl(210 85% 55%), hsl(185 90% 50%));
+    --gradient-secondary: linear-gradient(135deg, hsl(199 85% 45%), hsl(210 80% 50%));
+    --gradient-card: linear-gradient(135deg, hsl(220 18% 10%), hsl(220 16% 14%));
+    --gradient-glow: radial-gradient(circle at 50% 50%, hsl(199 89% 48% / 0.15), transparent 70%);
     
-    /* Glow Effects - Minimal */
-    --glow-cyan: 0 0 12px hsl(200 65% 48% / 0.2);
-    --glow-purple: 0 0 12px hsl(210 55% 52% / 0.2);
-    --glow-pink: 0 0 12px hsl(195 50% 55% / 0.2);
+    /* Glow Effects */
+    --glow-cyan: 0 0 20px hsl(185 100% 50% / 0.4);
+    --glow-purple: 0 0 20px hsl(260 90% 60% / 0.4);
+    --glow-pink: 0 0 20px hsl(330 90% 60% / 0.4);
     
-    --sidebar-background: 210 22% 12%;
-    --sidebar-foreground: 200 15% 92%;
-    --sidebar-primary: 200 65% 48%;
-    --sidebar-primary-foreground: 210 22% 10%;
-    --sidebar-accent: 210 20% 18%;
-    --sidebar-accent-foreground: 200 15% 92%;
-    --sidebar-border: 210 18% 20%;
-    --sidebar-ring: 200 65% 48%;
+    --sidebar-background: 220 18% 10%;
+    --sidebar-foreground: 0 0% 96%;
+    --sidebar-primary: 199 89% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 15% 16%;
+    --sidebar-accent-foreground: 0 0% 96%;
+    --sidebar-border: 220 15% 22%;
+    --sidebar-ring: 199 89% 48%;
   }
 
   /* Light Theme */
   :root.light {
-    --background: 200 20% 97%;
-    --foreground: 210 25% 15%;
+    --background: 0 0% 100%;
+    --foreground: 220 15% 10%;
 
-    --card: 200 15% 95%;
-    --card-foreground: 210 22% 18%;
+    --card: 210 20% 98%;
+    --card-foreground: 220 15% 12%;
 
-    --popover: 200 18% 96%;
-    --popover-foreground: 210 22% 18%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 12%;
 
-    --primary: 200 70% 42%;
-    --primary-foreground: 200 15% 98%;
+    --primary: 199 89% 42%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 195 55% 38%;
-    --secondary-foreground: 200 15% 98%;
+    --secondary: 199 75% 35%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 200 12% 90%;
-    --muted-foreground: 210 15% 40%;
+    --muted: 210 15% 92%;
+    --muted-foreground: 220 10% 35%;
 
-    --accent: 200 65% 40%;
-    --accent-foreground: 200 15% 98%;
+    --accent: 199 85% 45%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 65% 50%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 200 15% 85%;
-    --input: 200 15% 85%;
-    --ring: 200 70% 42%;
+    --border: 220 15% 85%;
+    --input: 220 15% 88%;
+    --ring: 199 89% 42%;
 
     /* Headline color for light mode */
-    --headline: 200 70% 35%;
-    --headline-dark: 200 65% 30%;
+    --headline: 199 90% 35%;
+    --headline-dark: 199 85% 28%;
 
-    /* Light Blue accent colors for light mode */
-    --neon-cyan: 200 65% 40%;
-    --neon-purple: 210 55% 45%;
-    --neon-pink: 195 50% 48%;
-    --neon-blue: 200 65% 42%;
-    --neon-orange: 190 60% 40%;
-    --dark-bg: 200 20% 97%;
-    --glass-bg: 200 15% 95%;
+    /* Accent colors for light mode */
+    --neon-cyan: 185 90% 38%;
+    --neon-purple: 260 80% 50%;
+    --neon-pink: 330 80% 50%;
+    --neon-blue: 199 90% 40%;
+    --neon-orange: 25 90% 48%;
+    --dark-bg: 0 0% 100%;
+    --glass-bg: 210 20% 98%;
     
     /* Gradients for light mode */
-    --gradient-hero: linear-gradient(135deg, hsl(200 65% 42%), hsl(210 55% 45%), hsl(195 50% 48%));
-    --gradient-secondary: linear-gradient(135deg, hsl(195 55% 40%), hsl(210 55% 45%));
-    --gradient-card: linear-gradient(135deg, hsl(200 15% 95% / 0.95), hsl(200 12% 92% / 0.9));
-    --gradient-glow: radial-gradient(circle at 50% 50%, hsl(200 65% 42% / 0.06), transparent 70%);
+    --gradient-hero: linear-gradient(135deg, hsl(199 89% 42%), hsl(210 80% 48%), hsl(185 85% 45%));
+    --gradient-secondary: linear-gradient(135deg, hsl(199 80% 38%), hsl(210 75% 45%));
+    --gradient-card: linear-gradient(135deg, hsl(210 20% 98%), hsl(210 18% 95%));
+    --gradient-glow: radial-gradient(circle at 50% 50%, hsl(199 89% 42% / 0.08), transparent 70%);
     
-    /* Glow Effects - Very subtle for light mode */
-    --glow-cyan: 0 0 8px hsl(200 65% 42% / 0.15);
-    --glow-purple: 0 0 8px hsl(210 55% 45% / 0.15);
-    --glow-pink: 0 0 8px hsl(195 50% 48% / 0.15);
+    /* Glow Effects for light mode */
+    --glow-cyan: 0 0 12px hsl(185 90% 38% / 0.25);
+    --glow-purple: 0 0 12px hsl(260 80% 50% / 0.25);
+    --glow-pink: 0 0 12px hsl(330 80% 50% / 0.25);
     
-    --sidebar-background: 200 15% 95%;
-    --sidebar-foreground: 210 22% 18%;
-    --sidebar-primary: 200 70% 42%;
-    --sidebar-primary-foreground: 200 15% 98%;
-    --sidebar-accent: 200 12% 90%;
-    --sidebar-accent-foreground: 210 22% 18%;
-    --sidebar-border: 200 15% 85%;
-    --sidebar-ring: 200 70% 42%;
+    --sidebar-background: 210 20% 98%;
+    --sidebar-foreground: 220 15% 12%;
+    --sidebar-primary: 199 89% 42%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 15% 92%;
+    --sidebar-accent-foreground: 220 15% 12%;
+    --sidebar-border: 220 15% 85%;
+    --sidebar-ring: 199 89% 42%;
   }
 }
 
@@ -153,20 +153,7 @@ All colors MUST be HSL.
     transition: background-color 0.3s ease, color 0.3s ease;
   }
   
-  /* Background overlay - subtle */
-  body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-      radial-gradient(circle at 20% 20%, hsl(var(--primary) / 0.04), transparent 40%),
-      radial-gradient(circle at 80% 80%, hsl(var(--secondary) / 0.04), transparent 40%);
-    pointer-events: none;
-    z-index: 0;
-  }
+  /* Background overlay - removed for clarity */
   
   #root {
     position: relative;
@@ -175,8 +162,8 @@ All colors MUST be HSL.
   
   h1, h2, h3, h4, h5, h6 {
     @apply font-bold italic;
-    color: hsl(200 80% 65%);
-    text-shadow: 0 2px 4px hsl(200 70% 50% / 0.2);
+    color: hsl(199 95% 70%);
+    text-shadow: 0 2px 8px hsl(199 100% 50% / 0.35);
   }
 
   /* Global italic styling */
@@ -264,7 +251,7 @@ All colors MUST be HSL.
 
 @layer utilities {
   .text-gradient {
-    background: linear-gradient(135deg, hsl(200 75% 58%), hsl(210 70% 62%), hsl(195 65% 60%));
+    background: linear-gradient(135deg, hsl(185 100% 55%), hsl(199 95% 60%), hsl(210 90% 65%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -272,26 +259,26 @@ All colors MUST be HSL.
     padding-top: 0.05em;
     line-height: 1.2;
     display: inline-block;
-    filter: drop-shadow(0 2px 6px hsl(200 65% 50% / 0.35));
+    filter: drop-shadow(0 2px 10px hsl(199 100% 50% / 0.5));
   }
   
   .glass-effect {
-    background: linear-gradient(135deg, hsl(210 22% 8% / 0.8), hsl(210 20% 12% / 0.65));
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border: 1px solid hsl(200 50% 50% / 0.15);
+    background: hsl(220 18% 10% / 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid hsl(199 80% 50% / 0.2);
     box-shadow: 
-      0 4px 25px 0 hsl(200 70% 60% / 0.08),
-      inset 0 1px 0 0 hsl(200 50% 70% / 0.08);
+      0 4px 30px 0 hsl(199 90% 50% / 0.15),
+      inset 0 1px 0 0 hsl(199 80% 60% / 0.1);
     position: relative;
     z-index: 1;
   }
   
   .glass-effect:hover {
-    border-color: hsl(200 50% 60% / 0.25);
+    border-color: hsl(199 80% 55% / 0.35);
     box-shadow: 
-      0 8px 35px 0 hsl(200 70% 60% / 0.12),
-      inset 0 1px 0 0 hsl(200 50% 70% / 0.1);
+      0 8px 40px 0 hsl(199 90% 50% / 0.2),
+      inset 0 1px 0 0 hsl(199 80% 60% / 0.15);
   }
   
   .glow-cyan {
