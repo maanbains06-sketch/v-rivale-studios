@@ -69,31 +69,30 @@ const Navigation = () => {
               onClick={() => navigate("/")}
             >
               <motion.span 
-                className="text-xl md:text-2xl font-black tracking-wider"
+                className="text-base md:text-lg font-semibold tracking-wide"
                 style={{
                   background: 'linear-gradient(135deg, hsl(185 100% 50%), hsl(199 89% 48%), hsl(260 90% 60%))',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
-                  textShadow: '0 0 30px hsl(199 89% 48% / 0.3)',
                 }}
-                initial={{ opacity: 0, y: -10 }}
+                initial={{ opacity: 0, y: -5 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 0.4 }}
               >
                 SKYLIFE ROLEPLAY
               </motion.span>
               <motion.span 
-                className="text-xs md:text-sm font-bold tracking-[0.3em] text-center"
+                className="text-[10px] md:text-xs font-medium tracking-[0.2em] text-center"
                 style={{
                   background: 'linear-gradient(90deg, #FF9933, #FFFFFF, #138808)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
                 }}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
+                transition={{ duration: 0.4, delay: 0.1 }}
               >
                 INDIA
               </motion.span>
