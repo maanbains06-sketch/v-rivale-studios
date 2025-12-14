@@ -298,10 +298,11 @@ const Index = () => {
               <h1 className="relative flex flex-col items-center">
                 {/* SKYLIFE with integrated cloud icon */}
                 <span 
-                  className="flex items-center text-7xl md:text-9xl lg:text-[11rem] font-black leading-none"
+                  className="flex items-center text-7xl md:text-9xl lg:text-[11rem] font-black leading-none italic"
                   style={{ 
                     fontStyle: 'italic',
                     letterSpacing: '-0.02em',
+                    transform: 'skewX(-8deg)',
                   }}
                 >
                   <span 
@@ -315,7 +316,8 @@ const Index = () => {
                     className="inline-block w-16 h-16 md:w-28 md:h-28 lg:w-36 lg:h-36 -mx-1 md:-mx-2"
                     style={{ 
                       color: 'hsl(270 90% 85%)',
-                      filter: 'drop-shadow(0 0 25px hsl(270 90% 80% / 1))'
+                      filter: 'drop-shadow(0 0 25px hsl(270 90% 80% / 1))',
+                      transform: 'skewX(8deg)',
                     }}
                     strokeWidth={2.5}
                     fill="hsl(270 80% 75%)"
@@ -328,24 +330,26 @@ const Index = () => {
                   </span>
                 </span>
                 
-                {/* ROLEPLAY - Wide letter spacing */}
+                {/* ROLEPLAY - Wide letter spacing, italic */}
                 <span 
-                  className="block text-2xl md:text-4xl lg:text-5xl font-medium tracking-[0.3em] md:tracking-[0.4em] text-foreground mt-2"
+                  className="block text-2xl md:text-4xl lg:text-5xl font-semibold tracking-[0.3em] md:tracking-[0.4em] text-foreground mt-2 italic"
                   style={{ 
-                    fontStyle: 'normal',
-                    letterSpacing: '0.4em'
+                    fontStyle: 'italic',
+                    letterSpacing: '0.4em',
+                    transform: 'skewX(-5deg)',
                   }}
                 >
                   ROLEPLAY
                 </span>
                 
-                {/* INDIA - Small accent in light purple */}
+                {/* INDIA - Small accent in light purple, italic */}
                 <span 
-                  className="block text-sm md:text-base lg:text-lg font-medium tracking-[0.3em] mt-3"
+                  className="block text-sm md:text-base lg:text-lg font-semibold tracking-[0.3em] mt-3 italic"
                   style={{ 
-                    fontStyle: 'normal',
+                    fontStyle: 'italic',
                     letterSpacing: '0.3em',
-                    color: 'hsl(270 90% 85%)'
+                    color: 'hsl(270 90% 85%)',
+                    transform: 'skewX(-5deg)',
                   }}
                 >
                   INDIA
