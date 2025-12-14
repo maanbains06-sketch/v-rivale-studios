@@ -295,41 +295,35 @@ const Index = () => {
               
               {/* Main Title */}
               <h1 className="relative flex flex-col items-center">
-                {/* SKYLIFE - Large bold italic with gradient */}
+                {/* SKYLIFE - Large bold italic like FlameCity style */}
                 <span 
-                  className="block text-8xl md:text-[10rem] lg:text-[12rem] font-black tracking-tight leading-none"
+                  className="block text-7xl md:text-9xl lg:text-[11rem] font-black leading-none bg-gradient-to-r from-primary via-neon-purple to-secondary bg-clip-text text-transparent"
                   style={{ 
                     fontStyle: 'italic',
-                    background: 'linear-gradient(135deg, hsl(185 90% 65%) 0%, hsl(275 80% 60%) 50%, hsl(275 90% 75%) 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    filter: 'drop-shadow(0 0 40px hsl(275 80% 60% / 0.6)) drop-shadow(0 4px 20px hsl(0 0% 0% / 0.8))',
-                    letterSpacing: '-0.02em'
+                    letterSpacing: '-0.02em',
+                    filter: 'drop-shadow(0 4px 30px hsl(185 90% 65% / 0.4))'
                   }}
                 >
                   SKYLIFE
                 </span>
                 
-                {/* ROLEPLAY - Spaced out professional style */}
+                {/* ROLEPLAY - Wide letter spacing like reference */}
                 <span 
-                  className="block text-3xl md:text-5xl lg:text-6xl font-bold tracking-[0.35em] md:tracking-[0.4em] text-foreground/95 -mt-2 md:-mt-4"
+                  className="block text-2xl md:text-4xl lg:text-5xl font-medium tracking-[0.3em] md:tracking-[0.4em] text-foreground mt-2"
                   style={{ 
-                    fontStyle: 'italic',
-                    textShadow: '0 2px 20px hsl(0 0% 0% / 0.7), 0 0 40px hsl(275 80% 60% / 0.3)',
-                    letterSpacing: '0.35em'
+                    fontStyle: 'normal',
+                    letterSpacing: '0.4em'
                   }}
                 >
                   ROLEPLAY
                 </span>
                 
-                {/* INDIA - Subtle accent below */}
+                {/* INDIA - Small accent */}
                 <span 
-                  className="block text-lg md:text-xl lg:text-2xl font-semibold tracking-[0.5em] mt-4"
+                  className="block text-sm md:text-base lg:text-lg font-medium tracking-[0.3em] text-primary/80 mt-3"
                   style={{ 
-                    fontStyle: 'italic',
-                    color: 'hsl(275 80% 68%)',
-                    textShadow: '0 0 20px hsl(275 80% 60% / 0.5)',
-                    letterSpacing: '0.5em'
+                    fontStyle: 'normal',
+                    letterSpacing: '0.3em'
                   }}
                 >
                   INDIA
