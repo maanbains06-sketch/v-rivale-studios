@@ -399,17 +399,39 @@ const Index = () => {
                   ROLEPLAY
                 </span>
                 
-                {/* INDIA - Small accent in light blue, italic */}
+                {/* INDIA - Tricolor animated text */}
                 <span 
-                  className="block text-sm md:text-base lg:text-lg font-semibold tracking-[0.3em] mt-3 italic"
+                  className="flex gap-1 justify-center text-sm md:text-base lg:text-lg font-bold tracking-[0.3em] mt-3"
                   style={{ 
                     fontStyle: 'italic',
-                    letterSpacing: '0.3em',
-                    color: 'hsl(200 70% 70%)',
                     transform: 'skewX(-5deg)',
                   }}
                 >
-                  INDIA
+                  <motion.span 
+                    animate={{ color: ['#FF9933', '#FFFFFF', '#138808', '#FF9933'] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                    style={{ textShadow: '0 0 8px currentColor' }}
+                  >I</motion.span>
+                  <motion.span 
+                    animate={{ color: ['#FFFFFF', '#138808', '#FF9933', '#FFFFFF'] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.15 }}
+                    style={{ textShadow: '0 0 8px currentColor' }}
+                  >N</motion.span>
+                  <motion.span 
+                    animate={{ color: ['#138808', '#FF9933', '#FFFFFF', '#138808'] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
+                    style={{ textShadow: '0 0 8px currentColor' }}
+                  >D</motion.span>
+                  <motion.span 
+                    animate={{ color: ['#FF9933', '#FFFFFF', '#138808', '#FF9933'] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.45 }}
+                    style={{ textShadow: '0 0 8px currentColor' }}
+                  >I</motion.span>
+                  <motion.span 
+                    animate={{ color: ['#FFFFFF', '#138808', '#FF9933', '#FFFFFF'] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
+                    style={{ textShadow: '0 0 8px currentColor' }}
+                  >A</motion.span>
                 </span>
               </h1>
             </motion.div>
