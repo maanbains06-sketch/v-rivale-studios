@@ -326,7 +326,7 @@ const Index = () => {
                       size="lg"
                       className={`text-base md:text-lg px-6 md:px-8 ${
                         allRequirementsMet
-                      ? "bg-primary hover:bg-primary/90 text-primary-foreground glow-gold"
+                      ? "bg-primary hover:bg-primary/90 text-primary-foreground glow-cyan"
                           : "bg-muted/80 hover:bg-muted text-muted-foreground border border-border/50"
                       }`}
                       onClick={handleJoinServer}
@@ -389,10 +389,10 @@ const Index = () => {
                 className="relative group cursor-pointer"
                 onClick={handleJoinServer}
               >
-                <div className="flex items-center gap-3 px-4 py-2 rounded-full border border-primary/50 bg-background/60 backdrop-blur-sm hover:border-primary/80 transition-all duration-300 hover:bg-background/80 glow-gold">
+                <div className="flex items-center gap-3 px-4 py-2 rounded-full border border-primary/50 bg-background/60 backdrop-blur-sm hover:border-primary/80 transition-all duration-300 hover:bg-background/80 glow-cyan">
                   {/* Live dot */}
                   <div className="relative">
-                    <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_10px_hsl(38_95%_60%_/_0.8)]"></div>
+                    <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_10px_hsl(185_90%_65%_/_0.8)]"></div>
                     <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-primary animate-ping opacity-60"></div>
                   </div>
                   
