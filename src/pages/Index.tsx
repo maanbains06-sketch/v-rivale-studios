@@ -501,12 +501,9 @@ const Index = () => {
 
             {/* Compact Live Server Status */}
             <motion.div variants={itemVariants} className="flex justify-center items-center gap-3 mt-6">
-              <div 
-                className="relative group cursor-pointer"
-                onClick={handleJoinServer}
-              >
-                <div className="absolute -inset-1 bg-gradient-to-r from-primary/25 via-accent/30 to-primary/25 rounded-full blur-sm opacity-50 group-hover:opacity-80 transition-opacity duration-300"></div>
-                <div className="relative flex items-center gap-4 px-6 py-3 rounded-full border border-primary/30 bg-background/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300">
+              <div className="relative">
+                <div className="absolute -inset-1 bg-gradient-to-r from-primary/25 via-accent/30 to-primary/25 rounded-full blur-sm opacity-50"></div>
+                <div className="relative flex items-center gap-4 px-6 py-3 rounded-full border border-primary/30 bg-background/80 backdrop-blur-sm">
                   {/* Live dot */}
                   <div className="relative">
                     <div className="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_12px_hsl(120_70%_50%_/_0.8)]"></div>
@@ -522,24 +519,12 @@ const Index = () => {
                     <span className="text-sm text-muted-foreground/70">{maxPlayers}</span>
                     <span className="text-xs text-sky-400 ml-1 uppercase tracking-wide font-semibold">Online</span>
                   </div>
-                  
-                  {/* Divider */}
-                  <div className="h-5 w-px bg-sky-500/30"></div>
-                  
-                  {/* Play button */}
-                  <div className="flex items-center gap-2 text-sky-400 group-hover:text-sky-300 transition-colors font-bold">
-                    <Play className="w-4 h-4 fill-current" />
-                    <span className="text-sm">Play Now</span>
-                  </div>
                 </div>
               </div>
               
               {/* Refresh Button */}
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRefreshStatus();
-                }}
+                onClick={handleRefreshStatus}
                 className="p-3 rounded-full border border-sky-500/40 bg-background/80 backdrop-blur-sm hover:border-sky-400/60 hover:bg-sky-500/10 transition-all duration-300 group"
                 title="Refresh server status"
               >
