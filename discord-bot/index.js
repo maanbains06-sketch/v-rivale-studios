@@ -24,14 +24,15 @@ const { Client, GatewayIntentBits, Events } = require('discord.js');
 // ============================================
 
 // Your Discord Bot Token (from Discord Developer Portal)
-// You can also set this as an environment variable: DISCORD_BOT_TOKEN
-const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN || 'YOUR_BOT_TOKEN_HERE';
+// Set this as an environment variable: DISCORD_BOT_TOKEN
+const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 
 // Your Supabase Edge Function URL
 const SYNC_URL = 'https://obirpzwvnqveddyuulsb.supabase.co/functions/v1/sync-discord-presence';
 
 // Your Discord Server ID
-const GUILD_ID = process.env.DISCORD_SERVER_ID || 'YOUR_GUILD_ID_HERE';
+// Set this as an environment variable: DISCORD_SERVER_ID
+const GUILD_ID = process.env.DISCORD_SERVER_ID;
 
 // Staff Discord IDs to monitor - ADD YOUR STAFF IDS HERE
 const STAFF_DISCORD_IDS = [
