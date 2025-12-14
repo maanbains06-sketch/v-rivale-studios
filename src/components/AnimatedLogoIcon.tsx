@@ -8,11 +8,29 @@ const AnimatedLogoIcon = ({ className = "" }: AnimatedLogoIconProps) => {
   return (
     <motion.div 
       className={`relative cursor-pointer ${className}`}
-      whileHover={{ scale: 1.05 }}
+      whileHover={{ scale: 1.08 }}
       whileTap={{ scale: 0.95 }}
     >
       {/* Hexagon shaped logo */}
       <div className="relative w-full h-full flex items-center justify-center">
+        
+        {/* Outer glow pulse */}
+        <motion.div
+          className="absolute inset-[-4px]"
+          style={{
+            background: 'transparent',
+            filter: 'blur(8px)',
+          }}
+          animate={{
+            boxShadow: [
+              '0 0 15px hsl(199 89% 48% / 0.3)',
+              '0 0 25px hsl(185 100% 50% / 0.5)',
+              '0 0 15px hsl(199 89% 48% / 0.3)',
+            ],
+          }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        />
+
         {/* Hexagon background */}
         <svg viewBox="0 0 60 52" className="absolute inset-0 w-full h-full">
           <defs>
@@ -23,6 +41,11 @@ const AnimatedLogoIcon = ({ className = "" }: AnimatedLogoIconProps) => {
             <linearGradient id="hexBorder" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="hsl(199 89% 48%)" />
               <stop offset="100%" stopColor="hsl(185 100% 50%)" />
+            </linearGradient>
+            <linearGradient id="shimmer" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="transparent" />
+              <stop offset="50%" stopColor="hsl(199 89% 70% / 0.3)" />
+              <stop offset="100%" stopColor="transparent" />
             </linearGradient>
           </defs>
           
@@ -37,12 +60,32 @@ const AnimatedLogoIcon = ({ className = "" }: AnimatedLogoIconProps) => {
             transition={{ duration: 0.5 }}
           />
           
-          {/* Inner hexagon accent */}
-          <polygon
+          {/* Inner hexagon accent - pulsing */}
+          <motion.polygon
             points="30,8 50,18 50,34 30,44 10,34 10,18"
             fill="none"
             stroke="hsl(199 89% 48% / 0.2)"
             strokeWidth="1"
+            animate={{
+              stroke: [
+                'hsl(199 89% 48% / 0.15)',
+                'hsl(199 89% 48% / 0.35)',
+                'hsl(199 89% 48% / 0.15)',
+              ],
+            }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          />
+
+          {/* Rotating light dot on border */}
+          <motion.circle
+            r="2"
+            fill="hsl(185 100% 60%)"
+            filter="url(#glow)"
+            animate={{
+              cx: [30, 56, 56, 30, 4, 4, 30],
+              cy: [2, 15, 37, 50, 37, 15, 2],
+            }}
+            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
           />
         </svg>
 
@@ -54,7 +97,7 @@ const AnimatedLogoIcon = ({ className = "" }: AnimatedLogoIconProps) => {
               <stop offset="100%" stopColor="hsl(199 89% 48%)" />
             </linearGradient>
             <filter id="glow">
-              <feGaussianBlur stdDeviation="1" result="blur" />
+              <feGaussianBlur stdDeviation="1.5" result="blur" />
               <feMerge>
                 <feMergeNode in="blur" />
                 <feMergeNode in="SourceGraphic" />
@@ -90,19 +133,63 @@ const AnimatedLogoIcon = ({ className = "" }: AnimatedLogoIconProps) => {
           />
         </svg>
 
-        {/* Animated corner glow */}
+        {/* Shimmer overlay */}
+        <motion.div
+          className="absolute inset-0 pointer-events-none z-20"
+          style={{
+            background: 'linear-gradient(105deg, transparent 40%, hsl(199 89% 70% / 0.1) 50%, transparent 60%)',
+          }}
+          animate={{
+            x: ['-100%', '200%'],
+          }}
+          transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 1, ease: "easeInOut" }}
+        />
+
+        {/* Top corner glow */}
         <motion.div
           className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-primary"
-          style={{ boxShadow: '0 0 10px hsl(199 89% 48%)' }}
-          animate={{ opacity: [0.5, 1, 0.5] }}
+          style={{ boxShadow: '0 0 12px hsl(185 100% 50%)' }}
+          animate={{ 
+            opacity: [0.4, 1, 0.4],
+            scale: [0.8, 1.2, 0.8],
+          }}
           transition={{ duration: 2, repeat: Infinity }}
+        />
+
+        {/* Bottom corners */}
+        <motion.div
+          className="absolute bottom-[8px] left-[8px] w-1.5 h-1.5 rounded-full"
+          style={{ background: 'hsl(185 100% 50%)', boxShadow: '0 0 8px hsl(185 100% 50%)' }}
+          animate={{ opacity: [0.3, 0.8, 0.3] }}
+          transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }}
+        />
+        <motion.div
+          className="absolute bottom-[8px] right-[8px] w-1.5 h-1.5 rounded-full"
+          style={{ background: 'hsl(185 100% 50%)', boxShadow: '0 0 8px hsl(185 100% 50%)' }}
+          animate={{ opacity: [0.3, 0.8, 0.3] }}
+          transition={{ duration: 1.5, repeat: Infinity, delay: 1 }}
         />
 
         {/* Indian flag stripe at bottom */}
         <div className="absolute bottom-[2px] left-[20%] right-[20%] h-[2px] flex rounded-full overflow-hidden">
-          <div className="flex-1" style={{ background: '#FF9933' }} />
-          <div className="flex-1" style={{ background: '#FFFFFF' }} />
-          <div className="flex-1" style={{ background: '#138808' }} />
+          <motion.div 
+            className="flex-1" 
+            style={{ background: '#FF9933' }}
+            animate={{ opacity: [0.7, 1, 0.7] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+          <motion.div 
+            className="flex-1" 
+            style={{ background: '#FFFFFF' }}
+            animate={{ opacity: [0.7, 1, 0.7] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
+          />
+          <motion.div 
+            className="flex-1" 
+            style={{ background: '#138808' }}
+            animate={{ opacity: [0.7, 1, 0.7] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 0.6 }}
+          />
         </div>
       </div>
     </motion.div>
