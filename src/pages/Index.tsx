@@ -355,8 +355,8 @@ const Index = () => {
         <div className="absolute inset-0 z-[4] pointer-events-none rain-effect" />
         
         <div className="absolute inset-0 z-[3] pointer-events-none">
-          <div className="absolute top-[10%] left-[30%] w-64 h-64 md:w-80 md:h-80 rounded-full blur-3xl bg-primary/10 gpu-accelerated" />
-          <div className="absolute top-[15%] right-[20%] w-48 h-48 md:w-64 md:h-64 rounded-full blur-3xl bg-secondary/8 gpu-accelerated" />
+          <div className="absolute top-[10%] left-[30%] w-64 h-64 md:w-80 md:h-80 rounded-full blur-3xl bg-primary/5 gpu-accelerated" />
+          <div className="absolute top-[15%] right-[20%] w-48 h-48 md:w-64 md:h-64 rounded-full blur-3xl bg-secondary/5 gpu-accelerated" />
         </div>
 
         <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-background/60 z-[5]" />
@@ -379,9 +379,9 @@ const Index = () => {
               variants={itemVariants} 
               className="mb-10 relative"
             >
-              {/* Glow effect behind text - minimal */}
+              {/* Glow effect behind text - subtle */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-[500px] h-[250px] bg-gradient-to-r from-primary/15 via-primary/20 to-primary/15 blur-[100px] rounded-full gpu-accelerated"></div>
+                <div className="w-[500px] h-[250px] bg-gradient-to-r from-primary/8 via-primary/10 to-primary/8 blur-[100px] rounded-full gpu-accelerated"></div>
               </div>
               
               {/* Main Title */}
@@ -397,7 +397,7 @@ const Index = () => {
                 >
                   <span 
                     className="bg-gradient-to-b from-primary via-accent to-secondary bg-clip-text text-transparent"
-                    style={{ filter: 'drop-shadow(0 2px 12px hsl(var(--primary) / 0.25))' }}
+                    style={{ filter: 'drop-shadow(0 2px 8px hsl(var(--primary) / 0.15))' }}
                   >
                     SK
                   </span>
@@ -417,7 +417,7 @@ const Index = () => {
                     <Cloud 
                       className="w-16 h-16 md:w-28 md:h-28 lg:w-36 lg:h-36 -mx-1 md:-mx-2 text-primary"
                       style={{ 
-                        filter: 'drop-shadow(0 0 8px hsl(var(--primary) / 0.35))'
+                        filter: 'drop-shadow(0 0 6px hsl(var(--primary) / 0.2))'
                       }}
                       strokeWidth={2.5}
                       fill="hsl(var(--accent))"
@@ -425,7 +425,7 @@ const Index = () => {
                   </motion.div>
                   <span 
                     className="bg-gradient-to-b from-primary via-accent to-secondary bg-clip-text text-transparent"
-                    style={{ filter: 'drop-shadow(0 2px 12px hsl(var(--primary) / 0.25))' }}
+                    style={{ filter: 'drop-shadow(0 2px 8px hsl(var(--primary) / 0.15))' }}
                   >
                     LIFE
                   </span>
