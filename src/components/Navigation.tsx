@@ -94,26 +94,11 @@ const Navigation = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.1 }}
               >
-                <motion.span 
-                  animate={{ color: ['#FF6B00', '#FFD700', '#00DD00', '#FF6B00'] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                >I</motion.span>
-                <motion.span 
-                  animate={{ color: ['#FF8C00', '#00DD00', '#FF6B00', '#FF8C00'] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear", delay: 0.2 }}
-                >N</motion.span>
-                <motion.span 
-                  animate={{ color: ['#FFD700', '#FF6B00', '#FFD700', '#00DD00'] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear", delay: 0.4 }}
-                >D</motion.span>
-                <motion.span 
-                  animate={{ color: ['#00DD00', '#FF8C00', '#00DD00', '#FFD700'] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear", delay: 0.6 }}
-                >I</motion.span>
-                <motion.span 
-                  animate={{ color: ['#00AA00', '#FFD700', '#FF6B00', '#00AA00'] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear", delay: 0.8 }}
-                >A</motion.span>
+                <span style={{ color: '#FF6B00', textShadow: '0 0 8px rgba(255, 107, 0, 0.5)' }}>I</span>
+                <span style={{ color: '#FF8C00', textShadow: '0 0 8px rgba(255, 140, 0, 0.5)' }}>N</span>
+                <span style={{ color: '#FFD700', textShadow: '0 0 8px rgba(255, 215, 0, 0.5)' }}>D</span>
+                <span style={{ color: '#00CC00', textShadow: '0 0 8px rgba(0, 204, 0, 0.5)' }}>I</span>
+                <span style={{ color: '#008800', textShadow: '0 0 8px rgba(0, 136, 0, 0.5)' }}>A</span>
               </motion.span>
             </motion.div>
           </div>
