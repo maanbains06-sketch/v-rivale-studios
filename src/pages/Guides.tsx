@@ -1320,58 +1320,49 @@ const Guides = () => {
                     viewport={{ once: true }}
                     transition={{ delay: 0.4 }}
                   >
-                    <Card className="h-full bg-gradient-to-br from-red-950/50 to-rose-900/30 border-red-500/20 hover:border-red-400/40 transition-all duration-300">
+                    <Card className="h-full glass-effect border-destructive/20 hover:border-destructive/40 transition-all duration-300 hover:shadow-[0_0_30px_hsl(var(--destructive)/0.2)]">
                       <CardHeader>
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center text-2xl shadow-lg shadow-red-500/25">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-destructive to-destructive/70 flex items-center justify-center text-2xl shadow-lg shadow-destructive/25">
                             ⚠️
                           </div>
-                          <CardTitle className="text-xl text-red-300">Common Mistakes</CardTitle>
+                          <CardTitle className="text-xl text-destructive">Common Mistakes</CardTitle>
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-3">
-                        <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/15 transition-colors">
+                        <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 hover:bg-destructive/15 transition-colors">
                           <div className="flex items-start gap-3">
                             <span className="text-2xl">👑</span>
                             <div>
-                              <strong className="text-red-300">Main Character Syndrome</strong>
+                              <strong className="text-destructive">Main Character Syndrome</strong>
                               <p className="text-xs text-muted-foreground mt-1">Not everyone can be the richest, toughest, or most connected. Be realistic about your place in the world. Supporting roles create great stories too.</p>
                             </div>
                           </div>
                         </div>
-                        <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/15 transition-colors">
+                        <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 hover:bg-destructive/15 transition-colors">
                           <div className="flex items-start gap-3">
                             <span className="text-2xl">🏆</span>
                             <div>
-                              <strong className="text-red-300">Winning Every Situation</strong>
+                              <strong className="text-destructive">Winning Every Situation</strong>
                               <p className="text-xs text-muted-foreground mt-1">Sometimes you lose fights. Sometimes you get arrested. Sometimes your plans fail. That is not just okay - it creates the best stories.</p>
                             </div>
                           </div>
                         </div>
-                        <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/15 transition-colors">
+                        <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 hover:bg-destructive/15 transition-colors">
                           <div className="flex items-start gap-3">
                             <span className="text-2xl">🙈</span>
                             <div>
-                              <strong className="text-red-300">Ignoring Other Players</strong>
+                              <strong className="text-destructive">Ignoring Other Players</strong>
                               <p className="text-xs text-muted-foreground mt-1">Someone is trying to roleplay with you. Even if you are busy, acknowledge them. A quick response is better than being ignored.</p>
                             </div>
                           </div>
                         </div>
-                        <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/15 transition-colors">
+                        <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 hover:bg-destructive/15 transition-colors">
                           <div className="flex items-start gap-3">
                             <span className="text-2xl">💢</span>
                             <div>
-                              <strong className="text-red-300">IC/OOC Bleed</strong>
-                              <p className="text-xs text-muted-foreground mt-1">Your character's enemies are not YOUR enemies. Do not take in-character conflicts personally. Separate the character from the player.</p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/15 transition-colors">
-                          <div className="flex items-start gap-3">
-                            <span className="text-2xl">⏰</span>
-                            <div>
-                              <strong className="text-red-300">Rushing Everything</strong>
-                              <p className="text-xs text-muted-foreground mt-1">Do not try to accomplish everything in one session. Let relationships, businesses, and stories develop naturally over time.</p>
+                              <strong className="text-destructive">Breaking Character</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Staying in character through wins AND losses is the mark of a great roleplayer. OOC frustration should stay OOC.</p>
                             </div>
                           </div>
                         </div>
@@ -1465,46 +1456,46 @@ const Guides = () => {
                     transition={{ delay: 0.1 }}
                     className="group"
                   >
-                    <Card className="h-full bg-gradient-to-br from-rose-950/50 to-pink-900/30 border-rose-500/20 hover:border-rose-400/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(244,63,94,0.15)]">
+                    <Card className="h-full glass-effect border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-[0_0_30px_hsl(var(--primary)/0.2)] card-hover">
                       <CardHeader className="pb-2">
                         <div className="flex items-center gap-4">
-                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-2xl shadow-lg shadow-rose-500/25 group-hover:scale-110 transition-transform">
-                            <Shield className="w-7 h-7 text-white" />
+                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-2xl shadow-lg shadow-primary/25 group-hover:scale-110 transition-transform">
+                            <Shield className="w-7 h-7 text-primary-foreground" />
                           </div>
                           <div>
-                            <span className="text-xs font-bold text-rose-400 tracking-widest">ESSENTIAL</span>
+                            <span className="text-xs font-bold text-primary tracking-widest">ESSENTIAL</span>
                             <CardTitle className="text-xl text-foreground">Content Standards</CardTitle>
                           </div>
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-3">
-                        <p className="text-muted-foreground text-sm">Every submission must meet these quality and content requirements to be approved.</p>
+                        <p className="text-muted-foreground text-sm">All gallery submissions must meet these basic requirements to be considered.</p>
                         <div className="space-y-2">
-                          <div className="flex items-start gap-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20">
-                            <span className="text-xl">📷</span>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-colors">
+                            <span className="text-xl">✨</span>
                             <div>
-                              <strong className="text-rose-300">High Quality Only</strong>
-                              <p className="text-xs text-muted-foreground mt-1">Minimum resolution of 1280x720. Clear, sharp images with no blur, pixelation, or compression artifacts. Screenshots should be visually appealing.</p>
+                              <strong className="text-primary">High Quality</strong>
+                              <p className="text-xs text-muted-foreground mt-1">Clear, well-lit screenshots and videos. No blurry, pixelated, or poorly compressed content. Minimum 720p resolution required.</p>
                             </div>
                           </div>
-                          <div className="flex items-start gap-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20">
-                            <span className="text-xl">✅</span>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-colors">
+                            <span className="text-xl">🎨</span>
                             <div>
-                              <strong className="text-rose-300">Original Content</strong>
-                              <p className="text-xs text-muted-foreground mt-1">Only submit screenshots and videos that YOU captured in-game. No stolen content, reposts from others, or heavily edited/AI-generated images.</p>
+                              <strong className="text-primary">Original Content</strong>
+                              <p className="text-xs text-muted-foreground mt-1">You must be the creator of all submitted content. No stolen, reposted, or AI-generated images will be accepted.</p>
                             </div>
                           </div>
-                          <div className="flex items-start gap-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20">
-                            <span className="text-xl">🚫</span>
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-colors">
+                            <span className="text-xl">🛡️</span>
                             <div>
-                              <strong className="text-rose-300">Appropriate Content</strong>
+                              <strong className="text-primary">Appropriate Content</strong>
                               <p className="text-xs text-muted-foreground mt-1">No nudity, excessive gore, hate symbols, real-world violence references, or any content that violates our community standards.</p>
                             </div>
                           </div>
-                          <div className="flex items-start gap-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20">
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-colors">
                             <span className="text-xl">🎮</span>
                             <div>
-                              <strong className="text-rose-300">SLRP Content Only</strong>
+                              <strong className="text-primary">SLRP Content Only</strong>
                               <p className="text-xs text-muted-foreground mt-1">All submissions must be from Skylife Roleplay India server. Content from other servers, games, or platforms will be rejected.</p>
                             </div>
                           </div>
@@ -1521,14 +1512,14 @@ const Guides = () => {
                     transition={{ delay: 0.2 }}
                     className="group"
                   >
-                    <Card className="h-full bg-gradient-to-br from-orange-950/50 to-amber-900/30 border-orange-500/20 hover:border-orange-400/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(249,115,22,0.15)]">
+                    <Card className="h-full glass-effect border-secondary/20 hover:border-secondary/40 transition-all duration-300 hover:shadow-[0_0_30px_hsl(var(--secondary)/0.2)] card-hover">
                       <CardHeader className="pb-2">
                         <div className="flex items-center gap-4">
-                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-2xl shadow-lg shadow-orange-500/25 group-hover:scale-110 transition-transform">
-                            <MessageSquare className="w-7 h-7 text-white" />
+                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-secondary to-primary flex items-center justify-center text-2xl shadow-lg shadow-secondary/25 group-hover:scale-110 transition-transform">
+                            <MessageSquare className="w-7 h-7 text-primary-foreground" />
                           </div>
                           <div>
-                            <span className="text-xs font-bold text-orange-400 tracking-widest">IMPORTANT</span>
+                            <span className="text-xs font-bold text-secondary tracking-widest">IMPORTANT</span>
                             <CardTitle className="text-xl text-foreground">Titles & Descriptions</CardTitle>
                           </div>
                         </div>
@@ -1536,31 +1527,31 @@ const Guides = () => {
                       <CardContent className="space-y-3">
                         <p className="text-muted-foreground text-sm">How you present your content matters as much as the content itself.</p>
                         <div className="space-y-2">
-                          <div className="flex items-start gap-3 p-3 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-secondary/10 border border-secondary/20 hover:bg-secondary/15 transition-colors">
                             <span className="text-xl">📝</span>
                             <div>
-                              <strong className="text-orange-300">Descriptive Titles</strong>
+                              <strong className="text-secondary">Descriptive Titles</strong>
                               <p className="text-xs text-muted-foreground mt-1">Use clear, meaningful titles that describe the moment. Avoid generic titles like &quot;Cool pic&quot; or &quot;Screenshot 1&quot;. Example: &quot;Sunset over Legion Square&quot;</p>
                             </div>
                           </div>
-                          <div className="flex items-start gap-3 p-3 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-secondary/10 border border-secondary/20 hover:bg-secondary/15 transition-colors">
                             <span className="text-xl">📖</span>
                             <div>
-                              <strong className="text-orange-300">Tell the Story</strong>
+                              <strong className="text-secondary">Tell the Story</strong>
                               <p className="text-xs text-muted-foreground mt-1">Add context in your description. What was happening? Who was there? What makes this moment special? Stories make images memorable.</p>
                             </div>
                           </div>
-                          <div className="flex items-start gap-3 p-3 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-secondary/10 border border-secondary/20 hover:bg-secondary/15 transition-colors">
                             <span className="text-xl">🗣️</span>
                             <div>
-                              <strong className="text-orange-300">Respectful Language</strong>
+                              <strong className="text-secondary">Respectful Language</strong>
                               <p className="text-xs text-muted-foreground mt-1">Keep titles and descriptions clean. No profanity, slurs, harassment, or offensive language. Be respectful of other players mentioned.</p>
                             </div>
                           </div>
-                          <div className="flex items-start gap-3 p-3 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-secondary/10 border border-secondary/20 hover:bg-secondary/15 transition-colors">
                             <span className="text-xl">🏷️</span>
                             <div>
-                              <strong className="text-orange-300">Proper Categorization</strong>
+                              <strong className="text-secondary">Proper Categorization</strong>
                               <p className="text-xs text-muted-foreground mt-1">Select the correct category for your submission: Screenshots, Videos, Cinematic, Events, Vehicles, or Artwork.</p>
                             </div>
                           </div>
@@ -1577,14 +1568,14 @@ const Guides = () => {
                     transition={{ delay: 0.3 }}
                     className="group"
                   >
-                    <Card className="h-full bg-gradient-to-br from-emerald-950/50 to-teal-900/30 border-emerald-500/20 hover:border-emerald-400/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(16,185,129,0.15)]">
+                    <Card className="h-full glass-effect border-accent/20 hover:border-accent/40 transition-all duration-300 hover:shadow-[0_0_30px_hsl(var(--accent)/0.2)] card-hover">
                       <CardHeader className="pb-2">
                         <div className="flex items-center gap-4">
-                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-2xl shadow-lg shadow-emerald-500/25 group-hover:scale-110 transition-transform">
-                            <Heart className="w-7 h-7 text-white" />
+                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-primary flex items-center justify-center text-2xl shadow-lg shadow-accent/25 group-hover:scale-110 transition-transform">
+                            <Heart className="w-7 h-7 text-primary-foreground" />
                           </div>
                           <div>
-                            <span className="text-xs font-bold text-emerald-400 tracking-widest">BEST PRACTICES</span>
+                            <span className="text-xs font-bold text-accent tracking-widest">BEST PRACTICES</span>
                             <CardTitle className="text-xl text-foreground">What Gets Approved</CardTitle>
                           </div>
                         </div>
@@ -1592,31 +1583,31 @@ const Guides = () => {
                       <CardContent className="space-y-3">
                         <p className="text-muted-foreground text-sm">These types of content are highly encouraged and will likely be featured.</p>
                         <div className="space-y-2">
-                          <div className="flex items-start gap-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-accent/10 border border-accent/20 hover:bg-accent/15 transition-colors">
                             <span className="text-xl">🌅</span>
                             <div>
-                              <strong className="text-emerald-300">Scenic & Cinematic Shots</strong>
+                              <strong className="text-accent">Scenic & Cinematic Shots</strong>
                               <p className="text-xs text-muted-foreground mt-1">Beautiful landscapes, golden hour lighting, creative camera angles, and atmospheric moments that showcase the city.</p>
                             </div>
                           </div>
-                          <div className="flex items-start gap-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-accent/10 border border-accent/20 hover:bg-accent/15 transition-colors">
                             <span className="text-xl">🎭</span>
                             <div>
-                              <strong className="text-emerald-300">Roleplay Moments</strong>
+                              <strong className="text-accent">Roleplay Moments</strong>
                               <p className="text-xs text-muted-foreground mt-1">Memorable RP scenes, emotional interactions, group activities, and story-driven moments that capture the essence of roleplay.</p>
                             </div>
                           </div>
-                          <div className="flex items-start gap-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-accent/10 border border-accent/20 hover:bg-accent/15 transition-colors">
                             <span className="text-xl">🚗</span>
                             <div>
-                              <strong className="text-emerald-300">Vehicle Photography</strong>
+                              <strong className="text-accent">Vehicle Photography</strong>
                               <p className="text-xs text-muted-foreground mt-1">Well-composed car meets, custom rides, racing moments, and automotive artistry with good lighting and angles.</p>
                             </div>
                           </div>
-                          <div className="flex items-start gap-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-accent/10 border border-accent/20 hover:bg-accent/15 transition-colors">
                             <span className="text-xl">🎉</span>
                             <div>
-                              <strong className="text-emerald-300">Community Events</strong>
+                              <strong className="text-accent">Community Events</strong>
                               <p className="text-xs text-muted-foreground mt-1">Server events, community gatherings, celebrations, and group photos that showcase our amazing community.</p>
                             </div>
                           </div>
@@ -1633,14 +1624,14 @@ const Guides = () => {
                     transition={{ delay: 0.4 }}
                     className="group"
                   >
-                    <Card className="h-full bg-gradient-to-br from-red-950/50 to-rose-900/30 border-red-500/20 hover:border-red-400/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(239,68,68,0.15)]">
+                    <Card className="h-full glass-effect border-destructive/20 hover:border-destructive/40 transition-all duration-300 hover:shadow-[0_0_30px_hsl(var(--destructive)/0.2)] card-hover">
                       <CardHeader className="pb-2">
                         <div className="flex items-center gap-4">
-                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center text-2xl shadow-lg shadow-red-500/25 group-hover:scale-110 transition-transform">
-                            <Flag className="w-7 h-7 text-white" />
+                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-destructive to-destructive/70 flex items-center justify-center text-2xl shadow-lg shadow-destructive/25 group-hover:scale-110 transition-transform">
+                            <Flag className="w-7 h-7 text-destructive-foreground" />
                           </div>
                           <div>
-                            <span className="text-xs font-bold text-red-400 tracking-widest">AVOID</span>
+                            <span className="text-xs font-bold text-destructive tracking-widest">AVOID</span>
                             <CardTitle className="text-xl text-foreground">What Gets Rejected</CardTitle>
                           </div>
                         </div>
@@ -1648,31 +1639,31 @@ const Guides = () => {
                       <CardContent className="space-y-3">
                         <p className="text-muted-foreground text-sm">These submissions will be automatically rejected. Repeated violations may result in gallery restrictions.</p>
                         <div className="space-y-2">
-                          <div className="flex items-start gap-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-destructive/10 border border-destructive/20 hover:bg-destructive/15 transition-colors">
                             <span className="text-xl">📱</span>
                             <div>
-                              <strong className="text-red-300">Phone Photos of Screens</strong>
+                              <strong className="text-destructive">Phone Photos of Screens</strong>
                               <p className="text-xs text-muted-foreground mt-1">Never photograph your monitor. Use proper screenshot tools (F12, Steam overlay, OBS, or game capture software).</p>
                             </div>
                           </div>
-                          <div className="flex items-start gap-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-destructive/10 border border-destructive/20 hover:bg-destructive/15 transition-colors">
                             <span className="text-xl">🐛</span>
                             <div>
-                              <strong className="text-red-300">Bug Exploits & Glitches</strong>
+                              <strong className="text-destructive">Bug Exploits & Glitches</strong>
                               <p className="text-xs text-muted-foreground mt-1">No screenshots showcasing bugs, exploits, or game-breaking glitches. Report bugs to staff instead of posting them.</p>
                             </div>
                           </div>
-                          <div className="flex items-start gap-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-destructive/10 border border-destructive/20 hover:bg-destructive/15 transition-colors">
                             <span className="text-xl">💀</span>
                             <div>
-                              <strong className="text-red-300">Rule Violations</strong>
+                              <strong className="text-destructive">Rule Violations</strong>
                               <p className="text-xs text-muted-foreground mt-1">No evidence of rulebreaking (RDM, VDM, metagaming, etc.). These should be reported, not celebrated in the gallery.</p>
                             </div>
                           </div>
-                          <div className="flex items-start gap-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                          <div className="flex items-start gap-3 p-3 rounded-xl bg-destructive/10 border border-destructive/20 hover:bg-destructive/15 transition-colors">
                             <span className="text-xl">🔄</span>
                             <div>
-                              <strong className="text-red-300">Spam & Duplicates</strong>
+                              <strong className="text-destructive">Spam & Duplicates</strong>
                               <p className="text-xs text-muted-foreground mt-1">No mass uploads of similar shots. Select your best 2-3 from a session. Quality over quantity always wins.</p>
                             </div>
                           </div>
@@ -1689,20 +1680,20 @@ const Guides = () => {
                   viewport={{ once: true }}
                   transition={{ delay: 0.5 }}
                 >
-                  <Card className="bg-gradient-to-br from-violet-950/50 to-purple-900/30 border-violet-500/20 mb-8">
+                  <Card className="glass-effect border-primary/20 mb-8 shadow-[0_0_30px_hsl(var(--primary)/0.1)]">
                     <CardHeader>
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-2xl shadow-lg shadow-violet-500/25">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-2xl shadow-lg shadow-primary/25">
                           📁
                         </div>
-                        <CardTitle className="text-xl text-violet-300">File Requirements & Specifications</CardTitle>
+                        <CardTitle className="text-xl text-primary">File Requirements & Specifications</CardTitle>
                       </div>
                     </CardHeader>
                     <CardContent>
                       <div className="grid md:grid-cols-3 gap-4">
-                        <div className="p-4 rounded-xl bg-violet-500/10 border border-violet-500/20 text-center">
+                        <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 text-center hover:bg-primary/15 transition-colors">
                           <span className="text-3xl block mb-3">🖼️</span>
-                          <strong className="text-violet-300 block mb-2">Image Files</strong>
+                          <strong className="text-primary block mb-2">Image Files</strong>
                           <div className="text-xs text-muted-foreground space-y-1">
                             <p>Formats: JPG, PNG, WebP</p>
                             <p>Max Size: 10MB per file</p>
@@ -1710,9 +1701,9 @@ const Guides = () => {
                             <p>Recommended: 1920x1080+</p>
                           </div>
                         </div>
-                        <div className="p-4 rounded-xl bg-violet-500/10 border border-violet-500/20 text-center">
+                        <div className="p-4 rounded-xl bg-secondary/10 border border-secondary/20 text-center hover:bg-secondary/15 transition-colors">
                           <span className="text-3xl block mb-3">🎬</span>
-                          <strong className="text-violet-300 block mb-2">Video Files</strong>
+                          <strong className="text-secondary block mb-2">Video Files</strong>
                           <div className="text-xs text-muted-foreground space-y-1">
                             <p>Formats: MP4, WebM</p>
                             <p>Max Size: 50MB per file</p>
@@ -1720,9 +1711,9 @@ const Guides = () => {
                             <p>Recommended: 1080p 30fps+</p>
                           </div>
                         </div>
-                        <div className="p-4 rounded-xl bg-violet-500/10 border border-violet-500/20 text-center">
+                        <div className="p-4 rounded-xl bg-accent/10 border border-accent/20 text-center hover:bg-accent/15 transition-colors">
                           <span className="text-3xl block mb-3">⚠️</span>
-                          <strong className="text-violet-300 block mb-2">Not Accepted</strong>
+                          <strong className="text-accent block mb-2">Not Accepted</strong>
                           <div className="text-xs text-muted-foreground space-y-1">
                             <p>GIF files (static images only)</p>
                             <p>BMP, TIFF formats</p>
@@ -1742,36 +1733,36 @@ const Guides = () => {
                   viewport={{ once: true }}
                   transition={{ delay: 0.6 }}
                 >
-                  <Card className="border-2 border-dashed border-rose-500/30 bg-gradient-to-r from-rose-500/5 via-pink-500/5 to-orange-500/5 mb-8">
+                  <Card className="border-2 border-dashed border-primary/30 bg-gradient-to-r from-primary/5 via-secondary/5 to-accent/5 mb-8 shadow-[0_0_40px_hsl(var(--primary)/0.1)]">
                     <CardContent className="p-6">
                       <div className="flex items-center gap-3 mb-6">
-                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-rose-500/20 to-orange-500/20 flex items-center justify-center border border-rose-500/30">
+                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center border border-primary/30">
                           <span className="text-3xl">📸</span>
                         </div>
                         <div>
-                          <h3 className="text-2xl font-bold bg-gradient-to-r from-rose-400 to-orange-400 bg-clip-text text-transparent">Pro Screenshot Tips</h3>
+                          <h3 className="text-2xl font-bold text-gradient">Pro Screenshot Tips</h3>
                           <p className="text-sm text-muted-foreground">Master the art of in-game photography</p>
                         </div>
                       </div>
                       <div className="grid md:grid-cols-4 gap-4">
-                        <div className="p-4 rounded-xl bg-background/50 border border-rose-500/20 hover:border-rose-500/40 transition-colors text-center">
+                        <div className="p-4 rounded-xl bg-background/50 border border-primary/20 hover:border-primary/40 transition-colors text-center">
                           <span className="text-3xl mb-3 block">🎥</span>
-                          <strong className="text-foreground block mb-1">Use Photo Mode</strong>
+                          <strong className="text-primary block mb-1">Use Photo Mode</strong>
                           <p className="text-xs text-muted-foreground">Pause the game and use the built-in photo mode for perfect compositions and camera control.</p>
                         </div>
-                        <div className="p-4 rounded-xl bg-background/50 border border-pink-500/20 hover:border-pink-500/40 transition-colors text-center">
+                        <div className="p-4 rounded-xl bg-background/50 border border-secondary/20 hover:border-secondary/40 transition-colors text-center">
                           <span className="text-3xl mb-3 block">🌅</span>
-                          <strong className="text-foreground block mb-1">Golden Hour Magic</strong>
+                          <strong className="text-secondary block mb-1">Golden Hour Magic</strong>
                           <p className="text-xs text-muted-foreground">Sunrise and sunset provide the most cinematic lighting. Plan your shots around these times.</p>
                         </div>
-                        <div className="p-4 rounded-xl bg-background/50 border border-orange-500/20 hover:border-orange-500/40 transition-colors text-center">
+                        <div className="p-4 rounded-xl bg-background/50 border border-accent/20 hover:border-accent/40 transition-colors text-center">
                           <span className="text-3xl mb-3 block">📐</span>
-                          <strong className="text-foreground block mb-1">Rule of Thirds</strong>
+                          <strong className="text-accent block mb-1">Rule of Thirds</strong>
                           <p className="text-xs text-muted-foreground">Place subjects off-center for more dynamic and visually interesting compositions.</p>
                         </div>
-                        <div className="p-4 rounded-xl bg-background/50 border border-amber-500/20 hover:border-amber-500/40 transition-colors text-center">
+                        <div className="p-4 rounded-xl bg-background/50 border border-primary/20 hover:border-primary/40 transition-colors text-center">
                           <span className="text-3xl mb-3 block">🌧️</span>
-                          <strong className="text-foreground block mb-1">Weather Effects</strong>
+                          <strong className="text-primary block mb-1">Weather Effects</strong>
                           <p className="text-xs text-muted-foreground">Rain, fog, and stormy weather add atmosphere and mood to your shots.</p>
                         </div>
                       </div>
@@ -1786,35 +1777,35 @@ const Guides = () => {
                   viewport={{ once: true }}
                   transition={{ delay: 0.7 }}
                 >
-                  <Card className="bg-gradient-to-br from-cyan-950/50 to-blue-900/30 border-cyan-500/20 mb-8">
+                  <Card className="glass-effect border-primary/20 mb-8 shadow-[0_0_30px_hsl(var(--primary)/0.1)]">
                     <CardHeader>
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-2xl shadow-lg shadow-cyan-500/25">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-2xl shadow-lg shadow-primary/25">
                           ⏱️
                         </div>
-                        <CardTitle className="text-xl text-cyan-300">Review Process & Timeline</CardTitle>
+                        <CardTitle className="text-xl text-primary">Review Process & Timeline</CardTitle>
                       </div>
                     </CardHeader>
                     <CardContent>
                       <div className="grid md:grid-cols-4 gap-4">
-                        <div className="text-center p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
-                          <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center mx-auto mb-3 text-cyan-400 font-bold">1</div>
-                          <strong className="text-cyan-300 block mb-2">Submit</strong>
+                        <div className="text-center p-4 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-colors">
+                          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-3 text-primary font-bold">1</div>
+                          <strong className="text-primary block mb-2">Submit</strong>
                           <p className="text-xs text-muted-foreground">Upload your content with a proper title and description.</p>
                         </div>
-                        <div className="text-center p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
-                          <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center mx-auto mb-3 text-cyan-400 font-bold">2</div>
-                          <strong className="text-cyan-300 block mb-2">Queue</strong>
+                        <div className="text-center p-4 rounded-xl bg-secondary/10 border border-secondary/20 hover:bg-secondary/15 transition-colors">
+                          <div className="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center mx-auto mb-3 text-secondary font-bold">2</div>
+                          <strong className="text-secondary block mb-2">Queue</strong>
                           <p className="text-xs text-muted-foreground">Your submission enters the moderation queue for review.</p>
                         </div>
-                        <div className="text-center p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
-                          <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center mx-auto mb-3 text-cyan-400 font-bold">3</div>
-                          <strong className="text-cyan-300 block mb-2">Review</strong>
+                        <div className="text-center p-4 rounded-xl bg-accent/10 border border-accent/20 hover:bg-accent/15 transition-colors">
+                          <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center mx-auto mb-3 text-accent font-bold">3</div>
+                          <strong className="text-accent block mb-2">Review</strong>
                           <p className="text-xs text-muted-foreground">Staff reviews within 24-48 hours. You will be notified of the decision.</p>
                         </div>
-                        <div className="text-center p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
-                          <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center mx-auto mb-3 text-cyan-400 font-bold">4</div>
-                          <strong className="text-cyan-300 block mb-2">Published</strong>
+                        <div className="text-center p-4 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-colors">
+                          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-3 text-primary font-bold">4</div>
+                          <strong className="text-primary block mb-2">Published</strong>
                           <p className="text-xs text-muted-foreground">Approved content goes live for the community to enjoy!</p>
                         </div>
                       </div>
@@ -1830,11 +1821,11 @@ const Guides = () => {
                   transition={{ delay: 0.8 }}
                   className="text-center"
                 >
-                  <div className="inline-block p-8 rounded-2xl bg-gradient-to-br from-rose-500/10 via-pink-500/10 to-orange-500/10 border border-rose-500/20">
+                  <div className="inline-block p-8 rounded-2xl bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 border border-primary/20 shadow-[0_0_40px_hsl(var(--primary)/0.15)]">
                     <span className="text-5xl block mb-4">🖼️</span>
-                    <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-rose-400 to-orange-400 bg-clip-text text-transparent">Ready to Share Your Moments?</h3>
+                    <h3 className="text-2xl font-bold mb-2 text-gradient">Ready to Share Your Moments?</h3>
                     <p className="text-muted-foreground mb-6 max-w-md">Follow these guidelines and become a featured contributor in our community gallery!</p>
-                    <Link to="/gallery" className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 text-white rounded-xl font-bold transition-all hover:scale-105 shadow-lg shadow-rose-500/25">
+                    <Link to="/gallery" className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground rounded-xl font-bold transition-all hover:scale-105 shadow-lg shadow-primary/25">
                       <Image className="w-5 h-5" /> Visit the Gallery
                     </Link>
                   </div>
