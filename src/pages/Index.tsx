@@ -562,69 +562,33 @@ const Index = () => {
       </motion.section>
 
       {/* Footer */}
-      <footer className="border-t border-border/20 py-8 md:py-12 relative z-10 bg-background/50">
+      <footer className="border-t border-border/20 py-12 md:py-16 relative z-10 bg-background">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-8">
-            <h3 className="text-3xl md:text-4xl font-bold text-gradient mb-2">SKYLIFE ROLEPLAY INDIA</h3>
-            <p className="text-muted-foreground text-sm">India's Premier GTA 5 Roleplay Experience</p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <h4 className="font-semibold text-primary mb-3 text-sm md:text-base">Server</h4>
-              <ul className="space-y-2 text-xs md:text-sm text-muted-foreground">
-                <li><a href="/features" className="hover:text-primary transition-colors">Features</a></li>
-                <li><a href="/rules" className="hover:text-primary transition-colors">Rules</a></li>
-                <li><a href="/staff" className="hover:text-primary transition-colors">Staff Team</a></li>
-                <li><a href="/whitelist" className="hover:text-primary transition-colors">Whitelist</a></li>
-                <li><a href="/gang-rp" className="hover:text-primary transition-colors">Gang RP</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-primary mb-3 text-sm md:text-base">Community</h4>
-              <ul className="space-y-2 text-xs md:text-sm text-muted-foreground">
-                <li><a href="/community" className="hover:text-primary transition-colors">Discord</a></li>
-                <li><a href="/gallery" className="hover:text-primary transition-colors">Gallery</a></li>
-                <li><a href="/guides" className="hover:text-primary transition-colors">Guides</a></li>
-                <li><a href="https://skylife-roleplay-india.tebex.io" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Store</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-primary mb-3 text-sm md:text-base">Support</h4>
-              <ul className="space-y-2 text-xs md:text-sm text-muted-foreground">
-                <li><a href="/support" className="hover:text-primary transition-colors">Help Center</a></li>
-                <li><a href="/support" className="hover:text-primary transition-colors">Support Tickets</a></li>
-                <li><a href="/ban-appeal" className="hover:text-primary transition-colors">Ban Appeals</a></li>
-                <li><a href="/support" className="hover:text-primary transition-colors">Contact</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-primary mb-3 text-sm md:text-base">Legal</h4>
-              <ul className="space-y-2 text-xs md:text-sm text-muted-foreground">
-                <li><a href="/privacy-policy" className="hover:text-primary transition-colors">Privacy Policy</a></li>
-                <li><a href="/terms-of-service" className="hover:text-primary transition-colors">Terms of Service</a></li>
-                <li><a href="/refund-policy" className="hover:text-primary transition-colors">Refund Policy</a></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8 border-t border-border/20">
-            <p className="text-muted-foreground text-xs md:text-sm">
+          <div className="flex flex-col items-center text-center">
+            {/* Logo */}
+            <h3 className="text-2xl md:text-3xl font-bold italic tracking-wide mb-6">
+              <span className="text-primary">SKYLIFE</span>
+              <span className="text-white ml-2">ROLEPLAY</span>
+              <span className="block text-xs md:text-sm font-normal tracking-[0.3em] text-muted-foreground mt-1">INDIA</span>
+            </h3>
+            
+            {/* Copyright */}
+            <p className="text-muted-foreground text-sm mb-2">
               © 2025 Skylife Roleplay India. All rights reserved.
             </p>
-            <div className="flex gap-3">
-              {[
-                { href: "https://discord.gg/skyliferp", icon: MessageCircle },
-                { href: "https://www.youtube.com/@Skyliferpindia20", icon: Youtube },
-                { href: "https://www.instagram.com/skyliferpindia/", icon: Instagram },
-              ].map((social, i) => (
-                <Button key={i} size="sm" variant="ghost" className="h-9 w-9 p-0 hover:bg-primary/10" asChild>
-                  <a href={social.href} target="_blank" rel="noopener noreferrer">
-                    <social.icon className="h-4 w-4" />
-                  </a>
-                </Button>
-              ))}
-            </div>
+            
+            {/* Developer Credit */}
+            <p className="text-muted-foreground text-sm">
+              Developed By{" "}
+              <a 
+                href="https://discord.gg/skyliferp" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline transition-colors"
+              >
+                SLRP Development Team
+              </a>
+            </p>
           </div>
         </div>
       </footer>
