@@ -141,17 +141,13 @@ const StaffProfile = () => {
   };
 
   const handleOpenSupport = () => {
-    navigate("/support");
+    // Navigate to support chat with staff tag for notification
+    navigate(`/support-chat?tagStaff=${staffMember?.id}&staffName=${encodeURIComponent(staffMember?.name || '')}`);
   };
 
   const handleContactStaff = () => {
-    // Navigate to support with pre-filled subject
-    navigate("/support", { 
-      state: { 
-        subject: `Message for ${staffMember?.name}`,
-        staffId: staffMember?.id 
-      } 
-    });
+    // Navigate to support chat for direct message to this staff member
+    navigate(`/support-chat?dmStaff=${staffMember?.id}&staffName=${encodeURIComponent(staffMember?.name || '')}`);
   };
 
   if (loading) {

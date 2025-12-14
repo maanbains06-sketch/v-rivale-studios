@@ -49,6 +49,9 @@ const SupportChat = () => {
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const category = searchParams.get('category');
+  const tagStaffId = searchParams.get('tagStaff');
+  const tagStaffName = searchParams.get('staffName');
+  const dmStaffId = searchParams.get('dmStaff');
   const [chats, setChats] = useState<Chat[]>([]);
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -74,6 +77,18 @@ const SupportChat = () => {
     // Auto-open create dialog if category is specified and no chats exist
     if (category === 'refund') {
       setNewChatSubject("Refund Request");
+      setCreateDialogOpen(true);
+    }
+    
+    // Auto-open create dialog for staff tagging
+    if (tagStaffId && tagStaffName) {
+      setNewChatSubject(`Support Request - Tagging ${decodeURIComponent(tagStaffName)}`);
+      setCreateDialogOpen(true);
+    }
+    
+    // Auto-open create dialog for direct message to staff
+    if (dmStaffId && tagStaffName) {
+      setNewChatSubject(`Direct Message to ${decodeURIComponent(tagStaffName)}`);
       setCreateDialogOpen(true);
     }
   }, []);
@@ -236,8 +251,34 @@ const SupportChat = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Prepare tags based on category
-    const tags = category === 'refund' ? ['refund', 'billing'] : [];
+    // Prepare tags based on category or staff tagging
+    let tags: string[] = [];
+    let assignedTo: string | null = null;
+    let priority = 'normal';
+    
+    if (category === 'refund') {
+      tags = ['refund', 'billing'];
+      priority = 'high';
+    }
+    
+    // If tagging a specific staff member or DM
+    const staffId = tagStaffId || dmStaffId;
+    if (staffId) {
+      // Get the staff member's user_id from staff_members table
+      const { data: staffData } = await supabase
+        .from("staff_members")
+        .select("user_id, name")
+        .eq("id", staffId)
+        .single();
+      
+      if (staffData?.user_id) {
+        assignedTo = staffData.user_id;
+        tags.push('staff_tagged');
+        if (dmStaffId) {
+          tags.push('direct_message');
+        }
+      }
+    }
 
     const { data, error } = await supabase
       .from("support_chats")
@@ -245,7 +286,9 @@ const SupportChat = () => {
         user_id: user.id,
         subject: newChatSubject,
         tags: tags,
-        priority: category === 'refund' ? 'high' : 'normal',
+        priority: priority,
+        assigned_to: assignedTo,
+        status: assignedTo ? 'in_progress' : 'open',
       })
       .select()
       .single();
@@ -259,6 +302,27 @@ const SupportChat = () => {
       });
       setLoading(false);
       return;
+    }
+
+    // Send notification to the tagged/assigned staff member
+    if (assignedTo) {
+      const notificationType = dmStaffId ? 'direct_message' : 'staff_tagged';
+      const notificationTitle = dmStaffId ? 'New Direct Message' : 'You were tagged in a support ticket';
+      const notificationMessage = dmStaffId 
+        ? `Someone has sent you a direct message: "${newChatSubject}"`
+        : `Someone has opened a support ticket and tagged you: "${newChatSubject}"`;
+      
+      try {
+        await supabase.from("notifications").insert({
+          user_id: assignedTo,
+          title: notificationTitle,
+          message: notificationMessage,
+          type: notificationType,
+          reference_id: data.id,
+        });
+      } catch (notifError) {
+        console.error("Error sending notification:", notifError);
+      }
     }
 
     setChats(prev => [data, ...prev]);
@@ -282,10 +346,19 @@ const SupportChat = () => {
       }
     }
     
-    const categoryText = category === 'refund' ? 'refund request' : 'support chat';
+    // Show appropriate toast message
+    let toastMessage = 'Your support chat has been created. Our team will respond shortly.';
+    if (dmStaffId && tagStaffName) {
+      toastMessage = `Your direct message to ${decodeURIComponent(tagStaffName)} has been sent. They will be notified.`;
+    } else if (tagStaffId && tagStaffName) {
+      toastMessage = `Your support ticket has been created and ${decodeURIComponent(tagStaffName)} has been notified.`;
+    } else if (category === 'refund') {
+      toastMessage = 'Your refund request has been created. Our team will respond shortly.';
+    }
+    
     toast({
-      title: "Chat Created",
-      description: `Your ${categoryText} has been created. Our team will respond shortly.`,
+      title: dmStaffId ? "Message Sent" : "Chat Created",
+      description: toastMessage,
     });
   };
 
