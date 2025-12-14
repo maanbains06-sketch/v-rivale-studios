@@ -887,12 +887,12 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center text-center gap-4">
             {/* Logo */}
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-bold italic">
+            <div className="flex flex-col items-center">
+              <span className="text-2xl md:text-3xl font-bold italic">
                 <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">SKYLIFE</span>
-                <span className="text-foreground ml-1">ROLEPLAY</span>
+                <span className="text-foreground ml-2">ROLEPLAY</span>
               </span>
-              <span className="flex gap-0.5 text-xs font-medium tracking-wider">
+              <span className="flex gap-1 text-sm md:text-base font-semibold tracking-[0.3em] mt-2">
                 <motion.span 
                   animate={{ color: ['#FF9933', '#FFFFFF', '#138808', '#FF9933'] }}
                   transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
