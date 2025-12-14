@@ -574,7 +574,7 @@ const Index = () => {
             
             {/* Copyright */}
             <p className="text-muted-foreground text-sm mb-2">
-              © 2025 Skylife Roleplay India. All rights reserved.
+              © 2026 Skylife Roleplay India. All rights reserved.
             </p>
             
             {/* Developer Credit */}
