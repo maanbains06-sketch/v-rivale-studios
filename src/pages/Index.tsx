@@ -442,33 +442,46 @@ const Index = () => {
                   <TooltipTrigger asChild>
                     <Button
                       size="lg"
+                      disabled={!allRequirementsMet}
                       className={`text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 ${
                         allRequirementsMet
-                          ? "bg-gradient-to-r from-sky-500 to-cyan-600 hover:from-sky-600 hover:to-cyan-700 text-white shadow-lg shadow-sky-500/30 hover:shadow-sky-500/50 hover:scale-105"
-                          : "bg-muted/80 hover:bg-muted text-muted-foreground border border-border/50"
+                          ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30 hover:shadow-green-500/50 hover:scale-105 cursor-pointer"
+                          : "bg-muted/50 text-muted-foreground border border-border/50 cursor-not-allowed opacity-70"
                       }`}
-                      onClick={handleJoinServer}
+                      onClick={allRequirementsMet ? handleJoinServer : undefined}
                     >
-                      {allRequirementsMet ? <Play className="w-5 h-5 mr-2" /> : <Lock className="w-5 h-5 mr-2" />}
-                      Join Server
+                      {allRequirementsMet ? <Play className="w-5 h-5 mr-2 fill-current" /> : <Lock className="w-5 h-5 mr-2" />}
+                      {allRequirementsMet ? "Join Server" : "Complete Requirements"}
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" sideOffset={10} className="p-4 bg-background/95 backdrop-blur-xl border border-sky-500/30 rounded-xl shadow-2xl max-w-xs z-[100]">
                     <div className="space-y-3">
                       <div className="flex items-center gap-2 mb-3">
-                        {allRequirementsMet ? <Sparkles className="w-5 h-5 text-sky-400" /> : <Lock className="w-5 h-5 text-destructive" />}
+                        {allRequirementsMet ? <Sparkles className="w-5 h-5 text-green-400" /> : <Lock className="w-5 h-5 text-destructive" />}
                         <p className="font-bold text-foreground">{allRequirementsMet ? "Ready to Play!" : "Requirements to Join"}</p>
                       </div>
                       <div className="space-y-2">
                         {getMissingRequirements().map((req) => (
-                          <div key={req.label} className={`flex items-center gap-3 p-2 rounded-lg ${req.met ? "bg-green-500/10 border border-green-500/30" : "bg-red-500/10 border border-red-500/30"}`}>
-                            {req.met ? <Check className="w-5 h-5 text-green-400" /> : <X className="w-5 h-5 text-red-400" />}
+                          <div key={req.label} className={`flex items-center gap-3 p-2.5 rounded-lg transition-all ${req.met ? "bg-green-500/15 border border-green-500/40" : "bg-red-500/10 border border-red-500/30"}`}>
+                            {req.met ? (
+                              <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
+                                <Check className="w-3 h-3 text-white" />
+                              </div>
+                            ) : (
+                              <div className="w-5 h-5 rounded-full bg-red-500/20 border border-red-500/50 flex items-center justify-center">
+                                <X className="w-3 h-3 text-red-400" />
+                              </div>
+                            )}
                             <req.icon className={`w-4 h-4 ${req.met ? "text-green-400" : "text-red-400"}`} />
                             <span className={`text-sm font-medium ${req.met ? "text-green-400" : "text-red-400"}`}>{req.label}</span>
                           </div>
                         ))}
                       </div>
-                      {!allRequirementsMet && (
+                      {allRequirementsMet ? (
+                        <p className="text-xs text-green-400 mt-3 pt-3 border-t border-green-500/30 text-center font-medium">
+                          Click to connect to the server!
+                        </p>
+                      ) : (
                         <p className="text-xs text-muted-foreground mt-3 pt-3 border-t border-border/30 text-center">
                           Complete all requirements to unlock server access
                         </p>
