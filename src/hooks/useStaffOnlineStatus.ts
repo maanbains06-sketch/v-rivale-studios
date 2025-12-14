@@ -23,22 +23,25 @@ export const useStaffOnlineStatus = () => {
 
   const fetchStaffStatus = useCallback(async () => {
     try {
-      // Fetch all active staff members
+      // Fetch all active staff members from PUBLIC view (accessible to everyone)
       const { data: staffMembers, error: staffError } = await supabase
-        .from("staff_members")
-        .select("id, user_id, last_seen")
+        .from("staff_members_public")
+        .select("id, user_id")
         .eq("is_active", true);
 
-      if (staffError) throw staffError;
+      if (staffError) {
+        console.error("Error fetching staff members:", staffError);
+        throw staffError;
+      }
 
-      if (!staffMembers) {
+      if (!staffMembers || staffMembers.length === 0) {
         setOnlineStatus({});
         setOnlineCount(0);
         return;
       }
 
-      // Fetch Discord presence data using staff_member_id (public view without discord_id)
-      const staffIds = staffMembers.map(m => m.id);
+      // Fetch Discord presence data from PUBLIC view (accessible to everyone)
+      const staffIds = staffMembers.map(m => m.id).filter(Boolean);
 
       let presenceMap = new Map<string, DiscordPresencePublic>();
       
@@ -49,6 +52,10 @@ export const useStaffOnlineStatus = () => {
           .select("*")
           .in("staff_member_id", staffIds);
 
+        if (presenceError) {
+          console.error("Error fetching presence data:", presenceError);
+        }
+
         if (!presenceError && presenceData) {
           presenceData.forEach((presence: DiscordPresencePublic) => {
             if (presence.staff_member_id) {
@@ -58,20 +65,8 @@ export const useStaffOnlineStatus = () => {
         }
       }
 
-      // Get staff availability as fallback
-      const staffWithUserIds = staffMembers.filter(m => m.user_id);
-      let availabilityMap = new Map<string, boolean>();
-      
-      if (staffWithUserIds.length > 0) {
-        const { data: availabilityData } = await supabase
-          .from("staff_availability")
-          .select("user_id, is_available")
-          .in("user_id", staffWithUserIds.map(s => s.user_id!));
-        
-        availabilityData?.forEach((avail) => {
-          availabilityMap.set(avail.user_id, avail.is_available);
-        });
-      }
+      // Skip staff availability check for public view - use Discord presence only
+      // This ensures unauthenticated users can still see online status
 
       const status: { [staffId: string]: OnlineStatusData } = {};
       const now = new Date();
@@ -80,9 +75,9 @@ export const useStaffOnlineStatus = () => {
       staffMembers.forEach((member) => {
         let isOnline = false;
         let presenceStatus = 'offline';
-        let lastSeenTime = member.last_seen;
+        let lastSeenTime: string | null = null;
 
-        // Check Discord presence first using staff_member_id (primary source)
+        // Check Discord presence using staff_member_id (primary and only source for public)
         const presence = presenceMap.get(member.id);
         if (presence) {
           isOnline = presence.is_online;
@@ -93,30 +88,14 @@ export const useStaffOnlineStatus = () => {
             lastSeenTime = presence.last_online_at;
           }
 
-          // Check if presence data is stale (more than 10 minutes old)
+          // Check if presence data is stale (more than 15 minutes old)
           const updatedAt = new Date(presence.updated_at);
           const minutesSinceUpdate = (now.getTime() - updatedAt.getTime()) / 1000 / 60;
           
-          if (minutesSinceUpdate > 10) {
+          if (minutesSinceUpdate > 15) {
             // Presence data is stale, mark as potentially offline
             isOnline = false;
             presenceStatus = 'unknown';
-          }
-        } else if (member.last_seen) {
-          // Fallback: Check last_seen for staff without Discord presence
-          const lastSeenDate = new Date(member.last_seen);
-          const minutesSinceLastSeen = (now.getTime() - lastSeenDate.getTime()) / 1000 / 60;
-          
-          if (minutesSinceLastSeen < 5) {
-            // Check availability if they have a user_id
-            if (member.user_id) {
-              const isAvailable = availabilityMap.get(member.user_id) ?? false;
-              isOnline = isAvailable;
-              presenceStatus = isAvailable ? 'online' : 'offline';
-            } else {
-              isOnline = true;
-              presenceStatus = 'online';
-            }
           }
         }
 
