@@ -263,17 +263,17 @@ const CreatorProgramSection = () => {
     >
       {/* Subtle background glow */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-violet-500/8 rounded-full blur-[150px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-red-500/8 rounded-full blur-[150px]" />
       </div>
 
       <div className="container mx-auto px-4">
-        <div className="rounded-3xl p-8 md:p-12 relative overflow-hidden bg-gradient-to-br from-violet-950/40 via-violet-900/20 to-background border border-violet-500/15">
+        <div className="rounded-3xl p-8 md:p-12 relative overflow-hidden bg-gradient-to-br from-red-950/40 via-red-900/20 to-background border border-red-500/15">
           
           <div className="relative z-10">
             {/* Header */}
             <div className="text-center mb-14">
               <motion.div variants={itemVariants} className="inline-flex items-center gap-2 mb-5">
-                <Badge className="bg-violet-500/15 text-violet-300 border border-violet-500/30 px-4 py-1.5 text-sm font-medium backdrop-blur-sm">
+                <Badge className="bg-red-500/15 text-red-300 border border-red-500/30 px-4 py-1.5 text-sm font-medium backdrop-blur-sm">
                   <Video className="w-3.5 h-3.5 mr-2" />
                   Creator Program
                 </Badge>
@@ -284,7 +284,7 @@ const CreatorProgramSection = () => {
                 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-5"
               >
                 <span className="text-foreground">Become a </span>
-                <span className="text-violet-400">SLRP Creator</span>
+                <span className="text-red-400">SLRP Creator</span>
               </motion.h2>
               
               <motion.p variants={itemVariants} className="text-base md:text-lg text-foreground/80 max-w-2xl mx-auto">
@@ -296,16 +296,16 @@ const CreatorProgramSection = () => {
 
             {/* Perks Grid */}
             <motion.div variants={itemVariants} className="mb-14">
-              <h3 className="text-xl font-semibold text-center text-violet-300 mb-6">Program Perks</h3>
+              <h3 className="text-xl font-semibold text-center text-red-300 mb-6">Program Perks</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                 {perks.map((perk, index) => (
                   <motion.div
                     key={perk.title}
                     variants={itemVariants}
-                    className="group p-4 md:p-5 rounded-xl bg-violet-500/5 border border-violet-500/10 hover:bg-violet-500/10 hover:border-violet-500/25 transition-all duration-300"
+                    className="group p-4 md:p-5 rounded-xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/10 hover:border-red-500/25 transition-all duration-300"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-violet-500/15 flex items-center justify-center mb-3 group-hover:bg-violet-500/25 transition-colors">
-                      <perk.icon className="w-5 h-5 text-violet-400" />
+                    <div className="w-10 h-10 rounded-xl bg-red-500/15 flex items-center justify-center mb-3 group-hover:bg-red-500/25 transition-colors">
+                      <perk.icon className="w-5 h-5 text-red-400" />
                     </div>
                     <h4 className="text-sm font-semibold text-foreground mb-1">{perk.title}</h4>
                     <p className="text-xs text-foreground/70 leading-relaxed">{perk.description}</p>
@@ -318,17 +318,17 @@ const CreatorProgramSection = () => {
             <div className="grid md:grid-cols-2 gap-4 md:gap-6 mb-12">
               <motion.div 
                 variants={itemVariants}
-                className="p-6 rounded-2xl bg-violet-500/5 border border-violet-500/10"
+                className="p-6 rounded-2xl bg-red-500/5 border border-red-500/10"
               >
-                <h3 className="text-lg font-semibold text-violet-300 mb-5 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-red-300 mb-5 flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5" />
                   Requirements
                 </h3>
                 <ul className="space-y-3">
                   {requirements.map((req, i) => (
                     <li key={i} className="flex items-start gap-3 text-sm text-foreground/80">
-                      <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center shrink-0 mt-0.5">
-                        <req.icon className="w-4 h-4 text-violet-400" />
+                      <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                        <req.icon className="w-4 h-4 text-red-400" />
                       </div>
                       <span className="pt-1.5">{req.text}</span>
                     </li>
@@ -338,17 +338,17 @@ const CreatorProgramSection = () => {
 
               <motion.div 
                 variants={itemVariants}
-                className="p-6 rounded-2xl bg-violet-500/5 border border-violet-500/10"
+                className="p-6 rounded-2xl bg-red-500/5 border border-red-500/10"
               >
-                <h3 className="text-lg font-semibold text-violet-300 mb-5 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-red-300 mb-5 flex items-center gap-2">
                   <Eye className="w-5 h-5" />
                   What We Evaluate
                 </h3>
                 <ul className="space-y-3">
                   {evaluations.map((item, i) => (
                     <li key={i} className="flex items-start gap-3 text-sm text-foreground/80">
-                      <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center shrink-0 mt-0.5">
-                        <item.icon className="w-4 h-4 text-violet-400" />
+                      <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                        <item.icon className="w-4 h-4 text-red-400" />
                       </div>
                       <span className="pt-1.5">{item.text}</span>
                     </li>
@@ -363,45 +363,45 @@ const CreatorProgramSection = () => {
                 <DialogTrigger asChild>
                   <Button
                     size="lg"
-                    className="bg-violet-600 hover:bg-violet-500 text-white font-semibold px-8 py-6 rounded-xl shadow-lg shadow-violet-500/20 hover:shadow-violet-500/30 transition-all duration-300 text-base group"
+                    className="bg-red-600 hover:bg-red-500 text-white font-semibold px-8 py-6 rounded-xl shadow-lg shadow-red-500/20 hover:shadow-red-500/30 transition-all duration-300 text-base group"
                   >
                     <Video className="w-5 h-5 mr-2" />
                     Apply for Creator Program
                     <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-background/95 backdrop-blur-2xl border border-violet-500/30 p-0 shadow-2xl shadow-violet-500/10">
+                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-background/95 backdrop-blur-2xl border border-red-500/30 p-0 shadow-2xl shadow-red-500/10">
                   {/* Animated Background Effects */}
                   <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    <div className="absolute top-0 left-1/4 w-64 h-64 bg-violet-500/10 rounded-full blur-[100px] animate-pulse" />
-                    <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-fuchsia-500/10 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '1s' }} />
-                    <div className="absolute top-1/2 left-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-[60px] animate-pulse" style={{ animationDelay: '2s' }} />
+                    <div className="absolute top-0 left-1/4 w-64 h-64 bg-red-500/10 rounded-full blur-[100px] animate-pulse" />
+                    <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-rose-500/10 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '1s' }} />
+                    <div className="absolute top-1/2 left-0 w-32 h-32 bg-orange-500/10 rounded-full blur-[60px] animate-pulse" style={{ animationDelay: '2s' }} />
                     {/* Floating particles */}
-                    <div className="absolute top-20 left-10 w-1 h-1 bg-violet-400/60 rounded-full animate-bounce" style={{ animationDuration: '3s' }} />
-                    <div className="absolute top-40 right-20 w-1.5 h-1.5 bg-fuchsia-400/50 rounded-full animate-bounce" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }} />
-                    <div className="absolute bottom-40 left-1/3 w-1 h-1 bg-indigo-400/60 rounded-full animate-bounce" style={{ animationDuration: '4s', animationDelay: '1s' }} />
+                    <div className="absolute top-20 left-10 w-1 h-1 bg-red-400/60 rounded-full animate-bounce" style={{ animationDuration: '3s' }} />
+                    <div className="absolute top-40 right-20 w-1.5 h-1.5 bg-rose-400/50 rounded-full animate-bounce" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }} />
+                    <div className="absolute bottom-40 left-1/3 w-1 h-1 bg-orange-400/60 rounded-full animate-bounce" style={{ animationDuration: '4s', animationDelay: '1s' }} />
                   </div>
 
                   {/* Form Header with Glassmorphism */}
-                  <div className="sticky top-0 z-20 bg-gradient-to-r from-violet-950/90 via-fuchsia-950/80 to-violet-950/90 backdrop-blur-2xl px-6 py-6 border-b border-violet-400/20">
-                    <div className="absolute inset-0 bg-gradient-to-r from-violet-500/5 via-fuchsia-500/5 to-violet-500/5" />
+                  <div className="sticky top-0 z-20 bg-gradient-to-r from-red-950/90 via-rose-950/80 to-red-950/90 backdrop-blur-2xl px-6 py-6 border-b border-red-400/20">
+                    <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 via-rose-500/5 to-red-500/5" />
                     <DialogHeader className="relative">
                       <div className="flex items-center gap-4">
                         <motion.div 
-                          className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500/30 to-fuchsia-500/30 flex items-center justify-center border border-violet-400/30 shadow-lg shadow-violet-500/20"
+                          className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500/30 to-rose-500/30 flex items-center justify-center border border-red-400/30 shadow-lg shadow-red-500/20"
                           animate={{ 
-                            boxShadow: ['0 0 20px rgba(139, 92, 246, 0.3)', '0 0 40px rgba(139, 92, 246, 0.5)', '0 0 20px rgba(139, 92, 246, 0.3)']
+                            boxShadow: ['0 0 20px rgba(239, 68, 68, 0.3)', '0 0 40px rgba(239, 68, 68, 0.5)', '0 0 20px rgba(239, 68, 68, 0.3)']
                           }}
                           transition={{ duration: 2, repeat: Infinity }}
                         >
-                          <Video className="w-7 h-7 text-violet-300" />
+                          <Video className="w-7 h-7 text-red-300" />
                           <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-background animate-pulse" />
                         </motion.div>
                         <div>
-                          <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-violet-200 via-fuchsia-200 to-violet-200 bg-clip-text text-transparent">
+                          <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-red-200 via-rose-200 to-red-200 bg-clip-text text-transparent">
                             Creator Program Application
                           </DialogTitle>
-                          <DialogDescription className="text-sm text-violet-200/70 flex items-center gap-2 mt-1">
+                          <DialogDescription className="text-sm text-red-200/70 flex items-center gap-2 mt-1">
                             <Sparkles className="w-3.5 h-3.5" />
                             Complete all fields • Review takes 3-5 days
                           </DialogDescription>
@@ -420,15 +420,15 @@ const CreatorProgramSection = () => {
                         <div key={step.num} className="flex items-center">
                           <div className="flex flex-col items-center">
                             <motion.div 
-                              className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500/40 to-fuchsia-500/40 flex items-center justify-center text-xs font-bold text-violet-200 border border-violet-400/30 shadow-lg shadow-violet-500/20"
-                              whileHover={{ scale: 1.1, boxShadow: '0 0 25px rgba(139, 92, 246, 0.5)' }}
+                              className="w-9 h-9 rounded-xl bg-gradient-to-br from-red-500/40 to-rose-500/40 flex items-center justify-center text-xs font-bold text-red-200 border border-red-400/30 shadow-lg shadow-red-500/20"
+                              whileHover={{ scale: 1.1, boxShadow: '0 0 25px rgba(239, 68, 68, 0.5)' }}
                             >
                               {step.num}
                             </motion.div>
-                            <span className="text-[10px] text-violet-300/70 mt-1.5 font-medium">{step.label}</span>
+                            <span className="text-[10px] text-red-300/70 mt-1.5 font-medium">{step.label}</span>
                           </div>
                           {i < 3 && (
-                            <div className="w-8 md:w-16 h-px bg-gradient-to-r from-violet-500/50 to-fuchsia-500/50 mx-1 md:mx-2 mt-[-12px]" />
+                            <div className="w-8 md:w-16 h-px bg-gradient-to-r from-red-500/50 to-rose-500/50 mx-1 md:mx-2 mt-[-12px]" />
                           )}
                         </div>
                       ))}
@@ -438,27 +438,27 @@ const CreatorProgramSection = () => {
                   <form onSubmit={handleSubmit} className="relative px-6 py-8 space-y-10">
                     {/* Section 1: Personal Info */}
                     <motion.div 
-                      className="space-y-5 p-6 rounded-2xl bg-gradient-to-br from-violet-500/5 via-transparent to-fuchsia-500/5 border border-violet-500/15 backdrop-blur-sm"
+                      className="space-y-5 p-6 rounded-2xl bg-gradient-to-br from-red-500/5 via-transparent to-rose-500/5 border border-red-500/15 backdrop-blur-sm"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.1 }}
                     >
                       <div className="flex items-center gap-3 mb-5">
                         <motion.div 
-                          className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500/30 to-fuchsia-500/30 flex items-center justify-center text-sm font-bold text-violet-200 border border-violet-400/30 shadow-lg shadow-violet-500/20"
+                          className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500/30 to-rose-500/30 flex items-center justify-center text-sm font-bold text-red-200 border border-red-400/30 shadow-lg shadow-red-500/20"
                           whileHover={{ rotate: 5, scale: 1.05 }}
                         >
                           1
                         </motion.div>
                         <div>
-                          <h3 className="text-lg font-bold bg-gradient-to-r from-violet-200 to-fuchsia-200 bg-clip-text text-transparent">Personal Information</h3>
-                          <p className="text-xs text-violet-300/60">Your basic details</p>
+                          <h3 className="text-lg font-bold bg-gradient-to-r from-red-200 to-rose-200 bg-clip-text text-transparent">Personal Information</h3>
+                          <p className="text-xs text-red-300/60">Your basic details</p>
                         </div>
                       </div>
                       <div className="grid md:grid-cols-2 gap-4">
                         <div className="space-y-2 group">
-                          <Label htmlFor="fullName" className="text-violet-200/90 flex items-center gap-2 text-sm font-medium">
-                            Full Name <span className="text-fuchsia-400">*</span>
+                          <Label htmlFor="fullName" className="text-red-200/90 flex items-center gap-2 text-sm font-medium">
+                            Full Name <span className="text-rose-400">*</span>
                           </Label>
                           <div className="relative">
                             <Input
@@ -466,15 +466,15 @@ const CreatorProgramSection = () => {
                               placeholder="Your real name"
                               value={formData.fullName || ""}
                               onChange={(e) => handleInputChange("fullName", e.target.value)}
-                              className={`bg-violet-950/50 border-violet-500/25 focus:border-violet-400/60 focus:ring-2 focus:ring-violet-500/20 text-foreground placeholder:text-violet-300/40 rounded-xl py-5 transition-all duration-300 hover:border-violet-400/40 ${errors.fullName ? "border-destructive" : ""}`}
+                              className={`bg-red-950/50 border-red-500/25 focus:border-red-400/60 focus:ring-2 focus:ring-red-500/20 text-foreground placeholder:text-red-300/40 rounded-xl py-5 transition-all duration-300 hover:border-red-400/40 ${errors.fullName ? "border-destructive" : ""}`}
                             />
-                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-violet-500/0 via-violet-500/5 to-fuchsia-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-red-500/0 via-red-500/5 to-rose-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                           </div>
                           {errors.fullName && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.fullName}</p>}
                         </div>
                         <div className="space-y-2 group">
-                          <Label htmlFor="discordUsername" className="text-violet-200/90 flex items-center gap-2 text-sm font-medium">
-                            Discord Username <span className="text-fuchsia-400">*</span>
+                          <Label htmlFor="discordUsername" className="text-red-200/90 flex items-center gap-2 text-sm font-medium">
+                            Discord Username <span className="text-rose-400">*</span>
                           </Label>
                           <div className="relative">
                             <Input
@@ -482,16 +482,16 @@ const CreatorProgramSection = () => {
                               placeholder="username#0000 or username"
                               value={formData.discordUsername || ""}
                               onChange={(e) => handleInputChange("discordUsername", e.target.value)}
-                              className={`bg-violet-950/50 border-violet-500/25 focus:border-violet-400/60 focus:ring-2 focus:ring-violet-500/20 text-foreground placeholder:text-violet-300/40 rounded-xl py-5 transition-all duration-300 hover:border-violet-400/40 ${errors.discordUsername ? "border-destructive" : ""}`}
+                              className={`bg-red-950/50 border-red-500/25 focus:border-red-400/60 focus:ring-2 focus:ring-red-500/20 text-foreground placeholder:text-red-300/40 rounded-xl py-5 transition-all duration-300 hover:border-red-400/40 ${errors.discordUsername ? "border-destructive" : ""}`}
                             />
-                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-violet-500/0 via-violet-500/5 to-fuchsia-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-red-500/0 via-red-500/5 to-rose-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                           </div>
                           {errors.discordUsername && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.discordUsername}</p>}
                         </div>
                       </div>
                       <div className="space-y-2 group">
-                        <Label htmlFor="steamId" className="text-violet-200/90 flex items-center gap-2 text-sm font-medium">
-                          Steam ID <span className="text-fuchsia-400">*</span>
+                        <Label htmlFor="steamId" className="text-red-200/90 flex items-center gap-2 text-sm font-medium">
+                          Steam ID <span className="text-rose-400">*</span>
                         </Label>
                         <div className="relative">
                           <Input
@@ -499,9 +499,9 @@ const CreatorProgramSection = () => {
                             placeholder="steam:xxxxxxxxx or STEAM_0:X:XXXXX"
                             value={formData.steamId || ""}
                             onChange={(e) => handleInputChange("steamId", e.target.value)}
-                            className={`bg-violet-950/50 border-violet-500/25 focus:border-violet-400/60 focus:ring-2 focus:ring-violet-500/20 text-foreground placeholder:text-violet-300/40 rounded-xl py-5 transition-all duration-300 hover:border-violet-400/40 ${errors.steamId ? "border-destructive" : ""}`}
+                            className={`bg-red-950/50 border-red-500/25 focus:border-red-400/60 focus:ring-2 focus:ring-red-500/20 text-foreground placeholder:text-red-300/40 rounded-xl py-5 transition-all duration-300 hover:border-red-400/40 ${errors.steamId ? "border-destructive" : ""}`}
                           />
-                          <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-violet-500/0 via-violet-500/5 to-fuchsia-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                          <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-red-500/0 via-red-500/5 to-rose-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                         </div>
                         {errors.steamId && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.steamId}</p>}
                       </div>
@@ -509,52 +509,52 @@ const CreatorProgramSection = () => {
 
                     {/* Section 2: Channel Info */}
                     <motion.div 
-                      className="space-y-5 p-6 rounded-2xl bg-gradient-to-br from-fuchsia-500/5 via-transparent to-violet-500/5 border border-fuchsia-500/15 backdrop-blur-sm"
+                      className="space-y-5 p-6 rounded-2xl bg-gradient-to-br from-rose-500/5 via-transparent to-red-500/5 border border-rose-500/15 backdrop-blur-sm"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.2 }}
                     >
                       <div className="flex items-center gap-3 mb-5">
                         <motion.div 
-                          className="w-10 h-10 rounded-xl bg-gradient-to-br from-fuchsia-500/30 to-violet-500/30 flex items-center justify-center text-sm font-bold text-fuchsia-200 border border-fuchsia-400/30 shadow-lg shadow-fuchsia-500/20"
+                          className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500/30 to-red-500/30 flex items-center justify-center text-sm font-bold text-rose-200 border border-rose-400/30 shadow-lg shadow-rose-500/20"
                           whileHover={{ rotate: -5, scale: 1.05 }}
                         >
                           2
                         </motion.div>
                         <div>
-                          <h3 className="text-lg font-bold bg-gradient-to-r from-fuchsia-200 to-violet-200 bg-clip-text text-transparent">Channel Details</h3>
-                          <p className="text-xs text-fuchsia-300/60">Your streaming platform info</p>
+                          <h3 className="text-lg font-bold bg-gradient-to-r from-rose-200 to-red-200 bg-clip-text text-transparent">Channel Details</h3>
+                          <p className="text-xs text-rose-300/60">Your streaming platform info</p>
                         </div>
                       </div>
                       <div className="grid md:grid-cols-2 gap-4">
                         <div className="space-y-2 group">
-                          <Label htmlFor="platform" className="text-fuchsia-200/90 flex items-center gap-2 text-sm font-medium">
-                            Primary Platform <span className="text-violet-400">*</span>
+                          <Label htmlFor="platform" className="text-rose-200/90 flex items-center gap-2 text-sm font-medium">
+                            Primary Platform <span className="text-red-400">*</span>
                           </Label>
                           <Select 
                             value={formData.platform || ""} 
                             onValueChange={(value) => handleInputChange("platform", value)}
                           >
-                            <SelectTrigger className={`bg-violet-950/50 border-fuchsia-500/25 focus:border-fuchsia-400/60 rounded-xl py-5 transition-all duration-300 hover:border-fuchsia-400/40 ${errors.platform ? "border-destructive" : ""}`}>
+                            <SelectTrigger className={`bg-red-950/50 border-rose-500/25 focus:border-rose-400/60 rounded-xl py-5 transition-all duration-300 hover:border-rose-400/40 ${errors.platform ? "border-destructive" : ""}`}>
                               <SelectValue placeholder="Select platform" />
                             </SelectTrigger>
-                            <SelectContent className="bg-violet-950/95 backdrop-blur-xl border-fuchsia-500/30 rounded-xl">
-                              <SelectItem value="youtube" className="focus:bg-fuchsia-500/20">
+                            <SelectContent className="bg-red-950/95 backdrop-blur-xl border-rose-500/30 rounded-xl">
+                              <SelectItem value="youtube" className="focus:bg-rose-500/20">
                                 <span className="flex items-center gap-2"><Youtube className="w-4 h-4 text-red-400" /> YouTube</span>
                               </SelectItem>
-                              <SelectItem value="twitch" className="focus:bg-fuchsia-500/20">
+                              <SelectItem value="twitch" className="focus:bg-rose-500/20">
                                 <span className="flex items-center gap-2"><Twitch className="w-4 h-4 text-purple-400" /> Twitch</span>
                               </SelectItem>
-                              <SelectItem value="facebook" className="focus:bg-fuchsia-500/20">Facebook Gaming</SelectItem>
-                              <SelectItem value="kick" className="focus:bg-fuchsia-500/20">Kick</SelectItem>
-                              <SelectItem value="other" className="focus:bg-fuchsia-500/20">Other</SelectItem>
+                              <SelectItem value="facebook" className="focus:bg-rose-500/20">Facebook Gaming</SelectItem>
+                              <SelectItem value="kick" className="focus:bg-rose-500/20">Kick</SelectItem>
+                              <SelectItem value="other" className="focus:bg-rose-500/20">Other</SelectItem>
                             </SelectContent>
                           </Select>
                           {errors.platform && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.platform}</p>}
                         </div>
                         <div className="space-y-2 group">
-                          <Label htmlFor="channelUrl" className="text-fuchsia-200/90 flex items-center gap-2 text-sm font-medium">
-                            Channel URL <span className="text-violet-400">*</span>
+                          <Label htmlFor="channelUrl" className="text-rose-200/90 flex items-center gap-2 text-sm font-medium">
+                            Channel URL <span className="text-red-400">*</span>
                           </Label>
                           <div className="relative">
                             <Input
@@ -562,52 +562,52 @@ const CreatorProgramSection = () => {
                               placeholder="https://youtube.com/c/yourchannel"
                               value={formData.channelUrl || ""}
                               onChange={(e) => handleInputChange("channelUrl", e.target.value)}
-                              className={`bg-violet-950/50 border-fuchsia-500/25 focus:border-fuchsia-400/60 focus:ring-2 focus:ring-fuchsia-500/20 text-foreground placeholder:text-fuchsia-300/40 rounded-xl py-5 transition-all duration-300 hover:border-fuchsia-400/40 ${errors.channelUrl ? "border-destructive" : ""}`}
+                              className={`bg-red-950/50 border-rose-500/25 focus:border-rose-400/60 focus:ring-2 focus:ring-rose-500/20 text-foreground placeholder:text-rose-300/40 rounded-xl py-5 transition-all duration-300 hover:border-rose-400/40 ${errors.channelUrl ? "border-destructive" : ""}`}
                             />
-                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-fuchsia-500/0 via-fuchsia-500/5 to-violet-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-rose-500/0 via-rose-500/5 to-red-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                           </div>
                           {errors.channelUrl && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.channelUrl}</p>}
                         </div>
                       </div>
                       <div className="grid md:grid-cols-2 gap-4">
                         <div className="space-y-2 group">
-                          <Label htmlFor="averageViewers" className="text-fuchsia-200/90 flex items-center gap-2 text-sm font-medium">
-                            Average Viewers <span className="text-violet-400">*</span>
+                          <Label htmlFor="averageViewers" className="text-rose-200/90 flex items-center gap-2 text-sm font-medium">
+                            Average Viewers <span className="text-red-400">*</span>
                           </Label>
                           <Select 
                             value={formData.averageViewers || ""} 
                             onValueChange={(value) => handleInputChange("averageViewers", value)}
                           >
-                            <SelectTrigger className={`bg-violet-950/50 border-fuchsia-500/25 focus:border-fuchsia-400/60 rounded-xl py-5 transition-all duration-300 hover:border-fuchsia-400/40 ${errors.averageViewers ? "border-destructive" : ""}`}>
+                            <SelectTrigger className={`bg-red-950/50 border-rose-500/25 focus:border-rose-400/60 rounded-xl py-5 transition-all duration-300 hover:border-rose-400/40 ${errors.averageViewers ? "border-destructive" : ""}`}>
                               <SelectValue placeholder="Select range" />
                             </SelectTrigger>
-                            <SelectContent className="bg-violet-950/95 backdrop-blur-xl border-fuchsia-500/30 rounded-xl">
-                              <SelectItem value="1-10" className="focus:bg-fuchsia-500/20">1-10 viewers</SelectItem>
-                              <SelectItem value="10-50" className="focus:bg-fuchsia-500/20">10-50 viewers</SelectItem>
-                              <SelectItem value="50-100" className="focus:bg-fuchsia-500/20">50-100 viewers</SelectItem>
-                              <SelectItem value="100-500" className="focus:bg-fuchsia-500/20">100-500 viewers</SelectItem>
-                              <SelectItem value="500+" className="focus:bg-fuchsia-500/20">500+ viewers</SelectItem>
+                            <SelectContent className="bg-red-950/95 backdrop-blur-xl border-rose-500/30 rounded-xl">
+                              <SelectItem value="1-10" className="focus:bg-rose-500/20">1-10 viewers</SelectItem>
+                              <SelectItem value="10-50" className="focus:bg-rose-500/20">10-50 viewers</SelectItem>
+                              <SelectItem value="50-100" className="focus:bg-rose-500/20">50-100 viewers</SelectItem>
+                              <SelectItem value="100-500" className="focus:bg-rose-500/20">100-500 viewers</SelectItem>
+                              <SelectItem value="500+" className="focus:bg-rose-500/20">500+ viewers</SelectItem>
                             </SelectContent>
                           </Select>
                           {errors.averageViewers && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.averageViewers}</p>}
                         </div>
                         <div className="space-y-2 group">
-                          <Label htmlFor="contentFrequency" className="text-fuchsia-200/90 flex items-center gap-2 text-sm font-medium">
-                            Content Frequency <span className="text-violet-400">*</span>
+                          <Label htmlFor="contentFrequency" className="text-rose-200/90 flex items-center gap-2 text-sm font-medium">
+                            Content Frequency <span className="text-red-400">*</span>
                           </Label>
                           <Select 
                             value={formData.contentFrequency || ""} 
                             onValueChange={(value) => handleInputChange("contentFrequency", value)}
                           >
-                            <SelectTrigger className={`bg-violet-950/50 border-fuchsia-500/25 focus:border-fuchsia-400/60 rounded-xl py-5 transition-all duration-300 hover:border-fuchsia-400/40 ${errors.contentFrequency ? "border-destructive" : ""}`}>
+                            <SelectTrigger className={`bg-red-950/50 border-rose-500/25 focus:border-rose-400/60 rounded-xl py-5 transition-all duration-300 hover:border-rose-400/40 ${errors.contentFrequency ? "border-destructive" : ""}`}>
                               <SelectValue placeholder="How often do you stream?" />
                             </SelectTrigger>
-                            <SelectContent className="bg-violet-950/95 backdrop-blur-xl border-fuchsia-500/30 rounded-xl">
-                              <SelectItem value="daily" className="focus:bg-fuchsia-500/20">Daily</SelectItem>
-                              <SelectItem value="4-6-week" className="focus:bg-fuchsia-500/20">4-6 times per week</SelectItem>
-                              <SelectItem value="2-3-week" className="focus:bg-fuchsia-500/20">2-3 times per week</SelectItem>
-                              <SelectItem value="weekly" className="focus:bg-fuchsia-500/20">Once a week</SelectItem>
-                              <SelectItem value="occasional" className="focus:bg-fuchsia-500/20">Occasionally</SelectItem>
+                            <SelectContent className="bg-red-950/95 backdrop-blur-xl border-rose-500/30 rounded-xl">
+                              <SelectItem value="daily" className="focus:bg-rose-500/20">Daily</SelectItem>
+                              <SelectItem value="4-6-week" className="focus:bg-rose-500/20">4-6 times per week</SelectItem>
+                              <SelectItem value="2-3-week" className="focus:bg-rose-500/20">2-3 times per week</SelectItem>
+                              <SelectItem value="weekly" className="focus:bg-rose-500/20">Once a week</SelectItem>
+                              <SelectItem value="occasional" className="focus:bg-rose-500/20">Occasionally</SelectItem>
                             </SelectContent>
                           </Select>
                           {errors.contentFrequency && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.contentFrequency}</p>}
@@ -617,27 +617,27 @@ const CreatorProgramSection = () => {
 
                     {/* Section 3: Experience */}
                     <motion.div 
-                      className="space-y-5 p-6 rounded-2xl bg-gradient-to-br from-indigo-500/5 via-transparent to-violet-500/5 border border-indigo-500/15 backdrop-blur-sm"
+                      className="space-y-5 p-6 rounded-2xl bg-gradient-to-br from-orange-500/5 via-transparent to-red-500/5 border border-orange-500/15 backdrop-blur-sm"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.3 }}
                     >
                       <div className="flex items-center gap-3 mb-5">
                         <motion.div 
-                          className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/30 to-violet-500/30 flex items-center justify-center text-sm font-bold text-indigo-200 border border-indigo-400/30 shadow-lg shadow-indigo-500/20"
+                          className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500/30 to-red-500/30 flex items-center justify-center text-sm font-bold text-orange-200 border border-orange-400/30 shadow-lg shadow-orange-500/20"
                           whileHover={{ rotate: 5, scale: 1.05 }}
                         >
                           3
                         </motion.div>
                         <div>
-                          <h3 className="text-lg font-bold bg-gradient-to-r from-indigo-200 to-violet-200 bg-clip-text text-transparent">Experience & Style</h3>
-                          <p className="text-xs text-indigo-300/60">Tell us about your content</p>
+                          <h3 className="text-lg font-bold bg-gradient-to-r from-orange-200 to-red-200 bg-clip-text text-transparent">Experience & Style</h3>
+                          <p className="text-xs text-orange-300/60">Tell us about your content</p>
                         </div>
                       </div>
                       <div className="space-y-5">
                         <div className="space-y-2 group">
-                          <Label htmlFor="rpExperience" className="text-indigo-200/90 flex items-center gap-2 text-sm font-medium">
-                            GTA RP Experience <span className="text-fuchsia-400">*</span>
+                          <Label htmlFor="rpExperience" className="text-orange-200/90 flex items-center gap-2 text-sm font-medium">
+                            GTA RP Experience <span className="text-rose-400">*</span>
                           </Label>
                           <div className="relative">
                             <Textarea
@@ -645,15 +645,15 @@ const CreatorProgramSection = () => {
                               placeholder="Describe your experience with GTA 5 RP servers. Which servers have you played on? How long have you been roleplaying?"
                               value={formData.rpExperience || ""}
                               onChange={(e) => handleInputChange("rpExperience", e.target.value)}
-                              className={`min-h-[100px] bg-violet-950/50 border-indigo-500/25 focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-500/20 text-foreground placeholder:text-indigo-300/40 rounded-xl resize-none transition-all duration-300 hover:border-indigo-400/40 ${errors.rpExperience ? "border-destructive" : ""}`}
+                              className={`min-h-[100px] bg-red-950/50 border-orange-500/25 focus:border-orange-400/60 focus:ring-2 focus:ring-orange-500/20 text-foreground placeholder:text-orange-300/40 rounded-xl resize-none transition-all duration-300 hover:border-orange-400/40 ${errors.rpExperience ? "border-destructive" : ""}`}
                             />
-                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-500/0 via-indigo-500/5 to-violet-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500/0 via-orange-500/5 to-red-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                           </div>
                           {errors.rpExperience && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.rpExperience}</p>}
                         </div>
                         <div className="space-y-2 group">
-                          <Label htmlFor="contentStyle" className="text-indigo-200/90 flex items-center gap-2 text-sm font-medium">
-                            Content Style <span className="text-fuchsia-400">*</span>
+                          <Label htmlFor="contentStyle" className="text-orange-200/90 flex items-center gap-2 text-sm font-medium">
+                            Content Style <span className="text-rose-400">*</span>
                           </Label>
                           <div className="relative">
                             <Textarea
@@ -661,15 +661,15 @@ const CreatorProgramSection = () => {
                               placeholder="Describe your content style. What type of RP scenarios do you enjoy? Are you more into serious RP, comedy, action, etc.?"
                               value={formData.contentStyle || ""}
                               onChange={(e) => handleInputChange("contentStyle", e.target.value)}
-                              className={`min-h-[100px] bg-violet-950/50 border-indigo-500/25 focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-500/20 text-foreground placeholder:text-indigo-300/40 rounded-xl resize-none transition-all duration-300 hover:border-indigo-400/40 ${errors.contentStyle ? "border-destructive" : ""}`}
+                              className={`min-h-[100px] bg-red-950/50 border-orange-500/25 focus:border-orange-400/60 focus:ring-2 focus:ring-orange-500/20 text-foreground placeholder:text-orange-300/40 rounded-xl resize-none transition-all duration-300 hover:border-orange-400/40 ${errors.contentStyle ? "border-destructive" : ""}`}
                             />
-                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-500/0 via-indigo-500/5 to-violet-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500/0 via-orange-500/5 to-red-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                           </div>
                           {errors.contentStyle && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.contentStyle}</p>}
                         </div>
                         <div className="space-y-2 group">
-                          <Label htmlFor="whyJoin" className="text-indigo-200/90 flex items-center gap-2 text-sm font-medium">
-                            Why Join SLRP? <span className="text-fuchsia-400">*</span>
+                          <Label htmlFor="whyJoin" className="text-orange-200/90 flex items-center gap-2 text-sm font-medium">
+                            Why Join SLRP? <span className="text-rose-400">*</span>
                           </Label>
                           <div className="relative">
                             <Textarea
@@ -677,15 +677,15 @@ const CreatorProgramSection = () => {
                               placeholder="Tell us why you want to be part of Skylife RP and what you can bring to our community."
                               value={formData.whyJoin || ""}
                               onChange={(e) => handleInputChange("whyJoin", e.target.value)}
-                              className={`min-h-[120px] bg-violet-950/50 border-indigo-500/25 focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-500/20 text-foreground placeholder:text-indigo-300/40 rounded-xl resize-none transition-all duration-300 hover:border-indigo-400/40 ${errors.whyJoin ? "border-destructive" : ""}`}
+                              className={`min-h-[120px] bg-red-950/50 border-orange-500/25 focus:border-orange-400/60 focus:ring-2 focus:ring-orange-500/20 text-foreground placeholder:text-orange-300/40 rounded-xl resize-none transition-all duration-300 hover:border-orange-400/40 ${errors.whyJoin ? "border-destructive" : ""}`}
                             />
-                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-500/0 via-indigo-500/5 to-violet-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500/0 via-orange-500/5 to-red-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                           </div>
                           {errors.whyJoin && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.whyJoin}</p>}
                         </div>
                         <div className="space-y-2 group">
-                          <Label htmlFor="socialLinks" className="text-indigo-200/90 text-sm font-medium">
-                            Other Social Media <span className="text-indigo-400/60">(Optional)</span>
+                          <Label htmlFor="socialLinks" className="text-orange-200/90 text-sm font-medium">
+                            Other Social Media <span className="text-orange-400/60">(Optional)</span>
                           </Label>
                           <div className="relative">
                             <Textarea
@@ -693,9 +693,9 @@ const CreatorProgramSection = () => {
                               placeholder="Instagram, Twitter, TikTok, etc. (one per line)"
                               value={formData.socialLinks || ""}
                               onChange={(e) => handleInputChange("socialLinks", e.target.value)}
-                              className="min-h-[80px] bg-violet-950/50 border-indigo-500/25 focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-500/20 text-foreground placeholder:text-indigo-300/40 rounded-xl resize-none transition-all duration-300 hover:border-indigo-400/40"
+                              className="min-h-[80px] bg-red-950/50 border-orange-500/25 focus:border-orange-400/60 focus:ring-2 focus:ring-orange-500/20 text-foreground placeholder:text-orange-300/40 rounded-xl resize-none transition-all duration-300 hover:border-orange-400/40"
                             />
-                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-500/0 via-indigo-500/5 to-violet-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500/0 via-orange-500/5 to-red-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                           </div>
                         </div>
                       </div>
@@ -703,32 +703,32 @@ const CreatorProgramSection = () => {
 
                     {/* Section 4: Upload */}
                     <motion.div 
-                      className="space-y-5 p-6 rounded-2xl bg-gradient-to-br from-emerald-500/5 via-transparent to-violet-500/5 border border-emerald-500/15 backdrop-blur-sm"
+                      className="space-y-5 p-6 rounded-2xl bg-gradient-to-br from-emerald-500/5 via-transparent to-red-500/5 border border-emerald-500/15 backdrop-blur-sm"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4 }}
                     >
                       <div className="flex items-center gap-3 mb-5">
                         <motion.div 
-                          className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/30 to-violet-500/30 flex items-center justify-center text-sm font-bold text-emerald-200 border border-emerald-400/30 shadow-lg shadow-emerald-500/20"
+                          className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/30 to-red-500/30 flex items-center justify-center text-sm font-bold text-emerald-200 border border-emerald-400/30 shadow-lg shadow-emerald-500/20"
                           whileHover={{ rotate: -5, scale: 1.05 }}
                         >
                           4
                         </motion.div>
                         <div>
-                          <h3 className="text-lg font-bold bg-gradient-to-r from-emerald-200 to-violet-200 bg-clip-text text-transparent">Verification</h3>
+                          <h3 className="text-lg font-bold bg-gradient-to-r from-emerald-200 to-red-200 bg-clip-text text-transparent">Verification</h3>
                           <p className="text-xs text-emerald-300/60">Prove channel ownership</p>
                         </div>
                       </div>
                       <div className="space-y-3">
                         <Label htmlFor="ownershipProof" className="text-emerald-200/90 flex items-center gap-2 text-sm font-medium">
-                          Channel Ownership Proof <span className="text-fuchsia-400">*</span>
+                          Channel Ownership Proof <span className="text-rose-400">*</span>
                         </Label>
                         <p className="text-xs text-emerald-300/60">
                           Upload a screenshot of your channel dashboard or analytics page (JPG, PNG, GIF, WebP, or PDF - Max 10MB)
                         </p>
                         <motion.div 
-                          className={`relative border-2 border-dashed rounded-2xl p-10 transition-all duration-500 ${fileError ? 'border-destructive bg-destructive/5' : ownershipProofFile ? 'border-emerald-400/60 bg-gradient-to-br from-emerald-500/10 to-emerald-500/5' : 'border-emerald-500/30 hover:border-emerald-400/50 bg-gradient-to-br from-emerald-500/5 to-violet-500/5 hover:from-emerald-500/10 hover:to-violet-500/10'}`}
+                          className={`relative border-2 border-dashed rounded-2xl p-10 transition-all duration-500 ${fileError ? 'border-destructive bg-destructive/5' : ownershipProofFile ? 'border-emerald-400/60 bg-gradient-to-br from-emerald-500/10 to-emerald-500/5' : 'border-emerald-500/30 hover:border-emerald-400/50 bg-gradient-to-br from-emerald-500/5 to-red-500/5 hover:from-emerald-500/10 hover:to-red-500/10'}`}
                           whileHover={{ scale: ownershipProofFile ? 1 : 1.01 }}
                         >
                           {ownershipProofFile ? (
@@ -768,7 +768,7 @@ const CreatorProgramSection = () => {
                           ) : (
                             <label htmlFor="ownershipProof" className="flex flex-col items-center cursor-pointer group">
                               <motion.div 
-                                className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500/20 to-violet-500/20 flex items-center justify-center mb-5 border border-emerald-500/20 group-hover:border-emerald-400/40 transition-all shadow-lg shadow-emerald-500/10"
+                                className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500/20 to-red-500/20 flex items-center justify-center mb-5 border border-emerald-500/20 group-hover:border-emerald-400/40 transition-all shadow-lg shadow-emerald-500/10"
                                 whileHover={{ rotate: 5, scale: 1.05 }}
                                 animate={{ y: [0, -5, 0] }}
                                 transition={{ duration: 2, repeat: Infinity }}
@@ -805,7 +805,7 @@ const CreatorProgramSection = () => {
                         <Button 
                           type="submit" 
                           disabled={isSubmitting || isUploading}
-                          className="w-full relative overflow-hidden bg-gradient-to-r from-violet-600 via-fuchsia-600 to-violet-600 hover:from-violet-500 hover:via-fuchsia-500 hover:to-violet-500 text-white font-bold py-7 rounded-2xl shadow-2xl shadow-violet-500/30 hover:shadow-violet-500/50 transition-all duration-500 text-base border border-violet-400/20 group"
+                          className="w-full relative overflow-hidden bg-gradient-to-r from-red-600 via-rose-600 to-red-600 hover:from-red-500 hover:via-rose-500 hover:to-red-500 text-white font-bold py-7 rounded-2xl shadow-2xl shadow-red-500/30 hover:shadow-red-500/50 transition-all duration-500 text-base border border-red-400/20 group"
                         >
                           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                           {isSubmitting || isUploading ? (
@@ -822,7 +822,7 @@ const CreatorProgramSection = () => {
                           )}
                         </Button>
                       </motion.div>
-                      <p className="text-xs text-center text-violet-300/50 flex items-center justify-center gap-2">
+                      <p className="text-xs text-center text-red-300/50 flex items-center justify-center gap-2">
                         <Shield className="w-3.5 h-3.5" />
                         By submitting, you agree to follow all server rules and maintain professional conduct.
                       </p>
@@ -836,16 +836,16 @@ const CreatorProgramSection = () => {
               variants={itemVariants} 
               className="flex flex-col md:flex-row items-center justify-center gap-3 mt-8 text-sm text-muted-foreground"
             >
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/15">
-                <Clock className="w-4 h-4 text-violet-400/70" />
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 border border-red-500/15">
+                <Clock className="w-4 h-4 text-red-400/70" />
                 <span>3-5 day review</span>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/15">
-                <MessageSquare className="w-4 h-4 text-violet-400/70" />
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 border border-red-500/15">
+                <MessageSquare className="w-4 h-4 text-red-400/70" />
                 <span>Discord notification</span>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/15">
-                <Shield className="w-4 h-4 text-violet-400/70" />
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 border border-red-500/15">
+                <Shield className="w-4 h-4 text-red-400/70" />
                 <span>100% confidential</span>
               </div>
             </motion.div>
