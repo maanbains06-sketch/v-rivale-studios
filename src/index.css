@@ -39,9 +39,9 @@ All colors MUST be HSL.
 
     --radius: 0.75rem;
 
-    /* Headline color - High visibility, darker for readability */
-    --headline: 0 0% 100%;
-    --headline-dark: 199 100% 70%;
+    /* Headline color - Bright and shiny */
+    --headline: 199 100% 75%;
+    --headline-dark: 199 100% 85%;
 
     /* Accent colors - Vibrant */
     --neon-cyan: 185 100% 50%;
@@ -103,9 +103,9 @@ All colors MUST be HSL.
     --input: 220 20% 82%;
     --ring: 199 85% 35%;
 
-    /* Headline color for light mode - darker for readability */
-    --headline: 220 25% 10%;
-    --headline-dark: 199 90% 25%;
+    /* Headline color for light mode - bright and visible */
+    --headline: 199 90% 35%;
+    --headline-dark: 199 85% 40%;
 
     /* Accent colors for light mode */
     --neon-cyan: 185 85% 32%;
@@ -163,14 +163,17 @@ All colors MUST be HSL.
   h1, h2, h3, h4, h5, h6 {
     @apply font-bold italic;
     color: hsl(var(--headline));
-    text-shadow: 0 4px 12px hsl(0 0% 0% / 0.5), 0 2px 4px hsl(0 0% 0% / 0.3);
+    text-shadow: 
+      0 0 20px hsl(var(--primary) / 0.6),
+      0 0 40px hsl(var(--primary) / 0.4),
+      0 2px 4px hsl(0 0% 0% / 0.3);
     letter-spacing: 0.02em;
   }
   
   /* Light mode heading adjustments */
   :root.light h1, :root.light h2, :root.light h3, :root.light h4, :root.light h5, :root.light h6 {
     color: hsl(var(--headline));
-    text-shadow: 0 1px 3px hsl(0 0% 0% / 0.1);
+    text-shadow: 0 0 15px hsl(var(--primary) / 0.3), 0 1px 2px hsl(0 0% 0% / 0.1);
   }
 
   /* Global italic styling and slightly bolder body text */
