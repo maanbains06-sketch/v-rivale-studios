@@ -68,15 +68,17 @@ interface PositionOption {
   value: string;
   label: string;
   description: string;
+  isLocked?: boolean;
+  memberCount?: number;
 }
 
-const allPositions: PositionOption[] = [
-  { value: "administrator", label: "Administrator", description: "Server management, policy enforcement, staff coordination" },
-  { value: "moderator", label: "Moderator", description: "Community safety, rule enforcement, player reports" },
-  { value: "developer", label: "Developer", description: "Feature development, bug fixes, technical support" },
-  { value: "support_staff", label: "Support Staff", description: "Player assistance, ticket management, issue resolution" },
-  { value: "event_coordinator", label: "Event Coordinator", description: "Event planning, hosting, community engagement" },
-  { value: "content_creator", label: "Content Creator", description: "Media production, social presence, community outreach" },
+const MAX_TEAM_MEMBERS = 3;
+
+const teamPositions: PositionOption[] = [
+  { value: "administration_team", label: "Administration Team", description: "Server management, policy enforcement, staff coordination" },
+  { value: "staff_team", label: "Staff Team", description: "Community safety, rule enforcement, player support" },
+  { value: "support_team", label: "Support Team", description: "Player assistance, ticket management, issue resolution" },
+  { value: "event_team", label: "Event Team", description: "Event planning, hosting, community engagement" },
 ];
 
 export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFormProps) {
@@ -84,11 +86,11 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
   const [isCheckingEligibility, setIsCheckingEligibility] = useState(true);
   const [isEligible, setIsEligible] = useState(false);
   const [eligibilityMessage, setEligibilityMessage] = useState("");
-  const [enabledPositions, setEnabledPositions] = useState<PositionOption[]>([]);
+  const [availablePositions, setAvailablePositions] = useState<PositionOption[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
-    async function checkWhitelistAndLoadPositions() {
+    async function checkEligibilityAndTeamCapacity() {
       if (!open) return;
       
       setIsCheckingEligibility(true);
@@ -126,21 +128,40 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
           return;
         }
 
-        // Load enabled positions from settings
-        const { data: positionsSetting } = await supabase
-          .from("site_settings")
-          .select("value")
-          .eq("key", "staff_positions_enabled")
-          .single();
+        // Check existing pending application
+        const { data: existingApp } = await supabase
+          .from("staff_applications")
+          .select("id, status")
+          .eq("user_id", user.id)
+          .eq("status", "pending")
+          .maybeSingle();
 
-        if (positionsSetting?.value) {
-          const enabledValues = positionsSetting.value.split(",").map((p: string) => p.trim());
-          const filtered = allPositions.filter(p => enabledValues.includes(p.value));
-          setEnabledPositions(filtered.length > 0 ? filtered : allPositions);
-        } else {
-          setEnabledPositions(allPositions);
+        if (existingApp) {
+          setIsEligible(false);
+          setEligibilityMessage("You already have a pending staff application. Please wait for it to be reviewed.");
+          setIsCheckingEligibility(false);
+          return;
         }
 
+        // Count approved applications per team position
+        const { data: approvedApps } = await supabase
+          .from("staff_applications")
+          .select("position")
+          .eq("status", "approved");
+
+        const teamCounts: Record<string, number> = {};
+        approvedApps?.forEach(app => {
+          teamCounts[app.position] = (teamCounts[app.position] || 0) + 1;
+        });
+
+        // Update positions with lock status
+        const positionsWithStatus = teamPositions.map(pos => ({
+          ...pos,
+          memberCount: teamCounts[pos.value] || 0,
+          isLocked: (teamCounts[pos.value] || 0) >= MAX_TEAM_MEMBERS
+        }));
+
+        setAvailablePositions(positionsWithStatus);
         setIsEligible(true);
         setEligibilityMessage("");
       } catch (error) {
@@ -152,7 +173,7 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
       }
     }
 
-    checkWhitelistAndLoadPositions();
+    checkEligibilityAndTeamCapacity();
   }, [open]);
 
   const form = useForm<StaffApplicationFormData>({
@@ -344,18 +365,36 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
               name="position"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Position Applying For *</FormLabel>
+                  <FormLabel>Team Applying For *</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a position" />
+                        <SelectValue placeholder="Select a team" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {enabledPositions.map((position) => (
-                        <SelectItem key={position.value} value={position.value}>
+                      {availablePositions.map((position) => (
+                        <SelectItem 
+                          key={position.value} 
+                          value={position.value}
+                          disabled={position.isLocked}
+                        >
                           <div className="flex flex-col">
-                            <span className="font-semibold">{position.label}</span>
+                            <div className="flex items-center gap-2">
+                              <span className={`font-semibold ${position.isLocked ? 'text-muted-foreground' : ''}`}>
+                                {position.label}
+                              </span>
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                position.isLocked 
+                                  ? 'bg-destructive/20 text-destructive' 
+                                  : 'bg-primary/20 text-primary'
+                              }`}>
+                                {position.memberCount}/{MAX_TEAM_MEMBERS}
+                              </span>
+                              {position.isLocked && (
+                                <span className="text-xs text-destructive font-medium">FULL</span>
+                              )}
+                            </div>
                             <span className="text-xs text-muted-foreground">{position.description}</span>
                           </div>
                         </SelectItem>
@@ -363,7 +402,7 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
                     </SelectContent>
                   </Select>
                   <FormDescription>
-                    Choose the position that best matches your skills and interests
+                    Choose the team that best matches your skills (max {MAX_TEAM_MEMBERS} members per team)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
