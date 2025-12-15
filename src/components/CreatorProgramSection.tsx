@@ -370,261 +370,387 @@ const CreatorProgramSection = () => {
                     <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-gradient-to-b from-violet-950/95 via-background/98 to-background border border-violet-500/20 p-0">
-                  {/* Form Header */}
-                  <div className="sticky top-0 z-20 bg-gradient-to-b from-violet-950 to-violet-950/80 backdrop-blur-xl px-6 py-5 border-b border-violet-500/20">
-                    <DialogHeader>
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-2xl bg-violet-500/20 flex items-center justify-center">
-                          <Video className="w-6 h-6 text-violet-400" />
-                        </div>
+                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-background/95 backdrop-blur-2xl border border-violet-500/30 p-0 shadow-2xl shadow-violet-500/10">
+                  {/* Animated Background Effects */}
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div className="absolute top-0 left-1/4 w-64 h-64 bg-violet-500/10 rounded-full blur-[100px] animate-pulse" />
+                    <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-fuchsia-500/10 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '1s' }} />
+                    <div className="absolute top-1/2 left-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-[60px] animate-pulse" style={{ animationDelay: '2s' }} />
+                    {/* Floating particles */}
+                    <div className="absolute top-20 left-10 w-1 h-1 bg-violet-400/60 rounded-full animate-bounce" style={{ animationDuration: '3s' }} />
+                    <div className="absolute top-40 right-20 w-1.5 h-1.5 bg-fuchsia-400/50 rounded-full animate-bounce" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }} />
+                    <div className="absolute bottom-40 left-1/3 w-1 h-1 bg-indigo-400/60 rounded-full animate-bounce" style={{ animationDuration: '4s', animationDelay: '1s' }} />
+                  </div>
+
+                  {/* Form Header with Glassmorphism */}
+                  <div className="sticky top-0 z-20 bg-gradient-to-r from-violet-950/90 via-fuchsia-950/80 to-violet-950/90 backdrop-blur-2xl px-6 py-6 border-b border-violet-400/20">
+                    <div className="absolute inset-0 bg-gradient-to-r from-violet-500/5 via-fuchsia-500/5 to-violet-500/5" />
+                    <DialogHeader className="relative">
+                      <div className="flex items-center gap-4">
+                        <motion.div 
+                          className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500/30 to-fuchsia-500/30 flex items-center justify-center border border-violet-400/30 shadow-lg shadow-violet-500/20"
+                          animate={{ 
+                            boxShadow: ['0 0 20px rgba(139, 92, 246, 0.3)', '0 0 40px rgba(139, 92, 246, 0.5)', '0 0 20px rgba(139, 92, 246, 0.3)']
+                          }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        >
+                          <Video className="w-7 h-7 text-violet-300" />
+                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-background animate-pulse" />
+                        </motion.div>
                         <div>
-                          <DialogTitle className="text-xl font-bold text-foreground">
+                          <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-violet-200 via-fuchsia-200 to-violet-200 bg-clip-text text-transparent">
                             Creator Program Application
                           </DialogTitle>
-                          <DialogDescription className="text-sm text-foreground/60">
-                            Complete all fields to apply • Review takes 3-5 days
+                          <DialogDescription className="text-sm text-violet-200/70 flex items-center gap-2 mt-1">
+                            <Sparkles className="w-3.5 h-3.5" />
+                            Complete all fields • Review takes 3-5 days
                           </DialogDescription>
                         </div>
                       </div>
                     </DialogHeader>
+                    
+                    {/* Progress Steps */}
+                    <div className="flex items-center justify-between mt-5 px-2">
+                      {[
+                        { num: 1, label: 'Personal' },
+                        { num: 2, label: 'Channel' },
+                        { num: 3, label: 'Experience' },
+                        { num: 4, label: 'Verify' }
+                      ].map((step, i) => (
+                        <div key={step.num} className="flex items-center">
+                          <div className="flex flex-col items-center">
+                            <motion.div 
+                              className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500/40 to-fuchsia-500/40 flex items-center justify-center text-xs font-bold text-violet-200 border border-violet-400/30 shadow-lg shadow-violet-500/20"
+                              whileHover={{ scale: 1.1, boxShadow: '0 0 25px rgba(139, 92, 246, 0.5)' }}
+                            >
+                              {step.num}
+                            </motion.div>
+                            <span className="text-[10px] text-violet-300/70 mt-1.5 font-medium">{step.label}</span>
+                          </div>
+                          {i < 3 && (
+                            <div className="w-8 md:w-16 h-px bg-gradient-to-r from-violet-500/50 to-fuchsia-500/50 mx-1 md:mx-2 mt-[-12px]" />
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
-                  <form onSubmit={handleSubmit} className="px-6 py-6 space-y-8">
+                  <form onSubmit={handleSubmit} className="relative px-6 py-8 space-y-10">
                     {/* Section 1: Personal Info */}
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-8 h-8 rounded-full bg-violet-500/20 flex items-center justify-center text-sm font-bold text-violet-400">1</div>
-                        <h3 className="text-lg font-semibold text-foreground">Personal Information</h3>
+                    <motion.div 
+                      className="space-y-5 p-6 rounded-2xl bg-gradient-to-br from-violet-500/5 via-transparent to-fuchsia-500/5 border border-violet-500/15 backdrop-blur-sm"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 }}
+                    >
+                      <div className="flex items-center gap-3 mb-5">
+                        <motion.div 
+                          className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500/30 to-fuchsia-500/30 flex items-center justify-center text-sm font-bold text-violet-200 border border-violet-400/30 shadow-lg shadow-violet-500/20"
+                          whileHover={{ rotate: 5, scale: 1.05 }}
+                        >
+                          1
+                        </motion.div>
+                        <div>
+                          <h3 className="text-lg font-bold bg-gradient-to-r from-violet-200 to-fuchsia-200 bg-clip-text text-transparent">Personal Information</h3>
+                          <p className="text-xs text-violet-300/60">Your basic details</p>
+                        </div>
                       </div>
                       <div className="grid md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="fullName" className="text-foreground/90 flex items-center gap-2">
-                            Full Name <span className="text-violet-400">*</span>
+                        <div className="space-y-2 group">
+                          <Label htmlFor="fullName" className="text-violet-200/90 flex items-center gap-2 text-sm font-medium">
+                            Full Name <span className="text-fuchsia-400">*</span>
                           </Label>
-                          <Input
-                            id="fullName"
-                            placeholder="Your real name"
-                            value={formData.fullName || ""}
-                            onChange={(e) => handleInputChange("fullName", e.target.value)}
-                            className={`bg-violet-500/5 border-violet-500/20 focus:border-violet-500/50 focus:ring-violet-500/20 ${errors.fullName ? "border-destructive" : ""}`}
-                          />
-                          {errors.fullName && <p className="text-xs text-destructive">{errors.fullName}</p>}
+                          <div className="relative">
+                            <Input
+                              id="fullName"
+                              placeholder="Your real name"
+                              value={formData.fullName || ""}
+                              onChange={(e) => handleInputChange("fullName", e.target.value)}
+                              className={`bg-violet-950/50 border-violet-500/25 focus:border-violet-400/60 focus:ring-2 focus:ring-violet-500/20 text-foreground placeholder:text-violet-300/40 rounded-xl py-5 transition-all duration-300 hover:border-violet-400/40 ${errors.fullName ? "border-destructive" : ""}`}
+                            />
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-violet-500/0 via-violet-500/5 to-fuchsia-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                          </div>
+                          {errors.fullName && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.fullName}</p>}
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="discordUsername" className="text-foreground/90 flex items-center gap-2">
-                            Discord Username <span className="text-violet-400">*</span>
+                        <div className="space-y-2 group">
+                          <Label htmlFor="discordUsername" className="text-violet-200/90 flex items-center gap-2 text-sm font-medium">
+                            Discord Username <span className="text-fuchsia-400">*</span>
                           </Label>
-                          <Input
-                            id="discordUsername"
-                            placeholder="username#0000 or username"
-                            value={formData.discordUsername || ""}
-                            onChange={(e) => handleInputChange("discordUsername", e.target.value)}
-                            className={`bg-violet-500/5 border-violet-500/20 focus:border-violet-500/50 focus:ring-violet-500/20 ${errors.discordUsername ? "border-destructive" : ""}`}
-                          />
-                          {errors.discordUsername && <p className="text-xs text-destructive">{errors.discordUsername}</p>}
+                          <div className="relative">
+                            <Input
+                              id="discordUsername"
+                              placeholder="username#0000 or username"
+                              value={formData.discordUsername || ""}
+                              onChange={(e) => handleInputChange("discordUsername", e.target.value)}
+                              className={`bg-violet-950/50 border-violet-500/25 focus:border-violet-400/60 focus:ring-2 focus:ring-violet-500/20 text-foreground placeholder:text-violet-300/40 rounded-xl py-5 transition-all duration-300 hover:border-violet-400/40 ${errors.discordUsername ? "border-destructive" : ""}`}
+                            />
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-violet-500/0 via-violet-500/5 to-fuchsia-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                          </div>
+                          {errors.discordUsername && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.discordUsername}</p>}
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="steamId" className="text-foreground/90 flex items-center gap-2">
-                          Steam ID <span className="text-violet-400">*</span>
+                      <div className="space-y-2 group">
+                        <Label htmlFor="steamId" className="text-violet-200/90 flex items-center gap-2 text-sm font-medium">
+                          Steam ID <span className="text-fuchsia-400">*</span>
                         </Label>
-                        <Input
-                          id="steamId"
-                          placeholder="steam:xxxxxxxxx or STEAM_0:X:XXXXX"
-                          value={formData.steamId || ""}
-                          onChange={(e) => handleInputChange("steamId", e.target.value)}
-                          className={`bg-violet-500/5 border-violet-500/20 focus:border-violet-500/50 focus:ring-violet-500/20 ${errors.steamId ? "border-destructive" : ""}`}
-                        />
-                        {errors.steamId && <p className="text-xs text-destructive">{errors.steamId}</p>}
+                        <div className="relative">
+                          <Input
+                            id="steamId"
+                            placeholder="steam:xxxxxxxxx or STEAM_0:X:XXXXX"
+                            value={formData.steamId || ""}
+                            onChange={(e) => handleInputChange("steamId", e.target.value)}
+                            className={`bg-violet-950/50 border-violet-500/25 focus:border-violet-400/60 focus:ring-2 focus:ring-violet-500/20 text-foreground placeholder:text-violet-300/40 rounded-xl py-5 transition-all duration-300 hover:border-violet-400/40 ${errors.steamId ? "border-destructive" : ""}`}
+                          />
+                          <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-violet-500/0 via-violet-500/5 to-fuchsia-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                        </div>
+                        {errors.steamId && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.steamId}</p>}
                       </div>
-                    </div>
-
-                    {/* Divider */}
-                    <div className="h-px bg-gradient-to-r from-transparent via-violet-500/30 to-transparent" />
+                    </motion.div>
 
                     {/* Section 2: Channel Info */}
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-8 h-8 rounded-full bg-violet-500/20 flex items-center justify-center text-sm font-bold text-violet-400">2</div>
-                        <h3 className="text-lg font-semibold text-foreground">Channel Details</h3>
+                    <motion.div 
+                      className="space-y-5 p-6 rounded-2xl bg-gradient-to-br from-fuchsia-500/5 via-transparent to-violet-500/5 border border-fuchsia-500/15 backdrop-blur-sm"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                    >
+                      <div className="flex items-center gap-3 mb-5">
+                        <motion.div 
+                          className="w-10 h-10 rounded-xl bg-gradient-to-br from-fuchsia-500/30 to-violet-500/30 flex items-center justify-center text-sm font-bold text-fuchsia-200 border border-fuchsia-400/30 shadow-lg shadow-fuchsia-500/20"
+                          whileHover={{ rotate: -5, scale: 1.05 }}
+                        >
+                          2
+                        </motion.div>
+                        <div>
+                          <h3 className="text-lg font-bold bg-gradient-to-r from-fuchsia-200 to-violet-200 bg-clip-text text-transparent">Channel Details</h3>
+                          <p className="text-xs text-fuchsia-300/60">Your streaming platform info</p>
+                        </div>
                       </div>
                       <div className="grid md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="platform" className="text-foreground/90 flex items-center gap-2">
+                        <div className="space-y-2 group">
+                          <Label htmlFor="platform" className="text-fuchsia-200/90 flex items-center gap-2 text-sm font-medium">
                             Primary Platform <span className="text-violet-400">*</span>
                           </Label>
                           <Select 
                             value={formData.platform || ""} 
                             onValueChange={(value) => handleInputChange("platform", value)}
                           >
-                            <SelectTrigger className={`bg-violet-500/5 border-violet-500/20 focus:border-violet-500/50 ${errors.platform ? "border-destructive" : ""}`}>
+                            <SelectTrigger className={`bg-violet-950/50 border-fuchsia-500/25 focus:border-fuchsia-400/60 rounded-xl py-5 transition-all duration-300 hover:border-fuchsia-400/40 ${errors.platform ? "border-destructive" : ""}`}>
                               <SelectValue placeholder="Select platform" />
                             </SelectTrigger>
-                            <SelectContent className="bg-violet-950 border-violet-500/30">
-                              <SelectItem value="youtube">
-                                <span className="flex items-center gap-2"><Youtube className="w-4 h-4 text-red-500" /> YouTube</span>
+                            <SelectContent className="bg-violet-950/95 backdrop-blur-xl border-fuchsia-500/30 rounded-xl">
+                              <SelectItem value="youtube" className="focus:bg-fuchsia-500/20">
+                                <span className="flex items-center gap-2"><Youtube className="w-4 h-4 text-red-400" /> YouTube</span>
                               </SelectItem>
-                              <SelectItem value="twitch">
-                                <span className="flex items-center gap-2"><Twitch className="w-4 h-4 text-purple-500" /> Twitch</span>
+                              <SelectItem value="twitch" className="focus:bg-fuchsia-500/20">
+                                <span className="flex items-center gap-2"><Twitch className="w-4 h-4 text-purple-400" /> Twitch</span>
                               </SelectItem>
-                              <SelectItem value="facebook">Facebook Gaming</SelectItem>
-                              <SelectItem value="kick">Kick</SelectItem>
-                              <SelectItem value="other">Other</SelectItem>
+                              <SelectItem value="facebook" className="focus:bg-fuchsia-500/20">Facebook Gaming</SelectItem>
+                              <SelectItem value="kick" className="focus:bg-fuchsia-500/20">Kick</SelectItem>
+                              <SelectItem value="other" className="focus:bg-fuchsia-500/20">Other</SelectItem>
                             </SelectContent>
                           </Select>
-                          {errors.platform && <p className="text-xs text-destructive">{errors.platform}</p>}
+                          {errors.platform && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.platform}</p>}
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="channelUrl" className="text-foreground/90 flex items-center gap-2">
+                        <div className="space-y-2 group">
+                          <Label htmlFor="channelUrl" className="text-fuchsia-200/90 flex items-center gap-2 text-sm font-medium">
                             Channel URL <span className="text-violet-400">*</span>
                           </Label>
-                          <Input
-                            id="channelUrl"
-                            placeholder="https://youtube.com/c/yourchannel"
-                            value={formData.channelUrl || ""}
-                            onChange={(e) => handleInputChange("channelUrl", e.target.value)}
-                            className={`bg-violet-500/5 border-violet-500/20 focus:border-violet-500/50 focus:ring-violet-500/20 ${errors.channelUrl ? "border-destructive" : ""}`}
-                          />
-                          {errors.channelUrl && <p className="text-xs text-destructive">{errors.channelUrl}</p>}
+                          <div className="relative">
+                            <Input
+                              id="channelUrl"
+                              placeholder="https://youtube.com/c/yourchannel"
+                              value={formData.channelUrl || ""}
+                              onChange={(e) => handleInputChange("channelUrl", e.target.value)}
+                              className={`bg-violet-950/50 border-fuchsia-500/25 focus:border-fuchsia-400/60 focus:ring-2 focus:ring-fuchsia-500/20 text-foreground placeholder:text-fuchsia-300/40 rounded-xl py-5 transition-all duration-300 hover:border-fuchsia-400/40 ${errors.channelUrl ? "border-destructive" : ""}`}
+                            />
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-fuchsia-500/0 via-fuchsia-500/5 to-violet-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                          </div>
+                          {errors.channelUrl && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.channelUrl}</p>}
                         </div>
                       </div>
                       <div className="grid md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="averageViewers" className="text-foreground/90 flex items-center gap-2">
+                        <div className="space-y-2 group">
+                          <Label htmlFor="averageViewers" className="text-fuchsia-200/90 flex items-center gap-2 text-sm font-medium">
                             Average Viewers <span className="text-violet-400">*</span>
                           </Label>
                           <Select 
                             value={formData.averageViewers || ""} 
                             onValueChange={(value) => handleInputChange("averageViewers", value)}
                           >
-                            <SelectTrigger className={`bg-violet-500/5 border-violet-500/20 focus:border-violet-500/50 ${errors.averageViewers ? "border-destructive" : ""}`}>
+                            <SelectTrigger className={`bg-violet-950/50 border-fuchsia-500/25 focus:border-fuchsia-400/60 rounded-xl py-5 transition-all duration-300 hover:border-fuchsia-400/40 ${errors.averageViewers ? "border-destructive" : ""}`}>
                               <SelectValue placeholder="Select range" />
                             </SelectTrigger>
-                            <SelectContent className="bg-violet-950 border-violet-500/30">
-                              <SelectItem value="1-10">1-10 viewers</SelectItem>
-                              <SelectItem value="10-50">10-50 viewers</SelectItem>
-                              <SelectItem value="50-100">50-100 viewers</SelectItem>
-                              <SelectItem value="100-500">100-500 viewers</SelectItem>
-                              <SelectItem value="500+">500+ viewers</SelectItem>
+                            <SelectContent className="bg-violet-950/95 backdrop-blur-xl border-fuchsia-500/30 rounded-xl">
+                              <SelectItem value="1-10" className="focus:bg-fuchsia-500/20">1-10 viewers</SelectItem>
+                              <SelectItem value="10-50" className="focus:bg-fuchsia-500/20">10-50 viewers</SelectItem>
+                              <SelectItem value="50-100" className="focus:bg-fuchsia-500/20">50-100 viewers</SelectItem>
+                              <SelectItem value="100-500" className="focus:bg-fuchsia-500/20">100-500 viewers</SelectItem>
+                              <SelectItem value="500+" className="focus:bg-fuchsia-500/20">500+ viewers</SelectItem>
                             </SelectContent>
                           </Select>
-                          {errors.averageViewers && <p className="text-xs text-destructive">{errors.averageViewers}</p>}
+                          {errors.averageViewers && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.averageViewers}</p>}
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="contentFrequency" className="text-foreground/90 flex items-center gap-2">
+                        <div className="space-y-2 group">
+                          <Label htmlFor="contentFrequency" className="text-fuchsia-200/90 flex items-center gap-2 text-sm font-medium">
                             Content Frequency <span className="text-violet-400">*</span>
                           </Label>
                           <Select 
                             value={formData.contentFrequency || ""} 
                             onValueChange={(value) => handleInputChange("contentFrequency", value)}
                           >
-                            <SelectTrigger className={`bg-violet-500/5 border-violet-500/20 focus:border-violet-500/50 ${errors.contentFrequency ? "border-destructive" : ""}`}>
+                            <SelectTrigger className={`bg-violet-950/50 border-fuchsia-500/25 focus:border-fuchsia-400/60 rounded-xl py-5 transition-all duration-300 hover:border-fuchsia-400/40 ${errors.contentFrequency ? "border-destructive" : ""}`}>
                               <SelectValue placeholder="How often do you stream?" />
                             </SelectTrigger>
-                            <SelectContent className="bg-violet-950 border-violet-500/30">
-                              <SelectItem value="daily">Daily</SelectItem>
-                              <SelectItem value="4-6-week">4-6 times per week</SelectItem>
-                              <SelectItem value="2-3-week">2-3 times per week</SelectItem>
-                              <SelectItem value="weekly">Once a week</SelectItem>
-                              <SelectItem value="occasional">Occasionally</SelectItem>
+                            <SelectContent className="bg-violet-950/95 backdrop-blur-xl border-fuchsia-500/30 rounded-xl">
+                              <SelectItem value="daily" className="focus:bg-fuchsia-500/20">Daily</SelectItem>
+                              <SelectItem value="4-6-week" className="focus:bg-fuchsia-500/20">4-6 times per week</SelectItem>
+                              <SelectItem value="2-3-week" className="focus:bg-fuchsia-500/20">2-3 times per week</SelectItem>
+                              <SelectItem value="weekly" className="focus:bg-fuchsia-500/20">Once a week</SelectItem>
+                              <SelectItem value="occasional" className="focus:bg-fuchsia-500/20">Occasionally</SelectItem>
                             </SelectContent>
                           </Select>
-                          {errors.contentFrequency && <p className="text-xs text-destructive">{errors.contentFrequency}</p>}
+                          {errors.contentFrequency && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.contentFrequency}</p>}
                         </div>
                       </div>
-                    </div>
-
-                    {/* Divider */}
-                    <div className="h-px bg-gradient-to-r from-transparent via-violet-500/30 to-transparent" />
+                    </motion.div>
 
                     {/* Section 3: Experience */}
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-8 h-8 rounded-full bg-violet-500/20 flex items-center justify-center text-sm font-bold text-violet-400">3</div>
-                        <h3 className="text-lg font-semibold text-foreground">Experience & Style</h3>
-                      </div>
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="rpExperience" className="text-foreground/90 flex items-center gap-2">
-                            GTA RP Experience <span className="text-violet-400">*</span>
-                          </Label>
-                          <Textarea
-                            id="rpExperience"
-                            placeholder="Describe your experience with GTA 5 RP servers. Which servers have you played on? How long have you been roleplaying?"
-                            value={formData.rpExperience || ""}
-                            onChange={(e) => handleInputChange("rpExperience", e.target.value)}
-                            className={`min-h-[100px] bg-violet-500/5 border-violet-500/20 focus:border-violet-500/50 focus:ring-violet-500/20 resize-none ${errors.rpExperience ? "border-destructive" : ""}`}
-                          />
-                          {errors.rpExperience && <p className="text-xs text-destructive">{errors.rpExperience}</p>}
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="contentStyle" className="text-foreground/90 flex items-center gap-2">
-                            Content Style <span className="text-violet-400">*</span>
-                          </Label>
-                          <Textarea
-                            id="contentStyle"
-                            placeholder="Describe your content style. What type of RP scenarios do you enjoy? Are you more into serious RP, comedy, action, etc.?"
-                            value={formData.contentStyle || ""}
-                            onChange={(e) => handleInputChange("contentStyle", e.target.value)}
-                            className={`min-h-[100px] bg-violet-500/5 border-violet-500/20 focus:border-violet-500/50 focus:ring-violet-500/20 resize-none ${errors.contentStyle ? "border-destructive" : ""}`}
-                          />
-                          {errors.contentStyle && <p className="text-xs text-destructive">{errors.contentStyle}</p>}
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="whyJoin" className="text-foreground/90 flex items-center gap-2">
-                            Why Join SLRP? <span className="text-violet-400">*</span>
-                          </Label>
-                          <Textarea
-                            id="whyJoin"
-                            placeholder="Tell us why you want to be part of Skylife RP and what you can bring to our community."
-                            value={formData.whyJoin || ""}
-                            onChange={(e) => handleInputChange("whyJoin", e.target.value)}
-                            className={`min-h-[120px] bg-violet-500/5 border-violet-500/20 focus:border-violet-500/50 focus:ring-violet-500/20 resize-none ${errors.whyJoin ? "border-destructive" : ""}`}
-                          />
-                          {errors.whyJoin && <p className="text-xs text-destructive">{errors.whyJoin}</p>}
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="socialLinks" className="text-foreground/90">
-                            Other Social Media <span className="text-foreground/50">(Optional)</span>
-                          </Label>
-                          <Textarea
-                            id="socialLinks"
-                            placeholder="Instagram, Twitter, TikTok, etc. (one per line)"
-                            value={formData.socialLinks || ""}
-                            onChange={(e) => handleInputChange("socialLinks", e.target.value)}
-                            className="min-h-[80px] bg-violet-500/5 border-violet-500/20 focus:border-violet-500/50 focus:ring-violet-500/20 resize-none"
-                          />
+                    <motion.div 
+                      className="space-y-5 p-6 rounded-2xl bg-gradient-to-br from-indigo-500/5 via-transparent to-violet-500/5 border border-indigo-500/15 backdrop-blur-sm"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                    >
+                      <div className="flex items-center gap-3 mb-5">
+                        <motion.div 
+                          className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/30 to-violet-500/30 flex items-center justify-center text-sm font-bold text-indigo-200 border border-indigo-400/30 shadow-lg shadow-indigo-500/20"
+                          whileHover={{ rotate: 5, scale: 1.05 }}
+                        >
+                          3
+                        </motion.div>
+                        <div>
+                          <h3 className="text-lg font-bold bg-gradient-to-r from-indigo-200 to-violet-200 bg-clip-text text-transparent">Experience & Style</h3>
+                          <p className="text-xs text-indigo-300/60">Tell us about your content</p>
                         </div>
                       </div>
-                    </div>
-
-                    {/* Divider */}
-                    <div className="h-px bg-gradient-to-r from-transparent via-violet-500/30 to-transparent" />
+                      <div className="space-y-5">
+                        <div className="space-y-2 group">
+                          <Label htmlFor="rpExperience" className="text-indigo-200/90 flex items-center gap-2 text-sm font-medium">
+                            GTA RP Experience <span className="text-fuchsia-400">*</span>
+                          </Label>
+                          <div className="relative">
+                            <Textarea
+                              id="rpExperience"
+                              placeholder="Describe your experience with GTA 5 RP servers. Which servers have you played on? How long have you been roleplaying?"
+                              value={formData.rpExperience || ""}
+                              onChange={(e) => handleInputChange("rpExperience", e.target.value)}
+                              className={`min-h-[100px] bg-violet-950/50 border-indigo-500/25 focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-500/20 text-foreground placeholder:text-indigo-300/40 rounded-xl resize-none transition-all duration-300 hover:border-indigo-400/40 ${errors.rpExperience ? "border-destructive" : ""}`}
+                            />
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-500/0 via-indigo-500/5 to-violet-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                          </div>
+                          {errors.rpExperience && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.rpExperience}</p>}
+                        </div>
+                        <div className="space-y-2 group">
+                          <Label htmlFor="contentStyle" className="text-indigo-200/90 flex items-center gap-2 text-sm font-medium">
+                            Content Style <span className="text-fuchsia-400">*</span>
+                          </Label>
+                          <div className="relative">
+                            <Textarea
+                              id="contentStyle"
+                              placeholder="Describe your content style. What type of RP scenarios do you enjoy? Are you more into serious RP, comedy, action, etc.?"
+                              value={formData.contentStyle || ""}
+                              onChange={(e) => handleInputChange("contentStyle", e.target.value)}
+                              className={`min-h-[100px] bg-violet-950/50 border-indigo-500/25 focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-500/20 text-foreground placeholder:text-indigo-300/40 rounded-xl resize-none transition-all duration-300 hover:border-indigo-400/40 ${errors.contentStyle ? "border-destructive" : ""}`}
+                            />
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-500/0 via-indigo-500/5 to-violet-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                          </div>
+                          {errors.contentStyle && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.contentStyle}</p>}
+                        </div>
+                        <div className="space-y-2 group">
+                          <Label htmlFor="whyJoin" className="text-indigo-200/90 flex items-center gap-2 text-sm font-medium">
+                            Why Join SLRP? <span className="text-fuchsia-400">*</span>
+                          </Label>
+                          <div className="relative">
+                            <Textarea
+                              id="whyJoin"
+                              placeholder="Tell us why you want to be part of Skylife RP and what you can bring to our community."
+                              value={formData.whyJoin || ""}
+                              onChange={(e) => handleInputChange("whyJoin", e.target.value)}
+                              className={`min-h-[120px] bg-violet-950/50 border-indigo-500/25 focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-500/20 text-foreground placeholder:text-indigo-300/40 rounded-xl resize-none transition-all duration-300 hover:border-indigo-400/40 ${errors.whyJoin ? "border-destructive" : ""}`}
+                            />
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-500/0 via-indigo-500/5 to-violet-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                          </div>
+                          {errors.whyJoin && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.whyJoin}</p>}
+                        </div>
+                        <div className="space-y-2 group">
+                          <Label htmlFor="socialLinks" className="text-indigo-200/90 text-sm font-medium">
+                            Other Social Media <span className="text-indigo-400/60">(Optional)</span>
+                          </Label>
+                          <div className="relative">
+                            <Textarea
+                              id="socialLinks"
+                              placeholder="Instagram, Twitter, TikTok, etc. (one per line)"
+                              value={formData.socialLinks || ""}
+                              onChange={(e) => handleInputChange("socialLinks", e.target.value)}
+                              className="min-h-[80px] bg-violet-950/50 border-indigo-500/25 focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-500/20 text-foreground placeholder:text-indigo-300/40 rounded-xl resize-none transition-all duration-300 hover:border-indigo-400/40"
+                            />
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-500/0 via-indigo-500/5 to-violet-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
 
                     {/* Section 4: Upload */}
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-8 h-8 rounded-full bg-violet-500/20 flex items-center justify-center text-sm font-bold text-violet-400">4</div>
-                        <h3 className="text-lg font-semibold text-foreground">Verification</h3>
+                    <motion.div 
+                      className="space-y-5 p-6 rounded-2xl bg-gradient-to-br from-emerald-500/5 via-transparent to-violet-500/5 border border-emerald-500/15 backdrop-blur-sm"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4 }}
+                    >
+                      <div className="flex items-center gap-3 mb-5">
+                        <motion.div 
+                          className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/30 to-violet-500/30 flex items-center justify-center text-sm font-bold text-emerald-200 border border-emerald-400/30 shadow-lg shadow-emerald-500/20"
+                          whileHover={{ rotate: -5, scale: 1.05 }}
+                        >
+                          4
+                        </motion.div>
+                        <div>
+                          <h3 className="text-lg font-bold bg-gradient-to-r from-emerald-200 to-violet-200 bg-clip-text text-transparent">Verification</h3>
+                          <p className="text-xs text-emerald-300/60">Prove channel ownership</p>
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="ownershipProof" className="text-foreground/90 flex items-center gap-2">
-                          Channel Ownership Proof <span className="text-violet-400">*</span>
+                      <div className="space-y-3">
+                        <Label htmlFor="ownershipProof" className="text-emerald-200/90 flex items-center gap-2 text-sm font-medium">
+                          Channel Ownership Proof <span className="text-fuchsia-400">*</span>
                         </Label>
-                        <p className="text-xs text-foreground/60 mb-3">
+                        <p className="text-xs text-emerald-300/60">
                           Upload a screenshot of your channel dashboard or analytics page (JPG, PNG, GIF, WebP, or PDF - Max 10MB)
                         </p>
-                        <div className={`relative border-2 border-dashed rounded-2xl p-8 transition-all duration-300 ${fileError ? 'border-destructive bg-destructive/5' : ownershipProofFile ? 'border-emerald-500/50 bg-emerald-500/5' : 'border-violet-500/30 hover:border-violet-400/50 bg-violet-500/5 hover:bg-violet-500/10'}`}>
+                        <motion.div 
+                          className={`relative border-2 border-dashed rounded-2xl p-10 transition-all duration-500 ${fileError ? 'border-destructive bg-destructive/5' : ownershipProofFile ? 'border-emerald-400/60 bg-gradient-to-br from-emerald-500/10 to-emerald-500/5' : 'border-emerald-500/30 hover:border-emerald-400/50 bg-gradient-to-br from-emerald-500/5 to-violet-500/5 hover:from-emerald-500/10 hover:to-violet-500/10'}`}
+                          whileHover={{ scale: ownershipProofFile ? 1 : 1.01 }}
+                        >
                           {ownershipProofFile ? (
-                            <div className="flex items-center justify-between">
+                            <motion.div 
+                              className="flex items-center justify-between"
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                            >
                               <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                                  <FileCheck className="w-6 h-6 text-emerald-400" />
-                                </div>
+                                <motion.div 
+                                  className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500/30 to-emerald-600/30 flex items-center justify-center border border-emerald-400/30 shadow-lg shadow-emerald-500/20"
+                                  animate={{ 
+                                    boxShadow: ['0 0 15px rgba(16, 185, 129, 0.2)', '0 0 30px rgba(16, 185, 129, 0.4)', '0 0 15px rgba(16, 185, 129, 0.2)']
+                                  }}
+                                  transition={{ duration: 2, repeat: Infinity }}
+                                >
+                                  <FileCheck className="w-7 h-7 text-emerald-300" />
+                                </motion.div>
                                 <div>
-                                  <p className="font-medium text-foreground">{ownershipProofFile.name}</p>
-                                  <p className="text-xs text-foreground/60">
+                                  <p className="font-semibold text-emerald-200">{ownershipProofFile.name}</p>
+                                  <p className="text-xs text-emerald-300/70 flex items-center gap-2">
+                                    <CheckCircle2 className="w-3 h-3" />
                                     {(ownershipProofFile.size / 1024 / 1024).toFixed(2)} MB • Ready to upload
                                   </p>
                                 </div>
@@ -634,18 +760,23 @@ const CreatorProgramSection = () => {
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => setOwnershipProofFile(null)}
-                                className="text-foreground/50 hover:text-destructive hover:bg-destructive/10 rounded-xl"
+                                className="text-emerald-300/50 hover:text-destructive hover:bg-destructive/10 rounded-xl transition-colors"
                               >
                                 <X className="w-5 h-5" />
                               </Button>
-                            </div>
+                            </motion.div>
                           ) : (
-                            <label htmlFor="ownershipProof" className="flex flex-col items-center cursor-pointer">
-                              <div className="w-16 h-16 rounded-2xl bg-violet-500/15 flex items-center justify-center mb-4">
-                                <Upload className="w-8 h-8 text-violet-400" />
-                              </div>
-                              <span className="text-sm font-medium text-foreground mb-1">Click to upload file</span>
-                              <span className="text-xs text-foreground/50">or drag and drop here</span>
+                            <label htmlFor="ownershipProof" className="flex flex-col items-center cursor-pointer group">
+                              <motion.div 
+                                className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500/20 to-violet-500/20 flex items-center justify-center mb-5 border border-emerald-500/20 group-hover:border-emerald-400/40 transition-all shadow-lg shadow-emerald-500/10"
+                                whileHover={{ rotate: 5, scale: 1.05 }}
+                                animate={{ y: [0, -5, 0] }}
+                                transition={{ duration: 2, repeat: Infinity }}
+                              >
+                                <Upload className="w-9 h-9 text-emerald-400" />
+                              </motion.div>
+                              <span className="text-sm font-semibold text-emerald-200 mb-1 group-hover:text-emerald-100 transition-colors">Click to upload file</span>
+                              <span className="text-xs text-emerald-300/50">or drag and drop here</span>
                             </label>
                           )}
                           <input
@@ -655,34 +786,47 @@ const CreatorProgramSection = () => {
                             onChange={handleFileChange}
                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                           />
-                        </div>
-                        {fileError && <p className="text-xs text-destructive mt-2">{fileError}</p>}
+                        </motion.div>
+                        {fileError && <p className="text-xs text-destructive mt-2 flex items-center gap-1"><X className="w-3 h-3" />{fileError}</p>}
                       </div>
-                    </div>
+                    </motion.div>
 
                     {/* Submit Section */}
-                    <div className="pt-4 space-y-4">
-                      <Button 
-                        type="submit" 
-                        disabled={isSubmitting || isUploading}
-                        className="w-full bg-violet-600 hover:bg-violet-500 text-white font-semibold py-6 rounded-xl shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 transition-all duration-300 text-base"
+                    <motion.div 
+                      className="pt-6 space-y-5"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5 }}
+                    >
+                      <motion.div
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
                       >
-                        {isSubmitting || isUploading ? (
-                          <>
-                            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                            {isUploading ? "Uploading Proof..." : "Submitting Application..."}
-                          </>
-                        ) : (
-                          <>
-                            <Send className="w-5 h-5 mr-2" />
-                            Submit Application
-                          </>
-                        )}
-                      </Button>
-                      <p className="text-xs text-center text-foreground/50">
+                        <Button 
+                          type="submit" 
+                          disabled={isSubmitting || isUploading}
+                          className="w-full relative overflow-hidden bg-gradient-to-r from-violet-600 via-fuchsia-600 to-violet-600 hover:from-violet-500 hover:via-fuchsia-500 hover:to-violet-500 text-white font-bold py-7 rounded-2xl shadow-2xl shadow-violet-500/30 hover:shadow-violet-500/50 transition-all duration-500 text-base border border-violet-400/20 group"
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                          {isSubmitting || isUploading ? (
+                            <>
+                              <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                              {isUploading ? "Uploading Proof..." : "Submitting Application..."}
+                            </>
+                          ) : (
+                            <>
+                              <Send className="w-5 h-5 mr-3" />
+                              Submit Application
+                              <Sparkles className="w-4 h-4 ml-3 animate-pulse" />
+                            </>
+                          )}
+                        </Button>
+                      </motion.div>
+                      <p className="text-xs text-center text-violet-300/50 flex items-center justify-center gap-2">
+                        <Shield className="w-3.5 h-3.5" />
                         By submitting, you agree to follow all server rules and maintain professional conduct.
                       </p>
-                    </div>
+                    </motion.div>
                   </form>
                 </DialogContent>
               </Dialog>
