@@ -29,6 +29,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import Navigation from "@/components/Navigation";
 import AnimatedLogo from "@/components/AnimatedLogo";
 import LaunchingSoonButton from "@/components/LaunchingSoonButton";
+import CreatorProgramSection from "@/components/CreatorProgramSection";
 import { MessageSquarePlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -796,6 +797,9 @@ const Index = () => {
           </div>
         </div>
       </motion.section>
+
+      {/* Creator Program Section */}
+      <CreatorProgramSection />
 
       {/* Community Section */}
       <motion.section 

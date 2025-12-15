@@ -133,6 +133,72 @@ export type Database = {
         }
         Relationships: []
       }
+      creator_applications: {
+        Row: {
+          admin_notes: string | null
+          average_viewers: string
+          channel_url: string
+          content_frequency: string
+          content_style: string
+          created_at: string
+          discord_username: string
+          full_name: string
+          id: string
+          platform: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          rp_experience: string
+          social_links: string | null
+          status: string
+          steam_id: string
+          updated_at: string
+          user_id: string | null
+          why_join: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          average_viewers: string
+          channel_url: string
+          content_frequency: string
+          content_style: string
+          created_at?: string
+          discord_username: string
+          full_name: string
+          id?: string
+          platform: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          rp_experience: string
+          social_links?: string | null
+          status?: string
+          steam_id: string
+          updated_at?: string
+          user_id?: string | null
+          why_join: string
+        }
+        Update: {
+          admin_notes?: string | null
+          average_viewers?: string
+          channel_url?: string
+          content_frequency?: string
+          content_style?: string
+          created_at?: string
+          discord_username?: string
+          full_name?: string
+          id?: string
+          platform?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          rp_experience?: string
+          social_links?: string | null
+          status?: string
+          steam_id?: string
+          updated_at?: string
+          user_id?: string | null
+          why_join?: string
+        }
+        Relationships: []
+      }
       discord_presence: {
         Row: {
           created_at: string
