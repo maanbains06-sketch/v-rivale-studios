@@ -370,237 +370,307 @@ const CreatorProgramSection = () => {
                     <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-background/98 backdrop-blur-xl border-violet-500/20">
-                  <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold text-violet-300 flex items-center gap-2">
-                      <Video className="w-6 h-6 text-violet-400" />
-                      Creator Program Application
-                    </DialogTitle>
-                    <DialogDescription className="text-muted-foreground">
-                      Fill out the form below to apply for the SLRP Creator Program. We review all applications within 3-5 days.
-                    </DialogDescription>
-                  </DialogHeader>
+                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-gradient-to-b from-violet-950/95 via-background/98 to-background border border-violet-500/20 p-0">
+                  {/* Form Header */}
+                  <div className="sticky top-0 z-20 bg-gradient-to-b from-violet-950 to-violet-950/80 backdrop-blur-xl px-6 py-5 border-b border-violet-500/20">
+                    <DialogHeader>
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-2xl bg-violet-500/20 flex items-center justify-center">
+                          <Video className="w-6 h-6 text-violet-400" />
+                        </div>
+                        <div>
+                          <DialogTitle className="text-xl font-bold text-foreground">
+                            Creator Program Application
+                          </DialogTitle>
+                          <DialogDescription className="text-sm text-foreground/60">
+                            Complete all fields to apply • Review takes 3-5 days
+                          </DialogDescription>
+                        </div>
+                      </div>
+                    </DialogHeader>
+                  </div>
 
-                  <form onSubmit={handleSubmit} className="space-y-5 mt-4">
-                    {/* Personal Info */}
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="fullName">Full Name *</Label>
-                        <Input
-                          id="fullName"
-                          placeholder="Your real name"
-                          value={formData.fullName || ""}
-                          onChange={(e) => handleInputChange("fullName", e.target.value)}
-                          className={errors.fullName ? "border-destructive" : ""}
-                        />
-                        {errors.fullName && <p className="text-xs text-destructive">{errors.fullName}</p>}
+                  <form onSubmit={handleSubmit} className="px-6 py-6 space-y-8">
+                    {/* Section 1: Personal Info */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-8 h-8 rounded-full bg-violet-500/20 flex items-center justify-center text-sm font-bold text-violet-400">1</div>
+                        <h3 className="text-lg font-semibold text-foreground">Personal Information</h3>
+                      </div>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="fullName" className="text-foreground/90 flex items-center gap-2">
+                            Full Name <span className="text-violet-400">*</span>
+                          </Label>
+                          <Input
+                            id="fullName"
+                            placeholder="Your real name"
+                            value={formData.fullName || ""}
+                            onChange={(e) => handleInputChange("fullName", e.target.value)}
+                            className={`bg-violet-500/5 border-violet-500/20 focus:border-violet-500/50 focus:ring-violet-500/20 ${errors.fullName ? "border-destructive" : ""}`}
+                          />
+                          {errors.fullName && <p className="text-xs text-destructive">{errors.fullName}</p>}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="discordUsername" className="text-foreground/90 flex items-center gap-2">
+                            Discord Username <span className="text-violet-400">*</span>
+                          </Label>
+                          <Input
+                            id="discordUsername"
+                            placeholder="username#0000 or username"
+                            value={formData.discordUsername || ""}
+                            onChange={(e) => handleInputChange("discordUsername", e.target.value)}
+                            className={`bg-violet-500/5 border-violet-500/20 focus:border-violet-500/50 focus:ring-violet-500/20 ${errors.discordUsername ? "border-destructive" : ""}`}
+                          />
+                          {errors.discordUsername && <p className="text-xs text-destructive">{errors.discordUsername}</p>}
+                        </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="discordUsername">Discord Username *</Label>
-                        <Input
-                          id="discordUsername"
-                          placeholder="username#0000 or username"
-                          value={formData.discordUsername || ""}
-                          onChange={(e) => handleInputChange("discordUsername", e.target.value)}
-                          className={errors.discordUsername ? "border-destructive" : ""}
-                        />
-                        {errors.discordUsername && <p className="text-xs text-destructive">{errors.discordUsername}</p>}
-                      </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="steamId">Steam ID *</Label>
+                        <Label htmlFor="steamId" className="text-foreground/90 flex items-center gap-2">
+                          Steam ID <span className="text-violet-400">*</span>
+                        </Label>
                         <Input
                           id="steamId"
                           placeholder="steam:xxxxxxxxx or STEAM_0:X:XXXXX"
                           value={formData.steamId || ""}
                           onChange={(e) => handleInputChange("steamId", e.target.value)}
-                          className={errors.steamId ? "border-destructive" : ""}
+                          className={`bg-violet-500/5 border-violet-500/20 focus:border-violet-500/50 focus:ring-violet-500/20 ${errors.steamId ? "border-destructive" : ""}`}
                         />
                         {errors.steamId && <p className="text-xs text-destructive">{errors.steamId}</p>}
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="platform">Primary Platform *</Label>
-                        <Select 
-                          value={formData.platform || ""} 
-                          onValueChange={(value) => handleInputChange("platform", value)}
-                        >
-                          <SelectTrigger className={errors.platform ? "border-destructive" : ""}>
-                            <SelectValue placeholder="Select platform" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="youtube">
-                              <span className="flex items-center gap-2"><Youtube className="w-4 h-4 text-red-500" /> YouTube</span>
-                            </SelectItem>
-                            <SelectItem value="twitch">
-                              <span className="flex items-center gap-2"><Twitch className="w-4 h-4 text-purple-500" /> Twitch</span>
-                            </SelectItem>
-                            <SelectItem value="facebook">Facebook Gaming</SelectItem>
-                            <SelectItem value="kick">Kick</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {errors.platform && <p className="text-xs text-destructive">{errors.platform}</p>}
+                    </div>
+
+                    {/* Divider */}
+                    <div className="h-px bg-gradient-to-r from-transparent via-violet-500/30 to-transparent" />
+
+                    {/* Section 2: Channel Info */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-8 h-8 rounded-full bg-violet-500/20 flex items-center justify-center text-sm font-bold text-violet-400">2</div>
+                        <h3 className="text-lg font-semibold text-foreground">Channel Details</h3>
+                      </div>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="platform" className="text-foreground/90 flex items-center gap-2">
+                            Primary Platform <span className="text-violet-400">*</span>
+                          </Label>
+                          <Select 
+                            value={formData.platform || ""} 
+                            onValueChange={(value) => handleInputChange("platform", value)}
+                          >
+                            <SelectTrigger className={`bg-violet-500/5 border-violet-500/20 focus:border-violet-500/50 ${errors.platform ? "border-destructive" : ""}`}>
+                              <SelectValue placeholder="Select platform" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-violet-950 border-violet-500/30">
+                              <SelectItem value="youtube">
+                                <span className="flex items-center gap-2"><Youtube className="w-4 h-4 text-red-500" /> YouTube</span>
+                              </SelectItem>
+                              <SelectItem value="twitch">
+                                <span className="flex items-center gap-2"><Twitch className="w-4 h-4 text-purple-500" /> Twitch</span>
+                              </SelectItem>
+                              <SelectItem value="facebook">Facebook Gaming</SelectItem>
+                              <SelectItem value="kick">Kick</SelectItem>
+                              <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {errors.platform && <p className="text-xs text-destructive">{errors.platform}</p>}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="channelUrl" className="text-foreground/90 flex items-center gap-2">
+                            Channel URL <span className="text-violet-400">*</span>
+                          </Label>
+                          <Input
+                            id="channelUrl"
+                            placeholder="https://youtube.com/c/yourchannel"
+                            value={formData.channelUrl || ""}
+                            onChange={(e) => handleInputChange("channelUrl", e.target.value)}
+                            className={`bg-violet-500/5 border-violet-500/20 focus:border-violet-500/50 focus:ring-violet-500/20 ${errors.channelUrl ? "border-destructive" : ""}`}
+                          />
+                          {errors.channelUrl && <p className="text-xs text-destructive">{errors.channelUrl}</p>}
+                        </div>
+                      </div>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="averageViewers" className="text-foreground/90 flex items-center gap-2">
+                            Average Viewers <span className="text-violet-400">*</span>
+                          </Label>
+                          <Select 
+                            value={formData.averageViewers || ""} 
+                            onValueChange={(value) => handleInputChange("averageViewers", value)}
+                          >
+                            <SelectTrigger className={`bg-violet-500/5 border-violet-500/20 focus:border-violet-500/50 ${errors.averageViewers ? "border-destructive" : ""}`}>
+                              <SelectValue placeholder="Select range" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-violet-950 border-violet-500/30">
+                              <SelectItem value="1-10">1-10 viewers</SelectItem>
+                              <SelectItem value="10-50">10-50 viewers</SelectItem>
+                              <SelectItem value="50-100">50-100 viewers</SelectItem>
+                              <SelectItem value="100-500">100-500 viewers</SelectItem>
+                              <SelectItem value="500+">500+ viewers</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {errors.averageViewers && <p className="text-xs text-destructive">{errors.averageViewers}</p>}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="contentFrequency" className="text-foreground/90 flex items-center gap-2">
+                            Content Frequency <span className="text-violet-400">*</span>
+                          </Label>
+                          <Select 
+                            value={formData.contentFrequency || ""} 
+                            onValueChange={(value) => handleInputChange("contentFrequency", value)}
+                          >
+                            <SelectTrigger className={`bg-violet-500/5 border-violet-500/20 focus:border-violet-500/50 ${errors.contentFrequency ? "border-destructive" : ""}`}>
+                              <SelectValue placeholder="How often do you stream?" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-violet-950 border-violet-500/30">
+                              <SelectItem value="daily">Daily</SelectItem>
+                              <SelectItem value="4-6-week">4-6 times per week</SelectItem>
+                              <SelectItem value="2-3-week">2-3 times per week</SelectItem>
+                              <SelectItem value="weekly">Once a week</SelectItem>
+                              <SelectItem value="occasional">Occasionally</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {errors.contentFrequency && <p className="text-xs text-destructive">{errors.contentFrequency}</p>}
+                        </div>
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="channelUrl">Channel/Stream URL *</Label>
-                      <Input
-                        id="channelUrl"
-                        placeholder="https://youtube.com/c/yourchannel or https://twitch.tv/yourusername"
-                        value={formData.channelUrl || ""}
-                        onChange={(e) => handleInputChange("channelUrl", e.target.value)}
-                        className={errors.channelUrl ? "border-destructive" : ""}
-                      />
-                      {errors.channelUrl && <p className="text-xs text-destructive">{errors.channelUrl}</p>}
+                    {/* Divider */}
+                    <div className="h-px bg-gradient-to-r from-transparent via-violet-500/30 to-transparent" />
+
+                    {/* Section 3: Experience */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-8 h-8 rounded-full bg-violet-500/20 flex items-center justify-center text-sm font-bold text-violet-400">3</div>
+                        <h3 className="text-lg font-semibold text-foreground">Experience & Style</h3>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="rpExperience" className="text-foreground/90 flex items-center gap-2">
+                            GTA RP Experience <span className="text-violet-400">*</span>
+                          </Label>
+                          <Textarea
+                            id="rpExperience"
+                            placeholder="Describe your experience with GTA 5 RP servers. Which servers have you played on? How long have you been roleplaying?"
+                            value={formData.rpExperience || ""}
+                            onChange={(e) => handleInputChange("rpExperience", e.target.value)}
+                            className={`min-h-[100px] bg-violet-500/5 border-violet-500/20 focus:border-violet-500/50 focus:ring-violet-500/20 resize-none ${errors.rpExperience ? "border-destructive" : ""}`}
+                          />
+                          {errors.rpExperience && <p className="text-xs text-destructive">{errors.rpExperience}</p>}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="contentStyle" className="text-foreground/90 flex items-center gap-2">
+                            Content Style <span className="text-violet-400">*</span>
+                          </Label>
+                          <Textarea
+                            id="contentStyle"
+                            placeholder="Describe your content style. What type of RP scenarios do you enjoy? Are you more into serious RP, comedy, action, etc.?"
+                            value={formData.contentStyle || ""}
+                            onChange={(e) => handleInputChange("contentStyle", e.target.value)}
+                            className={`min-h-[100px] bg-violet-500/5 border-violet-500/20 focus:border-violet-500/50 focus:ring-violet-500/20 resize-none ${errors.contentStyle ? "border-destructive" : ""}`}
+                          />
+                          {errors.contentStyle && <p className="text-xs text-destructive">{errors.contentStyle}</p>}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="whyJoin" className="text-foreground/90 flex items-center gap-2">
+                            Why Join SLRP? <span className="text-violet-400">*</span>
+                          </Label>
+                          <Textarea
+                            id="whyJoin"
+                            placeholder="Tell us why you want to be part of Skylife RP and what you can bring to our community."
+                            value={formData.whyJoin || ""}
+                            onChange={(e) => handleInputChange("whyJoin", e.target.value)}
+                            className={`min-h-[120px] bg-violet-500/5 border-violet-500/20 focus:border-violet-500/50 focus:ring-violet-500/20 resize-none ${errors.whyJoin ? "border-destructive" : ""}`}
+                          />
+                          {errors.whyJoin && <p className="text-xs text-destructive">{errors.whyJoin}</p>}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="socialLinks" className="text-foreground/90">
+                            Other Social Media <span className="text-foreground/50">(Optional)</span>
+                          </Label>
+                          <Textarea
+                            id="socialLinks"
+                            placeholder="Instagram, Twitter, TikTok, etc. (one per line)"
+                            value={formData.socialLinks || ""}
+                            onChange={(e) => handleInputChange("socialLinks", e.target.value)}
+                            className="min-h-[80px] bg-violet-500/5 border-violet-500/20 focus:border-violet-500/50 focus:ring-violet-500/20 resize-none"
+                          />
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="averageViewers">Average Viewers *</Label>
-                        <Select 
-                          value={formData.averageViewers || ""} 
-                          onValueChange={(value) => handleInputChange("averageViewers", value)}
-                        >
-                          <SelectTrigger className={errors.averageViewers ? "border-destructive" : ""}>
-                            <SelectValue placeholder="Select range" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="1-10">1-10 viewers</SelectItem>
-                            <SelectItem value="10-50">10-50 viewers</SelectItem>
-                            <SelectItem value="50-100">50-100 viewers</SelectItem>
-                            <SelectItem value="100-500">100-500 viewers</SelectItem>
-                            <SelectItem value="500+">500+ viewers</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {errors.averageViewers && <p className="text-xs text-destructive">{errors.averageViewers}</p>}
+                    {/* Divider */}
+                    <div className="h-px bg-gradient-to-r from-transparent via-violet-500/30 to-transparent" />
+
+                    {/* Section 4: Upload */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-8 h-8 rounded-full bg-violet-500/20 flex items-center justify-center text-sm font-bold text-violet-400">4</div>
+                        <h3 className="text-lg font-semibold text-foreground">Verification</h3>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="contentFrequency">Content Frequency *</Label>
-                        <Select 
-                          value={formData.contentFrequency || ""} 
-                          onValueChange={(value) => handleInputChange("contentFrequency", value)}
-                        >
-                          <SelectTrigger className={errors.contentFrequency ? "border-destructive" : ""}>
-                            <SelectValue placeholder="How often do you stream?" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="daily">Daily</SelectItem>
-                            <SelectItem value="4-6-week">4-6 times per week</SelectItem>
-                            <SelectItem value="2-3-week">2-3 times per week</SelectItem>
-                            <SelectItem value="weekly">Once a week</SelectItem>
-                            <SelectItem value="occasional">Occasionally</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {errors.contentFrequency && <p className="text-xs text-destructive">{errors.contentFrequency}</p>}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="rpExperience">GTA RP Experience *</Label>
-                      <Textarea
-                        id="rpExperience"
-                        placeholder="Describe your experience with GTA 5 RP servers. Which servers have you played on? How long have you been roleplaying?"
-                        value={formData.rpExperience || ""}
-                        onChange={(e) => handleInputChange("rpExperience", e.target.value)}
-                        className={`min-h-[100px] ${errors.rpExperience ? "border-destructive" : ""}`}
-                      />
-                      {errors.rpExperience && <p className="text-xs text-destructive">{errors.rpExperience}</p>}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="contentStyle">Content Style *</Label>
-                      <Textarea
-                        id="contentStyle"
-                        placeholder="Describe your content style. What type of RP scenarios do you enjoy? Are you more into serious RP, comedy, action, etc.?"
-                        value={formData.contentStyle || ""}
-                        onChange={(e) => handleInputChange("contentStyle", e.target.value)}
-                        className={`min-h-[100px] ${errors.contentStyle ? "border-destructive" : ""}`}
-                      />
-                      {errors.contentStyle && <p className="text-xs text-destructive">{errors.contentStyle}</p>}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="whyJoin">Why do you want to join SLRP Creator Program? *</Label>
-                      <Textarea
-                        id="whyJoin"
-                        placeholder="Tell us why you want to be part of Skylife RP and what you can bring to our community. What makes you a good fit for our creator program?"
-                        value={formData.whyJoin || ""}
-                        onChange={(e) => handleInputChange("whyJoin", e.target.value)}
-                        className={`min-h-[120px] ${errors.whyJoin ? "border-destructive" : ""}`}
-                      />
-                      {errors.whyJoin && <p className="text-xs text-destructive">{errors.whyJoin}</p>}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="socialLinks">Other Social Media Links (Optional)</Label>
-                      <Textarea
-                        id="socialLinks"
-                        placeholder="Instagram, Twitter, TikTok, etc. (one per line)"
-                        value={formData.socialLinks || ""}
-                        onChange={(e) => handleInputChange("socialLinks", e.target.value)}
-                        className="min-h-[80px]"
-                      />
-                    </div>
-
-                    {/* Ownership Proof Upload */}
-                    <div className="space-y-2">
-                      <Label htmlFor="ownershipProof">Upload Channel Ownership Proof *</Label>
-                      <p className="text-xs text-muted-foreground mb-2">
-                        Upload a screenshot of your channel dashboard, analytics page, or any proof that shows you own the channel (JPG, PNG, GIF, WebP, or PDF - Max 10MB)
-                      </p>
-                      <div className={`relative border-2 border-dashed rounded-xl p-6 transition-colors ${fileError ? 'border-destructive bg-destructive/5' : ownershipProofFile ? 'border-emerald-500/50 bg-emerald-500/5' : 'border-violet-500/30 hover:border-violet-500/50 bg-violet-500/5'}`}>
-                        {ownershipProofFile ? (
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <FileCheck className="w-8 h-8 text-emerald-500" />
-                              <div>
-                                <p className="font-medium text-foreground">{ownershipProofFile.name}</p>
-                                <p className="text-xs text-muted-foreground">
-                                  {(ownershipProofFile.size / 1024 / 1024).toFixed(2)} MB
-                                </p>
+                        <Label htmlFor="ownershipProof" className="text-foreground/90 flex items-center gap-2">
+                          Channel Ownership Proof <span className="text-violet-400">*</span>
+                        </Label>
+                        <p className="text-xs text-foreground/60 mb-3">
+                          Upload a screenshot of your channel dashboard or analytics page (JPG, PNG, GIF, WebP, or PDF - Max 10MB)
+                        </p>
+                        <div className={`relative border-2 border-dashed rounded-2xl p-8 transition-all duration-300 ${fileError ? 'border-destructive bg-destructive/5' : ownershipProofFile ? 'border-emerald-500/50 bg-emerald-500/5' : 'border-violet-500/30 hover:border-violet-400/50 bg-violet-500/5 hover:bg-violet-500/10'}`}>
+                          {ownershipProofFile ? (
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                                  <FileCheck className="w-6 h-6 text-emerald-400" />
+                                </div>
+                                <div>
+                                  <p className="font-medium text-foreground">{ownershipProofFile.name}</p>
+                                  <p className="text-xs text-foreground/60">
+                                    {(ownershipProofFile.size / 1024 / 1024).toFixed(2)} MB • Ready to upload
+                                  </p>
+                                </div>
                               </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setOwnershipProofFile(null)}
+                                className="text-foreground/50 hover:text-destructive hover:bg-destructive/10 rounded-xl"
+                              >
+                                <X className="w-5 h-5" />
+                              </Button>
                             </div>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setOwnershipProofFile(null)}
-                              className="text-muted-foreground hover:text-destructive"
-                            >
-                              <X className="w-5 h-5" />
-                            </Button>
-                          </div>
-                        ) : (
-                          <label htmlFor="ownershipProof" className="flex flex-col items-center cursor-pointer">
-                            <Upload className="w-10 h-10 text-violet-400 mb-2" />
-                            <span className="text-sm font-medium text-foreground">Click to upload</span>
-                            <span className="text-xs text-muted-foreground">or drag and drop</span>
-                          </label>
-                        )}
-                        <input
-                          type="file"
-                          id="ownershipProof"
-                          accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
-                          onChange={handleFileChange}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        />
+                          ) : (
+                            <label htmlFor="ownershipProof" className="flex flex-col items-center cursor-pointer">
+                              <div className="w-16 h-16 rounded-2xl bg-violet-500/15 flex items-center justify-center mb-4">
+                                <Upload className="w-8 h-8 text-violet-400" />
+                              </div>
+                              <span className="text-sm font-medium text-foreground mb-1">Click to upload file</span>
+                              <span className="text-xs text-foreground/50">or drag and drop here</span>
+                            </label>
+                          )}
+                          <input
+                            type="file"
+                            id="ownershipProof"
+                            accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
+                            onChange={handleFileChange}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          />
+                        </div>
+                        {fileError && <p className="text-xs text-destructive mt-2">{fileError}</p>}
                       </div>
-                      {fileError && <p className="text-xs text-destructive">{fileError}</p>}
                     </div>
 
-                    <div className="pt-4">
+                    {/* Submit Section */}
+                    <div className="pt-4 space-y-4">
                       <Button 
                         type="submit" 
                         disabled={isSubmitting || isUploading}
-                        className="w-full bg-violet-600 hover:bg-violet-500 text-white font-semibold py-6 rounded-xl"
+                        className="w-full bg-violet-600 hover:bg-violet-500 text-white font-semibold py-6 rounded-xl shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 transition-all duration-300 text-base"
                       >
                         {isSubmitting || isUploading ? (
                           <>
                             <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                            {isUploading ? "Uploading Proof..." : "Submitting..."}
+                            {isUploading ? "Uploading Proof..." : "Submitting Application..."}
                           </>
                         ) : (
                           <>
@@ -609,11 +679,10 @@ const CreatorProgramSection = () => {
                           </>
                         )}
                       </Button>
+                      <p className="text-xs text-center text-foreground/50">
+                        By submitting, you agree to follow all server rules and maintain professional conduct.
+                      </p>
                     </div>
-
-                    <p className="text-xs text-center text-muted-foreground">
-                      By submitting, you agree to follow all server rules and maintain professional conduct.
-                    </p>
                   </form>
                 </DialogContent>
               </Dialog>
