@@ -118,6 +118,7 @@ const evaluations = [
 
 const CreatorProgramSection = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isRulesOpen, setIsRulesOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [ownershipProofFile, setOwnershipProofFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -369,109 +370,131 @@ const CreatorProgramSection = () => {
               </motion.div>
             </div>
 
-            {/* Creator Agreement & Rules */}
-            <motion.div 
-              variants={itemVariants}
-              className="mb-12 p-6 md:p-8 rounded-2xl bg-gradient-to-br from-red-500/8 via-background/50 to-rose-500/8 border border-red-500/20"
-            >
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-xl bg-red-500/15 flex items-center justify-center">
-                  <Shield className="w-6 h-6 text-red-400" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-red-300">Creator Program Agreement & Rules</h3>
-                  <p className="text-sm text-foreground/60">Read carefully before applying</p>
-                </div>
-              </div>
-              
-              <p className="text-sm text-foreground/80 mb-6 p-4 rounded-xl bg-red-500/5 border border-red-500/10">
-                By joining the Skylife Roleplay India Creator Program, you agree to maintain professional, responsible, and rule-compliant behavior at all times — both in-city and on your content platforms.
-              </p>
+            {/* CTA Buttons */}
+            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              {/* Rules Button */}
+              <Dialog open={isRulesOpen} onOpenChange={setIsRulesOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-red-500/30 text-red-300 hover:bg-red-500/10 hover:border-red-500/50 font-semibold px-6 py-6 rounded-xl transition-all duration-300 text-base group"
+                  >
+                    <Shield className="w-5 h-5 mr-2" />
+                    View Creator Rules
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto bg-gradient-to-b from-background via-background to-red-950/20 backdrop-blur-2xl border border-red-400/25 shadow-2xl shadow-red-500/15">
+                  <DialogHeader className="pb-4 border-b border-red-500/20">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-red-500/15 flex items-center justify-center">
+                        <Shield className="w-6 h-6 text-red-400" />
+                      </div>
+                      <div>
+                        <DialogTitle className="text-xl font-bold text-red-300">Creator Program Agreement & Rules</DialogTitle>
+                        <DialogDescription className="text-sm text-foreground/60">Read carefully before applying</DialogDescription>
+                      </div>
+                    </div>
+                  </DialogHeader>
+                  
+                  <div className="py-4">
+                    <p className="text-sm text-foreground/80 mb-6 p-4 rounded-xl bg-red-500/5 border border-red-500/10">
+                      By joining the Skylife Roleplay India Creator Program, you agree to maintain professional, responsible, and rule-compliant behavior at all times — both in-city and on your content platforms.
+                    </p>
 
-              <div className="grid gap-4">
-                <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/10 transition-colors">
-                  <div className="w-8 h-8 rounded-lg bg-red-500/15 flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="text-xs font-bold text-red-400">1</span>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-foreground mb-1">No Exploit / Staff Exposure</h4>
-                    <p className="text-xs text-foreground/70">You agree not to show staff tools, dev menus, leaked content, backend systems, exploits, or unfinished features in any video or livestream.</p>
-                  </div>
-                </div>
+                    <div className="grid gap-3">
+                      <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/5 border border-red-500/10">
+                        <div className="w-7 h-7 rounded-lg bg-red-500/15 flex items-center justify-center shrink-0 mt-0.5">
+                          <span className="text-xs font-bold text-red-400">1</span>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-semibold text-foreground mb-1">No Exploit / Staff Exposure</h4>
+                          <p className="text-xs text-foreground/70">You agree not to show staff tools, dev menus, leaked content, backend systems, exploits, or unfinished features in any video or livestream.</p>
+                        </div>
+                      </div>
 
-                <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/10 transition-colors">
-                  <div className="w-8 h-8 rounded-lg bg-red-500/15 flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="text-xs font-bold text-red-400">2</span>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-foreground mb-1">No Rule-Breaking for Content</h4>
-                    <p className="text-xs text-foreground/70">You will not break, bend, bait, or manipulate RP rules for the sake of creating "funny moments," drama, or high-reach clips.</p>
-                  </div>
-                </div>
+                      <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/5 border border-red-500/10">
+                        <div className="w-7 h-7 rounded-lg bg-red-500/15 flex items-center justify-center shrink-0 mt-0.5">
+                          <span className="text-xs font-bold text-red-400">2</span>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-semibold text-foreground mb-1">No Rule-Breaking for Content</h4>
+                          <p className="text-xs text-foreground/70">You will not break, bend, bait, or manipulate RP rules for the sake of creating "funny moments," drama, or high-reach clips.</p>
+                        </div>
+                      </div>
 
-                <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/10 transition-colors">
-                  <div className="w-8 h-8 rounded-lg bg-red-500/15 flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="text-xs font-bold text-red-400">3</span>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-foreground mb-1">Respect IC / OOC Boundaries</h4>
-                    <p className="text-xs text-foreground/70">You will maintain a clear separation between IC (In Character) storytelling and OOC (Out of Character) communication. Using OOC pressure to influence RP is strictly prohibited.</p>
-                  </div>
-                </div>
+                      <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/5 border border-red-500/10">
+                        <div className="w-7 h-7 rounded-lg bg-red-500/15 flex items-center justify-center shrink-0 mt-0.5">
+                          <span className="text-xs font-bold text-red-400">3</span>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-semibold text-foreground mb-1">Respect IC / OOC Boundaries</h4>
+                          <p className="text-xs text-foreground/70">You will maintain a clear separation between IC (In Character) storytelling and OOC (Out of Character) communication. Using OOC pressure to influence RP is strictly prohibited.</p>
+                        </div>
+                      </div>
 
-                <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/10 transition-colors">
-                  <div className="w-8 h-8 rounded-lg bg-red-500/15 flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="text-xs font-bold text-red-400">4</span>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-foreground mb-1">No Harassment or Toxic Behavior</h4>
-                    <p className="text-xs text-foreground/70">You agree to avoid harassment, verbal abuse, discrimination, or targeted toxicity toward players, staff, or other creators — both in content and community spaces.</p>
-                  </div>
-                </div>
+                      <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/5 border border-red-500/10">
+                        <div className="w-7 h-7 rounded-lg bg-red-500/15 flex items-center justify-center shrink-0 mt-0.5">
+                          <span className="text-xs font-bold text-red-400">4</span>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-semibold text-foreground mb-1">No Harassment or Toxic Behavior</h4>
+                          <p className="text-xs text-foreground/70">You agree to avoid harassment, verbal abuse, discrimination, or targeted toxicity toward players, staff, or other creators — both in content and community spaces.</p>
+                        </div>
+                      </div>
 
-                <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/10 transition-colors">
-                  <div className="w-8 h-8 rounded-lg bg-red-500/15 flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="text-xs font-bold text-red-400">5</span>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-foreground mb-1">No Meta-Gaming or Power-Gaming</h4>
-                    <p className="text-xs text-foreground/70">You agree not to use OOC information IC, and not to force unfair RP outcomes for content purposes.</p>
-                  </div>
-                </div>
+                      <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/5 border border-red-500/10">
+                        <div className="w-7 h-7 rounded-lg bg-red-500/15 flex items-center justify-center shrink-0 mt-0.5">
+                          <span className="text-xs font-bold text-red-400">5</span>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-semibold text-foreground mb-1">No Meta-Gaming or Power-Gaming</h4>
+                          <p className="text-xs text-foreground/70">You agree not to use OOC information IC, and not to force unfair RP outcomes for content purposes.</p>
+                        </div>
+                      </div>
 
-                <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/10 transition-colors">
-                  <div className="w-8 h-8 rounded-lg bg-red-500/15 flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="text-xs font-bold text-red-400">6</span>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-foreground mb-1">Content Accuracy & Integrity</h4>
-                    <p className="text-xs text-foreground/70">You will not intentionally misrepresent Skylife Roleplay India rules, staff decisions, or RP scenarios in a way that harms the server's reputation.</p>
-                  </div>
-                </div>
+                      <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/5 border border-red-500/10">
+                        <div className="w-7 h-7 rounded-lg bg-red-500/15 flex items-center justify-center shrink-0 mt-0.5">
+                          <span className="text-xs font-bold text-red-400">6</span>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-semibold text-foreground mb-1">Content Accuracy & Integrity</h4>
+                          <p className="text-xs text-foreground/70">You will not intentionally misrepresent Skylife Roleplay India rules, staff decisions, or RP scenarios in a way that harms the server's reputation.</p>
+                        </div>
+                      </div>
 
-                <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/10 transition-colors">
-                  <div className="w-8 h-8 rounded-lg bg-red-500/15 flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="text-xs font-bold text-red-400">7</span>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-foreground mb-1">Respect Staff Decisions</h4>
-                    <p className="text-xs text-foreground/70">You agree to follow staff instructions during scenes, reports, or investigations, and to cooperate professionally at all times.</p>
-                  </div>
-                </div>
+                      <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/5 border border-red-500/10">
+                        <div className="w-7 h-7 rounded-lg bg-red-500/15 flex items-center justify-center shrink-0 mt-0.5">
+                          <span className="text-xs font-bold text-red-400">7</span>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-semibold text-foreground mb-1">Respect Staff Decisions</h4>
+                          <p className="text-xs text-foreground/70">You agree to follow staff instructions during scenes, reports, or investigations, and to cooperate professionally at all times.</p>
+                        </div>
+                      </div>
 
-                <div className="flex items-start gap-3 p-4 rounded-xl bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/15 transition-colors">
-                  <div className="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="text-xs font-bold text-orange-400">8</span>
+                      <div className="flex items-start gap-3 p-4 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                        <div className="w-7 h-7 rounded-lg bg-orange-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                          <span className="text-xs font-bold text-orange-400">8</span>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-semibold text-orange-300 mb-1">Removal Clause</h4>
+                          <p className="text-xs text-foreground/70">You understand that violating these rules or creating harmful situations may result in removal from the Skylife Roleplay India Creator Program, loss of perks, or server disciplinary action.</p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-orange-300 mb-1">Removal Clause</h4>
-                    <p className="text-xs text-foreground/70">You understand that violating these rules or creating harmful situations may result in removal from the Skylife Roleplay India Creator Program, loss of perks, or server disciplinary action.</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
 
-            <motion.div variants={itemVariants} className="text-center">
+                  <div className="pt-4 border-t border-red-500/20">
+                    <Button 
+                      onClick={() => setIsRulesOpen(false)}
+                      className="w-full bg-red-600 hover:bg-red-500 text-white font-semibold py-5 rounded-xl"
+                    >
+                      I Understand
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
               <Dialog open={isOpen} onOpenChange={setIsOpen}>
                 <DialogTrigger asChild>
                   <Button
