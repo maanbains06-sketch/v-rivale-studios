@@ -16,7 +16,10 @@ import {
   Send,
   Loader2,
   Youtube,
-  Twitch
+  Twitch,
+  Upload,
+  FileCheck,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
@@ -91,6 +94,9 @@ const perks = [
 const CreatorProgramSection = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [ownershipProofFile, setOwnershipProofFile] = useState<File | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
   const [formData, setFormData] = useState<Partial<CreatorFormData>>({});
   const [errors, setErrors] = useState<Partial<Record<keyof CreatorFormData, string>>>({});
@@ -102,13 +108,75 @@ const CreatorProgramSection = () => {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setFileError(null);
+    
+    if (!file) {
+      setOwnershipProofFile(null);
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
+      setFileError("Please upload an image (JPG, PNG, GIF, WebP) or PDF file");
+      setOwnershipProofFile(null);
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      setFileError("File size must be less than 10MB");
+      setOwnershipProofFile(null);
+      return;
+    }
+
+    setOwnershipProofFile(file);
+  };
+
+  const uploadOwnershipProof = async (): Promise<string | null> => {
+    if (!ownershipProofFile) return null;
+
+    setIsUploading(true);
+    try {
+      const fileExt = ownershipProofFile.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `proofs/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('creator-proofs')
+        .upload(filePath, ownershipProofFile);
+
+      if (uploadError) throw uploadError;
+
+      return filePath;
+    } catch (error) {
+      console.error('Upload error:', error);
+      throw new Error('Failed to upload ownership proof');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setErrors({});
+    setFileError(null);
 
     try {
       const validatedData = creatorSchema.parse(formData);
+
+      // Validate ownership proof is required
+      if (!ownershipProofFile) {
+        setFileError("Please upload ownership proof of your channel");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Upload ownership proof first
+      const proofUrl = await uploadOwnershipProof();
 
       // Get current user if logged in (optional)
       const { data: { user } } = await supabase.auth.getUser();
@@ -125,6 +193,7 @@ const CreatorProgramSection = () => {
         content_style: validatedData.contentStyle,
         why_join: validatedData.whyJoin,
         social_links: validatedData.socialLinks || null,
+        ownership_proof_url: proofUrl,
         user_id: user?.id || null,
         status: "pending"
       });
@@ -137,6 +206,7 @@ const CreatorProgramSection = () => {
       });
 
       setFormData({});
+      setOwnershipProofFile(null);
       setIsOpen(false);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -464,16 +534,62 @@ const CreatorProgramSection = () => {
                       />
                     </div>
 
+                    {/* Ownership Proof Upload */}
+                    <div className="space-y-2">
+                      <Label htmlFor="ownershipProof">Upload Channel Ownership Proof *</Label>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        Upload a screenshot of your channel dashboard, analytics page, or any proof that shows you own the channel (JPG, PNG, GIF, WebP, or PDF - Max 10MB)
+                      </p>
+                      <div className={`relative border-2 border-dashed rounded-xl p-6 transition-colors ${fileError ? 'border-destructive bg-destructive/5' : ownershipProofFile ? 'border-green-500 bg-green-500/5' : 'border-purple-500/30 hover:border-purple-500/50 bg-purple-500/5'}`}>
+                        {ownershipProofFile ? (
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <FileCheck className="w-8 h-8 text-green-500" />
+                              <div>
+                                <p className="font-medium text-foreground">{ownershipProofFile.name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {(ownershipProofFile.size / 1024 / 1024).toFixed(2)} MB
+                                </p>
+                              </div>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setOwnershipProofFile(null)}
+                              className="text-muted-foreground hover:text-destructive"
+                            >
+                              <X className="w-5 h-5" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <label htmlFor="ownershipProof" className="flex flex-col items-center cursor-pointer">
+                            <Upload className="w-10 h-10 text-purple-400 mb-2" />
+                            <span className="text-sm font-medium text-foreground">Click to upload</span>
+                            <span className="text-xs text-muted-foreground">or drag and drop</span>
+                          </label>
+                        )}
+                        <input
+                          type="file"
+                          id="ownershipProof"
+                          accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
+                          onChange={handleFileChange}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                      </div>
+                      {fileError && <p className="text-xs text-destructive">{fileError}</p>}
+                    </div>
+
                     <div className="pt-4">
                       <Button 
                         type="submit" 
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || isUploading}
                         className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-6 rounded-xl"
                       >
-                        {isSubmitting ? (
+                        {isSubmitting || isUploading ? (
                           <>
                             <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                            Submitting...
+                            {isUploading ? "Uploading Proof..." : "Submitting..."}
                           </>
                         ) : (
                           <>

@@ -144,6 +144,7 @@ export type Database = {
           discord_username: string
           full_name: string
           id: string
+          ownership_proof_url: string | null
           platform: string
           reviewed_at: string | null
           reviewed_by: string | null
@@ -165,6 +166,7 @@ export type Database = {
           discord_username: string
           full_name: string
           id?: string
+          ownership_proof_url?: string | null
           platform: string
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -186,6 +188,7 @@ export type Database = {
           discord_username?: string
           full_name?: string
           id?: string
+          ownership_proof_url?: string | null
           platform?: string
           reviewed_at?: string | null
           reviewed_by?: string | null
