@@ -657,6 +657,9 @@ const Admin = () => {
   ) => {
     const { data: { user } } = await supabase.auth.getUser();
     
+    // Find the application to get details for email
+    const application = creatorApplications.find(a => a.id === creatorAppId);
+    
     const { error } = await supabase
       .from("creator_applications")
       .update({
@@ -676,10 +679,60 @@ const Admin = () => {
       return;
     }
 
-    toast({
-      title: "Success",
-      description: `Creator application ${status} successfully.`,
-    });
+    // Send email notification
+    if (application) {
+      try {
+        // Try to get email from user profile if user_id exists
+        let applicantEmail: string | undefined;
+        if (application.user_id) {
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("discord_username")
+            .eq("id", application.user_id)
+            .single();
+          
+          // Get email from auth.users via edge function would be ideal,
+          // but for now we'll rely on discord username notification
+        }
+
+        const { error: notifyError } = await supabase.functions.invoke('send-creator-notification', {
+          body: {
+            applicantName: application.full_name,
+            discordUsername: application.discord_username,
+            status: status,
+            adminNotes: creatorAdminNotes || undefined,
+            channelUrl: application.channel_url,
+            platform: application.platform,
+          }
+        });
+
+        if (notifyError) {
+          console.error("Error sending creator notification:", notifyError);
+          toast({
+            title: "Partial Success",
+            description: `Application ${status}, but email notification failed.`,
+            variant: "default",
+          });
+        } else {
+          toast({
+            title: "Success",
+            description: `Creator application ${status} and notification sent.`,
+          });
+        }
+      } catch (notifyError) {
+        console.error("Error invoking notification function:", notifyError);
+        toast({
+          title: "Partial Success",
+          description: `Application ${status}, but notification failed.`,
+          variant: "default",
+        });
+      }
+    } else {
+      toast({
+        title: "Success",
+        description: `Creator application ${status} successfully.`,
+      });
+    }
 
     setSelectedCreatorApp(null);
     setCreatorAdminNotes("");
