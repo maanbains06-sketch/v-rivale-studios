@@ -1051,6 +1051,20 @@ const Guides = () => {
                             <p className="text-sm mt-1 text-muted-foreground">You cannot rob the same player more than once within 2 hours. Chain robbing (robbing multiple players in quick succession without roleplay) is prohibited. After a robbery, you should leave the area to allow the victim to recover. Targeting the same player repeatedly across days is considered harassment.</p>
                           </div>
                         </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                          <span className="text-xl">15.9</span>
+                          <div>
+                            <strong className="text-blue-400">Police Department (PD) Looting:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Looting police officers requires active hostile situation (shootout, kidnapping). You may take: radios, handcuffs, tasers, and sidearms. You CANNOT take: police badges, uniforms, police vehicles keys, or heavy weapons from armory. Police radios must be destroyed or discarded within 30 minutes. Impersonating police using looted items is strictly prohibited without staff approval for specific roleplay scenarios.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                          <span className="text-xl">15.10</span>
+                          <div>
+                            <strong className="text-red-400">EMS/Medical Looting:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">EMS personnel are generally protected from robbery while on duty responding to calls. You may only loot EMS during active gang/criminal scenarios where they are directly involved. Allowed items: medical supplies, radios, personal belongings. PROHIBITED: EMS uniforms, ambulance keys, defibrillators, and medical equipment. Targeting EMS repeatedly or camping hospitals to rob medics will result in severe punishment. Let EMS do their job - they help everyone.</p>
+                          </div>
+                        </li>
                       </ul>
                     </div>
 
