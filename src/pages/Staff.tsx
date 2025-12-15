@@ -492,8 +492,14 @@ const Staff = () => {
                 transition={{ type: "spring", stiffness: 300 }}
                 onClick={(e) => {
                   e.stopPropagation();
+                  // Get high-resolution Discord avatar (4096px) for lightbox
+                  let hdAvatarUrl = member.discord_avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`;
+                  if (member.discord_avatar && member.discord_avatar.includes('cdn.discordapp.com')) {
+                    // Remove any existing size parameter and add max size (4096)
+                    hdAvatarUrl = member.discord_avatar.replace(/\?size=\d+/, '').replace(/&size=\d+/, '') + '?size=4096';
+                  }
                   setSelectedAvatar({
-                    url: member.discord_avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`,
+                    url: hdAvatarUrl,
                     name: member.name
                   });
                 }}
