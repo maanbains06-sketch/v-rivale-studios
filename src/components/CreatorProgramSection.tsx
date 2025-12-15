@@ -370,7 +370,7 @@ const CreatorProgramSection = () => {
                     <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-background/95 backdrop-blur-2xl border border-red-500/30 p-0 shadow-2xl shadow-red-500/10">
+                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-gradient-to-b from-background via-background to-red-950/20 backdrop-blur-2xl border border-red-400/25 p-0 shadow-2xl shadow-red-500/15">
                   {/* Animated Background Effects */}
                   <div className="absolute inset-0 overflow-hidden pointer-events-none">
                     <div className="absolute top-0 left-1/4 w-64 h-64 bg-red-500/10 rounded-full blur-[100px] animate-pulse" />
@@ -383,7 +383,7 @@ const CreatorProgramSection = () => {
                   </div>
 
                   {/* Form Header with Glassmorphism */}
-                  <div className="sticky top-0 z-20 bg-gradient-to-r from-red-950/90 via-rose-950/80 to-red-950/90 backdrop-blur-2xl px-6 py-6 border-b border-red-400/20">
+                  <div className="sticky top-0 z-20 bg-gradient-to-r from-red-900/70 via-rose-900/60 to-red-900/70 backdrop-blur-2xl px-6 py-6 border-b border-red-300/25">
                     <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 via-rose-500/5 to-red-500/5" />
                     <DialogHeader className="relative">
                       <div className="flex items-center gap-4">
@@ -438,7 +438,7 @@ const CreatorProgramSection = () => {
                   <form onSubmit={handleSubmit} className="relative px-6 py-8 space-y-10">
                     {/* Section 1: Personal Info */}
                     <motion.div 
-                      className="space-y-5 p-6 rounded-2xl bg-gradient-to-br from-red-500/5 via-transparent to-rose-500/5 border border-red-500/15 backdrop-blur-sm"
+                      className="space-y-5 p-6 rounded-2xl bg-gradient-to-br from-red-500/8 via-background/50 to-rose-500/8 border border-red-400/20 backdrop-blur-sm"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.1 }}
@@ -466,7 +466,7 @@ const CreatorProgramSection = () => {
                               placeholder="Your real name"
                               value={formData.fullName || ""}
                               onChange={(e) => handleInputChange("fullName", e.target.value)}
-                              className={`bg-red-950/50 border-red-500/25 focus:border-red-400/60 focus:ring-2 focus:ring-red-500/20 text-foreground placeholder:text-red-300/40 rounded-xl py-5 transition-all duration-300 hover:border-red-400/40 ${errors.fullName ? "border-destructive" : ""}`}
+                              className={`bg-white/5 dark:bg-white/5 border-red-300/30 focus:border-red-400/70 focus:ring-2 focus:ring-red-400/25 text-foreground placeholder:text-muted-foreground/60 rounded-xl py-5 transition-all duration-300 hover:border-red-400/50 ${errors.fullName ? "border-destructive" : ""}`}
                             />
                             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-red-500/0 via-red-500/5 to-rose-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                           </div>
@@ -482,7 +482,7 @@ const CreatorProgramSection = () => {
                               placeholder="username#0000 or username"
                               value={formData.discordUsername || ""}
                               onChange={(e) => handleInputChange("discordUsername", e.target.value)}
-                              className={`bg-red-950/50 border-red-500/25 focus:border-red-400/60 focus:ring-2 focus:ring-red-500/20 text-foreground placeholder:text-red-300/40 rounded-xl py-5 transition-all duration-300 hover:border-red-400/40 ${errors.discordUsername ? "border-destructive" : ""}`}
+                              className={`bg-white/5 dark:bg-white/5 border-red-300/30 focus:border-red-400/70 focus:ring-2 focus:ring-red-400/25 text-foreground placeholder:text-muted-foreground/60 rounded-xl py-5 transition-all duration-300 hover:border-red-400/50 ${errors.discordUsername ? "border-destructive" : ""}`}
                             />
                             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-red-500/0 via-red-500/5 to-rose-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                           </div>
@@ -499,7 +499,7 @@ const CreatorProgramSection = () => {
                             placeholder="steam:xxxxxxxxx or STEAM_0:X:XXXXX"
                             value={formData.steamId || ""}
                             onChange={(e) => handleInputChange("steamId", e.target.value)}
-                            className={`bg-red-950/50 border-red-500/25 focus:border-red-400/60 focus:ring-2 focus:ring-red-500/20 text-foreground placeholder:text-red-300/40 rounded-xl py-5 transition-all duration-300 hover:border-red-400/40 ${errors.steamId ? "border-destructive" : ""}`}
+                            className={`bg-white/5 dark:bg-white/5 border-red-300/30 focus:border-red-400/70 focus:ring-2 focus:ring-red-400/25 text-foreground placeholder:text-muted-foreground/60 rounded-xl py-5 transition-all duration-300 hover:border-red-400/50 ${errors.steamId ? "border-destructive" : ""}`}
                           />
                           <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-red-500/0 via-red-500/5 to-rose-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                         </div>
@@ -509,7 +509,7 @@ const CreatorProgramSection = () => {
 
                     {/* Section 2: Channel Info */}
                     <motion.div 
-                      className="space-y-5 p-6 rounded-2xl bg-gradient-to-br from-rose-500/5 via-transparent to-red-500/5 border border-rose-500/15 backdrop-blur-sm"
+                      className="space-y-5 p-6 rounded-2xl bg-gradient-to-br from-rose-500/8 via-background/50 to-red-500/8 border border-rose-400/20 backdrop-blur-sm"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.2 }}
@@ -535,10 +535,10 @@ const CreatorProgramSection = () => {
                             value={formData.platform || ""} 
                             onValueChange={(value) => handleInputChange("platform", value)}
                           >
-                            <SelectTrigger className={`bg-red-950/50 border-rose-500/25 focus:border-rose-400/60 rounded-xl py-5 transition-all duration-300 hover:border-rose-400/40 ${errors.platform ? "border-destructive" : ""}`}>
+                            <SelectTrigger className={`bg-white/5 dark:bg-white/5 border-rose-300/30 focus:border-rose-400/70 rounded-xl py-5 transition-all duration-300 hover:border-rose-400/50 ${errors.platform ? "border-destructive" : ""}`}>
                               <SelectValue placeholder="Select platform" />
                             </SelectTrigger>
-                            <SelectContent className="bg-red-950/95 backdrop-blur-xl border-rose-500/30 rounded-xl">
+                            <SelectContent className="bg-background/98 backdrop-blur-xl border-rose-400/30 rounded-xl">
                               <SelectItem value="youtube" className="focus:bg-rose-500/20">
                                 <span className="flex items-center gap-2"><Youtube className="w-4 h-4 text-red-400" /> YouTube</span>
                               </SelectItem>
@@ -562,7 +562,7 @@ const CreatorProgramSection = () => {
                               placeholder="https://youtube.com/c/yourchannel"
                               value={formData.channelUrl || ""}
                               onChange={(e) => handleInputChange("channelUrl", e.target.value)}
-                              className={`bg-red-950/50 border-rose-500/25 focus:border-rose-400/60 focus:ring-2 focus:ring-rose-500/20 text-foreground placeholder:text-rose-300/40 rounded-xl py-5 transition-all duration-300 hover:border-rose-400/40 ${errors.channelUrl ? "border-destructive" : ""}`}
+                              className={`bg-white/5 dark:bg-white/5 border-rose-300/30 focus:border-rose-400/70 focus:ring-2 focus:ring-rose-400/25 text-foreground placeholder:text-muted-foreground/60 rounded-xl py-5 transition-all duration-300 hover:border-rose-400/50 ${errors.channelUrl ? "border-destructive" : ""}`}
                             />
                             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-rose-500/0 via-rose-500/5 to-red-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                           </div>
@@ -578,10 +578,10 @@ const CreatorProgramSection = () => {
                             value={formData.averageViewers || ""} 
                             onValueChange={(value) => handleInputChange("averageViewers", value)}
                           >
-                            <SelectTrigger className={`bg-red-950/50 border-rose-500/25 focus:border-rose-400/60 rounded-xl py-5 transition-all duration-300 hover:border-rose-400/40 ${errors.averageViewers ? "border-destructive" : ""}`}>
+                            <SelectTrigger className={`bg-white/5 dark:bg-white/5 border-rose-300/30 focus:border-rose-400/70 rounded-xl py-5 transition-all duration-300 hover:border-rose-400/50 ${errors.averageViewers ? "border-destructive" : ""}`}>
                               <SelectValue placeholder="Select range" />
                             </SelectTrigger>
-                            <SelectContent className="bg-red-950/95 backdrop-blur-xl border-rose-500/30 rounded-xl">
+                            <SelectContent className="bg-background/98 backdrop-blur-xl border-rose-400/30 rounded-xl">
                               <SelectItem value="1-10" className="focus:bg-rose-500/20">1-10 viewers</SelectItem>
                               <SelectItem value="10-50" className="focus:bg-rose-500/20">10-50 viewers</SelectItem>
                               <SelectItem value="50-100" className="focus:bg-rose-500/20">50-100 viewers</SelectItem>
@@ -599,10 +599,10 @@ const CreatorProgramSection = () => {
                             value={formData.contentFrequency || ""} 
                             onValueChange={(value) => handleInputChange("contentFrequency", value)}
                           >
-                            <SelectTrigger className={`bg-red-950/50 border-rose-500/25 focus:border-rose-400/60 rounded-xl py-5 transition-all duration-300 hover:border-rose-400/40 ${errors.contentFrequency ? "border-destructive" : ""}`}>
+                            <SelectTrigger className={`bg-white/5 dark:bg-white/5 border-rose-300/30 focus:border-rose-400/70 rounded-xl py-5 transition-all duration-300 hover:border-rose-400/50 ${errors.contentFrequency ? "border-destructive" : ""}`}>
                               <SelectValue placeholder="How often do you stream?" />
                             </SelectTrigger>
-                            <SelectContent className="bg-red-950/95 backdrop-blur-xl border-rose-500/30 rounded-xl">
+                            <SelectContent className="bg-background/98 backdrop-blur-xl border-rose-400/30 rounded-xl">
                               <SelectItem value="daily" className="focus:bg-rose-500/20">Daily</SelectItem>
                               <SelectItem value="4-6-week" className="focus:bg-rose-500/20">4-6 times per week</SelectItem>
                               <SelectItem value="2-3-week" className="focus:bg-rose-500/20">2-3 times per week</SelectItem>
@@ -617,7 +617,7 @@ const CreatorProgramSection = () => {
 
                     {/* Section 3: Experience */}
                     <motion.div 
-                      className="space-y-5 p-6 rounded-2xl bg-gradient-to-br from-orange-500/5 via-transparent to-red-500/5 border border-orange-500/15 backdrop-blur-sm"
+                      className="space-y-5 p-6 rounded-2xl bg-gradient-to-br from-orange-500/8 via-background/50 to-red-500/8 border border-orange-400/20 backdrop-blur-sm"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.3 }}
@@ -645,7 +645,7 @@ const CreatorProgramSection = () => {
                               placeholder="Describe your experience with GTA 5 RP servers. Which servers have you played on? How long have you been roleplaying?"
                               value={formData.rpExperience || ""}
                               onChange={(e) => handleInputChange("rpExperience", e.target.value)}
-                              className={`min-h-[100px] bg-red-950/50 border-orange-500/25 focus:border-orange-400/60 focus:ring-2 focus:ring-orange-500/20 text-foreground placeholder:text-orange-300/40 rounded-xl resize-none transition-all duration-300 hover:border-orange-400/40 ${errors.rpExperience ? "border-destructive" : ""}`}
+                              className={`min-h-[100px] bg-white/5 dark:bg-white/5 border-orange-300/30 focus:border-orange-400/70 focus:ring-2 focus:ring-orange-400/25 text-foreground placeholder:text-muted-foreground/60 rounded-xl resize-none transition-all duration-300 hover:border-orange-400/50 ${errors.rpExperience ? "border-destructive" : ""}`}
                             />
                             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500/0 via-orange-500/5 to-red-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                           </div>
@@ -661,7 +661,7 @@ const CreatorProgramSection = () => {
                               placeholder="Describe your content style. What type of RP scenarios do you enjoy? Are you more into serious RP, comedy, action, etc.?"
                               value={formData.contentStyle || ""}
                               onChange={(e) => handleInputChange("contentStyle", e.target.value)}
-                              className={`min-h-[100px] bg-red-950/50 border-orange-500/25 focus:border-orange-400/60 focus:ring-2 focus:ring-orange-500/20 text-foreground placeholder:text-orange-300/40 rounded-xl resize-none transition-all duration-300 hover:border-orange-400/40 ${errors.contentStyle ? "border-destructive" : ""}`}
+                              className={`min-h-[100px] bg-white/5 dark:bg-white/5 border-orange-300/30 focus:border-orange-400/70 focus:ring-2 focus:ring-orange-400/25 text-foreground placeholder:text-muted-foreground/60 rounded-xl resize-none transition-all duration-300 hover:border-orange-400/50 ${errors.contentStyle ? "border-destructive" : ""}`}
                             />
                             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500/0 via-orange-500/5 to-red-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                           </div>
@@ -677,7 +677,7 @@ const CreatorProgramSection = () => {
                               placeholder="Tell us why you want to be part of Skylife RP and what you can bring to our community."
                               value={formData.whyJoin || ""}
                               onChange={(e) => handleInputChange("whyJoin", e.target.value)}
-                              className={`min-h-[120px] bg-red-950/50 border-orange-500/25 focus:border-orange-400/60 focus:ring-2 focus:ring-orange-500/20 text-foreground placeholder:text-orange-300/40 rounded-xl resize-none transition-all duration-300 hover:border-orange-400/40 ${errors.whyJoin ? "border-destructive" : ""}`}
+                              className={`min-h-[120px] bg-white/5 dark:bg-white/5 border-orange-300/30 focus:border-orange-400/70 focus:ring-2 focus:ring-orange-400/25 text-foreground placeholder:text-muted-foreground/60 rounded-xl resize-none transition-all duration-300 hover:border-orange-400/50 ${errors.whyJoin ? "border-destructive" : ""}`}
                             />
                             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500/0 via-orange-500/5 to-red-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                           </div>
@@ -693,7 +693,7 @@ const CreatorProgramSection = () => {
                               placeholder="Instagram, Twitter, TikTok, etc. (one per line)"
                               value={formData.socialLinks || ""}
                               onChange={(e) => handleInputChange("socialLinks", e.target.value)}
-                              className="min-h-[80px] bg-red-950/50 border-orange-500/25 focus:border-orange-400/60 focus:ring-2 focus:ring-orange-500/20 text-foreground placeholder:text-orange-300/40 rounded-xl resize-none transition-all duration-300 hover:border-orange-400/40"
+                              className="min-h-[80px] bg-white/5 dark:bg-white/5 border-orange-300/30 focus:border-orange-400/70 focus:ring-2 focus:ring-orange-400/25 text-foreground placeholder:text-muted-foreground/60 rounded-xl resize-none transition-all duration-300 hover:border-orange-400/50"
                             />
                             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500/0 via-orange-500/5 to-red-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                           </div>
@@ -703,7 +703,7 @@ const CreatorProgramSection = () => {
 
                     {/* Section 4: Upload */}
                     <motion.div 
-                      className="space-y-5 p-6 rounded-2xl bg-gradient-to-br from-emerald-500/5 via-transparent to-red-500/5 border border-emerald-500/15 backdrop-blur-sm"
+                      className="space-y-5 p-6 rounded-2xl bg-gradient-to-br from-emerald-500/8 via-background/50 to-red-500/8 border border-emerald-400/20 backdrop-blur-sm"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4 }}
