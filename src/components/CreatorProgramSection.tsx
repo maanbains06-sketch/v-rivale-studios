@@ -221,7 +221,7 @@ const CreatorProgramSection = () => {
 
       toast({
         title: "Application Submitted!",
-        description: "We'll review your application and get back to you on Discord within 3-5 days.",
+        description: "We'll review your application and get back to you on Discord within 24-48 hours.",
       });
 
       setFormData({});
@@ -403,7 +403,7 @@ const CreatorProgramSection = () => {
                           </DialogTitle>
                           <DialogDescription className="text-sm text-red-200/70 flex items-center gap-2 mt-1">
                             <Sparkles className="w-3.5 h-3.5" />
-                            Complete all fields • Review takes 3-5 days
+                            Complete all fields • Review takes 24-48 hours
                           </DialogDescription>
                         </div>
                       </div>
