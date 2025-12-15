@@ -1072,42 +1072,36 @@ const Guides = () => {
                         <li className="flex items-start gap-3 p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
                           <span className="text-xl">15.11</span>
                           <div>
-                            <strong className="text-purple-400">Governor Kidnapping & Looting - STRICTLY PROHIBITED:</strong>
-                            <p className="text-sm mt-1 text-muted-foreground">Kidnapping or looting the Governor is <strong className="text-red-400">STRICTLY PROHIBITED</strong> without explicit <strong className="text-yellow-400">Staff Approval</strong>. The Governor is a high-profile government official and any hostile actions require pre-approved, coordinated roleplay scenarios. This includes kidnapping for ransom, political demands, or any form of robbery.</p>
-                            <p className="text-sm mt-2 text-muted-foreground"><strong className="text-green-400">Reporting:</strong> If anyone attempts to kidnap or loot you as Governor, immediately create a support ticket with video evidence including body cam footage, timestamps, and suspect details. Strict action will be taken against violators.</p>
+                            <strong className="text-purple-400">Governor Kidnapping & Looting:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Kidnapping or looting the Governor is allowed but requires valid roleplay reasoning. The Governor is a high-profile target, so ensure your scenario has proper buildup and storyline. You may kidnap for ransom, political demands, or gang-related storylines. Looting is limited to personal belongings - government documents, official seals, and state property cannot be taken.</p>
                           </div>
                         </li>
                         <li className="flex items-start gap-3 p-3 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
                           <span className="text-xl">15.12</span>
                           <div>
-                            <strong className="text-indigo-400">Judge Kidnapping & Looting - STRICTLY PROHIBITED:</strong>
-                            <p className="text-sm mt-1 text-muted-foreground">Kidnapping or looting Judges is <strong className="text-red-400">STRICTLY PROHIBITED</strong> under all circumstances. Judges are essential to the server's legal system and must remain protected to ensure fair trials and court proceedings. Any hostile actions against judges require explicit <strong className="text-yellow-400">Staff Approval</strong> for special pre-coordinated scenarios only.</p>
-                            <p className="text-sm mt-2 text-muted-foreground"><strong className="text-green-400">Reporting:</strong> Judges must report any kidnapping or looting attempts immediately with video proof. Violators will face severe punishment including potential permanent bans.</p>
+                            <strong className="text-indigo-400">Judge Kidnapping & Looting:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Judges may be kidnapped or looted with proper roleplay justification. Valid scenarios include witness intimidation storylines, case-related revenge, or organized crime operations. Avoid targeting judges during active court proceedings. You may loot personal items but court documents, legal files, and judicial robes are protected.</p>
                           </div>
                         </li>
                         <li className="flex items-start gap-3 p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
                           <span className="text-xl">15.13</span>
                           <div>
-                            <strong className="text-cyan-400">DOJ (Department of Justice) Kidnapping & Looting - STRICTLY PROHIBITED:</strong>
-                            <p className="text-sm mt-1 text-muted-foreground">All Department of Justice officials including prosecutors, district attorneys, and DOJ staff are <strong className="text-red-400">protected from kidnapping and looting</strong>. These officials maintain the legal integrity of the server and cannot be targeted without explicit <strong className="text-yellow-400">Staff Approval</strong>. This protection applies while they are on duty and conducting official business.</p>
-                            <p className="text-sm mt-2 text-muted-foreground"><strong className="text-green-400">Reporting:</strong> Submit a support ticket with complete video evidence if targeted. Include suspect names, time, location, and full footage of the incident.</p>
+                            <strong className="text-cyan-400">DOJ (Department of Justice) Kidnapping & Looting:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">DOJ officials including prosecutors and district attorneys can be targeted with valid roleplay. Kidnapping for case-related leverage or criminal storylines is permitted. Looting is allowed for personal items and cash, but official case files, evidence, and DOJ credentials cannot be taken. Avoid disrupting ongoing trials without good reason.</p>
                           </div>
                         </li>
                         <li className="flex items-start gap-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
                           <span className="text-xl">15.14</span>
                           <div>
-                            <strong className="text-amber-400">Lawyer Kidnapping & Looting - STRICTLY PROHIBITED:</strong>
-                            <p className="text-sm mt-1 text-muted-foreground">Lawyers and legal representatives are <strong className="text-red-400">STRICTLY PROHIBITED</strong> from being kidnapped or looted while performing their duties. This includes while attending court, meeting with clients, or conducting legal business. Lawyers provide essential services to all players and must be allowed to operate freely. Any hostile actions require <strong className="text-yellow-400">Staff Approval</strong>.</p>
-                            <p className="text-sm mt-2 text-muted-foreground"><strong className="text-green-400">Reporting:</strong> Report violations immediately through support tickets with video evidence. Targeting lawyers to disrupt legal proceedings will result in escalated punishments.</p>
+                            <strong className="text-amber-400">Lawyer Kidnapping & Looting:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Lawyers may be kidnapped or looted during roleplay scenarios. Valid reasons include intimidating opposing counsel, obtaining information about clients, or personal vendettas. You may take personal belongings and cash. Client files and attorney-client privileged documents should not be used to metagame information.</p>
                           </div>
                         </li>
                         <li className="flex items-start gap-3 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
                           <span className="text-xl">15.15</span>
                           <div>
-                            <strong className="text-emerald-400">State Officials & Government Members - STRICTLY PROHIBITED:</strong>
-                            <p className="text-sm mt-1 text-muted-foreground">All State Officials and Government Members including senators, representatives, cabinet members, and other state employees are <strong className="text-red-400">protected from kidnapping and looting</strong>. These individuals are crucial to the server's political and administrative roleplay. Any hostile actions against state officials require explicit <strong className="text-yellow-400">Staff Approval</strong> and must be part of a pre-coordinated storyline.</p>
-                            <p className="text-sm mt-2 text-muted-foreground"><strong className="text-orange-400">Consequences:</strong> Unauthorized kidnapping or looting of any government official will result in immediate character wipe, temporary ban, or permanent removal depending on severity. Repeat offenders will face escalated punishments without exception.</p>
-                            <p className="text-sm mt-2 text-muted-foreground"><strong className="text-green-400">Reporting:</strong> All government officials must report violations with body cam footage, timestamps, suspect information, and detailed incident descriptions through the support ticket system.</p>
+                            <strong className="text-emerald-400">State Officials & Government Members:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">State officials including senators, representatives, and cabinet members may be targeted with proper roleplay. Political kidnappings, ransom demands, and looting are allowed with valid storylines. Personal items and cash can be looted, but official government property, state documents, and credentials should remain protected. Maintain realistic scenarios befitting political roleplay.</p>
                           </div>
                         </li>
                       </ul>
