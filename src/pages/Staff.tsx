@@ -344,22 +344,22 @@ const Staff = () => {
   const getCardResponsibilities = (member: StaffMember): string[] => {
     const custom = member.responsibilities || [];
     
-    // If has custom responsibilities, show first 4
+    // If has custom responsibilities, show first 8
     if (custom.length > 0) {
-      return custom.slice(0, 4);
+      return custom.slice(0, 8);
     }
     
-    // Otherwise show 4 role-based defaults
+    // Otherwise show role-based defaults (7-8 per role)
     const roleDefaults: Record<string, string[]> = {
-      owner: ["Server Management", "Community Leadership", "Strategic Planning", "Team Oversight"],
-      admin: ["Staff Management", "Rule Enforcement", "Player Support", "Server Moderation"],
-      moderator: ["Community Support", "Rule Enforcement", "Ticket Handling", "Player Assistance"],
-      developer: ["Script Development", "Bug Fixes", "Feature Implementation", "Technical Support"],
-      staff: ["Player Support", "Community Help", "Ticket Assistance", "General Moderation"],
-      event_manager: ["Event Planning", "Community Events", "Player Engagement", "Event Coordination"],
+      owner: ["Server Management", "Community Leadership", "Strategic Planning", "Team Oversight", "Final Decision Making", "Partnership Management", "Server Vision", "Staff Recruitment"],
+      admin: ["Staff Management", "Rule Enforcement", "Player Support", "Server Moderation", "Ban Appeals", "Policy Development", "Conflict Resolution", "Quality Assurance"],
+      moderator: ["Community Support", "Rule Enforcement", "Ticket Handling", "Player Assistance", "Chat Moderation", "Report Review", "Warning Issuance", "Player Guidance"],
+      developer: ["Script Development", "Bug Fixes", "Feature Implementation", "Technical Support", "Performance Optimization", "System Maintenance", "Code Review", "Documentation"],
+      staff: ["Player Support", "Community Help", "Ticket Assistance", "General Moderation", "New Player Guidance", "FAQ Support", "Issue Escalation", "Feedback Collection"],
+      event_manager: ["Event Planning", "Community Events", "Player Engagement", "Event Coordination", "Prize Distribution", "Schedule Management", "Event Promotion", "Participant Support"],
     };
     
-    return roleDefaults[member.role_type] || ["Community Support", "Player Assistance", "General Help", "Team Support"];
+    return roleDefaults[member.role_type] || ["Community Support", "Player Assistance", "General Help", "Team Support", "Issue Handling", "Feedback Support", "Basic Moderation", "Player Guidance"];
   };
 
   const getTimezoneInfo = (timezone?: string) => {
