@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Shield, FileText, Image, Ban, Users as UsersIcon, Pencil, Trash2, Briefcase, Car } from "lucide-react";
+import { Loader2, Shield, FileText, Image, Ban, Users as UsersIcon, Pencil, Trash2, Briefcase, Car, Video, ExternalLink } from "lucide-react";
 import { StaffManagementDialog } from "@/components/StaffManagementDialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import headerAdminBg from "@/assets/header-staff.jpg";
@@ -114,6 +114,26 @@ interface PDMApplication {
   admin_notes?: string;
 }
 
+interface CreatorApplication {
+  id: string;
+  user_id: string | null;
+  full_name: string;
+  discord_username: string;
+  steam_id: string;
+  channel_url: string;
+  platform: string;
+  average_viewers: string;
+  content_frequency: string;
+  rp_experience: string;
+  content_style: string;
+  why_join: string;
+  social_links: string | null;
+  ownership_proof_url: string | null;
+  status: string;
+  created_at: string;
+  admin_notes: string | null;
+}
+
 const Admin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -127,6 +147,7 @@ const Admin = () => {
   const [staffMembers, setStaffMembers] = useState<StaffMemberData[]>([]);
   const [jobApplications, setJobApplications] = useState<JobApplication[]>([]);
   const [pdmApplications, setPdmApplications] = useState<PDMApplication[]>([]);
+  const [creatorApplications, setCreatorApplications] = useState<CreatorApplication[]>([]);
   
   const [selectedApp, setSelectedApp] = useState<WhitelistApplication | null>(null);
   const [adminNotes, setAdminNotes] = useState("");
@@ -142,6 +163,9 @@ const Admin = () => {
   
   const [selectedPdmApp, setSelectedPdmApp] = useState<PDMApplication | null>(null);
   const [pdmAdminNotes, setPdmAdminNotes] = useState("");
+  
+  const [selectedCreatorApp, setSelectedCreatorApp] = useState<CreatorApplication | null>(null);
+  const [creatorAdminNotes, setCreatorAdminNotes] = useState("");
   
   const [isStaffDialogOpen, setIsStaffDialogOpen] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<StaffMemberData | null>(null);
@@ -197,7 +221,22 @@ const Admin = () => {
       loadStaffMembers(),
       loadJobApplications(),
       loadPdmApplications(),
+      loadCreatorApplications(),
     ]);
+  };
+
+  const loadCreatorApplications = async () => {
+    const { data, error } = await supabase
+      .from("creator_applications")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error loading creator applications:", error);
+      return;
+    }
+
+    setCreatorApplications(data || []);
   };
 
   const loadPdmApplications = async () => {
@@ -612,6 +651,47 @@ const Admin = () => {
     loadPdmApplications();
   };
 
+  const updateCreatorApplicationStatus = async (
+    creatorAppId: string,
+    status: "approved" | "rejected"
+  ) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    const { error } = await supabase
+      .from("creator_applications")
+      .update({
+        status,
+        reviewed_by: user?.id,
+        reviewed_at: new Date().toISOString(),
+        admin_notes: creatorAdminNotes || null,
+      })
+      .eq("id", creatorAppId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update creator application.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Success",
+      description: `Creator application ${status} successfully.`,
+    });
+
+    setSelectedCreatorApp(null);
+    setCreatorAdminNotes("");
+    loadCreatorApplications();
+  };
+
+  const getOwnershipProofUrl = (path: string | null) => {
+    if (!path) return null;
+    const { data } = supabase.storage.from('creator-proofs').getPublicUrl(path);
+    return data.publicUrl;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -1010,6 +1090,153 @@ const Admin = () => {
                 </CardContent>
               </Card>
             ))}
+          </CardContent>
+        </Card>
+
+        {/* Creator Program Applications Section */}
+        <Card className="glass-effect border-border/20">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Video className="w-5 h-5 text-purple-500" />
+              <CardTitle className="text-gradient">Creator Program Applications</CardTitle>
+            </div>
+            <CardDescription>Review streamer and content creator applications</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {creatorApplications.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">No creator applications yet</p>
+            ) : (
+              creatorApplications.map((creatorApp) => (
+                <Card key={creatorApp.id} className="border-purple-500/20">
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-semibold">{creatorApp.full_name}</h3>
+                        <p className="text-sm text-muted-foreground">Discord: {creatorApp.discord_username}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={
+                          creatorApp.status === "approved" ? "default" :
+                          creatorApp.status === "rejected" ? "destructive" :
+                          "secondary"
+                        }>
+                          {creatorApp.status}
+                        </Badge>
+                        <Badge variant="outline" className="capitalize">
+                          {creatorApp.platform}
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Steam ID:</span>
+                        <p className="font-medium">{creatorApp.steam_id}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Avg Viewers:</span>
+                        <p className="font-medium">{creatorApp.average_viewers}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Frequency:</span>
+                        <p className="font-medium capitalize">{creatorApp.content_frequency.replace(/-/g, ' ')}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Applied:</span>
+                        <p className="font-medium">{new Date(creatorApp.created_at).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => window.open(creatorApp.channel_url, '_blank')}
+                      >
+                        <ExternalLink className="w-4 h-4 mr-1" />
+                        View Channel
+                      </Button>
+                      {creatorApp.ownership_proof_url && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const url = getOwnershipProofUrl(creatorApp.ownership_proof_url);
+                            if (url) window.open(url, '_blank');
+                          }}
+                        >
+                          <FileText className="w-4 h-4 mr-1" />
+                          View Proof
+                        </Button>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-semibold text-sm mb-1">RP Experience</h4>
+                      <p className="text-sm text-muted-foreground">{creatorApp.rp_experience}</p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-semibold text-sm mb-1">Content Style</h4>
+                      <p className="text-sm text-muted-foreground">{creatorApp.content_style}</p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-semibold text-sm mb-1">Why Join SLRP?</h4>
+                      <p className="text-sm text-muted-foreground">{creatorApp.why_join}</p>
+                    </div>
+
+                    {creatorApp.social_links && (
+                      <div>
+                        <h4 className="font-semibold text-sm mb-1">Other Socials</h4>
+                        <p className="text-sm text-muted-foreground whitespace-pre-line">{creatorApp.social_links}</p>
+                      </div>
+                    )}
+                    
+                    {creatorApp.status === "pending" && (
+                      <div className="space-y-3 pt-4 border-t">
+                        <Textarea
+                          placeholder="Admin notes (optional)"
+                          value={selectedCreatorApp?.id === creatorApp.id ? creatorAdminNotes : ""}
+                          onChange={(e) => {
+                            setSelectedCreatorApp(creatorApp);
+                            setCreatorAdminNotes(e.target.value);
+                          }}
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            variant="default"
+                            className="bg-green-600 hover:bg-green-700"
+                            onClick={() => {
+                              setSelectedCreatorApp(creatorApp);
+                              updateCreatorApplicationStatus(creatorApp.id, "approved");
+                            }}
+                          >
+                            Approve
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            onClick={() => {
+                              setSelectedCreatorApp(creatorApp);
+                              updateCreatorApplicationStatus(creatorApp.id, "rejected");
+                            }}
+                          >
+                            Reject
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {creatorApp.admin_notes && (
+                      <div className="pt-4 border-t">
+                        <h4 className="font-semibold text-sm mb-1">Admin Notes</h4>
+                        <p className="text-sm text-muted-foreground">{creatorApp.admin_notes}</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </CardContent>
         </Card>
 
