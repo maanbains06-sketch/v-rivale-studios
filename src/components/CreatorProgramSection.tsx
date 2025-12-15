@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
+import { motion } from "framer-motion";
 import { 
   Video, 
   Star, 
@@ -20,13 +20,10 @@ import {
   Upload,
   FileCheck,
   X,
-  Trophy,
   TrendingUp,
   Heart,
-  Play,
-  ExternalLink,
-  Crown,
-  Mic2
+  Mic2,
+  ArrowRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
@@ -38,7 +35,6 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const creatorSchema = z.object({
   fullName: z.string().min(2, "Name must be at least 2 characters").max(100),
@@ -57,12 +53,12 @@ const creatorSchema = z.object({
 type CreatorFormData = z.infer<typeof creatorSchema>;
 
 const scrollRevealVariants = {
-  hidden: { opacity: 0, y: 60 },
+  hidden: { opacity: 0, y: 40 },
   visible: { 
     opacity: 1, 
     y: 0,
     transition: { 
-      duration: 0.6, 
+      duration: 0.5, 
       ease: [0.22, 1, 0.36, 1] as const
     }
   }
@@ -73,39 +69,30 @@ const staggerContainerVariants = {
   visible: {
     opacity: 1,
     transition: { 
-      staggerChildren: 0.08, 
+      staggerChildren: 0.06, 
       delayChildren: 0.1 
     },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 15 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] as const },
+    transition: { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] as const },
   },
 };
 
-const floatingAnimation = {
-  y: [-5, 5, -5],
-  transition: {
-    duration: 4,
-    repeat: Infinity,
-    ease: "easeInOut" as const
-  }
-};
-
 const perks = [
-  { icon: Zap, title: "Priority Queue", description: "Skip the line during peak hours", color: "from-yellow-500 to-orange-500" },
-  { icon: Shield, title: "Creator Discord Role", description: "Exclusive badge and channels", color: "from-purple-500 to-violet-500" },
-  { icon: Users, title: "Custom RP Storylines", description: "Staff support for your content", color: "from-blue-500 to-cyan-500" },
-  { icon: Gift, title: "Sponsorship Opportunities", description: "Brand integration & partnerships", color: "from-pink-500 to-rose-500" },
-  { icon: MessageSquare, title: "Social Promotion", description: "Featured on our platforms", color: "from-green-500 to-emerald-500" },
-  { icon: Star, title: "Dedicated Support", description: "Direct staff assistance", color: "from-amber-500 to-yellow-500" },
-  { icon: Eye, title: "Early Access", description: "Preview upcoming updates", color: "from-indigo-500 to-purple-500" },
-  { icon: Radio, title: "Creator Events", description: "Exclusive projects & collabs", color: "from-red-500 to-pink-500" },
+  { icon: Zap, title: "Priority Queue", description: "Skip the line during peak hours" },
+  { icon: Shield, title: "Creator Discord Role", description: "Exclusive badge and channels" },
+  { icon: Users, title: "Custom RP Storylines", description: "Staff support for your content" },
+  { icon: Gift, title: "Sponsorship Opportunities", description: "Brand integration & partnerships" },
+  { icon: MessageSquare, title: "Social Promotion", description: "Featured on our platforms" },
+  { icon: Star, title: "Dedicated Support", description: "Direct staff assistance" },
+  { icon: Eye, title: "Early Access", description: "Preview upcoming updates" },
+  { icon: Radio, title: "Creator Events", description: "Exclusive projects & collabs" },
 ];
 
 const stats = [
@@ -115,28 +102,18 @@ const stats = [
   { value: "24/7", label: "Creator Support", icon: Mic2 },
 ];
 
-const tiers = [
-  {
-    name: "Rising Star",
-    icon: Star,
-    color: "from-slate-400 to-slate-500",
-    requirements: "0-50 avg viewers",
-    perks: ["Creator Discord Role", "Priority Queue", "Social Shoutouts"]
-  },
-  {
-    name: "Featured Creator",
-    icon: Trophy,
-    color: "from-amber-400 to-orange-500",
-    requirements: "50-200 avg viewers",
-    perks: ["All Rising Star perks", "Custom RP Support", "Featured on Homepage"]
-  },
-  {
-    name: "Partner",
-    icon: Crown,
-    color: "from-purple-500 to-pink-500",
-    requirements: "200+ avg viewers",
-    perks: ["All Featured perks", "Revenue Share", "Exclusive Events", "Dedicated Manager"]
-  }
+const requirements = [
+  { text: "Create regular content (streams or videos)", icon: Video },
+  { text: "Follow RP rules and IC/OOC boundaries", icon: Shield },
+  { text: "Have a stable streaming/recording setup", icon: Mic2 },
+  { text: "Willingness to collaborate professionally", icon: Users }
+];
+
+const evaluations = [
+  { text: "Content quality and production value", icon: Star },
+  { text: "Activity and consistency in streaming", icon: TrendingUp },
+  { text: "Viewership & community engagement", icon: Heart },
+  { text: "RP discipline and roleplay experience", icon: Sparkles }
 ];
 
 const CreatorProgramSection = () => {
@@ -284,274 +261,147 @@ const CreatorProgramSection = () => {
 
   return (
     <motion.section 
-      className="py-20 md:py-32 relative z-[10] overflow-hidden"
+      className="py-20 md:py-28 relative z-[10]"
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, margin: "-100px" }}
+      viewport={{ once: true, margin: "-80px" }}
       variants={scrollRevealVariants}
     >
-      {/* Animated background elements */}
-      <div className="absolute inset-0 pointer-events-none">
-        <motion.div 
-          className="absolute top-20 left-10 w-72 h-72 bg-purple-500/20 rounded-full blur-[100px]"
-          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-          transition={{ duration: 8, repeat: Infinity }}
-        />
-        <motion.div 
-          className="absolute bottom-20 right-10 w-96 h-96 bg-pink-500/15 rounded-full blur-[120px]"
-          animate={{ scale: [1.2, 1, 1.2], opacity: [0.4, 0.2, 0.4] }}
-          transition={{ duration: 10, repeat: Infinity }}
-        />
-        <motion.div 
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-orange-500/10 rounded-full blur-[150px]"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-        />
+      {/* Subtle background glow */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-violet-500/8 rounded-full blur-[150px]" />
       </div>
 
       <div className="container mx-auto px-4">
-        <div className="glass-effect rounded-3xl p-8 md:p-14 relative overflow-hidden border-purple-500/30">
-          {/* Animated border glow */}
-          <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-orange-500/20 opacity-50 blur-xl pointer-events-none" />
-          
-          {/* Grid pattern overlay */}
-          <div className="absolute inset-0 opacity-5 pointer-events-none" style={{
-            backgroundImage: 'linear-gradient(rgba(168, 85, 247, 0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(168, 85, 247, 0.5) 1px, transparent 1px)',
-            backgroundSize: '50px 50px'
-          }} />
+        <div className="rounded-3xl p-8 md:p-12 relative overflow-hidden bg-gradient-to-br from-violet-950/40 via-violet-900/20 to-background border border-violet-500/15">
           
           <div className="relative z-10">
-            {/* Header with floating animation */}
-            <div className="text-center mb-16">
-              <motion.div 
-                animate={floatingAnimation}
-                className="inline-flex items-center gap-2 mb-6"
-              >
-                <Badge className="bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white border-0 px-6 py-2 text-sm font-bold shadow-lg shadow-purple-500/30">
-                  <Sparkles className="w-4 h-4 mr-2 animate-pulse" />
+            {/* Header */}
+            <div className="text-center mb-14">
+              <motion.div variants={itemVariants} className="inline-flex items-center gap-2 mb-5">
+                <Badge className="bg-violet-500/15 text-violet-300 border border-violet-500/30 px-4 py-1.5 text-sm font-medium backdrop-blur-sm">
+                  <Video className="w-3.5 h-3.5 mr-2" />
                   Creator Program
-                  <Crown className="w-4 h-4 ml-2" />
                 </Badge>
               </motion.div>
               
               <motion.h2 
                 variants={itemVariants}
-                className="text-4xl md:text-6xl lg:text-7xl font-black mb-6"
-                style={{ transform: 'skewX(-2deg)' }}
+                className="text-3xl md:text-5xl lg:text-6xl font-bold mb-5"
               >
-                <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(168,85,247,0.5)]">
-                  Become a SLRP
-                </span>
-                <br />
-                <span className="bg-gradient-to-r from-orange-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
-                  Creator
-                </span>
+                <span className="text-foreground">Become a </span>
+                <span className="text-violet-400">SLRP Creator</span>
               </motion.h2>
               
-              <motion.p variants={itemVariants} className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              <motion.p variants={itemVariants} className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
                 Join our exclusive Creator Program and get recognized for your content. 
-                We support streamers and content creators of <span className="text-purple-400 font-semibold">all sizes</span> — 
-                <span className="text-pink-400 font-semibold"> effort matters more than numbers!</span>
+                We support creators of all sizes — effort matters more than numbers.
               </motion.p>
             </div>
 
-            {/* Stats Section */}
+            {/* Stats */}
             <motion.div 
-              className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16"
+              className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-14"
               variants={staggerContainerVariants}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
             >
-              {stats.map((stat, index) => (
+              {stats.map((stat) => (
                 <motion.div
                   key={stat.label}
                   variants={itemVariants}
-                  whileHover={{ scale: 1.05, y: -5 }}
-                  className="relative group"
+                  className="p-5 rounded-2xl bg-violet-500/5 border border-violet-500/10 text-center hover:bg-violet-500/10 hover:border-violet-500/20 transition-all duration-300"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="relative p-6 rounded-2xl bg-gradient-to-br from-purple-500/10 to-pink-500/5 border border-purple-500/20 text-center backdrop-blur-sm">
-                    <stat.icon className="w-8 h-8 mx-auto mb-3 text-purple-400" />
-                    <div className="text-3xl md:text-4xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                      {stat.value}
-                    </div>
-                    <div className="text-sm text-muted-foreground mt-1">{stat.label}</div>
+                  <stat.icon className="w-6 h-6 mx-auto mb-2 text-violet-400/70" />
+                  <div className="text-2xl md:text-3xl font-bold text-violet-300">
+                    {stat.value}
                   </div>
+                  <div className="text-xs text-muted-foreground mt-1">{stat.label}</div>
                 </motion.div>
               ))}
             </motion.div>
 
-            {/* Tabs for Perks, Tiers, and Requirements */}
-            <Tabs defaultValue="perks" className="mb-12">
-              <TabsList className="grid w-full grid-cols-3 bg-background/50 border border-purple-500/20 rounded-2xl p-1 mb-8">
-                <TabsTrigger value="perks" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white">
-                  <Gift className="w-4 h-4 mr-2" />
-                  Perks
-                </TabsTrigger>
-                <TabsTrigger value="tiers" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white">
-                  <Trophy className="w-4 h-4 mr-2" />
-                  Tiers
-                </TabsTrigger>
-                <TabsTrigger value="requirements" className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white">
-                  <CheckCircle2 className="w-4 h-4 mr-2" />
+            {/* Perks Grid */}
+            <motion.div variants={itemVariants} className="mb-14">
+              <h3 className="text-xl font-semibold text-center text-violet-300 mb-6">Program Perks</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                {perks.map((perk, index) => (
+                  <motion.div
+                    key={perk.title}
+                    variants={itemVariants}
+                    className="group p-4 md:p-5 rounded-xl bg-violet-500/5 border border-violet-500/10 hover:bg-violet-500/10 hover:border-violet-500/25 transition-all duration-300"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-violet-500/15 flex items-center justify-center mb-3 group-hover:bg-violet-500/25 transition-colors">
+                      <perk.icon className="w-5 h-5 text-violet-400" />
+                    </div>
+                    <h4 className="text-sm font-semibold text-foreground mb-1">{perk.title}</h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{perk.description}</p>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Requirements & Evaluation */}
+            <div className="grid md:grid-cols-2 gap-4 md:gap-6 mb-12">
+              <motion.div 
+                variants={itemVariants}
+                className="p-6 rounded-2xl bg-violet-500/5 border border-violet-500/10"
+              >
+                <h3 className="text-lg font-semibold text-violet-300 mb-5 flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5" />
                   Requirements
-                </TabsTrigger>
-              </TabsList>
+                </h3>
+                <ul className="space-y-3">
+                  {requirements.map((req, i) => (
+                    <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground">
+                      <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                        <req.icon className="w-4 h-4 text-violet-400/70" />
+                      </div>
+                      <span className="pt-1.5">{req.text}</span>
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
 
-              <AnimatePresence mode="wait">
-                <TabsContent value="perks" className="mt-0">
-                  <motion.div 
-                    className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"
-                    variants={staggerContainerVariants}
-                    initial="hidden"
-                    animate="visible"
-                  >
-                    {perks.map((perk, index) => (
-                      <motion.div
-                        key={perk.title}
-                        variants={itemVariants}
-                        whileHover={{ scale: 1.03, y: -5 }}
-                        className="group p-5 md:p-6 rounded-2xl bg-gradient-to-br from-background/80 to-background/40 border border-purple-500/20 hover:border-purple-400/50 transition-all duration-500 relative overflow-hidden"
-                      >
-                        <div className={`absolute inset-0 bg-gradient-to-br ${perk.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
-                        <div className={`w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br ${perk.color} flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-lg`}>
-                          <perk.icon className="w-6 h-6 md:w-7 md:h-7 text-white" />
-                        </div>
-                        <h3 className="text-base md:text-lg font-bold text-foreground mb-2 group-hover:text-purple-300 transition-colors">{perk.title}</h3>
-                        <p className="text-sm text-muted-foreground">{perk.description}</p>
-                      </motion.div>
-                    ))}
-                  </motion.div>
-                </TabsContent>
-
-                <TabsContent value="tiers" className="mt-0">
-                  <motion.div 
-                    className="grid md:grid-cols-3 gap-6"
-                    variants={staggerContainerVariants}
-                    initial="hidden"
-                    animate="visible"
-                  >
-                    {tiers.map((tier, index) => (
-                      <motion.div
-                        key={tier.name}
-                        variants={itemVariants}
-                        whileHover={{ scale: 1.02, y: -5 }}
-                        className="relative group"
-                      >
-                        <div className={`absolute inset-0 bg-gradient-to-br ${tier.color} opacity-20 rounded-2xl blur-xl group-hover:opacity-30 transition-opacity`} />
-                        <div className="relative p-6 rounded-2xl bg-background/80 border border-purple-500/20 hover:border-purple-400/40 transition-all backdrop-blur-sm">
-                          <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${tier.color} flex items-center justify-center mb-4 shadow-lg`}>
-                            <tier.icon className="w-8 h-8 text-white" />
-                          </div>
-                          <h3 className="text-xl font-bold mb-2">{tier.name}</h3>
-                          <p className="text-sm text-purple-400 mb-4">{tier.requirements}</p>
-                          <ul className="space-y-2">
-                            {tier.perks.map((perk, i) => (
-                              <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
-                                {perk}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </motion.div>
-                </TabsContent>
-
-                <TabsContent value="requirements" className="mt-0">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <motion.div 
-                      variants={itemVariants}
-                      initial="hidden"
-                      animate="visible"
-                      className="p-6 rounded-2xl bg-background/60 border border-purple-500/20 backdrop-blur-sm"
-                    >
-                      <h3 className="text-xl font-bold text-purple-400 mb-6 flex items-center gap-2">
-                        <CheckCircle2 className="w-6 h-6" />
-                        What We Need From You
-                      </h3>
-                      <ul className="space-y-4">
-                        {[
-                          { text: "Create regular content (streams or videos)", icon: Video },
-                          { text: "Follow RP rules and IC/OOC boundaries", icon: Shield },
-                          { text: "Have a stable streaming/recording setup", icon: Mic2 },
-                          { text: "Willingness to collaborate professionally", icon: Users }
-                        ].map((req, i) => (
-                          <motion.li 
-                            key={i} 
-                            className="flex items-start gap-4 p-3 rounded-xl bg-purple-500/5 border border-purple-500/10"
-                            whileHover={{ x: 5 }}
-                          >
-                            <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center shrink-0">
-                              <req.icon className="w-5 h-5 text-purple-400" />
-                            </div>
-                            <span className="text-muted-foreground pt-2">{req.text}</span>
-                          </motion.li>
-                        ))}
-                      </ul>
-                    </motion.div>
-
-                    <motion.div 
-                      variants={itemVariants}
-                      initial="hidden"
-                      animate="visible"
-                      className="p-6 rounded-2xl bg-background/60 border border-pink-500/20 backdrop-blur-sm"
-                    >
-                      <h3 className="text-xl font-bold text-pink-400 mb-6 flex items-center gap-2">
-                        <Eye className="w-6 h-6" />
-                        What We Evaluate
-                      </h3>
-                      <ul className="space-y-4">
-                        {[
-                          { text: "Content quality and production value", icon: Star },
-                          { text: "Activity and consistency in streaming", icon: TrendingUp },
-                          { text: "Viewership & community engagement", icon: Heart },
-                          { text: "RP discipline and roleplay experience", icon: Sparkles }
-                        ].map((item, i) => (
-                          <motion.li 
-                            key={i} 
-                            className="flex items-start gap-4 p-3 rounded-xl bg-pink-500/5 border border-pink-500/10"
-                            whileHover={{ x: 5 }}
-                          >
-                            <div className="w-10 h-10 rounded-lg bg-pink-500/20 flex items-center justify-center shrink-0">
-                              <item.icon className="w-5 h-5 text-pink-400" />
-                            </div>
-                            <span className="text-muted-foreground pt-2">{item.text}</span>
-                          </motion.li>
-                        ))}
-                      </ul>
-                    </motion.div>
-                  </div>
-                </TabsContent>
-              </AnimatePresence>
-            </Tabs>
+              <motion.div 
+                variants={itemVariants}
+                className="p-6 rounded-2xl bg-violet-500/5 border border-violet-500/10"
+              >
+                <h3 className="text-lg font-semibold text-violet-300 mb-5 flex items-center gap-2">
+                  <Eye className="w-5 h-5" />
+                  What We Evaluate
+                </h3>
+                <ul className="space-y-3">
+                  {evaluations.map((item, i) => (
+                    <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground">
+                      <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                        <item.icon className="w-4 h-4 text-violet-400/70" />
+                      </div>
+                      <span className="pt-1.5">{item.text}</span>
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+            </div>
 
             {/* CTA Button */}
             <motion.div variants={itemVariants} className="text-center">
               <Dialog open={isOpen} onOpenChange={setIsOpen}>
                 <DialogTrigger asChild>
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="inline-block"
+                  <Button
+                    size="lg"
+                    className="bg-violet-600 hover:bg-violet-500 text-white font-semibold px-8 py-6 rounded-xl shadow-lg shadow-violet-500/20 hover:shadow-violet-500/30 transition-all duration-300 text-base group"
                   >
-                    <Button
-                      size="lg"
-                      className="relative bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 hover:from-purple-600 hover:via-pink-600 hover:to-orange-600 text-white font-bold px-12 py-8 rounded-2xl shadow-2xl shadow-purple-500/40 hover:shadow-purple-500/60 transition-all duration-300 text-lg group overflow-hidden"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                      <Video className="w-6 h-6 mr-3" />
-                      Apply for Creator Program
-                      <Sparkles className="w-5 h-5 ml-3 animate-pulse" />
-                    </Button>
-                  </motion.div>
+                    <Video className="w-5 h-5 mr-2" />
+                    Apply for Creator Program
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-background/95 backdrop-blur-xl border-purple-500/30">
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-background/98 backdrop-blur-xl border-violet-500/20">
                   <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent flex items-center gap-2">
-                      <Video className="w-6 h-6 text-purple-400" />
+                    <DialogTitle className="text-2xl font-bold text-violet-300 flex items-center gap-2">
+                      <Video className="w-6 h-6 text-violet-400" />
                       Creator Program Application
                     </DialogTitle>
                     <DialogDescription className="text-muted-foreground">
@@ -729,11 +579,11 @@ const CreatorProgramSection = () => {
                       <p className="text-xs text-muted-foreground mb-2">
                         Upload a screenshot of your channel dashboard, analytics page, or any proof that shows you own the channel (JPG, PNG, GIF, WebP, or PDF - Max 10MB)
                       </p>
-                      <div className={`relative border-2 border-dashed rounded-xl p-6 transition-colors ${fileError ? 'border-destructive bg-destructive/5' : ownershipProofFile ? 'border-green-500 bg-green-500/5' : 'border-purple-500/30 hover:border-purple-500/50 bg-purple-500/5'}`}>
+                      <div className={`relative border-2 border-dashed rounded-xl p-6 transition-colors ${fileError ? 'border-destructive bg-destructive/5' : ownershipProofFile ? 'border-emerald-500/50 bg-emerald-500/5' : 'border-violet-500/30 hover:border-violet-500/50 bg-violet-500/5'}`}>
                         {ownershipProofFile ? (
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                              <FileCheck className="w-8 h-8 text-green-500" />
+                              <FileCheck className="w-8 h-8 text-emerald-500" />
                               <div>
                                 <p className="font-medium text-foreground">{ownershipProofFile.name}</p>
                                 <p className="text-xs text-muted-foreground">
@@ -753,7 +603,7 @@ const CreatorProgramSection = () => {
                           </div>
                         ) : (
                           <label htmlFor="ownershipProof" className="flex flex-col items-center cursor-pointer">
-                            <Upload className="w-10 h-10 text-purple-400 mb-2" />
+                            <Upload className="w-10 h-10 text-violet-400 mb-2" />
                             <span className="text-sm font-medium text-foreground">Click to upload</span>
                             <span className="text-xs text-muted-foreground">or drag and drop</span>
                           </label>
@@ -773,7 +623,7 @@ const CreatorProgramSection = () => {
                       <Button 
                         type="submit" 
                         disabled={isSubmitting || isUploading}
-                        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-6 rounded-xl"
+                        className="w-full bg-violet-600 hover:bg-violet-500 text-white font-semibold py-6 rounded-xl"
                       >
                         {isSubmitting || isUploading ? (
                           <>
@@ -799,18 +649,18 @@ const CreatorProgramSection = () => {
 
             <motion.div 
               variants={itemVariants} 
-              className="flex flex-col md:flex-row items-center justify-center gap-4 mt-8 text-sm text-muted-foreground"
+              className="flex flex-col md:flex-row items-center justify-center gap-3 mt-8 text-sm text-muted-foreground"
             >
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20">
-                <Clock className="w-4 h-4 text-purple-400" />
-                <span>3-5 day review time</span>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/15">
+                <Clock className="w-4 h-4 text-violet-400/70" />
+                <span>3-5 day review</span>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-pink-500/10 border border-pink-500/20">
-                <MessageSquare className="w-4 h-4 text-pink-400" />
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/15">
+                <MessageSquare className="w-4 h-4 text-violet-400/70" />
                 <span>Discord notification</span>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500/10 border border-orange-500/20">
-                <Shield className="w-4 h-4 text-orange-400" />
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/15">
+                <Shield className="w-4 h-4 text-violet-400/70" />
                 <span>100% confidential</span>
               </div>
             </motion.div>
