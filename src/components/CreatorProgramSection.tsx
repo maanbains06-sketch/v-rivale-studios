@@ -261,76 +261,117 @@ const CreatorProgramSection = () => {
       viewport={{ once: true, margin: "-80px" }}
       variants={scrollRevealVariants}
     >
-      {/* Subtle background glow */}
+      {/* Enhanced background effects */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-violet-500/8 rounded-full blur-[150px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[700px] bg-violet-500/10 rounded-full blur-[180px]" />
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-violet-600/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-violet-400/5 rounded-full blur-[100px]" />
       </div>
 
       <div className="container mx-auto px-4">
-        <div className="rounded-3xl p-8 md:p-12 relative overflow-hidden bg-gradient-to-br from-violet-950/40 via-violet-900/20 to-background border border-violet-500/15">
+        {/* Animated border container */}
+        <div className="relative rounded-3xl p-[1px] overflow-hidden">
+          {/* Animated gradient border */}
+          <div className="absolute inset-0 bg-gradient-to-r from-violet-500/50 via-purple-500/50 to-violet-500/50 animate-[spin_8s_linear_infinite] blur-sm opacity-60" style={{ backgroundSize: '200% 200%' }} />
           
-          <div className="relative z-10">
-            {/* Header */}
-            <div className="text-center mb-14">
-              <motion.div variants={itemVariants} className="inline-flex items-center gap-2 mb-5">
-                <Badge className="bg-violet-500/15 text-violet-300 border border-violet-500/30 px-4 py-1.5 text-sm font-medium backdrop-blur-sm">
-                  <Video className="w-3.5 h-3.5 mr-2" />
-                  Creator Program
-                </Badge>
-              </motion.div>
-              
-              <motion.h2 
-                variants={itemVariants}
-                className="text-3xl md:text-5xl lg:text-6xl font-bold mb-5"
-              >
-                <span className="text-foreground">Become a </span>
-                <span className="text-violet-400">SLRP Creator</span>
-              </motion.h2>
-              
-              <motion.p variants={itemVariants} className="text-base md:text-lg text-foreground/80 max-w-2xl mx-auto">
-                Join our exclusive Creator Program and get recognized for your content. 
-                We support creators of all sizes — effort matters more than numbers.
-              </motion.p>
-            </div>
-
-
-            {/* Perks Grid */}
-            <motion.div variants={itemVariants} className="mb-14">
-              <h3 className="text-xl font-semibold text-center text-violet-300 mb-6">Program Perks</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                {perks.map((perk, index) => (
-                  <motion.div
-                    key={perk.title}
-                    variants={itemVariants}
-                    className="group p-4 md:p-5 rounded-xl bg-violet-500/5 border border-violet-500/10 hover:bg-violet-500/10 hover:border-violet-500/25 transition-all duration-300"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-violet-500/15 flex items-center justify-center mb-3 group-hover:bg-violet-500/25 transition-colors">
-                      <perk.icon className="w-5 h-5 text-violet-400" />
-                    </div>
-                    <h4 className="text-sm font-semibold text-foreground mb-1">{perk.title}</h4>
-                    <p className="text-xs text-foreground/70 leading-relaxed">{perk.description}</p>
-                  </motion.div>
-                ))}
+          <div className="relative rounded-3xl p-8 md:p-12 bg-gradient-to-br from-violet-950/60 via-violet-900/30 to-background/95 backdrop-blur-xl">
+            {/* Decorative floating elements */}
+            <div className="absolute top-8 right-8 w-20 h-20 border border-violet-500/20 rounded-full animate-pulse" />
+            <div className="absolute top-12 right-12 w-12 h-12 border border-violet-400/15 rounded-full" />
+            <div className="absolute bottom-20 left-10 w-16 h-16 border border-violet-500/10 rounded-2xl rotate-12" />
+            
+            {/* Grid pattern overlay */}
+            <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(139,92,246,0.5) 1px, transparent 0)', backgroundSize: '40px 40px' }} />
+          
+            <div className="relative z-10">
+              {/* Header */}
+              <div className="text-center mb-16">
+                <motion.div variants={itemVariants} className="inline-flex items-center gap-2 mb-6">
+                  <div className="relative">
+                    <Badge className="bg-violet-500/20 text-violet-200 border border-violet-400/40 px-5 py-2 text-sm font-medium backdrop-blur-md shadow-lg shadow-violet-500/10">
+                      <Sparkles className="w-3.5 h-3.5 mr-2 animate-pulse" />
+                      Creator Program
+                    </Badge>
+                    {/* Glow effect behind badge */}
+                    <div className="absolute inset-0 bg-violet-500/30 rounded-full blur-xl -z-10" />
+                  </div>
+                </motion.div>
+                
+                <motion.h2 
+                  variants={itemVariants}
+                  className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6"
+                >
+                  <span className="text-foreground">Become a </span>
+                  <span className="relative">
+                    <span className="bg-gradient-to-r from-violet-400 via-purple-400 to-violet-300 bg-clip-text text-transparent">SLRP Creator</span>
+                    <span className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-violet-500/50 to-transparent rounded-full" />
+                  </span>
+                </motion.h2>
+                
+                <motion.p variants={itemVariants} className="text-base md:text-lg text-foreground/80 max-w-2xl mx-auto leading-relaxed">
+                  Join our exclusive Creator Program and get recognized for your content. 
+                  We support creators of all sizes — <span className="text-violet-300 font-medium">effort matters more than numbers.</span>
+                </motion.p>
               </div>
-            </motion.div>
+
+              {/* Perks Grid */}
+              <motion.div variants={itemVariants} className="mb-16">
+                <div className="flex items-center justify-center gap-3 mb-8">
+                  <div className="h-px w-12 bg-gradient-to-r from-transparent to-violet-500/50" />
+                  <h3 className="text-xl font-semibold text-violet-200 flex items-center gap-2">
+                    <Gift className="w-5 h-5 text-violet-400" />
+                    Program Perks
+                  </h3>
+                  <div className="h-px w-12 bg-gradient-to-l from-transparent to-violet-500/50" />
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {perks.map((perk, index) => (
+                    <motion.div
+                      key={perk.title}
+                      variants={itemVariants}
+                      whileHover={{ y: -4, scale: 1.02 }}
+                      className="group relative p-5 rounded-2xl bg-gradient-to-br from-violet-500/10 to-transparent border border-violet-500/15 hover:border-violet-400/40 transition-all duration-300 overflow-hidden"
+                    >
+                      {/* Card glow on hover */}
+                      <div className="absolute inset-0 bg-violet-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="absolute -top-10 -right-10 w-20 h-20 bg-violet-500/10 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      
+                      <div className="relative z-10">
+                        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-violet-500/25 to-violet-600/15 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-violet-500/10">
+                          <perk.icon className="w-5 h-5 text-violet-300" />
+                        </div>
+                        <h4 className="text-sm font-semibold text-foreground mb-1.5">{perk.title}</h4>
+                        <p className="text-xs text-foreground/60 leading-relaxed">{perk.description}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
 
             {/* Requirements & Evaluation */}
-            <div className="grid md:grid-cols-2 gap-4 md:gap-6 mb-12">
+            <div className="grid md:grid-cols-2 gap-5 mb-14">
               <motion.div 
                 variants={itemVariants}
-                className="p-6 rounded-2xl bg-violet-500/5 border border-violet-500/10"
+                whileHover={{ scale: 1.01 }}
+                className="relative p-6 rounded-2xl bg-gradient-to-br from-violet-500/10 to-transparent border border-violet-500/15 overflow-hidden group"
               >
-                <h3 className="text-lg font-semibold text-violet-300 mb-5 flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5" />
+                {/* Decorative corner */}
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-violet-500/10 to-transparent" />
+                <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-violet-400/50" />
+                
+                <h3 className="text-lg font-semibold text-violet-200 mb-6 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center">
+                    <CheckCircle2 className="w-5 h-5 text-violet-400" />
+                  </div>
                   Requirements
                 </h3>
-                <ul className="space-y-3">
+                <ul className="space-y-4">
                   {requirements.map((req, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm text-foreground/80">
-                      <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <li key={i} className="flex items-start gap-3 text-sm text-foreground/80 group/item">
+                      <div className="w-9 h-9 rounded-lg bg-violet-500/10 flex items-center justify-center shrink-0 group-hover/item:bg-violet-500/20 transition-colors">
                         <req.icon className="w-4 h-4 text-violet-400" />
                       </div>
-                      <span className="pt-1.5">{req.text}</span>
+                      <span className="pt-2 leading-relaxed">{req.text}</span>
                     </li>
                   ))}
                 </ul>
@@ -338,19 +379,26 @@ const CreatorProgramSection = () => {
 
               <motion.div 
                 variants={itemVariants}
-                className="p-6 rounded-2xl bg-violet-500/5 border border-violet-500/10"
+                whileHover={{ scale: 1.01 }}
+                className="relative p-6 rounded-2xl bg-gradient-to-br from-violet-500/10 to-transparent border border-violet-500/15 overflow-hidden group"
               >
-                <h3 className="text-lg font-semibold text-violet-300 mb-5 flex items-center gap-2">
-                  <Eye className="w-5 h-5" />
+                {/* Decorative corner */}
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-violet-500/10 to-transparent" />
+                <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-violet-400/50" />
+                
+                <h3 className="text-lg font-semibold text-violet-200 mb-6 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center">
+                    <Eye className="w-5 h-5 text-violet-400" />
+                  </div>
                   What We Evaluate
                 </h3>
-                <ul className="space-y-3">
+                <ul className="space-y-4">
                   {evaluations.map((item, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm text-foreground/80">
-                      <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <li key={i} className="flex items-start gap-3 text-sm text-foreground/80 group/item">
+                      <div className="w-9 h-9 rounded-lg bg-violet-500/10 flex items-center justify-center shrink-0 group-hover/item:bg-violet-500/20 transition-colors">
                         <item.icon className="w-4 h-4 text-violet-400" />
                       </div>
-                      <span className="pt-1.5">{item.text}</span>
+                      <span className="pt-2 leading-relaxed">{item.text}</span>
                     </li>
                   ))}
                 </ul>
@@ -706,6 +754,7 @@ const CreatorProgramSection = () => {
               </div>
             </motion.div>
           </div>
+        </div>
         </div>
       </div>
     </motion.section>
