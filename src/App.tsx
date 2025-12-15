@@ -51,6 +51,7 @@ import OwnerPanel from "./pages/OwnerPanel";
 import GangRP from "./pages/GangRP";
 import Feedback from "./pages/Feedback";
 import AdminYoutubers from "./pages/AdminYoutubers";
+import AdminStaffTeams from "./pages/AdminStaffTeams";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -93,6 +94,7 @@ const AppRoutes = () => {
         <Route path="/admin/staff-stats" element={<PageTransition><AdminStaffStats /></PageTransition>} />
         <Route path="/admin/players-active" element={<PageTransition><AdminPlayers /></PageTransition>} />
         <Route path="/admin/youtubers" element={<PageTransition><AdminYoutubers /></PageTransition>} />
+        <Route path="/admin/staff-teams" element={<PageTransition><AdminStaffTeams /></PageTransition>} />
         <Route path="/support-chat" element={<PageTransition><SupportChat /></PageTransition>} />
         <Route path="/job-application" element={<PageTransition><JobApplication /></PageTransition>} />
         <Route path="/dashboard" element={<PageTransition><Dashboard /></PageTransition>} />

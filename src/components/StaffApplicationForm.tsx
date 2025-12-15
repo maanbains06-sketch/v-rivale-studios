@@ -70,16 +70,8 @@ interface PositionOption {
   description: string;
   isLocked?: boolean;
   memberCount?: number;
+  maxMembers?: number;
 }
-
-const MAX_TEAM_MEMBERS = 3;
-
-const teamPositions: PositionOption[] = [
-  { value: "administration_team", label: "Administration Team", description: "Server management, policy enforcement, staff coordination" },
-  { value: "staff_team", label: "Staff Team", description: "Community safety, rule enforcement, player support" },
-  { value: "support_team", label: "Support Team", description: "Player assistance, ticket management, issue resolution" },
-  { value: "event_team", label: "Event Team", description: "Event planning, hosting, community engagement" },
-];
 
 export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -128,17 +120,15 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
           return;
         }
 
-        // Check existing pending application
-        const { data: existingApp } = await supabase
-          .from("staff_applications")
-          .select("id, status")
-          .eq("user_id", user.id)
-          .eq("status", "pending")
-          .maybeSingle();
+        // Fetch team settings from database
+        const { data: teamSettings } = await supabase
+          .from("staff_team_settings")
+          .select("*")
+          .eq("is_enabled", true);
 
-        if (existingApp) {
+        if (!teamSettings || teamSettings.length === 0) {
           setIsEligible(false);
-          setEligibilityMessage("You already have a pending staff application. Please wait for it to be reviewed.");
+          setEligibilityMessage("No staff positions are currently available. Please check back later.");
           setIsCheckingEligibility(false);
           return;
         }
@@ -154,12 +144,18 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
           teamCounts[app.position] = (teamCounts[app.position] || 0) + 1;
         });
 
-        // Update positions with lock status
-        const positionsWithStatus = teamPositions.map(pos => ({
-          ...pos,
-          memberCount: teamCounts[pos.value] || 0,
-          isLocked: (teamCounts[pos.value] || 0) >= MAX_TEAM_MEMBERS
-        }));
+        // Build positions from database settings with lock status
+        const positionsWithStatus: PositionOption[] = teamSettings.map(setting => {
+          const memberCount = teamCounts[setting.team_value] || 0;
+          return {
+            value: setting.team_value,
+            label: setting.team_label,
+            description: setting.team_description || "",
+            memberCount,
+            maxMembers: setting.max_members,
+            isLocked: memberCount >= setting.max_members
+          };
+        });
 
         setAvailablePositions(positionsWithStatus);
         setIsEligible(true);
@@ -389,7 +385,7 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
                                   ? 'bg-destructive/20 text-destructive' 
                                   : 'bg-primary/20 text-primary'
                               }`}>
-                                {position.memberCount}/{MAX_TEAM_MEMBERS}
+                                {position.memberCount}/{position.maxMembers}
                               </span>
                               {position.isLocked && (
                                 <span className="text-xs text-destructive font-medium">FULL</span>
@@ -402,7 +398,7 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
                     </SelectContent>
                   </Select>
                   <FormDescription>
-                    Choose the team that best matches your skills (max {MAX_TEAM_MEMBERS} members per team)
+                    Choose the team that best matches your skills
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
