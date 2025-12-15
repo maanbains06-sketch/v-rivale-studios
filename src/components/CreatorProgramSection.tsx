@@ -95,12 +95,6 @@ const perks = [
   { icon: Radio, title: "Creator Events", description: "Exclusive projects & collabs" },
 ];
 
-const stats = [
-  { value: "50+", label: "Active Creators", icon: Users },
-  { value: "1M+", label: "Combined Views", icon: Eye },
-  { value: "100%", label: "Support Rate", icon: Heart },
-  { value: "24/7", label: "Creator Support", icon: Mic2 },
-];
 
 const requirements = [
   { text: "Create regular content (streams or videos)", icon: Video },
@@ -299,28 +293,6 @@ const CreatorProgramSection = () => {
               </motion.p>
             </div>
 
-            {/* Stats */}
-            <motion.div 
-              className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-14"
-              variants={staggerContainerVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-            >
-              {stats.map((stat) => (
-                <motion.div
-                  key={stat.label}
-                  variants={itemVariants}
-                  className="p-5 rounded-2xl bg-violet-500/5 border border-violet-500/10 text-center hover:bg-violet-500/10 hover:border-violet-500/20 transition-all duration-300"
-                >
-                  <stat.icon className="w-6 h-6 mx-auto mb-2 text-violet-400/70" />
-                  <div className="text-2xl md:text-3xl font-bold text-violet-300">
-                    {stat.value}
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">{stat.label}</div>
-                </motion.div>
-              ))}
-            </motion.div>
 
             {/* Perks Grid */}
             <motion.div variants={itemVariants} className="mb-14">
