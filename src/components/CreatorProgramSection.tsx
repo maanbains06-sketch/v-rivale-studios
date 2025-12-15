@@ -40,13 +40,19 @@ const creatorSchema = z.object({
   fullName: z.string().min(2, "Name must be at least 2 characters").max(100),
   discordUsername: z.string().min(2, "Discord username is required").max(50),
   steamId: z.string().min(5, "Steam ID is required").max(50),
+  contactEmail: z.string().email("Please enter a valid email address").max(255),
   channelUrl: z.string().url("Please enter a valid URL"),
   platform: z.string().min(1, "Please select a platform"),
   averageViewers: z.string().min(1, "Please select average viewers"),
   contentFrequency: z.string().min(1, "Please select content frequency"),
+  averageCcv: z.string().min(1, "Please enter your average CCV").max(100),
   rpExperience: z.string().min(20, "Please describe your RP experience (min 20 characters)").max(1000),
   contentStyle: z.string().min(20, "Please describe your content style (min 20 characters)").max(1000),
   whyJoin: z.string().min(50, "Please explain why you want to join (min 50 characters)").max(1500),
+  expectedBenefits: z.string().min(20, "Please describe expected benefits (min 20 characters)").max(1000),
+  valueContribution: z.string().min(20, "Please describe your contribution (min 20 characters)").max(1000),
+  storylineIdeas: z.string().max(1500).optional(),
+  complyWithPolicies: z.boolean().refine(val => val === true, "You must agree to comply with server policies"),
   socialLinks: z.string().max(500).optional(),
 });
 
@@ -120,7 +126,7 @@ const CreatorProgramSection = () => {
   const [formData, setFormData] = useState<Partial<CreatorFormData>>({});
   const [errors, setErrors] = useState<Partial<Record<keyof CreatorFormData, string>>>({});
 
-  const handleInputChange = (field: keyof CreatorFormData, value: string) => {
+  const handleInputChange = (field: keyof CreatorFormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
@@ -204,13 +210,19 @@ const CreatorProgramSection = () => {
         full_name: validatedData.fullName,
         discord_username: validatedData.discordUsername,
         steam_id: validatedData.steamId,
+        contact_email: validatedData.contactEmail,
         channel_url: validatedData.channelUrl,
         platform: validatedData.platform,
         average_viewers: validatedData.averageViewers,
         content_frequency: validatedData.contentFrequency,
+        average_ccv: validatedData.averageCcv,
         rp_experience: validatedData.rpExperience,
         content_style: validatedData.contentStyle,
         why_join: validatedData.whyJoin,
+        expected_benefits: validatedData.expectedBenefits,
+        value_contribution: validatedData.valueContribution,
+        storyline_ideas: validatedData.storylineIdeas || null,
+        comply_with_policies: validatedData.complyWithPolicies,
         social_links: validatedData.socialLinks || null,
         ownership_proof_url: proofUrl,
         user_id: user?.id || null,
@@ -489,21 +501,40 @@ const CreatorProgramSection = () => {
                           {errors.discordUsername && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.discordUsername}</p>}
                         </div>
                       </div>
-                      <div className="space-y-2 group">
-                        <Label htmlFor="steamId" className="text-red-200/90 flex items-center gap-2 text-sm font-medium">
-                          Steam ID <span className="text-rose-400">*</span>
-                        </Label>
-                        <div className="relative">
-                          <Input
-                            id="steamId"
-                            placeholder="steam:xxxxxxxxx or STEAM_0:X:XXXXX"
-                            value={formData.steamId || ""}
-                            onChange={(e) => handleInputChange("steamId", e.target.value)}
-                            className={`bg-white/5 dark:bg-white/5 border-red-300/30 focus:border-red-400/70 focus:ring-2 focus:ring-red-400/25 text-foreground placeholder:text-muted-foreground/60 rounded-xl py-5 transition-all duration-300 hover:border-red-400/50 ${errors.steamId ? "border-destructive" : ""}`}
-                          />
-                          <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-red-500/0 via-red-500/5 to-rose-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-2 group">
+                          <Label htmlFor="steamId" className="text-red-200/90 flex items-center gap-2 text-sm font-medium">
+                            Steam ID <span className="text-rose-400">*</span>
+                          </Label>
+                          <div className="relative">
+                            <Input
+                              id="steamId"
+                              placeholder="steam:xxxxxxxxx or STEAM_0:X:XXXXX"
+                              value={formData.steamId || ""}
+                              onChange={(e) => handleInputChange("steamId", e.target.value)}
+                              className={`bg-white/5 dark:bg-white/5 border-red-300/30 focus:border-red-400/70 focus:ring-2 focus:ring-red-400/25 text-foreground placeholder:text-muted-foreground/60 rounded-xl py-5 transition-all duration-300 hover:border-red-400/50 ${errors.steamId ? "border-destructive" : ""}`}
+                            />
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-red-500/0 via-red-500/5 to-rose-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                          </div>
+                          {errors.steamId && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.steamId}</p>}
                         </div>
-                        {errors.steamId && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.steamId}</p>}
+                        <div className="space-y-2 group">
+                          <Label htmlFor="contactEmail" className="text-red-200/90 flex items-center gap-2 text-sm font-medium">
+                            Contact Email <span className="text-rose-400">*</span>
+                          </Label>
+                          <div className="relative">
+                            <Input
+                              id="contactEmail"
+                              type="email"
+                              placeholder="your@email.com"
+                              value={formData.contactEmail || ""}
+                              onChange={(e) => handleInputChange("contactEmail", e.target.value)}
+                              className={`bg-white/5 dark:bg-white/5 border-red-300/30 focus:border-red-400/70 focus:ring-2 focus:ring-red-400/25 text-foreground placeholder:text-muted-foreground/60 rounded-xl py-5 transition-all duration-300 hover:border-red-400/50 ${errors.contactEmail ? "border-destructive" : ""}`}
+                            />
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-red-500/0 via-red-500/5 to-rose-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                          </div>
+                          {errors.contactEmail && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.contactEmail}</p>}
+                        </div>
                       </div>
                     </motion.div>
 
@@ -613,6 +644,22 @@ const CreatorProgramSection = () => {
                           {errors.contentFrequency && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.contentFrequency}</p>}
                         </div>
                       </div>
+                      <div className="space-y-2 group">
+                        <Label htmlFor="averageCcv" className="text-rose-200/90 flex items-center gap-2 text-sm font-medium">
+                          Average CCV (Concurrent Viewers) <span className="text-red-400">*</span>
+                        </Label>
+                        <div className="relative">
+                          <Input
+                            id="averageCcv"
+                            placeholder="e.g., 50-100 viewers during livestreams"
+                            value={formData.averageCcv || ""}
+                            onChange={(e) => handleInputChange("averageCcv", e.target.value)}
+                            className={`bg-white/5 dark:bg-white/5 border-rose-300/30 focus:border-rose-400/70 focus:ring-2 focus:ring-rose-400/25 text-foreground placeholder:text-muted-foreground/60 rounded-xl py-5 transition-all duration-300 hover:border-rose-400/50 ${errors.averageCcv ? "border-destructive" : ""}`}
+                          />
+                          <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-rose-500/0 via-rose-500/5 to-red-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                        </div>
+                        {errors.averageCcv && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.averageCcv}</p>}
+                      </div>
                     </motion.div>
 
                     {/* Section 3: Experience */}
@@ -684,6 +731,53 @@ const CreatorProgramSection = () => {
                           {errors.whyJoin && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.whyJoin}</p>}
                         </div>
                         <div className="space-y-2 group">
+                          <Label htmlFor="expectedBenefits" className="text-orange-200/90 flex items-center gap-2 text-sm font-medium">
+                            Expected Benefits from Creator Program <span className="text-rose-400">*</span>
+                          </Label>
+                          <div className="relative">
+                            <Textarea
+                              id="expectedBenefits"
+                              placeholder="What benefits do you expect from being part of the Creator Program?"
+                              value={formData.expectedBenefits || ""}
+                              onChange={(e) => handleInputChange("expectedBenefits", e.target.value)}
+                              className={`min-h-[100px] bg-white/5 dark:bg-white/5 border-orange-300/30 focus:border-orange-400/70 focus:ring-2 focus:ring-orange-400/25 text-foreground placeholder:text-muted-foreground/60 rounded-xl resize-none transition-all duration-300 hover:border-orange-400/50 ${errors.expectedBenefits ? "border-destructive" : ""}`}
+                            />
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500/0 via-orange-500/5 to-red-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                          </div>
+                          {errors.expectedBenefits && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.expectedBenefits}</p>}
+                        </div>
+                        <div className="space-y-2 group">
+                          <Label htmlFor="valueContribution" className="text-orange-200/90 flex items-center gap-2 text-sm font-medium">
+                            Your Value/Contribution to the Server <span className="text-rose-400">*</span>
+                          </Label>
+                          <div className="relative">
+                            <Textarea
+                              id="valueContribution"
+                              placeholder="What value or contribution will you bring to the server as a creator?"
+                              value={formData.valueContribution || ""}
+                              onChange={(e) => handleInputChange("valueContribution", e.target.value)}
+                              className={`min-h-[100px] bg-white/5 dark:bg-white/5 border-orange-300/30 focus:border-orange-400/70 focus:ring-2 focus:ring-orange-400/25 text-foreground placeholder:text-muted-foreground/60 rounded-xl resize-none transition-all duration-300 hover:border-orange-400/50 ${errors.valueContribution ? "border-destructive" : ""}`}
+                            />
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500/0 via-orange-500/5 to-red-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                          </div>
+                          {errors.valueContribution && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.valueContribution}</p>}
+                        </div>
+                        <div className="space-y-2 group">
+                          <Label htmlFor="storylineIdeas" className="text-orange-200/90 text-sm font-medium">
+                            Storyline Ideas <span className="text-orange-400/60">(Optional)</span>
+                          </Label>
+                          <div className="relative">
+                            <Textarea
+                              id="storylineIdeas"
+                              placeholder="Do you have any storyline ideas you want us to help you execute? Share your creative ideas here."
+                              value={formData.storylineIdeas || ""}
+                              onChange={(e) => handleInputChange("storylineIdeas", e.target.value)}
+                              className="min-h-[100px] bg-white/5 dark:bg-white/5 border-orange-300/30 focus:border-orange-400/70 focus:ring-2 focus:ring-orange-400/25 text-foreground placeholder:text-muted-foreground/60 rounded-xl resize-none transition-all duration-300 hover:border-orange-400/50"
+                            />
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500/0 via-orange-500/5 to-red-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                          </div>
+                        </div>
+                        <div className="space-y-2 group">
                           <Label htmlFor="socialLinks" className="text-orange-200/90 text-sm font-medium">
                             Other Social Media <span className="text-orange-400/60">(Optional)</span>
                           </Label>
@@ -697,6 +791,25 @@ const CreatorProgramSection = () => {
                             />
                             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500/0 via-orange-500/5 to-red-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                           </div>
+                        </div>
+                        {/* Policy Compliance */}
+                        <div className="space-y-3 p-4 rounded-xl bg-red-500/5 border border-red-500/20">
+                          <Label className="text-orange-200/90 flex items-center gap-2 text-sm font-medium">
+                            Policy Compliance <span className="text-rose-400">*</span>
+                          </Label>
+                          <div className="flex items-start gap-3">
+                            <input
+                              type="checkbox"
+                              id="complyWithPolicies"
+                              checked={formData.complyWithPolicies || false}
+                              onChange={(e) => handleInputChange("complyWithPolicies", e.target.checked)}
+                              className="mt-1 w-5 h-5 rounded border-red-400/40 bg-white/5 text-red-500 focus:ring-red-500/50 focus:ring-2"
+                            />
+                            <label htmlFor="complyWithPolicies" className="text-sm text-foreground/80 cursor-pointer">
+                              I agree to comply with all policies of Skylife Roleplay India Server as a Streamer/Creator. I understand that violation of policies may result in removal from the Creator Program.
+                            </label>
+                          </div>
+                          {errors.complyWithPolicies && <p className="text-xs text-destructive flex items-center gap-1"><X className="w-3 h-3" />{errors.complyWithPolicies}</p>}
                         </div>
                       </div>
                     </motion.div>
