@@ -838,7 +838,7 @@ const CreatorProgramSection = () => {
             >
               <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 border border-red-500/15">
                 <Clock className="w-4 h-4 text-red-400/70" />
-                <span>3-5 day review</span>
+                <span>24-48 hour review</span>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 border border-red-500/15">
                 <MessageSquare className="w-4 h-4 text-red-400/70" />
