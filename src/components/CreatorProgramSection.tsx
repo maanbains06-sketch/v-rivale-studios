@@ -287,7 +287,7 @@ const CreatorProgramSection = () => {
                 <span className="text-violet-400">SLRP Creator</span>
               </motion.h2>
               
-              <motion.p variants={itemVariants} className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
+              <motion.p variants={itemVariants} className="text-base md:text-lg text-foreground/80 max-w-2xl mx-auto">
                 Join our exclusive Creator Program and get recognized for your content. 
                 We support creators of all sizes — effort matters more than numbers.
               </motion.p>
@@ -308,7 +308,7 @@ const CreatorProgramSection = () => {
                       <perk.icon className="w-5 h-5 text-violet-400" />
                     </div>
                     <h4 className="text-sm font-semibold text-foreground mb-1">{perk.title}</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{perk.description}</p>
+                    <p className="text-xs text-foreground/70 leading-relaxed">{perk.description}</p>
                   </motion.div>
                 ))}
               </div>
@@ -326,9 +326,9 @@ const CreatorProgramSection = () => {
                 </h3>
                 <ul className="space-y-3">
                   {requirements.map((req, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground">
+                    <li key={i} className="flex items-start gap-3 text-sm text-foreground/80">
                       <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center shrink-0 mt-0.5">
-                        <req.icon className="w-4 h-4 text-violet-400/70" />
+                        <req.icon className="w-4 h-4 text-violet-400" />
                       </div>
                       <span className="pt-1.5">{req.text}</span>
                     </li>
@@ -346,9 +346,9 @@ const CreatorProgramSection = () => {
                 </h3>
                 <ul className="space-y-3">
                   {evaluations.map((item, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground">
+                    <li key={i} className="flex items-start gap-3 text-sm text-foreground/80">
                       <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center shrink-0 mt-0.5">
-                        <item.icon className="w-4 h-4 text-violet-400/70" />
+                        <item.icon className="w-4 h-4 text-violet-400" />
                       </div>
                       <span className="pt-1.5">{item.text}</span>
                     </li>
