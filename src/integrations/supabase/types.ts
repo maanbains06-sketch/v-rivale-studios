@@ -136,12 +136,16 @@ export type Database = {
       creator_applications: {
         Row: {
           admin_notes: string | null
+          average_ccv: string | null
           average_viewers: string
           channel_url: string
+          comply_with_policies: boolean | null
+          contact_email: string | null
           content_frequency: string
           content_style: string
           created_at: string
           discord_username: string
+          expected_benefits: string | null
           full_name: string
           id: string
           ownership_proof_url: string | null
@@ -152,18 +156,24 @@ export type Database = {
           social_links: string | null
           status: string
           steam_id: string
+          storyline_ideas: string | null
           updated_at: string
           user_id: string | null
+          value_contribution: string | null
           why_join: string
         }
         Insert: {
           admin_notes?: string | null
+          average_ccv?: string | null
           average_viewers: string
           channel_url: string
+          comply_with_policies?: boolean | null
+          contact_email?: string | null
           content_frequency: string
           content_style: string
           created_at?: string
           discord_username: string
+          expected_benefits?: string | null
           full_name: string
           id?: string
           ownership_proof_url?: string | null
@@ -174,18 +184,24 @@ export type Database = {
           social_links?: string | null
           status?: string
           steam_id: string
+          storyline_ideas?: string | null
           updated_at?: string
           user_id?: string | null
+          value_contribution?: string | null
           why_join: string
         }
         Update: {
           admin_notes?: string | null
+          average_ccv?: string | null
           average_viewers?: string
           channel_url?: string
+          comply_with_policies?: boolean | null
+          contact_email?: string | null
           content_frequency?: string
           content_style?: string
           created_at?: string
           discord_username?: string
+          expected_benefits?: string | null
           full_name?: string
           id?: string
           ownership_proof_url?: string | null
@@ -196,8 +212,10 @@ export type Database = {
           social_links?: string | null
           status?: string
           steam_id?: string
+          storyline_ideas?: string | null
           updated_at?: string
           user_id?: string | null
+          value_contribution?: string | null
           why_join?: string
         }
         Relationships: []
