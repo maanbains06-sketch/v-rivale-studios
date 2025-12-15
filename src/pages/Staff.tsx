@@ -582,9 +582,9 @@ const Staff = () => {
                   <span>{getRoleDuties(member.role_type)}</span>
                 </div>
                 
-                {/* Responsibilities tags - Show 4 on cards */}
+                {/* Responsibilities tags - Show only 4 on cards */}
                 <div className="grid grid-cols-2 gap-1.5">
-                  {getCardResponsibilities(member).map((resp, idx) => (
+                  {getCardResponsibilities(member).slice(0, 4).map((resp, idx) => (
                     <motion.span 
                       key={idx}
                       initial={{ opacity: 0, scale: 0.8 }}
