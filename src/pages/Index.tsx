@@ -34,6 +34,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // ========================================
 // 🎬 YOUTUBE VIDEO BACKGROUND CONFIGURATION
@@ -142,6 +144,8 @@ const Index = () => {
   const [featuredYoutubers, setFeaturedYoutubers] = useState<FeaturedYoutuber[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isCheckingDiscord, setIsCheckingDiscord] = useState(false);
+  const [mobileRequirementsOpen, setMobileRequirementsOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   // Simplified scroll - removed heavy transforms
   const { scrollYProgress } = useScroll();
@@ -481,92 +485,199 @@ const Index = () => {
             </motion.div>
 
             <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center mb-8 px-4">
-              <HoverCard openDelay={100} closeDelay={200}>
-                <HoverCardTrigger asChild>
-                  <Button
-                    size="lg"
-                    className={`text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 ${
-                      allRequirementsMet
-                        ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30 hover:shadow-green-500/50 hover:scale-105 cursor-pointer"
-                        : "bg-muted/50 text-muted-foreground border border-border/50 hover:bg-muted/70"
-                    }`}
-                    onClick={allRequirementsMet ? handleJoinServer : undefined}
-                  >
-                    {allRequirementsMet ? <Play className="w-5 h-5 mr-2 fill-current" /> : <Lock className="w-5 h-5 mr-2" />}
-                    {allRequirementsMet ? "Join Server" : "Complete Requirements"}
-                  </Button>
-                </HoverCardTrigger>
-                <HoverCardContent side="bottom" sideOffset={10} className="p-5 bg-background/95 backdrop-blur-xl border border-sky-500/30 rounded-xl shadow-2xl w-80 z-[100]">
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      {allRequirementsMet ? <Sparkles className="w-5 h-5 text-green-400" /> : <Lock className="w-5 h-5 text-destructive" />}
-                      <p className="font-bold text-foreground text-lg">{allRequirementsMet ? "Ready to Play!" : "Requirements to Join"}</p>
-                    </div>
-                    <div className="space-y-2">
+              {/* Mobile: Use Sheet for requirements */}
+              {isMobile ? (
+                <Sheet open={mobileRequirementsOpen} onOpenChange={setMobileRequirementsOpen}>
+                  <SheetTrigger asChild>
+                    <Button
+                      size="lg"
+                      className={`text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 ${
+                        allRequirementsMet
+                          ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30 hover:shadow-green-500/50 hover:scale-105 cursor-pointer"
+                          : "bg-muted/50 text-muted-foreground border border-border/50 hover:bg-muted/70"
+                      }`}
+                      onClick={(e) => {
+                        if (allRequirementsMet) {
+                          e.preventDefault();
+                          handleJoinServer();
+                        }
+                      }}
+                    >
+                      {allRequirementsMet ? <Play className="w-5 h-5 mr-2 fill-current" /> : <Lock className="w-5 h-5 mr-2" />}
+                      {allRequirementsMet ? "Join Server" : "Complete Requirements"}
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="bottom" className="rounded-t-3xl bg-background/95 backdrop-blur-xl border-t border-sky-500/30">
+                    <SheetHeader className="pb-4">
+                      <SheetTitle className="flex items-center gap-2 text-lg">
+                        {allRequirementsMet ? <Sparkles className="w-5 h-5 text-green-400" /> : <Lock className="w-5 h-5 text-destructive" />}
+                        {allRequirementsMet ? "Ready to Play!" : "Requirements to Join"}
+                      </SheetTitle>
+                    </SheetHeader>
+                    <div className="space-y-3 pb-6">
                       {getMissingRequirements().map((req) => (
                         <div 
                           key={req.label} 
-                          className={`flex items-center gap-3 p-3 rounded-lg transition-all ${req.met ? "bg-green-500/15 border border-green-500/40" : "bg-red-500/10 border border-red-500/30 cursor-pointer hover:bg-red-500/20"}`}
+                          className={`flex items-center gap-3 p-4 rounded-xl transition-all ${req.met ? "bg-green-500/15 border border-green-500/40" : "bg-red-500/10 border border-red-500/30 cursor-pointer active:scale-[0.98]"}`}
                           onClick={() => {
                             if (req.met) return;
+                            setMobileRequirementsOpen(false);
                             if (req.label === "Logged In") navigate("/auth");
                             else if (req.label === "In Discord Server") window.open("https://discord.gg/W2nU97maBh", "_blank");
                             else if (req.label === "Whitelisted Role") navigate("/whitelist");
                           }}
                         >
                           {req.met ? (
-                            <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center shrink-0">
+                            <div className="w-7 h-7 rounded-full bg-green-500 flex items-center justify-center shrink-0">
                               <Check className="w-4 h-4 text-white" />
                             </div>
                           ) : (
-                            <div className="w-6 h-6 rounded-full bg-red-500/20 border border-red-500/50 flex items-center justify-center shrink-0">
+                            <div className="w-7 h-7 rounded-full bg-red-500/20 border border-red-500/50 flex items-center justify-center shrink-0">
                               <X className="w-4 h-4 text-red-400" />
                             </div>
                           )}
                           <req.icon className={`w-5 h-5 ${req.met ? "text-green-400" : "text-red-400"}`} />
-                          <span className={`text-sm font-medium ${req.met ? "text-green-400" : "text-red-400"}`}>{req.label}</span>
-                          {!req.met && <ExternalLink className="w-4 h-4 text-red-400/70 ml-auto" />}
+                          <span className={`text-sm font-medium flex-1 ${req.met ? "text-green-400" : "text-red-400"}`}>{req.label}</span>
+                          {!req.met && <ExternalLink className="w-4 h-4 text-red-400/70" />}
                         </div>
                       ))}
+                      
+                      {allRequirementsMet ? (
+                        <Button 
+                          className="w-full mt-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-6"
+                          onClick={() => {
+                            setMobileRequirementsOpen(false);
+                            handleJoinServer();
+                          }}
+                        >
+                          <Play className="w-4 h-4 mr-2 fill-current" />
+                          Connect to Server
+                        </Button>
+                      ) : (
+                        <div className="pt-4 border-t border-border/30 space-y-3">
+                          <p className="text-xs text-muted-foreground text-center">
+                            Complete all requirements to unlock server access
+                          </p>
+                          {!isLoggedIn && (
+                            <Button 
+                              variant="outline" 
+                              className="w-full border-sky-500/50 text-sky-400 hover:bg-sky-500/10 py-5"
+                              onClick={() => {
+                                setMobileRequirementsOpen(false);
+                                navigate("/auth");
+                              }}
+                            >
+                              <LogIn className="w-4 h-4 mr-2" />
+                              Login / Sign Up
+                            </Button>
+                          )}
+                          {isLoggedIn && !isWhitelisted && (
+                            <Button 
+                              variant="outline" 
+                              className="w-full border-sky-500/50 text-sky-400 hover:bg-sky-500/10 py-5"
+                              onClick={() => {
+                                setMobileRequirementsOpen(false);
+                                navigate("/whitelist");
+                              }}
+                            >
+                              <Shield className="w-4 h-4 mr-2" />
+                              Apply for Whitelist
+                            </Button>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    {allRequirementsMet ? (
-                      <Button 
-                        className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold"
-                        onClick={handleJoinServer}
-                      >
-                        <Play className="w-4 h-4 mr-2 fill-current" />
-                        Connect to Server
-                      </Button>
-                    ) : (
-                      <div className="pt-3 border-t border-border/30">
-                        <p className="text-xs text-muted-foreground text-center mb-3">
-                          Complete all requirements to unlock server access
-                        </p>
-                        {!isLoggedIn && (
-                          <Button 
-                            variant="outline" 
-                            className="w-full border-sky-500/50 text-sky-400 hover:bg-sky-500/10"
-                            onClick={() => navigate("/auth")}
-                          >
-                            <LogIn className="w-4 h-4 mr-2" />
-                            Login / Sign Up
-                          </Button>
-                        )}
-                        {isLoggedIn && !isWhitelisted && (
-                          <Button 
-                            variant="outline" 
-                            className="w-full border-sky-500/50 text-sky-400 hover:bg-sky-500/10"
-                            onClick={() => navigate("/whitelist")}
-                          >
-                            <Shield className="w-4 h-4 mr-2" />
-                            Apply for Whitelist
-                          </Button>
-                        )}
+                  </SheetContent>
+                </Sheet>
+              ) : (
+                /* Desktop: Use HoverCard */
+                <HoverCard openDelay={100} closeDelay={200}>
+                  <HoverCardTrigger asChild>
+                    <Button
+                      size="lg"
+                      className={`text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 ${
+                        allRequirementsMet
+                          ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30 hover:shadow-green-500/50 hover:scale-105 cursor-pointer"
+                          : "bg-muted/50 text-muted-foreground border border-border/50 hover:bg-muted/70"
+                      }`}
+                      onClick={allRequirementsMet ? handleJoinServer : undefined}
+                    >
+                      {allRequirementsMet ? <Play className="w-5 h-5 mr-2 fill-current" /> : <Lock className="w-5 h-5 mr-2" />}
+                      {allRequirementsMet ? "Join Server" : "Complete Requirements"}
+                    </Button>
+                  </HoverCardTrigger>
+                  <HoverCardContent side="bottom" sideOffset={10} className="p-5 bg-background/95 backdrop-blur-xl border border-sky-500/30 rounded-xl shadow-2xl w-80 z-[100]">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        {allRequirementsMet ? <Sparkles className="w-5 h-5 text-green-400" /> : <Lock className="w-5 h-5 text-destructive" />}
+                        <p className="font-bold text-foreground text-lg">{allRequirementsMet ? "Ready to Play!" : "Requirements to Join"}</p>
                       </div>
-                    )}
-                  </div>
-                </HoverCardContent>
-              </HoverCard>
+                      <div className="space-y-2">
+                        {getMissingRequirements().map((req) => (
+                          <div 
+                            key={req.label} 
+                            className={`flex items-center gap-3 p-3 rounded-lg transition-all ${req.met ? "bg-green-500/15 border border-green-500/40" : "bg-red-500/10 border border-red-500/30 cursor-pointer hover:bg-red-500/20"}`}
+                            onClick={() => {
+                              if (req.met) return;
+                              if (req.label === "Logged In") navigate("/auth");
+                              else if (req.label === "In Discord Server") window.open("https://discord.gg/W2nU97maBh", "_blank");
+                              else if (req.label === "Whitelisted Role") navigate("/whitelist");
+                            }}
+                          >
+                            {req.met ? (
+                              <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center shrink-0">
+                                <Check className="w-4 h-4 text-white" />
+                              </div>
+                            ) : (
+                              <div className="w-6 h-6 rounded-full bg-red-500/20 border border-red-500/50 flex items-center justify-center shrink-0">
+                                <X className="w-4 h-4 text-red-400" />
+                              </div>
+                            )}
+                            <req.icon className={`w-5 h-5 ${req.met ? "text-green-400" : "text-red-400"}`} />
+                            <span className={`text-sm font-medium ${req.met ? "text-green-400" : "text-red-400"}`}>{req.label}</span>
+                            {!req.met && <ExternalLink className="w-4 h-4 text-red-400/70 ml-auto" />}
+                          </div>
+                        ))}
+                      </div>
+                      {allRequirementsMet ? (
+                        <Button 
+                          className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold"
+                          onClick={handleJoinServer}
+                        >
+                          <Play className="w-4 h-4 mr-2 fill-current" />
+                          Connect to Server
+                        </Button>
+                      ) : (
+                        <div className="pt-3 border-t border-border/30">
+                          <p className="text-xs text-muted-foreground text-center mb-3">
+                            Complete all requirements to unlock server access
+                          </p>
+                          {!isLoggedIn && (
+                            <Button 
+                              variant="outline" 
+                              className="w-full border-sky-500/50 text-sky-400 hover:bg-sky-500/10"
+                              onClick={() => navigate("/auth")}
+                            >
+                              <LogIn className="w-4 h-4 mr-2" />
+                              Login / Sign Up
+                            </Button>
+                          )}
+                          {isLoggedIn && !isWhitelisted && (
+                            <Button 
+                              variant="outline" 
+                              className="w-full border-sky-500/50 text-sky-400 hover:bg-sky-500/10"
+                              onClick={() => navigate("/whitelist")}
+                            >
+                              <Shield className="w-4 h-4 mr-2" />
+                              Apply for Whitelist
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
+              )}
 
               <Button
                 size="lg"
