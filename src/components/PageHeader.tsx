@@ -18,8 +18,8 @@ const PageHeader = ({ title, description, badge, backgroundImage, backgroundPosi
         minHeight: minHeight,
       }}
     >
-      {/* Gradient overlay - reduced opacity for better image visibility */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background"></div>
+      {/* Gradient overlay - darker for better text visibility */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background"></div>
       
       
       <div className="container mx-auto px-4 relative z-10">
@@ -30,7 +30,7 @@ const PageHeader = ({ title, description, badge, backgroundImage, backgroundPosi
             </div>
           )}
           
-          <h1 className="text-3xl md:text-5xl font-bold text-gradient mb-4 leading-tight drop-shadow-[0_0_30px_rgba(var(--primary),0.4)] py-2">
+          <h1 className="text-3xl md:text-5xl font-bold mb-4 leading-tight py-2 text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)] [text-shadow:_0_2px_8px_rgb(0_0_0_/_80%),_0_4px_16px_rgb(0_0_0_/_60%),_0_0_30px_hsl(var(--primary)_/_50%)]">
             {title}
           </h1>
           
