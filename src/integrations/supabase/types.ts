@@ -1380,6 +1380,39 @@ export type Database = {
           },
         ]
       }
+      staff_team_settings: {
+        Row: {
+          created_at: string
+          id: string
+          is_enabled: boolean
+          max_members: number
+          team_description: string | null
+          team_label: string
+          team_value: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          max_members?: number
+          team_description?: string | null
+          team_label: string
+          team_value: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          max_members?: number
+          team_description?: string | null
+          team_label?: string
+          team_value?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       staff_training_modules: {
         Row: {
           content: string
