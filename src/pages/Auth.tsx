@@ -23,7 +23,7 @@ const Auth = () => {
   const defaultTab = location === "/signup" ? "signup" : "login";
 
   useEffect(() => {
-    const checkAuth = async (session: Session | null) => {
+    const checkAuth = async (session: Session | null, event?: string) => {
       if (session?.user) {
         // Check URL params to determine if this is signup or login flow
         const urlParams = new URLSearchParams(window.location.search);
@@ -32,6 +32,26 @@ const Auth = () => {
         if (isSignup) {
           navigate("/discord-signup");
         } else {
+          // For login flow, check if user exists in profiles table
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (error || !profile) {
+            // User is not registered, sign them out and show error
+            await supabase.auth.signOut();
+            setUser(null);
+            setSession(null);
+            toast({
+              title: "Account Not Found",
+              description: "You are not registered. Please sign up first to create an account.",
+              variant: "destructive",
+            });
+            return;
+          }
+          
           navigate("/discord-profile");
         }
       }
@@ -42,7 +62,9 @@ const Auth = () => {
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        checkAuth(session);
+        if (event === 'SIGNED_IN') {
+          checkAuth(session, event);
+        }
       }
     );
 
@@ -50,11 +72,11 @@ const Auth = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      checkAuth(session);
+      // Don't auto-check on page load, only on sign-in event
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   const handleDiscordLogin = async () => {
     setLoading(true);
