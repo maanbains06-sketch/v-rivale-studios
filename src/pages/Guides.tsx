@@ -988,50 +988,116 @@ const Guides = () => {
                       </ul>
                     </div>
 
-                    {/* Section 15: Punishment Guidelines */}
+                    {/* Section 15: Looting Rules */}
                     <div>
                       <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
-                        <span className="text-2xl">⚠️</span> 15. Punishment Guidelines
+                        <span className="text-2xl">🎒</span> 15. Looting Rules
+                      </h3>
+                      <p className="text-muted-foreground mb-4">Guidelines for looting players, NPCs, and locations to ensure fair and realistic roleplay.</p>
+                      <ul className="space-y-3 ml-4">
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">15.1</span>
+                          <div>
+                            <strong className="text-primary">Robbery Requirements:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Before looting a player, you must have proper roleplay initiation such as holding them at gunpoint or subduing them. Simply running up and using inventory mechanics without roleplay is prohibited. Demand compliance verbally: "Empty your pockets!" or "Give me everything you have!" The victim must have time to comply before you take items.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">15.2</span>
+                          <div>
+                            <strong className="text-primary">Loot Limits:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">You may take a maximum of ₹75,000 cash, one weapon, and reasonable items (phone, drugs, valuables) per robbery. You cannot strip a player of all their possessions. Leave them with basic items to continue their roleplay. Taking keys to vehicles is allowed but you cannot steal more than one vehicle per robbery.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">15.3</span>
+                          <div>
+                            <strong className="text-primary">Body Looting (Downed Players):</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">You may loot downed or unconscious players only if you were directly involved in their incapacitation. Randomly looting bodies you find is not allowed unless there is ongoing conflict. You have a maximum of 2 minutes to loot before EMS may arrive. Do not loot the same player multiple times within 30 minutes.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">15.4</span>
+                          <div>
+                            <strong className="text-primary">Store & Business Robberies:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Robbing stores requires a minimum of 2 police officers online. You must hold the clerk at gunpoint and demand they open the register. Maximum take from convenience stores is ₹50,000. Banks and jewelry stores have higher requirements - check with staff for heist planning. Cooldown between store robberies is 30 minutes per person.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">15.5</span>
+                          <div>
+                            <strong className="text-primary">Vehicle Looting:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">You may search and loot vehicles only if you have legitimate access (owner permission, stolen keys, or lockpicking). Lockpicking takes 30 seconds minimum and must be roleplayed. Items found in trunks can be taken following standard loot limits. Police impound lots and mechanic garages cannot be looted under any circumstances.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">15.6</span>
+                          <div>
+                            <strong className="text-primary">Protected Items:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Certain items cannot be looted: government-issued IDs, police badges (from officers), EMS equipment, business keys (unless with staff approval), and whitelisted job items. Taking these items is powergaming. If you accidentally receive protected items, return them immediately and report to staff.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">15.7</span>
+                          <div>
+                            <strong className="text-primary">New Player Protection:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">Players under 48 hours of playtime are protected from robbery. Check if someone appears new before robbing. If you accidentally rob a new player, return their items and apologize in-character. This rule exists to ensure new players have a positive first experience on the server.</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
+                          <span className="text-xl">15.8</span>
+                          <div>
+                            <strong className="text-primary">Robbery Cooldowns:</strong>
+                            <p className="text-sm mt-1 text-muted-foreground">You cannot rob the same player more than once within 2 hours. Chain robbing (robbing multiple players in quick succession without roleplay) is prohibited. After a robbery, you should leave the area to allow the victim to recover. Targeting the same player repeatedly across days is considered harassment.</p>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+
+                    {/* Section 16: Punishment Guidelines */}
+                    <div>
+                      <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
+                        <span className="text-2xl">⚠️</span> 16. Punishment Guidelines
                       </h3>
                       <p className="text-muted-foreground mb-4">Understanding consequences for rule violations helps maintain server integrity.</p>
                       <ul className="space-y-3 ml-4">
                         <li className="flex items-start gap-3 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
-                          <span className="text-xl">15.1</span>
+                          <span className="text-xl">16.1</span>
                           <div>
                             <strong className="text-yellow-400">Verbal Warning:</strong>
                             <p className="text-sm mt-1 text-muted-foreground">First-time minor offenses may result in a verbal warning with explanation. These are educational and give players a chance to correct behavior. Verbal warnings are logged and considered in future incidents. Examples: Minor FailRP, forgetting to stay in character, minor traffic violations.</p>
                           </div>
                         </li>
                         <li className="flex items-start gap-3 p-3 rounded-lg bg-orange-500/10 border border-orange-500/20">
-                          <span className="text-xl">15.2</span>
+                          <span className="text-xl">16.2</span>
                           <div>
                             <strong className="text-orange-400">Written Warning:</strong>
                             <p className="text-sm mt-1 text-muted-foreground">Moderate offenses or repeated minor violations result in official written warnings. Three written warnings may lead to temporary ban. Written warnings remain on your record permanently. Examples: Repeated FailRP, minor metagaming, poor roleplay quality consistently.</p>
                           </div>
                         </li>
                         <li className="flex items-start gap-3 p-3 rounded-lg bg-orange-600/10 border border-orange-600/20">
-                          <span className="text-xl">15.3</span>
+                          <span className="text-xl">16.3</span>
                           <div>
                             <strong className="text-orange-500">Kick:</strong>
                             <p className="text-sm mt-1 text-muted-foreground">Immediate removal from the server for disruption or moderate rule breaks. You may rejoin after being kicked but must correct behavior. Multiple kicks lead to temporary bans. Examples: Mic spam, minor trolling, refusing staff instructions, causing drama.</p>
                           </div>
                         </li>
                         <li className="flex items-start gap-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
-                          <span className="text-xl">15.4</span>
+                          <span className="text-xl">16.4</span>
                           <div>
                             <strong className="text-red-400">Temporary Ban:</strong>
                             <p className="text-sm mt-1 text-muted-foreground">Serious violations result in temporary bans ranging from 24 hours to 30 days depending on severity. Ban length increases with repeat offenses. Examples: RDM, VDM, combat logging, metagaming, powergaming, harassment. After ban expires, you are on probation for 30 days.</p>
                           </div>
                         </li>
                         <li className="flex items-start gap-3 p-3 rounded-lg bg-red-700/10 border border-red-700/20">
-                          <span className="text-xl">15.5</span>
+                          <span className="text-xl">16.5</span>
                           <div>
                             <strong className="text-red-500">Permanent Ban:</strong>
                             <p className="text-sm mt-1 text-muted-foreground">Reserved for the most serious offenses or repeated major violations. Permanent bans can be appealed after 30 days with a detailed appeal. Examples: Cheating/hacking, RMT, severe harassment, doxxing, threats, repeated major rule breaks, ban evasion. Some offenses are unappealable.</p>
                           </div>
                         </li>
                         <li className="flex items-start gap-3 p-3 rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
-                          <span className="text-xl">15.6</span>
+                          <span className="text-xl">16.6</span>
                           <div>
                             <strong className="text-primary">Appeal Process:</strong>
                             <p className="text-sm mt-1 text-muted-foreground">All punishments can be appealed through Discord tickets. Appeals must include: what happened, why you believe the punishment was wrong, what you will do differently. Staff will review within 48-72 hours. Lying in appeals results in appeal denial and potential extended punishment. Stay respectful during appeals.</p>
