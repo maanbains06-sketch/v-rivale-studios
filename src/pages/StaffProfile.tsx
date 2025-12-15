@@ -54,12 +54,12 @@ const roleIcons = {
 
 // Default responsibilities per role type (for members without custom responsibilities)
 const roleResponsibilities: Record<string, string[]> = {
-  owner: ["Server Management", "Community Leadership", "Strategic Planning", "Team Oversight"],
-  admin: ["Staff Management", "Rule Enforcement", "Player Support", "Server Moderation"],
-  moderator: ["Community Support", "Rule Enforcement", "Ticket Handling", "Player Assistance"],
-  developer: ["Script Development", "Bug Fixes", "Feature Implementation", "Technical Support"],
-  staff: ["Player Support", "Community Help", "Ticket Assistance", "General Moderation"],
-  event_manager: ["Event Planning", "Community Events", "Player Engagement", "Event Coordination"],
+  owner: ["Server Management", "Community Leadership", "Strategic Planning", "Team Oversight", "Final Decision Making", "Partnership Management", "Server Vision", "Staff Recruitment"],
+  admin: ["Staff Management", "Rule Enforcement", "Player Support", "Server Moderation", "Ban Appeals", "Policy Development", "Conflict Resolution", "Quality Assurance"],
+  moderator: ["Community Support", "Rule Enforcement", "Ticket Handling", "Player Assistance", "Chat Moderation", "Report Review", "Warning Issuance", "Player Guidance"],
+  developer: ["Script Development", "Bug Fixes", "Feature Implementation", "Technical Support", "Performance Optimization", "System Maintenance", "Code Review", "Documentation"],
+  staff: ["Player Support", "Community Help", "Ticket Assistance", "General Moderation", "New Player Guidance", "FAQ Support", "Issue Escalation", "Feedback Collection"],
+  event_manager: ["Event Planning", "Community Events", "Player Engagement", "Event Coordination", "Prize Distribution", "Schedule Management", "Event Promotion", "Participant Support"],
 };
 
 // Get responsibilities - show ALL custom if available, otherwise role defaults
@@ -181,6 +181,102 @@ const getResponsibilityDetails = (responsibility: string) => {
     "Moderation": { 
       icon: Shield, 
       description: "Monitors chat, resolves disputes, and maintains a positive community atmosphere." 
+    },
+    "Final Decision Making": { 
+      icon: Shield, 
+      description: "Makes final decisions on critical server matters, disputes, and policy changes." 
+    },
+    "Partnership Management": { 
+      icon: Users, 
+      description: "Manages partnerships with other communities, streamers, and organizations." 
+    },
+    "Server Vision": { 
+      icon: Target, 
+      description: "Defines and maintains the long-term vision and direction of the server." 
+    },
+    "Staff Recruitment": { 
+      icon: UserCheck, 
+      description: "Recruits, interviews, and onboards new staff members to the team." 
+    },
+    "Ban Appeals": { 
+      icon: Shield, 
+      description: "Reviews and processes ban appeal requests from players." 
+    },
+    "Policy Development": { 
+      icon: Target, 
+      description: "Creates and updates server policies, rules, and guidelines." 
+    },
+    "Conflict Resolution": { 
+      icon: Users, 
+      description: "Mediates disputes between players and resolves conflicts professionally." 
+    },
+    "Quality Assurance": { 
+      icon: CheckCircle2, 
+      description: "Ensures server quality standards are maintained across all areas." 
+    },
+    "Chat Moderation": { 
+      icon: MessageCircle, 
+      description: "Monitors and moderates in-game and Discord chat channels." 
+    },
+    "Report Review": { 
+      icon: Shield, 
+      description: "Reviews player reports and takes appropriate actions." 
+    },
+    "Warning Issuance": { 
+      icon: Shield, 
+      description: "Issues warnings to players who violate server rules." 
+    },
+    "Player Guidance": { 
+      icon: HeadphonesIcon, 
+      description: "Guides new and existing players with server features and roleplay." 
+    },
+    "Performance Optimization": { 
+      icon: Target, 
+      description: "Optimizes server performance and reduces lag for better experience." 
+    },
+    "System Maintenance": { 
+      icon: Code, 
+      description: "Maintains server systems, backups, and infrastructure." 
+    },
+    "Code Review": { 
+      icon: Code, 
+      description: "Reviews and approves code changes from other developers." 
+    },
+    "Documentation": { 
+      icon: Target, 
+      description: "Creates and maintains technical documentation for the server." 
+    },
+    "New Player Guidance": { 
+      icon: HeadphonesIcon, 
+      description: "Helps new players understand server rules and get started." 
+    },
+    "FAQ Support": { 
+      icon: MessageCircle, 
+      description: "Answers frequently asked questions from community members." 
+    },
+    "Issue Escalation": { 
+      icon: Shield, 
+      description: "Escalates complex issues to senior staff members when needed." 
+    },
+    "Feedback Collection": { 
+      icon: Star, 
+      description: "Collects and reports player feedback for server improvements." 
+    },
+    "Prize Distribution": { 
+      icon: Award, 
+      description: "Manages and distributes prizes for events and competitions." 
+    },
+    "Schedule Management": { 
+      icon: Calendar, 
+      description: "Creates and manages event schedules for the community." 
+    },
+    "Event Promotion": { 
+      icon: Star, 
+      description: "Promotes upcoming events through announcements and social media." 
+    },
+    "Participant Support": { 
+      icon: HeadphonesIcon, 
+      description: "Assists event participants with questions and issues during events." 
     },
   };
   
