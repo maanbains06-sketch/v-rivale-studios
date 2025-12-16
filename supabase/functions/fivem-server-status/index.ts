@@ -52,6 +52,93 @@ serve(async (req) => {
     }
   }
 
+  // Helper function to format resource name for display
+  function formatResourceName(resourceName: string): string {
+    // Remove common prefixes and clean up the name
+    let formatted = resourceName
+      .replace(/^(es_|esx_|qb-|qbcore-|vrp_|vRP_|ox_|okokBilling|okokGarage|okokPed|okokTextUI|)/i, '')
+      .replace(/[-_]/g, ' ')
+      .trim();
+    
+    // Capitalize first letter of each word
+    formatted = formatted
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+    
+    return formatted || resourceName;
+  }
+
+  // Helper function to detect and save new resources
+  async function detectNewResources(currentResources: string[]) {
+    try {
+      // Get the last known resource snapshot
+      const { data: snapshot } = await supabase
+        .from('server_resource_snapshot')
+        .select('*')
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      const previousResources: string[] = snapshot?.resources || [];
+      
+      // Find new resources (in current but not in previous)
+      const newResources = currentResources.filter(r => !previousResources.includes(r));
+      
+      // Find removed resources (in previous but not in current)
+      const removedResources = previousResources.filter(r => !currentResources.includes(r));
+
+      console.log('Previous resources count:', previousResources.length);
+      console.log('Current resources count:', currentResources.length);
+      console.log('New resources found:', newResources.length);
+
+      // If we have new resources and this isn't the first sync (previous had resources)
+      if (newResources.length > 0 && previousResources.length > 0) {
+        // Insert new resource updates
+        const updates = newResources.map(resource => ({
+          title: formatResourceName(resource),
+          description: `New resource added: ${resource}`,
+          update_type: 'resource',
+          resource_name: resource,
+          detected_at: new Date().toISOString()
+        }));
+
+        const { error: insertError } = await supabase
+          .from('server_updates')
+          .insert(updates);
+
+        if (insertError) {
+          console.error('Error inserting server updates:', insertError);
+        } else {
+          console.log('Inserted', updates.length, 'new resource updates');
+        }
+      }
+
+      // Update the snapshot with current resources
+      if (snapshot?.id) {
+        await supabase
+          .from('server_resource_snapshot')
+          .update({
+            resources: currentResources,
+            resource_count: currentResources.length,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', snapshot.id);
+      } else {
+        await supabase
+          .from('server_resource_snapshot')
+          .insert({
+            resources: currentResources,
+            resource_count: currentResources.length
+          });
+      }
+
+      console.log('Updated resource snapshot');
+    } catch (error) {
+      console.error('Error detecting new resources:', error);
+    }
+  }
+
   try {
     let serverIp = Deno.env.get('FIVEM_SERVER_IP') || '';
     const serverPort = Deno.env.get('FIVEM_SERVER_PORT') || '30120';
@@ -121,9 +208,17 @@ serve(async (req) => {
       const currentPlayers = players.length;
       const maxPlayers = parseInt(info.vars?.sv_maxClients, 10) || await getLastKnownMaxPlayers();
       
+      // Get resource list from server
+      const currentResources: string[] = info.resources || [];
+      
       // Save max players to database for future offline fallback (non-blocking)
       if (info.vars?.sv_maxClients) {
         saveMaxPlayers(maxPlayers).catch(err => console.log('Background save error:', err));
+      }
+      
+      // Detect and save new resources (non-blocking)
+      if (currentResources.length > 0) {
+        detectNewResources(currentResources).catch(err => console.log('Resource detection error:', err));
       }
       
       // Get server uptime (convert from seconds to readable format)
@@ -154,7 +249,7 @@ serve(async (req) => {
         serverName: info.server || 'SLRP Server',
         gametype: info.gametype || 'Roleplay',
         mapname: info.mapname || 'Los Santos',
-        resources: info.resources?.length || 0,
+        resources: currentResources.length,
         playerList: players,
       };
 
