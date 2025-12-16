@@ -355,11 +355,13 @@ export type Database = {
           created_by: string | null
           current_participants: number | null
           description: string | null
+          discord_event_id: string | null
           end_date: string
           event_type: string
           id: string
           location: string | null
           max_participants: number | null
+          source: string | null
           start_date: string
           status: string
           title: string
@@ -371,11 +373,13 @@ export type Database = {
           created_by?: string | null
           current_participants?: number | null
           description?: string | null
+          discord_event_id?: string | null
           end_date: string
           event_type?: string
           id?: string
           location?: string | null
           max_participants?: number | null
+          source?: string | null
           start_date: string
           status?: string
           title: string
@@ -387,11 +391,13 @@ export type Database = {
           created_by?: string | null
           current_participants?: number | null
           description?: string | null
+          discord_event_id?: string | null
           end_date?: string
           event_type?: string
           id?: string
           location?: string | null
           max_participants?: number | null
+          source?: string | null
           start_date?: string
           status?: string
           title?: string
