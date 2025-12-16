@@ -41,7 +41,7 @@ interface RecentUpdate {
   id: number;
   title: string;
   date: string;
-  type: "update" | "event" | "maintenance" | "resource";
+  type: "update" | "maintenance" | "resource";
 }
 
 interface ActiveEvent {
@@ -135,13 +135,6 @@ const Status = () => {
         .order("created_at", { ascending: false })
         .limit(5);
 
-      // Fetch recent events
-      const { data: eventsData, error: eventsError } = await supabase
-        .from("events")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(5);
-
       // Fetch server resource updates (auto-detected new scripts/resources)
       const { data: serverUpdatesData, error: serverUpdatesError } = await supabase
         .from("server_updates")
@@ -171,18 +164,6 @@ const Status = () => {
             title: item.title,
             date: getTimeAgo(new Date(item.created_at)),
             type: "maintenance",
-          });
-        });
-      }
-
-      // Add event items
-      if (!eventsError && eventsData) {
-        eventsData.forEach((item, index) => {
-          updates.push({
-            id: updates.length + index + 1,
-            title: item.title,
-            date: getTimeAgo(new Date(item.created_at)),
-            type: "event",
           });
         });
       }
@@ -335,14 +316,12 @@ const Status = () => {
 
   const updateTypeColors: Record<string, string> = {
     update: "bg-gradient-to-r from-primary/80 to-primary",
-    event: "bg-gradient-to-r from-secondary/80 to-secondary",
     maintenance: "bg-gradient-to-r from-accent/80 to-accent",
     resource: "bg-gradient-to-r from-green-500/80 to-green-600",
   };
 
   const updateTypeIcons: Record<string, any> = {
     update: Sparkles,
-    event: Radio,
     maintenance: Shield,
     resource: Package,
   };
