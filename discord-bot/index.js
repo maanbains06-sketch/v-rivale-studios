@@ -27,15 +27,18 @@ const { Client, GatewayIntentBits, Events } = require('discord.js');
 // Your Discord Bot Token (from Discord Developer Portal)
 const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 
-// Your Supabase Edge Function URL for syncing presence
-const SYNC_URL = 'https://obirpzwvnqveddyuulsb.supabase.co/functions/v1/sync-discord-presence';
+// Your Discord Server ID
+const GUILD_ID = process.env.DISCORD_SERVER_ID;
 
-// Supabase URL for fetching staff IDs
+// Lovable Cloud backend URLs
+// - Presence updates are pushed in real-time via the bot
+// - Event syncing is triggered by the bot (then the backend function fetches the latest scheduled events)
 const SUPABASE_URL = 'https://obirpzwvnqveddyuulsb.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iaXJwend2bnF2ZWRkeXV1bHNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1OTA3OTcsImV4cCI6MjA3OTE2Njc5N30.23nOCIh06oFPW5TTHC6jhiBOkvd6GrXBn-pjZAYiXpY';
 
-// Your Discord Server ID
-const GUILD_ID = process.env.DISCORD_SERVER_ID;
+// Backend functions
+const SYNC_PRESENCE_URL = `${SUPABASE_URL}/functions/v1/sync-discord-presence`;
+const SYNC_EVENTS_URL = `${SUPABASE_URL}/functions/v1/sync-discord-events`;
 
 // Staff Discord IDs - will be auto-fetched from database
 let STAFF_DISCORD_IDS = [];
@@ -49,6 +52,8 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildPresences,
     GatewayIntentBits.GuildMembers,
+    // Required to receive create/update/delete scheduled event gateway events
+    GatewayIntentBits.GuildScheduledEvents,
   ],
 });
 
@@ -87,52 +92,114 @@ async function fetchStaffIds() {
   }
 }
 
-// Helper to send presence update to edge function
+// Helper to send presence update to backend function
 async function syncPresence(updates) {
   try {
     const presenceUpdates = Array.isArray(updates) ? updates : [updates];
-    
+
     console.log(`📤 Sending ${presenceUpdates.length} presence update(s)...`);
-    
-    const response = await fetch(SYNC_URL, {
+
+    const response = await fetch(SYNC_PRESENCE_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ presenceUpdates }),
     });
-    
+
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ Sync failed:', response.status, errorText);
+      console.error('❌ Presence sync failed:', response.status, errorText);
     } else {
       const result = await response.json();
-      console.log('✅ Sync successful:', result.message);
+      console.log('✅ Presence sync successful:', result.message);
     }
   } catch (error) {
     console.error('❌ Error syncing presence:', error.message);
   }
 }
 
+// Trigger event sync (debounced) so the website updates right after Discord changes
+let eventsSyncTimeout = null;
+let lastEventsSyncAt = 0;
+const MIN_EVENTS_SYNC_INTERVAL_MS = 10_000; // avoid spam if multiple updates fire
+
+function scheduleEventsSync(reason) {
+  const now = Date.now();
+  const waitMs = Math.max(0, MIN_EVENTS_SYNC_INTERVAL_MS - (now - lastEventsSyncAt));
+
+  if (eventsSyncTimeout) clearTimeout(eventsSyncTimeout);
+
+  eventsSyncTimeout = setTimeout(async () => {
+    try {
+      lastEventsSyncAt = Date.now();
+      console.log(`\n📅 Triggering events sync (${reason})...`);
+
+      const response = await fetch(SYNC_EVENTS_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Edge function can be invoked with anon credentials; it uses service access internally.
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({ triggeredBy: 'discord-bot', reason }),
+      });
+
+      const text = await response.text();
+      if (!response.ok) {
+        console.error('❌ Events sync trigger failed:', response.status, text);
+        return;
+      }
+
+      try {
+        const json = JSON.parse(text);
+        console.log(`✅ Events sync triggered: ${json.message ?? 'ok'} (synced: ${json.synced ?? 0})`);
+      } catch {
+        console.log('✅ Events sync triggered:', text);
+      }
+    } catch (error) {
+      console.error('❌ Error triggering events sync:', error.message);
+    }
+  }, waitMs);
+}
+
 // Handle real-time presence updates
 client.on(Events.PresenceUpdate, async (oldPresence, newPresence) => {
   if (!newPresence?.userId) return;
-  
+
   // Only sync staff members
   if (!STAFF_DISCORD_IDS.includes(newPresence.userId)) {
     return;
   }
-  
+
   const oldStatus = oldPresence?.status || 'offline';
   const newStatus = newPresence.status || 'offline';
   const isOnline = newStatus !== 'offline';
   const username = newPresence.user?.username || newPresence.userId;
-  
+
   console.log(`\n🔄 [${new Date().toLocaleTimeString()}] ${username}: ${oldStatus} → ${newStatus}`);
-  
+
   await syncPresence({
     discord_id: newPresence.userId,
     is_online: isOnline,
     status: newStatus,
   });
+});
+
+// Scheduled event gateway events (create/update/delete) -> trigger backend sync immediately
+client.on(Events.GuildScheduledEventCreate, (event) => {
+  if (event?.guildId && event.guildId !== GUILD_ID) return;
+  scheduleEventsSync('GuildScheduledEventCreate');
+});
+
+client.on(Events.GuildScheduledEventUpdate, (oldEvent, newEvent) => {
+  const guildId = newEvent?.guildId || oldEvent?.guildId;
+  if (guildId && guildId !== GUILD_ID) return;
+  scheduleEventsSync('GuildScheduledEventUpdate');
+});
+
+client.on(Events.GuildScheduledEventDelete, (event) => {
+  if (event?.guildId && event.guildId !== GUILD_ID) return;
+  scheduleEventsSync('GuildScheduledEventDelete');
 });
 
 // Bot ready event
