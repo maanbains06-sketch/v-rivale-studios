@@ -301,55 +301,86 @@ serve(async (req) => {
         detectNewResources(currentResources).catch(err => console.log('Resource detection error:', err));
       }
       
-      // Get server uptime from txAdmin
+      // Get server uptime from txAdmin with API key authentication
       let uptimeSeconds = 0;
       const txAdminPort = '30121';
+      const txAdminApiKey = Deno.env.get('TXADMIN_API_KEY') || '';
       
-      // Try multiple txAdmin API endpoints
+      // For txAdmin v8, try multiple endpoint formats and authentication methods
+      // The cfxk_ token format suggests using it as a cookie or query parameter
       const txAdminEndpoints = [
-        `http://${serverIp}:${txAdminPort}/status.json`,
-        `http://${serverIp}:${txAdminPort}/api/status`,
-        `http://${serverIp}:${txAdminPort}/serverStatus.json`,
+        // Try NUI endpoints (used by in-game menu)
+        { url: `http://${serverIp}:${txAdminPort}/nui/status`, method: 'cookie' },
+        // Try API endpoints with token as query param
+        { url: `http://${serverIp}:${txAdminPort}/api/status?token=${txAdminApiKey}`, method: 'query' },
+        { url: `http://${serverIp}:${txAdminPort}/status?token=${txAdminApiKey}`, method: 'query' },
+        // Try WebPipe format
+        { url: `http://${serverIp}:${txAdminPort}/WebPipe/status`, method: 'header' },
+        // Standard API endpoints
+        { url: `http://${serverIp}:${txAdminPort}/api/serverStats`, method: 'header' },
       ];
       
-      for (const txAdminUrl of txAdminEndpoints) {
+      for (const endpoint of txAdminEndpoints) {
         if (uptimeSeconds > 0) break;
         
         try {
-          console.log('Trying txAdmin endpoint:', txAdminUrl);
+          console.log('Trying txAdmin endpoint:', endpoint.url);
           const txController = new AbortController();
-          const txTimeoutId = setTimeout(() => txController.abort(), 3000);
+          const txTimeoutId = setTimeout(() => txController.abort(), 5000);
           
-          const txAdminResponse = await fetch(txAdminUrl, {
+          const headers: Record<string, string> = {
+            'Accept': 'application/json',
+          };
+          
+          // Try different auth methods based on endpoint
+          if (endpoint.method === 'cookie') {
+            headers['Cookie'] = `txAdmin-token=${txAdminApiKey}`;
+          } else if (endpoint.method === 'header') {
+            headers['Authorization'] = `Bearer ${txAdminApiKey}`;
+            headers['X-TxAdmin-Token'] = txAdminApiKey;
+          }
+          
+          const txAdminResponse = await fetch(endpoint.url, {
             signal: txController.signal,
-            headers: {
-              'Accept': 'application/json',
-            },
+            headers,
           });
           
           clearTimeout(txTimeoutId);
+          console.log('txAdmin response status:', txAdminResponse.status);
           
           if (txAdminResponse.ok) {
-            const contentType = txAdminResponse.headers.get('content-type') || '';
-            if (contentType.includes('application/json')) {
-              const txAdminData = await txAdminResponse.json();
-              console.log('txAdmin response:', JSON.stringify(txAdminData));
-              
-              // txAdmin returns uptime in different formats depending on version
-              if (typeof txAdminData.uptime === 'number' && txAdminData.uptime > 0) {
-                uptimeSeconds = txAdminData.uptime;
-                console.log('Got uptime from txAdmin:', uptimeSeconds, 'seconds');
-              } else if (txAdminData.server?.uptime) {
-                uptimeSeconds = txAdminData.server.uptime;
-                console.log('Got uptime from txAdmin server:', uptimeSeconds, 'seconds');
-              } else if (txAdminData.serverUptime) {
-                uptimeSeconds = txAdminData.serverUptime;
-                console.log('Got serverUptime from txAdmin:', uptimeSeconds, 'seconds');
+            const responseText = await txAdminResponse.text();
+            // Only log first 200 chars to avoid cluttering logs
+            console.log('txAdmin response preview:', responseText.substring(0, 200));
+            
+            // Check if response is JSON
+            if (responseText.trim().startsWith('{') || responseText.trim().startsWith('[')) {
+              try {
+                const txAdminData = JSON.parse(responseText);
+                console.log('txAdmin parsed data keys:', Object.keys(txAdminData).join(', '));
+                
+                // Extract uptime from various possible response formats
+                const possibleUptime = 
+                  txAdminData.uptime ||
+                  txAdminData.server?.uptime ||
+                  txAdminData.serverUptime ||
+                  txAdminData.meta?.uptime ||
+                  txAdminData.stats?.uptime ||
+                  txAdminData.fxServer?.uptime;
+                
+                if (possibleUptime) {
+                  uptimeSeconds = typeof possibleUptime === 'number' 
+                    ? possibleUptime 
+                    : parseInt(String(possibleUptime), 10) || 0;
+                  console.log('Got uptime from txAdmin:', uptimeSeconds, 'seconds');
+                }
+              } catch (parseErr) {
+                console.log('Failed to parse txAdmin JSON');
               }
             }
           }
         } catch (txError) {
-          console.log('txAdmin endpoint failed:', txAdminUrl, txError);
+          console.log('txAdmin endpoint failed:', endpoint.url);
         }
       }
       
