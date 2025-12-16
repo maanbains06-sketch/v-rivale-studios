@@ -12,11 +12,19 @@ serve(async (req) => {
   }
 
   try {
-    const serverIp = Deno.env.get('FIVEM_SERVER_IP');
-    const serverPort = Deno.env.get('FIVEM_SERVER_PORT');
+    let serverIp = Deno.env.get('FIVEM_SERVER_IP') || '';
+    const serverPort = Deno.env.get('FIVEM_SERVER_PORT') || '30120';
 
-    if (!serverIp || !serverPort) {
-      throw new Error('FiveM server IP or port not configured');
+    if (!serverIp) {
+      throw new Error('FiveM server IP not configured');
+    }
+
+    // Clean up the IP - remove any protocol prefix, "connect" prefix, or port suffix
+    serverIp = serverIp.replace(/^(https?:\/\/|connect\s*)/i, '').trim();
+    
+    // If IP already contains a port, extract just the IP
+    if (serverIp.includes(':')) {
+      serverIp = serverIp.split(':')[0];
     }
 
     const baseUrl = `http://${serverIp}:${serverPort}`;
