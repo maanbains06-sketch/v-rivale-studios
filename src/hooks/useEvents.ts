@@ -107,7 +107,63 @@ export const useEvents = () => {
       syncDiscordEvents();
     }, 5 * 60 * 1000);
 
-    return () => clearInterval(syncInterval);
+    // Subscribe to realtime changes on the events table
+    const channel = supabase
+      .channel('events-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // listen to INSERT, UPDATE, DELETE
+          schema: 'public',
+          table: 'events',
+        },
+        (payload) => {
+          console.log('Realtime event update:', payload.eventType, payload);
+
+          if (payload.eventType === 'INSERT') {
+            const newEvent = payload.new as Event;
+            // Only add if it's an active event
+            if (newEvent.status === 'upcoming' || newEvent.status === 'running') {
+              setEvents((prev) => {
+                // Avoid duplicates
+                if (prev.some((e) => e.id === newEvent.id)) return prev;
+                return [...prev, newEvent].sort(
+                  (a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
+                );
+              });
+            }
+          } else if (payload.eventType === 'UPDATE') {
+            const updatedEvent = payload.new as Event;
+            setEvents((prev) => {
+              // If status changed to completed/cancelled, remove from list
+              if (updatedEvent.status === 'completed' || updatedEvent.status === 'cancelled') {
+                return prev.filter((e) => e.id !== updatedEvent.id);
+              }
+              // Otherwise update existing or add if new active event
+              const exists = prev.some((e) => e.id === updatedEvent.id);
+              if (exists) {
+                return prev
+                  .map((e) => (e.id === updatedEvent.id ? updatedEvent : e))
+                  .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime());
+              } else if (updatedEvent.status === 'upcoming' || updatedEvent.status === 'running') {
+                return [...prev, updatedEvent].sort(
+                  (a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
+                );
+              }
+              return prev;
+            });
+          } else if (payload.eventType === 'DELETE') {
+            const deletedId = (payload.old as { id: string }).id;
+            setEvents((prev) => prev.filter((e) => e.id !== deletedId));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      clearInterval(syncInterval);
+      supabase.removeChannel(channel);
+    };
   }, [syncDiscordEvents, loadEvents]);
 
   const registerForEvent = async (eventId: string) => {
