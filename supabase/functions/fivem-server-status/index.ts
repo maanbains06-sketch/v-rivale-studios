@@ -261,7 +261,7 @@ serve(async (req) => {
         uptimeSeconds: uptimeSeconds,
         serverLoad: serverLoad,
         networkLatency: networkLatency,
-        serverName: info.server || 'SLRP Server',
+        serverName: info.vars?.sv_hostname || info.vars?.sv_projectName || 'SLRP Server',
         gametype: info.gametype || 'Roleplay',
         mapname: info.mapname || 'Los Santos',
         resources: currentResources.length,
