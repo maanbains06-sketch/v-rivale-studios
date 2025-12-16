@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,6 +10,46 @@ serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Initialize Supabase client
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  // Helper function to get last known max players from database
+  async function getLastKnownMaxPlayers(): Promise<number> {
+    try {
+      const { data } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'fivem_max_players')
+        .single();
+      
+      if (data?.value) {
+        return parseInt(data.value, 10) || 48;
+      }
+    } catch (error) {
+      console.log('Could not fetch last known max players:', error);
+    }
+    return 48; // Default fallback
+  }
+
+  // Helper function to save max players to database
+  async function saveMaxPlayers(maxPlayers: number) {
+    try {
+      await supabase
+        .from('site_settings')
+        .upsert({
+          key: 'fivem_max_players',
+          value: maxPlayers.toString(),
+          description: 'Last known FiveM server max player limit (auto-synced)',
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'key' });
+      console.log('Saved max players to database:', maxPlayers);
+    } catch (error) {
+      console.log('Could not save max players:', error);
+    }
   }
 
   try {
@@ -78,7 +119,12 @@ serve(async (req) => {
 
       // Calculate server metrics
       const currentPlayers = players.length;
-      const maxPlayers = info.vars?.sv_maxClients || 48;
+      const maxPlayers = parseInt(info.vars?.sv_maxClients, 10) || await getLastKnownMaxPlayers();
+      
+      // Save max players to database for future offline fallback (non-blocking)
+      if (info.vars?.sv_maxClients) {
+        saveMaxPlayers(maxPlayers).catch(err => console.log('Background save error:', err));
+      }
       
       // Get server uptime (convert from seconds to readable format)
       const uptimeSeconds = dynamic.uptime || 0;
@@ -121,10 +167,13 @@ serve(async (req) => {
     } catch (fetchError) {
       console.error('Failed to fetch from FiveM server:', fetchError);
       
+      // Get last known max players from database
+      const lastKnownMaxPlayers = await getLastKnownMaxPlayers();
+      
       // Return offline status if server is unreachable
       return new Response(JSON.stringify({
         status: 'offline',
-        players: { current: 0, max: 48 },
+        players: { current: 0, max: lastKnownMaxPlayers },
         uptime: '0h',
         uptimeSeconds: 0,
         serverLoad: 0,
