@@ -78,7 +78,7 @@ serve(async (req) => {
 
       // Calculate server metrics
       const currentPlayers = players.length;
-      const maxPlayers = info.vars?.sv_maxClients || 32;
+      const maxPlayers = info.vars?.sv_maxClients || 48;
       
       // Get server uptime (convert from seconds to readable format)
       const uptimeSeconds = dynamic.uptime || 0;
@@ -124,7 +124,7 @@ serve(async (req) => {
       // Return offline status if server is unreachable
       return new Response(JSON.stringify({
         status: 'offline',
-        players: { current: 0, max: 32 },
+        players: { current: 0, max: 48 },
         uptime: '0h',
         uptimeSeconds: 0,
         serverLoad: 0,
