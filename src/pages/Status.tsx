@@ -20,6 +20,7 @@ import {
   Calendar,
   AlertTriangle,
   Package,
+  MapPin,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
@@ -49,6 +50,8 @@ interface ActiveEvent {
   startTime: string;
   endTime: string;
   participants: number;
+  status: string;
+  location?: string;
 }
 
 interface ServerStatus {
@@ -199,6 +202,9 @@ const Status = () => {
 
   const fetchActiveEvents = async () => {
     try {
+      // First sync Discord events
+      await supabase.functions.invoke('sync-discord-events');
+      
       const { data, error } = await supabase
         .from("events")
         .select("*")
@@ -213,6 +219,8 @@ const Status = () => {
           startTime: getEventStartTime(new Date(event.start_date)),
           endTime: getEventDuration(new Date(event.start_date), new Date(event.end_date)),
           participants: event.current_participants || 0,
+          status: event.status,
+          location: event.location || undefined,
         }));
         setActiveEvents(events);
       }
@@ -696,21 +704,33 @@ const Status = () => {
                         style={{ animationDelay: `${index * 100}ms` }}
                       >
                         <div className="absolute top-2 right-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                          <Badge 
+                            variant={event.status === 'running' ? 'default' : 'secondary'}
+                            className={`text-xs ${event.status === 'running' ? 'bg-green-500 hover:bg-green-600 animate-pulse' : 'bg-yellow-500 hover:bg-yellow-600'}`}
+                          >
+                            {event.status === 'running' ? '🔴 LIVE' : '📅 Upcoming'}
+                          </Badge>
                         </div>
-                        <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-start justify-between mb-3 pr-20">
                           <h4 className="font-bold text-lg text-foreground">{event.name}</h4>
                           <Badge variant="secondary" className="text-xs flex items-center gap-1">
                             <Users className="w-3 h-3" />
                             {event.participants}
                           </Badge>
                         </div>
+                        {event.location && (
+                          <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            {event.location}
+                          </p>
+                        )}
                         <Separator className="my-3 bg-border/30" />
                         <div className="flex items-center justify-between text-sm">
                           <div className="flex items-center gap-2 text-muted-foreground">
                             <Clock className="w-4 h-4 text-secondary" />
                             <span className="font-medium">
-                              Starts: <span className="text-foreground">{event.startTime}</span>
+                              {event.status === 'running' ? 'Started: ' : 'Starts: '}
+                              <span className="text-foreground">{event.startTime}</span>
                             </span>
                           </div>
                           <div className="text-muted-foreground">

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -15,6 +15,8 @@ interface Event {
   current_participants: number;
   banner_image: string | null;
   created_at: string;
+  discord_event_id?: string | null;
+  source?: string;
 }
 
 interface EventParticipant {
@@ -28,13 +30,38 @@ interface EventParticipant {
 export const useEvents = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadEvents();
+  // Sync events from Discord
+  const syncDiscordEvents = useCallback(async () => {
+    try {
+      setSyncing(true);
+      console.log('Syncing Discord events...');
+      
+      const { data, error } = await supabase.functions.invoke('sync-discord-events');
+      
+      if (error) {
+        console.error('Error syncing Discord events:', error);
+        return false;
+      }
+      
+      if (data?.events) {
+        setEvents(data.events);
+        console.log(`Synced ${data.synced} events from Discord`);
+      }
+      
+      return true;
+    } catch (error: any) {
+      console.error('Error syncing Discord events:', error);
+      return false;
+    } finally {
+      setSyncing(false);
+    }
   }, []);
 
-  const loadEvents = async () => {
+  // Load events from database
+  const loadEvents = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('events')
@@ -54,7 +81,21 @@ export const useEvents = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    // Initial sync from Discord
+    syncDiscordEvents().then(() => {
+      setLoading(false);
+    });
+    
+    // Set up periodic sync every 2 minutes
+    const syncInterval = setInterval(() => {
+      syncDiscordEvents();
+    }, 2 * 60 * 1000);
+    
+    return () => clearInterval(syncInterval);
+  }, [syncDiscordEvents]);
 
   const registerForEvent = async (eventId: string) => {
     try {
@@ -172,6 +213,7 @@ export const useEvents = () => {
   return {
     events,
     loading,
+    syncing,
     registerForEvent,
     cancelRegistration,
     checkUserRegistration,
@@ -179,5 +221,6 @@ export const useEvents = () => {
     getUpcomingEvents,
     getCompletedEvents,
     reloadEvents: loadEvents,
+    syncDiscordEvents,
   };
 };
