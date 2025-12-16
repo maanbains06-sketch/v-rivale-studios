@@ -701,37 +701,94 @@ const Index = () => {
               </Button>
             </motion.div>
 
-            {/* Compact Live Server Status */}
-            <motion.div variants={itemVariants} className="flex justify-center items-center gap-3 mt-6">
-              <div className="relative">
-                <div className="absolute -inset-1 bg-gradient-to-r from-primary/25 via-accent/30 to-primary/25 rounded-full blur-sm opacity-50"></div>
-                <div className="relative flex items-center gap-4 px-6 py-3 rounded-full border border-primary/30 bg-background/80 backdrop-blur-sm">
-                  {/* Live dot */}
-                  <div className="relative">
-                    <div className="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_12px_hsl(120_70%_50%_/_0.8)]"></div>
-                    <div className="absolute inset-0 w-3 h-3 rounded-full bg-green-400 animate-ping opacity-60"></div>
+            {/* Enhanced Live Server Status */}
+            <motion.div variants={itemVariants} className="flex justify-center mt-8">
+              <div className="relative group">
+                {/* Animated outer glow */}
+                <div className="absolute -inset-[2px] bg-gradient-to-r from-emerald-500 via-cyan-500 to-sky-500 rounded-2xl blur-md opacity-40 group-hover:opacity-60 transition-opacity duration-500 animate-pulse"></div>
+                <div className="absolute -inset-[2px] bg-gradient-to-r from-emerald-500 via-cyan-500 to-sky-500 rounded-2xl opacity-20"></div>
+                
+                {/* Main container */}
+                <div className="relative flex items-center gap-4 md:gap-6 px-5 md:px-8 py-4 md:py-5 rounded-2xl border border-white/10 bg-background/90 backdrop-blur-xl overflow-hidden">
+                  {/* Animated background gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 via-transparent to-sky-500/5 opacity-50"></div>
+                  
+                  {/* Scanning line effect */}
+                  <div className="absolute inset-0 overflow-hidden">
+                    <div className="absolute inset-y-0 w-20 bg-gradient-to-r from-transparent via-white/5 to-transparent -skew-x-12 animate-[shimmer_3s_infinite]"></div>
+                  </div>
+
+                  {/* Status indicator */}
+                  <div className="relative flex flex-col items-center">
+                    <div className="relative">
+                      {/* Outer ring animation */}
+                      <div className="absolute -inset-2 rounded-full border-2 border-emerald-500/30 animate-[ping_2s_infinite]"></div>
+                      <div className="absolute -inset-1 rounded-full border border-emerald-400/50"></div>
+                      {/* Core status dot */}
+                      <div className="relative w-4 h-4 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 shadow-[0_0_20px_hsl(142_70%_50%_/_0.8),0_0_40px_hsl(142_70%_50%_/_0.4)]">
+                        <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-40"></div>
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider mt-2 hidden md:block">Live</span>
+                  </div>
+
+                  {/* Vertical divider */}
+                  <div className="h-10 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent hidden md:block"></div>
+
+                  {/* Players section */}
+                  <div className="flex flex-col items-start">
+                    <div className="flex items-baseline gap-1.5">
+                      <Users className="w-4 h-4 text-sky-400 mr-1" />
+                      <motion.span 
+                        key={serverPlayers}
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-cyan-400 to-sky-400"
+                      >
+                        {serverPlayers !== null ? serverPlayers : "0"}
+                      </motion.span>
+                      <span className="text-muted-foreground/60 text-sm font-medium">/</span>
+                      <span className="text-muted-foreground/60 text-sm font-medium">{maxPlayers}</span>
+                    </div>
+                    {/* Progress bar */}
+                    <div className="w-full mt-2 relative">
+                      <div className="h-1.5 w-24 md:w-32 rounded-full bg-white/10 overflow-hidden">
+                        <motion.div 
+                          className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-cyan-500 to-sky-500"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${Math.min(((serverPlayers || 0) / maxPlayers) * 100, 100)}%` }}
+                          transition={{ duration: 0.8, ease: "easeOut" }}
+                        />
+                      </div>
+                      <span className="text-[10px] text-muted-foreground/70 mt-1 block uppercase tracking-wide">
+                        {Math.round(((serverPlayers || 0) / maxPlayers) * 100)}% Capacity
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Vertical divider */}
+                  <div className="h-10 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent hidden md:block"></div>
+
+                  {/* Server info badge */}
+                  <div className="hidden md:flex flex-col items-center gap-1">
+                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30">
+                      <Radio className="w-3 h-3 text-emerald-400" />
+                      <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wide">Online</span>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground/50">SLRP Server</span>
                   </div>
                   
-                  {/* Player count */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl font-bold text-foreground">
-                      {serverPlayers !== null ? serverPlayers : "0"}
-                    </span>
-                    <span className="text-sm text-muted-foreground/70">/</span>
-                    <span className="text-sm text-muted-foreground/70">{maxPlayers}</span>
-                    <span className="text-xs text-sky-400 ml-1 uppercase tracking-wide font-semibold">Online</span>
-                  </div>
+                  {/* Refresh Button */}
+                  <button
+                    onClick={handleRefreshStatus}
+                    disabled={isRefreshing}
+                    className="relative ml-2 p-2.5 md:p-3 rounded-xl border border-sky-500/30 bg-sky-500/10 hover:border-sky-400/60 hover:bg-sky-500/20 transition-all duration-300 group/btn disabled:opacity-50"
+                    title="Refresh server status"
+                  >
+                    <RefreshCw className={`w-4 h-4 text-sky-400 group-hover/btn:text-sky-300 transition-all ${isRefreshing ? 'animate-spin' : 'group-hover/btn:rotate-180'} duration-500`} />
+                  </button>
                 </div>
               </div>
-              
-              {/* Refresh Button */}
-              <button
-                onClick={handleRefreshStatus}
-                className="p-3 rounded-full border border-sky-500/40 bg-background/80 backdrop-blur-sm hover:border-sky-400/60 hover:bg-sky-500/10 transition-all duration-300 group"
-                title="Refresh server status"
-              >
-                <RefreshCw className={`w-4 h-4 text-sky-400 group-hover:text-sky-300 transition-colors ${isRefreshing ? 'animate-spin' : ''}`} />
-              </button>
             </motion.div>
           </motion.div>
         </div>
