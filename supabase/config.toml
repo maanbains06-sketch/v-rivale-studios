@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.send-creator-notification]
 verify_jwt = true
+
+[functions.sync-staff-discord-info]
+verify_jwt = false
