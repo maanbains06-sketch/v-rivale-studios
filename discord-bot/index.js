@@ -101,7 +101,11 @@ async function syncPresence(updates) {
 
     const response = await fetch(SYNC_PRESENCE_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        // Authentication required - use bot token as API key
+        'x-api-key': BOT_TOKEN,
+      },
       body: JSON.stringify({ presenceUpdates }),
     });
 
