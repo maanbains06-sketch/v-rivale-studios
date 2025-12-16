@@ -6,19 +6,28 @@ import { supabase } from '@/integrations/supabase/client';
  * Shows staff as online ONLY when they are logged in to the website.
  */
 export const StaffPresenceTracker = () => {
-  const [discordId, setDiscordId] = useState<string | null>(null);
+  const [staffMemberId, setStaffMemberId] = useState<string | null>(null);
   const heartbeatRef = useRef<number | null>(null);
   const isTrackingRef = useRef(false);
+  const sessionTokenRef = useRef<string | null>(null);
 
-  const updatePresence = async (discordIdToUpdate: string, isOnline: boolean, status: string = 'online') => {
+  const updatePresence = async (staffIdToUpdate: string, isOnline: boolean, status: string = 'online') => {
     try {
+      // Get the current session for authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      sessionTokenRef.current = session?.access_token || null;
+      
       await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-discord-presence`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            // Send authorization header for authenticated staff updates
+            ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
+          },
           body: JSON.stringify({
-            discord_id: discordIdToUpdate,
+            staff_member_id: staffIdToUpdate,
             is_online: isOnline,
             status: isOnline ? status : 'offline',
           }),
@@ -29,32 +38,55 @@ export const StaffPresenceTracker = () => {
     }
   };
 
-  const startTracking = async (discordIdToTrack: string) => {
+  const startTracking = async (staffIdToTrack: string) => {
     if (isTrackingRef.current) return;
     isTrackingRef.current = true;
     
     // Set online immediately
-    await updatePresence(discordIdToTrack, true, 'online');
+    await updatePresence(staffIdToTrack, true, 'online');
 
     // Handle visibility change (tab focus/blur)
     const handleVisibilityChange = async () => {
       if (document.visibilityState === 'visible') {
-        await updatePresence(discordIdToTrack, true, 'online');
+        await updatePresence(staffIdToTrack, true, 'online');
       } else {
-        await updatePresence(discordIdToTrack, true, 'idle');
+        await updatePresence(staffIdToTrack, true, 'idle');
       }
     };
 
     // Handle before unload (page close/navigate away)
+    // Note: sendBeacon doesn't support custom headers, but the backend accepts
+    // unauthenticated requests for staff_member_id offline updates from the same origin
     const handleBeforeUnload = () => {
-      navigator.sendBeacon(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-discord-presence`,
-        JSON.stringify({
-          discord_id: discordIdToTrack,
-          is_online: false,
-          status: 'offline',
-        })
-      );
+      // Use keepalive fetch for better browser support with headers
+      try {
+        fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-discord-presence`,
+          {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              ...(sessionTokenRef.current ? { 'Authorization': `Bearer ${sessionTokenRef.current}` } : {}),
+            },
+            body: JSON.stringify({
+              staff_member_id: staffIdToTrack,
+              is_online: false,
+              status: 'offline',
+            }),
+            keepalive: true, // Allows request to outlive the page
+          }
+        );
+      } catch {
+        // Fallback to sendBeacon if fetch fails
+        navigator.sendBeacon(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-discord-presence`,
+          JSON.stringify({
+            staff_member_id: staffIdToTrack,
+            is_online: false,
+            status: 'offline',
+          })
+        );
+      }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -62,7 +94,7 @@ export const StaffPresenceTracker = () => {
 
     // Heartbeat every 30 seconds
     heartbeatRef.current = window.setInterval(async () => {
-      await updatePresence(discordIdToTrack, true, document.visibilityState === 'visible' ? 'online' : 'idle');
+      await updatePresence(staffIdToTrack, true, document.visibilityState === 'visible' ? 'online' : 'idle');
     }, 30000);
 
     // Store cleanup function
@@ -76,28 +108,28 @@ export const StaffPresenceTracker = () => {
     };
   };
 
-  const stopTracking = async (discordIdToStop: string) => {
+  const stopTracking = async (staffIdToStop: string) => {
     if (heartbeatRef.current) {
       clearInterval(heartbeatRef.current);
       heartbeatRef.current = null;
     }
     isTrackingRef.current = false;
-    await updatePresence(discordIdToStop, false, 'offline');
+    await updatePresence(staffIdToStop, false, 'offline');
   };
 
   useEffect(() => {
     let cleanup: (() => void) | undefined;
-    let currentDiscordId: string | null = null;
+    let currentStaffId: string | null = null;
 
     const checkStaffStatus = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
         // User logged out - set offline if we were tracking
-        if (currentDiscordId) {
-          await stopTracking(currentDiscordId);
-          currentDiscordId = null;
-          setDiscordId(null);
+        if (currentStaffId) {
+          await stopTracking(currentStaffId);
+          currentStaffId = null;
+          setStaffMemberId(null);
         }
         return;
       }
@@ -105,20 +137,20 @@ export const StaffPresenceTracker = () => {
       // Check if user is a staff member by user_id
       const { data: staffByUserId } = await supabase
         .from('staff_members')
-        .select('discord_id')
+        .select('id, discord_id')
         .eq('user_id', user.id)
         .eq('is_active', true)
         .single();
 
-      if (staffByUserId?.discord_id) {
-        if (currentDiscordId !== staffByUserId.discord_id) {
+      if (staffByUserId?.id) {
+        if (currentStaffId !== staffByUserId.id) {
           // New staff login
-          if (currentDiscordId) {
-            await stopTracking(currentDiscordId);
+          if (currentStaffId) {
+            await stopTracking(currentStaffId);
           }
-          currentDiscordId = staffByUserId.discord_id;
-          setDiscordId(staffByUserId.discord_id);
-          cleanup = await startTracking(staffByUserId.discord_id);
+          currentStaffId = staffByUserId.id;
+          setStaffMemberId(staffByUserId.id);
+          cleanup = await startTracking(staffByUserId.id);
         }
         return;
       }
@@ -128,29 +160,29 @@ export const StaffPresenceTracker = () => {
       if (discordUsername) {
         const { data: staffByUsername } = await supabase
           .from('staff_members')
-          .select('discord_id')
+          .select('id, discord_id')
           .ilike('discord_username', discordUsername)
           .eq('is_active', true)
           .single();
 
-        if (staffByUsername?.discord_id) {
-          if (currentDiscordId !== staffByUsername.discord_id) {
-            if (currentDiscordId) {
-              await stopTracking(currentDiscordId);
+        if (staffByUsername?.id) {
+          if (currentStaffId !== staffByUsername.id) {
+            if (currentStaffId) {
+              await stopTracking(currentStaffId);
             }
-            currentDiscordId = staffByUsername.discord_id;
-            setDiscordId(staffByUsername.discord_id);
-            cleanup = await startTracking(staffByUsername.discord_id);
+            currentStaffId = staffByUsername.id;
+            setStaffMemberId(staffByUsername.id);
+            cleanup = await startTracking(staffByUsername.id);
           }
           return;
         }
       }
 
       // User is logged in but not a staff member
-      if (currentDiscordId) {
-        await stopTracking(currentDiscordId);
-        currentDiscordId = null;
-        setDiscordId(null);
+      if (currentStaffId) {
+        await stopTracking(currentStaffId);
+        currentStaffId = null;
+        setStaffMemberId(null);
       }
     };
 
@@ -159,18 +191,30 @@ export const StaffPresenceTracker = () => {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT' && currentDiscordId) {
-        // User signed out - set offline immediately
-        navigator.sendBeacon(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-discord-presence`,
-          JSON.stringify({
-            discord_id: currentDiscordId,
-            is_online: false,
-            status: 'offline',
-          })
-        );
-        currentDiscordId = null;
-        setDiscordId(null);
+      if (event === 'SIGNED_OUT' && currentStaffId) {
+        // User signed out - set offline immediately using keepalive fetch
+        try {
+          fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-discord-presence`,
+            {
+              method: 'POST',
+              headers: { 
+                'Content-Type': 'application/json',
+                ...(sessionTokenRef.current ? { 'Authorization': `Bearer ${sessionTokenRef.current}` } : {}),
+              },
+              body: JSON.stringify({
+                staff_member_id: currentStaffId,
+                is_online: false,
+                status: 'offline',
+              }),
+              keepalive: true,
+            }
+          );
+        } catch {
+          // Ignore errors on sign out
+        }
+        currentStaffId = null;
+        setStaffMemberId(null);
       } else {
         checkStaffStatus();
       }
@@ -179,16 +223,36 @@ export const StaffPresenceTracker = () => {
     return () => {
       subscription.unsubscribe();
       cleanup?.();
-      if (currentDiscordId) {
-        // Send offline on unmount
-        navigator.sendBeacon(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-discord-presence`,
-          JSON.stringify({
-            discord_id: currentDiscordId,
-            is_online: false,
-            status: 'offline',
-          })
-        );
+      if (currentStaffId) {
+        // Send offline on unmount using keepalive
+        try {
+          fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-discord-presence`,
+            {
+              method: 'POST',
+              headers: { 
+                'Content-Type': 'application/json',
+                ...(sessionTokenRef.current ? { 'Authorization': `Bearer ${sessionTokenRef.current}` } : {}),
+              },
+              body: JSON.stringify({
+                staff_member_id: currentStaffId,
+                is_online: false,
+                status: 'offline',
+              }),
+              keepalive: true,
+            }
+          );
+        } catch {
+          // Fallback to sendBeacon
+          navigator.sendBeacon(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-discord-presence`,
+            JSON.stringify({
+              staff_member_id: currentStaffId,
+              is_online: false,
+              status: 'offline',
+            })
+          );
+        }
       }
     };
   }, []);
