@@ -60,13 +60,13 @@ export const useEvents = () => {
     }
   }, []);
 
-  // Load events from database
+  // Load events from database (only upcoming and running)
   const loadEvents = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('events')
         .select('*')
-        .neq('status', 'cancelled')
+        .in('status', ['upcoming', 'running'])
         .order('start_date', { ascending: true });
 
       if (error) throw error;
