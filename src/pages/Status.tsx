@@ -435,9 +435,9 @@ const Status = () => {
                     <Clock className="w-4 h-4" />
                     <span>Last updated: Just now • {isLoading ? "Loading..." : "Live"}</span>
                   </p>
-                  {serverData.serverName && (
-                    <p className="text-sm text-muted-foreground mt-1">{serverData.serverName}</p>
-                  )}
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {serverData.serverName || "Skylife RP India"}
+                  </p>
                 </div>
               </div>
               <div className="flex gap-4">
