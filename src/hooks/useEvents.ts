@@ -84,18 +84,20 @@ export const useEvents = () => {
   }, [toast]);
 
   useEffect(() => {
-    // Initial sync from Discord
-    syncDiscordEvents().then(() => {
+    // Load from database first, then sync from Discord
+    loadEvents().then(() => {
       setLoading(false);
+      // Sync after initial load with a small delay
+      setTimeout(() => syncDiscordEvents(), 1000);
     });
     
-    // Set up periodic sync every 2 minutes
+    // Set up periodic sync every 5 minutes (not 2 minutes to reduce API calls)
     const syncInterval = setInterval(() => {
       syncDiscordEvents();
-    }, 2 * 60 * 1000);
+    }, 5 * 60 * 1000);
     
     return () => clearInterval(syncInterval);
-  }, [syncDiscordEvents]);
+  }, [syncDiscordEvents, loadEvents]);
 
   const registerForEvent = async (eventId: string) => {
     try {
