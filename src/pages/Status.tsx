@@ -733,7 +733,7 @@ const Status = () => {
             <CardContent className="pt-8">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <a 
-                  href="fivem://connect/connect.skylifeindia.com:30120" 
+                  href="fivem://connect/15.235.234.147:30120" 
                   className="block p-6 rounded-xl glass-effect border-2 border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 cursor-pointer group"
                 >
                   <div className="flex items-center gap-3 mb-4">
@@ -743,7 +743,7 @@ const Status = () => {
                     <h4 className="font-bold text-sm text-primary">Connect IP Address</h4>
                   </div>
                   <p className="text-base font-mono font-semibold bg-background/80 p-4 rounded-lg border-2 border-primary/20 text-foreground group-hover:bg-primary/10 transition-colors">
-                    connect.skylifeindia.com:30120
+                    15.235.234.147:30120
                   </p>
                 </a>
                 <a 
