@@ -288,7 +288,7 @@ serve(async (req) => {
         uptimeSeconds: 0,
         serverLoad: 0,
         networkLatency: 0,
-        serverName: 'SLRP Server',
+        serverName: 'Skylife RP India',
         error: 'Server unreachable'
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
