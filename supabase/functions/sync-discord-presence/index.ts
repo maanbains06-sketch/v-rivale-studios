@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-api-key",
 };
 
 interface PresenceUpdate {
@@ -30,6 +30,28 @@ interface WidgetMember {
   avatar_url: string;
 }
 
+// Simple in-memory rate limiting (resets on function cold start)
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_WINDOW_MS = 60000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 10; // Max 10 requests per minute per discord_id
+
+const isRateLimited = (discordId: string): boolean => {
+  const now = Date.now();
+  const entry = rateLimitMap.get(discordId);
+  
+  if (!entry || now > entry.resetTime) {
+    rateLimitMap.set(discordId, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+    return false;
+  }
+  
+  if (entry.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return true;
+  }
+  
+  entry.count++;
+  return false;
+};
+
 const getAvatarUrl = (user: DiscordUser): string => {
   if (user.avatar) {
     return `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=256`;
@@ -48,8 +70,10 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const discordBotToken = Deno.env.get("DISCORD_BOT_TOKEN");
     const guildId = Deno.env.get("DISCORD_SERVER_ID");
+    const cronSecret = Deno.env.get("CRON_SECRET");
 
     if (!discordBotToken) {
       throw new Error("Discord Bot Token not configured");
@@ -57,6 +81,44 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!guildId) {
       throw new Error("Discord Server ID not configured");
+    }
+
+    // Authentication check
+    const authHeader = req.headers.get("authorization");
+    const apiKeyHeader = req.headers.get("x-api-key");
+    
+    // Check if this is a server-side call (cron, bot, or internal)
+    const isServerCall = apiKeyHeader === cronSecret || 
+                         apiKeyHeader === discordBotToken ||
+                         authHeader === `Bearer ${supabaseServiceKey}`;
+    
+    // For webhook/presence updates, require authentication
+    let isAuthenticated = isServerCall;
+    let authenticatedUserId: string | null = null;
+    
+    // If not a server call, check for user authentication
+    if (!isServerCall && authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.replace("Bearer ", "");
+      // Verify the JWT token using anon key client
+      const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey);
+      const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
+      
+      if (!authError && user) {
+        // Check if user is a staff member
+        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+        const { data: staffMember } = await supabase
+          .from("staff_members")
+          .select("id, discord_id, user_id")
+          .eq("user_id", user.id)
+          .eq("is_active", true)
+          .single();
+        
+        if (staffMember) {
+          isAuthenticated = true;
+          authenticatedUserId = user.id;
+          console.log(`Authenticated staff user: ${user.id}`);
+        }
+      }
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -67,59 +129,125 @@ const handler = async (req: Request): Promise<Response> => {
 
     try {
       const body = await req.json();
+      
+      // For webhook presence updates, require authentication
+      if (body.presenceUpdates || body.discord_id || body.staff_member_id) {
+        if (!isAuthenticated) {
+          console.log("Rejected unauthenticated presence update attempt");
+          return new Response(
+            JSON.stringify({ error: "Unauthorized", message: "Authentication required for presence updates" }),
+            {
+              status: 401,
+              headers: { "Content-Type": "application/json", ...corsHeaders },
+            }
+          );
+        }
+      }
+      
       if (body.presenceUpdates && Array.isArray(body.presenceUpdates)) {
         // Handle website presence updates (staff_member_id based)
         for (const update of body.presenceUpdates) {
+          // Rate limit check per discord_id
+          if (update.discord_id && isRateLimited(update.discord_id)) {
+            console.log(`Rate limited presence update for ${update.discord_id}`);
+            continue;
+          }
+          
           if (update.staff_member_id && !update.discord_id) {
-            // Website presence - lookup discord_id from staff_member_id
-            const { data: staff } = await supabase
-              .from("staff_members")
-              .select("discord_id")
-              .eq("id", update.staff_member_id)
-              .single();
-            
-            if (staff?.discord_id) {
-              presenceUpdates.push({
-                discord_id: staff.discord_id,
-                is_online: update.is_online,
-                status: update.status || (update.is_online ? 'online' : 'offline')
-              });
+            // For authenticated user updates, verify they're updating their own presence
+            if (authenticatedUserId) {
+              const { data: staff } = await supabase
+                .from("staff_members")
+                .select("discord_id, user_id")
+                .eq("id", update.staff_member_id)
+                .single();
+              
+              // Only allow updating own presence unless server call
+              if (staff?.discord_id && (isServerCall || staff.user_id === authenticatedUserId)) {
+                if (!isRateLimited(staff.discord_id)) {
+                  presenceUpdates.push({
+                    discord_id: staff.discord_id,
+                    is_online: update.is_online,
+                    status: update.status || (update.is_online ? 'online' : 'offline')
+                  });
+                }
+              }
+            } else if (isServerCall) {
+              // Server calls can update any presence
+              const { data: staff } = await supabase
+                .from("staff_members")
+                .select("discord_id")
+                .eq("id", update.staff_member_id)
+                .single();
+              
+              if (staff?.discord_id && !isRateLimited(staff.discord_id)) {
+                presenceUpdates.push({
+                  discord_id: staff.discord_id,
+                  is_online: update.is_online,
+                  status: update.status || (update.is_online ? 'online' : 'offline')
+                });
+              }
             }
-          } else if (update.discord_id) {
+          } else if (update.discord_id && !isRateLimited(update.discord_id)) {
             presenceUpdates.push(update);
           }
         }
         isWebhookUpdate = true;
-        console.log(`Received ${presenceUpdates.length} presence updates`);
+        console.log(`Received ${presenceUpdates.length} presence updates (authenticated: ${isServerCall ? 'server' : 'user'})`);
       } else if (body.discord_id && typeof body.is_online === 'boolean') {
-        // Single presence update
-        presenceUpdates = [{ 
-          discord_id: body.discord_id, 
-          is_online: body.is_online,
-          status: body.status || (body.is_online ? 'online' : 'offline')
-        }];
-        isWebhookUpdate = true;
-        console.log(`Received single presence update for ${body.discord_id}: ${body.is_online ? 'online' : 'offline'}`);
-      } else if (body.staff_member_id && typeof body.is_online === 'boolean') {
-        // Website presence update via staff_member_id
-        const { data: staff } = await supabase
-          .from("staff_members")
-          .select("discord_id")
-          .eq("id", body.staff_member_id)
-          .single();
-        
-        if (staff?.discord_id) {
-          presenceUpdates = [{
-            discord_id: staff.discord_id,
+        // Single presence update - rate limit check
+        if (!isRateLimited(body.discord_id)) {
+          presenceUpdates = [{ 
+            discord_id: body.discord_id, 
             is_online: body.is_online,
             status: body.status || (body.is_online ? 'online' : 'offline')
           }];
           isWebhookUpdate = true;
-          console.log(`Received website presence update for staff ${body.staff_member_id}: ${body.is_online ? 'online' : 'offline'}`);
+          console.log(`Received single presence update for ${body.discord_id}: ${body.is_online ? 'online' : 'offline'}`);
+        } else {
+          console.log(`Rate limited single presence update for ${body.discord_id}`);
+        }
+      } else if (body.staff_member_id && typeof body.is_online === 'boolean') {
+        // Website presence update via staff_member_id - verify ownership
+        const { data: staff } = await supabase
+          .from("staff_members")
+          .select("discord_id, user_id")
+          .eq("id", body.staff_member_id)
+          .single();
+        
+        // Only allow if server call or user owns this staff record
+        if (staff?.discord_id && (isServerCall || staff.user_id === authenticatedUserId)) {
+          if (!isRateLimited(staff.discord_id)) {
+            presenceUpdates = [{
+              discord_id: staff.discord_id,
+              is_online: body.is_online,
+              status: body.status || (body.is_online ? 'online' : 'offline')
+            }];
+            isWebhookUpdate = true;
+            console.log(`Received website presence update for staff ${body.staff_member_id}: ${body.is_online ? 'online' : 'offline'}`);
+          }
+        } else if (!isServerCall && staff?.user_id !== authenticatedUserId) {
+          console.log(`Rejected presence update: user ${authenticatedUserId} cannot update staff ${body.staff_member_id}`);
+          return new Response(
+            JSON.stringify({ error: "Forbidden", message: "Cannot update another user's presence" }),
+            {
+              status: 403,
+              headers: { "Content-Type": "application/json", ...corsHeaders },
+            }
+          );
         }
       }
     } catch {
-      // No body or invalid JSON - proceed with widget sync
+      // No body or invalid JSON - proceed with widget sync (only for server calls)
+      if (!isServerCall) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized", message: "Authentication required" }),
+          {
+            status: 401,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
+      }
     }
 
     // Fetch all staff members with Discord IDs
