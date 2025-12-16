@@ -289,10 +289,25 @@ const handler = async (req: Request): Promise<Response> => {
       syncedEvents.push(data);
     }
 
-    // If an event was deleted in Discord, it won't appear here; mark old discord-sourced events as completed.
+    // If an event was deleted/cancelled in Discord and no longer appears in the API response,
+    // mark it as completed so it disappears from the website.
     const syncedDiscordIds = discordEvents.map((e) => e.id);
 
-    if (syncedDiscordIds.length > 0) {
+    if (syncedDiscordIds.length === 0) {
+      // Discord returned 0 scheduled events (valid response). Treat as source-of-truth.
+      const { error: updateAllError } = await supabase
+        .from("events")
+        .update({ status: "completed", updated_at: new Date().toISOString() })
+        .eq("source", "discord")
+        .in("status", ["upcoming", "running"]);
+
+      if (updateAllError) {
+        console.error(
+          "Error marking discord events as completed when Discord returned 0 events:",
+          updateAllError,
+        );
+      }
+    } else {
       const { error: updateError } = await supabase
         .from("events")
         .update({ status: "completed", updated_at: new Date().toISOString() })
