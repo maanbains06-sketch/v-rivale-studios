@@ -208,33 +208,48 @@ const handler = async (req: Request): Promise<Response> => {
 
     const syncedEvents = [];
     const nowDate = new Date();
+    const activeDiscordIds: string[] = [];
 
     for (const discordEvent of discordEvents) {
-      let status: string;
       const startDate = new Date(discordEvent.scheduled_start_time);
       const endDate = discordEvent.scheduled_end_time
         ? new Date(discordEvent.scheduled_end_time)
         : new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
 
-      switch (discordEvent.status) {
-        case 2:
-          status = "running";
-          break;
-        case 3:
-          status = "completed";
-          break;
-        case 4:
-          status = "cancelled";
-          break;
-        default:
-          if (startDate <= nowDate && endDate >= nowDate) {
-            status = "running";
-          } else if (endDate < nowDate) {
-            status = "completed";
-          } else {
-            status = "upcoming";
-          }
+      // Discord event status: 1 = scheduled, 2 = active, 3 = completed, 4 = cancelled
+      // If event is cancelled (4) or completed (3), DELETE it from DB immediately
+      if (discordEvent.status === 3 || discordEvent.status === 4) {
+        const statusName = discordEvent.status === 4 ? "cancelled" : "completed";
+        console.log(`Event "${discordEvent.name}" is ${statusName} - removing from website`);
+        
+        const { error: deleteError } = await supabase
+          .from("events")
+          .delete()
+          .eq("discord_event_id", discordEvent.id);
+        
+        if (deleteError) {
+          console.error(`Error deleting ${statusName} event ${discordEvent.name}:`, deleteError);
+        }
+        continue; // Don't add to activeDiscordIds
       }
+
+      // Calculate status for active events
+      let status: string;
+      if (discordEvent.status === 2) {
+        status = "running";
+      } else if (startDate <= nowDate && endDate >= nowDate) {
+        status = "running";
+      } else if (endDate < nowDate) {
+        // Event ended - delete it
+        console.log(`Event "${discordEvent.name}" has ended - removing from website`);
+        await supabase.from("events").delete().eq("discord_event_id", discordEvent.id);
+        continue;
+      } else {
+        status = "upcoming";
+      }
+
+      // Track this as an active event
+      activeDiscordIds.push(discordEvent.id);
 
       let eventType: string;
       switch (discordEvent.entity_type) {
@@ -289,38 +304,38 @@ const handler = async (req: Request): Promise<Response> => {
       syncedEvents.push(data);
     }
 
-    // If an event was deleted/cancelled in Discord and no longer appears in the API response,
-    // mark it as completed so it disappears from the website.
-    const syncedDiscordIds = discordEvents.map((e) => e.id);
-
-    if (syncedDiscordIds.length === 0) {
-      // Discord returned 0 scheduled events (valid response). Treat as source-of-truth.
-      const { error: updateAllError } = await supabase
+    // Delete any Discord events from DB that are no longer in the active list
+    // (they were deleted from Discord or are cancelled/completed)
+    if (activeDiscordIds.length === 0) {
+      // Discord returned 0 active events - delete all discord-sourced events
+      console.log("No active Discord events - removing all discord events from website");
+      const { error: deleteAllError } = await supabase
         .from("events")
-        .update({ status: "completed", updated_at: new Date().toISOString() })
-        .eq("source", "discord")
-        .in("status", ["upcoming", "running"]);
+        .delete()
+        .eq("source", "discord");
 
-      if (updateAllError) {
-        console.error(
-          "Error marking discord events as completed when Discord returned 0 events:",
-          updateAllError,
-        );
+      if (deleteAllError) {
+        console.error("Error deleting all discord events:", deleteAllError);
       }
     } else {
-      const { error: updateError } = await supabase
+      // Delete events that are no longer in Discord's active list
+      const { data: staleEvents } = await supabase
         .from("events")
-        .update({ status: "completed", updated_at: new Date().toISOString() })
+        .select("id, discord_event_id, title")
         .eq("source", "discord")
-        .not(
-          "discord_event_id",
-          "in",
-          `(${syncedDiscordIds.map((id) => `'${id}'`).join(",")})`,
-        )
-        .in("status", ["upcoming", "running"]);
+        .not("discord_event_id", "in", `(${activeDiscordIds.map((id) => `'${id}'`).join(",")})`);
 
-      if (updateError) {
-        console.error("Error marking old events as completed:", updateError);
+      if (staleEvents && staleEvents.length > 0) {
+        console.log(`Removing ${staleEvents.length} stale events:`, staleEvents.map((e: any) => e.title));
+        const { error: deleteError } = await supabase
+          .from("events")
+          .delete()
+          .eq("source", "discord")
+          .not("discord_event_id", "in", `(${activeDiscordIds.map((id) => `'${id}'`).join(",")})`);
+
+        if (deleteError) {
+          console.error("Error deleting stale events:", deleteError);
+        }
       }
     }
 
