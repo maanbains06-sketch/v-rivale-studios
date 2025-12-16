@@ -52,13 +52,20 @@ serve(async (req) => {
     }
   }
 
-  // Helper function to format resource name for display
+  // Helper function to format resource name for display (hides raw file names)
   function formatResourceName(resourceName: string): string {
-    // Remove common prefixes and clean up the name
+    // Remove common prefixes and technical patterns
     let formatted = resourceName
-      .replace(/^(es_|esx_|qb-|qbcore-|vrp_|vRP_|ox_|okokBilling|okokGarage|okokPed|okokTextUI|)/i, '')
+      .replace(/^(es_|esx_|qb-|qbcore-|vrp_|vRP_|ox_|okokBilling|okokGarage|okokPed|okokTextUI|slrp_|slrp-|server_|client_|shared_|core_|base_|)/gi, '')
       .replace(/[-_]/g, ' ')
+      .replace(/\s+/g, ' ')
       .trim();
+    
+    // Skip system/internal resources
+    const skipPatterns = ['webpack', 'monitor', 'mysql', 'oxmysql', 'yarn', 'spawnmanager', 'sessionmanager', 'hardcap', 'baseevents', 'chat', 'mapmanager', 'basic-gamemode'];
+    if (skipPatterns.some(pattern => resourceName.toLowerCase().includes(pattern))) {
+      return '';
+    }
     
     // Capitalize first letter of each word
     formatted = formatted
@@ -66,7 +73,7 @@ serve(async (req) => {
       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
     
-    return formatted || resourceName;
+    return formatted || '';
   }
 
   // Helper function to detect and save new resources
@@ -94,23 +101,31 @@ serve(async (req) => {
 
       // If we have new resources and this isn't the first sync (previous had resources)
       if (newResources.length > 0 && previousResources.length > 0) {
-        // Insert new resource updates
-        const updates = newResources.map(resource => ({
-          title: formatResourceName(resource),
-          description: `New resource added: ${resource}`,
-          update_type: 'resource',
-          resource_name: resource,
-          detected_at: new Date().toISOString()
-        }));
+        // Insert new resource updates (only user-friendly names, no raw file names)
+        const updates = newResources
+          .map(resource => {
+            const formattedName = formatResourceName(resource);
+            if (!formattedName) return null; // Skip system resources
+            return {
+              title: formattedName,
+              description: 'New feature added to the server',
+              update_type: 'resource',
+              resource_name: null, // Don't store raw resource name
+              detected_at: new Date().toISOString()
+            };
+          })
+          .filter(update => update !== null);
 
-        const { error: insertError } = await supabase
-          .from('server_updates')
-          .insert(updates);
+        if (updates.length > 0) {
+          const { error: insertError } = await supabase
+            .from('server_updates')
+            .insert(updates);
 
-        if (insertError) {
-          console.error('Error inserting server updates:', insertError);
-        } else {
-          console.log('Inserted', updates.length, 'new resource updates');
+          if (insertError) {
+            console.error('Error inserting server updates:', insertError);
+          } else {
+            console.log('Inserted', updates.length, 'new resource updates');
+          }
         }
       }
 
