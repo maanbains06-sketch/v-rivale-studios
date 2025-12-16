@@ -288,6 +288,15 @@ const Gallery = () => {
               onClick={() => handleCategoryClick('event')}
             >
               <div className="relative overflow-hidden rounded-2xl bg-card border border-border/30 hover:border-primary/50 transition-all duration-500 h-full">
+                {/* Live indicator */}
+                <div className="absolute top-4 right-4 z-10 flex items-center gap-1.5 bg-background/80 backdrop-blur-sm px-2.5 py-1 rounded-full border border-green-500/30">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                  </span>
+                  <span className="text-xs font-medium text-green-500">Live</span>
+                </div>
+                
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5" />
                 </div>
@@ -480,7 +489,16 @@ const Gallery = () => {
           <Dialog open={showEventsDialog} onOpenChange={setShowEventsDialog}>
             <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle className="text-2xl text-gradient">Community Events</DialogTitle>
+                <DialogTitle className="text-2xl text-gradient flex items-center gap-3">
+                  Community Events
+                  <span className="flex items-center gap-1.5 bg-background/80 backdrop-blur-sm px-2.5 py-1 rounded-full border border-green-500/30 text-sm font-normal">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                    </span>
+                    <span className="text-xs font-medium text-green-500">Live</span>
+                  </span>
+                </DialogTitle>
               </DialogHeader>
               
               <div className="space-y-8">
