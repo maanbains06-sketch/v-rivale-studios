@@ -13,8 +13,8 @@ interface DiscordScheduledEvent {
   description: string | null;
   scheduled_start_time: string;
   scheduled_end_time: string | null;
-  status: number; // 1=SCHEDULED, 2=ACTIVE, 3=COMPLETED, 4=CANCELED
-  entity_type: number; // 1=STAGE_INSTANCE, 2=VOICE, 3=EXTERNAL
+  status: number;
+  entity_type: number;
   entity_metadata?: {
     location?: string;
   };
@@ -22,17 +22,49 @@ interface DiscordScheduledEvent {
   image?: string | null;
 }
 
+// Simple in-memory cache to prevent rate limiting
+let lastSyncTime = 0;
+const SYNC_COOLDOWN_MS = 30000; // 30 seconds cooldown
+
 const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
   try {
+    // Check cooldown to prevent rate limiting
+    const currentTime = Date.now();
+    if (currentTime - lastSyncTime < SYNC_COOLDOWN_MS) {
+      console.log("Sync cooldown active, returning cached events");
+      
+      const { data: existingEvents } = await supabase
+        .from('events')
+        .select('*')
+        .neq('status', 'cancelled')
+        .order('start_date', { ascending: true });
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          synced: 0,
+          total: existingEvents?.length || 0,
+          events: existingEvents || [],
+          message: "Using cached events (cooldown active)",
+          cached: true,
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
     const discordBotToken = Deno.env.get("DISCORD_BOT_TOKEN");
     const discordServerId = Deno.env.get("DISCORD_SERVER_ID");
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
     if (!discordBotToken) {
       throw new Error("DISCORD_BOT_TOKEN not configured");
@@ -44,7 +76,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Fetching Discord scheduled events for server:", discordServerId);
 
-    // Fetch scheduled events from Discord
     const discordResponse = await fetch(
       `https://discord.com/api/v10/guilds/${discordServerId}/scheduled-events?with_user_count=true`,
       {
@@ -60,45 +91,42 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error(`Discord API error: ${discordResponse.status} ${discordResponse.statusText}`);
     }
 
+    // Update last sync time after successful Discord API call
+    lastSyncTime = Date.now();
+
     const discordEvents: DiscordScheduledEvent[] = await discordResponse.json();
     console.log(`Found ${discordEvents.length} Discord events`);
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Process each Discord event
     const syncedEvents = [];
-    const now = new Date();
+    const nowDate = new Date();
 
     for (const discordEvent of discordEvents) {
-      // Map Discord status to our status
       let status: string;
       const startDate = new Date(discordEvent.scheduled_start_time);
       const endDate = discordEvent.scheduled_end_time 
         ? new Date(discordEvent.scheduled_end_time) 
-        : new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // Default 2 hours if no end time
+        : new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
 
-      // Determine status based on Discord status and time
       switch (discordEvent.status) {
-        case 2: // ACTIVE
+        case 2:
           status = 'running';
           break;
-        case 3: // COMPLETED
+        case 3:
           status = 'completed';
           break;
-        case 4: // CANCELED
+        case 4:
           status = 'cancelled';
           break;
-        default: // SCHEDULED or unknown
-          if (startDate <= now && endDate >= now) {
+        default:
+          if (startDate <= nowDate && endDate >= nowDate) {
             status = 'running';
-          } else if (endDate < now) {
+          } else if (endDate < nowDate) {
             status = 'completed';
           } else {
             status = 'upcoming';
           }
       }
 
-      // Map entity_type to event_type
       let eventType: string;
       switch (discordEvent.entity_type) {
         case 1:
@@ -114,10 +142,7 @@ const handler = async (req: Request): Promise<Response> => {
           eventType = 'community';
       }
 
-      // Get location from entity_metadata
       const location = discordEvent.entity_metadata?.location || null;
-
-      // Build banner image URL if available
       const bannerImage = discordEvent.image 
         ? `https://cdn.discordapp.com/guild-events/${discordEvent.id}/${discordEvent.image}.png?size=1024`
         : null;
@@ -137,7 +162,6 @@ const handler = async (req: Request): Promise<Response> => {
         updated_at: new Date().toISOString(),
       };
 
-      // Upsert event (insert or update based on discord_event_id)
       const { data, error } = await supabase
         .from('events')
         .upsert(eventData, {
@@ -156,10 +180,8 @@ const handler = async (req: Request): Promise<Response> => {
       syncedEvents.push(data);
     }
 
-    // Get IDs of currently synced Discord events
     const syncedDiscordIds = discordEvents.map(e => e.id);
 
-    // Mark events that are no longer in Discord as completed (if they were from Discord)
     if (syncedDiscordIds.length > 0) {
       const { error: updateError } = await supabase
         .from('events')
@@ -173,7 +195,6 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // Fetch all current events to return
     const { data: allEvents, error: fetchError } = await supabase
       .from('events')
       .select('*')
@@ -199,14 +220,23 @@ const handler = async (req: Request): Promise<Response> => {
     );
   } catch (error: any) {
     console.error("Error in sync-discord-events function:", error);
+    
+    // On error, still return existing events from database
+    const { data: fallbackEvents } = await supabase
+      .from('events')
+      .select('*')
+      .neq('status', 'cancelled')
+      .order('start_date', { ascending: true });
+
     return new Response(
       JSON.stringify({
         success: false,
         error: error.message,
+        events: fallbackEvents || [],
         details: "Make sure DISCORD_BOT_TOKEN and DISCORD_SERVER_ID are configured",
       }),
       {
-        status: 500,
+        status: 200, // Return 200 with fallback data instead of 500
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );

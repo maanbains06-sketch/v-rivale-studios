@@ -202,9 +202,7 @@ const Status = () => {
 
   const fetchActiveEvents = async () => {
     try {
-      // First sync Discord events
-      await supabase.functions.invoke('sync-discord-events');
-      
+      // Just fetch from database - Discord sync happens via useEvents hook on Gallery page
       const { data, error } = await supabase
         .from("events")
         .select("*")
