@@ -4,6 +4,7 @@ import PageHeader from "@/components/PageHeader";
 import headerStatus from "@/assets/header-status.jpg";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Users,
   Activity,
@@ -15,18 +16,21 @@ import {
   Wifi,
   Network,
   Sparkles,
-  Radio,
   Shield,
   Calendar,
   AlertTriangle,
   Package,
   MapPin,
+  UserPlus,
+  Check,
+  Loader2,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import type { User } from "@supabase/supabase-js";
 
 interface ServerStats {
   playersOnline: number;
@@ -46,10 +50,12 @@ interface RecentUpdate {
 
 interface ActiveEvent {
   id: number;
+  eventId: string; // actual UUID from database
   name: string;
   startTime: string;
   endTime: string;
   participants: number;
+  maxParticipants?: number;
   status: string;
   location?: string;
 }
@@ -82,6 +88,9 @@ const Status = () => {
   const [maintenance, setMaintenance] = useState<any[]>([]);
   const [recentUpdates, setRecentUpdates] = useState<RecentUpdate[]>([]);
   const [activeEvents, setActiveEvents] = useState<ActiveEvent[]>([]);
+  const [user, setUser] = useState<User | null>(null);
+  const [userRegistrations, setUserRegistrations] = useState<string[]>([]);
+  const [registeringEventId, setRegisteringEventId] = useState<string | null>(null);
 
   const fetchServerStatus = async () => {
     try {
@@ -194,10 +203,12 @@ const Status = () => {
       if (!error && data) {
         const events: ActiveEvent[] = data.map((event, index) => ({
           id: index + 1,
+          eventId: event.id,
           name: event.title,
           startTime: getEventStartTime(new Date(event.start_date)),
           endTime: getEventDuration(new Date(event.start_date), new Date(event.end_date)),
           participants: event.current_participants || 0,
+          maxParticipants: event.max_participants || undefined,
           status: event.status,
           location: event.location || undefined,
         }));
@@ -205,6 +216,54 @@ const Status = () => {
       }
     } catch (error) {
       console.error("Failed to fetch active events:", error);
+    }
+  };
+
+  const fetchUserRegistrations = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("event_participants")
+        .select("event_id")
+        .eq("user_id", userId);
+
+      if (!error && data) {
+        setUserRegistrations(data.map((r) => r.event_id));
+      }
+    } catch (error) {
+      console.error("Failed to fetch user registrations:", error);
+    }
+  };
+
+  const handleRegisterForEvent = async (eventId: string) => {
+    if (!user) {
+      toast.error("Please sign in to register for events");
+      return;
+    }
+
+    setRegisteringEventId(eventId);
+
+    try {
+      const { error } = await supabase.from("event_participants").insert({
+        event_id: eventId,
+        user_id: user.id,
+      });
+
+      if (error) {
+        if (error.code === "23505") {
+          toast.info("You're already registered for this event");
+        } else {
+          throw error;
+        }
+      } else {
+        toast.success("Successfully registered for event!");
+        setUserRegistrations((prev) => [...prev, eventId]);
+        fetchActiveEvents(); // Refresh to get updated participant count
+      }
+    } catch (error) {
+      console.error("Failed to register for event:", error);
+      toast.error("Failed to register for event");
+    } finally {
+      setRegisteringEventId(null);
     }
   };
 
@@ -256,6 +315,24 @@ const Status = () => {
   };
 
   useEffect(() => {
+    // Get current user
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+      if (user) {
+        fetchUserRegistrations(user.id);
+      }
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchUserRegistrations(session.user.id);
+      } else {
+        setUserRegistrations([]);
+      }
+    });
+
     fetchServerStatus();
     fetchMaintenance();
     fetchRecentUpdates();
@@ -267,6 +344,7 @@ const Status = () => {
     const eventsInterval = setInterval(fetchActiveEvents, 60000);
 
     return () => {
+      subscription.unsubscribe();
       clearInterval(statusInterval);
       clearInterval(maintenanceInterval);
       clearInterval(updatesInterval);
@@ -692,7 +770,7 @@ const Status = () => {
                           <h4 className="font-bold text-lg text-foreground">{event.name}</h4>
                           <Badge variant="secondary" className="text-xs flex items-center gap-1">
                             <Users className="w-3 h-3" />
-                            {event.participants}
+                            {event.participants}{event.maxParticipants ? `/${event.maxParticipants}` : ''}
                           </Badge>
                         </div>
                         {event.location && (
@@ -702,7 +780,7 @@ const Status = () => {
                           </p>
                         )}
                         <Separator className="my-3 bg-border/30" />
-                        <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center justify-between text-sm mb-4">
                           <div className="flex items-center gap-2 text-muted-foreground">
                             <Clock className="w-4 h-4 text-secondary" />
                             <span className="font-medium">
@@ -714,6 +792,40 @@ const Status = () => {
                             Duration: <span className="text-foreground font-medium">{event.endTime}</span>
                           </div>
                         </div>
+                        {/* Register Button */}
+                        {userRegistrations.includes(event.eventId) ? (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="w-full bg-green-500/10 text-green-500 border-green-500/30 hover:bg-green-500/20 cursor-default"
+                            disabled
+                          >
+                            <Check className="w-4 h-4 mr-2" />
+                            Registered
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            className="w-full bg-gradient-to-r from-secondary to-primary hover:opacity-90"
+                            onClick={() => handleRegisterForEvent(event.eventId)}
+                            disabled={registeringEventId === event.eventId || (event.maxParticipants !== undefined && event.participants >= event.maxParticipants)}
+                          >
+                            {registeringEventId === event.eventId ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Registering...
+                              </>
+                            ) : event.maxParticipants !== undefined && event.participants >= event.maxParticipants ? (
+                              'Event Full'
+                            ) : (
+                              <>
+                                <UserPlus className="w-4 h-4 mr-2" />
+                                Register Now
+                              </>
+                            )}
+                          </Button>
+                        )}
                       </div>
                     ))
                   ) : (
