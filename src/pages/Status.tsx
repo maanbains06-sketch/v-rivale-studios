@@ -67,7 +67,7 @@ interface ServerStatus {
 const Status = () => {
   const [serverData, setServerData] = useState<ServerStatus>({
     status: "offline",
-    players: { current: 0, max: 32 },
+    players: { current: 0, max: 48 },
     uptime: "0h",
     uptimeSeconds: 0,
     serverLoad: 0,
