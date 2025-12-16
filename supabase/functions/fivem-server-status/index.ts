@@ -301,38 +301,85 @@ serve(async (req) => {
         detectNewResources(currentResources).catch(err => console.log('Resource detection error:', err));
       }
       
-      // Get server uptime - check multiple possible field names
-      // FiveM servers may return uptime in different formats
+      // Get server uptime from txAdmin
       let uptimeSeconds = 0;
+      const txAdminPort = '30121';
       
-      // First try to get uptime from server response
-      if (typeof dynamic.uptime === 'number' && dynamic.uptime > 0) {
-        uptimeSeconds = dynamic.uptime;
-      } else if (typeof dynamic.uptime === 'string' && parseInt(dynamic.uptime, 10) > 0) {
-        uptimeSeconds = parseInt(dynamic.uptime, 10);
-      } else if (dynamic.sv_uptime) {
-        uptimeSeconds = parseInt(dynamic.sv_uptime, 10) || 0;
-      } else if (info.vars?.sv_uptime) {
-        uptimeSeconds = parseInt(info.vars.sv_uptime, 10) || 0;
+      // Try multiple txAdmin API endpoints
+      const txAdminEndpoints = [
+        `http://${serverIp}:${txAdminPort}/status.json`,
+        `http://${serverIp}:${txAdminPort}/api/status`,
+        `http://${serverIp}:${txAdminPort}/serverStatus.json`,
+      ];
+      
+      for (const txAdminUrl of txAdminEndpoints) {
+        if (uptimeSeconds > 0) break;
+        
+        try {
+          console.log('Trying txAdmin endpoint:', txAdminUrl);
+          const txController = new AbortController();
+          const txTimeoutId = setTimeout(() => txController.abort(), 3000);
+          
+          const txAdminResponse = await fetch(txAdminUrl, {
+            signal: txController.signal,
+            headers: {
+              'Accept': 'application/json',
+            },
+          });
+          
+          clearTimeout(txTimeoutId);
+          
+          if (txAdminResponse.ok) {
+            const contentType = txAdminResponse.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+              const txAdminData = await txAdminResponse.json();
+              console.log('txAdmin response:', JSON.stringify(txAdminData));
+              
+              // txAdmin returns uptime in different formats depending on version
+              if (typeof txAdminData.uptime === 'number' && txAdminData.uptime > 0) {
+                uptimeSeconds = txAdminData.uptime;
+                console.log('Got uptime from txAdmin:', uptimeSeconds, 'seconds');
+              } else if (txAdminData.server?.uptime) {
+                uptimeSeconds = txAdminData.server.uptime;
+                console.log('Got uptime from txAdmin server:', uptimeSeconds, 'seconds');
+              } else if (txAdminData.serverUptime) {
+                uptimeSeconds = txAdminData.serverUptime;
+                console.log('Got serverUptime from txAdmin:', uptimeSeconds, 'seconds');
+              }
+            }
+          }
+        } catch (txError) {
+          console.log('txAdmin endpoint failed:', txAdminUrl, txError);
+        }
       }
       
-      // If server doesn't provide uptime, track it ourselves
+      // Fallback: try to get uptime from FiveM server response
+      if (uptimeSeconds === 0) {
+        if (typeof dynamic.uptime === 'number' && dynamic.uptime > 0) {
+          uptimeSeconds = dynamic.uptime;
+        } else if (typeof dynamic.uptime === 'string' && parseInt(dynamic.uptime, 10) > 0) {
+          uptimeSeconds = parseInt(dynamic.uptime, 10);
+        } else if (dynamic.sv_uptime) {
+          uptimeSeconds = parseInt(dynamic.sv_uptime, 10) || 0;
+        } else if (info.vars?.sv_uptime) {
+          uptimeSeconds = parseInt(info.vars.sv_uptime, 10) || 0;
+        }
+      }
+      
+      // Last fallback: track it ourselves
       if (uptimeSeconds === 0 && isOnline) {
         const lastStatus = await getLastServerStatus();
         const storedStartTime = await getServerStartTime();
         
-        // If server just came online or no start time stored, save current time
         if (lastStatus !== 'online' || !storedStartTime) {
           const now = new Date().toISOString();
           saveServerStartTime(now).catch(err => console.log('Save start time error:', err));
-          uptimeSeconds = 0; // Just started
+          uptimeSeconds = 0;
         } else {
-          // Calculate uptime from stored start time
           const startTime = new Date(storedStartTime).getTime();
           const now = Date.now();
           uptimeSeconds = Math.floor((now - startTime) / 1000);
         }
-        
         console.log('Using tracked uptime:', uptimeSeconds, 'seconds');
       }
       
