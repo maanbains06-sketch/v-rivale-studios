@@ -19,6 +19,7 @@ import {
   Shield,
   Calendar,
   AlertTriangle,
+  Package,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
@@ -39,7 +40,7 @@ interface RecentUpdate {
   id: number;
   title: string;
   date: string;
-  type: "update" | "event" | "maintenance";
+  type: "update" | "event" | "maintenance" | "resource";
 }
 
 interface ActiveEvent {
@@ -138,13 +139,32 @@ const Status = () => {
         .order("created_at", { ascending: false })
         .limit(5);
 
+      // Fetch server resource updates (auto-detected new scripts/resources)
+      const { data: serverUpdatesData, error: serverUpdatesError } = await supabase
+        .from("server_updates")
+        .select("*")
+        .order("detected_at", { ascending: false })
+        .limit(10);
+
       const updates: RecentUpdate[] = [];
+
+      // Add server resource updates (new scripts/jobs added)
+      if (!serverUpdatesError && serverUpdatesData) {
+        serverUpdatesData.forEach((item, index) => {
+          updates.push({
+            id: index + 1,
+            title: item.title,
+            date: getTimeAgo(new Date(item.detected_at)),
+            type: "resource",
+          });
+        });
+      }
 
       // Add maintenance items
       if (!maintenanceError && maintenanceData) {
         maintenanceData.forEach((item, index) => {
           updates.push({
-            id: index + 1,
+            id: updates.length + index + 1,
             title: item.title,
             date: getTimeAgo(new Date(item.created_at)),
             type: "maintenance",
@@ -307,16 +327,18 @@ const Status = () => {
     return "Critical";
   };
 
-  const updateTypeColors = {
+  const updateTypeColors: Record<string, string> = {
     update: "bg-gradient-to-r from-primary/80 to-primary",
     event: "bg-gradient-to-r from-secondary/80 to-secondary",
     maintenance: "bg-gradient-to-r from-accent/80 to-accent",
+    resource: "bg-gradient-to-r from-green-500/80 to-green-600",
   };
 
-  const updateTypeIcons = {
+  const updateTypeIcons: Record<string, any> = {
     update: Sparkles,
     event: Radio,
     maintenance: Shield,
+    resource: Package,
   };
 
   return (

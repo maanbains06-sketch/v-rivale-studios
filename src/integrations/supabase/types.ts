@@ -1141,6 +1141,60 @@ export type Database = {
         }
         Relationships: []
       }
+      server_resource_snapshot: {
+        Row: {
+          created_at: string
+          id: string
+          resource_count: number
+          resources: string[]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          resource_count?: number
+          resources?: string[]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          resource_count?: number
+          resources?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      server_updates: {
+        Row: {
+          created_at: string
+          description: string | null
+          detected_at: string
+          id: string
+          resource_name: string | null
+          title: string
+          update_type: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          detected_at?: string
+          id?: string
+          resource_name?: string | null
+          title: string
+          update_type?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          detected_at?: string
+          id?: string
+          resource_name?: string | null
+          title?: string
+          update_type?: string
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           created_at: string
