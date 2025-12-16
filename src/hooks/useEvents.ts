@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -33,32 +33,43 @@ export const useEvents = () => {
   const [syncing, setSyncing] = useState(false);
   const { toast } = useToast();
 
-  // Sync events from Discord
+  // Prevent hammering the backend function (and Discord API behind it)
+  const lastSyncAttemptAtRef = useRef<number>(0);
+  const MIN_SYNC_INTERVAL_MS = 60_000;
+
+  // Sync events from Discord (throttled)
   const syncDiscordEvents = useCallback(async () => {
+    const now = Date.now();
+    if (syncing) return false;
+    if (now - lastSyncAttemptAtRef.current < MIN_SYNC_INTERVAL_MS) return false;
+
+    lastSyncAttemptAtRef.current = now;
+
     try {
       setSyncing(true);
       console.log('Syncing Discord events...');
-      
+
       const { data, error } = await supabase.functions.invoke('sync-discord-events');
-      
+
       if (error) {
         console.error('Error syncing Discord events:', error);
         return false;
       }
-      
+
+      // The function always returns a payload with events; even on rate-limit it returns cached DB events.
       if (data?.events) {
         setEvents(data.events);
-        console.log(`Synced ${data.synced} events from Discord`);
+        console.log(`Sync result: ${data.message || 'ok'}`);
       }
-      
-      return true;
+
+      return !!data?.success;
     } catch (error: any) {
       console.error('Error syncing Discord events:', error);
       return false;
     } finally {
       setSyncing(false);
     }
-  }, []);
+  }, [syncing]);
 
   // Load events from database (only upcoming and running)
   const loadEvents = useCallback(async () => {
@@ -90,18 +101,20 @@ export const useEvents = () => {
       // Sync after initial load with a small delay
       setTimeout(() => syncDiscordEvents(), 1000);
     });
-    
-    // Set up periodic sync every 5 minutes (not 2 minutes to reduce API calls)
+
+    // Periodic sync (backend function is rate-limit aware, but we still keep this modest)
     const syncInterval = setInterval(() => {
       syncDiscordEvents();
     }, 5 * 60 * 1000);
-    
+
     return () => clearInterval(syncInterval);
   }, [syncDiscordEvents, loadEvents]);
 
   const registerForEvent = async (eventId: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         toast({
           title: 'Authentication Required',
@@ -111,18 +124,16 @@ export const useEvents = () => {
         return false;
       }
 
-      const { error } = await supabase
-        .from('event_participants')
-        .insert({
-          event_id: eventId,
-          user_id: user.id,
-          status: 'registered',
-        });
+      const { error } = await supabase.from('event_participants').insert({
+        event_id: eventId,
+        user_id: user.id,
+        status: 'registered',
+      });
 
       if (error) throw error;
 
       // Update participant count
-      const event = events.find(e => e.id === eventId);
+      const event = events.find((e) => e.id === eventId);
       if (event) {
         await supabase
           .from('events')
@@ -150,7 +161,9 @@ export const useEvents = () => {
 
   const cancelRegistration = async (eventId: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return false;
 
       const { error } = await supabase
@@ -162,7 +175,7 @@ export const useEvents = () => {
       if (error) throw error;
 
       // Update participant count
-      const event = events.find(e => e.id === eventId);
+      const event = events.find((e) => e.id === eventId);
       if (event && event.current_participants > 0) {
         await supabase
           .from('events')
@@ -190,7 +203,9 @@ export const useEvents = () => {
 
   const checkUserRegistration = async (eventId: string): Promise<boolean> => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return false;
 
       const { data, error } = await supabase
@@ -208,9 +223,9 @@ export const useEvents = () => {
     }
   };
 
-  const getRunningEvents = () => events.filter(e => e.status === 'running');
-  const getUpcomingEvents = () => events.filter(e => e.status === 'upcoming');
-  const getCompletedEvents = () => events.filter(e => e.status === 'completed');
+  const getRunningEvents = () => events.filter((e) => e.status === 'running');
+  const getUpcomingEvents = () => events.filter((e) => e.status === 'upcoming');
+  const getCompletedEvents = () => events.filter((e) => e.status === 'completed');
 
   return {
     events,
