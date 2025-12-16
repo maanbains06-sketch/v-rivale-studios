@@ -130,12 +130,16 @@ const handler = async (req: Request): Promise<Response> => {
     try {
       const body = await req.json();
       
-      // For webhook presence updates, require authentication
-      if (body.presenceUpdates || body.discord_id || body.staff_member_id) {
+      // Special case: Allow unauthenticated OFFLINE updates from sendBeacon
+      // (sendBeacon can't send auth headers, but offline updates are low-risk)
+      const isOfflineUpdate = body.is_online === false && body.status === 'offline';
+      
+      // For online presence updates, require authentication
+      if ((body.presenceUpdates || body.discord_id || body.staff_member_id) && !isOfflineUpdate) {
         if (!isAuthenticated) {
-          console.log("Rejected unauthenticated presence update attempt");
+          console.log("Rejected unauthenticated online presence update attempt");
           return new Response(
-            JSON.stringify({ error: "Unauthorized", message: "Authentication required for presence updates" }),
+            JSON.stringify({ error: "Unauthorized", message: "Authentication required for online presence updates" }),
             {
               status: 401,
               headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -208,42 +212,42 @@ const handler = async (req: Request): Promise<Response> => {
           console.log(`Rate limited single presence update for ${body.discord_id}`);
         }
       } else if (body.staff_member_id && typeof body.is_online === 'boolean') {
-        // Website presence update via staff_member_id - verify ownership
+        // Website presence update via staff_member_id
         const { data: staff } = await supabase
           .from("staff_members")
           .select("discord_id, user_id")
           .eq("id", body.staff_member_id)
           .single();
         
-        // Only allow if server call or user owns this staff record
-        if (staff?.discord_id && (isServerCall || staff.user_id === authenticatedUserId)) {
-          if (!isRateLimited(staff.discord_id)) {
+        const isOfflineUpdate = body.is_online === false;
+        
+        // Allow offline updates without auth (for sendBeacon), require auth for online updates
+        if (staff?.discord_id) {
+          const canUpdate = isServerCall || 
+                           staff.user_id === authenticatedUserId || 
+                           isOfflineUpdate; // Allow unauthenticated offline updates
+          
+          if (canUpdate && !isRateLimited(staff.discord_id)) {
             presenceUpdates = [{
               discord_id: staff.discord_id,
               is_online: body.is_online,
               status: body.status || (body.is_online ? 'online' : 'offline')
             }];
             isWebhookUpdate = true;
-            console.log(`Received website presence update for staff ${body.staff_member_id}: ${body.is_online ? 'online' : 'offline'}`);
+            console.log(`Website presence update for staff ${body.staff_member_id}: ${body.status || (body.is_online ? 'online' : 'offline')}`);
+          } else if (!canUpdate) {
+            console.log(`Rejected presence update: unauthorized for staff ${body.staff_member_id}`);
           }
-        } else if (!isServerCall && staff?.user_id !== authenticatedUserId) {
-          console.log(`Rejected presence update: user ${authenticatedUserId} cannot update staff ${body.staff_member_id}`);
-          return new Response(
-            JSON.stringify({ error: "Forbidden", message: "Cannot update another user's presence" }),
-            {
-              status: 403,
-              headers: { "Content-Type": "application/json", ...corsHeaders },
-            }
-          );
         }
       }
-    } catch {
+    } catch (parseError) {
       // No body or invalid JSON - proceed with widget sync (only for server calls)
       if (!isServerCall) {
+        console.log("No valid JSON body and not a server call - rejecting");
         return new Response(
-          JSON.stringify({ error: "Unauthorized", message: "Authentication required" }),
+          JSON.stringify({ error: "Bad Request", message: "Invalid request body" }),
           {
-            status: 401,
+            status: 400,
             headers: { "Content-Type": "application/json", ...corsHeaders },
           }
         );
