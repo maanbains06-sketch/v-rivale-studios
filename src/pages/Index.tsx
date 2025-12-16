@@ -701,56 +701,91 @@ const Index = () => {
               </Button>
             </motion.div>
 
-            {/* Live Server Status - Compact & Elegant */}
+            {/* Live Server Status - Enhanced */}
             <motion.div variants={itemVariants} className="flex justify-center mt-6">
-              <div className="relative group">
-                {/* Subtle glow */}
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500/40 to-sky-500/40 rounded-full blur-sm opacity-0 group-hover:opacity-60 transition-opacity duration-300"></div>
+              <motion.div 
+                className="relative group cursor-default"
+                whileHover={{ scale: 1.02 }}
+                transition={{ type: "spring", stiffness: 400, damping: 20 }}
+              >
+                {/* Animated border gradient */}
+                <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-emerald-500 via-cyan-400 to-sky-500 opacity-60 blur-[1px] group-hover:opacity-80 transition-opacity"></div>
+                <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-emerald-500 via-cyan-400 to-sky-500 opacity-30"></div>
                 
                 {/* Main container */}
-                <div className="relative flex items-center gap-3 px-4 py-2.5 rounded-full border border-emerald-500/30 bg-background/90 backdrop-blur-sm">
-                  {/* Live pulse dot */}
-                  <div className="relative flex items-center justify-center">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_hsl(142_70%_50%_/_0.8)]"></div>
-                    <div className="absolute w-2 h-2 rounded-full bg-emerald-400 animate-ping opacity-50"></div>
-                  </div>
-
-                  {/* Player count */}
-                  <div className="flex items-center gap-1.5">
-                    <motion.span 
-                      key={serverPlayers}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="text-lg font-bold text-emerald-400"
-                    >
-                      {serverPlayers !== null ? serverPlayers : "0"}
-                    </motion.span>
-                    <span className="text-muted-foreground/50">/</span>
-                    <span className="text-sm text-muted-foreground/60">{maxPlayers}</span>
-                    <span className="text-xs text-sky-400/80 ml-1 uppercase tracking-wide font-medium">players</span>
-                  </div>
-
-                  {/* Mini progress indicator */}
-                  <div className="hidden sm:block w-12 h-1 rounded-full bg-white/10 overflow-hidden">
+                <div className="relative flex items-center gap-4 px-5 py-3 rounded-2xl bg-background/95 backdrop-blur-md">
+                  {/* Animated background shimmer */}
+                  <div className="absolute inset-0 rounded-2xl overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 via-cyan-500/10 to-sky-500/5"></div>
                     <motion.div 
-                      className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-sky-500"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${Math.min(((serverPlayers || 0) / maxPlayers) * 100, 100)}%` }}
-                      transition={{ duration: 0.5 }}
+                      className="absolute inset-y-0 w-24 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12"
+                      animate={{ x: ["-100%", "400%"] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "linear", repeatDelay: 2 }}
                     />
                   </div>
+
+                  {/* Status indicator with rings */}
+                  <div className="relative z-10">
+                    <div className="relative flex items-center justify-center w-8 h-8">
+                      {/* Outer pulse ring */}
+                      <motion.div 
+                        className="absolute inset-0 rounded-full border border-emerald-500/40"
+                        animate={{ scale: [1, 1.5], opacity: [0.6, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
+                      />
+                      {/* Inner ring */}
+                      <div className="absolute inset-1 rounded-full border border-emerald-400/30"></div>
+                      {/* Core dot */}
+                      <div className="w-3 h-3 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 shadow-[0_0_12px_hsl(142_70%_50%_/_0.7)]"></div>
+                    </div>
+                  </div>
+
+                  {/* Server name & status */}
+                  <div className="relative z-10 flex flex-col">
+                    <span className="text-[10px] text-emerald-400/80 font-semibold uppercase tracking-wider">Live Server</span>
+                    <div className="flex items-baseline gap-2">
+                      <motion.span 
+                        key={serverPlayers}
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-xl font-black bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent"
+                      >
+                        {serverPlayers !== null ? serverPlayers : "0"}
+                      </motion.span>
+                      <span className="text-muted-foreground/40 text-sm">/</span>
+                      <span className="text-muted-foreground/50 text-sm">{maxPlayers}</span>
+                      <span className="text-[10px] text-sky-400/70 uppercase tracking-wide ml-1">online</span>
+                    </div>
+                  </div>
+
+                  {/* Mini capacity bar */}
+                  <div className="relative z-10 hidden sm:flex flex-col items-center gap-1">
+                    <div className="w-16 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                      <motion.div 
+                        className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-cyan-400 to-sky-500"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.min(((serverPlayers || 0) / maxPlayers) * 100, 100)}%` }}
+                        transition={{ duration: 0.6, ease: "easeOut" }}
+                      />
+                    </div>
+                    <span className="text-[9px] text-muted-foreground/50 uppercase tracking-wide">
+                      {Math.round(((serverPlayers || 0) / maxPlayers) * 100)}%
+                    </span>
+                  </div>
                   
-                  {/* Refresh */}
-                  <button
+                  {/* Refresh button */}
+                  <motion.button
                     onClick={handleRefreshStatus}
                     disabled={isRefreshing}
-                    className="p-1.5 rounded-full hover:bg-white/5 transition-colors disabled:opacity-50"
-                    title="Refresh"
+                    className="relative z-10 p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 hover:border-sky-500/30 transition-all disabled:opacity-50"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    title="Refresh status"
                   >
-                    <RefreshCw className={`w-3.5 h-3.5 text-sky-400/70 hover:text-sky-400 ${isRefreshing ? 'animate-spin' : ''}`} />
-                  </button>
+                    <RefreshCw className={`w-3.5 h-3.5 text-sky-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  </motion.button>
                 </div>
-              </div>
+              </motion.div>
             </motion.div>
           </motion.div>
         </div>
