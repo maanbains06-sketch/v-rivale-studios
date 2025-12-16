@@ -52,7 +52,70 @@ serve(async (req) => {
     }
   }
 
-  // Helper function to format resource name for display (hides raw file names)
+  // Helper function to get server start time for uptime tracking
+  async function getServerStartTime(): Promise<string | null> {
+    try {
+      const { data } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'fivem_server_start_time')
+        .single();
+      
+      return data?.value || null;
+    } catch (error) {
+      console.log('Could not fetch server start time:', error);
+      return null;
+    }
+  }
+
+  // Helper function to save server start time
+  async function saveServerStartTime(timestamp: string) {
+    try {
+      await supabase
+        .from('site_settings')
+        .upsert({
+          key: 'fivem_server_start_time',
+          value: timestamp,
+          description: 'FiveM server start time for uptime tracking (auto-synced)',
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'key' });
+      console.log('Saved server start time:', timestamp);
+    } catch (error) {
+      console.log('Could not save server start time:', error);
+    }
+  }
+
+  // Helper function to get last known server status
+  async function getLastServerStatus(): Promise<string> {
+    try {
+      const { data } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'fivem_last_status')
+        .single();
+      
+      return data?.value || 'offline';
+    } catch (error) {
+      return 'offline';
+    }
+  }
+
+  // Helper function to save server status
+  async function saveServerStatus(status: string) {
+    try {
+      await supabase
+        .from('site_settings')
+        .upsert({
+          key: 'fivem_last_status',
+          value: status,
+          description: 'Last known FiveM server status (auto-synced)',
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'key' });
+    } catch (error) {
+      console.log('Could not save server status:', error);
+    }
+  }
+
   function formatResourceName(resourceName: string): string {
     // Remove common prefixes and technical patterns
     let formatted = resourceName
@@ -213,10 +276,12 @@ serve(async (req) => {
 
       if (infoResponse.ok) {
         info = await infoResponse.json();
+        console.log('Info vars:', JSON.stringify(info.vars || {}));
       }
 
       if (dynamicResponse.ok) {
         dynamic = await dynamicResponse.json();
+        console.log('Dynamic response:', JSON.stringify(dynamic));
       }
 
       // Calculate server metrics
@@ -236,8 +301,46 @@ serve(async (req) => {
         detectNewResources(currentResources).catch(err => console.log('Resource detection error:', err));
       }
       
-      // Get server uptime (convert from seconds to readable format)
-      const uptimeSeconds = dynamic.uptime || 0;
+      // Get server uptime - check multiple possible field names
+      // FiveM servers may return uptime in different formats
+      let uptimeSeconds = 0;
+      
+      // First try to get uptime from server response
+      if (typeof dynamic.uptime === 'number' && dynamic.uptime > 0) {
+        uptimeSeconds = dynamic.uptime;
+      } else if (typeof dynamic.uptime === 'string' && parseInt(dynamic.uptime, 10) > 0) {
+        uptimeSeconds = parseInt(dynamic.uptime, 10);
+      } else if (dynamic.sv_uptime) {
+        uptimeSeconds = parseInt(dynamic.sv_uptime, 10) || 0;
+      } else if (info.vars?.sv_uptime) {
+        uptimeSeconds = parseInt(info.vars.sv_uptime, 10) || 0;
+      }
+      
+      // If server doesn't provide uptime, track it ourselves
+      if (uptimeSeconds === 0 && isOnline) {
+        const lastStatus = await getLastServerStatus();
+        const storedStartTime = await getServerStartTime();
+        
+        // If server just came online or no start time stored, save current time
+        if (lastStatus !== 'online' || !storedStartTime) {
+          const now = new Date().toISOString();
+          saveServerStartTime(now).catch(err => console.log('Save start time error:', err));
+          uptimeSeconds = 0; // Just started
+        } else {
+          // Calculate uptime from stored start time
+          const startTime = new Date(storedStartTime).getTime();
+          const now = Date.now();
+          uptimeSeconds = Math.floor((now - startTime) / 1000);
+        }
+        
+        console.log('Using tracked uptime:', uptimeSeconds, 'seconds');
+      }
+      
+      // Save current server status for tracking
+      saveServerStatus(isOnline ? 'online' : 'offline').catch(err => console.log('Save status error:', err));
+      
+      console.log('Final uptime seconds:', uptimeSeconds);
+      
       const uptimeMinutes = Math.floor(uptimeSeconds / 60) % 60;
       const uptimeHours = Math.floor(uptimeSeconds / 3600) % 24;
       const uptimeDays = Math.floor(uptimeSeconds / 86400);
