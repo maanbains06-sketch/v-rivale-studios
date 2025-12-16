@@ -238,12 +238,12 @@ serve(async (req) => {
       
       // Get server uptime (convert from seconds to readable format)
       const uptimeSeconds = dynamic.uptime || 0;
-      const uptimeHours = Math.floor(uptimeSeconds / 3600);
-      const uptimeDays = Math.floor(uptimeHours / 24);
-      const remainingHours = uptimeHours % 24;
+      const uptimeMinutes = Math.floor(uptimeSeconds / 60) % 60;
+      const uptimeHours = Math.floor(uptimeSeconds / 3600) % 24;
+      const uptimeDays = Math.floor(uptimeSeconds / 86400);
       const uptime = uptimeDays > 0 
-        ? `${uptimeDays}d ${remainingHours}h`
-        : `${uptimeHours}h`;
+        ? `${uptimeDays}d ${uptimeHours}h ${uptimeMinutes}m`
+        : `${uptimeHours}h ${uptimeMinutes}m`;
 
       // Calculate server load (based on player percentage)
       const serverLoad = Math.round((currentPlayers / maxPlayers) * 100);
