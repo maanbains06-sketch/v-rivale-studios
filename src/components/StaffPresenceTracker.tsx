@@ -1,263 +1,251 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+const IDLE_TIMEOUT_MS = 2 * 60 * 1000; // 2 minutes of inactivity = idle
+const HEARTBEAT_INTERVAL_MS = 15000; // 15 seconds
+
 /**
- * Tracks staff presence on the website.
- * Shows staff as online ONLY when they are logged in to the website.
+ * Tracks staff presence on the website with proper idle detection.
+ * - Online: Active on website (mouse/keyboard/scroll activity)
+ * - Idle: No activity for 2+ minutes but website still open
+ * - Offline: Logged out or website closed
  */
 export const StaffPresenceTracker = () => {
-  const [staffMemberId, setStaffMemberId] = useState<string | null>(null);
+  const staffMemberIdRef = useRef<string | null>(null);
   const heartbeatRef = useRef<number | null>(null);
-  const isTrackingRef = useRef(false);
+  const lastActivityRef = useRef<number>(Date.now());
+  const currentStatusRef = useRef<string>('offline');
   const sessionTokenRef = useRef<string | null>(null);
+  const isInitializedRef = useRef(false);
 
-  const updatePresence = async (staffIdToUpdate: string, isOnline: boolean, status: string = 'online') => {
+  const updatePresence = useCallback(async (isOnline: boolean, status: string) => {
+    const staffId = staffMemberIdRef.current;
+    if (!staffId) return;
+    
+    // Don't send duplicate updates
+    if (currentStatusRef.current === status && isOnline) return;
+    currentStatusRef.current = status;
+
     try {
-      // Get the current session for authentication
-      const { data: { session } } = await supabase.auth.getSession();
-      sessionTokenRef.current = session?.access_token || null;
-      
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (sessionTokenRef.current) {
+        headers['Authorization'] = `Bearer ${sessionTokenRef.current}`;
+      }
+
       await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-discord-presence`,
         {
           method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            // Send authorization header for authenticated staff updates
-            ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
-          },
+          headers,
           body: JSON.stringify({
-            staff_member_id: staffIdToUpdate,
+            staff_member_id: staffId,
             is_online: isOnline,
-            status: isOnline ? status : 'offline',
+            status: status,
           }),
         }
       );
-    } catch {
-      // Silently ignore presence errors
+      console.log(`[Presence] Updated: ${status}`);
+    } catch (err) {
+      console.error('[Presence] Update failed:', err);
     }
-  };
+  }, []);
 
-  const startTracking = async (staffIdToTrack: string) => {
-    if (isTrackingRef.current) return;
-    isTrackingRef.current = true;
+  const sendOfflineBeacon = useCallback((staffId: string) => {
+    const body = JSON.stringify({
+      staff_member_id: staffId,
+      is_online: false,
+      status: 'offline',
+    });
+
+    // Try keepalive fetch first, fallback to sendBeacon
+    try {
+      fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-discord-presence`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(sessionTokenRef.current ? { 'Authorization': `Bearer ${sessionTokenRef.current}` } : {}),
+          },
+          body,
+          keepalive: true,
+        }
+      );
+    } catch {
+      navigator.sendBeacon(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-discord-presence`,
+        body
+      );
+    }
+  }, []);
+
+  const handleUserActivity = useCallback(() => {
+    lastActivityRef.current = Date.now();
     
-    // Set online immediately
-    await updatePresence(staffIdToTrack, true, 'online');
+    // If we were idle, update to online
+    if (currentStatusRef.current === 'idle' && staffMemberIdRef.current) {
+      updatePresence(true, 'online');
+    }
+  }, [updatePresence]);
 
-    // Handle visibility change (tab focus/blur)
-    const handleVisibilityChange = async () => {
-      if (document.visibilityState === 'visible') {
-        await updatePresence(staffIdToTrack, true, 'online');
-      } else {
-        await updatePresence(staffIdToTrack, true, 'idle');
-      }
+  const checkIdleStatus = useCallback(() => {
+    const staffId = staffMemberIdRef.current;
+    if (!staffId) return;
+
+    const timeSinceActivity = Date.now() - lastActivityRef.current;
+    const isTabVisible = document.visibilityState === 'visible';
+    
+    let newStatus: string;
+    if (!isTabVisible || timeSinceActivity > IDLE_TIMEOUT_MS) {
+      newStatus = 'idle';
+    } else {
+      newStatus = 'online';
+    }
+
+    updatePresence(true, newStatus);
+  }, [updatePresence]);
+
+  useEffect(() => {
+    if (isInitializedRef.current) return;
+    isInitializedRef.current = true;
+
+    let cleanup: (() => void) | undefined;
+
+    const startTracking = (staffId: string) => {
+      staffMemberIdRef.current = staffId;
+      lastActivityRef.current = Date.now();
+      
+      // Set online immediately
+      updatePresence(true, 'online');
+
+      // Activity listeners
+      const activityEvents = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'];
+      activityEvents.forEach(event => {
+        document.addEventListener(event, handleUserActivity, { passive: true });
+      });
+
+      // Visibility change
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+          lastActivityRef.current = Date.now();
+          updatePresence(true, 'online');
+        } else {
+          updatePresence(true, 'idle');
+        }
+      };
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+
+      // Before unload
+      const handleBeforeUnload = () => {
+        if (staffMemberIdRef.current) {
+          sendOfflineBeacon(staffMemberIdRef.current);
+        }
+      };
+      window.addEventListener('beforeunload', handleBeforeUnload);
+
+      // Heartbeat to check idle status and keep presence alive
+      heartbeatRef.current = window.setInterval(checkIdleStatus, HEARTBEAT_INTERVAL_MS);
+
+      return () => {
+        activityEvents.forEach(event => {
+          document.removeEventListener(event, handleUserActivity);
+        });
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+        if (heartbeatRef.current) {
+          clearInterval(heartbeatRef.current);
+          heartbeatRef.current = null;
+        }
+      };
     };
 
-    // Handle before unload (page close/navigate away)
-    // Note: sendBeacon doesn't support custom headers, but the backend accepts
-    // unauthenticated requests for staff_member_id offline updates from the same origin
-    const handleBeforeUnload = () => {
-      // Use keepalive fetch for better browser support with headers
-      try {
-        fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-discord-presence`,
-          {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              ...(sessionTokenRef.current ? { 'Authorization': `Bearer ${sessionTokenRef.current}` } : {}),
-            },
-            body: JSON.stringify({
-              staff_member_id: staffIdToTrack,
-              is_online: false,
-              status: 'offline',
-            }),
-            keepalive: true, // Allows request to outlive the page
-          }
-        );
-      } catch {
-        // Fallback to sendBeacon if fetch fails
-        navigator.sendBeacon(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-discord-presence`,
-          JSON.stringify({
-            staff_member_id: staffIdToTrack,
-            is_online: false,
-            status: 'offline',
-          })
-        );
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    // Heartbeat every 30 seconds
-    heartbeatRef.current = window.setInterval(async () => {
-      await updatePresence(staffIdToTrack, true, document.visibilityState === 'visible' ? 'online' : 'idle');
-    }, 30000);
-
-    // Store cleanup function
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+    const stopTracking = () => {
       if (heartbeatRef.current) {
         clearInterval(heartbeatRef.current);
         heartbeatRef.current = null;
       }
+      if (staffMemberIdRef.current) {
+        sendOfflineBeacon(staffMemberIdRef.current);
+        staffMemberIdRef.current = null;
+      }
+      currentStatusRef.current = 'offline';
     };
-  };
 
-  const stopTracking = async (staffIdToStop: string) => {
-    if (heartbeatRef.current) {
-      clearInterval(heartbeatRef.current);
-      heartbeatRef.current = null;
-    }
-    isTrackingRef.current = false;
-    await updatePresence(staffIdToStop, false, 'offline');
-  };
-
-  useEffect(() => {
-    let cleanup: (() => void) | undefined;
-    let currentStaffId: string | null = null;
-
-    const checkStaffStatus = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        // User logged out - set offline if we were tracking
-        if (currentStaffId) {
-          await stopTracking(currentStaffId);
-          currentStaffId = null;
-          setStaffMemberId(null);
+    const checkAndStartTracking = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        sessionTokenRef.current = session?.access_token || null;
+        
+        if (!session?.user) {
+          stopTracking();
+          return;
         }
-        return;
-      }
 
-      // Check if user is a staff member by user_id
-      const { data: staffByUserId } = await supabase
-        .from('staff_members')
-        .select('id, discord_id')
-        .eq('user_id', user.id)
-        .eq('is_active', true)
-        .single();
-
-      if (staffByUserId?.id) {
-        if (currentStaffId !== staffByUserId.id) {
-          // New staff login
-          if (currentStaffId) {
-            await stopTracking(currentStaffId);
-          }
-          currentStaffId = staffByUserId.id;
-          setStaffMemberId(staffByUserId.id);
-          cleanup = await startTracking(staffByUserId.id);
-        }
-        return;
-      }
-
-      // Fallback: Check by discord_username from user metadata
-      const discordUsername = user.user_metadata?.discord_username;
-      if (discordUsername) {
-        const { data: staffByUsername } = await supabase
+        // Check if user is a staff member
+        const { data: staffMember } = await supabase
           .from('staff_members')
           .select('id, discord_id')
-          .ilike('discord_username', discordUsername)
+          .eq('user_id', session.user.id)
           .eq('is_active', true)
           .single();
 
-        if (staffByUsername?.id) {
-          if (currentStaffId !== staffByUsername.id) {
-            if (currentStaffId) {
-              await stopTracking(currentStaffId);
-            }
-            currentStaffId = staffByUsername.id;
-            setStaffMemberId(staffByUsername.id);
-            cleanup = await startTracking(staffByUsername.id);
+        if (staffMember?.id) {
+          if (staffMemberIdRef.current !== staffMember.id) {
+            cleanup?.();
+            cleanup = startTracking(staffMember.id);
+            console.log(`[Presence] Started tracking staff: ${staffMember.id}`);
           }
           return;
         }
-      }
 
-      // User is logged in but not a staff member
-      if (currentStaffId) {
-        await stopTracking(currentStaffId);
-        currentStaffId = null;
-        setStaffMemberId(null);
+        // Fallback: check by discord_username
+        const discordUsername = session.user.user_metadata?.discord_username;
+        if (discordUsername) {
+          const { data: staffByUsername } = await supabase
+            .from('staff_members')
+            .select('id, discord_id')
+            .ilike('discord_username', discordUsername)
+            .eq('is_active', true)
+            .single();
+
+          if (staffByUsername?.id) {
+            if (staffMemberIdRef.current !== staffByUsername.id) {
+              cleanup?.();
+              cleanup = startTracking(staffByUsername.id);
+              console.log(`[Presence] Started tracking staff (by username): ${staffByUsername.id}`);
+            }
+            return;
+          }
+        }
+
+        // Not a staff member
+        stopTracking();
+      } catch (err) {
+        console.error('[Presence] Error checking staff status:', err);
       }
     };
 
     // Initial check
-    checkStaffStatus();
+    checkAndStartTracking();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT' && currentStaffId) {
-        // User signed out - set offline immediately using keepalive fetch
-        try {
-          fetch(
-            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-discord-presence`,
-            {
-              method: 'POST',
-              headers: { 
-                'Content-Type': 'application/json',
-                ...(sessionTokenRef.current ? { 'Authorization': `Bearer ${sessionTokenRef.current}` } : {}),
-              },
-              body: JSON.stringify({
-                staff_member_id: currentStaffId,
-                is_online: false,
-                status: 'offline',
-              }),
-              keepalive: true,
-            }
-          );
-        } catch {
-          // Ignore errors on sign out
-        }
-        currentStaffId = null;
-        setStaffMemberId(null);
-      } else {
-        checkStaffStatus();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      sessionTokenRef.current = session?.access_token || null;
+      
+      if (event === 'SIGNED_OUT') {
+        stopTracking();
+      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        checkAndStartTracking();
       }
     });
 
     return () => {
       subscription.unsubscribe();
       cleanup?.();
-      if (currentStaffId) {
-        // Send offline on unmount using keepalive
-        try {
-          fetch(
-            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-discord-presence`,
-            {
-              method: 'POST',
-              headers: { 
-                'Content-Type': 'application/json',
-                ...(sessionTokenRef.current ? { 'Authorization': `Bearer ${sessionTokenRef.current}` } : {}),
-              },
-              body: JSON.stringify({
-                staff_member_id: currentStaffId,
-                is_online: false,
-                status: 'offline',
-              }),
-              keepalive: true,
-            }
-          );
-        } catch {
-          // Fallback to sendBeacon
-          navigator.sendBeacon(
-            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-discord-presence`,
-            JSON.stringify({
-              staff_member_id: currentStaffId,
-              is_online: false,
-              status: 'offline',
-            })
-          );
-        }
-      }
+      stopTracking();
     };
-  }, []);
+  }, [updatePresence, handleUserActivity, checkIdleStatus, sendOfflineBeacon]);
 
-  // This component doesn't render anything
   return null;
 };
 
