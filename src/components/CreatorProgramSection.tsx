@@ -23,7 +23,17 @@ import {
   TrendingUp,
   Heart,
   Mic2,
-  ArrowRight
+  ArrowRight,
+  FileText,
+  Scale,
+  AlertTriangle,
+  Ban,
+  DollarSign,
+  Gavel,
+  UserX,
+  ShieldAlert,
+  RefreshCw,
+  BookOpen
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
@@ -119,6 +129,7 @@ const evaluations = [
 const CreatorProgramSection = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isRulesOpen, setIsRulesOpen] = useState(false);
+  const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [ownershipProofFile, setOwnershipProofFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -495,6 +506,332 @@ const CreatorProgramSection = () => {
                   </div>
                 </DialogContent>
               </Dialog>
+
+              {/* Terms & Conditions Button */}
+              <Dialog open={isTermsOpen} onOpenChange={setIsTermsOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-red-500/30 text-red-300 hover:bg-red-500/10 hover:border-red-500/50 font-semibold px-6 py-6 rounded-xl transition-all duration-300 text-base group"
+                  >
+                    <FileText className="w-5 h-5 mr-2" />
+                    Terms & Conditions
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto bg-gradient-to-b from-background via-background to-red-950/20 backdrop-blur-2xl border border-red-400/25 shadow-2xl shadow-red-500/15">
+                  <DialogHeader className="pb-4 border-b border-red-500/20">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-red-500/15 flex items-center justify-center">
+                        <Scale className="w-6 h-6 text-red-400" />
+                      </div>
+                      <div>
+                        <DialogTitle className="text-xl font-bold text-red-300">Creator Program Terms & Conditions</DialogTitle>
+                        <DialogDescription className="text-sm text-foreground/60">Effective upon acceptance • Last updated December 2024</DialogDescription>
+                      </div>
+                    </div>
+                  </DialogHeader>
+                  
+                  <div className="py-4 space-y-4">
+                    {/* Section 1: Eligibility */}
+                    <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/10">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-7 h-7 rounded-lg bg-red-500/15 flex items-center justify-center">
+                          <CheckCircle2 className="w-4 h-4 text-red-400" />
+                        </div>
+                        <h4 className="text-sm font-bold text-red-300">1. Eligibility</h4>
+                      </div>
+                      <p className="text-xs text-foreground/70 mb-3">To be eligible for the Creator Program, you must:</p>
+                      <ul className="space-y-2 text-xs text-foreground/70">
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">•</span>
+                          Be at least 13 years of age (or the minimum age required by your platform)
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">•</span>
+                          Maintain an active account on an approved platform (e.g., Twitch, YouTube, TikTok)
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">•</span>
+                          Follow all SLRP Server Rules, Community Guidelines, and Platform TOS
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">•</span>
+                          Be approved by server administration
+                        </li>
+                      </ul>
+                      <p className="text-xs text-orange-400/80 mt-3 italic">Approval is not guaranteed and may be revoked at any time.</p>
+                    </div>
+
+                    {/* Section 2: Creator Responsibilities */}
+                    <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/10">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-7 h-7 rounded-lg bg-red-500/15 flex items-center justify-center">
+                          <Users className="w-4 h-4 text-red-400" />
+                        </div>
+                        <h4 className="text-sm font-bold text-red-300">2. Creator Responsibilities</h4>
+                      </div>
+                      <p className="text-xs text-foreground/70 mb-3">Creators must:</p>
+                      <ul className="space-y-2 text-xs text-foreground/70">
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">•</span>
+                          Represent Skylife Roleplay India in a positive and respectful manner
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">•</span>
+                          Follow all RP rules, lore, and server guidelines
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">•</span>
+                          Avoid power-gaming, meta-gaming, exploiting, or abusing creator status
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">•</span>
+                          Clearly disclose sponsored or promotional content when applicable
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">•</span>
+                          Maintain respectful conduct toward players, staff, and viewers
+                        </li>
+                      </ul>
+                      <p className="text-xs text-orange-400/80 mt-3 italic">Failure to meet these responsibilities may result in removal from the program.</p>
+                    </div>
+
+                    {/* Section 3: Content Guidelines */}
+                    <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/10">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-7 h-7 rounded-lg bg-red-500/15 flex items-center justify-center">
+                          <Ban className="w-4 h-4 text-red-400" />
+                        </div>
+                        <h4 className="text-sm font-bold text-red-300">3. Content Guidelines</h4>
+                      </div>
+                      <p className="text-xs text-foreground/70 mb-3">Creator content must NOT include:</p>
+                      <ul className="space-y-2 text-xs text-foreground/70">
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">✗</span>
+                          Hate speech, harassment, or discrimination
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">✗</span>
+                          Cheating, exploiting, or rule-breaking
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">✗</span>
+                          Doxxing or sharing private player/staff information
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">✗</span>
+                          Sexual content involving minors
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">✗</span>
+                          Content that damages the reputation of the server
+                        </li>
+                      </ul>
+                      <p className="text-xs text-foreground/60 mt-3">Constructive criticism is allowed, but public server drama, staff callouts, or misleading narratives are prohibited.</p>
+                    </div>
+
+                    {/* Section 4: Use of Server Content */}
+                    <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/10">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-7 h-7 rounded-lg bg-red-500/15 flex items-center justify-center">
+                          <Video className="w-4 h-4 text-red-400" />
+                        </div>
+                        <h4 className="text-sm font-bold text-red-300">4. Use of Server Content</h4>
+                      </div>
+                      <p className="text-xs text-foreground/70 mb-3">By participating in the program:</p>
+                      <ul className="space-y-2 text-xs text-foreground/70">
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">•</span>
+                          You are granted permission to record, stream, and publish content from SLRP
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">•</span>
+                          The server retains the right to use creator content for promotion, social media, trailers, and server marketing
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">•</span>
+                          Proper credit will be given whenever reasonably possible
+                        </li>
+                      </ul>
+                    </div>
+
+                    {/* Section 5: Creator Benefits */}
+                    <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/15">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-7 h-7 rounded-lg bg-emerald-500/15 flex items-center justify-center">
+                          <Gift className="w-4 h-4 text-emerald-400" />
+                        </div>
+                        <h4 className="text-sm font-bold text-emerald-300">5. Creator Benefits</h4>
+                      </div>
+                      <p className="text-xs text-foreground/70 mb-3">Approved creators may receive:</p>
+                      <ul className="space-y-2 text-xs text-foreground/70">
+                        <li className="flex items-start gap-2">
+                          <span className="text-emerald-400 mt-0.5">✓</span>
+                          Priority whitelist access
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-emerald-400 mt-0.5">✓</span>
+                          Creator-only Discord channels
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-emerald-400 mt-0.5">✓</span>
+                          In-game cosmetic perks
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-emerald-400 mt-0.5">✓</span>
+                          Early access to updates or features
+                        </li>
+                      </ul>
+                      <p className="text-xs text-foreground/60 mt-3 italic">All benefits are non-transferable and may be changed or removed at any time.</p>
+                    </div>
+
+                    {/* Section 6: Monetization */}
+                    <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/10">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-7 h-7 rounded-lg bg-red-500/15 flex items-center justify-center">
+                          <DollarSign className="w-4 h-4 text-red-400" />
+                        </div>
+                        <h4 className="text-sm font-bold text-red-300">6. Monetization</h4>
+                      </div>
+                      <p className="text-xs text-foreground/70 mb-3">Creators may monetize their content under these conditions:</p>
+                      <ul className="space-y-2 text-xs text-foreground/70">
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">•</span>
+                          Monetization must comply with platform policies
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">•</span>
+                          Content must not misrepresent the server
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">•</span>
+                          Server assets may not be sold, redistributed, or claimed as original work
+                        </li>
+                      </ul>
+                      <p className="text-xs text-foreground/60 mt-3 italic">The server does not guarantee income, growth, or sponsorship opportunities.</p>
+                    </div>
+
+                    {/* Section 7: Staff Authority */}
+                    <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/10">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-7 h-7 rounded-lg bg-red-500/15 flex items-center justify-center">
+                          <Gavel className="w-4 h-4 text-red-400" />
+                        </div>
+                        <h4 className="text-sm font-bold text-red-300">7. Staff Authority</h4>
+                      </div>
+                      <p className="text-xs text-foreground/70 mb-3">Server staff reserves the right to:</p>
+                      <ul className="space-y-2 text-xs text-foreground/70">
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">•</span>
+                          Review creator content at any time
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">•</span>
+                          Remove creators from the program without prior notice
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">•</span>
+                          Revoke perks or whitelist access
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">•</span>
+                          Enforce disciplinary actions for rule violations
+                        </li>
+                      </ul>
+                      <p className="text-xs text-orange-400/80 mt-3 font-medium">Staff decisions are final.</p>
+                    </div>
+
+                    {/* Section 8: Termination */}
+                    <div className="p-4 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-7 h-7 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                          <UserX className="w-4 h-4 text-orange-400" />
+                        </div>
+                        <h4 className="text-sm font-bold text-orange-300">8. Termination</h4>
+                      </div>
+                      <p className="text-xs text-foreground/70 mb-3">Creator status may be terminated if:</p>
+                      <ul className="space-y-2 text-xs text-foreground/70">
+                        <li className="flex items-start gap-2">
+                          <span className="text-orange-400 mt-0.5">•</span>
+                          Server rules or these terms are violated
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-orange-400 mt-0.5">•</span>
+                          The creator becomes inactive for an extended period
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-orange-400 mt-0.5">•</span>
+                          Behavior harms the community or server reputation
+                        </li>
+                      </ul>
+                      <p className="text-xs text-orange-400/80 mt-3 italic">Termination may occur with or without warning.</p>
+                    </div>
+
+                    {/* Section 9: Liability Disclaimer */}
+                    <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/10">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-7 h-7 rounded-lg bg-red-500/15 flex items-center justify-center">
+                          <ShieldAlert className="w-4 h-4 text-red-400" />
+                        </div>
+                        <h4 className="text-sm font-bold text-red-300">9. Liability Disclaimer</h4>
+                      </div>
+                      <p className="text-xs text-foreground/70 mb-3">Skylife Roleplay India is NOT responsible for:</p>
+                      <ul className="space-y-2 text-xs text-foreground/70">
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">•</span>
+                          Platform bans or strikes
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">•</span>
+                          Loss of income or viewership
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">•</span>
+                          Technical issues affecting streams or recordings
+                        </li>
+                      </ul>
+                      <p className="text-xs text-foreground/60 mt-3 font-medium">Participation is at your own risk.</p>
+                    </div>
+
+                    {/* Section 10: Changes to Terms */}
+                    <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/10">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-7 h-7 rounded-lg bg-red-500/15 flex items-center justify-center">
+                          <RefreshCw className="w-4 h-4 text-red-400" />
+                        </div>
+                        <h4 className="text-sm font-bold text-red-300">10. Changes to Terms</h4>
+                      </div>
+                      <p className="text-xs text-foreground/70">
+                        These Terms & Conditions may be updated at any time. Continued participation in the Creator Program constitutes acceptance of any changes. We recommend reviewing these terms periodically.
+                      </p>
+                    </div>
+
+                    {/* Section 11: Acceptance */}
+                    <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-7 h-7 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                          <BookOpen className="w-4 h-4 text-emerald-400" />
+                        </div>
+                        <h4 className="text-sm font-bold text-emerald-300">11. Acceptance</h4>
+                      </div>
+                      <p className="text-xs text-foreground/70">
+                        By joining the Skylife Roleplay India Creator Program, you acknowledge that you have read, understood, and agreed to these Terms & Conditions. Your application submission serves as your digital signature and acceptance of all terms outlined herein.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-red-500/20">
+                    <Button 
+                      onClick={() => setIsTermsOpen(false)}
+                      className="w-full bg-red-600 hover:bg-red-500 text-white font-semibold py-5 rounded-xl"
+                    >
+                      I Have Read & Understood
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
               <Dialog open={isOpen} onOpenChange={setIsOpen}>
                 <DialogTrigger asChild>
                   <Button
