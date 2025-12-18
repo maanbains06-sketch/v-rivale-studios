@@ -12,6 +12,8 @@ interface DiscordUser {
   discriminator: string;
   global_name: string | null;
   avatar: string | null;
+  banner: string | null;
+  banner_color: string | null;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -32,7 +34,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Fetch all active staff members with discord_id
     const { data: staffMembers, error: fetchError } = await supabase
       .from("staff_members")
-      .select("id, discord_id, name, discord_username, discord_avatar")
+      .select("id, discord_id, name, discord_username, discord_avatar, discord_banner")
       .eq("is_active", true)
       .not("discord_id", "is", null);
 
@@ -42,7 +44,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Found ${staffMembers?.length || 0} active staff members to sync`);
 
-    const results: Array<{ staffId: string; name: string; success: boolean; error?: string }> = [];
+    const results: Array<{ staffId: string; name: string; success: boolean; error?: string; banner?: string | null }> = [];
 
     for (const staff of staffMembers || []) {
       try {
@@ -79,6 +81,14 @@ const handler = async (req: Request): Promise<Response> => {
                 : parseInt(userData.discriminator) % 5
             }.png`;
 
+        // Build banner URL (if user has a banner)
+        let bannerUrl: string | null = null;
+        if (userData.banner) {
+          // Check if it's an animated banner (starts with a_)
+          const extension = userData.banner.startsWith('a_') ? 'gif' : 'png';
+          bannerUrl = `https://cdn.discordapp.com/banners/${userData.id}/${userData.banner}.${extension}?size=600`;
+        }
+
         const displayName = userData.global_name || userData.username;
 
         // Update staff member
@@ -88,6 +98,7 @@ const handler = async (req: Request): Promise<Response> => {
             name: displayName,
             discord_username: userData.username,
             discord_avatar: avatarUrl,
+            discord_banner: bannerUrl,
             updated_at: new Date().toISOString(),
           })
           .eq("id", staff.id);
@@ -101,11 +112,12 @@ const handler = async (req: Request): Promise<Response> => {
             error: updateError.message,
           });
         } else {
-          console.log(`Updated ${staff.name} -> ${displayName}`);
+          console.log(`Updated ${staff.name} -> ${displayName}, banner: ${bannerUrl || 'none'}`);
           results.push({
             staffId: staff.id,
             name: displayName,
             success: true,
+            banner: bannerUrl,
           });
         }
 
@@ -124,12 +136,13 @@ const handler = async (req: Request): Promise<Response> => {
 
     const successCount = results.filter((r) => r.success).length;
     const failCount = results.filter((r) => !r.success).length;
+    const bannersFound = results.filter((r) => r.banner).length;
 
-    console.log(`Sync complete: ${successCount} success, ${failCount} failed`);
+    console.log(`Sync complete: ${successCount} success, ${failCount} failed, ${bannersFound} banners found`);
 
     return new Response(
       JSON.stringify({
-        message: `Synced ${successCount} staff members, ${failCount} failed`,
+        message: `Synced ${successCount} staff members, ${failCount} failed, ${bannersFound} banners found`,
         results,
       }),
       {
