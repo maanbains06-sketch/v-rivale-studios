@@ -45,6 +45,7 @@ interface StaffMember {
   discord_id?: string;
   discord_username?: string;
   discord_avatar?: string;
+  discord_banner?: string;
   role: string;
   role_type: string;
   department: string;
@@ -447,14 +448,28 @@ const Staff = () => {
             <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-primary/5 to-transparent" />
           </div>
           
-          {/* Top decorative banner - subtle theme colors */}
-          <div className="relative h-20 bg-gradient-to-r from-primary/15 via-secondary/10 to-primary/15 overflow-hidden">
-            <div className="absolute inset-0 bg-[linear-gradient(135deg,transparent_25%,hsl(var(--primary)/0.08)_50%,transparent_75%)] bg-[length:200%_200%] group-hover:animate-shimmer" />
-            {/* Decorative pattern overlay */}
-            <div className="absolute inset-0 opacity-30">
-              <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_30%_20%,hsl(var(--primary)/0.2),transparent_40%)]" />
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(circle,hsl(var(--accent)/0.15),transparent_60%)]" />
-            </div>
+          {/* Top decorative banner - Discord banner or role-based gradient */}
+          <div className="relative h-20 overflow-hidden">
+            {member.discord_banner ? (
+              <>
+                <img 
+                  src={member.discord_banner} 
+                  alt={`${member.name}'s banner`}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-card/80 to-transparent" />
+              </>
+            ) : (
+              <>
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/15 via-secondary/10 to-primary/15" />
+                <div className="absolute inset-0 bg-[linear-gradient(135deg,transparent_25%,hsl(var(--primary)/0.08)_50%,transparent_75%)] bg-[length:200%_200%] group-hover:animate-shimmer" />
+                {/* Decorative pattern overlay */}
+                <div className="absolute inset-0 opacity-30">
+                  <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_30%_20%,hsl(var(--primary)/0.2),transparent_40%)]" />
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(circle,hsl(var(--accent)/0.15),transparent_60%)]" />
+                </div>
+              </>
+            )}
             {/* Role label */}
             <div className="absolute bottom-2 left-3 px-2 py-0.5 bg-background/50 backdrop-blur-sm rounded text-[10px] font-bold text-primary/80 uppercase tracking-wider border border-primary/20">
               {member.role_type.replace("_", " ")}

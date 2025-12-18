@@ -45,10 +45,18 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Discord user data retrieved:", userData);
 
-    // Format the response
+    // Format the avatar URL
     const avatarUrl = userData.avatar 
       ? `https://cdn.discordapp.com/avatars/${userData.id}/${userData.avatar}.png?size=256`
       : `https://cdn.discordapp.com/embed/avatars/${userData.discriminator === '0' ? (BigInt(userData.id) >> BigInt(22)) % BigInt(6) : parseInt(userData.discriminator) % 5}.png`;
+
+    // Format the banner URL (if user has a banner)
+    let bannerUrl = null;
+    if (userData.banner) {
+      // Check if it's an animated banner (starts with a_)
+      const extension = userData.banner.startsWith('a_') ? 'gif' : 'png';
+      bannerUrl = `https://cdn.discordapp.com/banners/${userData.id}/${userData.banner}.${extension}?size=600`;
+    }
 
     const result = {
       id: userData.id,
@@ -56,6 +64,8 @@ const handler = async (req: Request): Promise<Response> => {
       discriminator: userData.discriminator,
       globalName: userData.global_name || userData.username,
       avatar: avatarUrl,
+      banner: bannerUrl,
+      bannerColor: userData.banner_color || null,
       displayName: userData.global_name || userData.username,
     };
 
@@ -71,13 +81,14 @@ const handler = async (req: Request): Promise<Response> => {
           name: result.displayName,
           discord_username: result.username,
           discord_avatar: result.avatar,
+          discord_banner: result.banner,
         })
         .eq("discord_id", discordId);
 
       if (updateError) {
         console.error("Error updating staff member:", updateError);
       } else {
-        console.log("Staff member updated successfully");
+        console.log("Staff member updated successfully with banner:", result.banner);
       }
     }
 
