@@ -34,7 +34,7 @@ const departments: Department[] = [
 
 const DepartmentRoster = ({ departmentId }: { departmentId: string }) => {
   const sections = getDepartmentSections(departmentId);
-  const { entries, loading, canEdit, refetch } = useRoster(departmentId);
+  const { entries, loading, canEdit, permissions, refetch } = useRoster(departmentId);
 
   if (loading) {
     return (
@@ -51,6 +51,7 @@ const DepartmentRoster = ({ departmentId }: { departmentId: string }) => {
       department={departmentId}
       sections={sections}
       canEdit={canEdit}
+      permissions={permissions}
       onRefresh={refetch}
     />
   );
