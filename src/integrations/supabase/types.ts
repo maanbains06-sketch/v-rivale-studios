@@ -220,6 +220,57 @@ export type Database = {
         }
         Relationships: []
       }
+      department_rosters: {
+        Row: {
+          callsign: string | null
+          created_at: string
+          created_by: string | null
+          department: string
+          department_logs: string | null
+          discord_id: string | null
+          display_order: number | null
+          id: string
+          name: string
+          rank: string
+          section: string
+          status: string
+          sub_department: string | null
+          updated_at: string
+        }
+        Insert: {
+          callsign?: string | null
+          created_at?: string
+          created_by?: string | null
+          department: string
+          department_logs?: string | null
+          discord_id?: string | null
+          display_order?: number | null
+          id?: string
+          name: string
+          rank: string
+          section?: string
+          status?: string
+          sub_department?: string | null
+          updated_at?: string
+        }
+        Update: {
+          callsign?: string | null
+          created_at?: string
+          created_by?: string | null
+          department?: string
+          department_logs?: string | null
+          discord_id?: string | null
+          display_order?: number | null
+          id?: string
+          name?: string
+          rank?: string
+          section?: string
+          status?: string
+          sub_department?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       discord_presence: {
         Row: {
           created_at: string
