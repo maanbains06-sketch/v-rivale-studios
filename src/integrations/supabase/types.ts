@@ -1198,6 +1198,33 @@ export type Database = {
         }
         Relationships: []
       }
+      roster_edit_permissions: {
+        Row: {
+          created_at: string
+          department: string
+          discord_role_id: string
+          discord_role_name: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          department: string
+          discord_role_id: string
+          discord_role_name: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          department?: string
+          discord_role_id?: string
+          discord_role_name?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       server_resource_snapshot: {
         Row: {
           created_at: string
