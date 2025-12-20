@@ -16,6 +16,8 @@ export interface RosterEntry {
   display_order: number;
   created_at: string;
   updated_at: string;
+  strikes: number;
+  shop_name: string | null;
 }
 
 export interface RosterPermission {
@@ -25,24 +27,35 @@ export interface RosterPermission {
   discord_role_name: string;
 }
 
-export const useRoster = (department: string) => {
+// Owner Discord ID for full access
+const OWNER_DISCORD_ID = "833680146510381097";
+
+export const useRoster = (department: string, shopName?: string) => {
   const [entries, setEntries] = useState<RosterEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [canEdit, setCanEdit] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
   const [permissions, setPermissions] = useState<RosterPermission[]>([]);
   const { toast } = useToast();
 
   const fetchRoster = useCallback(async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from("department_rosters")
         .select("*")
         .eq("department", department)
         .order("display_order", { ascending: true });
 
+      // Filter by shop name if provided
+      if (shopName) {
+        query = query.eq("shop_name", shopName);
+      }
+
+      const { data, error } = await query;
+
       if (error) throw error;
-      setEntries(data || []);
+      setEntries((data as RosterEntry[]) || []);
     } catch (error: any) {
       console.error("Error fetching roster:", error);
       toast({
@@ -53,7 +66,7 @@ export const useRoster = (department: string) => {
     } finally {
       setLoading(false);
     }
-  }, [department, toast]);
+  }, [department, shopName, toast]);
 
   const fetchPermissions = useCallback(async () => {
     try {
@@ -74,6 +87,7 @@ export const useRoster = (department: string) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         setCanEdit(false);
+        setIsOwner(false);
         return;
       }
 
@@ -86,60 +100,85 @@ export const useRoster = (department: string) => {
 
       if (roleData?.role === "admin") {
         setCanEdit(true);
+        setIsOwner(true);
         return;
       }
 
-      // Check if user is a staff member with matching Discord roles for this department
+      // Get user's Discord ID from staff_members or profiles
+      let userDiscordId: string | null = null;
+
+      // First check staff_members
       const { data: staffMember } = await supabase
         .from("staff_members")
         .select("discord_id")
         .eq("user_id", user.id)
         .single();
 
-      if (!staffMember?.discord_id) {
-        setCanEdit(false);
-        return;
+      if (staffMember?.discord_id) {
+        userDiscordId = staffMember.discord_id;
+      } else {
+        // Check profiles as fallback
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("discord_username")
+          .eq("id", user.id)
+          .single();
+        
+        // If discord_username looks like a Discord ID (all numbers), use it
+        if (profile?.discord_username && /^\d+$/.test(profile.discord_username)) {
+          userDiscordId = profile.discord_username;
+        }
       }
 
-      // Fetch Discord presence/roles data for this user
-      const { data: discordPresence } = await supabase
-        .from("discord_presence")
-        .select("*")
-        .eq("discord_id", staffMember.discord_id)
-        .single();
-
-      // For now, if user is staff and has presence in this department's roster, allow editing
-      // This can be extended to check actual Discord roles via API
-      const { data: permissionData } = await supabase
-        .from("roster_edit_permissions")
-        .select("*")
-        .eq("department", department);
-
-      // If there are no specific permissions set, only admins can edit
-      if (!permissionData || permissionData.length === 0) {
-        setCanEdit(false);
-        return;
-      }
-
-      // Check if user has any of the required Discord roles
-      // For now, we check if staff member exists and is active
-      const { data: isStaffActive } = await supabase
-        .from("staff_members")
-        .select("is_active, department")
-        .eq("user_id", user.id)
-        .eq("is_active", true)
-        .single();
-
-      // Allow editing if staff is active and their department matches
-      if (isStaffActive && isStaffActive.department?.toLowerCase() === department.toLowerCase()) {
+      // Check if user is the owner
+      if (userDiscordId === OWNER_DISCORD_ID) {
+        console.log("Owner detected via Discord ID");
         setCanEdit(true);
+        setIsOwner(true);
         return;
+      }
+
+      // Check against roster_owner_access table
+      if (userDiscordId) {
+        const { data: ownerAccess } = await supabase
+          .from("roster_owner_access")
+          .select("*")
+          .eq("discord_id", userDiscordId)
+          .single();
+
+        if (ownerAccess) {
+          console.log("Owner access found in database");
+          setCanEdit(true);
+          setIsOwner(true);
+          return;
+        }
+
+        // Verify Discord roles via edge function
+        try {
+          const { data: verifyData, error: verifyError } = await supabase.functions.invoke(
+            "verify-roster-permissions",
+            {
+              body: { discordId: userDiscordId, department },
+            }
+          );
+
+          if (!verifyError && verifyData?.canEdit) {
+            console.log("Permission granted via Discord role verification");
+            setCanEdit(true);
+            setIsOwner(verifyData.isOwner || false);
+            return;
+          }
+        } catch (err) {
+          console.error("Error calling verify-roster-permissions:", err);
+        }
       }
 
       setCanEdit(false);
+      setIsOwner(false);
     } catch (error) {
       console.error("Error checking permissions:", error);
       setCanEdit(false);
+      setIsOwner(false);
     }
   }, [department]);
 
@@ -150,7 +189,7 @@ export const useRoster = (department: string) => {
 
     // Subscribe to realtime changes
     const channel = supabase
-      .channel(`roster-${department}`)
+      .channel(`roster-${department}${shopName ? `-${shopName}` : ""}`)
       .on(
         "postgres_changes",
         {
@@ -168,24 +207,36 @@ export const useRoster = (department: string) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [department, fetchRoster, fetchPermissions, checkEditPermission]);
+  }, [department, shopName, fetchRoster, fetchPermissions, checkEditPermission]);
 
-  return { entries, loading, canEdit, permissions, refetch: fetchRoster };
+  return { entries, loading, canEdit, isOwner, permissions, refetch: fetchRoster };
 };
 
 // Get unique sections for a department
-export const getDepartmentSections = (department: string): string[] => {
+export const getDepartmentSections = (department: string, shopName?: string): string[] => {
   const sectionsByDepartment: Record<string, string[]> = {
-    police: ["High Command", "Command Staff", "Supervisors", "Officers"],
-    ems: ["High Command", "Supervisors", "Paramedics", "EMTs"],
-    fire: ["High Command", "Captains", "Firefighters"],
-    doj: ["Judges", "Attorneys"],
-    mechanic: ["Management", "Senior Mechanics", "Mechanics"],
-    pdm: ["Management", "Sales Team"],
+    police: ["High Command", "Command Staff", "Supervisors", "Officers", "Cadets", "Solo Cadets", "Strikes"],
+    ems: ["High Command", "Supervisors", "Paramedics", "EMTs", "Strikes"],
+    fire: ["High Command", "Captains", "Firefighters", "Strikes"],
+    doj: ["Judges", "Attorneys", "State Staff", "Strikes"],
+    mechanic: ["Management", "Senior Mechanics", "Mechanics", "Strikes"],
+    pdm: ["Management", "Sales Team", "Strikes"],
   };
 
-  return sectionsByDepartment[department] || ["General"];
+  return sectionsByDepartment[department] || ["General", "Strikes"];
 };
+
+// Shop configurations for multi-shop departments
+export const getMechanicShops = (): { id: string; name: string; editable: boolean }[] => [
+  { id: "main", name: "Main Shop", editable: true },
+  { id: "shop2", name: "Shop 2", editable: true },
+  { id: "shop3", name: "Shop 3", editable: true },
+];
+
+export const getPdmShops = (): { id: string; name: string; editable: boolean }[] => [
+  { id: "main", name: "PDM Main", editable: true },
+  { id: "shop2", name: "PDM Shop 2", editable: true },
+];
 
 // Status options for roster entries
 export const ROSTER_STATUS_OPTIONS = [
