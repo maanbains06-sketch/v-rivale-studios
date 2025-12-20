@@ -34,6 +34,7 @@ export const useRoster = (department: string, shopName?: string) => {
   const [entries, setEntries] = useState<RosterEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [canEdit, setCanEdit] = useState(false);
+  const [canView, setCanView] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
   const [permissions, setPermissions] = useState<RosterPermission[]>([]);
   const { toast } = useToast();
@@ -87,11 +88,12 @@ export const useRoster = (department: string, shopName?: string) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         setCanEdit(false);
+        setCanView(false);
         setIsOwner(false);
         return;
       }
 
-      // Check if user is admin - admins can edit all rosters
+      // Check if user is admin - admins can edit and view all rosters
       const { data: roleData } = await supabase
         .from("user_roles")
         .select("role")
@@ -100,6 +102,7 @@ export const useRoster = (department: string, shopName?: string) => {
 
       if (roleData?.role === "admin") {
         setCanEdit(true);
+        setCanView(true);
         setIsOwner(true);
         return;
       }
@@ -134,6 +137,7 @@ export const useRoster = (department: string, shopName?: string) => {
       if (userDiscordId === OWNER_DISCORD_ID) {
         console.log("Owner detected via Discord ID");
         setCanEdit(true);
+        setCanView(true);
         setIsOwner(true);
         return;
       }
@@ -149,6 +153,7 @@ export const useRoster = (department: string, shopName?: string) => {
         if (ownerAccess) {
           console.log("Owner access found in database");
           setCanEdit(true);
+          setCanView(true);
           setIsOwner(true);
           return;
         }
@@ -165,6 +170,7 @@ export const useRoster = (department: string, shopName?: string) => {
           if (!verifyError && verifyData?.canEdit) {
             console.log("Permission granted via Discord role verification");
             setCanEdit(true);
+            setCanView(true);
             setIsOwner(verifyData.isOwner || false);
             return;
           }
@@ -174,10 +180,12 @@ export const useRoster = (department: string, shopName?: string) => {
       }
 
       setCanEdit(false);
+      setCanView(false);
       setIsOwner(false);
     } catch (error) {
       console.error("Error checking permissions:", error);
       setCanEdit(false);
+      setCanView(false);
       setIsOwner(false);
     }
   }, [department]);
@@ -209,7 +217,7 @@ export const useRoster = (department: string, shopName?: string) => {
     };
   }, [department, shopName, fetchRoster, fetchPermissions, checkEditPermission]);
 
-  return { entries, loading, canEdit, isOwner, permissions, refetch: fetchRoster };
+  return { entries, loading, canEdit, canView, isOwner, permissions, refetch: fetchRoster };
 };
 
 // Get unique sections for a department
@@ -237,6 +245,9 @@ export const getPdmShops = (): { id: string; name: string; editable: boolean }[]
   { id: "main", name: "PDM Main", editable: true },
   { id: "shop2", name: "PDM Shop 2", editable: true },
 ];
+
+// Departments that should NOT show callsign column
+export const DEPARTMENTS_WITHOUT_CALLSIGN = ["mechanic", "pdm"];
 
 // Status options for roster entries
 export const ROSTER_STATUS_OPTIONS = [

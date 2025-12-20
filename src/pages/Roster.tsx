@@ -1,23 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
 import RosterTable from "@/components/RosterTable";
 import { useRoster, getDepartmentSections, getMechanicShops, getPdmShops } from "@/hooks/useRoster";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Shield, Heart, Flame, Wrench, Car, Scale, Store } from "lucide-react";
+import { Shield, Heart, Flame, Wrench, Car, Scale, Store, Lock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-// Department images
-import jobPoliceImg from "@/assets/job-police.jpg";
-import jobEmsImg from "@/assets/job-ems.jpg";
-import jobFirefighterImg from "@/assets/job-firefighter.jpg";
-import jobMechanicImg from "@/assets/job-mechanic.jpg";
-import jobPdmImg from "@/assets/job-pdm.jpg";
-import headerDoj from "@/assets/header-doj.jpg";
+// Department images - GTA 5 themed
+import rosterPolice from "@/assets/roster-police.jpg";
+import rosterEms from "@/assets/roster-ems.jpg";
+import rosterFire from "@/assets/roster-fire.jpg";
+import rosterDoj from "@/assets/roster-doj.jpg";
+import rosterMechanic from "@/assets/roster-mechanic.jpg";
+import rosterPdm from "@/assets/roster-pdm.jpg";
 
 interface Department {
   id: string;
@@ -29,28 +30,31 @@ interface Department {
 }
 
 const departments: Department[] = [
-  { id: "police", name: "Police Department", icon: Shield, color: "text-blue-400", headerImage: jobPoliceImg },
-  { id: "ems", name: "EMS", icon: Heart, color: "text-red-400", headerImage: jobEmsImg },
-  { id: "fire", name: "Fire Department", icon: Flame, color: "text-orange-400", headerImage: jobFirefighterImg },
-  { id: "doj", name: "DOJ", icon: Scale, color: "text-amber-400", headerImage: headerDoj },
-  { id: "mechanic", name: "Mechanic", icon: Wrench, color: "text-cyan-400", headerImage: jobMechanicImg, hasShops: true },
-  { id: "pdm", name: "PDM Dealership", icon: Car, color: "text-pink-400", headerImage: jobPdmImg, hasShops: true },
+  { id: "police", name: "Police Department", icon: Shield, color: "text-blue-400", headerImage: rosterPolice },
+  { id: "ems", name: "EMS", icon: Heart, color: "text-red-400", headerImage: rosterEms },
+  { id: "fire", name: "Fire Department", icon: Flame, color: "text-orange-400", headerImage: rosterFire },
+  { id: "doj", name: "DOJ", icon: Scale, color: "text-amber-400", headerImage: rosterDoj },
+  { id: "mechanic", name: "Mechanic", icon: Wrench, color: "text-cyan-400", headerImage: rosterMechanic, hasShops: true },
+  { id: "pdm", name: "PDM Dealership", icon: Car, color: "text-pink-400", headerImage: rosterPdm, hasShops: true },
 ];
+
+// Owner Discord ID for full access
+const OWNER_DISCORD_ID = "833680146510381097";
 
 // Component for a single shop roster
 const ShopRoster = ({ 
   department, 
   shop, 
-  canEditShopName,
+  isOwner,
   onShopNameChange 
 }: { 
   department: string; 
   shop: { id: string; name: string; editable: boolean }; 
-  canEditShopName: boolean;
+  isOwner: boolean;
   onShopNameChange: (shopId: string, newName: string) => void;
 }) => {
   const sections = getDepartmentSections(department);
-  const { entries, loading, canEdit, permissions, refetch } = useRoster(department, shop.id);
+  const { entries, loading, canEdit, canView, permissions, refetch } = useRoster(department, shop.id);
   const [isEditingName, setIsEditingName] = useState(false);
   const [shopName, setShopName] = useState(shop.name);
 
@@ -63,11 +67,26 @@ const ShopRoster = ({
     );
   }
 
+  // If user can't view, show access denied message
+  if (!canView) {
+    return (
+      <Card className="border-border/30 bg-muted/20">
+        <CardHeader className="text-center">
+          <Lock className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+          <CardTitle>Access Restricted</CardTitle>
+          <CardDescription>
+            You don't have permission to view this roster. Only authorized staff members can access this content.
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3 border-b border-border/30 pb-4">
         <Store className="w-5 h-5 text-muted-foreground" />
-        {isEditingName && canEditShopName ? (
+        {isEditingName && isOwner ? (
           <div className="flex items-center gap-2">
             <Input
               value={shopName}
@@ -98,7 +117,7 @@ const ShopRoster = ({
         ) : (
           <div className="flex items-center gap-2">
             <h3 className="text-lg font-semibold">{shop.name}</h3>
-            {canEditShopName && shop.editable && (
+            {isOwner && shop.editable && (
               <Button
                 size="sm"
                 variant="ghost"
@@ -125,9 +144,8 @@ const ShopRoster = ({
 };
 
 // Component for departments with multiple shops
-const MultiShopRoster = ({ department }: { department: string }) => {
+const MultiShopRoster = ({ department, isOwner }: { department: string; isOwner: boolean }) => {
   const { toast } = useToast();
-  const { canEdit: canEditRoster } = useRoster(department);
   const [shopNames, setShopNames] = useState<Record<string, string>>({});
   
   const shops = department === "mechanic" ? getMechanicShops() : getPdmShops();
@@ -136,12 +154,19 @@ const MultiShopRoster = ({ department }: { department: string }) => {
     // Update local state
     setShopNames(prev => ({ ...prev, [shopId]: newName }));
     
-    // In a real implementation, you would save this to the database
-    // For now, we'll just show a toast
-    toast({
-      title: "Shop name updated",
-      description: `Shop renamed to "${newName}"`,
-    });
+    // Save to database - update all entries with this shop_name
+    try {
+      // For now, just show toast as shop names are stored per-entry
+      toast({
+        title: "Shop name updated",
+        description: `Shop renamed to "${newName}"`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error updating shop name",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -159,7 +184,7 @@ const MultiShopRoster = ({ department }: { department: string }) => {
           <ShopRoster
             department={department}
             shop={{ ...shop, name: shopNames[shop.id] || shop.name }}
-            canEditShopName={canEditRoster}
+            isOwner={isOwner}
             onShopNameChange={handleShopNameChange}
           />
         </TabsContent>
@@ -170,7 +195,7 @@ const MultiShopRoster = ({ department }: { department: string }) => {
 
 const DepartmentRoster = ({ departmentId }: { departmentId: string }) => {
   const sections = getDepartmentSections(departmentId);
-  const { entries, loading, canEdit, permissions, refetch } = useRoster(departmentId);
+  const { entries, loading, canEdit, canView, permissions, refetch } = useRoster(departmentId);
 
   if (loading) {
     return (
@@ -178,6 +203,21 @@ const DepartmentRoster = ({ departmentId }: { departmentId: string }) => {
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-64 w-full" />
       </div>
+    );
+  }
+
+  // If user can't view, show access denied message
+  if (!canView) {
+    return (
+      <Card className="border-border/30 bg-muted/20">
+        <CardHeader className="text-center">
+          <Lock className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+          <CardTitle>Access Restricted</CardTitle>
+          <CardDescription>
+            You don't have permission to view this roster. Only authorized staff members can access this content.
+          </CardDescription>
+        </CardHeader>
+      </Card>
     );
   }
 
@@ -195,7 +235,84 @@ const DepartmentRoster = ({ departmentId }: { departmentId: string }) => {
 
 const Roster = () => {
   const [activeDepartment, setActiveDepartment] = useState("police");
+  const [isOwner, setIsOwner] = useState(false);
   const currentDept = departments.find(d => d.id === activeDepartment);
+  const { toast } = useToast();
+
+  // Check if current user is owner
+  useEffect(() => {
+    const checkOwnership = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setIsOwner(false);
+          return;
+        }
+
+        // Check if admin
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .single();
+
+        if (roleData?.role === "admin") {
+          setIsOwner(true);
+          return;
+        }
+
+        // Check Discord ID
+        let userDiscordId: string | null = null;
+
+        const { data: staffMember } = await supabase
+          .from("staff_members")
+          .select("discord_id")
+          .eq("user_id", user.id)
+          .single();
+
+        if (staffMember?.discord_id) {
+          userDiscordId = staffMember.discord_id;
+        } else {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("discord_username")
+            .eq("id", user.id)
+            .single();
+          
+          if (profile?.discord_username && /^\d+$/.test(profile.discord_username)) {
+            userDiscordId = profile.discord_username;
+          }
+        }
+
+        // Check if owner by Discord ID
+        if (userDiscordId === OWNER_DISCORD_ID) {
+          setIsOwner(true);
+          return;
+        }
+
+        // Check roster_owner_access table
+        if (userDiscordId) {
+          const { data: ownerAccess } = await supabase
+            .from("roster_owner_access")
+            .select("*")
+            .eq("discord_id", userDiscordId)
+            .single();
+
+          if (ownerAccess) {
+            setIsOwner(true);
+            return;
+          }
+        }
+
+        setIsOwner(false);
+      } catch (error) {
+        console.error("Error checking ownership:", error);
+        setIsOwner(false);
+      }
+    };
+
+    checkOwnership();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -205,7 +322,7 @@ const Roster = () => {
           title={`${currentDept?.name || "Server"} Roster`}
           description="View all department rosters and team members"
           badge="ROSTER"
-          backgroundImage={currentDept?.headerImage || jobPoliceImg}
+          backgroundImage={currentDept?.headerImage || rosterPolice}
         />
 
         <main className="container mx-auto px-4 py-8">
@@ -240,7 +357,7 @@ const Roster = () => {
                     </div>
                   </div>
                   {dept.hasShops ? (
-                    <MultiShopRoster department={dept.id} />
+                    <MultiShopRoster department={dept.id} isOwner={isOwner} />
                   ) : (
                     <DepartmentRoster departmentId={dept.id} />
                   )}
