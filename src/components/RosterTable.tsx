@@ -6,10 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Pencil, Trash2, Plus, Save, X, Settings } from "lucide-react";
+import { Pencil, Trash2, Plus, Save, X, UserPlus, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ROSTER_STATUS_OPTIONS, RosterPermission } from "@/hooks/useRoster";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface RosterEntry {
   id: string;
@@ -23,6 +29,8 @@ interface RosterEntry {
   discord_id: string | null;
   sub_department: string | null;
   display_order: number;
+  strikes?: number;
+  shop_name?: string | null;
 }
 
 interface RosterTableProps {
@@ -32,6 +40,7 @@ interface RosterTableProps {
   canEdit: boolean;
   permissions: RosterPermission[];
   onRefresh: () => void;
+  shopName?: string;
 }
 
 const statusColors: Record<string, string> = {
@@ -51,28 +60,34 @@ const sectionColors: Record<string, string> = {
   "Senior Sector": "from-emerald-900/60 to-emerald-800/40 border-emerald-500/30",
   "Judges": "from-amber-900/60 to-amber-800/40 border-amber-500/30",
   "Attorneys": "from-emerald-900/60 to-emerald-800/40 border-emerald-500/30",
+  "State Staff": "from-indigo-900/60 to-indigo-800/40 border-indigo-500/30",
   "Captains": "from-orange-900/60 to-orange-800/40 border-orange-500/30",
   "Senior Mechanics": "from-cyan-900/60 to-cyan-800/40 border-cyan-500/30",
   "Sales Team": "from-pink-900/60 to-pink-800/40 border-pink-500/30",
   "Officers": "from-slate-800/60 to-slate-700/40 border-slate-500/30",
+  "Cadets": "from-sky-900/60 to-sky-800/40 border-sky-500/30",
+  "Solo Cadets": "from-teal-900/60 to-teal-800/40 border-teal-500/30",
   "Paramedics": "from-teal-900/60 to-teal-800/40 border-teal-500/30",
   "EMTs": "from-cyan-900/60 to-cyan-800/40 border-cyan-500/30",
   "Firefighters": "from-red-900/60 to-red-800/40 border-red-500/30",
   "Mechanics": "from-gray-800/60 to-gray-700/40 border-gray-500/30",
+  "Strikes": "from-red-950/60 to-red-900/40 border-red-600/30",
 };
 
-const RosterTable = ({ entries, department, sections, canEdit, permissions, onRefresh }: RosterTableProps) => {
+const RosterTable = ({ entries, department, sections, canEdit, permissions, onRefresh, shopName }: RosterTableProps) => {
   const { toast } = useToast();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<RosterEntry>>({});
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
+  const [selectedSection, setSelectedSection] = useState<string>(sections[0] || "General");
   const [addForm, setAddForm] = useState<Partial<RosterEntry>>({
     department,
     section: sections[0] || "General",
     status: "Active",
     department_logs: "0 Misconducts",
+    strikes: 0,
+    shop_name: shopName || null,
   });
 
   const startFieldEdit = (entry: RosterEntry, field: string) => {
@@ -87,7 +102,7 @@ const RosterTable = ({ entries, department, sections, canEdit, permissions, onRe
     setEditForm({});
   };
 
-  const saveFieldEdit = async (field: string, value: string) => {
+  const saveFieldEdit = async (field: string, value: string | number) => {
     if (!editingId) return;
 
     try {
@@ -123,7 +138,7 @@ const RosterTable = ({ entries, department, sections, canEdit, permissions, onRe
     try {
       const { error } = await supabase.from("department_rosters").insert({
         department: addForm.department || department,
-        section: addForm.section || "General",
+        section: addForm.section || selectedSection,
         callsign: addForm.callsign,
         name: addForm.name,
         rank: addForm.rank,
@@ -132,6 +147,8 @@ const RosterTable = ({ entries, department, sections, canEdit, permissions, onRe
         discord_id: addForm.discord_id,
         sub_department: addForm.sub_department,
         display_order: entries.length + 1,
+        strikes: addForm.strikes || 0,
+        shop_name: shopName || null,
       });
 
       if (error) throw error;
@@ -143,6 +160,8 @@ const RosterTable = ({ entries, department, sections, canEdit, permissions, onRe
         section: sections[0] || "General",
         status: "Active",
         department_logs: "0 Misconducts",
+        strikes: 0,
+        shop_name: shopName || null,
       });
       onRefresh();
     } catch (error: any) {
@@ -150,21 +169,43 @@ const RosterTable = ({ entries, department, sections, canEdit, permissions, onRe
     }
   };
 
+  const openAddDialogForSection = (section: string) => {
+    setSelectedSection(section);
+    setAddForm({ ...addForm, section });
+    setIsAddDialogOpen(true);
+  };
+
   const groupedEntries = sections.map(section => ({
     section,
     entries: entries.filter(e => e.section === section),
   }));
 
-  const EditableCell = ({ entry, field, value, type = "text" }: { entry: RosterEntry; field: string; value: string | null; type?: "text" | "status" | "section" }) => {
+  // Check if this is the strikes section
+  const isStrikesSection = (section: string) => section === "Strikes";
+
+  const EditableCell = ({ 
+    entry, 
+    field, 
+    value, 
+    type = "text" 
+  }: { 
+    entry: RosterEntry; 
+    field: string; 
+    value: string | number | null; 
+    type?: "text" | "status" | "section" | "number" 
+  }) => {
     const isEditing = editingId === entry.id && editingField === field;
 
     if (!canEdit) {
       if (type === "status") {
         return (
-          <Badge className={`${statusColors[value || ""] || statusColors["No Data"]} border`}>
+          <Badge className={`${statusColors[value as string || ""] || statusColors["No Data"]} border`}>
             {value || "N/A"}
           </Badge>
         );
+      }
+      if (type === "number") {
+        return <span className="font-mono">{value ?? 0}</span>;
       }
       return <span className={field === "callsign" || field === "discord_id" ? "font-mono text-muted-foreground" : ""}>{value || "-"}</span>;
     }
@@ -176,7 +217,7 @@ const RosterTable = ({ entries, department, sections, canEdit, permissions, onRe
             value={editForm[field as keyof RosterEntry] as string || ""}
             onValueChange={(v) => saveFieldEdit(field, v)}
           >
-            <SelectTrigger className="h-8 w-28">
+            <SelectTrigger className="h-8 w-32">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -187,6 +228,33 @@ const RosterTable = ({ entries, department, sections, canEdit, permissions, onRe
               ))}
             </SelectContent>
           </Select>
+        );
+      }
+
+      if (type === "number") {
+        return (
+          <div className="flex gap-1 items-center">
+            <Input
+              type="number"
+              value={editForm[field as keyof RosterEntry] as number || 0}
+              onChange={(e) => setEditForm({ ...editForm, [field]: parseInt(e.target.value) || 0 })}
+              className="h-7 w-16"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  saveFieldEdit(field, parseInt(editForm[field as keyof RosterEntry] as string) || 0);
+                } else if (e.key === "Escape") {
+                  cancelEdit();
+                }
+              }}
+            />
+            <Button size="icon" variant="ghost" className="h-6 w-6 shrink-0" onClick={() => saveFieldEdit(field, parseInt(editForm[field as keyof RosterEntry] as string) || 0)}>
+              <Save className="w-3 h-3 text-green-400" />
+            </Button>
+            <Button size="icon" variant="ghost" className="h-6 w-6 shrink-0" onClick={cancelEdit}>
+              <X className="w-3 h-3 text-red-400" />
+            </Button>
+          </div>
         );
       }
       
@@ -235,10 +303,36 @@ const RosterTable = ({ entries, department, sections, canEdit, permissions, onRe
 
     if (type === "status") {
       return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
+              <Badge className={`${statusColors[value as string || ""] || statusColors["No Data"]} border cursor-pointer flex items-center gap-1`}>
+                {value || "N/A"}
+                <ChevronDown className="w-3 h-3" />
+              </Badge>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            {ROSTER_STATUS_OPTIONS.map((status) => (
+              <DropdownMenuItem
+                key={status.value}
+                onClick={() => {
+                  setEditingId(entry.id);
+                  saveFieldEdit("status", status.value);
+                }}
+              >
+                <Badge className={`${status.color} border`}>{status.label}</Badge>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    }
+
+    if (type === "number") {
+      return (
         <div className="flex items-center gap-2 group">
-          <Badge className={`${statusColors[value || ""] || statusColors["No Data"]} border`}>
-            {value || "N/A"}
-          </Badge>
+          <span className="font-mono">{value ?? 0}</span>
           <Button 
             size="icon" 
             variant="ghost" 
@@ -271,154 +365,164 @@ const RosterTable = ({ entries, department, sections, canEdit, permissions, onRe
   return (
     <div className="space-y-6">
       {canEdit && (
-        <div className="flex justify-between items-center">
-          <div className="text-sm text-muted-foreground">
-            {permissions.length > 0 && (
-              <span>Editable by: {permissions.map(p => p.discord_role_name).join(", ")}</span>
-            )}
-          </div>
-          <div className="flex gap-2">
-            <Dialog open={isPermissionsDialogOpen} onOpenChange={setIsPermissionsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
-                  <Settings className="w-4 h-4" />
-                  Permissions
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Discord Role Permissions</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <p className="text-sm text-muted-foreground">
-                    These Discord roles can edit the {department.charAt(0).toUpperCase() + department.slice(1)} roster:
-                  </p>
-                  {permissions.length > 0 ? (
-                    <ul className="space-y-2">
-                      {permissions.map((perm) => (
-                        <li key={perm.id} className="flex items-center justify-between p-2 bg-muted/30 rounded-lg">
-                          <span>{perm.discord_role_name}</span>
-                          <code className="text-xs text-muted-foreground">{perm.discord_role_id}</code>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No specific roles configured. Only admins can edit.</p>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    Contact an administrator to manage Discord role permissions.
-                  </p>
-                </div>
-              </DialogContent>
-            </Dialog>
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="gap-2">
-                  <Plus className="w-4 h-4" />
-                  Add Member
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Add New Roster Member</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Callsign</Label>
-                      <Input
-                        value={addForm.callsign || ""}
-                        onChange={(e) => setAddForm({ ...addForm, callsign: e.target.value })}
-                        placeholder="e.g., PD-101"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Section</Label>
-                      <Select
-                        value={addForm.section}
-                        onValueChange={(v) => setAddForm({ ...addForm, section: v })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {sections.map((s) => (
-                            <SelectItem key={s} value={s}>{s}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Name *</Label>
-                    <Input
-                      value={addForm.name || ""}
-                      onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
-                      placeholder="Full Name"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Rank *</Label>
-                    <Input
-                      value={addForm.rank || ""}
-                      onChange={(e) => setAddForm({ ...addForm, rank: e.target.value })}
-                      placeholder="e.g., Officer, Sergeant"
-                      required
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Status</Label>
-                      <Select
-                        value={addForm.status}
-                        onValueChange={(v) => setAddForm({ ...addForm, status: v })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {ROSTER_STATUS_OPTIONS.map((status) => (
-                            <SelectItem key={status.value} value={status.value}>
-                              {status.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Sub-Department</Label>
-                      <Input
-                        value={addForm.sub_department || ""}
-                        onChange={(e) => setAddForm({ ...addForm, sub_department: e.target.value })}
-                        placeholder="e.g., SWAT, K9"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Discord ID</Label>
-                    <Input
-                      value={addForm.discord_id || ""}
-                      onChange={(e) => setAddForm({ ...addForm, discord_id: e.target.value })}
-                      placeholder="Discord ID"
-                    />
-                  </div>
-                  <Button onClick={addEntry} className="w-full" disabled={!addForm.name || !addForm.rank}>
-                    Add Member
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
+        <div className="flex justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="gap-2">
+                <UserPlus className="w-4 h-4" />
+                Add Members
+                <ChevronDown className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              {sections.map((section) => (
+                <DropdownMenuItem
+                  key={section}
+                  onClick={() => openAddDialogForSection(section)}
+                >
+                  Add to {section}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       )}
 
-      {groupedEntries.map(({ section, entries: sectionEntries }) => (
-        sectionEntries.length > 0 && (
-          <div key={section} className="space-y-2">
-            <div className={`px-4 py-2 rounded-t-lg bg-gradient-to-r ${sectionColors[section] || "from-muted/60 to-muted/40 border-border/30"} border-b`}>
-              <h3 className="font-semibold text-foreground">{section}</h3>
+      {/* Add Member Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Member to {selectedSection}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Callsign</Label>
+                <Input
+                  value={addForm.callsign || ""}
+                  onChange={(e) => setAddForm({ ...addForm, callsign: e.target.value })}
+                  placeholder="e.g., PD-101"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Section</Label>
+                <Select
+                  value={addForm.section || selectedSection}
+                  onValueChange={(v) => setAddForm({ ...addForm, section: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sections.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+            <div className="space-y-2">
+              <Label>Name *</Label>
+              <Input
+                value={addForm.name || ""}
+                onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
+                placeholder="Full Name"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Rank *</Label>
+              <Input
+                value={addForm.rank || ""}
+                onChange={(e) => setAddForm({ ...addForm, rank: e.target.value })}
+                placeholder="e.g., Officer, Sergeant"
+                required
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select
+                  value={addForm.status}
+                  onValueChange={(v) => setAddForm({ ...addForm, status: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ROSTER_STATUS_OPTIONS.map((status) => (
+                      <SelectItem key={status.value} value={status.value}>
+                        {status.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Strikes</Label>
+                <Input
+                  type="number"
+                  value={addForm.strikes || 0}
+                  onChange={(e) => setAddForm({ ...addForm, strikes: parseInt(e.target.value) || 0 })}
+                  min={0}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Discord ID</Label>
+                <Input
+                  value={addForm.discord_id || ""}
+                  onChange={(e) => setAddForm({ ...addForm, discord_id: e.target.value })}
+                  placeholder="Discord ID"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Sub-Department</Label>
+                <Input
+                  value={addForm.sub_department || ""}
+                  onChange={(e) => setAddForm({ ...addForm, sub_department: e.target.value })}
+                  placeholder="e.g., SWAT, K9"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Dept. Logs</Label>
+              <Input
+                value={addForm.department_logs || ""}
+                onChange={(e) => setAddForm({ ...addForm, department_logs: e.target.value })}
+                placeholder="e.g., 0 Misconducts"
+              />
+            </div>
+            <Button onClick={addEntry} className="w-full" disabled={!addForm.name || !addForm.rank}>
+              Add Member
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {groupedEntries.map(({ section, entries: sectionEntries }) => (
+        <div key={section} className="space-y-2">
+          <div className={`px-4 py-3 rounded-t-lg bg-gradient-to-r ${sectionColors[section] || "from-muted/60 to-muted/40 border-border/30"} border-b flex items-center justify-between`}>
+            <div className="flex items-center gap-3">
+              <h3 className="font-semibold text-foreground">{section}</h3>
+              <Badge variant="outline" className="text-xs">
+                {sectionEntries.length} member{sectionEntries.length !== 1 ? 's' : ''}
+              </Badge>
+            </div>
+            {canEdit && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 gap-1 text-xs"
+                onClick={() => openAddDialogForSection(section)}
+              >
+                <Plus className="w-3 h-3" />
+                Add
+              </Button>
+            )}
+          </div>
+          {sectionEntries.length > 0 ? (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -430,6 +534,7 @@ const RosterTable = ({ entries, department, sections, canEdit, permissions, onRe
                     <TableHead>Dept. Logs</TableHead>
                     <TableHead>Discord ID</TableHead>
                     <TableHead>Sub-Dept</TableHead>
+                    <TableHead className="w-20">Strikes</TableHead>
                     {canEdit && <TableHead className="w-16">Delete</TableHead>}
                   </TableRow>
                 </TableHeader>
@@ -457,6 +562,9 @@ const RosterTable = ({ entries, department, sections, canEdit, permissions, onRe
                       <TableCell>
                         <EditableCell entry={entry} field="sub_department" value={entry.sub_department} />
                       </TableCell>
+                      <TableCell>
+                        <EditableCell entry={entry} field="strikes" value={entry.strikes ?? 0} type="number" />
+                      </TableCell>
                       {canEdit && (
                         <TableCell>
                           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => deleteEntry(entry.id)}>
@@ -469,14 +577,28 @@ const RosterTable = ({ entries, department, sections, canEdit, permissions, onRe
                 </TableBody>
               </Table>
             </div>
-          </div>
-        )
+          ) : (
+            <div className="text-center py-6 text-muted-foreground text-sm border border-border/20 rounded-b-lg">
+              No members in this section yet.
+              {canEdit && (
+                <Button
+                  variant="link"
+                  size="sm"
+                  className="ml-2"
+                  onClick={() => openAddDialogForSection(section)}
+                >
+                  Add first member
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
       ))}
 
-      {entries.length === 0 && (
+      {entries.length === 0 && sections.length === 0 && (
         <div className="text-center py-12 text-muted-foreground">
           <p>No roster entries for this department yet.</p>
-          {canEdit && <p className="text-sm mt-2">Click "Add Member" to add the first entry.</p>}
+          {canEdit && <p className="text-sm mt-2">Use the "Add Members" button to add the first entry.</p>}
         </div>
       )}
     </div>

@@ -233,7 +233,9 @@ export type Database = {
           name: string
           rank: string
           section: string
+          shop_name: string | null
           status: string
+          strikes: number | null
           sub_department: string | null
           updated_at: string
         }
@@ -249,7 +251,9 @@ export type Database = {
           name: string
           rank: string
           section?: string
+          shop_name?: string | null
           status?: string
+          strikes?: number | null
           sub_department?: string | null
           updated_at?: string
         }
@@ -265,7 +269,9 @@ export type Database = {
           name?: string
           rank?: string
           section?: string
+          shop_name?: string | null
           status?: string
+          strikes?: number | null
           sub_department?: string | null
           updated_at?: string
         }
@@ -1221,6 +1227,30 @@ export type Database = {
           discord_role_id?: string
           discord_role_name?: string
           id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      roster_owner_access: {
+        Row: {
+          created_at: string
+          discord_id: string
+          id: string
+          name: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discord_id: string
+          id?: string
+          name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discord_id?: string
+          id?: string
+          name?: string | null
           updated_at?: string
         }
         Relationships: []
