@@ -4,12 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Pencil, Trash2, Plus, Save, X, UserPlus, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ROSTER_STATUS_OPTIONS, RosterPermission } from "@/hooks/useRoster";
+import { ROSTER_STATUS_OPTIONS, RosterPermission, DEPARTMENTS_WITHOUT_CALLSIGN } from "@/hooks/useRoster";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -81,6 +81,10 @@ const RosterTable = ({ entries, department, sections, canEdit, permissions, onRe
   const [editForm, setEditForm] = useState<Partial<RosterEntry>>({});
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [selectedSection, setSelectedSection] = useState<string>(sections[0] || "General");
+  
+  // Check if this department should show callsign
+  const showCallsign = !DEPARTMENTS_WITHOUT_CALLSIGN.includes(department);
+  
   const [addForm, setAddForm] = useState<Partial<RosterEntry>>({
     department,
     section: sections[0] || "General",
@@ -139,7 +143,7 @@ const RosterTable = ({ entries, department, sections, canEdit, permissions, onRe
       const { error } = await supabase.from("department_rosters").insert({
         department: addForm.department || department,
         section: addForm.section || selectedSection,
-        callsign: addForm.callsign,
+        callsign: showCallsign ? addForm.callsign : null,
         name: addForm.name,
         rank: addForm.rank,
         status: addForm.status || "Active",
@@ -179,9 +183,6 @@ const RosterTable = ({ entries, department, sections, canEdit, permissions, onRe
     section,
     entries: entries.filter(e => e.section === section),
   }));
-
-  // Check if this is the strikes section
-  const isStrikesSection = (section: string) => section === "Strikes";
 
   const EditableCell = ({ 
     entry, 
@@ -396,15 +397,17 @@ const RosterTable = ({ entries, department, sections, canEdit, permissions, onRe
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Callsign</Label>
-                <Input
-                  value={addForm.callsign || ""}
-                  onChange={(e) => setAddForm({ ...addForm, callsign: e.target.value })}
-                  placeholder="e.g., PD-101"
-                />
-              </div>
-              <div className="space-y-2">
+              {showCallsign && (
+                <div className="space-y-2">
+                  <Label>Callsign</Label>
+                  <Input
+                    value={addForm.callsign || ""}
+                    onChange={(e) => setAddForm({ ...addForm, callsign: e.target.value })}
+                    placeholder="e.g., PD-101"
+                  />
+                </div>
+              )}
+              <div className={`space-y-2 ${!showCallsign ? "col-span-2" : ""}`}>
                 <Label>Section</Label>
                 <Select
                   value={addForm.section || selectedSection}
@@ -527,7 +530,7 @@ const RosterTable = ({ entries, department, sections, canEdit, permissions, onRe
               <Table>
                 <TableHeader>
                   <TableRow className="border-border/30 hover:bg-transparent">
-                    <TableHead className="w-24">Callsign</TableHead>
+                    {showCallsign && <TableHead className="w-24">Callsign</TableHead>}
                     <TableHead>Name</TableHead>
                     <TableHead>Rank</TableHead>
                     <TableHead className="w-36">Status</TableHead>
@@ -541,9 +544,11 @@ const RosterTable = ({ entries, department, sections, canEdit, permissions, onRe
                 <TableBody>
                   {sectionEntries.map((entry) => (
                     <TableRow key={entry.id} className="border-border/20 hover:bg-muted/30">
-                      <TableCell>
-                        <EditableCell entry={entry} field="callsign" value={entry.callsign} />
-                      </TableCell>
+                      {showCallsign && (
+                        <TableCell>
+                          <EditableCell entry={entry} field="callsign" value={entry.callsign} />
+                        </TableCell>
+                      )}
                       <TableCell>
                         <EditableCell entry={entry} field="name" value={entry.name} />
                       </TableCell>
