@@ -24,6 +24,8 @@ import {
   UserPlus,
   Check,
   Loader2,
+  RefreshCw,
+  X,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
@@ -85,6 +87,8 @@ const Status = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [lastUptimeSeconds, setLastUptimeSeconds] = useState<number | null>(null);
+  const [showRestartBanner, setShowRestartBanner] = useState(false);
+  const [restartTime, setRestartTime] = useState<Date | null>(null);
   const [maintenance, setMaintenance] = useState<any[]>([]);
   const [recentUpdates, setRecentUpdates] = useState<RecentUpdate[]>([]);
   const [activeEvents, setActiveEvents] = useState<ActiveEvent[]>([]);
@@ -104,6 +108,8 @@ const Status = () => {
 
       // Check for server restart (uptime decreased)
       if (lastUptimeSeconds !== null && data.uptimeSeconds < lastUptimeSeconds && data.status === "online") {
+        setShowRestartBanner(true);
+        setRestartTime(new Date());
         toast.success("Server Restarted", {
           description: `${data.serverName || "Server"} has been restarted. Current uptime: ${data.uptime}`,
         });
@@ -423,6 +429,44 @@ const Status = () => {
 
       <main className="pb-16">
         <div className="container mx-auto px-4">
+          {/* Server Restart Notification Banner */}
+          {showRestartBanner && (
+            <div className="mb-8 animate-fade-in">
+              <Card className="glass-effect border-2 border-green-500/50 bg-green-500/5 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 via-transparent to-green-500/10 animate-pulse" />
+                <CardContent className="p-6 relative">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 rounded-full bg-green-500/20 animate-spin-slow">
+                        <RefreshCw className="h-6 w-6 text-green-500" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-semibold text-green-500 flex items-center gap-2">
+                          <span>Server Restarted Successfully!</span>
+                          <Badge variant="outline" className="bg-green-500/20 text-green-500 border-green-500/30">
+                            Fresh Start
+                          </Badge>
+                        </h3>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          The server was restarted {restartTime ? `at ${format(restartTime, "h:mm a")}` : "recently"}. 
+                          Current uptime: <span className="font-semibold text-foreground">{serverData.uptime}</span>
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground hover:text-foreground hover:bg-green-500/10"
+                      onClick={() => setShowRestartBanner(false)}
+                    >
+                      <X className="h-5 w-5" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
           {/* Scheduled Maintenance Section */}
           {maintenance.length > 0 && (
             <div className="mb-8 animate-fade-in">
