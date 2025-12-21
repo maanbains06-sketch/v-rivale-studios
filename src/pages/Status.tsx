@@ -116,14 +116,24 @@ const Status = () => {
       }
 
       setLastUptimeSeconds(data.uptimeSeconds);
-      setServerData(data);
-      setIsLoading(false);
     } catch (error) {
-      console.error("Error:", error);
-      toast.error("Failed to connect to server");
+      console.error("Error fetching server status:", error);
+      setServerData((prev) => ({ ...prev, status: "offline" }));
+    } finally {
       setIsLoading(false);
     }
   };
+
+  // Auto-dismiss restart banner after 5 minutes
+  useEffect(() => {
+    if (showRestartBanner) {
+      const timer = setTimeout(() => {
+        setShowRestartBanner(false);
+      }, 5 * 60 * 1000); // 5 minutes
+
+      return () => clearTimeout(timer);
+    }
+  }, [showRestartBanner]);
 
   const fetchMaintenance = async () => {
     try {
