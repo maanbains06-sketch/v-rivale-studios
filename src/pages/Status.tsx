@@ -901,7 +901,7 @@ const Status = () => {
                     <h4 className="font-bold text-sm text-accent">Server Version</h4>
                   </div>
                   <p className="text-base font-mono font-semibold bg-background/80 p-4 rounded-lg border-2 border-accent/20 text-foreground hover:bg-accent/5 transition-colors">
-                    v2.4.1 (Latest)
+                    Skylife Roleplay India 1.0
                   </p>
                 </div>
               </div>
