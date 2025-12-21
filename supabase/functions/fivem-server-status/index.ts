@@ -116,6 +116,37 @@ serve(async (req) => {
     }
   }
 
+  // Helper function to get last known uptime seconds for restart detection
+  async function getLastKnownUptimeSeconds(): Promise<number> {
+    try {
+      const { data } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'fivem_last_uptime_seconds')
+        .single();
+      
+      return data?.value ? parseInt(data.value, 10) : 0;
+    } catch (error) {
+      return 0;
+    }
+  }
+
+  // Helper function to save uptime seconds for restart detection
+  async function saveUptimeSeconds(seconds: number) {
+    try {
+      await supabase
+        .from('site_settings')
+        .upsert({
+          key: 'fivem_last_uptime_seconds',
+          value: seconds.toString(),
+          description: 'Last known uptime in seconds for restart detection (auto-synced)',
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'key' });
+    } catch (error) {
+      console.log('Could not save uptime seconds:', error);
+    }
+  }
+
   function formatResourceName(resourceName: string): string {
     // Remove common prefixes and technical patterns
     let formatted = resourceName
@@ -386,25 +417,48 @@ serve(async (req) => {
         }
       }
       
-      // Last fallback: track it ourselves
+      // Last fallback: track it ourselves using database persistence
+      const lastStatus = await getLastServerStatus();
+      const storedStartTime = await getServerStartTime();
+      const storedUptimeSeconds = await getLastKnownUptimeSeconds();
+      
       if (uptimeSeconds === 0 && isOnline) {
-        const lastStatus = await getLastServerStatus();
-        const storedStartTime = await getServerStartTime();
-        
+        // Server is online but we didn't get uptime from txAdmin/FiveM
+        // Check if this is a fresh start (was offline before) or continuing
         if (lastStatus !== 'online' || !storedStartTime) {
+          // Server just came online - record start time
           const now = new Date().toISOString();
-          saveServerStartTime(now).catch(err => console.log('Save start time error:', err));
+          await saveServerStartTime(now);
           uptimeSeconds = 0;
+          console.log('Server just started, resetting uptime');
         } else {
+          // Server was already online - calculate from stored start time
           const startTime = new Date(storedStartTime).getTime();
           const now = Date.now();
           uptimeSeconds = Math.floor((now - startTime) / 1000);
+          console.log('Calculated uptime from stored start time:', uptimeSeconds, 'seconds');
         }
-        console.log('Using tracked uptime:', uptimeSeconds, 'seconds');
+      }
+      
+      // Detect server restart: if we got uptime and it's significantly less than our stored uptime
+      // This means the server restarted
+      if (uptimeSeconds > 0 && storedUptimeSeconds > 0) {
+        // If uptime decreased by more than 2 minutes (accounting for timing variations)
+        if (storedUptimeSeconds - uptimeSeconds > 120) {
+          console.log('Server restart detected! Old uptime:', storedUptimeSeconds, 'New uptime:', uptimeSeconds);
+          // Reset our tracked start time to match the actual server uptime
+          const actualStartTime = new Date(Date.now() - (uptimeSeconds * 1000)).toISOString();
+          await saveServerStartTime(actualStartTime);
+        }
+      }
+      
+      // Save current uptime for restart detection
+      if (uptimeSeconds > 0) {
+        saveUptimeSeconds(uptimeSeconds).catch(err => console.log('Save uptime error:', err));
       }
       
       // Save current server status for tracking
-      saveServerStatus(isOnline ? 'online' : 'offline').catch(err => console.log('Save status error:', err));
+      await saveServerStatus(isOnline ? 'online' : 'offline');
       
       console.log('Final uptime seconds:', uptimeSeconds);
       
