@@ -188,13 +188,6 @@ const Navigation = () => {
               Status
             </NavLink>
             <NavLink 
-              to="/status" 
-              className="text-foreground/80 hover:text-primary transition-colors"
-              activeClassName="text-primary"
-            >
-              Status
-            </NavLink>
-            <NavLink 
               to="/support" 
               className="text-foreground/80 hover:text-primary transition-colors"
               activeClassName="text-primary"
@@ -293,9 +286,6 @@ const Navigation = () => {
                     </Button>
                     <Button variant="ghost" className="justify-start" onClick={() => { navigate("/gang-rp"); setIsMenuOpen(false); }}>
                       Gang RP
-                    </Button>
-                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/status"); setIsMenuOpen(false); }}>
-                      Status
                     </Button>
                     <Button variant="ghost" className="justify-start" onClick={() => { navigate("/status"); setIsMenuOpen(false); }}>
                       Status
