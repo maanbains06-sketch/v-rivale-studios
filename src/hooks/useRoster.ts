@@ -84,16 +84,18 @@ export const useRoster = (department: string, shopName?: string) => {
   }, [department]);
 
   const checkEditPermission = useCallback(async () => {
+    // Roster is now publicly viewable
+    setCanView(true);
+    
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         setCanEdit(false);
-        setCanView(false);
         setIsOwner(false);
         return;
       }
 
-      // Check if user is admin - admins can edit and view all rosters
+      // Check if user is admin - admins can edit all rosters
       const { data: roleData } = await supabase
         .from("user_roles")
         .select("role")
@@ -102,7 +104,6 @@ export const useRoster = (department: string, shopName?: string) => {
 
       if (roleData?.role === "admin") {
         setCanEdit(true);
-        setCanView(true);
         setIsOwner(true);
         return;
       }
@@ -137,7 +138,6 @@ export const useRoster = (department: string, shopName?: string) => {
       if (userDiscordId === OWNER_DISCORD_ID) {
         console.log("Owner detected via Discord ID");
         setCanEdit(true);
-        setCanView(true);
         setIsOwner(true);
         return;
       }
@@ -153,7 +153,6 @@ export const useRoster = (department: string, shopName?: string) => {
         if (ownerAccess) {
           console.log("Owner access found in database");
           setCanEdit(true);
-          setCanView(true);
           setIsOwner(true);
           return;
         }
@@ -170,7 +169,6 @@ export const useRoster = (department: string, shopName?: string) => {
           if (!verifyError && verifyData?.canEdit) {
             console.log("Permission granted via Discord role verification");
             setCanEdit(true);
-            setCanView(true);
             setIsOwner(verifyData.isOwner || false);
             return;
           }
@@ -180,12 +178,10 @@ export const useRoster = (department: string, shopName?: string) => {
       }
 
       setCanEdit(false);
-      setCanView(false);
       setIsOwner(false);
     } catch (error) {
       console.error("Error checking permissions:", error);
       setCanEdit(false);
-      setCanView(false);
       setIsOwner(false);
     }
   }, [department]);
