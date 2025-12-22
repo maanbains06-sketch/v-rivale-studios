@@ -325,54 +325,6 @@ export type Database = {
           },
         ]
       }
-      dot_applications: {
-        Row: {
-          admin_notes: string | null
-          created_at: string
-          discord_id: string
-          id: string
-          in_game_name: string
-          real_name: string
-          reviewed_at: string | null
-          reviewed_by: string | null
-          status: string
-          steam_id: string
-          updated_at: string
-          user_id: string
-          weekly_availability: string
-        }
-        Insert: {
-          admin_notes?: string | null
-          created_at?: string
-          discord_id: string
-          id?: string
-          in_game_name: string
-          real_name: string
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string
-          steam_id: string
-          updated_at?: string
-          user_id: string
-          weekly_availability: string
-        }
-        Update: {
-          admin_notes?: string | null
-          created_at?: string
-          discord_id?: string
-          id?: string
-          in_game_name?: string
-          real_name?: string
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string
-          steam_id?: string
-          updated_at?: string
-          user_id?: string
-          weekly_availability?: string
-        }
-        Relationships: []
-      }
       event_participants: {
         Row: {
           event_id: string
