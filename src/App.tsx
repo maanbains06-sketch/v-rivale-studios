@@ -49,7 +49,6 @@ import DiscordSignupForm from "./pages/DiscordSignupForm";
 import DiscordProfile from "./pages/DiscordProfile";
 import OwnerPanel from "./pages/OwnerPanel";
 import GangRP from "./pages/GangRP";
-import Roster from "./pages/Roster";
 import Feedback from "./pages/Feedback";
 import AdminYoutubers from "./pages/AdminYoutubers";
 import AdminStaffTeams from "./pages/AdminStaffTeams";
@@ -107,7 +106,6 @@ const AppRoutes = () => {
         <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
         <Route path="/owner-panel" element={<PageTransition><OwnerPanel /></PageTransition>} />
         <Route path="/gang-rp" element={<PageTransition><GangRP /></PageTransition>} />
-        <Route path="/roster" element={<PageTransition><Roster /></PageTransition>} />
         <Route path="/feedback" element={<PageTransition><Feedback /></PageTransition>} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
