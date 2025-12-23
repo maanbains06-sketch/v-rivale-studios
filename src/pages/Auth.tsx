@@ -19,8 +19,9 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const location = window.location.pathname;
   const searchParams = new URLSearchParams(window.location.search);
-  const isSignupFlow = searchParams.get("signup") === "true" || location === "/signup";
-  const defaultTab = location === "/signup" ? "signup" : "login";
+  const tabParam = searchParams.get("tab");
+  const isSignupFlow = searchParams.get("signup") === "true" || location === "/signup" || tabParam === "signup";
+  const defaultTab = tabParam === "signup" || location === "/signup" ? "signup" : "login";
 
   useEffect(() => {
     const checkAuth = async (session: Session | null, event?: string) => {
