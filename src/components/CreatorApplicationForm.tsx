@@ -288,14 +288,14 @@ const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
       </div>
 
       {/* Header */}
-      <div className="relative bg-gradient-to-r from-red-900/80 via-rose-900/70 to-red-900/80 backdrop-blur-2xl px-6 py-6 border-b border-red-400/20">
-        <div className="absolute inset-0 bg-[linear-gradient(135deg,transparent_25%,rgba(239,68,68,0.05)_50%,transparent_75%)] bg-[length:20px_20px]" />
+      <div className="relative bg-gradient-to-r from-rose-800/60 via-red-800/50 to-rose-800/60 backdrop-blur-2xl px-6 py-6 border-b border-rose-300/20">
+        <div className="absolute inset-0 bg-[linear-gradient(135deg,transparent_25%,rgba(251,113,133,0.05)_50%,transparent_75%)] bg-[length:20px_20px]" />
         
         <div className="relative flex items-center gap-4">
           <motion.div 
-            className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-xl shadow-red-500/30"
+            className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-400 to-red-500 flex items-center justify-center shadow-xl shadow-rose-500/25"
             animate={{ 
-              boxShadow: ['0 10px 40px rgba(239, 68, 68, 0.3)', '0 10px 60px rgba(239, 68, 68, 0.5)', '0 10px 40px rgba(239, 68, 68, 0.3)']
+              boxShadow: ['0 10px 40px rgba(251, 113, 133, 0.25)', '0 10px 60px rgba(251, 113, 133, 0.4)', '0 10px 40px rgba(251, 113, 133, 0.25)']
             }}
             transition={{ duration: 2, repeat: Infinity }}
           >
@@ -326,10 +326,10 @@ const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
 
         {/* Progress Bar */}
         <div className="mt-6 relative">
-          <div className="absolute inset-0 bg-black/20 rounded-full" />
-          <Progress value={progressPercentage} className="h-2 bg-red-950/50" />
+          <div className="absolute inset-0 bg-rose-950/30 rounded-full" />
+          <Progress value={progressPercentage} className="h-2 bg-rose-900/40" />
           <div 
-            className="absolute top-0 left-0 h-2 rounded-full bg-gradient-to-r from-red-500 via-rose-500 to-orange-500 transition-all duration-500 shadow-lg shadow-red-500/50"
+            className="absolute top-0 left-0 h-2 rounded-full bg-gradient-to-r from-rose-400 via-pink-400 to-orange-400 transition-all duration-500 shadow-lg shadow-rose-400/40"
             style={{ width: `${progressPercentage}%` }}
           />
         </div>
@@ -347,10 +347,10 @@ const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
               <motion.div 
                 className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${
                   currentStep === step.id 
-                    ? 'bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/40' 
+                    ? 'bg-gradient-to-br from-rose-400 to-pink-500 text-white shadow-lg shadow-rose-400/35' 
                     : currentStep > step.id
                     ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                    : 'bg-red-500/10 text-red-300/50 border border-red-500/20'
+                    : 'bg-rose-400/10 text-rose-300/50 border border-rose-400/20'
                 }`}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -362,14 +362,13 @@ const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
                 )}
               </motion.div>
               <span className={`mt-2 text-xs font-medium transition-colors ${
-                currentStep === step.id ? 'text-red-200' : 'text-red-300/40'
+                currentStep === step.id ? 'text-rose-200' : 'text-rose-300/40'
               }`}>
                 {step.title}
               </span>
             </motion.div>
           ))}
-          {/* Connection lines */}
-          <div className="absolute top-6 left-12 right-12 h-0.5 bg-red-500/20 -z-0">
+          <div className="absolute top-6 left-12 right-12 h-0.5 bg-rose-400/15 -z-0">
             <motion.div 
               className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400"
               initial={{ width: '0%' }}
@@ -394,8 +393,8 @@ const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
               className="space-y-5"
             >
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500/30 to-rose-500/30 flex items-center justify-center border border-red-400/30">
-                  <User className="w-5 h-5 text-red-300" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-400/30 to-pink-400/30 flex items-center justify-center border border-rose-300/30">
+                  <User className="w-5 h-5 text-rose-300" />
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-foreground">Personal Information</h3>
@@ -477,8 +476,8 @@ const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
               className="space-y-5"
             >
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500/30 to-red-500/30 flex items-center justify-center border border-rose-400/30">
-                  <Video className="w-5 h-5 text-rose-300" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-400/30 to-rose-400/30 flex items-center justify-center border border-pink-300/30">
+                  <Video className="w-5 h-5 text-pink-300" />
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-foreground">Channel Details</h3>
@@ -604,8 +603,8 @@ const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
               className="space-y-5"
             >
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500/30 to-red-500/30 flex items-center justify-center border border-orange-400/30">
-                  <Gamepad2 className="w-5 h-5 text-orange-300" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400/30 to-orange-400/30 flex items-center justify-center border border-amber-300/30">
+                  <Gamepad2 className="w-5 h-5 text-amber-300" />
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-foreground">Experience & Style</h3>
@@ -838,14 +837,14 @@ const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
       </form>
 
       {/* Footer Navigation */}
-      <div className="relative border-t border-red-400/20 p-6 bg-gradient-to-r from-red-900/30 via-background to-red-900/30">
+      <div className="relative border-t border-rose-300/15 p-6 bg-gradient-to-r from-rose-800/20 via-background to-rose-800/20">
         <div className="flex items-center justify-between gap-4">
           <Button
             type="button"
             variant="outline"
             onClick={prevStep}
             disabled={currentStep === 1}
-            className="border-red-400/30 text-red-200 hover:bg-red-500/10 hover:border-red-400/50 disabled:opacity-30 disabled:cursor-not-allowed px-6 rounded-xl"
+            className="border-rose-300/30 text-rose-200 hover:bg-rose-400/10 hover:border-rose-300/50 disabled:opacity-30 disabled:cursor-not-allowed px-6 rounded-xl"
           >
             <ChevronLeft className="w-4 h-4 mr-2" />
             Previous
@@ -859,7 +858,7 @@ const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
             <Button
               type="button"
               onClick={nextStep}
-              className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white shadow-lg shadow-red-500/30 px-6 rounded-xl"
+              className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-400 hover:to-pink-400 text-white shadow-lg shadow-rose-400/25 px-6 rounded-xl"
             >
               Next Step
               <ChevronRight className="w-4 h-4 ml-2" />
