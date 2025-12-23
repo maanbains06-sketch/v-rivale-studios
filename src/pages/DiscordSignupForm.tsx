@@ -12,7 +12,7 @@ import Navigation from "@/components/Navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-const DISCORD_INVITE_LINK = "https://discord.gg/slrp"; // Replace with your actual Discord invite link
+const DISCORD_INVITE_LINK = "https://discord.gg/W2nU97maBh";
 
 const DiscordSignupForm = () => {
   const navigate = useNavigate();
@@ -70,7 +70,7 @@ const DiscordSignupForm = () => {
         if (data.isMember) {
           toast({
             title: "Discord Verified!",
-            description: "You are a member of the SLRP Discord server.",
+            description: "You are a member of the Skylife Roleplay India Discord server.",
           });
         }
       }
@@ -145,7 +145,7 @@ const DiscordSignupForm = () => {
     if (!isMember) {
       toast({
         title: "Discord Membership Required",
-        description: "You must join the SLRP Discord server before completing registration.",
+        description: "You must join the Skylife Roleplay India Discord server before completing registration.",
         variant: "destructive",
       });
       return;
@@ -257,7 +257,7 @@ const DiscordSignupForm = () => {
                     <Loader2 className="h-4 w-4 animate-spin" />
                     <AlertTitle>Checking Discord Membership</AlertTitle>
                     <AlertDescription>
-                      Verifying your membership in the SLRP Discord server...
+                      Verifying your membership in the Skylife Roleplay India Discord server...
                     </AlertDescription>
                   </Alert>
                 ) : isMember ? (
@@ -265,7 +265,7 @@ const DiscordSignupForm = () => {
                     <CheckCircle2 className="h-4 w-4 text-green-500" />
                     <AlertTitle className="text-green-600 dark:text-green-400">Discord Verified!</AlertTitle>
                     <AlertDescription className="text-green-600/80 dark:text-green-400/80">
-                      You are a member of the SLRP Discord server. You can complete your registration.
+                      You are a member of the Skylife Roleplay India Discord server. You can complete your registration.
                     </AlertDescription>
                   </Alert>
                 ) : membershipChecked ? (
@@ -274,7 +274,7 @@ const DiscordSignupForm = () => {
                     <AlertTitle className="text-destructive">Discord Membership Required</AlertTitle>
                     <AlertDescription className="space-y-3">
                       <p className="text-destructive/80">
-                        You must join the SLRP Discord server before completing registration.
+                        You must join the Skylife Roleplay India Discord server before completing registration.
                       </p>
                       <div className="flex flex-wrap gap-2">
                         <Button

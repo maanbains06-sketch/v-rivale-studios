@@ -13,7 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
-const DISCORD_INVITE_LINK = "https://discord.gg/slrp"; // Replace with your actual Discord invite link
+const DISCORD_INVITE_LINK = "https://discord.gg/W2nU97maBh";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -104,7 +104,7 @@ const Auth = () => {
             setSession(null);
             toast({
               title: "Discord Membership Required",
-              description: "You must be a member of the SLRP Discord server to access your account.",
+              description: "You must be a member of the Skylife Roleplay India Discord server to access your account.",
               variant: "destructive",
             });
             return;
@@ -318,7 +318,7 @@ const Auth = () => {
                         </div>
                         <div>
                           <p className="font-medium">Discord Server Member</p>
-                          <p className="text-sm text-muted-foreground">Must be in the SLRP Discord server</p>
+                          <p className="text-sm text-muted-foreground">Must be in the Skylife Roleplay India Discord server</p>
                         </div>
                       </div>
                       <div className="flex items-start gap-3">
