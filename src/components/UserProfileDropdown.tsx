@@ -9,6 +9,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -34,6 +44,7 @@ const UserProfileDropdown = ({ className = "" }: UserProfileDropdownProps) => {
   const [loading, setLoading] = useState(true);
   const [isMember, setIsMember] = useState<boolean | null>(null);
   const [checkingMembership, setCheckingMembership] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -136,6 +147,7 @@ const UserProfileDropdown = ({ className = "" }: UserProfileDropdownProps) => {
   const username = getDiscordUsername();
 
   return (
+    <>
     <DropdownMenu>
       <DropdownMenuTrigger className={`outline-none ${className}`}>
         <motion.div 
@@ -212,13 +224,38 @@ const UserProfileDropdown = ({ className = "" }: UserProfileDropdownProps) => {
 
         <DropdownMenuItem 
           className="cursor-pointer flex items-center gap-2 py-2.5 rounded-lg hover:bg-destructive/10 text-destructive"
-          onClick={handleLogout}
+          onClick={() => setShowLogoutDialog(true)}
         >
           <LogOut className="w-4 h-4" />
           <span>Sign Out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+
+    {/* Logout Confirmation Dialog */}
+    <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+      <AlertDialogContent className="bg-background/95 backdrop-blur-xl border border-border/20">
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <LogOut className="w-5 h-5 text-destructive" />
+            Sign Out
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to sign out? You'll need to log in again to access your profile and applications.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel className="border-border/30">Cancel</AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={handleLogout}
+            className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+          >
+            Sign Out
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 };
 
