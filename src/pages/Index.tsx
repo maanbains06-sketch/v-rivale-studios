@@ -44,7 +44,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 // To change the background video, replace the VIDEO_ID below with your YouTube video ID.
 // Example: For https://www.youtube.com/watch?v=ABC123xyz, the VIDEO_ID is "ABC123xyz"
 // ========================================
-const YOUTUBE_VIDEO_ID = "dQw4w9WgXcQ"; // <-- PASTE YOUR YOUTUBE VIDEO ID HERE
+const YOUTUBE_VIDEO_ID = "hKt7nUCu7Kg"; // <-- PASTE YOUR YOUTUBE VIDEO ID HERE
 // ========================================
 
 // Lazy load heavy components
