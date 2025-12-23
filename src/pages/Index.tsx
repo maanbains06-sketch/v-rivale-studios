@@ -168,6 +168,8 @@ const Index = () => {
         playerVars: {
           autoplay: 1,
           mute: 1,
+          loop: 1,
+          playlist: YOUTUBE_VIDEO_ID,
           controls: 0,
           showinfo: 0,
           modestbranding: 1,
