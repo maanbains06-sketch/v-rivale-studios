@@ -500,6 +500,34 @@ All colors MUST be HSL.
     }
   }
 
+  /* Premium Form Input Styles */
+  .form-input-premium {
+    @apply bg-background/50 border-red-300/30 focus:border-red-400/70 focus:ring-2 focus:ring-red-400/25 text-foreground placeholder:text-muted-foreground/60 rounded-xl py-5 transition-all duration-300 hover:border-red-400/50;
+  }
+
+  .form-input-premium:focus {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.1);
+  }
+
+  /* Form Section Card */
+  .form-section-card {
+    @apply p-6 rounded-2xl border backdrop-blur-sm transition-all duration-300;
+    background: linear-gradient(135deg, hsl(var(--card) / 0.5), hsl(var(--background) / 0.8));
+  }
+
+  /* Animated Border Gradient */
+  @keyframes border-rotate {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .animated-border {
+    background: linear-gradient(90deg, hsl(0 72% 51%), hsl(330 90% 60%), hsl(0 72% 51%));
+    background-size: 200% 200%;
+    animation: border-rotate 3s ease infinite;
+  }
+
   .animate-fade-in {
     animation: fadeIn 0.5s ease-out;
   }
