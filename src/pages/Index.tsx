@@ -438,10 +438,11 @@ const Index = () => {
         <div className="absolute inset-0 scale-[1.5] pointer-events-none">
           <div
             id="youtube-bg-player"
-            className="absolute top-1/2 left-1/2 w-[300vw] h-[300vh] -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+            className="absolute top-1/2 left-1/2 w-[300vw] h-[300vh] -translate-x-1/2 pointer-events-none"
             style={{ 
               minWidth: '100%',
               minHeight: '100%',
+              transform: 'translate(-50%, -45%)',
             }}
           />
         </div>
