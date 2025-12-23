@@ -10,9 +10,8 @@ import Navigation from "@/components/Navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import SignupFormModal, { SignupFormData } from "@/components/SignupFormModal";
+import LoginFormModal, { LoginFormData } from "@/components/LoginFormModal";
 
 const DISCORD_INVITE_LINK = "https://discord.gg/W2nU97maBh";
 
@@ -25,6 +24,7 @@ const Auth = () => {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [verifyingMembership, setVerifyingMembership] = useState(false);
   const [showSignupModal, setShowSignupModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [rememberMe, setRememberMe] = useState(() => {
     return localStorage.getItem('slrp_remember_me') === 'true';
   });
@@ -136,7 +136,11 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate, toast]);
 
-  const handleDiscordLogin = async () => {
+  const handleOpenLoginModal = () => {
+    setShowLoginModal(true);
+  };
+
+  const handleLoginFormSubmit = async (data: LoginFormData) => {
     setLoading(true);
     
     const { error } = await supabase.auth.signInWithOAuth({
@@ -153,6 +157,7 @@ const Auth = () => {
         variant: "destructive",
       });
       setLoading(false);
+      setShowLoginModal(false);
     }
   };
 
@@ -249,22 +254,8 @@ const Auth = () => {
                     </Alert>
 
                     <div className="space-y-4">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox 
-                          id="remember-me" 
-                          checked={rememberMe}
-                          onCheckedChange={handleRememberMeChange}
-                        />
-                        <Label 
-                          htmlFor="remember-me" 
-                          className="text-sm text-muted-foreground cursor-pointer"
-                        >
-                          Remember me on this device
-                        </Label>
-                      </div>
-                      
                       <Button
-                        onClick={handleDiscordLogin}
+                        onClick={handleOpenLoginModal}
                         disabled={loading || !!user}
                         size="lg"
                         className="w-full h-14 text-lg bg-[#5865F2] hover:bg-[#4752C4] text-white disabled:opacity-50 shadow-lg"
@@ -503,6 +494,20 @@ const Auth = () => {
           </p>
         </div>
       </div>
+
+      {/* Login Form Modal */}
+      <LoginFormModal
+        open={showLoginModal}
+        onOpenChange={setShowLoginModal}
+        onSubmit={handleLoginFormSubmit}
+        onSwitchToSignup={() => {
+          setShowLoginModal(false);
+          setShowSignupModal(true);
+        }}
+        loading={loading}
+        rememberMe={rememberMe}
+        onRememberMeChange={handleRememberMeChange}
+      />
 
       {/* Signup Form Modal */}
       <SignupFormModal
