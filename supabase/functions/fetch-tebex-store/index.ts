@@ -8,137 +8,153 @@ const corsHeaders = {
 interface TebexPackage {
   id: number;
   name: string;
-  price: string;
-  image: string | boolean;
-  sale: {
-    active: boolean;
-    discount: string;
+  description: string;
+  image: string | null;
+  base_price: number;
+  sales_price: number;
+  category: {
+    id: number;
+    name: string;
   };
+  type: string;
 }
 
 interface TebexCategory {
   id: number;
   name: string;
-  packages: TebexPackage[];
+  description?: string;
+  packages?: TebexPackage[];
+}
+
+function looksLikeHeadlessToken(token: string) {
+  // Docs: token example like `t66x-7cd928b1e...`
+  return /^[a-z0-9]{3,6}-[a-f0-9]{16,}$/i.test(token);
 }
 
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const secretKey = Deno.env.get("TEBEX_SECRET_KEY");
-    
-    if (!secretKey) {
-      console.error("TEBEX_SECRET_KEY not configured");
+    const token = Deno.env.get("TEBEX_STORE_IDENTIFIER")?.trim();
+
+    if (!token) {
       return new Response(
-        JSON.stringify({ error: "Tebex secret key not configured" }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, "Content-Type": "application/json" } 
-        }
+        JSON.stringify({
+          error: "Tebex store identifier not configured",
+          hint:
+            "Set TEBEX_STORE_IDENTIFIER to your Tebex Headless API webstore identifier/token (looks like t66x-...).",
+        }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    console.log("Fetching Tebex store listing with Plugin API");
+    if (!looksLikeHeadlessToken(token)) {
+      return new Response(
+        JSON.stringify({
+          error: "Invalid Tebex store identifier format",
+          hint:
+            "TEBEX_STORE_IDENTIFIER must be the Headless API webstore identifier/token (it is NOT your store URL/slug). It looks like t66x-...",
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
-    // Use the Plugin API to get listings
-    const listingResponse = await fetch("https://plugin.tebex.io/listing", {
-      headers: {
-        "X-Tebex-Secret": secretKey,
-        "Content-Type": "application/json",
-      },
+    console.log("Fetching Tebex Headless listings for token:", token.slice(0, 8) + "...");
+
+    const storeInfoResponse = await fetch(`https://headless.tebex.io/api/accounts/${token}`, {
+      headers: { "Content-Type": "application/json" },
     });
 
-    if (!listingResponse.ok) {
-      const errorText = await listingResponse.text();
-      console.error("Failed to fetch listing:", listingResponse.status, errorText);
+    if (!storeInfoResponse.ok) {
+      const errorText = await storeInfoResponse.text();
+      console.error("Failed to fetch store info:", storeInfoResponse.status, errorText);
       return new Response(
-        JSON.stringify({ error: "Failed to fetch store listing", details: errorText }),
-        { 
-          status: listingResponse.status, 
-          headers: { ...corsHeaders, "Content-Type": "application/json" } 
-        }
+        JSON.stringify({
+          error: "Failed to fetch store information",
+          details: errorText,
+          hint:
+            storeInfoResponse.status === 404
+              ? "This usually means your TEBEX_STORE_IDENTIFIER is not a valid Headless API token. Copy it from your Tebex Headless API settings."
+              : undefined,
+        }),
+        {
+          status: storeInfoResponse.status,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
-    const listingData = await listingResponse.json();
-    const categories: TebexCategory[] = listingData.categories || [];
-    console.log(`Fetched ${categories.length} categories`);
+    const storeInfoData = await storeInfoResponse.json();
+    const storeInfo = storeInfoData.data;
 
-    // Get all packages from categories
-    const allPackages: any[] = [];
-    categories.forEach((category) => {
-      if (category.packages) {
-        category.packages.forEach((pkg) => {
-          allPackages.push({
-            id: pkg.id,
-            name: pkg.name,
-            description: '',
-            image: typeof pkg.image === 'string' ? pkg.image : null,
-            price: parseFloat(pkg.price) || 0,
-            salePrice: pkg.sale?.active ? parseFloat(pkg.price) - parseFloat(pkg.sale.discount) : null,
-            category: {
-              id: category.id,
-              name: category.name,
-            },
-          });
+    const categoriesResponse = await fetch(
+      `https://headless.tebex.io/api/accounts/${token}/categories?includePackages=1`,
+      { headers: { "Content-Type": "application/json" } },
+    );
+
+    if (!categoriesResponse.ok) {
+      const errorText = await categoriesResponse.text();
+      console.error("Failed to fetch categories:", categoriesResponse.status, errorText);
+      return new Response(
+        JSON.stringify({ error: "Failed to fetch store categories", details: errorText }),
+        {
+          status: categoriesResponse.status,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    const categoriesData = await categoriesResponse.json();
+    const categories: TebexCategory[] = categoriesData.data || [];
+
+    const packages: Array<{
+      id: number;
+      name: string;
+      description: string;
+      image: string | null;
+      price: number;
+      category: { id: number; name: string };
+    }> = [];
+
+    categories.forEach((cat) => {
+      (cat.packages || []).forEach((pkg) => {
+        packages.push({
+          id: pkg.id,
+          name: pkg.name,
+          description: pkg.description || "",
+          image: pkg.image,
+          price: pkg.sales_price || pkg.base_price,
+          category: { id: cat.id, name: cat.name },
         });
-      }
+      });
     });
-
-    console.log(`Total packages: ${allPackages.length}`);
-
-    // Fetch store info
-    const infoResponse = await fetch("https://plugin.tebex.io/information", {
-      headers: {
-        "X-Tebex-Secret": secretKey,
-        "Content-Type": "application/json",
-      },
-    });
-
-    let storeInfo = { name: 'Store', domain: '', currency: { iso_4217: 'INR', symbol: '₹' } };
-    if (infoResponse.ok) {
-      const infoData = await infoResponse.json();
-      storeInfo = {
-        name: infoData.account?.name || 'Store',
-        domain: infoData.account?.domain || '',
-        currency: infoData.account?.currency || { iso_4217: 'INR', symbol: '₹' },
-      };
-      console.log("Store info fetched:", storeInfo.name);
-    }
 
     return new Response(
       JSON.stringify({
         success: true,
         store: {
-          name: storeInfo.name,
-          domain: storeInfo.domain,
-          currency: storeInfo.currency,
-          gameType: 'FiveM',
+          name: storeInfo?.name || "Store",
+          domain: storeInfo?.domain || "",
+          currency: storeInfo?.currency || { iso_4217: "INR", symbol: "₹" },
+          gameType: storeInfo?.game_type || "FiveM",
         },
-        categories: categories.map(cat => ({
+        categories: categories.map((cat) => ({
           id: cat.id,
           name: cat.name,
           packages: cat.packages || [],
         })),
-        packages: allPackages,
-        totalPackages: allPackages.length,
+        packages,
+        totalPackages: packages.length,
       }),
-      { 
-        headers: { ...corsHeaders, "Content-Type": "application/json" } 
-      }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (error) {
     console.error("Error fetching Tebex store:", error);
     return new Response(
       JSON.stringify({ error: "Failed to fetch store data", details: String(error) }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, "Content-Type": "application/json" } 
-      }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 });
