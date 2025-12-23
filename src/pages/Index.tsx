@@ -30,6 +30,7 @@ import Navigation from "@/components/Navigation";
 import AnimatedLogo from "@/components/AnimatedLogo";
 import LaunchingSoonButton from "@/components/LaunchingSoonButton";
 import CreatorProgramSection from "@/components/CreatorProgramSection";
+import TebexStoreSection from "@/components/TebexStoreSection";
 import { MessageSquarePlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -1121,6 +1122,9 @@ const Index = () => {
           </div>
         </div>
       </motion.section>
+
+      {/* Tebex Store Section */}
+      <TebexStoreSection />
 
       {/* Featured Streamers Section - Only show if there are YouTubers */}
       {featuredYoutubers.length > 0 && (
