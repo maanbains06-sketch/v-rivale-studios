@@ -10,6 +10,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui
 import { NotificationBell } from "./NotificationBell";
 import { useStaffRole } from "@/hooks/useStaffRole";
 import { ThemeToggle } from "./ThemeToggle";
+import UserProfileDropdown from "./UserProfileDropdown";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -232,6 +233,9 @@ const Navigation = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            
+            {/* User Profile Dropdown - Shows for authenticated Discord server members */}
+            <UserProfileDropdown className="hidden md:flex" />
             {hasAdminAccess && (
               <NavLink 
                 to="/admin" 
