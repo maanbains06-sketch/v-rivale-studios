@@ -279,10 +279,9 @@ const Auth = () => {
                       <p>Don't have an account?</p>
                       <Button 
                         variant="link" 
-                        className="text-primary p-0 h-auto"
+                        className="text-primary p-0 h-auto font-semibold"
                         onClick={() => {
-                          const tabsList = document.querySelector('[data-state="inactive"][value="signup"]') as HTMLElement;
-                          tabsList?.click();
+                          setShowSignupModal(true);
                         }}
                       >
                         Create one now →
@@ -404,10 +403,9 @@ const Auth = () => {
                       <p>Already have an account?</p>
                       <Button 
                         variant="link" 
-                        className="text-primary p-0 h-auto"
+                        className="text-primary p-0 h-auto font-semibold"
                         onClick={() => {
-                          const tabsList = document.querySelector('[data-state="inactive"][value="login"]') as HTMLElement;
-                          tabsList?.click();
+                          setShowLoginModal(true);
                         }}
                       >
                         Login instead →
@@ -514,6 +512,7 @@ const Auth = () => {
         open={showSignupModal}
         onOpenChange={setShowSignupModal}
         onSubmit={handleSignupFormSubmit}
+        onSwitchToLogin={() => setShowLoginModal(true)}
         loading={loading}
       />
     </div>
