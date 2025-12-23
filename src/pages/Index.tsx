@@ -433,8 +433,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen relative">
-      {/* YouTube Video Background - Covers entire page */}
-      <div className="fixed inset-0 z-0 overflow-hidden">
+      <Navigation />
+
+      {/* YouTube Video Background - Starts below header, ends above footer */}
+      <div className="fixed top-[72px] left-0 right-0 bottom-[80px] z-0 overflow-hidden">
         <div className="absolute inset-0 scale-[1.5] pointer-events-none">
           <div
             id="youtube-bg-player"
@@ -442,15 +444,13 @@ const Index = () => {
             style={{ 
               minWidth: '100%',
               minHeight: '100%',
-              transform: 'translate(-50%, -42%)',
+              transform: 'translate(-50%, -50%)',
             }}
           />
         </div>
         {/* Subtle overlay for text readability */}
         <div className="absolute inset-0 bg-background/15" />
       </div>
-
-      <Navigation />
 
       {/* Hero Section */}
       <section 
