@@ -446,8 +446,8 @@ const Index = () => {
             }}
           />
         </div>
-        {/* Dark overlay to ensure text readability */}
-        <div className="absolute inset-0 bg-background/75" />
+        {/* Subtle overlay for text readability */}
+        <div className="absolute inset-0 bg-background/40" />
       </div>
 
       <Navigation />
@@ -463,7 +463,7 @@ const Index = () => {
           <div className="absolute top-[15%] right-[20%] w-48 h-48 md:w-64 md:h-64 rounded-full blur-3xl bg-secondary/5 gpu-accelerated" />
         </div>
 
-        <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-background/60 z-[5]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/40 z-[5]" />
 
         <FloatingParticles />
 
