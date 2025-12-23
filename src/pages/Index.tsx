@@ -435,21 +435,26 @@ const Index = () => {
     <div className="min-h-screen relative">
       <Navigation />
 
-      {/* YouTube Video Background - Starts below header, ends above footer */}
-      <div className="fixed top-[72px] left-0 right-0 bottom-[80px] z-0 overflow-hidden">
-        <div className="absolute inset-0 scale-[1.5] pointer-events-none">
+      {/* YouTube Video Background - Full viewport coverage */}
+      <div className="fixed inset-0 z-0 overflow-hidden">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div
             id="youtube-bg-player"
-            className="absolute top-1/2 left-1/2 w-[300vw] h-[300vh] -translate-x-1/2 pointer-events-none"
+            className="w-full h-full pointer-events-none"
             style={{ 
-              minWidth: '100%',
-              minHeight: '100%',
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              width: '177.78vh', /* 16:9 aspect ratio */
+              height: '100vh',
+              minWidth: '100vw',
+              minHeight: '56.25vw', /* 16:9 aspect ratio */
               transform: 'translate(-50%, -50%)',
             }}
           />
         </div>
         {/* Subtle overlay for text readability */}
-        <div className="absolute inset-0 bg-background/15" />
+        <div className="absolute inset-0 bg-background/20" />
       </div>
 
       {/* Hero Section */}
