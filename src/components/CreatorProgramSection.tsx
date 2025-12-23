@@ -73,7 +73,7 @@ const CreatorProgramSection = () => {
 
   return (
     <motion.section 
-      className="py-20 md:py-28 relative z-[10]"
+      className="py-20 md:py-28 relative z-[10] bg-background/80"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: "-80px" }}
