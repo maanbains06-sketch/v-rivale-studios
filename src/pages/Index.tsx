@@ -1220,7 +1220,7 @@ const Index = () => {
       )}
 
       {/* Footer */}
-      <footer className="border-t border-primary/20 py-10 relative z-10 bg-background">
+      <footer className="border-t border-primary/20 py-10 relative z-10 bg-background/95">
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center text-center gap-4">
             {/* Logo */}
