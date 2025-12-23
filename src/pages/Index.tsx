@@ -435,20 +435,18 @@ const Index = () => {
     <div className="min-h-screen relative">
       <Navigation />
 
-      {/* YouTube Video Background - Positioned below header */}
-      <div className="fixed top-[72px] left-0 right-0 bottom-0 z-0 overflow-hidden">
+      {/* YouTube Video Background - Full coverage */}
+      <div className="fixed inset-0 z-0 overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div
             id="youtube-bg-player"
             className="w-full h-full pointer-events-none"
             style={{ 
               position: 'absolute',
-              top: '45%',
+              top: '50%',
               left: '50%',
-              width: '177.78vh',
-              height: '100vh',
-              minWidth: '100vw',
-              minHeight: '56.25vw',
+              width: '200vmax',
+              height: '200vmax',
               transform: 'translate(-50%, -50%)',
             }}
           />
