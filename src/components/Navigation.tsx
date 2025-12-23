@@ -3,7 +3,6 @@ import { NavLink } from "./NavLink";
 import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail, Ban, Briefcase, Gift, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, Ticket, ExternalLink, Crown } from "lucide-react";
 import { Button } from "./ui/button";
 import { motion } from "framer-motion";
-import slrpLogo from "@/assets/slrp-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -63,14 +62,6 @@ const Navigation = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {/* SLRP Logo */}
-            <motion.img
-              src={slrpLogo}
-              alt="SLRP Logo"
-              className="w-10 h-10 md:w-12 md:h-12 object-contain cursor-pointer"
-              whileHover={{ scale: 1.1, rotate: 5 }}
-              onClick={() => navigate("/")}
-            />
             {/* Animated Brand Text */}
             <motion.div 
               className="flex flex-col leading-none cursor-pointer"
