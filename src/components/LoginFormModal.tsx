@@ -7,7 +7,7 @@ import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
-import { MessageCircle, Loader2, Mail, Lock, Eye, EyeOff, Shield, Sparkles } from "lucide-react";
+import { MessageCircle, Loader2, Mail, Lock, Eye, EyeOff, Shield, Sparkles, ArrowRight, Stars, Fingerprint } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 
@@ -46,6 +46,7 @@ const LoginFormModal = ({
     email: "",
     password: "",
   });
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,36 +73,51 @@ const LoginFormModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden bg-transparent border-0 shadow-none">
-        {/* Main Card with glass effect */}
-        <div className="relative bg-card/95 backdrop-blur-2xl rounded-2xl border border-border/40 shadow-2xl overflow-hidden">
-          {/* Animated gradient border */}
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[#5865F2]/30 via-transparent to-primary/20 opacity-50" />
-          <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-br from-[#5865F2]/50 via-transparent to-primary/30 -z-10 blur-sm" />
+      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden bg-transparent border-0 shadow-none">
+        {/* Main Card */}
+        <div className="relative bg-gradient-to-b from-card via-card to-card/95 backdrop-blur-2xl rounded-3xl border border-border/30 shadow-2xl overflow-hidden">
+          {/* Animated Background Effects */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-gradient-to-b from-[#5865F2]/20 via-[#5865F2]/5 to-transparent rounded-full blur-3xl" />
+            <div className="absolute -top-40 -right-40 w-80 h-80 bg-[#5865F2]/10 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-primary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+            
+            {/* Floating particles */}
+            <div className="absolute top-20 left-10 w-2 h-2 bg-[#5865F2]/40 rounded-full animate-bounce" style={{ animationDuration: '3s' }} />
+            <div className="absolute top-32 right-16 w-1.5 h-1.5 bg-primary/50 rounded-full animate-bounce" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }} />
+            <div className="absolute bottom-40 left-20 w-1 h-1 bg-[#5865F2]/30 rounded-full animate-bounce" style={{ animationDuration: '4s', animationDelay: '1s' }} />
+          </div>
           
-          {/* Decorative elements */}
-          <div className="absolute top-0 right-0 w-40 h-40 bg-[#5865F2]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+          {/* Gradient border glow */}
+          <div className="absolute -inset-[1px] rounded-3xl bg-gradient-to-br from-[#5865F2]/40 via-transparent to-primary/40 -z-10 blur-sm opacity-60" />
           
           {/* Content */}
           <div className="relative z-10">
             {/* Header */}
-            <div className="relative px-8 pt-8 pb-6 text-center">
-              {/* Logo/Icon */}
-              <div className="relative inline-flex mb-4">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#5865F2] to-[#4752C4] flex items-center justify-center shadow-xl shadow-[#5865F2]/30">
-                  <MessageCircle className="w-10 h-10 text-white" />
+            <div className="relative px-8 pt-10 pb-6 text-center">
+              {/* Logo with ring animation */}
+              <div className="relative inline-flex mb-6">
+                <div className="absolute inset-0 w-24 h-24 rounded-2xl bg-[#5865F2]/30 blur-xl animate-pulse" />
+                <div className="relative w-24 h-24 rounded-2xl bg-gradient-to-br from-[#5865F2] via-[#5865F2] to-[#4752C4] flex items-center justify-center shadow-2xl shadow-[#5865F2]/40 border border-white/10">
+                  <MessageCircle className="w-12 h-12 text-white" />
+                  
+                  {/* Animated ring */}
+                  <div className="absolute -inset-2 rounded-2xl border-2 border-[#5865F2]/30 animate-ping" style={{ animationDuration: '2s' }} />
                 </div>
-                <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-4 border-card flex items-center justify-center animate-pulse">
-                  <Sparkles className="w-3 h-3 text-white" />
+                
+                {/* Online status */}
+                <div className="absolute -top-1 -right-1 w-7 h-7 bg-gradient-to-br from-green-400 to-green-600 rounded-full border-4 border-card flex items-center justify-center shadow-lg shadow-green-500/30">
+                  <Sparkles className="w-3.5 h-3.5 text-white" />
                 </div>
               </div>
               
-              <h2 className="text-2xl font-bold text-foreground mb-2" style={{ textShadow: 'none' }}>
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent mb-2">
                 Welcome Back!
               </h2>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground/80 flex items-center justify-center gap-2">
+                <Stars className="w-4 h-4 text-[#5865F2]" />
                 Sign in to continue your journey
+                <Stars className="w-4 h-4 text-[#5865F2]" />
               </p>
             </div>
 
@@ -109,107 +125,121 @@ const LoginFormModal = ({
             <form onSubmit={handleSubmit} className="px-8 pb-8 space-y-5">
               {/* Email Field */}
               <div className="space-y-2">
-                <Label htmlFor="login-email" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <Label htmlFor="login-email" className="text-xs font-bold uppercase tracking-widest text-muted-foreground/80 flex items-center gap-2">
                   <Mail className="w-3.5 h-3.5 text-[#5865F2]" />
                   Email or Username
                 </Label>
-                <div className="relative group">
+                <div className={`relative group transition-all duration-500 ${focusedField === 'email' ? 'scale-[1.02]' : ''}`}>
+                  <div className={`absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-[#5865F2] to-[#4752C4] opacity-0 transition-opacity duration-300 blur-sm ${focusedField === 'email' ? 'opacity-50' : 'group-hover:opacity-30'}`} />
                   <Input
                     id="login-email"
                     type="text"
                     placeholder="you@example.com"
                     value={formData.email}
                     onChange={(e) => updateField("email", e.target.value)}
-                    className="h-12 bg-background/60 border-border/50 rounded-xl pl-4 pr-4 text-base placeholder:text-muted-foreground/50 focus:border-[#5865F2] focus:ring-2 focus:ring-[#5865F2]/20 transition-all duration-300"
+                    onFocus={() => setFocusedField('email')}
+                    onBlur={() => setFocusedField(null)}
+                    className="relative h-14 bg-background/80 backdrop-blur-sm border-border/40 rounded-2xl pl-5 pr-5 text-base placeholder:text-muted-foreground/40 focus:border-[#5865F2] focus:ring-0 focus:bg-background transition-all duration-300"
                     required
                   />
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#5865F2]/0 via-[#5865F2]/5 to-[#5865F2]/0 opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none" />
                 </div>
               </div>
 
               {/* Password Field */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="login-password" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <Label htmlFor="login-password" className="text-xs font-bold uppercase tracking-widest text-muted-foreground/80 flex items-center gap-2">
                     <Lock className="w-3.5 h-3.5 text-[#5865F2]" />
                     Password
                   </Label>
                   <button
                     type="button"
-                    className="text-xs text-[#5865F2] hover:text-[#4752C4] transition-colors font-medium"
+                    className="text-xs text-[#5865F2] hover:text-[#4752C4] transition-colors font-semibold hover:underline underline-offset-4"
                     onClick={() => window.open('https://discord.com/reset', '_blank')}
                   >
                     Forgot password?
                   </button>
                 </div>
-                <div className="relative group">
+                <div className={`relative group transition-all duration-500 ${focusedField === 'password' ? 'scale-[1.02]' : ''}`}>
+                  <div className={`absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-[#5865F2] to-[#4752C4] opacity-0 transition-opacity duration-300 blur-sm ${focusedField === 'password' ? 'opacity-50' : 'group-hover:opacity-30'}`} />
                   <Input
                     id="login-password"
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     value={formData.password}
                     onChange={(e) => updateField("password", e.target.value)}
-                    className="h-12 bg-background/60 border-border/50 rounded-xl pl-4 pr-12 text-base placeholder:text-muted-foreground/50 focus:border-[#5865F2] focus:ring-2 focus:ring-[#5865F2]/20 transition-all duration-300"
+                    onFocus={() => setFocusedField('password')}
+                    onBlur={() => setFocusedField(null)}
+                    className="relative h-14 bg-background/80 backdrop-blur-sm border-border/40 rounded-2xl pl-5 pr-14 text-base placeholder:text-muted-foreground/40 focus:border-[#5865F2] focus:ring-0 focus:bg-background transition-all duration-300"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    className="absolute right-5 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-foreground transition-colors p-1"
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
               </div>
 
-              {/* Remember Me */}
-              <div className="flex items-center justify-between pt-1">
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id="login-remember"
-                    checked={rememberMe}
-                    onCheckedChange={(checked) => onRememberMeChange(checked as boolean)}
-                    className="border-border/60 data-[state=checked]:bg-[#5865F2] data-[state=checked]:border-[#5865F2]"
-                  />
-                  <Label htmlFor="login-remember" className="text-sm text-muted-foreground cursor-pointer font-normal">
+              {/* Remember Me - Enhanced */}
+              <div className="flex items-center justify-between pt-1 px-1">
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <div className="relative">
+                    <Checkbox
+                      id="login-remember"
+                      checked={rememberMe}
+                      onCheckedChange={(checked) => onRememberMeChange(checked as boolean)}
+                      className="h-5 w-5 rounded-md border-2 border-border/60 data-[state=checked]:bg-[#5865F2] data-[state=checked]:border-[#5865F2] transition-all duration-200"
+                    />
+                  </div>
+                  <span className="text-sm text-muted-foreground/80 group-hover:text-foreground transition-colors flex items-center gap-2">
+                    <Fingerprint className="w-4 h-4" />
                     Remember me
-                  </Label>
-                </div>
+                  </span>
+                </label>
               </div>
 
               {/* Submit Button */}
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full h-12 text-base font-semibold bg-[#5865F2] hover:bg-[#4752C4] text-white rounded-xl shadow-lg shadow-[#5865F2]/25 hover:shadow-xl hover:shadow-[#5865F2]/30 transition-all duration-300 hover:-translate-y-0.5"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Connecting...
-                  </>
-                ) : (
-                  <>
-                    <MessageCircle className="w-5 h-5 mr-2" />
-                    Login with Discord
-                  </>
-                )}
-              </Button>
+              <div className="pt-2">
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="relative w-full h-14 text-base font-bold bg-gradient-to-r from-[#5865F2] to-[#4752C4] hover:from-[#4752C4] hover:to-[#3a43b8] text-white rounded-2xl shadow-xl shadow-[#5865F2]/30 hover:shadow-2xl hover:shadow-[#5865F2]/40 transition-all duration-300 hover:-translate-y-1 disabled:opacity-50 disabled:hover:translate-y-0 overflow-hidden group"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Connecting...
+                    </>
+                  ) : (
+                    <>
+                      <MessageCircle className="w-5 h-5 mr-2" />
+                      Login with Discord
+                      <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                    </>
+                  )}
+                </Button>
+              </div>
 
               {/* Security Badge */}
-              <div className="flex items-center justify-center gap-2 pt-2">
-                <Shield className="w-4 h-4 text-green-500" />
-                <span className="text-xs text-muted-foreground">Secured with Discord OAuth2</span>
+              <div className="flex items-center justify-center gap-2 pt-3">
+                <div className="flex items-center gap-1.5 px-4 py-2 bg-green-500/10 rounded-full border border-green-500/20">
+                  <Shield className="w-4 h-4 text-green-500" />
+                  <span className="text-xs font-medium text-green-600 dark:text-green-400">Secured with Discord OAuth2</span>
+                </div>
               </div>
 
               {/* Divider */}
-              <div className="relative py-3">
+              <div className="relative py-4">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-border/40" />
+                  <div className="w-full border-t border-border/30" />
                 </div>
                 <div className="relative flex justify-center">
-                  <span className="bg-card px-4 text-xs text-muted-foreground uppercase tracking-wider">
-                    New here?
+                  <span className="bg-card px-6 text-xs text-muted-foreground/60 uppercase tracking-widest font-medium">
+                    New to SLRP?
                   </span>
                 </div>
               </div>
@@ -221,9 +251,13 @@ const LoginFormModal = ({
                   onOpenChange(false);
                   onSwitchToSignup();
                 }}
-                className="w-full h-11 text-sm font-medium text-foreground bg-muted/50 hover:bg-muted rounded-xl border border-border/50 transition-all duration-300 hover:border-[#5865F2]/30"
+                className="relative w-full h-12 text-sm font-semibold text-foreground/80 bg-gradient-to-r from-muted/50 to-muted/30 hover:from-muted hover:to-muted/60 rounded-2xl border border-border/40 transition-all duration-300 hover:border-[#5865F2]/40 hover:text-foreground group overflow-hidden"
               >
-                Create an account
+                <div className="absolute inset-0 bg-gradient-to-r from-[#5865F2]/0 via-[#5865F2]/10 to-[#5865F2]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <span className="relative flex items-center justify-center gap-2">
+                  Create an account
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </span>
               </button>
             </form>
           </div>
