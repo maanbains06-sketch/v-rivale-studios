@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
   Video, 
@@ -16,11 +17,15 @@ import {
   Heart,
   Mic2,
   ArrowRight,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import CreatorApplicationForm from "./CreatorApplicationForm";
+import { supabase } from "@/integrations/supabase/client";
+import { User } from "@supabase/supabase-js";
+import { useToast } from "@/hooks/use-toast";
 
 const scrollRevealVariants = {
   hidden: { opacity: 0, y: 40 },
@@ -70,7 +75,39 @@ const evaluations = [
 
 const CreatorProgramSection = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+        setCheckingAuth(false);
+      }
+    );
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setCheckingAuth(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleApplyClick = () => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login with Discord to apply for the Creator Program.",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
+    setIsOpen(true);
+  };
   return (
     <motion.section 
       className="py-20 md:py-28 relative z-[10] bg-background/80"
@@ -171,21 +208,33 @@ const CreatorProgramSection = () => {
             </div>
 
             <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                <DialogTrigger asChild>
-                  <Button
-                    size="lg"
-                    className="bg-red-600 hover:bg-red-500 text-white font-semibold px-8 py-6 rounded-xl shadow-lg shadow-red-500/20 hover:shadow-red-500/30 transition-all duration-300 text-base group"
-                  >
-                    <Video className="w-5 h-5 mr-2" />
-                    Apply for Creator Program
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden bg-gradient-to-b from-background via-background to-red-950/20 backdrop-blur-2xl border border-red-400/25 p-0 shadow-2xl shadow-red-500/15">
-                  <CreatorApplicationForm onClose={() => setIsOpen(false)} />
-                </DialogContent>
-              </Dialog>
+              {user ? (
+                <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                  <DialogTrigger asChild>
+                    <Button
+                      size="lg"
+                      className="bg-red-600 hover:bg-red-500 text-white font-semibold px-8 py-6 rounded-xl shadow-lg shadow-red-500/20 hover:shadow-red-500/30 transition-all duration-300 text-base group"
+                    >
+                      <Video className="w-5 h-5 mr-2" />
+                      Apply for Creator Program
+                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden bg-gradient-to-b from-background via-background to-red-950/20 backdrop-blur-2xl border border-red-400/25 p-0 shadow-2xl shadow-red-500/15">
+                    <CreatorApplicationForm onClose={() => setIsOpen(false)} />
+                  </DialogContent>
+                </Dialog>
+              ) : (
+                <Button
+                  size="lg"
+                  onClick={handleApplyClick}
+                  className="bg-red-600 hover:bg-red-500 text-white font-semibold px-8 py-6 rounded-xl shadow-lg shadow-red-500/20 hover:shadow-red-500/30 transition-all duration-300 text-base group"
+                >
+                  <Lock className="w-5 h-5 mr-2" />
+                  Login to Apply
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              )}
             </motion.div>
           </div>
         </div>
