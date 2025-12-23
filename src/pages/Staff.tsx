@@ -803,9 +803,9 @@ const Staff = () => {
               </div>
               
               {dept.staff.length > 0 ? (
-                <div className={`${dept.centerSingle && dept.staff.length === 1 ? 'flex justify-center' : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-4xl mx-auto'}`}>
+                <div className={`${dept.centerSingle && dept.staff.length === 1 ? 'flex justify-center' : dept.staff.length === 2 ? 'grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto' : 'grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto'}`}>
                   {dept.staff.map((member, index) => (
-                    <div key={member.id} className={dept.centerSingle && dept.staff.length === 1 ? 'w-full max-w-sm' : ''}>
+                    <div key={member.id} className={dept.centerSingle && dept.staff.length === 1 ? 'w-full max-w-md' : 'w-full'}>
                       {renderStaffCard(member, index)}
                     </div>
                   ))}
