@@ -155,14 +155,18 @@ const Index = () => {
 
   // YouTube Player API for precise trimming
   useEffect(() => {
-    // Load YouTube IFrame API
-    const tag = document.createElement('script');
-    tag.src = 'https://www.youtube.com/iframe_api';
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+    const initializePlayer = () => {
+      // Destroy existing player if it exists
+      if (playerRef.current && playerRef.current.destroy) {
+        try {
+          playerRef.current.destroy();
+        } catch (e) {
+          console.log('Player cleanup failed');
+        }
+        playerRef.current = null;
+      }
 
-    // Define the callback
-    (window as any).onYouTubeIframeAPIReady = () => {
+      // Create new player
       playerRef.current = new (window as any).YT.Player('youtube-bg-player', {
         videoId: YOUTUBE_VIDEO_ID,
         playerVars: {
@@ -187,7 +191,6 @@ const Index = () => {
             event.target.playVideo();
           },
           onStateChange: (event: any) => {
-            // When video ends or when we need to loop
             if (event.data === (window as any).YT.PlayerState.ENDED) {
               event.target.seekTo(VIDEO_TRIM_START);
               event.target.playVideo();
@@ -196,6 +199,22 @@ const Index = () => {
         },
       });
     };
+
+    // Check if YouTube API is already loaded
+    if ((window as any).YT && (window as any).YT.Player) {
+      initializePlayer();
+    } else {
+      // Load YouTube IFrame API only if not already loaded
+      if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
+        const tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+      }
+      
+      // Define the callback
+      (window as any).onYouTubeIframeAPIReady = initializePlayer;
+    }
 
     // Check playback position periodically to handle end trimming
     const checkPlayback = setInterval(() => {
@@ -211,8 +230,17 @@ const Index = () => {
 
     return () => {
       clearInterval(checkPlayback);
+      // Cleanup player on unmount
+      if (playerRef.current && playerRef.current.destroy) {
+        try {
+          playerRef.current.destroy();
+        } catch (e) {
+          console.log('Player cleanup on unmount failed');
+        }
+        playerRef.current = null;
+      }
     };
-  }, [videoDuration]);
+  }, []);
 
   // Simplified scroll - removed heavy transforms
   const { scrollYProgress } = useScroll();
