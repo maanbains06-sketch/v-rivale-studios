@@ -442,7 +442,7 @@ const Index = () => {
             style={{ 
               minWidth: '100%',
               minHeight: '100%',
-              transform: 'translate(-50%, -45%)',
+              transform: 'translate(-50%, -42%)',
             }}
           />
         </div>
