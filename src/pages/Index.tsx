@@ -594,7 +594,7 @@ const Index = () => {
                       className={`text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 ${
                         allRequirementsMet
                           ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30 hover:shadow-green-500/50 hover:scale-105 cursor-pointer"
-                          : "bg-muted/50 text-muted-foreground border border-border/50 hover:bg-muted/70"
+                          : "bg-background/75 text-muted-foreground border border-border/50 hover:bg-background/85"
                       }`}
                       onClick={(e) => {
                         if (allRequirementsMet) {
@@ -698,7 +698,7 @@ const Index = () => {
                       className={`text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 ${
                         allRequirementsMet
                           ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30 hover:shadow-green-500/50 hover:scale-105 cursor-pointer"
-                          : "bg-muted/50 text-muted-foreground border border-border/50 hover:bg-muted/70"
+                          : "bg-background/75 text-muted-foreground border border-border/50 hover:bg-background/85"
                       }`}
                       onClick={allRequirementsMet ? handleJoinServer : undefined}
                     >
@@ -781,7 +781,7 @@ const Index = () => {
 
               <Button
                 size="lg"
-                className="bg-transparent border-2 border-sky-500/50 text-sky-400 hover:bg-sky-500/10 hover:border-sky-400 text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 hover:scale-105"
+                className="bg-background/75 border-2 border-sky-500/50 text-sky-400 hover:bg-background/85 hover:border-sky-400 text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 hover:scale-105"
                 onClick={() => navigate("/whitelist")}
               >
                 <Play className="w-5 h-5 mr-2" />
@@ -790,7 +790,7 @@ const Index = () => {
 
               <Button
                 size="lg"
-                className="bg-transparent border-2 border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-400 text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 hover:scale-105"
+                className="bg-background/75 border-2 border-cyan-500/50 text-cyan-400 hover:bg-background/85 hover:border-cyan-400 text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 hover:scale-105"
                 asChild
               >
                 <a href="https://www.youtube.com/@Skyliferpindia20" target="_blank" rel="noopener noreferrer">
