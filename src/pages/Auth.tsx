@@ -5,13 +5,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { User, Session } from "@supabase/supabase-js";
-import { MessageCircle, Shield, Users, Zap, CheckCircle, Loader2 } from "lucide-react";
+import { MessageCircle, Shield, Users, Zap, CheckCircle, Loader2, ExternalLink } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+
+const DISCORD_INVITE_LINK = "https://discord.gg/slrp"; // Replace with your actual Discord invite link
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -20,6 +22,7 @@ const Auth = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [verifyingMembership, setVerifyingMembership] = useState(false);
   const [rememberMe, setRememberMe] = useState(() => {
     return localStorage.getItem('slrp_remember_me') === 'true';
   });
@@ -35,6 +38,33 @@ const Auth = () => {
       localStorage.setItem('slrp_remember_me', 'true');
     } else {
       localStorage.removeItem('slrp_remember_me');
+    }
+  };
+
+  const getDiscordId = (user: User) => {
+    return user.user_metadata?.provider_id || 
+           user.user_metadata?.sub || 
+           user.identities?.find(i => i.provider === 'discord')?.id;
+  };
+
+  const verifyDiscordMembership = async (user: User): Promise<boolean> => {
+    const discordId = getDiscordId(user);
+    if (!discordId) return false;
+
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-discord-membership', {
+        body: { discordId }
+      });
+
+      if (error) {
+        console.error('Membership verification error:', error);
+        return false;
+      }
+
+      return data.isMember === true;
+    } catch (err) {
+      console.error('Membership check failed:', err);
+      return false;
     }
   };
 
@@ -63,6 +93,23 @@ const Auth = () => {
             toast({
               title: "Account Not Found",
               description: "You are not registered. Please sign up first to create an account.",
+              variant: "destructive",
+            });
+            return;
+          }
+
+          // Verify Discord membership on login
+          setVerifyingMembership(true);
+          const isMember = await verifyDiscordMembership(session.user);
+          setVerifyingMembership(false);
+
+          if (!isMember) {
+            await supabase.auth.signOut();
+            setUser(null);
+            setSession(null);
+            toast({
+              title: "Discord Membership Required",
+              description: "You must be a member of the SLRP Discord server to access your account.",
               variant: "destructive",
             });
             return;
@@ -136,12 +183,14 @@ const Auth = () => {
   };
 
 
-  if (checkingAuth) {
+  if (checkingAuth || verifyingMembership) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-10 h-10 animate-spin text-primary" />
-          <p className="text-muted-foreground text-sm">Checking authentication...</p>
+          <p className="text-muted-foreground text-sm">
+            {verifyingMembership ? "Verifying Discord membership..." : "Checking authentication..."}
+          </p>
         </div>
       </div>
     );
@@ -194,9 +243,9 @@ const Auth = () => {
                   <Zap className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg mb-1">Quick Access</h3>
+                  <h3 className="font-semibold text-lg mb-1">Discord Verification</h3>
                   <p className="text-sm text-muted-foreground">
-                    One-click authentication gets you into the action immediately.
+                    We verify your Discord membership to ensure a quality community.
                   </p>
                 </div>
               </div>
@@ -225,6 +274,13 @@ const Auth = () => {
                       Sign in to access your account and continue your roleplay journey
                     </p>
                   </div>
+
+                  <Alert className="border-blue-500/20 bg-blue-500/10">
+                    <MessageCircle className="h-4 w-4 text-blue-500" />
+                    <AlertDescription className="text-sm">
+                      You must be a member of the SLRP Discord server to login.
+                    </AlertDescription>
+                  </Alert>
                   
                   <div className="flex items-center space-x-2">
                     <Checkbox 
@@ -263,31 +319,41 @@ const Auth = () => {
                   <div className="text-center space-y-2">
                     <h3 className="text-lg font-semibold">Create Your Account</h3>
                     <p className="text-sm text-muted-foreground">
-                      New to SLRP? Sign up with Discord to get started
+                      New to SLRP? Follow these steps to get started
                     </p>
                   </div>
 
                   <div className="space-y-3 p-4 rounded-lg bg-muted/50 border border-border/50">
-                    <p className="text-sm font-medium">After signing up, you'll be able to:</p>
-                    <ul className="space-y-2 text-sm text-muted-foreground">
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-primary" />
-                        <span>Apply for server whitelist</span>
+                    <p className="text-sm font-medium">Registration Steps:</p>
+                    <ol className="space-y-2 text-sm text-muted-foreground list-decimal list-inside">
+                      <li className="flex items-start gap-2">
+                        <span className="font-medium text-primary">1.</span>
+                        <span>Click "Sign Up with Discord" below</span>
                       </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-primary" />
-                        <span>Access exclusive features and store</span>
+                      <li className="flex items-start gap-2">
+                        <span className="font-medium text-primary">2.</span>
+                        <span>Authorize SLRP to access your Discord</span>
                       </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-primary" />
-                        <span>Join our active community</span>
+                      <li className="flex items-start gap-2">
+                        <span className="font-medium text-primary">3.</span>
+                        <span>Fill out your gaming profile details</span>
                       </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-primary" />
-                        <span>Track your applications and orders</span>
+                      <li className="flex items-start gap-2">
+                        <span className="font-medium text-primary">4.</span>
+                        <span>Join our Discord server (required)</span>
                       </li>
-                    </ul>
+                    </ol>
                   </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full border-[#5865F2]/50 text-[#5865F2] hover:bg-[#5865F2]/10"
+                    onClick={() => window.open(DISCORD_INVITE_LINK, '_blank')}
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Join Discord Server First (Recommended)
+                  </Button>
                   
                   <Button
                     onClick={handleDiscordSignup}
