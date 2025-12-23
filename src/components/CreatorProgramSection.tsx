@@ -96,17 +96,20 @@ const CreatorProgramSection = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleApplyClick = () => {
-    if (!user) {
-      toast({
-        title: "Login Required",
-        description: "Please login with Discord to apply for the Creator Program.",
-        variant: "destructive",
-      });
-      navigate("/auth");
-      return;
-    }
-    setIsOpen(true);
+  const handleLoginClick = () => {
+    toast({
+      title: "Login Required",
+      description: "Please login with Discord to apply for the Creator Program.",
+    });
+    navigate("/auth");
+  };
+
+  const handleSignupClick = () => {
+    toast({
+      title: "Sign Up Required",
+      description: "Please sign up with Discord to apply for the Creator Program.",
+    });
+    navigate("/auth?tab=signup");
   };
   return (
     <motion.section 
@@ -225,15 +228,27 @@ const CreatorProgramSection = () => {
                   </DialogContent>
                 </Dialog>
               ) : (
-                <Button
-                  size="lg"
-                  onClick={handleApplyClick}
-                  className="bg-red-600 hover:bg-red-500 text-white font-semibold px-8 py-6 rounded-xl shadow-lg shadow-red-500/20 hover:shadow-red-500/30 transition-all duration-300 text-base group"
-                >
-                  <Lock className="w-5 h-5 mr-2" />
-                  Login to Apply
-                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Button>
+                <div className="flex flex-col sm:flex-row items-center gap-3">
+                  <Button
+                    size="lg"
+                    onClick={handleLoginClick}
+                    className="bg-red-600 hover:bg-red-500 text-white font-semibold px-8 py-6 rounded-xl shadow-lg shadow-red-500/20 hover:shadow-red-500/30 transition-all duration-300 text-base group"
+                  >
+                    <Lock className="w-5 h-5 mr-2" />
+                    Login to Apply
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                  <Button
+                    size="lg"
+                    onClick={handleSignupClick}
+                    variant="outline"
+                    className="border-red-500/50 text-red-400 hover:bg-red-500/10 font-semibold px-8 py-6 rounded-xl transition-all duration-300 text-base group"
+                  >
+                    <Users className="w-5 h-5 mr-2" />
+                    Sign Up with Discord
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </div>
               )}
             </motion.div>
           </div>
