@@ -956,7 +956,7 @@ const Index = () => {
 
       {/* Quick Info Section */}
       <motion.section 
-        className="py-16 md:py-24 relative z-[10] bg-background/15"
+        className="py-16 md:py-24 relative z-[10] bg-background/80"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
@@ -1020,7 +1020,7 @@ const Index = () => {
 
       {/* Community Section */}
       <motion.section 
-        className="py-20 md:py-32 relative bg-background/15"
+        className="py-20 md:py-32 relative bg-background/80"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
@@ -1103,7 +1103,7 @@ const Index = () => {
       {/* Featured Streamers Section - Only show if there are YouTubers */}
       {featuredYoutubers.length > 0 && (
         <motion.section 
-          className="py-16 md:py-24 relative bg-background/15"
+          className="py-16 md:py-24 relative bg-background/80"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
@@ -1215,7 +1215,7 @@ const Index = () => {
       )}
 
       {/* Footer */}
-      <footer className="border-t border-primary/20 py-10 relative z-10 bg-background/55">
+      <footer className="border-t border-primary/20 py-10 relative z-10 bg-background/80">
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center text-center gap-4">
             {/* Logo */}
