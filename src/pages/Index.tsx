@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState, useMemo, lazy, Suspense } from "react";
+import { useEffect, useState, useMemo, lazy, Suspense, useRef, useCallback } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Navigation from "@/components/Navigation";
 import AnimatedLogo from "@/components/AnimatedLogo";
@@ -45,6 +45,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 // Example: For https://www.youtube.com/watch?v=ABC123xyz, the VIDEO_ID is "ABC123xyz"
 // ========================================
 const YOUTUBE_VIDEO_ID = "hKt7nUCu7Kg"; // <-- PASTE YOUR YOUTUBE VIDEO ID HERE
+const VIDEO_TRIM_START = 3; // Seconds to trim from start
+const VIDEO_TRIM_END = 3; // Seconds to trim from end
 // ========================================
 
 // Lazy load heavy components
@@ -148,6 +150,67 @@ const Index = () => {
   const [isCheckingDiscord, setIsCheckingDiscord] = useState(false);
   const [mobileRequirementsOpen, setMobileRequirementsOpen] = useState(false);
   const isMobile = useIsMobile();
+  const playerRef = useRef<any>(null);
+  const [videoDuration, setVideoDuration] = useState<number>(0);
+
+  // YouTube Player API for precise trimming
+  useEffect(() => {
+    // Load YouTube IFrame API
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+
+    // Define the callback
+    (window as any).onYouTubeIframeAPIReady = () => {
+      playerRef.current = new (window as any).YT.Player('youtube-bg-player', {
+        videoId: YOUTUBE_VIDEO_ID,
+        playerVars: {
+          autoplay: 1,
+          mute: 1,
+          controls: 0,
+          showinfo: 0,
+          modestbranding: 1,
+          rel: 0,
+          iv_load_policy: 3,
+          disablekb: 1,
+          playsinline: 1,
+          start: VIDEO_TRIM_START,
+        },
+        events: {
+          onReady: (event: any) => {
+            const duration = event.target.getDuration();
+            setVideoDuration(duration);
+            event.target.seekTo(VIDEO_TRIM_START);
+            event.target.playVideo();
+          },
+          onStateChange: (event: any) => {
+            // When video ends or when we need to loop
+            if (event.data === (window as any).YT.PlayerState.ENDED) {
+              event.target.seekTo(VIDEO_TRIM_START);
+              event.target.playVideo();
+            }
+          },
+        },
+      });
+    };
+
+    // Check playback position periodically to handle end trimming
+    const checkPlayback = setInterval(() => {
+      if (playerRef.current && playerRef.current.getCurrentTime && videoDuration > 0) {
+        const currentTime = playerRef.current.getCurrentTime();
+        const endTime = videoDuration - VIDEO_TRIM_END;
+        if (currentTime >= endTime) {
+          playerRef.current.seekTo(VIDEO_TRIM_START);
+          playerRef.current.playVideo();
+        }
+      }
+    }, 500);
+
+    return () => {
+      clearInterval(checkPlayback);
+    };
+  }, [videoDuration]);
 
   // Simplified scroll - removed heavy transforms
   const { scrollYProgress } = useScroll();
@@ -371,18 +434,13 @@ const Index = () => {
       {/* YouTube Video Background - Covers entire page */}
       <div className="fixed inset-0 z-0 overflow-hidden">
         <div className="absolute inset-0 scale-[1.5] pointer-events-none">
-          <iframe
-            src={`https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?autoplay=1&mute=1&loop=1&playlist=${YOUTUBE_VIDEO_ID}&controls=0&showinfo=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&playsinline=1&enablejsapi=1&start=3&end=57`}
-            title="Background Video"
+          <div
+            id="youtube-bg-player"
             className="absolute top-1/2 left-1/2 w-[300vw] h-[300vh] -translate-x-1/2 -translate-y-1/2 pointer-events-none"
             style={{ 
               minWidth: '100%',
               minHeight: '100%',
-              objectFit: 'cover',
             }}
-            allow="autoplay; encrypted-media"
-            allowFullScreen={false}
-            frameBorder="0"
           />
         </div>
         {/* Dark overlay to ensure text readability */}
