@@ -50,3 +50,6 @@ verify_jwt = false
 
 [functions.verify-roster-permissions]
 verify_jwt = false
+
+[functions.verify-discord-membership]
+verify_jwt = false
