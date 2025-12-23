@@ -77,7 +77,7 @@ const AppRoutes = () => {
         <Route path="/ban-appeal" element={<PageTransition><RequireAuth message="Login with Discord to submit a ban appeal."><BanAppeal /></RequireAuth></PageTransition>} />
         <Route path="/guides" element={<PageTransition><Guides /></PageTransition>} />
         <Route path="/gallery" element={<PageTransition><RequireAuth message="Login with Discord to view the gallery."><Gallery /></RequireAuth></PageTransition>} />
-        <Route path="/status" element={<PageTransition><Status /></PageTransition>} />
+        <Route path="/status" element={<PageTransition><RequireAuth message="Login with Discord to view server status."><Status /></RequireAuth></PageTransition>} />
         <Route path="/support" element={<PageTransition><RequireAuth message="Login with Discord to access support."><Support /></RequireAuth></PageTransition>} />
         <Route path="/confirmation" element={<PageTransition><Confirmation /></PageTransition>} />
         <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
