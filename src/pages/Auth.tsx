@@ -10,6 +10,8 @@ import Navigation from "@/components/Navigation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -18,11 +20,23 @@ const Auth = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [rememberMe, setRememberMe] = useState(() => {
+    return localStorage.getItem('slrp_remember_me') === 'true';
+  });
   const location = window.location.pathname;
   const searchParams = new URLSearchParams(window.location.search);
   const tabParam = searchParams.get("tab");
   const isSignupFlow = searchParams.get("signup") === "true" || location === "/signup" || tabParam === "signup";
   const defaultTab = tabParam === "signup" || location === "/signup" ? "signup" : "login";
+
+  const handleRememberMeChange = (checked: boolean) => {
+    setRememberMe(checked);
+    if (checked) {
+      localStorage.setItem('slrp_remember_me', 'true');
+    } else {
+      localStorage.removeItem('slrp_remember_me');
+    }
+  };
 
   useEffect(() => {
     const checkAuth = async (session: Session | null, event?: string) => {
@@ -210,6 +224,20 @@ const Auth = () => {
                     <p className="text-sm text-muted-foreground">
                       Sign in to access your account and continue your roleplay journey
                     </p>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="remember-me" 
+                      checked={rememberMe}
+                      onCheckedChange={handleRememberMeChange}
+                    />
+                    <Label 
+                      htmlFor="remember-me" 
+                      className="text-sm text-muted-foreground cursor-pointer"
+                    >
+                      Remember me
+                    </Label>
                   </div>
                   
                   <Button
