@@ -778,13 +778,13 @@ const Staff = () => {
 
           {/* Department Sections - Clean unified design */}
           {[
-            { key: "leadership", title: "Leadership Team", subtitle: "The visionaries guiding SLRP to excellence", icon: Shield, staff: leadershipStaff, centerSingle: true },
-            { key: "management", title: "Management Team", subtitle: "Ensuring smooth server operations", icon: Users, staff: adminStaff, centerSingle: false },
-            { key: "development", title: "Development Team", subtitle: "Building innovative features", icon: Code, staff: developerStaff, centerSingle: true },
-            { key: "moderation", title: "Administration Team", subtitle: "Keeping the community safe and fair", icon: HeadphonesIcon, staff: moderatorStaff, centerSingle: false },
-            { key: "staff", title: "Staff Team", subtitle: "Core team members providing essential services", icon: UserCheck, staff: generalStaff, centerSingle: false },
-            { key: "support", title: "Support Team", subtitle: "Always here to help you succeed", icon: HeadphonesIcon, staff: supportStaff, centerSingle: false },
-            { key: "events", title: "Events Team", subtitle: "Creating unforgettable experiences", icon: Calendar, staff: eventStaff, centerSingle: false },
+            { key: "leadership", title: "Leadership Team", subtitle: "The visionaries guiding SLRP to excellence", icon: Shield, staff: leadershipStaff, centerSingle: true, noLimit: true },
+            { key: "management", title: "Management Team", subtitle: "Ensuring smooth server operations", icon: Users, staff: adminStaff.slice(0, 3), centerSingle: false, noLimit: false },
+            { key: "development", title: "Development Team", subtitle: "Building innovative features", icon: Code, staff: developerStaff, centerSingle: true, noLimit: true },
+            { key: "moderation", title: "Administration Team", subtitle: "Keeping the community safe and fair", icon: HeadphonesIcon, staff: moderatorStaff.slice(0, 3), centerSingle: false, noLimit: false },
+            { key: "staff", title: "Staff Team", subtitle: "Core team members providing essential services", icon: UserCheck, staff: generalStaff.slice(0, 3), centerSingle: false, noLimit: false },
+            { key: "support", title: "Support Team", subtitle: "Always here to help you succeed", icon: HeadphonesIcon, staff: supportStaff.slice(0, 3), centerSingle: false, noLimit: false },
+            { key: "events", title: "Events Team", subtitle: "Creating unforgettable experiences", icon: Calendar, staff: eventStaff.slice(0, 3), centerSingle: false, noLimit: false },
           ].map((dept, deptIdx) => (
             <motion.div
               key={dept.key}
@@ -803,7 +803,7 @@ const Staff = () => {
               </div>
               
               {dept.staff.length > 0 ? (
-                <div className={`${dept.centerSingle && dept.staff.length === 1 ? 'flex justify-center' : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5'}`}>
+                <div className={`${dept.centerSingle && dept.staff.length === 1 ? 'flex justify-center' : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-4xl mx-auto'}`}>
                   {dept.staff.map((member, index) => (
                     <div key={member.id} className={dept.centerSingle && dept.staff.length === 1 ? 'w-full max-w-sm' : ''}>
                       {renderStaffCard(member, index)}
