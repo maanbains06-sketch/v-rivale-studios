@@ -10,35 +10,20 @@ interface TebexPackage {
   name: string;
   description: string;
   image: string | null;
-  price: number;
-  currency: string;
+  base_price: number;
+  sales_price: number;
   category: {
     id: number;
     name: string;
   };
   type: string;
-  sales: number;
 }
 
 interface TebexCategory {
   id: number;
   name: string;
+  description: string;
   packages: TebexPackage[];
-}
-
-interface TebexStoreInfo {
-  account: {
-    id: number;
-    name: string;
-    domain: string;
-    currency: {
-      iso_4217: string;
-      symbol: string;
-    };
-    online_mode: boolean;
-    game_type: string;
-    log_events: boolean;
-  };
 }
 
 serve(async (req) => {
@@ -48,12 +33,13 @@ serve(async (req) => {
   }
 
   try {
-    const secretKey = Deno.env.get("TEBEX_SECRET_KEY");
+    // Get the public store identifier (from your Tebex webstore URL or Headless API settings)
+    const storeIdentifier = Deno.env.get("TEBEX_STORE_IDENTIFIER");
     
-    if (!secretKey) {
-      console.error("TEBEX_SECRET_KEY not configured");
+    if (!storeIdentifier) {
+      console.error("TEBEX_STORE_IDENTIFIER not configured");
       return new Response(
-        JSON.stringify({ error: "Tebex API key not configured" }),
+        JSON.stringify({ error: "Tebex store identifier not configured" }),
         { 
           status: 500, 
           headers: { ...corsHeaders, "Content-Type": "application/json" } 
@@ -61,14 +47,13 @@ serve(async (req) => {
       );
     }
 
-    const headers = {
-      "X-Tebex-Secret": secretKey,
-      "Content-Type": "application/json",
-    };
+    console.log("Fetching Tebex store with identifier:", storeIdentifier);
 
-    // Fetch store information
-    const storeInfoResponse = await fetch("https://plugin.tebex.io/information", {
-      headers,
+    // Fetch store information using Headless API
+    const storeInfoResponse = await fetch(`https://headless.tebex.io/api/accounts/${storeIdentifier}`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
 
     if (!storeInfoResponse.ok) {
@@ -83,37 +68,44 @@ serve(async (req) => {
       );
     }
 
-    const storeInfo: TebexStoreInfo = await storeInfoResponse.json();
-    console.log("Store info fetched successfully:", storeInfo.account.name);
+    const storeInfoData = await storeInfoResponse.json();
+    const storeInfo = storeInfoData.data;
+    console.log("Store info fetched successfully:", storeInfo?.name);
 
-    // Fetch categories with packages
-    const listingResponse = await fetch("https://plugin.tebex.io/listing", {
-      headers,
+    // Fetch categories with packages using Headless API
+    const categoriesResponse = await fetch(`https://headless.tebex.io/api/accounts/${storeIdentifier}/categories?includePackages=1`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
 
-    if (!listingResponse.ok) {
-      const errorText = await listingResponse.text();
-      console.error("Failed to fetch listing:", listingResponse.status, errorText);
+    if (!categoriesResponse.ok) {
+      const errorText = await categoriesResponse.text();
+      console.error("Failed to fetch categories:", categoriesResponse.status, errorText);
       return new Response(
-        JSON.stringify({ error: "Failed to fetch store listing", details: errorText }),
+        JSON.stringify({ error: "Failed to fetch store categories", details: errorText }),
         { 
-          status: listingResponse.status, 
+          status: categoriesResponse.status, 
           headers: { ...corsHeaders, "Content-Type": "application/json" } 
         }
       );
     }
 
-    const listingData = await listingResponse.json();
-    const categories: TebexCategory[] = listingData.categories || [];
+    const categoriesData = await categoriesResponse.json();
+    const categories: TebexCategory[] = categoriesData.data || [];
     console.log(`Fetched ${categories.length} categories`);
 
-    // Get featured/all packages
-    const allPackages: TebexPackage[] = [];
+    // Get all packages from categories
+    const allPackages: any[] = [];
     categories.forEach((category) => {
       if (category.packages) {
         category.packages.forEach((pkg) => {
           allPackages.push({
-            ...pkg,
+            id: pkg.id,
+            name: pkg.name,
+            description: pkg.description || '',
+            image: pkg.image,
+            price: pkg.sales_price || pkg.base_price,
             category: {
               id: category.id,
               name: category.name,
@@ -129,12 +121,16 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         store: {
-          name: storeInfo.account.name,
-          domain: storeInfo.account.domain,
-          currency: storeInfo.account.currency,
-          gameType: storeInfo.account.game_type,
+          name: storeInfo?.name || 'Store',
+          domain: storeInfo?.domain || '',
+          currency: storeInfo?.currency || { iso_4217: 'INR', symbol: '₹' },
+          gameType: storeInfo?.game_type || 'FiveM',
         },
-        categories,
+        categories: categories.map(cat => ({
+          id: cat.id,
+          name: cat.name,
+          packages: cat.packages || [],
+        })),
         packages: allPackages,
         totalPackages: allPackages.length,
       }),
