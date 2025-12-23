@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail, Ban, Briefcase, Gift, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, Ticket, ExternalLink, Crown } from "lucide-react";
+import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail, Ban, Briefcase, Gift, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, Ticket, ExternalLink, Crown, CheckCircle2, LayoutDashboard } from "lucide-react";
 import { Button } from "./ui/button";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +11,18 @@ import { NotificationBell } from "./NotificationBell";
 import { useStaffRole } from "@/hooks/useStaffRole";
 import { ThemeToggle } from "./ThemeToggle";
 import UserProfileDropdown from "./UserProfileDropdown";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Badge } from "./ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +36,8 @@ const Navigation = () => {
   const [user, setUser] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
+  const [isMember, setIsMember] = useState<boolean | null>(null);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAdmin, department, loading } = useStaffRole();
@@ -40,13 +54,48 @@ const Navigation = () => {
     const { data: { user } } = await supabase.auth.getUser();
     setUser(user);
     
-    // Check if user is owner
+    // Check if user is owner and Discord member
     if (user) {
       const { data: ownerResult } = await supabase.rpc('is_owner', { _user_id: user.id });
       setIsOwner(ownerResult || false);
+      
+      // Check Discord server membership
+      const discordId = user.user_metadata?.provider_id || user.user_metadata?.sub;
+      if (discordId) {
+        try {
+          const { data, error } = await supabase.functions.invoke('verify-discord-membership', {
+            body: { discordId }
+          });
+          if (!error && data) {
+            setIsMember(data.isMember);
+          }
+        } catch (err) {
+          setIsMember(false);
+        }
+      }
     } else {
       setIsOwner(false);
+      setIsMember(null);
     }
+  };
+
+  // Helper functions for Discord user info
+  const getDiscordAvatar = () => {
+    if (!user) return null;
+    return user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
+  };
+
+  const getDiscordUsername = () => {
+    if (!user) return "User";
+    return user.user_metadata?.full_name || 
+           user.user_metadata?.name || 
+           user.user_metadata?.user_name ||
+           user.user_metadata?.preferred_username ||
+           "User";
+  };
+
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
   const handleLogout = async () => {
@@ -59,6 +108,7 @@ const Navigation = () => {
   };
 
   return (
+    <>
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-primary/20 bg-background">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
@@ -477,7 +527,73 @@ const Navigation = () => {
                     Contact Server Owner
                   </Button>
                   
-                  {user ? (
+                  {user && isMember ? (
+                    <>
+                      {/* Mobile User Profile Card */}
+                      <div className="p-4 rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/20 mb-2">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="w-12 h-12 border-2 border-primary/40">
+                            <AvatarImage src={getDiscordAvatar() || undefined} alt={getDiscordUsername()} />
+                            <AvatarFallback className="bg-primary/20 text-primary font-bold">
+                              {getInitials(getDiscordUsername())}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-foreground truncate">{getDiscordUsername()}</p>
+                            <Badge className="bg-green-500/15 text-green-400 border-green-500/25 text-[10px] px-1.5 py-0 mt-1">
+                              <CheckCircle2 className="w-2.5 h-2.5 mr-1" />
+                              Server Member
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Button 
+                        variant="outline"
+                        className="justify-start glass-effect"
+                        onClick={() => {
+                          navigate("/discord-profile");
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        <UserCircle className="w-4 h-4 mr-2" />
+                        My Profile
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        className="justify-start glass-effect"
+                        onClick={() => {
+                          navigate("/dashboard");
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        <LayoutDashboard className="w-4 h-4 mr-2" />
+                        Dashboard
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        className="justify-start glass-effect"
+                        onClick={() => {
+                          navigate("/application-status");
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        <Shield className="w-4 h-4 mr-2" />
+                        Application Status
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        className="justify-start glass-effect text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          setShowLogoutDialog(true);
+                        }}
+                      >
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Sign Out
+                      </Button>
+                    </>
+                  ) : user ? (
                     <>
                       <Button 
                         variant="outline"
@@ -492,14 +608,14 @@ const Navigation = () => {
                       </Button>
                       <Button 
                         variant="outline"
-                        className="justify-start glass-effect"
+                        className="justify-start glass-effect text-destructive hover:text-destructive hover:bg-destructive/10"
                         onClick={() => {
-                          handleLogout();
                           setIsMenuOpen(false);
+                          setShowLogoutDialog(true);
                         }}
                       >
                         <LogOut className="w-4 h-4 mr-2" />
-                        Logout
+                        Sign Out
                       </Button>
                     </>
                   ) : (
@@ -569,6 +685,31 @@ const Navigation = () => {
         </div>
       </div>
     </nav>
+
+    {/* Logout Confirmation Dialog */}
+    <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+      <AlertDialogContent className="bg-background/95 backdrop-blur-xl border border-border/20">
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <LogOut className="w-5 h-5 text-destructive" />
+            Sign Out
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to sign out? You'll need to log in again to access your profile and applications.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel className="border-border/30">Cancel</AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={handleLogout}
+            className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+          >
+            Sign Out
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 };
 
