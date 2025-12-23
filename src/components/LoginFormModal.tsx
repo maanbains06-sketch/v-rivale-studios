@@ -109,19 +109,29 @@ const LoginFormModal = ({
                   transition={{ delay: 0.1, duration: 0.3 }}
                   className="relative px-8 pt-10 pb-6 text-center"
                 >
+                  {/* SLRP Logo */}
+                  <div className="mb-4">
+                    <div className="inline-flex items-center justify-center gap-1">
+                      <span className="text-4xl font-black tracking-wider bg-gradient-to-r from-[#5865F2] via-primary to-[#5865F2] bg-clip-text text-transparent drop-shadow-lg">
+                        SLRP
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground/60 mt-1 tracking-widest uppercase">Skylife Roleplay India</p>
+                  </div>
+
                   {/* Logo with ring animation */}
                   <div className="relative inline-flex mb-6">
-                    <div className="absolute inset-0 w-24 h-24 rounded-2xl bg-[#5865F2]/30 blur-xl animate-pulse" />
-                    <div className="relative w-24 h-24 rounded-2xl bg-gradient-to-br from-[#5865F2] via-[#5865F2] to-[#4752C4] flex items-center justify-center shadow-2xl shadow-[#5865F2]/40 border border-white/10">
-                      <MessageCircle className="w-12 h-12 text-white" />
+                    <div className="absolute inset-0 w-20 h-20 rounded-2xl bg-[#5865F2]/30 blur-xl animate-pulse" />
+                    <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-[#5865F2] via-[#5865F2] to-[#4752C4] flex items-center justify-center shadow-2xl shadow-[#5865F2]/40 border border-white/10">
+                      <MessageCircle className="w-10 h-10 text-white" />
                       
                       {/* Animated ring */}
                       <div className="absolute -inset-2 rounded-2xl border-2 border-[#5865F2]/30 animate-ping" style={{ animationDuration: '2s' }} />
                     </div>
                     
                     {/* Online status */}
-                    <div className="absolute -top-1 -right-1 w-7 h-7 bg-gradient-to-br from-green-400 to-green-600 rounded-full border-4 border-card flex items-center justify-center shadow-lg shadow-green-500/30">
-                      <Sparkles className="w-3.5 h-3.5 text-white" />
+                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-br from-green-400 to-green-600 rounded-full border-3 border-card flex items-center justify-center shadow-lg shadow-green-500/30">
+                      <Sparkles className="w-3 h-3 text-white" />
                     </div>
                   </div>
                   

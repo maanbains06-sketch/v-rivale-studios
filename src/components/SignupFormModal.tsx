@@ -176,55 +176,68 @@ const SignupFormModal = ({ open, onOpenChange, onSubmit, onSwitchToLogin, loadin
                   className="sticky top-0 z-20 bg-card/90 backdrop-blur-xl px-8 pt-6 pb-5 border-b border-border/20"
                 >
                   <div className="flex items-center gap-4">
-                    {/* Icon */}
-                    <div className="relative">
-                      <div className="absolute inset-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/30 to-[#5865F2]/30 blur-lg" />
-                      <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-primary via-primary to-[#5865F2] flex items-center justify-center shadow-xl shadow-primary/30 border border-white/10">
-                        <Rocket className="w-8 h-8 text-white" />
+                    {/* SLRP Logo + Icon */}
+                    <div className="relative flex items-center gap-3">
+                      {/* SLRP Text Logo */}
+                      <div className="flex flex-col">
+                        <span className="text-2xl font-black tracking-wider bg-gradient-to-r from-primary via-[#5865F2] to-primary bg-clip-text text-transparent">
+                          SLRP
+                        </span>
                       </div>
-                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full border-3 border-card flex items-center justify-center shadow-lg">
-                        <Crown className="w-3 h-3 text-white" />
+                      
+                      {/* Divider */}
+                      <div className="h-10 w-px bg-border/40" />
+                      
+                      {/* Icon */}
+                      <div className="relative">
+                        <div className="absolute inset-0 w-12 h-12 rounded-xl bg-gradient-to-br from-primary/30 to-[#5865F2]/30 blur-lg" />
+                        <div className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-primary via-primary to-[#5865F2] flex items-center justify-center shadow-lg shadow-primary/30 border border-white/10">
+                          <Rocket className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full border-2 border-card flex items-center justify-center shadow-lg">
+                          <Crown className="w-2.5 h-2.5 text-white" />
+                        </div>
                       </div>
                     </div>
                     
                     {/* Text */}
                     <div className="flex-1">
-                      <h2 className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+                      <h2 className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
                         Create Account
                       </h2>
-                      <p className="text-sm text-muted-foreground/80 flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-primary" />
+                      <p className="text-xs text-muted-foreground/80 flex items-center gap-1.5">
+                        <Sparkles className="w-3 h-3 text-primary" />
                         Join Skylife Roleplay India
                       </p>
                     </div>
 
                     {/* Progress Circle */}
                     <div className="hidden sm:flex flex-col items-center">
-                      <div className="relative w-14 h-14">
-                        <svg className="w-14 h-14 -rotate-90">
+                      <div className="relative w-12 h-12">
+                        <svg className="w-12 h-12 -rotate-90">
                           <circle
-                            cx="28"
-                            cy="28"
-                            r="24"
+                            cx="24"
+                            cy="24"
+                            r="20"
                             stroke="currentColor"
-                            strokeWidth="4"
+                            strokeWidth="3"
                             fill="none"
                             className="text-muted/30"
                           />
                           <circle
-                            cx="28"
-                            cy="28"
-                            r="24"
+                            cx="24"
+                            cy="24"
+                            r="20"
                             stroke="currentColor"
-                            strokeWidth="4"
+                            strokeWidth="3"
                             fill="none"
-                            strokeDasharray={`${progressPercentage * 1.51} 151`}
+                            strokeDasharray={`${progressPercentage * 1.26} 126`}
                             className="text-primary transition-all duration-500"
                             strokeLinecap="round"
                           />
                         </svg>
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-sm font-bold text-foreground">{filledFields}/5</span>
+                          <span className="text-xs font-bold text-foreground">{filledFields}/5</span>
                         </div>
                       </div>
                     </div>
