@@ -432,7 +432,7 @@ const Index = () => {
   const allRequirementsMet = isLoggedIn && isInDiscordServer && isWhitelisted;
 
   return (
-    <div className="min-h-screen bg-background relative">
+    <div className="min-h-screen relative">
       {/* YouTube Video Background - Covers entire page */}
       <div className="fixed inset-0 z-0 overflow-hidden">
         <div className="absolute inset-0 scale-[1.5] pointer-events-none">
@@ -1128,14 +1128,14 @@ const Index = () => {
                       <div className="absolute top-3 left-3 z-10">
                         <Badge className="bg-destructive text-destructive-foreground font-bold">LIVE</Badge>
                       </div>
-                      <div className="aspect-video bg-card">
+                      <div className="aspect-video bg-transparent">
                         <img
                           src={youtuber.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${youtuber.name}`}
                           alt={youtuber.name}
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <div className="p-4 bg-card/80">
+                      <div className="p-4 bg-background/75 backdrop-blur-sm">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary">
                             <img
@@ -1215,7 +1215,7 @@ const Index = () => {
       )}
 
       {/* Footer */}
-      <footer className="border-t border-primary/20 py-10 relative z-10 bg-background/95">
+      <footer className="border-t border-primary/20 py-10 relative z-10 bg-transparent">
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center text-center gap-4">
             {/* Logo */}
