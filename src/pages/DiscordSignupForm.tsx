@@ -102,6 +102,26 @@ const DiscordSignupForm = () => {
                              session.user.user_metadata?.name ||
                              session.user.user_metadata?.preferred_username || "";
       
+      // Check for saved signup data from the signup form modal
+      const savedSignupData = localStorage.getItem('slrp_signup_data');
+      if (savedSignupData) {
+        try {
+          const parsedData = JSON.parse(savedSignupData);
+          setFormData({
+            age: parsedData.age?.toString() || "",
+            steam_id: parsedData.steamId || "",
+            discord_username: parsedData.discordUsername || discordUsername,
+            in_game_name: parsedData.displayName || "",
+          });
+          // Clear the saved data after using it
+          localStorage.removeItem('slrp_signup_data');
+          setLoading(false);
+          return;
+        } catch (e) {
+          console.error('Failed to parse saved signup data:', e);
+        }
+      }
+      
       setFormData(prev => ({
         ...prev,
         discord_username: discordUsername,

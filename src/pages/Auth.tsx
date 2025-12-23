@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import SignupFormModal, { SignupFormData } from "@/components/SignupFormModal";
 
 const DISCORD_INVITE_LINK = "https://discord.gg/W2nU97maBh";
 
@@ -23,6 +24,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [verifyingMembership, setVerifyingMembership] = useState(false);
+  const [showSignupModal, setShowSignupModal] = useState(false);
   const [rememberMe, setRememberMe] = useState(() => {
     return localStorage.getItem('slrp_remember_me') === 'true';
   });
@@ -154,7 +156,11 @@ const Auth = () => {
     }
   };
 
-  const handleDiscordSignup = async () => {
+  const handleOpenSignupModal = () => {
+    setShowSignupModal(true);
+  };
+
+  const handleSignupFormSubmit = async (data: SignupFormData) => {
     setLoading(true);
     
     const { error } = await supabase.auth.signInWithOAuth({
@@ -171,6 +177,7 @@ const Auth = () => {
         variant: "destructive",
       });
       setLoading(false);
+      setShowSignupModal(false);
     }
   };
 
@@ -382,7 +389,7 @@ const Auth = () => {
                       </Button>
 
                       <Button
-                        onClick={handleDiscordSignup}
+                        onClick={handleOpenSignupModal}
                         disabled={loading || !!user}
                         size="lg"
                         className="w-full h-14 text-lg bg-[#5865F2] hover:bg-[#4752C4] text-white disabled:opacity-50 shadow-lg"
@@ -496,6 +503,14 @@ const Auth = () => {
           </p>
         </div>
       </div>
+
+      {/* Signup Form Modal */}
+      <SignupFormModal
+        open={showSignupModal}
+        onOpenChange={setShowSignupModal}
+        onSubmit={handleSignupFormSubmit}
+        loading={loading}
+      />
     </div>
   );
 };
