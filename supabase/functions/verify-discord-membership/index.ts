@@ -5,6 +5,35 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Rate limiting configuration
+const RATE_LIMIT = 20; // requests per minute
+const RATE_WINDOW_MS = 60 * 1000; // 1 minute
+
+// Simple in-memory rate limiting
+const rateLimitMap = new Map<string, { count: number; windowStart: number }>();
+
+function checkRateLimit(identifier: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(identifier);
+  
+  if (!entry || (now - entry.windowStart) > RATE_WINDOW_MS) {
+    rateLimitMap.set(identifier, { count: 1, windowStart: now });
+    return true;
+  }
+  
+  if (entry.count >= RATE_LIMIT) {
+    return false;
+  }
+  
+  entry.count++;
+  return true;
+}
+
+// Validate Discord ID format (17-19 digit snowflake)
+function isValidDiscordId(id: string): boolean {
+  return typeof id === 'string' && /^\d{17,19}$/.test(id);
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -12,7 +41,37 @@ serve(async (req) => {
   }
 
   try {
-    const { discordId } = await req.json();
+    // Get client identifier for rate limiting
+    const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    
+    // Check rate limit
+    if (!checkRateLimit(clientIP)) {
+      console.warn(`Rate limit exceeded for Discord verification from IP: ${clientIP}`);
+      return new Response(
+        JSON.stringify({ error: 'Too many requests. Please try again later.', isMember: false }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Parse request body
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: 'Invalid request', isMember: false }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (typeof body !== 'object' || body === null) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid request', isMember: false }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { discordId } = body as { discordId: unknown };
     
     if (!discordId) {
       console.error('No Discord ID provided');
@@ -22,18 +81,27 @@ serve(async (req) => {
       );
     }
 
+    // Validate Discord ID format
+    if (!isValidDiscordId(discordId as string)) {
+      console.error('Invalid Discord ID format');
+      return new Response(
+        JSON.stringify({ error: 'Invalid Discord ID format', isMember: false }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const botToken = Deno.env.get('DISCORD_BOT_TOKEN');
     const serverId = Deno.env.get('DISCORD_SERVER_ID');
 
     if (!botToken || !serverId) {
-      console.error('Missing DISCORD_BOT_TOKEN or DISCORD_SERVER_ID');
+      console.error('Missing Discord configuration');
       return new Response(
-        JSON.stringify({ error: 'Server configuration error', isMember: false }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Service temporarily unavailable', isMember: false }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`Checking membership for Discord ID: ${discordId} in server: ${serverId}`);
+    console.log(`Checking membership for Discord ID: ${discordId}`);
 
     // Check if user is a member of the Discord server using the bot
     const response = await fetch(
@@ -65,18 +133,16 @@ serve(async (req) => {
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     } else {
-      const errorText = await response.text();
-      console.error(`Discord API error: ${response.status} - ${errorText}`);
+      console.error(`Discord API error: ${response.status}`);
       return new Response(
-        JSON.stringify({ error: `Discord API error: ${response.status}`, isMember: false }),
+        JSON.stringify({ error: 'Unable to verify membership', isMember: false }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-  } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Error checking Discord membership:', errorMessage);
+  } catch (error) {
+    console.error('Error checking Discord membership:', error);
     return new Response(
-      JSON.stringify({ error: errorMessage, isMember: false }),
+      JSON.stringify({ error: 'Unable to verify membership', isMember: false }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

@@ -6,17 +6,151 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Input validation constants
+const MAX_MESSAGES = 50;
+const MAX_MESSAGE_LENGTH = 2000;
+const VALID_ROLES = ["user", "assistant", "system"];
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Rate limiting configuration
+const RATE_LIMIT = 10; // requests per minute
+const RATE_WINDOW_MS = 60 * 1000; // 1 minute
+
+interface Message {
+  role: string;
+  content: string;
+}
+
+interface RequestBody {
+  messages: Message[];
+  chatId?: string;
+}
+
+// Validate and sanitize message
+function validateMessage(msg: unknown): msg is Message {
+  if (typeof msg !== 'object' || msg === null) return false;
+  const m = msg as Record<string, unknown>;
+  return (
+    typeof m.role === 'string' &&
+    VALID_ROLES.includes(m.role) &&
+    typeof m.content === 'string' &&
+    m.content.length > 0 &&
+    m.content.length <= MAX_MESSAGE_LENGTH
+  );
+}
+
+// Validate request body
+function validateRequestBody(body: unknown): { valid: boolean; error?: string; data?: RequestBody } {
+  if (typeof body !== 'object' || body === null) {
+    return { valid: false, error: 'Invalid request body' };
+  }
+  
+  const b = body as Record<string, unknown>;
+  
+  // Validate messages array
+  if (!Array.isArray(b.messages)) {
+    return { valid: false, error: 'Messages must be an array' };
+  }
+  
+  if (b.messages.length === 0) {
+    return { valid: false, error: 'Messages array cannot be empty' };
+  }
+  
+  if (b.messages.length > MAX_MESSAGES) {
+    return { valid: false, error: `Maximum ${MAX_MESSAGES} messages allowed` };
+  }
+  
+  // Validate each message
+  for (let i = 0; i < b.messages.length; i++) {
+    if (!validateMessage(b.messages[i])) {
+      return { valid: false, error: `Invalid message at index ${i}` };
+    }
+  }
+  
+  // Validate chatId if provided
+  if (b.chatId !== undefined) {
+    if (typeof b.chatId !== 'string' || !UUID_REGEX.test(b.chatId)) {
+      return { valid: false, error: 'Invalid chat ID format' };
+    }
+  }
+  
+  return { 
+    valid: true, 
+    data: { 
+      messages: b.messages as Message[], 
+      chatId: b.chatId as string | undefined 
+    } 
+  };
+}
+
+// Simple in-memory rate limiting (resets on function cold start)
+const rateLimitMap = new Map<string, { count: number; windowStart: number }>();
+
+function checkRateLimit(identifier: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(identifier);
+  
+  if (!entry || (now - entry.windowStart) > RATE_WINDOW_MS) {
+    rateLimitMap.set(identifier, { count: 1, windowStart: now });
+    return true;
+  }
+  
+  if (entry.count >= RATE_LIMIT) {
+    return false;
+  }
+  
+  entry.count++;
+  return true;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { messages, chatId } = await req.json();
+    // Get client identifier for rate limiting
+    const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    
+    // Check rate limit
+    if (!checkRateLimit(clientIP)) {
+      console.warn(`Rate limit exceeded for IP: ${clientIP}`);
+      return new Response(
+        JSON.stringify({ error: "Too many requests. Please try again later." }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Parse and validate request body
+    let rawBody: unknown;
+    try {
+      rawBody = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON in request body" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    const validation = validateRequestBody(rawBody);
+    if (!validation.valid || !validation.data) {
+      console.warn("Validation failed:", validation.error);
+      return new Response(
+        JSON.stringify({ error: validation.error || "Invalid request" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    const { messages, chatId } = validation.data;
+    
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+      console.error("LOVABLE_API_KEY is not configured");
+      return new Response(
+        JSON.stringify({ error: "Service temporarily unavailable" }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Initialize Supabase client
@@ -247,7 +381,7 @@ Be friendly, concise, professional, and use the conversation history to provide 
     if (!response.ok) {
       if (response.status === 429) {
         return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
+          JSON.stringify({ error: "Service is busy. Please try again later." }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -257,9 +391,11 @@ Be friendly, concise, professional, and use the conversation history to provide 
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      throw new Error("AI gateway error");
+      console.error("AI gateway error:", response.status);
+      return new Response(
+        JSON.stringify({ error: "Unable to process your request" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const data = await response.json();
@@ -295,7 +431,7 @@ Be friendly, concise, professional, and use the conversation history to provide 
   } catch (error) {
     console.error("Error in ai-support-chat:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      JSON.stringify({ error: "Unable to process your request" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

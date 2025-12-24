@@ -8,17 +8,127 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Rate limiting configuration
+const RATE_LIMIT = 5; // requests per minute per IP
+const RATE_WINDOW_MS = 60 * 1000; // 1 minute
+
+// Simple in-memory rate limiting
+const rateLimitMap = new Map<string, { count: number; windowStart: number }>();
+
+function checkRateLimit(identifier: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(identifier);
+  
+  if (!entry || (now - entry.windowStart) > RATE_WINDOW_MS) {
+    rateLimitMap.set(identifier, { count: 1, windowStart: now });
+    return true;
+  }
+  
+  if (entry.count >= RATE_LIMIT) {
+    return false;
+  }
+  
+  entry.count++;
+  return true;
+}
+
+// Email validation
+function isValidEmail(email: string): boolean {
+  return typeof email === 'string' && 
+         /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && 
+         email.length <= 254;
+}
+
+// Sanitize text for HTML
+function sanitizeForHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+interface PurchaseItem {
+  name: string;
+  price: number;
+  quantity: number;
+}
+
 interface PurchaseConfirmationRequest {
   customerEmail: string;
   customerName: string;
   orderNumber: string;
-  items: Array<{
-    name: string;
-    price: number;
-    quantity: number;
-  }>;
+  items: PurchaseItem[];
   total: number;
   currency: string;
+}
+
+function validateItem(item: unknown): item is PurchaseItem {
+  if (typeof item !== 'object' || item === null) return false;
+  const i = item as Record<string, unknown>;
+  return (
+    typeof i.name === 'string' && i.name.length > 0 && i.name.length <= 200 &&
+    typeof i.price === 'number' && i.price >= 0 && i.price <= 1000000 &&
+    typeof i.quantity === 'number' && i.quantity > 0 && i.quantity <= 100
+  );
+}
+
+function validateRequest(body: unknown): { valid: boolean; error?: string; data?: PurchaseConfirmationRequest } {
+  if (typeof body !== 'object' || body === null) {
+    return { valid: false, error: 'Invalid request' };
+  }
+
+  const b = body as Record<string, unknown>;
+
+  // Validate email
+  if (!isValidEmail(b.customerEmail as string)) {
+    return { valid: false, error: 'Invalid email address' };
+  }
+
+  // Validate customer name
+  if (typeof b.customerName !== 'string' || b.customerName.length === 0 || b.customerName.length > 100) {
+    return { valid: false, error: 'Invalid customer name' };
+  }
+
+  // Validate order number
+  if (typeof b.orderNumber !== 'string' || b.orderNumber.length === 0 || b.orderNumber.length > 50) {
+    return { valid: false, error: 'Invalid order number' };
+  }
+
+  // Validate items
+  if (!Array.isArray(b.items) || b.items.length === 0 || b.items.length > 50) {
+    return { valid: false, error: 'Invalid items' };
+  }
+
+  for (const item of b.items) {
+    if (!validateItem(item)) {
+      return { valid: false, error: 'Invalid item data' };
+    }
+  }
+
+  // Validate total
+  if (typeof b.total !== 'number' || b.total < 0 || b.total > 10000000) {
+    return { valid: false, error: 'Invalid total' };
+  }
+
+  // Validate currency
+  const validCurrencies = ['INR', 'USD', 'EUR', 'GBP', 'AUD', 'CAD', 'SGD', 'AED'];
+  if (typeof b.currency !== 'string' || !validCurrencies.includes(b.currency)) {
+    return { valid: false, error: 'Invalid currency' };
+  }
+
+  return {
+    valid: true,
+    data: {
+      customerEmail: b.customerEmail as string,
+      customerName: b.customerName as string,
+      orderNumber: b.orderNumber as string,
+      items: b.items as PurchaseItem[],
+      total: b.total as number,
+      currency: b.currency as string,
+    }
+  };
 }
 
 const formatPrice = (price: number, currency: string): string => {
@@ -33,7 +143,7 @@ const formatPrice = (price: number, currency: string): string => {
     AED: "AED",
   };
   const symbol = symbols[currency] || currency;
-  return `${symbol}${price}`;
+  return `${symbol}${price.toFixed(2)}`;
 };
 
 const handler = async (req: Request): Promise<Response> => {
@@ -42,22 +152,51 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const {
-      customerEmail,
-      customerName,
-      orderNumber,
-      items,
-      total,
-      currency,
-    }: PurchaseConfirmationRequest = await req.json();
+    // Get client identifier for rate limiting
+    const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    
+    // Check rate limit
+    if (!checkRateLimit(clientIP)) {
+      console.warn(`Rate limit exceeded for purchase confirmation from IP: ${clientIP}`);
+      return new Response(
+        JSON.stringify({ error: "Too many requests. Please try again later." }),
+        { status: 429, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Parse and validate request
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Invalid request" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    const validation = validateRequest(body);
+    if (!validation.valid || !validation.data) {
+      console.warn("Validation failed:", validation.error);
+      return new Response(
+        JSON.stringify({ error: validation.error || "Invalid request" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    const { customerEmail, customerName, orderNumber, items, total, currency } = validation.data;
 
     console.log("Sending purchase confirmation to:", customerEmail);
+
+    // Sanitize all user inputs for HTML
+    const safeCustomerName = sanitizeForHtml(customerName);
+    const safeOrderNumber = sanitizeForHtml(orderNumber);
 
     const itemsList = items
       .map(
         (item) =>
           `<tr>
-            <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${item.name}</td>
+            <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${sanitizeForHtml(item.name)}</td>
             <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: center;">${item.quantity}</td>
             <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right;">${formatPrice(item.price * item.quantity, currency)}</td>
           </tr>`
@@ -77,13 +216,13 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
           
           <div style="background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
-            <p style="font-size: 16px; margin-bottom: 20px;">Hi ${customerName},</p>
+            <p style="font-size: 16px; margin-bottom: 20px;">Hi ${safeCustomerName},</p>
             
             <p style="font-size: 16px; margin-bottom: 20px;">Thank you for your purchase! Your order has been successfully confirmed.</p>
             
             <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
               <p style="margin: 0; font-size: 14px; color: #6b7280;">Order Number</p>
-              <p style="margin: 5px 0 0 0; font-size: 18px; font-weight: bold; font-family: 'Courier New', monospace;">${orderNumber}</p>
+              <p style="margin: 5px 0 0 0; font-size: 18px; font-weight: bold; font-family: 'Courier New', monospace;">${safeOrderNumber}</p>
             </div>
             
             <h2 style="font-size: 20px; margin-top: 30px; margin-bottom: 15px; color: #111827;">Order Summary</h2>
@@ -132,22 +271,22 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: "SLRP Store <onboarding@resend.dev>",
       to: [customerEmail],
-      subject: `Order Confirmation - ${orderNumber}`,
+      subject: `Order Confirmation - ${safeOrderNumber}`,
       html: emailHtml,
     });
 
-    console.log("Confirmation email sent successfully:", emailResponse);
+    console.log("Confirmation email sent successfully");
 
-    return new Response(JSON.stringify({ success: true, emailResponse }), {
+    return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
         ...corsHeaders,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error in send-purchase-confirmation function:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: "Unable to send confirmation" }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
