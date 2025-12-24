@@ -71,8 +71,8 @@ const AppRoutes = () => {
         <Route path="/rules" element={<PageTransition><Rules /></PageTransition>} />
         <Route path="/community" element={<PageTransition><Community /></PageTransition>} />
         <Route path="/whitelist" element={<PageTransition><RequireAuth message="Login with Discord to apply for whitelist."><Whitelist /></RequireAuth></PageTransition>} />
-        <Route path="/staff" element={<PageTransition><RequireAuth message="Login with Discord to view our staff team."><Staff /></RequireAuth></PageTransition>} />
-        <Route path="/staff/:name" element={<PageTransition><RequireAuth message="Login with Discord to view staff profiles."><StaffProfile /></RequireAuth></PageTransition>} />
+        <Route path="/staff" element={<PageTransition><Staff /></PageTransition>} />
+        <Route path="/staff/:name" element={<PageTransition><StaffProfile /></PageTransition>} />
         <Route path="/staff-setup" element={<PageTransition><StaffSetup /></PageTransition>} />
         <Route path="/ban-appeal" element={<PageTransition><RequireAuth message="Login with Discord to submit a ban appeal."><BanAppeal /></RequireAuth></PageTransition>} />
         <Route path="/guides" element={<PageTransition><Guides /></PageTransition>} />
