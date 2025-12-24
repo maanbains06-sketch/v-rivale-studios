@@ -781,6 +781,7 @@ const Staff = () => {
             { key: "leadership", title: "Leadership Team", subtitle: "The visionaries guiding SLRP to excellence", icon: Shield, staff: leadershipStaff, centerSingle: true, noLimit: true },
             { key: "management", title: "Management Team", subtitle: "Ensuring smooth server operations", icon: Users, staff: adminStaff.slice(0, 3), centerSingle: false, noLimit: false },
             { key: "development", title: "Development Team", subtitle: "Building innovative features", icon: Code, staff: developerStaff, centerSingle: true, noLimit: true },
+            { key: "moderation", title: "Administration Team", subtitle: "Keeping the community safe and fair", icon: HeadphonesIcon, staff: moderatorStaff.slice(0, 3), centerSingle: false, noLimit: false },
             { key: "staff", title: "Staff Team", subtitle: "Core team members providing essential services", icon: UserCheck, staff: generalStaff.slice(0, 3), centerSingle: false, noLimit: false },
             { key: "support", title: "Support Team", subtitle: "Always here to help you succeed", icon: HeadphonesIcon, staff: supportStaff.slice(0, 3), centerSingle: false, noLimit: false },
             { key: "events", title: "Events Team", subtitle: "Creating unforgettable experiences", icon: Calendar, staff: eventStaff.slice(0, 3), centerSingle: false, noLimit: false },
