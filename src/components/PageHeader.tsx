@@ -10,7 +10,7 @@ interface PageHeaderProps {
 const PageHeader = ({ title, description, badge, backgroundImage, backgroundPosition = 'center 25%', minHeight = '40vh' }: PageHeaderProps) => {
   return (
     <section 
-      className="relative flex items-center justify-center overflow-hidden mb-12"
+      className="relative flex items-center justify-center overflow-hidden mb-12 pt-20"
       style={{
         backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
         backgroundSize: 'cover',
