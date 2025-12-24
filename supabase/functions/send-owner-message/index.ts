@@ -6,6 +6,48 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+// Rate limiting configuration
+const RATE_LIMIT = 3; // requests per minute
+const RATE_WINDOW_MS = 60 * 1000; // 1 minute
+
+// Simple in-memory rate limiting
+const rateLimitMap = new Map<string, { count: number; windowStart: number }>();
+
+function checkRateLimit(identifier: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(identifier);
+  
+  if (!entry || (now - entry.windowStart) > RATE_WINDOW_MS) {
+    rateLimitMap.set(identifier, { count: 1, windowStart: now });
+    return true;
+  }
+  
+  if (entry.count >= RATE_LIMIT) {
+    return false;
+  }
+  
+  entry.count++;
+  return true;
+}
+
+// Validate Discord ID format (17-19 digit snowflake)
+function isValidDiscordId(id: string): boolean {
+  return /^\d{17,19}$/.test(id);
+}
+
+// Sanitize text for Discord embeds
+function sanitizeForDiscord(text: string): string {
+  return text
+    .replace(/[<>@&]/g, '') // Remove Discord formatting chars
+    .replace(/```/g, '`​`​`') // Break code block attempts with zero-width spaces
+    .trim();
+}
+
+// Validate name (alphanumeric, spaces, basic punctuation)
+function isValidName(name: string): boolean {
+  return /^[\p{L}\p{N}\s\-_.,']+$/u.test(name) && name.length >= 1 && name.length <= 100;
+}
+
 interface ContactRequest {
   name: string;
   discordId: string;
@@ -19,18 +61,146 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { name, discordId, message }: ContactRequest = await req.json();
+    // Get client identifier for rate limiting
+    const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    
+    // Check rate limit
+    if (!checkRateLimit(clientIP)) {
+      console.warn(`Rate limit exceeded for IP: ${clientIP}`);
+      return new Response(
+        JSON.stringify({ 
+          error: "Too many requests",
+          details: "Please wait a minute before sending another message"
+        }),
+        {
+          status: 429,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
 
-    console.log("Received contact message:", { name, discordId });
+    // Parse request body
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ 
+          error: "Invalid request",
+          details: "Please check your input and try again"
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
 
+    // Validate request structure
+    if (typeof body !== 'object' || body === null) {
+      return new Response(
+        JSON.stringify({ 
+          error: "Invalid request",
+          details: "Please check your input and try again"
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    const { name, discordId, message } = body as ContactRequest;
+
+    // Validate required fields
     if (!name || !discordId || !message) {
-      throw new Error("Missing required fields: name, discordId, or message");
+      return new Response(
+        JSON.stringify({ 
+          error: "Missing required fields",
+          details: "Please fill in all required fields"
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    // Validate types
+    if (typeof name !== 'string' || typeof discordId !== 'string' || typeof message !== 'string') {
+      return new Response(
+        JSON.stringify({ 
+          error: "Invalid input format",
+          details: "Please check your input and try again"
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
     }
 
     // Validate input lengths
-    if (name.length > 100 || discordId.length > 100 || message.length > 2000) {
-      throw new Error("Input exceeds maximum allowed length");
+    if (name.length > 100 || discordId.length > 20 || message.length > 2000) {
+      return new Response(
+        JSON.stringify({ 
+          error: "Input too long",
+          details: "Please shorten your message and try again"
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
     }
+
+    // Validate name format
+    if (!isValidName(name)) {
+      return new Response(
+        JSON.stringify({ 
+          error: "Invalid name format",
+          details: "Please enter a valid name"
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    // Validate Discord ID format
+    if (!isValidDiscordId(discordId)) {
+      return new Response(
+        JSON.stringify({ 
+          error: "Invalid Discord ID",
+          details: "Please enter a valid Discord ID (17-19 digit number)"
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    // Validate message is not empty after trimming
+    if (message.trim().length === 0) {
+      return new Response(
+        JSON.stringify({ 
+          error: "Empty message",
+          details: "Please enter a message"
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    // Sanitize inputs for Discord
+    const sanitizedName = sanitizeForDiscord(name).slice(0, 100);
+    const sanitizedMessage = sanitizeForDiscord(message).slice(0, 2000);
+
+    console.log("Processing contact message from Discord ID:", discordId);
 
     // Get the Discord bot token
     const DISCORD_BOT_TOKEN = Deno.env.get("DISCORD_BOT_TOKEN");
@@ -95,9 +265,9 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const dmChannel = await dmChannelResponse.json();
-    console.log("DM channel created:", dmChannel.id);
+    console.log("DM channel created successfully");
 
-    // Format the message embed
+    // Format the message embed with sanitized content
     const embedMessage = {
       embeds: [
         {
@@ -106,7 +276,7 @@ const handler = async (req: Request): Promise<Response> => {
           fields: [
             {
               name: "👤 From",
-              value: name,
+              value: sanitizedName || "Anonymous",
               inline: false,
             },
             {
@@ -116,7 +286,7 @@ const handler = async (req: Request): Promise<Response> => {
             },
             {
               name: "📝 Message",
-              value: message,
+              value: sanitizedMessage || "(empty)",
               inline: false,
             },
           ],
@@ -171,7 +341,7 @@ const handler = async (req: Request): Promise<Response> => {
         },
       }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error in send-owner-message function:", error);
     return new Response(
       JSON.stringify({ 
