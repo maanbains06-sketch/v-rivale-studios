@@ -50,11 +50,22 @@ npm start
 
 ## Configuration
 
-Edit `index.js` to update:
+Set these environment variables before running:
 
-1. **BOT_TOKEN** - Your Discord bot token
-2. **GUILD_ID** - Your Discord server ID
-3. **STAFF_DISCORD_IDS** - Array of staff member Discord IDs
+| Variable | Description |
+|----------|-------------|
+| `DISCORD_BOT_TOKEN` | Your Discord bot token |
+| `DISCORD_SERVER_ID` | Your Discord server ID |
+| `SUPABASE_URL` | Your Supabase project URL (e.g., `https://your-project.supabase.co`) |
+| `SUPABASE_ANON_KEY` | Your Supabase anon/public key |
+
+Example:
+```bash
+export DISCORD_BOT_TOKEN="your-bot-token-here"
+export DISCORD_SERVER_ID="your-server-id"
+export SUPABASE_URL="https://your-project.supabase.co"
+export SUPABASE_ANON_KEY="your-anon-key"
+```
 
 ## How It Works
 

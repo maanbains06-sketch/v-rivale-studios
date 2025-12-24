@@ -205,12 +205,9 @@ const TebexStoreSection = () => {
                     </div>
                     
                     {pkg.description && (
-                      <p 
-                        className="text-sm text-muted-foreground line-clamp-2 mb-4"
-                        dangerouslySetInnerHTML={{ 
-                          __html: pkg.description.replace(/<[^>]*>/g, '').slice(0, 100) + '...' 
-                        }}
-                      />
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                        {pkg.description.replace(/<[^>]*>/g, '').slice(0, 100) + '...'}
+                      </p>
                     )}
                     
                     <div className="flex items-center justify-between mt-auto">

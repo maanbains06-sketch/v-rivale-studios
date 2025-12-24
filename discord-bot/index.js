@@ -30,11 +30,24 @@ const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 // Your Discord Server ID
 const GUILD_ID = process.env.DISCORD_SERVER_ID;
 
-// Lovable Cloud backend URLs
+// Lovable Cloud backend URLs (read from environment variables)
 // - Presence updates are pushed in real-time via the bot
 // - Event syncing is triggered by the bot (then the backend function fetches the latest scheduled events)
-const SUPABASE_URL = 'https://obirpzwvnqveddyuulsb.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iaXJwend2bnF2ZWRkeXV1bHNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1OTA3OTcsImV4cCI6MjA3OTE2Njc5N30.23nOCIh06oFPW5TTHC6jhiBOkvd6GrXBn-pjZAYiXpY';
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+
+// Validate Supabase configuration
+if (!SUPABASE_URL) {
+  console.error('❌ ERROR: SUPABASE_URL environment variable not set!');
+  console.error('   Set it with: export SUPABASE_URL="https://your-project.supabase.co"');
+  process.exit(1);
+}
+
+if (!SUPABASE_ANON_KEY) {
+  console.error('❌ ERROR: SUPABASE_ANON_KEY environment variable not set!');
+  console.error('   Set it with: export SUPABASE_ANON_KEY="your-anon-key"');
+  process.exit(1);
+}
 
 // Backend functions
 const SYNC_PRESENCE_URL = `${SUPABASE_URL}/functions/v1/sync-discord-presence`;
