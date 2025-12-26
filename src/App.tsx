@@ -5,12 +5,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useReferralTracking } from "@/hooks/useReferralTracking";
 import { useStaffPresence } from "@/hooks/useStaffPresence";
+import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { AnimatePresence } from "framer-motion";
-import { lazy, Suspense, useState, useEffect } from "react";
+import { lazy, Suspense } from "react";
 
 const LiveVisitorCounter = lazy(() => import("@/components/LiveVisitorCounter"));
 const StaffPresenceTracker = lazy(() => import("@/components/StaffPresenceTracker"));
-const LoadingScreen = lazy(() => import("@/components/LoadingScreen"));
+const NetworkOfflineScreen = lazy(() => import("@/components/NetworkOfflineScreen"));
 import { PageTransition } from "@/components/PageTransition";
 import RequireAuth from "@/components/RequireAuth";
 import Index from "./pages/Index";
@@ -116,45 +117,33 @@ const AppRoutes = () => {
   );
 };
 
+const AppContent = () => {
+  const { isOnline } = useNetworkStatus();
+
+  return (
+    <>
+      {!isOnline && (
+        <Suspense fallback={null}>
+          <NetworkOfflineScreen />
+        </Suspense>
+      )}
+      <Suspense fallback={null}>
+        <LiveVisitorCounter />
+        <StaffPresenceTracker />
+      </Suspense>
+      <AppRoutes />
+    </>
+  );
+};
+
 const App = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [showContent, setShowContent] = useState(false);
-
-  useEffect(() => {
-    // Check if this is the first visit in this session
-    const hasVisited = sessionStorage.getItem("slrp_visited");
-    if (hasVisited) {
-      setIsLoading(false);
-      setShowContent(true);
-    }
-  }, []);
-
-  const handleLoadingComplete = () => {
-    sessionStorage.setItem("slrp_visited", "true");
-    setShowContent(true);
-    setTimeout(() => setIsLoading(false), 500);
-  };
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          {isLoading && (
-            <Suspense fallback={null}>
-              <LoadingScreen onComplete={handleLoadingComplete} minDuration={2500} />
-            </Suspense>
-          )}
-          {showContent && (
-            <>
-              <Suspense fallback={null}>
-                <LiveVisitorCounter />
-                <StaffPresenceTracker />
-              </Suspense>
-              <AppRoutes />
-            </>
-          )}
+          <AppContent />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
