@@ -7,10 +7,11 @@ import { useReferralTracking } from "@/hooks/useReferralTracking";
 import { useStaffPresence } from "@/hooks/useStaffPresence";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { AnimatePresence } from "framer-motion";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 
 const LiveVisitorCounter = lazy(() => import("@/components/LiveVisitorCounter"));
 const StaffPresenceTracker = lazy(() => import("@/components/StaffPresenceTracker"));
+const LoadingScreen = lazy(() => import("@/components/LoadingScreen"));
 const NetworkOfflineScreen = lazy(() => import("@/components/NetworkOfflineScreen"));
 import { PageTransition } from "@/components/PageTransition";
 import RequireAuth from "@/components/RequireAuth";
@@ -137,13 +138,36 @@ const AppContent = () => {
 };
 
 const App = () => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [showContent, setShowContent] = useState(false);
+
+  useEffect(() => {
+    // Check if this is the first visit in this session
+    const hasVisited = sessionStorage.getItem("slrp_visited");
+    if (hasVisited) {
+      setIsLoading(false);
+      setShowContent(true);
+    }
+  }, []);
+
+  const handleLoadingComplete = () => {
+    sessionStorage.setItem("slrp_visited", "true");
+    setShowContent(true);
+    setTimeout(() => setIsLoading(false), 500);
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <AppContent />
+          {isLoading && (
+            <Suspense fallback={null}>
+              <LoadingScreen onComplete={handleLoadingComplete} minDuration={2500} />
+            </Suspense>
+          )}
+          {showContent && <AppContent />}
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
