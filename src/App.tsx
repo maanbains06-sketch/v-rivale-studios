@@ -6,10 +6,11 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useReferralTracking } from "@/hooks/useReferralTracking";
 import { useStaffPresence } from "@/hooks/useStaffPresence";
 import { AnimatePresence } from "framer-motion";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 
 const LiveVisitorCounter = lazy(() => import("@/components/LiveVisitorCounter"));
 const StaffPresenceTracker = lazy(() => import("@/components/StaffPresenceTracker"));
+const LoadingScreen = lazy(() => import("@/components/LoadingScreen"));
 import { PageTransition } from "@/components/PageTransition";
 import RequireAuth from "@/components/RequireAuth";
 import Index from "./pages/Index";
@@ -115,20 +116,49 @@ const AppRoutes = () => {
   );
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Suspense fallback={null}>
-          <LiveVisitorCounter />
-          <StaffPresenceTracker />
-        </Suspense>
-        <AppRoutes />
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [showContent, setShowContent] = useState(false);
+
+  useEffect(() => {
+    // Check if this is the first visit in this session
+    const hasVisited = sessionStorage.getItem("slrp_visited");
+    if (hasVisited) {
+      setIsLoading(false);
+      setShowContent(true);
+    }
+  }, []);
+
+  const handleLoadingComplete = () => {
+    sessionStorage.setItem("slrp_visited", "true");
+    setShowContent(true);
+    setTimeout(() => setIsLoading(false), 500);
+  };
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          {isLoading && (
+            <Suspense fallback={null}>
+              <LoadingScreen onComplete={handleLoadingComplete} minDuration={2500} />
+            </Suspense>
+          )}
+          {showContent && (
+            <>
+              <Suspense fallback={null}>
+                <LiveVisitorCounter />
+                <StaffPresenceTracker />
+              </Suspense>
+              <AppRoutes />
+            </>
+          )}
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
