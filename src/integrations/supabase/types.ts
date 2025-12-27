@@ -607,6 +607,8 @@ export type Database = {
           giveaway_id: string
           id: string
           is_winner: boolean
+          referral_bonus: boolean | null
+          social_share_bonus: boolean | null
           user_id: string
         }
         Insert: {
@@ -617,6 +619,8 @@ export type Database = {
           giveaway_id: string
           id?: string
           is_winner?: boolean
+          referral_bonus?: boolean | null
+          social_share_bonus?: boolean | null
           user_id: string
         }
         Update: {
@@ -627,6 +631,8 @@ export type Database = {
           giveaway_id?: string
           id?: string
           is_winner?: boolean
+          referral_bonus?: boolean | null
+          social_share_bonus?: boolean | null
           user_id?: string
         }
         Relationships: [
@@ -2166,6 +2172,10 @@ export type Database = {
       }
     }
     Functions: {
+      add_bonus_entry: {
+        Args: { p_bonus_type: string; p_giveaway_id: string; p_user_id: string }
+        Returns: boolean
+      }
       assign_chat_to_staff: { Args: { chat_id: string }; Returns: string }
       auto_assign_unassigned_chats: {
         Args: never
@@ -2229,6 +2239,13 @@ export type Database = {
         Returns: {
           message: string
           rebalanced_count: number
+        }[]
+      }
+      select_giveaway_winners: {
+        Args: { p_giveaway_id: string }
+        Returns: {
+          winner_discord_username: string
+          winner_user_id: string
         }[]
       }
       sync_all_staff_user_ids: {

@@ -2053,6 +2053,11 @@ const Giveaway = () => {
           entryCount={entryGiveaway ? (entryCounts[entryGiveaway.id] || 0) : 0}
           user={user}
           hasEntered={entryGiveaway ? !!getUserEntry(entryGiveaway.id) : false}
+          userEntry={entryGiveaway ? getUserEntry(entryGiveaway.id) as any : null}
+          onBonusEntryClaimed={() => {
+            fetchUserEntries();
+            fetchGiveaways();
+          }}
         />
       </div>
     </div>
