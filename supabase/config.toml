@@ -53,3 +53,6 @@ verify_jwt = false
 
 [functions.verify-discord-membership]
 verify_jwt = false
+
+[functions.send-giveaway-notification]
+verify_jwt = false

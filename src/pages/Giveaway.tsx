@@ -433,7 +433,7 @@ const Giveaway = () => {
 
     setIsCreatingGiveaway(true);
 
-    const { error } = await supabase
+    const { data: insertedData, error } = await supabase
       .from('giveaways')
       .insert({
         title: giveawayForm.title,
@@ -446,7 +446,9 @@ const Giveaway = () => {
         winner_count: parseInt(giveawayForm.winner_count) || 1,
         status: giveawayForm.status,
         created_by: user?.id || null,
-      });
+      })
+      .select()
+      .single();
 
     if (error) {
       toast({
@@ -455,9 +457,32 @@ const Giveaway = () => {
         variant: "destructive",
       });
     } else {
+      // Send notification to Discord
+      try {
+        const websiteUrl = `${window.location.origin}/giveaway`;
+        await supabase.functions.invoke('send-giveaway-notification', {
+          body: {
+            title: giveawayForm.title,
+            description: giveawayForm.description || null,
+            prize: giveawayForm.prize,
+            prize_image_url: giveawayForm.prize_image_url || null,
+            start_date: new Date(giveawayForm.start_date).toISOString(),
+            end_date: new Date(giveawayForm.end_date).toISOString(),
+            status: giveawayForm.status,
+            winner_count: parseInt(giveawayForm.winner_count) || 1,
+            giveaway_id: insertedData?.id || '',
+            website_url: websiteUrl,
+          }
+        });
+        console.log('Discord notification sent successfully');
+      } catch (notifyError) {
+        console.error('Failed to send Discord notification:', notifyError);
+        // Don't show error toast - giveaway was created successfully
+      }
+
       toast({
         title: "Giveaway Created!",
-        description: "Your giveaway has been created successfully.",
+        description: "Your giveaway has been created and notification sent to Discord.",
       });
       setShowAddGiveawayDialog(false);
       setGiveawayForm({
