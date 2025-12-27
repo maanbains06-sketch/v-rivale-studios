@@ -84,6 +84,30 @@ const GiveawayEntryDialog = ({
   const [step, setStep] = useState<"confirm" | "entering" | "success">("confirm");
   const [acceptedRules, setAcceptedRules] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+  // Live countdown timer
+  useEffect(() => {
+    if (!giveaway) return;
+    
+    const calculateTimeLeft = () => {
+      const difference = new Date(giveaway.end_date).getTime() - Date.now();
+      if (difference > 0) {
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60),
+        });
+      } else {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      }
+    };
+
+    calculateTimeLeft();
+    const timer = setInterval(calculateTimeLeft, 1000);
+    return () => clearInterval(timer);
+  }, [giveaway]);
 
   useEffect(() => {
     if (isOpen) {
@@ -217,8 +241,57 @@ const GiveawayEntryDialog = ({
                   </div>
                 </div>
 
+                {/* Live Countdown Timer */}
+                <div className="p-4 rounded-xl bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 border border-primary/20">
+                  <div className="flex items-center justify-center gap-2 mb-3">
+                    <Clock className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-semibold text-foreground uppercase tracking-wider">Time Remaining</span>
+                  </div>
+                  <div className="flex justify-center gap-2">
+                    {[
+                      { value: timeLeft.days, label: 'Days' },
+                      { value: timeLeft.hours, label: 'Hrs' },
+                      { value: timeLeft.minutes, label: 'Min' },
+                      { value: timeLeft.seconds, label: 'Sec' }
+                    ].map((item, index) => (
+                      <motion.div
+                        key={item.label}
+                        className="flex flex-col items-center"
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-accent/30 rounded-lg blur-md" />
+                          <div className="relative bg-gradient-to-br from-card to-card/80 border-2 border-primary/40 rounded-lg px-3 py-2 min-w-[52px] backdrop-blur-sm shadow-lg">
+                            <motion.span
+                              key={item.value}
+                              initial={{ y: -5, opacity: 0 }}
+                              animate={{ y: 0, opacity: 1 }}
+                              className="block text-2xl font-black text-transparent bg-clip-text bg-gradient-to-br from-primary to-accent text-center"
+                            >
+                              {item.value.toString().padStart(2, '0')}
+                            </motion.span>
+                          </div>
+                        </div>
+                        <span className="text-[10px] font-semibold text-muted-foreground mt-1.5 uppercase tracking-wider">{item.label}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                  {timeLeft.days === 0 && timeLeft.hours < 24 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center justify-center gap-2 mt-3 text-yellow-500"
+                    >
+                      <AlertCircle className="w-4 h-4" />
+                      <span className="text-xs font-semibold">Ending soon! Don't miss out!</span>
+                    </motion.div>
+                  )}
+                </div>
+
                 {/* Stats Row */}
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 rounded-xl bg-muted/30 text-center">
                     <div className="w-10 h-10 mx-auto mb-2 rounded-lg bg-primary/10 flex items-center justify-center">
                       <Users className="w-5 h-5 text-primary" />
@@ -232,15 +305,6 @@ const GiveawayEntryDialog = ({
                     </div>
                     <p className="text-lg font-bold text-foreground">{giveaway.winner_count}</p>
                     <p className="text-xs text-muted-foreground">Winners</p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-muted/30 text-center">
-                    <div className="w-10 h-10 mx-auto mb-2 rounded-lg bg-accent/10 flex items-center justify-center">
-                      <Clock className="w-5 h-5 text-accent" />
-                    </div>
-                    <p className="text-lg font-bold text-foreground">
-                      {Math.max(0, Math.ceil((new Date(giveaway.end_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))}
-                    </p>
-                    <p className="text-xs text-muted-foreground">Days Left</p>
                   </div>
                 </div>
 
