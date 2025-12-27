@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { toast } from "@/hooks/use-toast";
 
 export const useNetworkStatus = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -7,9 +8,13 @@ export const useNetworkStatus = () => {
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
-      // If we were offline and came back online, reload to refresh data
+      // If we were offline and came back online, show toast and reload
       if (wasOffline) {
-        window.location.reload();
+        toast({
+          title: "Connection Restored",
+          description: "You're back online. Refreshing data...",
+        });
+        setTimeout(() => window.location.reload(), 1500);
       }
     };
 
