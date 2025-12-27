@@ -1082,7 +1082,7 @@ const Giveaway = () => {
         }}
       >
         {/* Lighter gradient overlay for better background visibility */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/60 to-background/80" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/50 to-background/50" />
         {/* Animated accent overlays */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-yellow-500/5 animate-pulse" style={{ animationDuration: '8s' }} />
       </div>
