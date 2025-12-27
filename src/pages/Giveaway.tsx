@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
-import headerImage from "@/assets/header-store.jpg";
+import headerImage from "@/assets/header-giveaway.jpg";
 
 // Replace with your Discord ID for admin access
 const ADMIN_DISCORD_ID = "833680146510381097";
