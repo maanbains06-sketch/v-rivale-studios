@@ -306,14 +306,14 @@ const Navigation = () => {
             )}
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 ml-auto md:ml-0">
             {user && <NotificationBell />}
             <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <SheetTrigger asChild>
                 <Button 
                   variant="outline"
                   size="sm"
-                  className="glass-effect md:hidden"
+                  className="glass-effect md:hidden order-last"
                 >
                   <Menu className="w-5 h-5" />
                 </Button>
