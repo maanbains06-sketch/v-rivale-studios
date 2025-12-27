@@ -14,7 +14,7 @@ import PageHeader from "@/components/PageHeader";
 import headerImage from "@/assets/header-store.jpg";
 
 // Replace with your Discord ID for admin access
-const ADMIN_DISCORD_ID = "523855030329065474";
+const ADMIN_DISCORD_ID = "833680146510381097";
 
 interface Giveaway {
   id: string;
