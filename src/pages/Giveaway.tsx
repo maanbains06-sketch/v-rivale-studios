@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Gift, Clock, Users, Trophy, Sparkles, Calendar, ChevronRight, Star, Crown, Ticket, Check, Timer, Award, PartyPopper, Plus, X, Image, Hash, CalendarDays, Target, Loader2 } from "lucide-react";
+import { Gift, Clock, Users, Trophy, Sparkles, Calendar, ChevronRight, Star, Crown, Ticket, Check, Timer, Award, PartyPopper, Plus, X, Image, Hash, CalendarDays, Target, Loader2, Pencil, Trash2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/Navigation";
@@ -109,13 +110,19 @@ const GiveawayCard = ({
   userEntry,
   entryCount,
   onEnter, 
-  isEntering 
+  isEntering,
+  isAdmin,
+  onEdit,
+  onDelete
 }: { 
   giveaway: Giveaway;
   userEntry: GiveawayEntry | null;
   entryCount: number;
   onEnter: (id: string) => void;
   isEntering: boolean;
+  isAdmin?: boolean;
+  onEdit?: (giveaway: Giveaway) => void;
+  onDelete?: (giveaway: Giveaway) => void;
 }) => {
   const isActive = giveaway.status === 'active';
   const isUpcoming = giveaway.status === 'upcoming';
@@ -133,6 +140,34 @@ const GiveawayCard = ({
   return (
     <motion.div variants={itemVariants}>
       <Card className="glass-effect overflow-hidden group hover:border-primary/40 transition-all duration-300 relative">
+        {/* Admin Controls */}
+        {isAdmin && (
+          <div className="absolute top-3 left-3 z-10 flex gap-2">
+            <Button
+              size="icon"
+              variant="secondary"
+              className="w-8 h-8 bg-background/80 backdrop-blur-sm hover:bg-primary/20"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit?.(giveaway);
+              }}
+            >
+              <Pencil className="w-4 h-4" />
+            </Button>
+            <Button
+              size="icon"
+              variant="secondary"
+              className="w-8 h-8 bg-background/80 backdrop-blur-sm hover:bg-destructive/20 hover:text-destructive"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete?.(giveaway);
+              }}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
+
         {/* Glow effect for active giveaways */}
         {isActive && (
           <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5 animate-pulse" />
@@ -281,8 +316,13 @@ const Giveaway = () => {
   const [activeTab, setActiveTab] = useState("active");
   const [showEntriesDialog, setShowEntriesDialog] = useState(false);
   const [showAddGiveawayDialog, setShowAddGiveawayDialog] = useState(false);
+  const [showEditGiveawayDialog, setShowEditGiveawayDialog] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [selectedGiveaway, setSelectedGiveaway] = useState<Giveaway | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCreatingGiveaway, setIsCreatingGiveaway] = useState(false);
+  const [isUpdatingGiveaway, setIsUpdatingGiveaway] = useState(false);
+  const [isDeletingGiveaway, setIsDeletingGiveaway] = useState(false);
   
   // Giveaway form state
   const [giveawayForm, setGiveawayForm] = useState({
@@ -449,6 +489,102 @@ const Giveaway = () => {
       winner_count: "1",
       status: "upcoming"
     });
+  };
+
+  const handleEditGiveaway = (giveaway: Giveaway) => {
+    setSelectedGiveaway(giveaway);
+    setGiveawayForm({
+      title: giveaway.title,
+      description: giveaway.description || "",
+      prize: giveaway.prize,
+      prize_image_url: giveaway.prize_image_url || "",
+      start_date: new Date(giveaway.start_date).toISOString().slice(0, 16),
+      end_date: new Date(giveaway.end_date).toISOString().slice(0, 16),
+      max_entries: giveaway.max_entries?.toString() || "",
+      winner_count: giveaway.winner_count.toString(),
+      status: giveaway.status
+    });
+    setShowEditGiveawayDialog(true);
+  };
+
+  const handleUpdateGiveaway = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedGiveaway) return;
+    
+    setIsUpdatingGiveaway(true);
+
+    const { error } = await supabase
+      .from('giveaways')
+      .update({
+        title: giveawayForm.title,
+        description: giveawayForm.description || null,
+        prize: giveawayForm.prize,
+        prize_image_url: giveawayForm.prize_image_url || null,
+        start_date: new Date(giveawayForm.start_date).toISOString(),
+        end_date: new Date(giveawayForm.end_date).toISOString(),
+        max_entries: giveawayForm.max_entries ? parseInt(giveawayForm.max_entries) : null,
+        winner_count: parseInt(giveawayForm.winner_count) || 1,
+        status: giveawayForm.status,
+      })
+      .eq('id', selectedGiveaway.id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update giveaway. Please try again.",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Giveaway Updated!",
+        description: "Your giveaway has been updated successfully.",
+      });
+      setShowEditGiveawayDialog(false);
+      setSelectedGiveaway(null);
+      resetGiveawayForm();
+      fetchGiveaways();
+    }
+
+    setIsUpdatingGiveaway(false);
+  };
+
+  const handleDeleteClick = (giveaway: Giveaway) => {
+    setSelectedGiveaway(giveaway);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteGiveaway = async () => {
+    if (!selectedGiveaway) return;
+    
+    setIsDeletingGiveaway(true);
+
+    // First delete related entries and winners
+    await supabase.from('giveaway_entries').delete().eq('giveaway_id', selectedGiveaway.id);
+    await supabase.from('giveaway_winners').delete().eq('giveaway_id', selectedGiveaway.id);
+
+    const { error } = await supabase
+      .from('giveaways')
+      .delete()
+      .eq('id', selectedGiveaway.id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete giveaway. Please try again.",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Giveaway Deleted",
+        description: "The giveaway has been deleted successfully.",
+      });
+      setShowDeleteConfirm(false);
+      setSelectedGiveaway(null);
+      fetchGiveaways();
+      fetchTotalWinnersCount();
+    }
+
+    setIsDeletingGiveaway(false);
   };
 
   const handleEnterGiveaway = async (giveawayId: string) => {
@@ -870,6 +1006,262 @@ const Giveaway = () => {
           </DialogContent>
         </Dialog>
 
+        {/* Edit Giveaway Dialog */}
+        <Dialog open={showEditGiveawayDialog} onOpenChange={(open) => {
+          setShowEditGiveawayDialog(open);
+          if (!open) {
+            setSelectedGiveaway(null);
+            resetGiveawayForm();
+          }
+        }}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-3 text-2xl">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500 to-amber-600 flex items-center justify-center">
+                  <Pencil className="w-6 h-6 text-white" />
+                </div>
+                Edit Giveaway
+              </DialogTitle>
+              <DialogDescription>
+                Update the giveaway details below.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <form onSubmit={handleUpdateGiveaway} className="space-y-6 mt-4">
+              {/* Title & Prize Section */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-title" className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-yellow-500" />
+                    Giveaway Title *
+                  </Label>
+                  <Input
+                    id="edit-title"
+                    placeholder="e.g., Weekly Cash Giveaway"
+                    value={giveawayForm.title}
+                    onChange={(e) => setGiveawayForm({ ...giveawayForm, title: e.target.value })}
+                    className="bg-background/50"
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="edit-prize" className="flex items-center gap-2">
+                    <Trophy className="w-4 h-4 text-primary" />
+                    Prize *
+                  </Label>
+                  <Input
+                    id="edit-prize"
+                    placeholder="e.g., $1,000,000 In-Game Cash"
+                    value={giveawayForm.prize}
+                    onChange={(e) => setGiveawayForm({ ...giveawayForm, prize: e.target.value })}
+                    className="bg-background/50"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <Label htmlFor="edit-description" className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-accent" />
+                  Description
+                </Label>
+                <Textarea
+                  id="edit-description"
+                  placeholder="Describe your giveaway..."
+                  value={giveawayForm.description}
+                  onChange={(e) => setGiveawayForm({ ...giveawayForm, description: e.target.value })}
+                  className="bg-background/50 min-h-[80px]"
+                />
+              </div>
+
+              {/* Prize Image URL */}
+              <div className="space-y-2">
+                <Label htmlFor="edit-prize_image_url" className="flex items-center gap-2">
+                  <Image className="w-4 h-4 text-green-500" />
+                  Prize Image URL
+                </Label>
+                <Input
+                  id="edit-prize_image_url"
+                  type="url"
+                  placeholder="https://example.com/prize-image.jpg"
+                  value={giveawayForm.prize_image_url}
+                  onChange={(e) => setGiveawayForm({ ...giveawayForm, prize_image_url: e.target.value })}
+                  className="bg-background/50"
+                />
+              </div>
+
+              {/* Dates Section */}
+              <div className="p-4 rounded-xl bg-gradient-to-br from-primary/5 to-accent/5 border border-primary/20">
+                <h4 className="font-semibold text-foreground flex items-center gap-2 mb-4">
+                  <CalendarDays className="w-5 h-5 text-primary" />
+                  Schedule
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-start_date">Start Date & Time *</Label>
+                    <Input
+                      id="edit-start_date"
+                      type="datetime-local"
+                      value={giveawayForm.start_date}
+                      onChange={(e) => setGiveawayForm({ ...giveawayForm, start_date: e.target.value })}
+                      className="bg-background/50"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-end_date">End Date & Time *</Label>
+                    <Input
+                      id="edit-end_date"
+                      type="datetime-local"
+                      value={giveawayForm.end_date}
+                      onChange={(e) => setGiveawayForm({ ...giveawayForm, end_date: e.target.value })}
+                      className="bg-background/50"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Settings Section */}
+              <div className="p-4 rounded-xl bg-gradient-to-br from-accent/5 to-primary/5 border border-accent/20">
+                <h4 className="font-semibold text-foreground flex items-center gap-2 mb-4">
+                  <Target className="w-5 h-5 text-accent" />
+                  Settings
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-max_entries">Max Entries</Label>
+                    <Input
+                      id="edit-max_entries"
+                      type="number"
+                      min="1"
+                      placeholder="Unlimited"
+                      value={giveawayForm.max_entries}
+                      onChange={(e) => setGiveawayForm({ ...giveawayForm, max_entries: e.target.value })}
+                      className="bg-background/50"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-winner_count">Winner Count</Label>
+                    <Input
+                      id="edit-winner_count"
+                      type="number"
+                      min="1"
+                      value={giveawayForm.winner_count}
+                      onChange={(e) => setGiveawayForm({ ...giveawayForm, winner_count: e.target.value })}
+                      className="bg-background/50"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-status">Status</Label>
+                    <Select 
+                      value={giveawayForm.status} 
+                      onValueChange={(value) => setGiveawayForm({ ...giveawayForm, status: value })}
+                    >
+                      <SelectTrigger className="bg-background/50">
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="upcoming">
+                          <div className="flex items-center gap-2">
+                            <Clock className="w-4 h-4 text-yellow-500" />
+                            Upcoming
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="active">
+                          <div className="flex items-center gap-2">
+                            <Sparkles className="w-4 h-4 text-green-500" />
+                            Active (Live)
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="ended">
+                          <div className="flex items-center gap-2">
+                            <Trophy className="w-4 h-4 text-muted-foreground" />
+                            Ended
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4 border-t border-border">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => setShowEditGiveawayDialog(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="flex-1 bg-gradient-to-r from-yellow-500 to-amber-600 hover:opacity-90"
+                  disabled={isUpdatingGiveaway}
+                >
+                  {isUpdatingGiveaway ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4 mr-2" />
+                      Update Giveaway
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-destructive/20 flex items-center justify-center">
+                  <AlertTriangle className="w-5 h-5 text-destructive" />
+                </div>
+                Delete Giveaway
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete "<span className="font-semibold text-foreground">{selectedGiveaway?.title}</span>"? 
+                This will also delete all entries and winner records. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isDeletingGiveaway}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteGiveaway}
+                className="bg-destructive hover:bg-destructive/90"
+                disabled={isDeletingGiveaway}
+              >
+                {isDeletingGiveaway ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete Giveaway
+                  </>
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
         {/* Giveaway Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8">
@@ -908,6 +1300,9 @@ const Giveaway = () => {
                     entryCount={entryCounts[giveaway.id] || 0}
                     onEnter={handleEnterGiveaway}
                     isEntering={isEntering}
+                    isAdmin={isAdmin}
+                    onEdit={handleEditGiveaway}
+                    onDelete={handleDeleteClick}
                   />
                 ))}
               </motion.div>
@@ -936,6 +1331,9 @@ const Giveaway = () => {
                     entryCount={entryCounts[giveaway.id] || 0}
                     onEnter={handleEnterGiveaway}
                     isEntering={isEntering}
+                    isAdmin={isAdmin}
+                    onEdit={handleEditGiveaway}
+                    onDelete={handleDeleteClick}
                   />
                 ))}
               </motion.div>
@@ -964,6 +1362,9 @@ const Giveaway = () => {
                     entryCount={entryCounts[giveaway.id] || 0}
                     onEnter={handleEnterGiveaway}
                     isEntering={isEntering}
+                    isAdmin={isAdmin}
+                    onEdit={handleEditGiveaway}
+                    onDelete={handleDeleteClick}
                   />
                 ))}
               </motion.div>
@@ -1025,7 +1426,7 @@ const Giveaway = () => {
             </p>
             <Button 
               className="bg-[#5865F2] hover:bg-[#4752C4] text-white"
-              onClick={() => window.open("https://discord.gg/W2nU97maBh", "_blank")}
+              onClick={() => window.open("https://discord.gg/slrp", "_blank")}
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
