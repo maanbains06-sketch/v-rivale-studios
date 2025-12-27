@@ -1,12 +1,16 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Gift, Clock, Users, Trophy, Sparkles, Calendar, ChevronRight, Star, Crown, Ticket, Check, Timer, Award, PartyPopper, Plus, X } from "lucide-react";
+import { Gift, Clock, Users, Trophy, Sparkles, Calendar, ChevronRight, Star, Crown, Ticket, Check, Timer, Award, PartyPopper, Plus, X, Image, Hash, CalendarDays, Target, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/Navigation";
@@ -276,7 +280,22 @@ const Giveaway = () => {
   const [isEntering, setIsEntering] = useState(false);
   const [activeTab, setActiveTab] = useState("active");
   const [showEntriesDialog, setShowEntriesDialog] = useState(false);
+  const [showAddGiveawayDialog, setShowAddGiveawayDialog] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isCreatingGiveaway, setIsCreatingGiveaway] = useState(false);
+  
+  // Giveaway form state
+  const [giveawayForm, setGiveawayForm] = useState({
+    title: "",
+    description: "",
+    prize: "",
+    prize_image_url: "",
+    start_date: "",
+    end_date: "",
+    max_entries: "",
+    winner_count: "1",
+    status: "upcoming"
+  });
 
   useEffect(() => {
     fetchUser();
@@ -358,6 +377,78 @@ const Giveaway = () => {
     if (!error) {
       setTotalWinnersCount(count || 0);
     }
+  };
+
+  const handleCreateGiveaway = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!giveawayForm.title || !giveawayForm.prize || !giveawayForm.start_date || !giveawayForm.end_date) {
+      toast({
+        title: "Missing Fields",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsCreatingGiveaway(true);
+
+    const { error } = await supabase
+      .from('giveaways')
+      .insert({
+        title: giveawayForm.title,
+        description: giveawayForm.description || null,
+        prize: giveawayForm.prize,
+        prize_image_url: giveawayForm.prize_image_url || null,
+        start_date: new Date(giveawayForm.start_date).toISOString(),
+        end_date: new Date(giveawayForm.end_date).toISOString(),
+        max_entries: giveawayForm.max_entries ? parseInt(giveawayForm.max_entries) : null,
+        winner_count: parseInt(giveawayForm.winner_count) || 1,
+        status: giveawayForm.status,
+        created_by: user?.id || null,
+      });
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create giveaway. Please try again.",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Giveaway Created!",
+        description: "Your giveaway has been created successfully.",
+      });
+      setShowAddGiveawayDialog(false);
+      setGiveawayForm({
+        title: "",
+        description: "",
+        prize: "",
+        prize_image_url: "",
+        start_date: "",
+        end_date: "",
+        max_entries: "",
+        winner_count: "1",
+        status: "upcoming"
+      });
+      fetchGiveaways();
+    }
+
+    setIsCreatingGiveaway(false);
+  };
+
+  const resetGiveawayForm = () => {
+    setGiveawayForm({
+      title: "",
+      description: "",
+      prize: "",
+      prize_image_url: "",
+      start_date: "",
+      end_date: "",
+      max_entries: "",
+      winner_count: "1",
+      status: "upcoming"
+    });
   };
 
   const handleEnterGiveaway = async (giveawayId: string) => {
@@ -492,7 +583,7 @@ const Giveaway = () => {
             {isAdmin && (
               <Card 
                 className="glass-effect text-center p-4 hover:border-primary/50 transition-colors cursor-pointer bg-gradient-to-br from-primary/10 to-accent/10" 
-                onClick={() => window.location.href = '/admin'}
+                onClick={() => setShowAddGiveawayDialog(true)}
               >
                 <div className="flex items-center justify-center gap-3">
                   <Plus className="w-6 h-6 text-primary" />
@@ -551,6 +642,231 @@ const Giveaway = () => {
                 </p>
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Add Giveaway Dialog */}
+        <Dialog open={showAddGiveawayDialog} onOpenChange={(open) => {
+          setShowAddGiveawayDialog(open);
+          if (!open) resetGiveawayForm();
+        }}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-3 text-2xl">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                  <Gift className="w-6 h-6 text-white" />
+                </div>
+                Create New Giveaway
+              </DialogTitle>
+              <DialogDescription>
+                Fill in the details below to create an exciting giveaway for your community.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <form onSubmit={handleCreateGiveaway} className="space-y-6 mt-4">
+              {/* Title & Prize Section */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="title" className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-yellow-500" />
+                    Giveaway Title *
+                  </Label>
+                  <Input
+                    id="title"
+                    placeholder="e.g., Weekly Cash Giveaway"
+                    value={giveawayForm.title}
+                    onChange={(e) => setGiveawayForm({ ...giveawayForm, title: e.target.value })}
+                    className="bg-background/50"
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="prize" className="flex items-center gap-2">
+                    <Trophy className="w-4 h-4 text-primary" />
+                    Prize *
+                  </Label>
+                  <Input
+                    id="prize"
+                    placeholder="e.g., $1,000,000 In-Game Cash"
+                    value={giveawayForm.prize}
+                    onChange={(e) => setGiveawayForm({ ...giveawayForm, prize: e.target.value })}
+                    className="bg-background/50"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <Label htmlFor="description" className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-accent" />
+                  Description
+                </Label>
+                <Textarea
+                  id="description"
+                  placeholder="Describe your giveaway, rules, and what participants can win..."
+                  value={giveawayForm.description}
+                  onChange={(e) => setGiveawayForm({ ...giveawayForm, description: e.target.value })}
+                  className="bg-background/50 min-h-[100px]"
+                />
+              </div>
+
+              {/* Prize Image URL */}
+              <div className="space-y-2">
+                <Label htmlFor="prize_image_url" className="flex items-center gap-2">
+                  <Image className="w-4 h-4 text-green-500" />
+                  Prize Image URL
+                </Label>
+                <Input
+                  id="prize_image_url"
+                  type="url"
+                  placeholder="https://example.com/prize-image.jpg"
+                  value={giveawayForm.prize_image_url}
+                  onChange={(e) => setGiveawayForm({ ...giveawayForm, prize_image_url: e.target.value })}
+                  className="bg-background/50"
+                />
+                {giveawayForm.prize_image_url && (
+                  <div className="mt-2 rounded-lg overflow-hidden border border-border/50 max-h-32">
+                    <img 
+                      src={giveawayForm.prize_image_url} 
+                      alt="Prize preview" 
+                      className="w-full h-32 object-cover"
+                      onError={(e) => (e.currentTarget.style.display = 'none')}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Dates Section */}
+              <div className="p-4 rounded-xl bg-gradient-to-br from-primary/5 to-accent/5 border border-primary/20">
+                <h4 className="font-semibold text-foreground flex items-center gap-2 mb-4">
+                  <CalendarDays className="w-5 h-5 text-primary" />
+                  Schedule
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="start_date">Start Date & Time *</Label>
+                    <Input
+                      id="start_date"
+                      type="datetime-local"
+                      value={giveawayForm.start_date}
+                      onChange={(e) => setGiveawayForm({ ...giveawayForm, start_date: e.target.value })}
+                      className="bg-background/50"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="end_date">End Date & Time *</Label>
+                    <Input
+                      id="end_date"
+                      type="datetime-local"
+                      value={giveawayForm.end_date}
+                      onChange={(e) => setGiveawayForm({ ...giveawayForm, end_date: e.target.value })}
+                      className="bg-background/50"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Settings Section */}
+              <div className="p-4 rounded-xl bg-gradient-to-br from-accent/5 to-primary/5 border border-accent/20">
+                <h4 className="font-semibold text-foreground flex items-center gap-2 mb-4">
+                  <Target className="w-5 h-5 text-accent" />
+                  Settings
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="max_entries" className="flex items-center gap-2">
+                      <Hash className="w-4 h-4" />
+                      Max Entries
+                    </Label>
+                    <Input
+                      id="max_entries"
+                      type="number"
+                      min="1"
+                      placeholder="Unlimited"
+                      value={giveawayForm.max_entries}
+                      onChange={(e) => setGiveawayForm({ ...giveawayForm, max_entries: e.target.value })}
+                      className="bg-background/50"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="winner_count" className="flex items-center gap-2">
+                      <Crown className="w-4 h-4 text-yellow-500" />
+                      Winner Count
+                    </Label>
+                    <Input
+                      id="winner_count"
+                      type="number"
+                      min="1"
+                      value={giveawayForm.winner_count}
+                      onChange={(e) => setGiveawayForm({ ...giveawayForm, winner_count: e.target.value })}
+                      className="bg-background/50"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="status">Initial Status</Label>
+                    <Select 
+                      value={giveawayForm.status} 
+                      onValueChange={(value) => setGiveawayForm({ ...giveawayForm, status: value })}
+                    >
+                      <SelectTrigger className="bg-background/50">
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="upcoming">
+                          <div className="flex items-center gap-2">
+                            <Clock className="w-4 h-4 text-yellow-500" />
+                            Upcoming
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="active">
+                          <div className="flex items-center gap-2">
+                            <Sparkles className="w-4 h-4 text-green-500" />
+                            Active (Live)
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4 border-t border-border">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => setShowAddGiveawayDialog(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="flex-1 bg-gradient-to-r from-primary to-accent hover:opacity-90"
+                  disabled={isCreatingGiveaway}
+                >
+                  {isCreatingGiveaway ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <Gift className="w-4 h-4 mr-2" />
+                      Create Giveaway
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
           </DialogContent>
         </Dialog>
 
