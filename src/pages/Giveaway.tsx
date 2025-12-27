@@ -453,6 +453,169 @@ const WinnerCard = ({ winner, giveawayTitle }: { winner: GiveawayWinner; giveawa
   </motion.div>
 );
 
+// Enhanced Ended Giveaway Card with Winners
+const EndedGiveawayCard = ({ 
+  giveaway, 
+  entryCount,
+  winners,
+  isAdmin,
+  onEdit,
+  onDelete
+}: { 
+  giveaway: Giveaway;
+  entryCount: number;
+  winners: GiveawayWinner[];
+  isAdmin?: boolean;
+  onEdit?: (giveaway: Giveaway) => void;
+  onDelete?: (giveaway: Giveaway) => void;
+}) => {
+  return (
+    <motion.div 
+      variants={itemVariants}
+      whileHover={{ y: -5 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+    >
+      <Card className="relative overflow-hidden group border-2 border-muted/30 hover:border-yellow-500/30 transition-all duration-500 bg-gradient-to-b from-card to-card/80 backdrop-blur-xl">
+        {/* Subtle gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 via-transparent to-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        
+        {/* Admin Controls */}
+        {isAdmin && (
+          <div className="absolute top-4 left-4 z-20 flex gap-2">
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                size="icon"
+                variant="secondary"
+                className="w-9 h-9 bg-background/90 backdrop-blur-md border border-border/50 hover:bg-primary/20 shadow-lg"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit?.(giveaway);
+                }}
+              >
+                <Pencil className="w-4 h-4" />
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                size="icon"
+                variant="secondary"
+                className="w-9 h-9 bg-background/90 backdrop-blur-md border border-border/50 hover:bg-destructive/20 hover:text-destructive shadow-lg"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete?.(giveaway);
+                }}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Prize Image */}
+        <div className="relative h-40 overflow-hidden">
+          {giveaway.prize_image_url ? (
+            <img 
+              src={giveaway.prize_image_url} 
+              alt={giveaway.prize}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out grayscale-[30%] group-hover:grayscale-0"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-muted/50 via-muted/30 to-muted/10 flex items-center justify-center">
+              <Gift className="w-16 h-16 text-muted-foreground/50" />
+            </div>
+          )}
+          
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/60 to-transparent" />
+          
+          {/* Ended badge */}
+          <div className="absolute top-4 right-4">
+            <Badge className="bg-muted/90 text-muted-foreground border-0 backdrop-blur-sm">
+              <Trophy className="w-3 h-3 mr-1" />
+              ENDED
+            </Badge>
+          </div>
+          
+          {/* Prize info */}
+          <div className="absolute bottom-3 left-3 right-3">
+            <div className="flex items-center gap-2 p-2 bg-background/80 backdrop-blur-md rounded-lg border border-border/30">
+              <Trophy className="w-4 h-4 text-yellow-500" />
+              <span className="font-semibold text-sm text-foreground truncate">{giveaway.prize}</span>
+            </div>
+          </div>
+        </div>
+
+        <CardContent className="p-5 relative">
+          {/* Title */}
+          <h3 className="text-lg font-bold text-headline mb-2 line-clamp-1 group-hover:text-yellow-500 transition-colors">
+            {giveaway.title}
+          </h3>
+          
+          {/* Stats */}
+          <div className="flex items-center gap-3 mb-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <Users className="w-4 h-4" />
+              <span>{entryCount} entries</span>
+            </div>
+            <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+            <div className="flex items-center gap-1.5">
+              <Crown className="w-4 h-4 text-yellow-500" />
+              <span>{winners.length} winner{winners.length !== 1 ? 's' : ''}</span>
+            </div>
+          </div>
+          
+          {/* Winners Section */}
+          {winners.length > 0 ? (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-semibold text-yellow-500 mb-2">
+                <Award className="w-4 h-4" />
+                <span>Winners</span>
+              </div>
+              <div className="space-y-2 max-h-[140px] overflow-y-auto pr-1">
+                {winners.map((winner, index) => (
+                  <motion.div
+                    key={winner.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="flex items-center gap-3 p-2 rounded-lg bg-gradient-to-r from-yellow-500/10 to-amber-500/5 border border-yellow-500/20"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-lg shadow-yellow-500/20">
+                      <Crown className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm text-foreground truncate">
+                        {winner.discord_username || "Anonymous"}
+                      </p>
+                    </div>
+                    {winner.prize_claimed && (
+                      <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center">
+                        <Check className="w-3 h-3 text-green-500" />
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="p-4 rounded-lg bg-muted/30 border border-dashed border-muted text-center">
+              <p className="text-sm text-muted-foreground">No winners announced yet</p>
+            </div>
+          )}
+          
+          {/* End date */}
+          <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Ended {new Date(giveaway.end_date).toLocaleDateString()}</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+};
+
 const Giveaway = () => {
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
@@ -902,25 +1065,44 @@ const Giveaway = () => {
   const getGiveawayStatus = (giveawayId: string) => 
     giveaways.find(g => g.id === giveawayId)?.status || "unknown";
 
+  // Get winners for ended giveaways grouped by giveaway
+  const getWinnersForGiveaway = (giveawayId: string) => 
+    winners.filter(w => w.giveaway_id === giveawayId);
+
   return (
     <div className="min-h-screen bg-background relative">
-      {/* Giveaway-themed background */}
+      {/* Full-page background image */}
+      <div 
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `url(${headerImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed',
+        }}
+      >
+        {/* Gradient overlay for readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/90 to-background" />
+        {/* Animated accent overlays */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-yellow-500/5 animate-pulse" style={{ animationDuration: '8s' }} />
+      </div>
+      
+      {/* Floating elements */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-20 left-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute top-1/3 right-10 w-96 h-96 bg-yellow-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-        <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-accent/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
-        <div className="absolute bottom-20 right-1/3 w-72 h-72 bg-green-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.5s' }} />
+        <div className="absolute top-20 left-10 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-1/3 right-10 w-96 h-96 bg-yellow-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-accent/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
         {/* Floating gift icons */}
-        <div className="absolute top-1/4 left-[15%] text-primary/10 animate-bounce" style={{ animationDuration: '3s' }}>
+        <div className="absolute top-1/4 left-[15%] text-primary/20 animate-bounce" style={{ animationDuration: '3s' }}>
           <Gift className="w-12 h-12" />
         </div>
-        <div className="absolute top-1/2 right-[10%] text-yellow-500/10 animate-bounce" style={{ animationDuration: '4s', animationDelay: '1s' }}>
+        <div className="absolute top-1/2 right-[10%] text-yellow-500/20 animate-bounce" style={{ animationDuration: '4s', animationDelay: '1s' }}>
           <Trophy className="w-16 h-16" />
         </div>
-        <div className="absolute bottom-1/3 left-[8%] text-accent/10 animate-bounce" style={{ animationDuration: '3.5s', animationDelay: '0.5s' }}>
+        <div className="absolute bottom-1/3 left-[8%] text-accent/20 animate-bounce" style={{ animationDuration: '3.5s', animationDelay: '0.5s' }}>
           <Star className="w-10 h-10" />
         </div>
-        <div className="absolute top-[60%] right-[20%] text-green-500/10 animate-bounce" style={{ animationDuration: '2.5s', animationDelay: '1.5s' }}>
+        <div className="absolute top-[60%] right-[20%] text-green-500/20 animate-bounce" style={{ animationDuration: '2.5s', animationDelay: '1.5s' }}>
           <PartyPopper className="w-14 h-14" />
         </div>
       </div>
@@ -1023,24 +1205,38 @@ const Giveaway = () => {
 
           {/* Your Entries + Admin Card */}
           <motion.div variants={itemVariants} className="flex flex-col gap-4">
-            <motion.div whileHover={{ y: -3, scale: 1.02 }} transition={{ type: "spring", stiffness: 300 }}>
+            <motion.div 
+              whileHover={{ y: -3, scale: 1.02 }} 
+              whileTap={{ scale: 0.98 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
               <Card 
-                className="relative overflow-hidden text-center p-6 cursor-pointer border-2 border-transparent hover:border-accent/30 transition-all duration-300 bg-gradient-to-br from-accent/5 to-transparent flex-1" 
+                className="group relative overflow-hidden p-6 cursor-pointer border-2 border-accent/30 hover:border-accent transition-all duration-300 bg-gradient-to-br from-accent/10 via-accent/5 to-transparent hover:shadow-lg hover:shadow-accent/20" 
                 onClick={() => user ? setShowEntriesDialog(true) : toast({ title: "Login Required", description: "Please log in to view your entries.", variant: "destructive" })}
               >
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-24 bg-accent/20 rounded-full blur-2xl" />
+                {/* Animated background shimmer */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                {/* Glow effect */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-accent/30 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 
                 <div className="relative flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-accent to-primary flex items-center justify-center shadow-lg shadow-accent/30">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-accent via-primary to-accent bg-[length:200%_200%] animate-gradient flex items-center justify-center shadow-lg shadow-accent/40 group-hover:shadow-accent/60 transition-shadow">
                     <Ticket className="w-7 h-7 text-white" />
                   </div>
                   <div className="text-left flex-1">
                     <p className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-accent to-primary">{userActiveUpcomingEntries.length}</p>
-                    <p className="text-sm font-medium text-muted-foreground">Your Entries</p>
+                    <p className="text-sm font-bold text-accent/80 group-hover:text-accent transition-colors">Your Entries</p>
                   </div>
-                  {user && userActiveUpcomingEntries.length > 0 && (
-                    <ChevronRight className="w-5 h-5 text-accent" />
-                  )}
+                  <div className="flex items-center gap-2">
+                    {user && userActiveUpcomingEntries.length > 0 && (
+                      <Badge className="bg-accent/20 text-accent border-accent/30 group-hover:bg-accent group-hover:text-white transition-colors">
+                        View All
+                      </Badge>
+                    )}
+                    <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center group-hover:bg-accent/30 transition-colors">
+                      <ChevronRight className="w-5 h-5 text-accent group-hover:translate-x-0.5 transition-transform" />
+                    </div>
+                  </div>
                 </div>
               </Card>
             </motion.div>
@@ -1743,13 +1939,11 @@ const Giveaway = () => {
                 animate="visible"
               >
                 {endedGiveaways.map(giveaway => (
-                  <GiveawayCard
+                  <EndedGiveawayCard
                     key={giveaway.id}
                     giveaway={giveaway}
-                    userEntry={getUserEntry(giveaway.id)}
                     entryCount={entryCounts[giveaway.id] || 0}
-                    onEnter={handleEnterGiveaway}
-                    isEntering={isEntering}
+                    winners={getWinnersForGiveaway(giveaway.id)}
                     isAdmin={isAdmin}
                     onEdit={handleEditGiveaway}
                     onDelete={handleDeleteClick}
