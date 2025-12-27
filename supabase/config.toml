@@ -56,3 +56,6 @@ verify_jwt = false
 
 [functions.send-giveaway-notification]
 verify_jwt = false
+
+[functions.check-giveaway-status]
+verify_jwt = false
