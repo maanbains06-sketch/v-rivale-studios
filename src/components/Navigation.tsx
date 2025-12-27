@@ -254,6 +254,14 @@ const Navigation = () => {
               Store
               <ExternalLink className="w-3 h-3" />
             </a>
+            <NavLink 
+              to="/giveaway" 
+              className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1"
+              activeClassName="text-primary"
+            >
+              <Gift className="w-4 h-4" />
+              Giveaway
+            </NavLink>
             <DropdownMenu>
               <DropdownMenuTrigger className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1 outline-none">
                 Legal
@@ -351,6 +359,10 @@ const Navigation = () => {
                       <a href={TEBEX_STORE_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
                         Store <ExternalLink className="w-3 h-3" />
                       </a>
+                    </Button>
+                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/giveaway"); setIsMenuOpen(false); }}>
+                      <Gift className="w-4 h-4 mr-2" />
+                      Giveaway
                     </Button>
                     <Button variant="ghost" className="justify-start" onClick={() => { navigate("/privacy-policy"); setIsMenuOpen(false); }}>
                       Privacy Policy
