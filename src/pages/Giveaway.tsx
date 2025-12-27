@@ -1113,7 +1113,6 @@ const Giveaway = () => {
         title="Giveaways"
         description="Win exclusive prizes, in-game items, and more!"
         badge="WIN BIG"
-        backgroundImage={headerImage}
       />
 
       <div className="container mx-auto px-4 pb-16 relative z-10">
