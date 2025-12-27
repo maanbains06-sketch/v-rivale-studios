@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Gift, Clock, Users, Trophy, Sparkles, Calendar, ChevronRight, Star, Crown, Ticket, Check, Timer, Award, PartyPopper, Plus, X, Image, Hash, CalendarDays, Target, Loader2, Pencil, Trash2, AlertTriangle } from "lucide-react";
+import { Gift, Clock, Users, Trophy, Sparkles, Calendar, ChevronRight, Star, Crown, Ticket, Check, Timer, Award, PartyPopper, Plus, X, Image, Hash, CalendarDays, Target, Loader2, Pencil, Trash2, AlertTriangle, Lock, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +34,7 @@ interface Giveaway {
   status: string;
   requirements: unknown;
   created_at: string;
+  category: string;
 }
 
 interface GiveawayEntry {
@@ -137,6 +138,13 @@ const GiveawayCard = ({
     return null;
   };
 
+  const getCategoryBadge = () => {
+    if (giveaway.category === 'whitelisted') {
+      return <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30"><Lock className="w-3 h-3 mr-1" />WHITELIST</Badge>;
+    }
+    return null;
+  };
+
   return (
     <motion.div variants={itemVariants}>
       <Card className="glass-effect overflow-hidden group hover:border-primary/40 transition-all duration-300 relative">
@@ -182,7 +190,8 @@ const GiveawayCard = ({
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
-            <div className="absolute top-3 right-3">
+            <div className="absolute top-3 right-3 flex gap-2">
+              {getCategoryBadge()}
               {getStatusBadge()}
             </div>
           </div>
@@ -191,7 +200,8 @@ const GiveawayCard = ({
         {!giveaway.prize_image_url && (
           <div className="relative h-48 bg-gradient-to-br from-primary/20 via-primary/10 to-background flex items-center justify-center">
             <Gift className="w-20 h-20 text-primary/40" />
-            <div className="absolute top-3 right-3">
+            <div className="absolute top-3 right-3 flex gap-2">
+              {getCategoryBadge()}
               {getStatusBadge()}
             </div>
           </div>
@@ -334,7 +344,8 @@ const Giveaway = () => {
     end_date: "",
     max_entries: "",
     winner_count: "1",
-    status: "upcoming"
+    status: "upcoming",
+    category: "all"
   });
 
   useEffect(() => {
@@ -445,6 +456,7 @@ const Giveaway = () => {
         max_entries: giveawayForm.max_entries ? parseInt(giveawayForm.max_entries) : null,
         winner_count: parseInt(giveawayForm.winner_count) || 1,
         status: giveawayForm.status,
+        category: giveawayForm.category,
         created_by: user?.id || null,
       })
       .select()
@@ -494,7 +506,8 @@ const Giveaway = () => {
         end_date: "",
         max_entries: "",
         winner_count: "1",
-        status: "upcoming"
+        status: "upcoming",
+        category: "all"
       });
       fetchGiveaways();
     }
@@ -512,7 +525,8 @@ const Giveaway = () => {
       end_date: "",
       max_entries: "",
       winner_count: "1",
-      status: "upcoming"
+      status: "upcoming",
+      category: "all"
     });
   };
 
@@ -527,7 +541,8 @@ const Giveaway = () => {
       end_date: new Date(giveaway.end_date).toISOString().slice(0, 16),
       max_entries: giveaway.max_entries?.toString() || "",
       winner_count: giveaway.winner_count.toString(),
-      status: giveaway.status
+      status: giveaway.status,
+      category: giveaway.category || "all"
     });
     setShowEditGiveawayDialog(true);
   };
@@ -550,6 +565,7 @@ const Giveaway = () => {
         max_entries: giveawayForm.max_entries ? parseInt(giveawayForm.max_entries) : null,
         winner_count: parseInt(giveawayForm.winner_count) || 1,
         status: giveawayForm.status,
+        category: giveawayForm.category,
       })
       .eq('id', selectedGiveaway.id);
 
@@ -624,10 +640,73 @@ const Giveaway = () => {
 
     setIsEntering(true);
     
+    const discordId = user.user_metadata?.provider_id || user.user_metadata?.sub;
     const discordUsername = user.user_metadata?.full_name || 
                            user.user_metadata?.name || 
                            user.user_metadata?.user_name || 
                            null;
+
+    // Get the giveaway to check its category
+    const giveaway = giveaways.find(g => g.id === giveawayId);
+    
+    if (!giveaway) {
+      toast({
+        title: "Error",
+        description: "Giveaway not found.",
+        variant: "destructive",
+      });
+      setIsEntering(false);
+      return;
+    }
+
+    // Verify Discord requirements
+    try {
+      const { data: verifyData, error: verifyError } = await supabase.functions.invoke('verify-discord-requirements', {
+        body: { discordId }
+      });
+
+      if (verifyError) {
+        console.error('Error verifying Discord requirements:', verifyError);
+        toast({
+          title: "Verification Error",
+          description: "Could not verify Discord membership. Please try again.",
+          variant: "destructive",
+        });
+        setIsEntering(false);
+        return;
+      }
+
+      // Check if user is in Discord server
+      if (!verifyData?.isInServer) {
+        toast({
+          title: "Discord Membership Required",
+          description: "You must join our Discord server to enter giveaways.",
+          variant: "destructive",
+        });
+        setIsEntering(false);
+        return;
+      }
+
+      // Check whitelist requirement for whitelisted giveaways
+      if (giveaway.category === 'whitelisted' && !verifyData?.hasWhitelistRole) {
+        toast({
+          title: "Whitelist Required",
+          description: "This giveaway is only for whitelisted members. You must have the whitelist role on Discord to enter.",
+          variant: "destructive",
+        });
+        setIsEntering(false);
+        return;
+      }
+    } catch (error) {
+      console.error('Error calling verify-discord-requirements:', error);
+      toast({
+        title: "Verification Error",
+        description: "Could not verify Discord membership. Please try again.",
+        variant: "destructive",
+      });
+      setIsEntering(false);
+      return;
+    }
 
     const { error } = await supabase
       .from('giveaway_entries')
@@ -635,6 +714,7 @@ const Giveaway = () => {
         giveaway_id: giveawayId,
         user_id: user.id,
         discord_username: discordUsername,
+        discord_id: discordId,
       });
 
     if (error) {
@@ -959,7 +1039,7 @@ const Giveaway = () => {
                   <Target className="w-5 h-5 text-accent" />
                   Settings
                 </h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="max_entries" className="flex items-center gap-2">
                       <Hash className="w-4 h-4" />
@@ -1012,6 +1092,35 @@ const Giveaway = () => {
                           <div className="flex items-center gap-2">
                             <Sparkles className="w-4 h-4 text-green-500" />
                             Active (Live)
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="category" className="flex items-center gap-2">
+                      <Users className="w-4 h-4 text-blue-500" />
+                      Category
+                    </Label>
+                    <Select 
+                      value={giveawayForm.category} 
+                      onValueChange={(value) => setGiveawayForm({ ...giveawayForm, category: value })}
+                    >
+                      <SelectTrigger className="bg-background/50">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">
+                          <div className="flex items-center gap-2">
+                            <Globe className="w-4 h-4 text-green-500" />
+                            All Members
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="whitelisted">
+                          <div className="flex items-center gap-2">
+                            <Lock className="w-4 h-4 text-yellow-500" />
+                            Whitelisted Only
                           </div>
                         </SelectItem>
                       </SelectContent>
@@ -1177,7 +1286,7 @@ const Giveaway = () => {
                   <Target className="w-5 h-5 text-accent" />
                   Settings
                 </h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="edit-max_entries">Max Entries</Label>
                     <Input
@@ -1230,6 +1339,32 @@ const Giveaway = () => {
                           <div className="flex items-center gap-2">
                             <Trophy className="w-4 h-4 text-muted-foreground" />
                             Ended
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-category">Category</Label>
+                    <Select 
+                      value={giveawayForm.category} 
+                      onValueChange={(value) => setGiveawayForm({ ...giveawayForm, category: value })}
+                    >
+                      <SelectTrigger className="bg-background/50">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">
+                          <div className="flex items-center gap-2">
+                            <Globe className="w-4 h-4 text-green-500" />
+                            All Members
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="whitelisted">
+                          <div className="flex items-center gap-2">
+                            <Lock className="w-4 h-4 text-yellow-500" />
+                            Whitelisted Only
                           </div>
                         </SelectItem>
                       </SelectContent>

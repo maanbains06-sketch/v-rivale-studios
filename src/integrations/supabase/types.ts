@@ -601,6 +601,7 @@ export type Database = {
       giveaway_entries: {
         Row: {
           created_at: string
+          discord_id: string | null
           discord_username: string | null
           entry_count: number
           giveaway_id: string
@@ -610,6 +611,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          discord_id?: string | null
           discord_username?: string | null
           entry_count?: number
           giveaway_id: string
@@ -619,6 +621,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          discord_id?: string | null
           discord_username?: string | null
           entry_count?: number
           giveaway_id?: string
@@ -679,6 +682,7 @@ export type Database = {
       }
       giveaways: {
         Row: {
+          category: string
           created_at: string
           created_by: string | null
           description: string | null
@@ -695,6 +699,7 @@ export type Database = {
           winner_count: number
         }
         Insert: {
+          category?: string
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -711,6 +716,7 @@ export type Database = {
           winner_count?: number
         }
         Update: {
+          category?: string
           created_at?: string
           created_by?: string | null
           description?: string | null
