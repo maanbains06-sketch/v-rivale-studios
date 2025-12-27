@@ -27,6 +27,7 @@ serve(async (req) => {
   try {
     const discordBotToken = Deno.env.get('DISCORD_BOT_TOKEN');
     const channelId = Deno.env.get('DISCORD_GIVEAWAY_CHANNEL_ID');
+    const ownerDiscordId = Deno.env.get('OWNER_DISCORD_ID');
 
     if (!discordBotToken) {
       console.error('DISCORD_BOT_TOKEN not configured');
@@ -42,6 +43,34 @@ serve(async (req) => {
     console.log('Received giveaway notification request:', JSON.stringify(body, null, 2));
 
     const { title, description, prize, prize_image_url, start_date, end_date, status, winner_count, website_url } = body;
+
+    // Fetch owner's Discord profile for the embed author
+    let ownerUsername = 'Giveaway Manager';
+    let ownerAvatarUrl = '';
+    
+    if (ownerDiscordId) {
+      try {
+        const ownerResponse = await fetch(
+          `https://discord.com/api/v10/users/${ownerDiscordId}`,
+          {
+            headers: {
+              'Authorization': `Bot ${discordBotToken}`,
+            },
+          }
+        );
+        
+        if (ownerResponse.ok) {
+          const ownerData = await ownerResponse.json();
+          ownerUsername = ownerData.global_name || ownerData.username || 'Giveaway Manager';
+          if (ownerData.avatar) {
+            const extension = ownerData.avatar.startsWith('a_') ? 'gif' : 'png';
+            ownerAvatarUrl = `https://cdn.discordapp.com/avatars/${ownerDiscordId}/${ownerData.avatar}.${extension}?size=256`;
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch owner Discord profile:', error);
+      }
+    }
 
     // Format dates for display
     const startDate = new Date(start_date);
@@ -66,6 +95,10 @@ serve(async (req) => {
       title: `🎁 ${title}`,
       description: description || 'Enter for a chance to win amazing prizes!',
       color: embedColor,
+      author: {
+        name: ownerUsername,
+        icon_url: ownerAvatarUrl || undefined,
+      },
       fields: [
         {
           name: '🏆 Prize',
