@@ -18,8 +18,8 @@ const PageHeader = ({ title, description, badge, backgroundImage, backgroundPosi
         minHeight: minHeight,
       }}
     >
-      {/* Gradient overlay - darker for better text visibility */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background"></div>
+      {/* Gradient overlay - 50% opacity */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/50 to-background/50"></div>
       
       
       <div className="container mx-auto px-4 relative z-10">
