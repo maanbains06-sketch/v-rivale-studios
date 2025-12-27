@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
+import GiveawayEntryDialog from "@/components/GiveawayEntryDialog";
 import headerImage from "@/assets/header-giveaway.jpg";
 
 // Replace with your Discord ID for admin access
@@ -170,7 +171,7 @@ const GiveawayCard = ({
   giveaway: Giveaway;
   userEntry: GiveawayEntry | null;
   entryCount: number;
-  onEnter: (id: string) => void;
+  onEnter: (giveaway: Giveaway) => void;
   isEntering: boolean;
   isAdmin?: boolean;
   onEdit?: (giveaway: Giveaway) => void;
@@ -366,7 +367,7 @@ const GiveawayCard = ({
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Button 
                 className="w-full h-12 bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] hover:bg-right transition-all duration-500 shadow-lg shadow-primary/30 font-bold text-lg"
-                onClick={() => onEnter(giveaway.id)}
+                onClick={() => onEnter(giveaway)}
                 disabled={isEntering}
               >
                 {isEntering ? (
@@ -636,6 +637,8 @@ const Giveaway = () => {
   const [isCreatingGiveaway, setIsCreatingGiveaway] = useState(false);
   const [isUpdatingGiveaway, setIsUpdatingGiveaway] = useState(false);
   const [isDeletingGiveaway, setIsDeletingGiveaway] = useState(false);
+  const [showEntryDialog, setShowEntryDialog] = useState(false);
+  const [entryGiveaway, setEntryGiveaway] = useState<Giveaway | null>(null);
   
   // Giveaway form state
   const [giveawayForm, setGiveawayForm] = useState({
@@ -1068,6 +1071,25 @@ const Giveaway = () => {
   // Get winners for ended giveaways grouped by giveaway
   const getWinnersForGiveaway = (giveawayId: string) => 
     winners.filter(w => w.giveaway_id === giveawayId);
+
+  // Handler to open entry dialog
+  const handleOpenEntryDialog = (giveaway: Giveaway) => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please log in with Discord to enter giveaways.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setEntryGiveaway(giveaway);
+    setShowEntryDialog(true);
+  };
+
+  // Handler for confirm entry from dialog
+  const handleConfirmEntry = async (giveawayId: string) => {
+    await handleEnterGiveaway(giveawayId);
+  };
 
   return (
     <div className="min-h-screen bg-background relative">
@@ -1882,7 +1904,7 @@ const Giveaway = () => {
                     giveaway={giveaway}
                     userEntry={getUserEntry(giveaway.id)}
                     entryCount={entryCounts[giveaway.id] || 0}
-                    onEnter={handleEnterGiveaway}
+                    onEnter={handleOpenEntryDialog}
                     isEntering={isEntering}
                     isAdmin={isAdmin}
                     onEdit={handleEditGiveaway}
@@ -1913,7 +1935,7 @@ const Giveaway = () => {
                     giveaway={giveaway}
                     userEntry={getUserEntry(giveaway.id)}
                     entryCount={entryCounts[giveaway.id] || 0}
-                    onEnter={handleEnterGiveaway}
+                    onEnter={handleOpenEntryDialog}
                     isEntering={isEntering}
                     isAdmin={isAdmin}
                     onEdit={handleEditGiveaway}
@@ -2017,6 +2039,21 @@ const Giveaway = () => {
             </Button>
           </Card>
         </motion.div>
+
+        {/* Giveaway Entry Dialog */}
+        <GiveawayEntryDialog
+          giveaway={entryGiveaway}
+          isOpen={showEntryDialog}
+          onClose={() => {
+            setShowEntryDialog(false);
+            setEntryGiveaway(null);
+          }}
+          onConfirmEntry={handleConfirmEntry}
+          isEntering={isEntering}
+          entryCount={entryGiveaway ? (entryCounts[entryGiveaway.id] || 0) : 0}
+          user={user}
+          hasEntered={entryGiveaway ? !!getUserEntry(entryGiveaway.id) : false}
+        />
       </div>
     </div>
   );
