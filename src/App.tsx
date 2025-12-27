@@ -112,7 +112,7 @@ const AppRoutes = () => {
         <Route path="/owner-panel" element={<PageTransition><OwnerPanel /></PageTransition>} />
         <Route path="/gang-rp" element={<PageTransition><RequireAuth message="Login with Discord to access Gang RP applications."><GangRP /></RequireAuth></PageTransition>} />
         <Route path="/feedback" element={<PageTransition><RequireAuth message="Login with Discord to submit feedback."><Feedback /></RequireAuth></PageTransition>} />
-        <Route path="/giveaway" element={<PageTransition><RequireAuth message="Login with Discord to enter giveaways."><Giveaway /></RequireAuth></PageTransition>} />
+        <Route path="/giveaway" element={<PageTransition><Giveaway /></PageTransition>} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
