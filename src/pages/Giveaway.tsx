@@ -60,16 +60,21 @@ const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.1 },
+    transition: { staggerChildren: 0.08 },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  hidden: { opacity: 0, y: 30, scale: 0.95 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    scale: 1,
+    transition: { duration: 0.5 } 
+  },
 };
 
-const CountdownTimer = ({ endDate }: { endDate: string }) => {
+const CountdownTimer = ({ endDate, variant = "default" }: { endDate: string; variant?: "default" | "compact" | "hero" }) => {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
@@ -92,15 +97,61 @@ const CountdownTimer = ({ endDate }: { endDate: string }) => {
     return () => clearInterval(timer);
   }, [endDate]);
 
+  if (variant === "hero") {
+    return (
+      <div className="flex gap-3 justify-center">
+        {Object.entries(timeLeft).map(([unit, value]) => (
+          <motion.div 
+            key={unit} 
+            className="flex flex-col items-center"
+            whileHover={{ scale: 1.1, y: -5 }}
+            transition={{ type: "spring", stiffness: 400 }}
+          >
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/30 to-amber-600/30 rounded-xl blur-lg" />
+              <div className="relative bg-gradient-to-br from-yellow-500/20 to-amber-600/20 border-2 border-yellow-500/40 rounded-xl px-4 py-3 min-w-[70px] backdrop-blur-sm">
+                <motion.span 
+                  key={value}
+                  initial={{ scale: 1.2, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-yellow-400 to-amber-500"
+                >
+                  {value.toString().padStart(2, '0')}
+                </motion.span>
+              </div>
+            </div>
+            <span className="text-xs font-semibold text-yellow-500/80 mt-2 uppercase tracking-wider">{unit}</span>
+          </motion.div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="flex gap-2 justify-center">
       {Object.entries(timeLeft).map(([unit, value]) => (
-        <div key={unit} className="flex flex-col items-center">
-          <div className="bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30 rounded-lg px-3 py-2 min-w-[50px]">
-            <span className="text-xl font-bold text-primary">{value.toString().padStart(2, '0')}</span>
+        <motion.div 
+          key={unit} 
+          className="flex flex-col items-center"
+          whileHover={{ scale: 1.05 }}
+        >
+          <div className="relative overflow-hidden bg-gradient-to-br from-primary/20 to-accent/10 border border-primary/30 rounded-xl px-3 py-2 min-w-[50px]">
+            <motion.div 
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+              animate={{ x: ['-100%', '100%'] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            />
+            <motion.span 
+              key={value}
+              initial={{ y: -10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="relative text-xl font-bold text-primary"
+            >
+              {value.toString().padStart(2, '0')}
+            </motion.span>
           </div>
-          <span className="text-xs text-muted-foreground mt-1 capitalize">{unit}</span>
-        </div>
+          <span className="text-xs text-muted-foreground mt-1 capitalize font-medium">{unit}</span>
+        </motion.div>
       ))}
     </div>
   );
@@ -132,159 +183,221 @@ const GiveawayCard = ({
   const progress = giveaway.max_entries ? (entryCount / giveaway.max_entries) * 100 : 0;
 
   const getStatusBadge = () => {
-    if (isActive) return <Badge className="bg-green-500/20 text-green-400 border-green-500/30 animate-pulse">LIVE NOW</Badge>;
-    if (isUpcoming) return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">COMING SOON</Badge>;
-    if (isEnded) return <Badge className="bg-muted text-muted-foreground border-muted">ENDED</Badge>;
+    if (isActive) return (
+      <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 shadow-lg shadow-green-500/30">
+        <span className="w-2 h-2 rounded-full bg-white animate-pulse mr-2" />
+        LIVE NOW
+      </Badge>
+    );
+    if (isUpcoming) return (
+      <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-0 shadow-lg shadow-yellow-500/30">
+        <Calendar className="w-3 h-3 mr-1" />
+        COMING SOON
+      </Badge>
+    );
+    if (isEnded) return <Badge className="bg-muted/80 text-muted-foreground border-0">ENDED</Badge>;
     return null;
   };
 
   const getCategoryBadge = () => {
     if (giveaway.category === 'whitelisted') {
-      return <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30"><Lock className="w-3 h-3 mr-1" />WHITELIST</Badge>;
+      return (
+        <Badge className="bg-gradient-to-r from-purple-500 to-violet-500 text-white border-0 shadow-lg shadow-purple-500/30">
+          <Lock className="w-3 h-3 mr-1" />
+          WHITELIST
+        </Badge>
+      );
     }
     return null;
   };
 
   return (
-    <motion.div variants={itemVariants}>
-      <Card className="glass-effect overflow-hidden group hover:border-primary/40 transition-all duration-300 relative">
+    <motion.div 
+      variants={itemVariants}
+      whileHover={{ y: -8, scale: 1.02 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+    >
+      <Card className="relative overflow-hidden group border-2 border-transparent hover:border-primary/30 transition-all duration-500 bg-gradient-to-b from-card to-card/80 backdrop-blur-xl">
+        {/* Animated gradient border effect for active */}
+        {isActive && (
+          <>
+            <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 via-transparent to-green-500/10 animate-pulse" />
+            <div className="absolute -inset-[1px] bg-gradient-to-r from-green-500 via-emerald-500 to-green-500 rounded-xl opacity-30 blur-sm animate-pulse" />
+          </>
+        )}
+        
         {/* Admin Controls */}
         {isAdmin && (
-          <div className="absolute top-3 left-3 z-10 flex gap-2">
-            <Button
-              size="icon"
-              variant="secondary"
-              className="w-8 h-8 bg-background/80 backdrop-blur-sm hover:bg-primary/20"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit?.(giveaway);
-              }}
-            >
-              <Pencil className="w-4 h-4" />
-            </Button>
-            <Button
-              size="icon"
-              variant="secondary"
-              className="w-8 h-8 bg-background/80 backdrop-blur-sm hover:bg-destructive/20 hover:text-destructive"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete?.(giveaway);
-              }}
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
+          <div className="absolute top-4 left-4 z-20 flex gap-2">
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                size="icon"
+                variant="secondary"
+                className="w-9 h-9 bg-background/90 backdrop-blur-md border border-border/50 hover:bg-primary/20 shadow-lg"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit?.(giveaway);
+                }}
+              >
+                <Pencil className="w-4 h-4" />
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                size="icon"
+                variant="secondary"
+                className="w-9 h-9 bg-background/90 backdrop-blur-md border border-border/50 hover:bg-destructive/20 hover:text-destructive shadow-lg"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete?.(giveaway);
+                }}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </motion.div>
           </div>
         )}
 
-        {/* Glow effect for active giveaways */}
-        {isActive && (
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5 animate-pulse" />
-        )}
-        
-        {/* Prize Image */}
-        {giveaway.prize_image_url && (
-          <div className="relative h-48 overflow-hidden">
+        {/* Prize Image with enhanced overlay */}
+        <div className="relative h-56 overflow-hidden">
+          {giveaway.prize_image_url ? (
             <img 
               src={giveaway.prize_image_url} 
               alt={giveaway.prize}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
-            <div className="absolute top-3 right-3 flex gap-2">
-              {getCategoryBadge()}
-              {getStatusBadge()}
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-primary/30 via-accent/20 to-primary/10 flex items-center justify-center">
+              <motion.div
+                animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }}
+                transition={{ duration: 3, repeat: Infinity }}
+              >
+                <Gift className="w-24 h-24 text-primary/50" />
+              </motion.div>
             </div>
-          </div>
-        )}
-        
-        {!giveaway.prize_image_url && (
-          <div className="relative h-48 bg-gradient-to-br from-primary/20 via-primary/10 to-background flex items-center justify-center">
-            <Gift className="w-20 h-20 text-primary/40" />
-            <div className="absolute top-3 right-3 flex gap-2">
-              {getCategoryBadge()}
-              {getStatusBadge()}
-            </div>
-          </div>
-        )}
-
-        <CardContent className="p-6 relative">
-          <div className="flex items-start justify-between mb-3">
-            <h3 className="text-xl font-bold text-headline line-clamp-2">{giveaway.title}</h3>
+          )}
+          
+          {/* Gradient overlays */}
+          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          
+          {/* Status badges */}
+          <div className="absolute top-4 right-4 flex flex-col gap-2 items-end">
+            {getStatusBadge()}
+            {getCategoryBadge()}
           </div>
           
-          <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
+          {/* Prize pill */}
+          <div className="absolute bottom-4 left-4 right-4">
+            <div className="flex items-center gap-2 p-3 bg-background/90 backdrop-blur-md rounded-xl border border-primary/20 shadow-xl">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-lg shadow-yellow-500/30">
+                <Trophy className="w-5 h-5 text-white" />
+              </div>
+              <span className="font-bold text-foreground flex-1 line-clamp-1">{giveaway.prize}</span>
+            </div>
+          </div>
+        </div>
+
+        <CardContent className="p-6 relative">
+          {/* Title */}
+          <h3 className="text-xl font-bold text-headline mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+            {giveaway.title}
+          </h3>
+          
+          <p className="text-muted-foreground text-sm mb-5 line-clamp-2">
             {giveaway.description || "Enter for a chance to win amazing prizes!"}
           </p>
 
-          {/* Prize Display */}
-          <div className="flex items-center gap-2 mb-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
-            <Trophy className="w-5 h-5 text-yellow-500" />
-            <span className="font-semibold text-foreground">{giveaway.prize}</span>
-          </div>
-
           {/* Countdown Timer */}
           {(isActive || isUpcoming) && (
-            <div className="mb-4">
-              <div className="flex items-center gap-2 mb-2 text-sm text-muted-foreground">
-                <Timer className="w-4 h-4" />
-                <span>{isUpcoming ? "Starts in" : "Ends in"}</span>
+            <div className="mb-5">
+              <div className="flex items-center gap-2 mb-3 text-sm text-muted-foreground">
+                <Timer className="w-4 h-4 text-primary" />
+                <span className="font-medium">{isUpcoming ? "Starts in" : "Ends in"}</span>
               </div>
               <CountdownTimer endDate={isUpcoming ? giveaway.start_date : giveaway.end_date} />
             </div>
           )}
 
-          {/* Entry Progress */}
+          {/* Entry Progress - Enhanced */}
           {giveaway.max_entries && (
-            <div className="mb-4">
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-muted-foreground">Entries</span>
-                <span className="text-foreground">{entryCount} / {giveaway.max_entries}</span>
+            <div className="mb-5">
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-muted-foreground font-medium">Entry Progress</span>
+                <span className="text-foreground font-bold">{entryCount} / {giveaway.max_entries}</span>
               </div>
-              <Progress value={progress} className="h-2" />
+              <div className="relative h-3 bg-muted/50 rounded-full overflow-hidden">
+                <motion.div 
+                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary to-accent rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 1, ease: "easeOut" }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+              </div>
             </div>
           )}
 
-          {/* Entry Stats */}
-          <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-            <div className="flex items-center gap-1">
-              <Users className="w-4 h-4" />
-              <span>{entryCount} entries</span>
+          {/* Stats row */}
+          <div className="flex items-center gap-4 mb-5 p-3 bg-muted/30 rounded-xl">
+            <div className="flex items-center gap-2 flex-1">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Users className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Entries</p>
+                <p className="font-bold text-foreground">{entryCount}</p>
+              </div>
             </div>
-            <div className="flex items-center gap-1">
-              <Award className="w-4 h-4" />
-              <span>{giveaway.winner_count} winner{giveaway.winner_count > 1 ? 's' : ''}</span>
+            <div className="w-px h-10 bg-border" />
+            <div className="flex items-center gap-2 flex-1">
+              <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center">
+                <Crown className="w-4 h-4 text-yellow-500" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Winners</p>
+                <p className="font-bold text-foreground">{giveaway.winner_count}</p>
+              </div>
             </div>
           </div>
 
-          {/* Action Button */}
+          {/* Action Button - Enhanced */}
           {isActive && !hasEntered && (
-            <Button 
-              className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity"
-              onClick={() => onEnter(giveaway.id)}
-              disabled={isEntering}
-            >
-              <Ticket className="w-4 h-4 mr-2" />
-              {isEntering ? "Entering..." : "Enter Giveaway"}
-            </Button>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Button 
+                className="w-full h-12 bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] hover:bg-right transition-all duration-500 shadow-lg shadow-primary/30 font-bold text-lg"
+                onClick={() => onEnter(giveaway.id)}
+                disabled={isEntering}
+              >
+                {isEntering ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <>
+                    <Ticket className="w-5 h-5 mr-2" />
+                    Enter Giveaway
+                  </>
+                )}
+              </Button>
+            </motion.div>
           )}
 
           {isActive && hasEntered && (
-            <Button className="w-full" variant="outline" disabled>
-              <Check className="w-4 h-4 mr-2 text-green-500" />
+            <Button className="w-full h-12 bg-green-500/10 border-2 border-green-500/30 text-green-500 font-bold" disabled>
+              <Check className="w-5 h-5 mr-2" />
               You're Entered!
             </Button>
           )}
 
           {isUpcoming && (
-            <Button className="w-full" variant="outline" disabled>
-              <Clock className="w-4 h-4 mr-2" />
+            <Button className="w-full h-12 bg-yellow-500/10 border-2 border-yellow-500/30 text-yellow-500 font-bold" disabled>
+              <Clock className="w-5 h-5 mr-2" />
               Coming Soon
             </Button>
           )}
 
           {isEnded && (
-            <Button className="w-full" variant="outline" disabled>
-              <Trophy className="w-4 h-4 mr-2" />
+            <Button className="w-full h-12 bg-muted/50 text-muted-foreground font-bold" disabled>
+              <Trophy className="w-5 h-5 mr-2" />
               Giveaway Ended
             </Button>
           )}
@@ -295,18 +408,45 @@ const GiveawayCard = ({
 };
 
 const WinnerCard = ({ winner, giveawayTitle }: { winner: GiveawayWinner; giveawayTitle: string }) => (
-  <motion.div variants={itemVariants}>
-    <Card className="glass-effect border-yellow-500/30 overflow-hidden">
-      <CardContent className="p-4 flex items-center gap-4">
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-amber-600 flex items-center justify-center">
-          <Crown className="w-6 h-6 text-white" />
+  <motion.div 
+    variants={itemVariants}
+    whileHover={{ scale: 1.02, x: 5 }}
+    transition={{ type: "spring", stiffness: 300 }}
+  >
+    <Card className="relative overflow-hidden border-2 border-yellow-500/20 bg-gradient-to-r from-yellow-500/5 to-amber-500/5 hover:border-yellow-500/40 transition-all duration-300">
+      {/* Shimmer effect */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+      
+      <CardContent className="p-5 flex items-center gap-4 relative">
+        {/* Winner avatar with crown */}
+        <div className="relative">
+          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-yellow-500/30">
+            <Crown className="w-7 h-7 text-white" />
+          </div>
+          <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-green-500 border-2 border-background flex items-center justify-center">
+            <Check className="w-3 h-3 text-white" />
+          </div>
         </div>
-        <div className="flex-1">
-          <p className="font-bold text-foreground">{winner.discord_username || "Anonymous Winner"}</p>
-          <p className="text-sm text-muted-foreground">{giveawayTitle}</p>
+        
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-foreground text-lg truncate">{winner.discord_username || "Anonymous Winner"}</p>
+          <p className="text-sm text-muted-foreground truncate">{giveawayTitle}</p>
         </div>
-        <Badge className={winner.prize_claimed ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}>
-          {winner.prize_claimed ? "Claimed" : "Pending"}
+        
+        <Badge className={`px-3 py-1 ${winner.prize_claimed 
+          ? "bg-green-500/20 text-green-400 border-green-500/30" 
+          : "bg-yellow-500/20 text-yellow-400 border-yellow-500/30 animate-pulse"}`}>
+          {winner.prize_claimed ? (
+            <>
+              <Check className="w-3 h-3 mr-1" />
+              Claimed
+            </>
+          ) : (
+            <>
+              <Clock className="w-3 h-3 mr-1" />
+              Pending
+            </>
+          )}
         </Badge>
       </CardContent>
     </Card>
@@ -795,66 +935,133 @@ const Giveaway = () => {
       />
 
       <div className="container mx-auto px-4 pb-16 relative z-10">
-        {/* Hero Stats */}
+        {/* Hero Stats - Enhanced */}
         <motion.div 
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
-          <motion.div variants={itemVariants}>
-            <Card className="glass-effect text-center p-6 hover:border-green-500/30 transition-colors cursor-pointer h-full" onClick={() => setActiveTab("active")}>
-              <Gift className="w-12 h-12 mx-auto mb-3 text-green-500" />
-              <p className="text-4xl font-bold text-foreground mb-1">{activeGiveaways.length}</p>
-              <p className="text-base text-muted-foreground">Active Giveaways</p>
-              {activeGiveaways.length > 0 && (
-                <Badge className="mt-3 bg-green-500/20 text-green-400 border-green-500/30 animate-pulse">LIVE</Badge>
-              )}
-            </Card>
-          </motion.div>
-
-          <motion.div variants={itemVariants}>
-            <Card className="glass-effect text-center p-6 hover:border-yellow-500/30 transition-colors cursor-pointer h-full" onClick={() => setActiveTab("upcoming")}>
-              <Calendar className="w-12 h-12 mx-auto mb-3 text-yellow-500" />
-              <p className="text-4xl font-bold text-foreground mb-1">{upcomingGiveaways.length}</p>
-              <p className="text-base text-muted-foreground">Coming Soon</p>
-            </Card>
-          </motion.div>
-
-          <motion.div variants={itemVariants}>
-            <Card className="glass-effect text-center p-6 hover:border-primary/30 transition-colors h-full">
-              <Trophy className="w-12 h-12 mx-auto mb-3 text-primary" />
-              <p className="text-4xl font-bold text-foreground mb-1">{totalWinnersCount}</p>
-              <p className="text-base text-muted-foreground">Total Winners</p>
-            </Card>
-          </motion.div>
-
-          <motion.div variants={itemVariants} className="flex flex-col gap-4">
+          {/* Active Giveaways Card */}
+          <motion.div variants={itemVariants} whileHover={{ y: -5, scale: 1.02 }} transition={{ type: "spring", stiffness: 300 }}>
             <Card 
-              className="glass-effect text-center p-6 hover:border-accent/30 transition-colors cursor-pointer flex-1" 
-              onClick={() => user ? setShowEntriesDialog(true) : toast({ title: "Login Required", description: "Please log in to view your entries.", variant: "destructive" })}
+              className="relative overflow-hidden text-center p-8 cursor-pointer border-2 border-transparent hover:border-green-500/30 transition-all duration-300 bg-gradient-to-br from-green-500/5 to-transparent" 
+              onClick={() => setActiveTab("active")}
             >
-              <Ticket className="w-12 h-12 mx-auto mb-3 text-accent" />
-              <p className="text-4xl font-bold text-foreground mb-1">{userActiveUpcomingEntries.length}</p>
-              <p className="text-base text-muted-foreground">Your Entries</p>
-              {user && userActiveUpcomingEntries.length > 0 && (
-                <Badge className="mt-3 bg-accent/20 text-accent border-accent/30">Click to view</Badge>
-              )}
+              {/* Glow effect */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-green-500/20 rounded-full blur-3xl" />
+              
+              <div className="relative">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-green-500/30">
+                  <Gift className="w-8 h-8 text-white" />
+                </div>
+                <motion.p 
+                  className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-br from-green-400 to-emerald-500 mb-2"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
+                >
+                  {activeGiveaways.length}
+                </motion.p>
+                <p className="text-base font-medium text-muted-foreground">Active Giveaways</p>
+                {activeGiveaways.length > 0 && (
+                  <Badge className="mt-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 shadow-lg shadow-green-500/30">
+                    <span className="w-2 h-2 rounded-full bg-white animate-pulse mr-2" />
+                    LIVE
+                  </Badge>
+                )}
+              </div>
             </Card>
-            
-            {isAdmin && (
+          </motion.div>
+
+          {/* Upcoming Card */}
+          <motion.div variants={itemVariants} whileHover={{ y: -5, scale: 1.02 }} transition={{ type: "spring", stiffness: 300 }}>
+            <Card 
+              className="relative overflow-hidden text-center p-8 cursor-pointer border-2 border-transparent hover:border-yellow-500/30 transition-all duration-300 bg-gradient-to-br from-yellow-500/5 to-transparent" 
+              onClick={() => setActiveTab("upcoming")}
+            >
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-yellow-500/20 rounded-full blur-3xl" />
+              
+              <div className="relative">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-600 flex items-center justify-center shadow-lg shadow-yellow-500/30">
+                  <Calendar className="w-8 h-8 text-white" />
+                </div>
+                <motion.p 
+                  className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-br from-yellow-400 to-amber-500 mb-2"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 200, delay: 0.3 }}
+                >
+                  {upcomingGiveaways.length}
+                </motion.p>
+                <p className="text-base font-medium text-muted-foreground">Coming Soon</p>
+              </div>
+            </Card>
+          </motion.div>
+
+          {/* Total Winners Card */}
+          <motion.div variants={itemVariants} whileHover={{ y: -5, scale: 1.02 }} transition={{ type: "spring", stiffness: 300 }}>
+            <Card className="relative overflow-hidden text-center p-8 border-2 border-transparent hover:border-primary/30 transition-all duration-300 bg-gradient-to-br from-primary/5 to-transparent">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-primary/20 rounded-full blur-3xl" />
+              
+              <div className="relative">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/30">
+                  <Trophy className="w-8 h-8 text-white" />
+                </div>
+                <motion.p 
+                  className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-br from-primary to-accent mb-2"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 200, delay: 0.4 }}
+                >
+                  {totalWinnersCount}
+                </motion.p>
+                <p className="text-base font-medium text-muted-foreground">Total Winners</p>
+              </div>
+            </Card>
+          </motion.div>
+
+          {/* Your Entries + Admin Card */}
+          <motion.div variants={itemVariants} className="flex flex-col gap-4">
+            <motion.div whileHover={{ y: -3, scale: 1.02 }} transition={{ type: "spring", stiffness: 300 }}>
               <Card 
-                className="glass-effect text-center p-4 hover:border-primary/50 transition-colors cursor-pointer bg-gradient-to-br from-primary/10 to-accent/10" 
-                onClick={() => setShowAddGiveawayDialog(true)}
+                className="relative overflow-hidden text-center p-6 cursor-pointer border-2 border-transparent hover:border-accent/30 transition-all duration-300 bg-gradient-to-br from-accent/5 to-transparent flex-1" 
+                onClick={() => user ? setShowEntriesDialog(true) : toast({ title: "Login Required", description: "Please log in to view your entries.", variant: "destructive" })}
               >
-                <div className="flex items-center justify-center gap-3">
-                  <Plus className="w-6 h-6 text-primary" />
-                  <div className="text-left">
-                    <p className="text-lg font-bold text-foreground">Add Giveaway</p>
-                    <p className="text-xs text-muted-foreground">Admin Only</p>
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-24 bg-accent/20 rounded-full blur-2xl" />
+                
+                <div className="relative flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-accent to-primary flex items-center justify-center shadow-lg shadow-accent/30">
+                    <Ticket className="w-7 h-7 text-white" />
                   </div>
+                  <div className="text-left flex-1">
+                    <p className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-accent to-primary">{userActiveUpcomingEntries.length}</p>
+                    <p className="text-sm font-medium text-muted-foreground">Your Entries</p>
+                  </div>
+                  {user && userActiveUpcomingEntries.length > 0 && (
+                    <ChevronRight className="w-5 h-5 text-accent" />
+                  )}
                 </div>
               </Card>
+            </motion.div>
+            
+            {isAdmin && (
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Card 
+                  className="relative overflow-hidden p-4 cursor-pointer border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all duration-300 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5" 
+                  onClick={() => setShowAddGiveawayDialog(true)}
+                >
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                      <Plus className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-lg font-bold text-foreground">Create Giveaway</p>
+                      <p className="text-xs text-muted-foreground">Admin Only</p>
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
             )}
           </motion.div>
         </motion.div>
