@@ -1081,8 +1081,8 @@ const Giveaway = () => {
           backgroundAttachment: 'fixed',
         }}
       >
-        {/* Gradient overlay for readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/90 to-background" />
+        {/* Lighter gradient overlay for better background visibility */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/60 to-background/80" />
         {/* Animated accent overlays */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-yellow-500/5 animate-pulse" style={{ animationDuration: '8s' }} />
       </div>
