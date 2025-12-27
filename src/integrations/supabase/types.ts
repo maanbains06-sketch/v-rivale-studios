@@ -598,6 +598,136 @@ export type Database = {
         }
         Relationships: []
       }
+      giveaway_entries: {
+        Row: {
+          created_at: string
+          discord_username: string | null
+          entry_count: number
+          giveaway_id: string
+          id: string
+          is_winner: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          discord_username?: string | null
+          entry_count?: number
+          giveaway_id: string
+          id?: string
+          is_winner?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          discord_username?: string | null
+          entry_count?: number
+          giveaway_id?: string
+          id?: string
+          is_winner?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "giveaway_entries_giveaway_id_fkey"
+            columns: ["giveaway_id"]
+            isOneToOne: false
+            referencedRelation: "giveaways"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      giveaway_winners: {
+        Row: {
+          announced_at: string | null
+          claimed_at: string | null
+          created_at: string
+          discord_username: string | null
+          giveaway_id: string
+          id: string
+          prize_claimed: boolean
+          user_id: string
+        }
+        Insert: {
+          announced_at?: string | null
+          claimed_at?: string | null
+          created_at?: string
+          discord_username?: string | null
+          giveaway_id: string
+          id?: string
+          prize_claimed?: boolean
+          user_id: string
+        }
+        Update: {
+          announced_at?: string | null
+          claimed_at?: string | null
+          created_at?: string
+          discord_username?: string | null
+          giveaway_id?: string
+          id?: string
+          prize_claimed?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "giveaway_winners_giveaway_id_fkey"
+            columns: ["giveaway_id"]
+            isOneToOne: false
+            referencedRelation: "giveaways"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      giveaways: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          end_date: string
+          id: string
+          max_entries: number | null
+          prize: string
+          prize_image_url: string | null
+          requirements: Json | null
+          start_date: string
+          status: string
+          title: string
+          updated_at: string
+          winner_count: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date: string
+          id?: string
+          max_entries?: number | null
+          prize: string
+          prize_image_url?: string | null
+          requirements?: Json | null
+          start_date?: string
+          status?: string
+          title: string
+          updated_at?: string
+          winner_count?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string
+          id?: string
+          max_entries?: number | null
+          prize?: string
+          prize_image_url?: string | null
+          requirements?: Json | null
+          start_date?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          winner_count?: number
+        }
+        Relationships: []
+      }
       job_applications: {
         Row: {
           additional_info: string | null
