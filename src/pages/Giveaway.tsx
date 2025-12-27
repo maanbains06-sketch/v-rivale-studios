@@ -444,65 +444,66 @@ const Giveaway = () => {
       <div className="container mx-auto px-4 pb-16">
         {/* Hero Stats */}
         <motion.div 
-          className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-12"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
           <motion.div variants={itemVariants}>
-            <Card className="glass-effect text-center p-4 hover:border-green-500/30 transition-colors cursor-pointer" onClick={() => setActiveTab("active")}>
-              <Gift className="w-8 h-8 mx-auto mb-2 text-green-500" />
-              <p className="text-2xl font-bold text-foreground">{activeGiveaways.length}</p>
-              <p className="text-sm text-muted-foreground">Active Giveaways</p>
+            <Card className="glass-effect text-center p-6 hover:border-green-500/30 transition-colors cursor-pointer h-full" onClick={() => setActiveTab("active")}>
+              <Gift className="w-12 h-12 mx-auto mb-3 text-green-500" />
+              <p className="text-4xl font-bold text-foreground mb-1">{activeGiveaways.length}</p>
+              <p className="text-base text-muted-foreground">Active Giveaways</p>
               {activeGiveaways.length > 0 && (
-                <Badge className="mt-2 bg-green-500/20 text-green-400 border-green-500/30 animate-pulse">LIVE</Badge>
+                <Badge className="mt-3 bg-green-500/20 text-green-400 border-green-500/30 animate-pulse">LIVE</Badge>
               )}
             </Card>
           </motion.div>
 
           <motion.div variants={itemVariants}>
-            <Card className="glass-effect text-center p-4 hover:border-yellow-500/30 transition-colors cursor-pointer" onClick={() => setActiveTab("upcoming")}>
-              <Calendar className="w-8 h-8 mx-auto mb-2 text-yellow-500" />
-              <p className="text-2xl font-bold text-foreground">{upcomingGiveaways.length}</p>
-              <p className="text-sm text-muted-foreground">Coming Soon</p>
+            <Card className="glass-effect text-center p-6 hover:border-yellow-500/30 transition-colors cursor-pointer h-full" onClick={() => setActiveTab("upcoming")}>
+              <Calendar className="w-12 h-12 mx-auto mb-3 text-yellow-500" />
+              <p className="text-4xl font-bold text-foreground mb-1">{upcomingGiveaways.length}</p>
+              <p className="text-base text-muted-foreground">Coming Soon</p>
             </Card>
           </motion.div>
 
           <motion.div variants={itemVariants}>
-            <Card className="glass-effect text-center p-4 hover:border-primary/30 transition-colors">
-              <Trophy className="w-8 h-8 mx-auto mb-2 text-primary" />
-              <p className="text-2xl font-bold text-foreground">{totalWinnersCount}</p>
-              <p className="text-sm text-muted-foreground">Total Winners</p>
+            <Card className="glass-effect text-center p-6 hover:border-primary/30 transition-colors h-full">
+              <Trophy className="w-12 h-12 mx-auto mb-3 text-primary" />
+              <p className="text-4xl font-bold text-foreground mb-1">{totalWinnersCount}</p>
+              <p className="text-base text-muted-foreground">Total Winners</p>
             </Card>
           </motion.div>
 
-          <motion.div variants={itemVariants}>
+          <motion.div variants={itemVariants} className="flex flex-col gap-4">
             <Card 
-              className="glass-effect text-center p-4 hover:border-accent/30 transition-colors cursor-pointer" 
+              className="glass-effect text-center p-6 hover:border-accent/30 transition-colors cursor-pointer flex-1" 
               onClick={() => user ? setShowEntriesDialog(true) : toast({ title: "Login Required", description: "Please log in to view your entries.", variant: "destructive" })}
             >
-              <Ticket className="w-8 h-8 mx-auto mb-2 text-accent" />
-              <p className="text-2xl font-bold text-foreground">{userActiveUpcomingEntries.length}</p>
-              <p className="text-sm text-muted-foreground">Your Entries</p>
+              <Ticket className="w-12 h-12 mx-auto mb-3 text-accent" />
+              <p className="text-4xl font-bold text-foreground mb-1">{userActiveUpcomingEntries.length}</p>
+              <p className="text-base text-muted-foreground">Your Entries</p>
               {user && userActiveUpcomingEntries.length > 0 && (
-                <Badge className="mt-2 bg-accent/20 text-accent border-accent/30">Click to view</Badge>
+                <Badge className="mt-3 bg-accent/20 text-accent border-accent/30">Click to view</Badge>
               )}
             </Card>
-          </motion.div>
-
-          {isAdmin && (
-            <motion.div variants={itemVariants}>
+            
+            {isAdmin && (
               <Card 
                 className="glass-effect text-center p-4 hover:border-primary/50 transition-colors cursor-pointer bg-gradient-to-br from-primary/10 to-accent/10" 
                 onClick={() => window.location.href = '/admin'}
               >
-                <Plus className="w-8 h-8 mx-auto mb-2 text-primary" />
-                <p className="text-lg font-bold text-foreground">Add</p>
-                <p className="text-sm text-muted-foreground">Giveaway</p>
-                <Badge className="mt-2 bg-primary/20 text-primary border-primary/30">Admin</Badge>
+                <div className="flex items-center justify-center gap-3">
+                  <Plus className="w-6 h-6 text-primary" />
+                  <div className="text-left">
+                    <p className="text-lg font-bold text-foreground">Add Giveaway</p>
+                    <p className="text-xs text-muted-foreground">Admin Only</p>
+                  </div>
+                </div>
               </Card>
-            </motion.div>
-          )}
+            )}
+          </motion.div>
         </motion.div>
 
         {/* Your Entries Dialog */}
