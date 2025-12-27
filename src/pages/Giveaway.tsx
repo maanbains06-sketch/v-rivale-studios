@@ -1,16 +1,20 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Gift, Clock, Users, Trophy, Sparkles, Calendar, ChevronRight, Star, Crown, Ticket, Check, Timer, Award, PartyPopper } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Gift, Clock, Users, Trophy, Sparkles, Calendar, ChevronRight, Star, Crown, Ticket, Check, Timer, Award, PartyPopper, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
 import headerImage from "@/assets/header-store.jpg";
+
+// Replace with your Discord ID for admin access
+const ADMIN_DISCORD_ID = "523855030329065474";
 
 interface Giveaway {
   id: string;
@@ -267,14 +271,18 @@ const Giveaway = () => {
   const [userEntries, setUserEntries] = useState<GiveawayEntry[]>([]);
   const [entryCounts, setEntryCounts] = useState<Record<string, number>>({});
   const [winners, setWinners] = useState<GiveawayWinner[]>([]);
+  const [totalWinnersCount, setTotalWinnersCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isEntering, setIsEntering] = useState(false);
   const [activeTab, setActiveTab] = useState("active");
+  const [showEntriesDialog, setShowEntriesDialog] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     fetchUser();
     fetchGiveaways();
     fetchWinners();
+    fetchTotalWinnersCount();
   }, []);
 
   useEffect(() => {
@@ -286,6 +294,12 @@ const Giveaway = () => {
   const fetchUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     setUser(user);
+    
+    // Check if user is admin based on Discord ID
+    if (user) {
+      const discordId = user.user_metadata?.provider_id || user.user_metadata?.sub;
+      setIsAdmin(discordId === ADMIN_DISCORD_ID);
+    }
   };
 
   const fetchGiveaways = async () => {
@@ -333,6 +347,16 @@ const Giveaway = () => {
 
     if (!error && data) {
       setWinners(data);
+    }
+  };
+
+  const fetchTotalWinnersCount = async () => {
+    const { count, error } = await supabase
+      .from('giveaway_winners')
+      .select('*', { count: 'exact', head: true });
+
+    if (!error) {
+      setTotalWinnersCount(count || 0);
     }
   };
 
@@ -391,11 +415,20 @@ const Giveaway = () => {
   const upcomingGiveaways = giveaways.filter(g => g.status === 'upcoming');
   const endedGiveaways = giveaways.filter(g => g.status === 'ended');
 
+  // Get user entries for active and upcoming giveaways only (not past)
+  const activeAndUpcomingGiveawayIds = [...activeGiveaways, ...upcomingGiveaways].map(g => g.id);
+  const userActiveUpcomingEntries = userEntries.filter(e => 
+    activeAndUpcomingGiveawayIds.includes(e.giveaway_id)
+  );
+
   const getUserEntry = (giveawayId: string) => 
     userEntries.find(e => e.giveaway_id === giveawayId) || null;
 
   const getGiveawayTitle = (giveawayId: string) => 
     giveaways.find(g => g.id === giveawayId)?.title || "Unknown Giveaway";
+
+  const getGiveawayStatus = (giveawayId: string) => 
+    giveaways.find(g => g.id === giveawayId)?.status || "unknown";
 
   return (
     <div className="min-h-screen bg-background">
@@ -411,26 +444,114 @@ const Giveaway = () => {
       <div className="container mx-auto px-4 pb-16">
         {/* Hero Stats */}
         <motion.div 
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12"
+          className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-12"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
-          {[
-            { icon: Gift, label: "Active Giveaways", value: activeGiveaways.length, color: "text-green-500" },
-            { icon: Calendar, label: "Coming Soon", value: upcomingGiveaways.length, color: "text-yellow-500" },
-            { icon: Trophy, label: "Total Winners", value: winners.length, color: "text-primary" },
-            { icon: Ticket, label: "Your Entries", value: userEntries.length, color: "text-accent" },
-          ].map((stat, index) => (
-            <motion.div key={index} variants={itemVariants}>
-              <Card className="glass-effect text-center p-4 hover:border-primary/30 transition-colors">
-                <stat.icon className={`w-8 h-8 mx-auto mb-2 ${stat.color}`} />
-                <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-                <p className="text-sm text-muted-foreground">{stat.label}</p>
+          <motion.div variants={itemVariants}>
+            <Card className="glass-effect text-center p-4 hover:border-green-500/30 transition-colors cursor-pointer" onClick={() => setActiveTab("active")}>
+              <Gift className="w-8 h-8 mx-auto mb-2 text-green-500" />
+              <p className="text-2xl font-bold text-foreground">{activeGiveaways.length}</p>
+              <p className="text-sm text-muted-foreground">Active Giveaways</p>
+              {activeGiveaways.length > 0 && (
+                <Badge className="mt-2 bg-green-500/20 text-green-400 border-green-500/30 animate-pulse">LIVE</Badge>
+              )}
+            </Card>
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
+            <Card className="glass-effect text-center p-4 hover:border-yellow-500/30 transition-colors cursor-pointer" onClick={() => setActiveTab("upcoming")}>
+              <Calendar className="w-8 h-8 mx-auto mb-2 text-yellow-500" />
+              <p className="text-2xl font-bold text-foreground">{upcomingGiveaways.length}</p>
+              <p className="text-sm text-muted-foreground">Coming Soon</p>
+            </Card>
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
+            <Card className="glass-effect text-center p-4 hover:border-primary/30 transition-colors">
+              <Trophy className="w-8 h-8 mx-auto mb-2 text-primary" />
+              <p className="text-2xl font-bold text-foreground">{totalWinnersCount}</p>
+              <p className="text-sm text-muted-foreground">Total Winners</p>
+            </Card>
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
+            <Card 
+              className="glass-effect text-center p-4 hover:border-accent/30 transition-colors cursor-pointer" 
+              onClick={() => user ? setShowEntriesDialog(true) : toast({ title: "Login Required", description: "Please log in to view your entries.", variant: "destructive" })}
+            >
+              <Ticket className="w-8 h-8 mx-auto mb-2 text-accent" />
+              <p className="text-2xl font-bold text-foreground">{userActiveUpcomingEntries.length}</p>
+              <p className="text-sm text-muted-foreground">Your Entries</p>
+              {user && userActiveUpcomingEntries.length > 0 && (
+                <Badge className="mt-2 bg-accent/20 text-accent border-accent/30">Click to view</Badge>
+              )}
+            </Card>
+          </motion.div>
+
+          {isAdmin && (
+            <motion.div variants={itemVariants}>
+              <Card 
+                className="glass-effect text-center p-4 hover:border-primary/50 transition-colors cursor-pointer bg-gradient-to-br from-primary/10 to-accent/10" 
+                onClick={() => window.location.href = '/admin'}
+              >
+                <Plus className="w-8 h-8 mx-auto mb-2 text-primary" />
+                <p className="text-lg font-bold text-foreground">Add</p>
+                <p className="text-sm text-muted-foreground">Giveaway</p>
+                <Badge className="mt-2 bg-primary/20 text-primary border-primary/30">Admin</Badge>
               </Card>
             </motion.div>
-          ))}
+          )}
         </motion.div>
+
+        {/* Your Entries Dialog */}
+        <Dialog open={showEntriesDialog} onOpenChange={setShowEntriesDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Ticket className="w-5 h-5 text-accent" />
+                Your Active Entries
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3 max-h-[400px] overflow-y-auto">
+              {userActiveUpcomingEntries.length > 0 ? (
+                userActiveUpcomingEntries.map(entry => {
+                  const giveawayTitle = getGiveawayTitle(entry.giveaway_id);
+                  const status = getGiveawayStatus(entry.giveaway_id);
+                  return (
+                    <Card key={entry.id} className="p-4 border-border/50">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-semibold text-foreground">{giveawayTitle}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Entered: {new Date(entry.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <Badge className={status === 'active' ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"}>
+                          {status === 'active' ? 'LIVE' : 'UPCOMING'}
+                        </Badge>
+                      </div>
+                    </Card>
+                  );
+                })
+              ) : (
+                <div className="text-center py-8">
+                  <Ticket className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-muted-foreground">No active entries yet</p>
+                  <p className="text-sm text-muted-foreground">Enter a giveaway to see your entries here!</p>
+                </div>
+              )}
+            </div>
+            {userActiveUpcomingEntries.length > 0 && (
+              <div className="pt-4 border-t border-border">
+                <p className="text-center text-sm text-muted-foreground">
+                  Total entries in active/upcoming giveaways: <span className="font-bold text-foreground">{userActiveUpcomingEntries.length}</span>
+                </p>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* Giveaway Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
