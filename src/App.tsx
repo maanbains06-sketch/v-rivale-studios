@@ -56,6 +56,7 @@ import GangRP from "./pages/GangRP";
 import Feedback from "./pages/Feedback";
 import AdminYoutubers from "./pages/AdminYoutubers";
 import AdminStaffTeams from "./pages/AdminStaffTeams";
+import AdminDiscordRules from "./pages/AdminDiscordRules";
 import Giveaway from "./pages/Giveaway";
 import NotFound from "./pages/NotFound";
 
@@ -100,6 +101,7 @@ const AppRoutes = () => {
         <Route path="/admin/players-active" element={<PageTransition><AdminPlayers /></PageTransition>} />
         <Route path="/admin/youtubers" element={<PageTransition><AdminYoutubers /></PageTransition>} />
         <Route path="/admin/staff-teams" element={<PageTransition><AdminStaffTeams /></PageTransition>} />
+        <Route path="/admin/discord-rules" element={<PageTransition><AdminDiscordRules /></PageTransition>} />
         <Route path="/support-chat" element={<PageTransition><RequireAuth message="Login with Discord to access support chat."><SupportChat /></RequireAuth></PageTransition>} />
         <Route path="/job-application" element={<PageTransition><RequireAuth message="Login with Discord to apply for jobs."><JobApplication /></RequireAuth></PageTransition>} />
         <Route path="/dashboard" element={<PageTransition><RequireAuth message="Login with Discord to access your dashboard."><Dashboard /></RequireAuth></PageTransition>} />
