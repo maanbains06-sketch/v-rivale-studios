@@ -10,7 +10,7 @@ const corsHeaders = {
 const SLRP_LOGO_URL = "https://preview--slrp-hub.lovable.app/images/slrp-logo-discord.png";
 
 // Default header image - GTA 5 themed
-const DEFAULT_HEADER_IMAGE = "https://preview--slrp-hub.lovable.app/images/rules/gta-header.jpg";
+const DEFAULT_HEADER_IMAGE = "https://storage.googleapis.com/gpt-engineer-file-uploads/image-gen/fe787e39-269c-454a-accb-36923ad9605d?Expires=1766897589&GoogleAccessId=go-api-on-aws%40gpt-engineer-390607.iam.gserviceaccount.com&Signature=H5A4Ctvb0flXDIENnYkDboBrOzRw6PGig6ziXbC8ktHcRnOOyGBaq1kBEeTKXvBeaFWz2MaULxgimNN4icQOUIezK2EtAdwunSYOIrUtLAMMxRXl7UcQ5bfUiO6%2BhndPxnTAN%2FOkn7F%2FGse4DPr0GZO%2BmBC0c%2FFtpIBECmC6ypjk7sKTBFRHMGy1437CUn3rZGsPigkVigzEiY1tTuryln80wI8sz8xiv4zDGb8A%2B9hYLWB7M928DAHj21wXBoR4UcgYOq56NuDRh5HpafjjOqKxxMOEYwX%2FAwz5VQ6dVawMHUgF%2Bm77f%2B89NTSM69Rx6qEIB6S2IM%2BdUblUPe6OAg%3D%3D";
 
 interface RuleItem {
   emoji: string;
@@ -192,42 +192,86 @@ serve(async (req) => {
 
     const webhook = await getOrCreateWebhook(rulesChannelId, discordBotToken, ownerUsername, ownerAvatarUrl);
     const sentAs = webhook ? 'webhook (shows your profile)' : 'bot (missing Manage Webhooks permission)';
-    const sendMessage = async (payload: any) => {
-      if (webhook) {
-        // Use owner's avatar and username for webhook messages
-        const webhookPayload = {
-          ...payload,
-          username: ownerUsername,
-          avatar_url: ownerAvatarUrl || SLRP_LOGO_URL, // Use owner avatar, fallback to logo
-        };
-        
-        const response = await fetch(`https://discord.com/api/v10/webhooks/${webhook.id}/${webhook.token}`, {
+
+    const fetchImageFile = async (imageUrl: string, baseName: string) => {
+      const res = await fetch(imageUrl);
+      if (!res.ok) {
+        throw new Error(`Failed to fetch image (${res.status}): ${imageUrl}`);
+      }
+      const contentType = res.headers.get('content-type') || 'image/jpeg';
+      const ext = contentType.includes('png') ? 'png' : contentType.includes('webp') ? 'webp' : 'jpg';
+      const fileName = `${baseName}.${ext}`;
+      const bytes = new Uint8Array(await res.arrayBuffer());
+      const file = new File([bytes], fileName, { type: contentType });
+      return { file, fileName };
+    };
+
+    const sendMessage = async (payload: any, imageToAttach?: { url: string; baseName: string }) => {
+      const endpoint = webhook
+        ? `https://discord.com/api/v10/webhooks/${webhook.id}/${webhook.token}`
+        : `https://discord.com/api/v10/channels/${rulesChannelId}/messages`;
+
+      const headers: Record<string, string> = webhook
+        ? {}
+        : { 'Authorization': `Bot ${discordBotToken}` };
+
+      // If we need an image, upload it as an attachment so Discord always displays it
+      if (imageToAttach?.url) {
+        const { file, fileName } = await fetchImageFile(imageToAttach.url, imageToAttach.baseName);
+
+        const basePayload = webhook
+          ? {
+              ...payload,
+              username: ownerUsername,
+              avatar_url: ownerAvatarUrl || SLRP_LOGO_URL,
+            }
+          : payload;
+
+        // Ensure embed image points to the uploaded attachment
+        const payloadWithAttachment = structuredClone(basePayload);
+        if (payloadWithAttachment?.embeds?.[0]?.image) {
+          payloadWithAttachment.embeds[0].image.url = `attachment://${fileName}`;
+        }
+
+        const form = new FormData();
+        form.append('payload_json', JSON.stringify(payloadWithAttachment));
+        form.append('files[0]', file, fileName);
+
+        const response = await fetch(endpoint, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(webhookPayload),
+          headers,
+          body: form,
         });
-        
+
         if (!response.ok) {
           const errorText = await response.text();
-          throw new Error(`Webhook failed: ${response.status} - ${errorText}`);
+          throw new Error(`Message with attachment failed: ${response.status} - ${errorText}`);
         }
-        return response;
-      } else {
-        const response = await fetch(`https://discord.com/api/v10/channels/${rulesChannelId}/messages`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bot ${discordBotToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-        });
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Bot message failed: ${response.status} - ${errorText}`);
-        }
+
         return response;
       }
+
+      // JSON message (no attachment)
+      const payloadWithProfile = webhook
+        ? {
+            ...payload,
+            username: ownerUsername,
+            avatar_url: ownerAvatarUrl || SLRP_LOGO_URL,
+          }
+        : payload;
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payloadWithProfile),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`${webhook ? 'Webhook' : 'Bot'} message failed: ${response.status} - ${errorText}`);
+      }
+
+      return response;
     };
 
     // Enhanced header embed - clean design without ANSI
@@ -270,7 +314,10 @@ serve(async (req) => {
     };
 
     console.log('Sending header embed...');
-    await sendMessage({ embeds: [headerEmbed] });
+    await sendMessage(
+      { embeds: [headerEmbed] },
+      { url: DEFAULT_HEADER_IMAGE, baseName: 'rules-header' }
+    );
     await new Promise(resolve => setTimeout(resolve, 1200));
 
     // Send each rule section from database
@@ -319,7 +366,10 @@ ${rulesText}
       };
 
       console.log(`Sending ${section.title}...`);
-      await sendMessage({ embeds: [sectionEmbed] });
+      await sendMessage(
+        { embeds: [sectionEmbed] },
+        { url: section.image_url || DEFAULT_HEADER_IMAGE, baseName: `rules-${section.section_key}` }
+      );
       await new Promise(resolve => setTimeout(resolve, 1200));
     }
 
