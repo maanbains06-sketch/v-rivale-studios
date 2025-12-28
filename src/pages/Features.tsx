@@ -12,12 +12,12 @@ import emergencyImg from "@/assets/feature-emergency.jpg";
 const features = [
   {
     title: "Custom Jobs",
-    description: "30+ unique jobs including legal and illegal activities with realistic progression systems and specialized skills.",
+    description: "15+ unique jobs including legal and illegal activities with realistic progression systems and specialized skills.",
     image: jobsImg,
     icon: Briefcase,
   },
   {
-    title: "500+ Vehicles",
+    title: "Custom Vehicles",
     description: "Extensive vehicle collection with custom handling, modifications, and realistic damage systems.",
     image: vehiclesImg,
     icon: Car,
