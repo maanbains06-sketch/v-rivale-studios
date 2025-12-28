@@ -8,15 +8,17 @@ const corsHeaders = {
 // SLRP Logo URL - hosted on your domain
 const SLRP_LOGO_URL = "https://preview--slrp-hub.lovable.app/images/slrp-logo-discord.png";
 
-// GTA-styled rule images hosted on your site (Discord reliably loads these)
+// GTA-themed images that are publicly reachable by Discord (avoid preview-domain assets)
 const GTA_IMAGES = {
-  header: "https://preview--slrp-hub.lovable.app/images/rules/gta-header.jpg",
-  general: "https://preview--slrp-hub.lovable.app/images/rules/gta-general.jpg",
-  roleplay: "https://preview--slrp-hub.lovable.app/images/rules/gta-roleplay.jpg",
-  vehicles: "https://preview--slrp-hub.lovable.app/images/rules/gta-vehicles.jpg",
-  combat: "https://preview--slrp-hub.lovable.app/images/rules/gta-combat.jpg",
-  emergency: "https://preview--slrp-hub.lovable.app/images/rules/gta-emergency.jpg",
-  communication: "https://preview--slrp-hub.lovable.app/images/rules/gta-communication.jpg",
+  // Los Santos emblem (SVG rendered as PNG)
+  header: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Los_Santos.svg/1200px-Los_Santos.svg.png",
+  general: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Los_Santos.svg/1200px-Los_Santos.svg.png",
+  // GTA V in-game signage (Ludendorff)
+  roleplay: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/LudendorffSign-GTAVPC%281%29.png/1200px-LudendorffSign-GTAVPC%281%29.png",
+  vehicles: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/LudendorffSign-GTAVPC%281%29.png/1200px-LudendorffSign-GTAVPC%281%29.png",
+  combat: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/LudendorffSign-GTAVPC%281%29.png/1200px-LudendorffSign-GTAVPC%281%29.png",
+  emergency: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/LudendorffSign-GTAVPC%281%29.png/1200px-LudendorffSign-GTAVPC%281%29.png",
+  communication: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/LudendorffSign-GTAVPC%281%29.png/1200px-LudendorffSign-GTAVPC%281%29.png",
 };
 
 // Enhanced rule sections with GTA themed images, bold italic formatting
