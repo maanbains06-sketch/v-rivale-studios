@@ -373,7 +373,7 @@ ${rulesText}
 
 ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
-🌐 **Website** • 💬 **Support** • 📋 **Apply**
+🌐 [**Website**](https://slrp.lovable.app/) • 💬 [**Support**](https://slrp.lovable.app/support) • 📋 [**Apply**](https://slrp.lovable.app/whitelist)
 
 🇮🇳 ***SLRP - India's Premier GTA V Roleplay Server*** 🇮🇳`,
       color: 0x00FF88,
