@@ -20,12 +20,16 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { 
   User as UserIcon, 
   LogOut, 
+  Settings, 
   LayoutDashboard,
   Shield,
-  ChevronDown
+  ChevronDown,
+  Loader2,
+  CheckCircle2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
@@ -38,6 +42,8 @@ const UserProfileDropdown = ({ className = "" }: UserProfileDropdownProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isMember, setIsMember] = useState<boolean | null>(null);
+  const [checkingMembership, setCheckingMembership] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -59,6 +65,45 @@ const UserProfileDropdown = ({ className = "" }: UserProfileDropdownProps) => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Check Discord server membership
+  useEffect(() => {
+    const checkMembership = async () => {
+      if (!user) {
+        setIsMember(null);
+        return;
+      }
+
+      const discordId = user.user_metadata?.provider_id || user.user_metadata?.sub;
+      
+      if (!discordId) {
+        setIsMember(false);
+        return;
+      }
+
+      setCheckingMembership(true);
+
+      try {
+        const { data, error } = await supabase.functions.invoke('verify-discord-membership', {
+          body: { discordId }
+        });
+
+        if (error) {
+          setIsMember(false);
+        } else {
+          setIsMember(data.isMember);
+        }
+      } catch (err) {
+        setIsMember(false);
+      } finally {
+        setCheckingMembership(false);
+      }
+    };
+
+    if (user && !loading) {
+      checkMembership();
+    }
+  }, [user, loading]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -89,8 +134,12 @@ const UserProfileDropdown = ({ className = "" }: UserProfileDropdownProps) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  // Don't show if not logged in
-  if (loading || !user) {
+  // Don't show if not logged in or not a server member
+  if (loading || checkingMembership) {
+    return null;
+  }
+
+  if (!user || !isMember) {
     return null;
   }
 
@@ -115,6 +164,10 @@ const UserProfileDropdown = ({ className = "" }: UserProfileDropdownProps) => {
           <span className="text-sm font-medium text-foreground/90 max-w-[100px] truncate hidden lg:block">
             {username}
           </span>
+          <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/30 text-[10px] px-1.5 py-0 hidden lg:flex items-center gap-1">
+            <CheckCircle2 className="w-2.5 h-2.5" />
+            Member
+          </Badge>
           <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
         </motion.div>
       </DropdownMenuTrigger>
@@ -133,6 +186,12 @@ const UserProfileDropdown = ({ className = "" }: UserProfileDropdownProps) => {
             </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground truncate">{username}</p>
+              <div className="flex items-center gap-1 mt-1">
+                <Badge className="bg-green-500/15 text-green-400 border-green-500/25 text-[10px] px-1.5 py-0">
+                  <CheckCircle2 className="w-2.5 h-2.5 mr-1" />
+                  Server Member
+                </Badge>
+              </div>
             </div>
           </div>
         </div>
