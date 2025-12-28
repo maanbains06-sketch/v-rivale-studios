@@ -268,6 +268,45 @@ export type Database = {
           },
         ]
       }
+      discord_rules_sections: {
+        Row: {
+          color: number
+          created_at: string
+          display_order: number
+          id: string
+          image_url: string | null
+          is_active: boolean
+          rules: Json
+          section_key: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          color?: number
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          rules?: Json
+          section_key: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          color?: number
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          rules?: Json
+          section_key?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       event_participants: {
         Row: {
           event_id: string
