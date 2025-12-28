@@ -9,7 +9,7 @@ const corsHeaders = {
 // SLRP Logo URL - for thumbnail (top right corner)
 const SLRP_LOGO_URL = "https://preview--slrp-hub.lovable.app/images/slrp-logo.png";
 
-// Skylife Roleplay India banner - GTA V themed cityscape
+// Default header image (fallback only)
 const DEFAULT_HEADER_IMAGE = "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=1920&h=600&fit=crop&q=95";
 
 interface RuleItem {
@@ -125,6 +125,19 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Optional body: { imageUrl?: string }
+  let requestedImageUrl: string | null = null;
+  try {
+    if (req.method !== 'GET') {
+      const body = await req.json().catch(() => null);
+      if (body && typeof body.imageUrl === 'string' && body.imageUrl.trim()) {
+        requestedImageUrl = body.imageUrl.trim();
+      }
+    }
+  } catch {
+    // ignore body parsing errors
+  }
+
   try {
     const discordBotToken = Deno.env.get('DISCORD_BOT_TOKEN');
     const rulesChannelId = Deno.env.get('DISCORD_RULES_CHANNEL_ID');
@@ -142,6 +155,52 @@ serve(async (req) => {
 
     // Create Supabase client with service role key
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // If an image was provided, upload it to Storage to get a stable public URL
+    let bannerUrl = DEFAULT_HEADER_IMAGE;
+    if (requestedImageUrl) {
+      console.log('Fetching requested banner image...');
+      const imgRes = await fetch(requestedImageUrl);
+      if (!imgRes.ok) {
+        throw new Error(`Failed to fetch image (${imgRes.status}): ${requestedImageUrl}`);
+      }
+
+      const contentType = imgRes.headers.get('content-type') || 'image/jpeg';
+      const ext = contentType.includes('png')
+        ? 'png'
+        : contentType.includes('webp')
+          ? 'webp'
+          : 'jpg';
+
+      const bytes = new Uint8Array(await imgRes.arrayBuffer());
+      const objectName = `rules-banners/skylife-banner.${ext}`;
+
+      console.log('Uploading banner image to storage:', objectName);
+      const { error: uploadError } = await supabase.storage
+        .from('discord-assets')
+        .upload(objectName, bytes, { contentType, upsert: true });
+
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError);
+        throw new Error(`Banner upload failed: ${uploadError.message}`);
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('discord-assets')
+        .getPublicUrl(objectName);
+
+      if (urlData?.publicUrl) {
+        bannerUrl = urlData.publicUrl;
+      }
+
+      console.log('Banner public URL:', bannerUrl);
+
+      // Persist to DB so future sends use the same banner
+      await supabase
+        .from('discord_rules_sections')
+        .update({ image_url: bannerUrl })
+        .eq('is_active', true);
+    }
 
     // Fetch rules sections from database
     console.log('Fetching rules sections from database...');
@@ -304,7 +363,7 @@ serve(async (req) => {
         url: SLRP_LOGO_URL, // SLRP logo for top right corner
       },
       image: {
-        url: DEFAULT_HEADER_IMAGE,
+        url: bannerUrl,
       },
       footer: {
         text: `✦ SLRP ✦ Posted by ${ownerUsername} ✦ Last Updated`,
@@ -316,7 +375,7 @@ serve(async (req) => {
     console.log('Sending header embed...');
     await sendMessage(
       { embeds: [headerEmbed] },
-      { url: DEFAULT_HEADER_IMAGE, baseName: 'rules-header' }
+      { url: bannerUrl, baseName: 'rules-header' }
     );
     await new Promise(resolve => setTimeout(resolve, 1200));
 
@@ -357,7 +416,7 @@ ${rulesText}
           url: SLRP_LOGO_URL, // SLRP logo for top right corner
         },
         image: {
-          url: section.image_url || DEFAULT_HEADER_IMAGE,
+          url: bannerUrl,
         },
         footer: {
           text: `✦ Section ${sectionNumber} of ${rulesSections.length} ✦ SLRP ✦ ${ownerUsername}`,
@@ -368,7 +427,7 @@ ${rulesText}
       console.log(`Sending ${section.title}...`);
       await sendMessage(
         { embeds: [sectionEmbed] },
-        { url: section.image_url || DEFAULT_HEADER_IMAGE, baseName: `rules-${section.section_key}` }
+        { url: bannerUrl, baseName: `rules-${section.section_key}` }
       );
       await new Promise(resolve => setTimeout(resolve, 1200));
     }
