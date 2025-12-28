@@ -7,10 +7,10 @@ const corsHeaders = {
 };
 
 // SLRP Logo URL - for thumbnail (top right corner)
-const SLRP_LOGO_URL = "https://preview--slrp-hub.lovable.app/images/slrp-logo.png";
+const SLRP_LOGO_URL = "https://cdn.discordapp.com/attachments/1234567890/slrp-logo.png";
 
-// Default header image (fallback only) - Use Supabase Storage URL as primary
-const DEFAULT_HEADER_IMAGE = "https://obirpzwvnqveddyuulsb.supabase.co/storage/v1/object/public/discord-assets/rules-banners/skylife-banner.png";
+// Fallback header image - use a reliable public image
+const DEFAULT_HEADER_IMAGE = "";
 
 interface RuleItem {
   emoji: string;
@@ -253,16 +253,25 @@ serve(async (req) => {
     const sentAs = webhook ? 'webhook (shows your profile)' : 'bot (missing Manage Webhooks permission)';
 
     const fetchImageFile = async (imageUrl: string, baseName: string) => {
-      const res = await fetch(imageUrl);
-      if (!res.ok) {
-        throw new Error(`Failed to fetch image (${res.status}): ${imageUrl}`);
+      if (!imageUrl) {
+        return null;
       }
-      const contentType = res.headers.get('content-type') || 'image/jpeg';
-      const ext = contentType.includes('png') ? 'png' : contentType.includes('webp') ? 'webp' : 'jpg';
-      const fileName = `${baseName}.${ext}`;
-      const bytes = new Uint8Array(await res.arrayBuffer());
-      const file = new File([bytes], fileName, { type: contentType });
-      return { file, fileName };
+      try {
+        const res = await fetch(imageUrl);
+        if (!res.ok) {
+          console.log(`Failed to fetch image (${res.status}): ${imageUrl}`);
+          return null;
+        }
+        const contentType = res.headers.get('content-type') || 'image/jpeg';
+        const ext = contentType.includes('png') ? 'png' : contentType.includes('webp') ? 'webp' : 'jpg';
+        const fileName = `${baseName}.${ext}`;
+        const bytes = new Uint8Array(await res.arrayBuffer());
+        const file = new File([bytes], fileName, { type: contentType });
+        return { file, fileName };
+      } catch (error) {
+        console.log(`Error fetching image: ${error}`);
+        return null;
+      }
     };
 
     const sendMessage = async (payload: any, imageToAttach?: { url: string; baseName: string }) => {
@@ -276,38 +285,43 @@ serve(async (req) => {
 
       // If we need an image, upload it as an attachment so Discord always displays it
       if (imageToAttach?.url) {
-        const { file, fileName } = await fetchImageFile(imageToAttach.url, imageToAttach.baseName);
+        const imageResult = await fetchImageFile(imageToAttach.url, imageToAttach.baseName);
 
-        const basePayload = webhook
-          ? {
-              ...payload,
-              username: ownerUsername,
-              avatar_url: ownerAvatarUrl || SLRP_LOGO_URL,
-            }
-          : payload;
+        if (imageResult) {
+          const { file, fileName } = imageResult;
+          
+          const basePayload = webhook
+            ? {
+                ...payload,
+                username: ownerUsername,
+                avatar_url: ownerAvatarUrl || SLRP_LOGO_URL,
+              }
+            : payload;
 
-        // Ensure embed image points to the uploaded attachment
-        const payloadWithAttachment = structuredClone(basePayload);
-        if (payloadWithAttachment?.embeds?.[0]?.image) {
-          payloadWithAttachment.embeds[0].image.url = `attachment://${fileName}`;
+          // Ensure embed image points to the uploaded attachment
+          const payloadWithAttachment = structuredClone(basePayload);
+          if (payloadWithAttachment?.embeds?.[0]?.image) {
+            payloadWithAttachment.embeds[0].image.url = `attachment://${fileName}`;
+          }
+
+          const form = new FormData();
+          form.append('payload_json', JSON.stringify(payloadWithAttachment));
+          form.append('files[0]', file, fileName);
+
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers,
+            body: form,
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Message with attachment failed: ${response.status} - ${errorText}`);
+          }
+
+          return response;
         }
-
-        const form = new FormData();
-        form.append('payload_json', JSON.stringify(payloadWithAttachment));
-        form.append('files[0]', file, fileName);
-
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers,
-          body: form,
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Message with attachment failed: ${response.status} - ${errorText}`);
-        }
-
-        return response;
+        // If image fetch failed, fall through to send without attachment
       }
 
       // JSON message (no attachment)
