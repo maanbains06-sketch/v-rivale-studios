@@ -8,17 +8,15 @@ const corsHeaders = {
 // SLRP Logo URL - hosted on your domain
 const SLRP_LOGO_URL = "https://preview--slrp-hub.lovable.app/images/slrp-logo-discord.png";
 
-// GTA-themed images that are publicly reachable by Discord (avoid preview-domain assets)
+// GTA-themed images from Unsplash CDN (reliable for Discord)
 const GTA_IMAGES = {
-  // Los Santos emblem (SVG rendered as PNG)
-  header: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Los_Santos.svg/1200px-Los_Santos.svg.png",
-  general: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Los_Santos.svg/1200px-Los_Santos.svg.png",
-  // GTA V in-game signage (Ludendorff)
-  roleplay: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/LudendorffSign-GTAVPC%281%29.png/1200px-LudendorffSign-GTAVPC%281%29.png",
-  vehicles: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/LudendorffSign-GTAVPC%281%29.png/1200px-LudendorffSign-GTAVPC%281%29.png",
-  combat: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/LudendorffSign-GTAVPC%281%29.png/1200px-LudendorffSign-GTAVPC%281%29.png",
-  emergency: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/LudendorffSign-GTAVPC%281%29.png/1200px-LudendorffSign-GTAVPC%281%29.png",
-  communication: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/LudendorffSign-GTAVPC%281%29.png/1200px-LudendorffSign-GTAVPC%281%29.png",
+  header: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&q=80",
+  general: "https://images.unsplash.com/photo-1493711662062-fa541f7f3d24?w=800&q=80",
+  roleplay: "https://images.unsplash.com/photo-1511882150382-421056c89033?w=800&q=80",
+  vehicles: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&q=80",
+  combat: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&q=80",
+  emergency: "https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?w=800&q=80",
+  communication: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80",
 };
 
 // Enhanced rule sections with GTA themed images, bold italic formatting
@@ -223,30 +221,28 @@ serve(async (req) => {
       }
     };
 
-    // Enhanced header embed with GTA theme and ANSI colors
+    // Enhanced header embed - clean design without ANSI
     const headerEmbed = {
       author: {
         name: "✧ SKYLIFE ROLEPLAY INDIA ✧",
         icon_url: SLRP_LOGO_URL,
       },
-      title: "╔══════════════════════════════════════════════╗\n║   📜  ***S E R V E R   R U L E S***  📜   ║\n╚══════════════════════════════════════════════╝",
+      title: "📜  **S E R V E R   R U L E S**  📜",
       description: `
 > 🎮 ***Welcome to SLRP - Skylife Roleplay India!***
 > 
 > ***Please read and follow all rules below to ensure***
 > ***a fair and enjoyable experience for everyone.***
 
-\`\`\`ansi
-[1;33m╔════════════════════════════════════════════╗[0m
-[1;33m║[0m   [1;31m⚠️  IMPORTANT NOTICE  ⚠️[0m                  [1;33m║[0m
-[1;33m╠════════════════════════════════════════════╣[0m
-[1;33m║[0m  [1;37mBreaking these rules may result in:[0m       [1;33m║[0m
-[1;33m║[0m                                            [1;33m║[0m
-[1;33m║[0m  [1;32m➤[0m [0;37mVerbal Warning[0m                         [1;33m║[0m
-[1;33m║[0m  [1;32m➤[0m [0;37mTemporary Kick[0m                         [1;33m║[0m
-[1;33m║[0m  [1;32m➤[0m [1;31mPermanent Ban[0m                          [1;33m║[0m
-[1;33m╚════════════════════════════════════════════╝[0m
-\`\`\`
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+
+⚠️ **IMPORTANT NOTICE**
+
+> ➤ ***Verbal Warning***
+> ➤ ***Temporary Kick***
+> ➤ ***Permanent Ban***
+
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
 > ✅ ***Staff decisions are FINAL***
 > 📝 ***Appeal bans through our Discord server***`,
@@ -268,12 +264,11 @@ serve(async (req) => {
     await sendMessage({ embeds: [headerEmbed] });
     await new Promise(resolve => setTimeout(resolve, 1200));
 
-    // Send each rule section with enhanced bold/colored design
+    // Send each rule section with clean design (no ANSI)
     for (let i = 0; i < rulesSections.length; i++) {
       const section = rulesSections[i];
       const sectionNumber = i + 1;
       
-      // Build colored rules text using ANSI codes in code blocks + bold markdown
       const rulesText = section.rules
         .map((rule, index) => `> ${rule.emoji} **${index + 1}.** ${rule.text}`)
         .join('\n>\n');
@@ -284,16 +279,11 @@ serve(async (req) => {
           icon_url: SLRP_LOGO_URL,
         },
         title: section.title,
-        description: `
-\`\`\`ansi
-[1;36m▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬[0m
-\`\`\`
+        description: `▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
 ${rulesText}
 
-\`\`\`ansi
-[1;36m▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬[0m
-\`\`\``,
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬`,
         color: section.color,
         thumbnail: {
           url: SLRP_LOGO_URL,
@@ -312,32 +302,29 @@ ${rulesText}
       await new Promise(resolve => setTimeout(resolve, 1200));
     }
 
-    // Beautiful closing embed with GTA theme
+    // Clean closing embed without ANSI
     const closingEmbed = {
       author: {
         name: "✧ SKYLIFE ROLEPLAY INDIA ✧",
         icon_url: SLRP_LOGO_URL,
       },
       title: "〘 ✨ 〙 **__THANK YOU FOR READING!__**",
-      description: `
-\`\`\`ansi
-[1;32m╔════════════════════════════════════════════╗[0m
-[1;32m║[0m      [1;33m🎮  ENJOY YOUR TIME AT SLRP!  🎮[0m       [1;32m║[0m
-[1;32m╚════════════════════════════════════════════╝[0m
-\`\`\`
+      description: `▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+
+🎮 ***ENJOY YOUR TIME AT SLRP!*** 🎮
+
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
 > 📋 ***By playing on our server, you agree***
 > ***to follow all rules listed above.***
 > 
 > ❓ ***Questions? Contact our staff team!***
 
-\`\`\`ansi
-[1;35m═══════════════ QUICK LINKS ═══════════════[0m
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
-[1;34m🌐[0m [1;37mWebsite[0m    [1;34m💬[0m [1;37mSupport[0m    [1;34m📋[0m [1;37mApply[0m
+🌐 **Website** • 💬 **Support** • 📋 **Apply**
 
-[1;33m🇮🇳  SLRP - India's Premier GTA V Roleplay Server  🇮🇳[0m
-\`\`\``,
+🇮🇳 ***SLRP - India's Premier GTA V Roleplay Server*** 🇮🇳`,
       color: 0x00FF88,
       thumbnail: {
         url: SLRP_LOGO_URL,
