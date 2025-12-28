@@ -121,10 +121,32 @@ const AdminDiscordRules = () => {
 
   const publishRulesMutation = useMutation({
     mutationFn: async () => {
-      const imageUrl = `${window.location.origin}/images/discord-rules/skylife-banner.png`;
-      const { data, error } = await supabase.functions.invoke('send-rules-to-discord', {
-        body: { imageUrl },
-      });
+      // First try to upload the banner image from public folder to storage
+      try {
+        const imgResponse = await fetch('/images/discord-rules/skylife-banner.png');
+        if (imgResponse.ok) {
+          const blob = await imgResponse.blob();
+          const reader = new FileReader();
+          const base64Promise = new Promise<string>((resolve) => {
+            reader.onloadend = () => {
+              const base64 = (reader.result as string).split(',')[1];
+              resolve(base64);
+            };
+            reader.readAsDataURL(blob);
+          });
+          const imageBase64 = await base64Promise;
+          
+          // Upload to storage
+          await supabase.functions.invoke('upload-local-banner', {
+            body: { imageBase64, fileName: 'skylife-banner.png' },
+          });
+        }
+      } catch (uploadErr) {
+        console.log('Banner upload skipped:', uploadErr);
+      }
+
+      // Now send rules to Discord (will use the storage URL as default)
+      const { data, error } = await supabase.functions.invoke('send-rules-to-discord');
       if (error) throw error;
       return data;
     },
