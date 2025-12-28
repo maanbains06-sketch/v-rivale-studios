@@ -147,6 +147,49 @@ async function getOrCreateWebhook(channelId: string, botToken: string, ownerUser
   }
 }
 
+// Delete all messages in a channel
+async function deleteAllMessages(channelId: string, botToken: string): Promise<number> {
+  let deletedCount = 0;
+  try {
+    // Fetch messages (up to 100)
+    const messagesResponse = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages?limit=100`, {
+      headers: { 'Authorization': `Bot ${botToken}` },
+    });
+
+    if (!messagesResponse.ok) {
+      console.log('Cannot fetch messages for deletion');
+      return 0;
+    }
+
+    const messages = await messagesResponse.json();
+    console.log(`Found ${messages.length} messages to delete`);
+
+    // Delete each message
+    for (const message of messages) {
+      try {
+        const deleteResponse = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages/${message.id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bot ${botToken}` },
+        });
+
+        if (deleteResponse.ok || deleteResponse.status === 204) {
+          deletedCount++;
+        }
+        // Rate limit: wait between deletions
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } catch (e) {
+        console.log(`Failed to delete message ${message.id}`);
+      }
+    }
+
+    console.log(`Deleted ${deletedCount} messages`);
+    return deletedCount;
+  } catch (error) {
+    console.error('Error deleting messages:', error);
+    return deletedCount;
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -160,6 +203,14 @@ serve(async (req) => {
     if (!discordBotToken || !rulesChannelId || !ownerDiscordId) {
       throw new Error('Missing required environment variables');
     }
+
+    // Delete all previous messages first
+    console.log('Deleting previous messages from channel...');
+    const deletedCount = await deleteAllMessages(rulesChannelId, discordBotToken);
+    console.log(`Deleted ${deletedCount} old messages`);
+
+    // Wait a moment after deletions
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     console.log('Fetching owner Discord profile...');
     
