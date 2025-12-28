@@ -296,7 +296,7 @@ serve(async (req) => {
 ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
 > ✅ ***Staff decisions are FINAL***
-> 📝 ***Appeal bans through our Discord server***`,
+> 📝 ***Appeal bans through our Discord server or our official website***`,
       color: 0x00D9FF,
       thumbnail: {
         url: SLRP_LOGO_URL,
