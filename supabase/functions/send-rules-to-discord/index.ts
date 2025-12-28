@@ -6,11 +6,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// SLRP Logo URL - hosted on your domain
-const SLRP_LOGO_URL = "https://preview--slrp-hub.lovable.app/images/slrp-logo-discord.png";
+// SLRP Logo URL - use a working public image
+const SLRP_LOGO_URL = "https://cdn.discordapp.com/embed/avatars/0.png";
 
-// Default header image - Clean GTA 5 style cityscape without any text/logos
-const DEFAULT_HEADER_IMAGE = "https://preview--slrp-hub.lovable.app/images/discord-rules/header-clean.jpg";
+// Default header image - placeholder that always works
+const DEFAULT_HEADER_IMAGE = "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=1920&h=1080&fit=crop";
 
 interface RuleItem {
   emoji: string;
