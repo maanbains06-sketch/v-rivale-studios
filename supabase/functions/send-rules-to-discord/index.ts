@@ -9,8 +9,8 @@ const corsHeaders = {
 // SLRP Logo URL - hosted on your domain
 const SLRP_LOGO_URL = "https://preview--slrp-hub.lovable.app/images/slrp-logo-discord.png";
 
-// Default header image - GTA 5 themed
-const DEFAULT_HEADER_IMAGE = "https://storage.googleapis.com/gpt-engineer-file-uploads/image-gen/fe787e39-269c-454a-accb-36923ad9605d?Expires=1766897589&GoogleAccessId=go-api-on-aws%40gpt-engineer-390607.iam.gserviceaccount.com&Signature=H5A4Ctvb0flXDIENnYkDboBrOzRw6PGig6ziXbC8ktHcRnOOyGBaq1kBEeTKXvBeaFWz2MaULxgimNN4icQOUIezK2EtAdwunSYOIrUtLAMMxRXl7UcQ5bfUiO6%2BhndPxnTAN%2FOkn7F%2FGse4DPr0GZO%2BmBC0c%2FFtpIBECmC6ypjk7sKTBFRHMGy1437CUn3rZGsPigkVigzEiY1tTuryln80wI8sz8xiv4zDGb8A%2B9hYLWB7M928DAHj21wXBoR4UcgYOq56NuDRh5HpafjjOqKxxMOEYwX%2FAwz5VQ6dVawMHUgF%2Bm77f%2B89NTSM69Rx6qEIB6S2IM%2BdUblUPe6OAg%3D%3D";
+// Default header image - Clean GTA 5 style cityscape without any text/logos
+const DEFAULT_HEADER_IMAGE = "https://preview--slrp-hub.lovable.app/images/discord-rules/header-clean.jpg";
 
 interface RuleItem {
   emoji: string;
