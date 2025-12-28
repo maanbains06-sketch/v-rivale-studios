@@ -8,15 +8,15 @@ const corsHeaders = {
 // SLRP Logo URL - hosted on your domain
 const SLRP_LOGO_URL = "https://preview--slrp-hub.lovable.app/images/slrp-logo-discord.png";
 
-// GTA 5 themed images for each rule section
+// GTA-styled rule images hosted on your site (Discord reliably loads these)
 const GTA_IMAGES = {
-  general: "https://i.imgur.com/8Y5Qf9K.jpg", // GTA 5 city skyline
-  roleplay: "https://i.imgur.com/JKL3nM2.jpg", // GTA 5 characters
-  vehicles: "https://i.imgur.com/2VqP8Nx.jpg", // GTA 5 cars
-  combat: "https://i.imgur.com/9RtY4Hs.jpg", // GTA 5 action
-  emergency: "https://i.imgur.com/F5mK7Lw.jpg", // GTA 5 police
-  communication: "https://i.imgur.com/X8Zp3Qn.jpg", // GTA 5 phone
-  header: "https://i.imgur.com/Ug7vP2M.jpg", // GTA 5 Los Santos
+  header: "https://preview--slrp-hub.lovable.app/images/rules/gta-header.jpg",
+  general: "https://preview--slrp-hub.lovable.app/images/rules/gta-general.jpg",
+  roleplay: "https://preview--slrp-hub.lovable.app/images/rules/gta-roleplay.jpg",
+  vehicles: "https://preview--slrp-hub.lovable.app/images/rules/gta-vehicles.jpg",
+  combat: "https://preview--slrp-hub.lovable.app/images/rules/gta-combat.jpg",
+  emergency: "https://preview--slrp-hub.lovable.app/images/rules/gta-emergency.jpg",
+  communication: "https://preview--slrp-hub.lovable.app/images/rules/gta-communication.jpg",
 };
 
 // Enhanced rule sections with GTA themed images, bold italic formatting
@@ -174,13 +174,15 @@ serve(async (req) => {
       const ownerData = await ownerResponse.json();
       ownerUsername = ownerData.global_name || ownerData.username || 'SLRP Owner';
       if (ownerData.avatar) {
-        ownerAvatarUrl = `https://cdn.discordapp.com/avatars/${ownerDiscordId}/${ownerData.avatar}.png?size=256`;
+        // If avatar is animated (hash starts with "a_"), use GIF so Discord can animate it
+        const ext = String(ownerData.avatar).startsWith('a_') ? 'gif' : 'png';
+        ownerAvatarUrl = `https://cdn.discordapp.com/avatars/${ownerDiscordId}/${ownerData.avatar}.${ext}?size=256`;
       }
       console.log(`Owner profile fetched: ${ownerUsername}, Avatar: ${ownerAvatarUrl ? 'Yes' : 'No'}`);
     }
 
     const webhook = await getOrCreateWebhook(rulesChannelId, discordBotToken, ownerUsername, ownerAvatarUrl);
-    
+    const sentAs = webhook ? 'webhook (shows your profile)' : 'bot (missing Manage Webhooks permission)';
     const sendMessage = async (payload: any) => {
       if (webhook) {
         // Use owner's avatar and username for webhook messages
@@ -355,10 +357,13 @@ ${rulesText}
         message: 'Server rules sent to Discord successfully!',
         channelId: rulesChannelId,
         sectionsPosted: rulesSections.length + 2,
-        sentAs: webhook ? 'webhook (owner profile)' : 'bot',
+        sentAs,
         ownerName: ownerUsername,
         ownerAvatar: ownerAvatarUrl,
         logoUsed: SLRP_LOGO_URL,
+        warning: webhook
+          ? null
+          : 'Bot lacks Manage Webhooks permission in this channel. Grant Manage Webhooks to post as your profile.',
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
