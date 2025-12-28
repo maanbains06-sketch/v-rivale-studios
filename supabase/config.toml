@@ -65,3 +65,6 @@ verify_jwt = false
 
 [functions.send-rules-to-discord]
 verify_jwt = false
+
+[functions.upload-rules-images]
+verify_jwt = false
