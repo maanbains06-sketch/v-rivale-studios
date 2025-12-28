@@ -8,86 +8,97 @@ const corsHeaders = {
 // SLRP Logo URL - hosted on your domain
 const SLRP_LOGO_URL = "https://preview--slrp-hub.lovable.app/images/slrp-logo-discord.png";
 
-// Enhanced rule sections with italic formatting and better design
+// GTA 5 themed images for each rule section
+const GTA_IMAGES = {
+  general: "https://i.imgur.com/8Y5Qf9K.jpg", // GTA 5 city skyline
+  roleplay: "https://i.imgur.com/JKL3nM2.jpg", // GTA 5 characters
+  vehicles: "https://i.imgur.com/2VqP8Nx.jpg", // GTA 5 cars
+  combat: "https://i.imgur.com/9RtY4Hs.jpg", // GTA 5 action
+  emergency: "https://i.imgur.com/F5mK7Lw.jpg", // GTA 5 police
+  communication: "https://i.imgur.com/X8Zp3Qn.jpg", // GTA 5 phone
+  header: "https://i.imgur.com/Ug7vP2M.jpg", // GTA 5 Los Santos
+};
+
+// Enhanced rule sections with GTA themed images, bold italic formatting
 const rulesSections = [
   {
-    title: "〘 📜 〙 GENERAL SERVER RULES",
+    title: "〘 📜 〙 **__GENERAL SERVER RULES__**",
     color: 0xFFD700, // Gold
-    image: "https://images.unsplash.com/photo-1511882150382-421056c89033?w=800&q=80",
+    image: GTA_IMAGES.general,
     rules: [
-      { emoji: "➊", text: "_Respect all players and staff members at all times_" },
-      { emoji: "➋", text: "_No harassment, discrimination, or toxic behavior_" },
-      { emoji: "➌", text: "_English and Hindi are the primary languages in-game_" },
-      { emoji: "➍", text: "_No exploiting bugs or glitches - report them immediately_" },
-      { emoji: "➎", text: "_Follow staff instructions without argument_" },
-      { emoji: "➏", text: "_No advertising other servers or communities_" }
+      { emoji: "🔸", text: "***Respect all players and staff members at all times***" },
+      { emoji: "🔸", text: "***No harassment, discrimination, or toxic behavior***" },
+      { emoji: "🔸", text: "***English and Hindi are the primary languages in-game***" },
+      { emoji: "🔸", text: "***No exploiting bugs or glitches - report them immediately***" },
+      { emoji: "🔸", text: "***Follow staff instructions without argument***" },
+      { emoji: "🔸", text: "***No advertising other servers or communities***" }
     ]
   },
   {
-    title: "〘 🎭 〙 ROLEPLAY GUIDELINES",
+    title: "〘 🎭 〙 **__ROLEPLAY GUIDELINES__**",
     color: 0x9B59B6, // Purple
-    image: "https://images.unsplash.com/photo-1560253023-3ec5d502959f?w=800&q=80",
+    image: GTA_IMAGES.roleplay,
     rules: [
-      { emoji: "➊", text: "_Stay in character at all times while in-game_" },
-      { emoji: "➋", text: "_Use /ooc for out-of-character communication_" },
-      { emoji: "➌", text: "_No metagaming - don't use external information in RP_" },
-      { emoji: "➍", text: "_No powergaming - give others a chance to respond_" },
-      { emoji: "➎", text: "_Value your life (Fear RP) in dangerous situations_" },
-      { emoji: "➏", text: "_Create realistic and immersive storylines_" }
+      { emoji: "🔹", text: "***Stay in character at all times while in-game***" },
+      { emoji: "🔹", text: "***Use /ooc for out-of-character communication***" },
+      { emoji: "🔹", text: "***No metagaming - don't use external information in RP***" },
+      { emoji: "🔹", text: "***No powergaming - give others a chance to respond***" },
+      { emoji: "🔹", text: "***Value your life (Fear RP) in dangerous situations***" },
+      { emoji: "🔹", text: "***Create realistic and immersive storylines***" }
     ]
   },
   {
-    title: "〘 🚗 〙 VEHICLE RULES",
+    title: "〘 🚗 〙 **__VEHICLE RULES__**",
     color: 0x3498DB, // Blue
-    image: "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80",
+    image: GTA_IMAGES.vehicles,
     rules: [
-      { emoji: "➊", text: "_No VDM (Vehicle Deathmatch) under any circumstances_" },
-      { emoji: "➋", text: "_Follow traffic laws unless in an active RP scenario_" },
-      { emoji: "➌", text: "_No unrealistic driving through mountains or water_" },
-      { emoji: "➍", text: "_Park vehicles properly in designated areas_" },
-      { emoji: "➎", text: "_No combat logging to save your vehicle_" }
+      { emoji: "🚙", text: "***No VDM (Vehicle Deathmatch) under any circumstances***" },
+      { emoji: "🚙", text: "***Follow traffic laws unless in an active RP scenario***" },
+      { emoji: "🚙", text: "***No unrealistic driving through mountains or water***" },
+      { emoji: "🚙", text: "***Park vehicles properly in designated areas***" },
+      { emoji: "🚙", text: "***No combat logging to save your vehicle***" }
     ]
   },
   {
-    title: "〘 ⚔️ 〙 COMBAT & CRIME RULES",
+    title: "〘 ⚔️ 〙 **__COMBAT & CRIME RULES__**",
     color: 0xE74C3C, // Red
-    image: "https://images.unsplash.com/photo-1579566346927-c68383817a25?w=800&q=80",
+    image: GTA_IMAGES.combat,
     rules: [
-      { emoji: "➊", text: "_No RDM (Random Deathmatch) - always have valid RP reason_" },
-      { emoji: "➋", text: "_Initiate properly before any hostile action_" },
-      { emoji: "➌", text: "_Respect the New Life Rule (NLR) after death_" },
-      { emoji: "➍", text: "_No cop baiting or intentionally provoking police_" },
-      { emoji: "➎", text: "_Maximum 6 members in criminal activities_" },
-      { emoji: "➏", text: "_No combat logging during active situations_" }
+      { emoji: "⚡", text: "***No RDM (Random Deathmatch) - always have valid RP reason***" },
+      { emoji: "⚡", text: "***Initiate properly before any hostile action***" },
+      { emoji: "⚡", text: "***Respect the New Life Rule (NLR) after death***" },
+      { emoji: "⚡", text: "***No cop baiting or intentionally provoking police***" },
+      { emoji: "⚡", text: "***Maximum 6 members in criminal activities***" },
+      { emoji: "⚡", text: "***No combat logging during active situations***" }
     ]
   },
   {
-    title: "〘 👮 〙 EMERGENCY SERVICES RULES",
+    title: "〘 👮 〙 **__EMERGENCY SERVICES RULES__**",
     color: 0x2ECC71, // Green
-    image: "https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?w=800&q=80",
+    image: GTA_IMAGES.emergency,
     rules: [
-      { emoji: "➊", text: "_EMS must remain neutral in all criminal activities_" },
-      { emoji: "➋", text: "_Police must follow proper arrest procedures_" },
-      { emoji: "➌", text: "_No corruption without proper RP development_" },
-      { emoji: "➍", text: "_Respond to calls professionally and in character_" },
-      { emoji: "➎", text: "_Follow chain of command within departments_" }
+      { emoji: "🚨", text: "***EMS must remain neutral in all criminal activities***" },
+      { emoji: "🚨", text: "***Police must follow proper arrest procedures***" },
+      { emoji: "🚨", text: "***No corruption without proper RP development***" },
+      { emoji: "🚨", text: "***Respond to calls professionally and in character***" },
+      { emoji: "🚨", text: "***Follow chain of command within departments***" }
     ]
   },
   {
-    title: "〘 💬 〙 COMMUNICATION RULES",
+    title: "〘 💬 〙 **__COMMUNICATION RULES__**",
     color: 0xF39C12, // Orange
-    image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80",
+    image: GTA_IMAGES.communication,
     rules: [
-      { emoji: "➊", text: "_Use appropriate voice chat distance settings_" },
-      { emoji: "➋", text: "_No earrape or playing music through mic_" },
-      { emoji: "➌", text: "_Keep Discord communications professional_" },
-      { emoji: "➍", text: "_No sharing personal information of others_" },
-      { emoji: "➎", text: "_Use proper channels for support requests_" }
+      { emoji: "📢", text: "***Use appropriate voice chat distance settings***" },
+      { emoji: "📢", text: "***No earrape or playing music through mic***" },
+      { emoji: "📢", text: "***Keep Discord communications professional***" },
+      { emoji: "📢", text: "***No sharing personal information of others***" },
+      { emoji: "📢", text: "***Use proper channels for support requests***" }
     ]
   }
 ];
 
-async function getOrCreateWebhook(channelId: string, botToken: string, ownerName: string, ownerAvatar: string | null): Promise<{ id: string; token: string } | null> {
+async function getOrCreateWebhook(channelId: string, botToken: string, ownerUsername: string, ownerAvatarUrl: string | null): Promise<{ id: string; token: string } | null> {
   try {
     const webhooksResponse = await fetch(`https://discord.com/api/v10/channels/${channelId}/webhooks`, {
       headers: {
@@ -102,11 +113,16 @@ async function getOrCreateWebhook(channelId: string, botToken: string, ownerName
 
     const webhooks = await webhooksResponse.json();
     
+    // Delete existing SLRP Rules webhook to create fresh one with owner avatar
     const existingWebhook = webhooks.find((wh: any) => wh.name === 'SLRP Rules');
     if (existingWebhook) {
-      return { id: existingWebhook.id, token: existingWebhook.token };
+      await fetch(`https://discord.com/api/v10/webhooks/${existingWebhook.id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bot ${botToken}` },
+      });
     }
 
+    // Create new webhook with owner's avatar
     const createResponse = await fetch(`https://discord.com/api/v10/channels/${channelId}/webhooks`, {
       method: 'POST',
       headers: {
@@ -115,7 +131,6 @@ async function getOrCreateWebhook(channelId: string, botToken: string, ownerName
       },
       body: JSON.stringify({
         name: 'SLRP Rules',
-        avatar: ownerAvatar,
       }),
     });
 
@@ -152,39 +167,27 @@ serve(async (req) => {
       headers: { 'Authorization': `Bot ${discordBotToken}` },
     });
 
-    let ownerAvatar: string | null = null;
+    let ownerAvatarUrl: string | null = null;
     let ownerUsername = 'SLRP Owner';
-    let ownerAvatarBase64: string | null = null;
 
     if (ownerResponse.ok) {
       const ownerData = await ownerResponse.json();
       ownerUsername = ownerData.global_name || ownerData.username || 'SLRP Owner';
       if (ownerData.avatar) {
-        ownerAvatar = `https://cdn.discordapp.com/avatars/${ownerDiscordId}/${ownerData.avatar}.png?size=256`;
-        
-        try {
-          const avatarResponse = await fetch(ownerAvatar);
-          if (avatarResponse.ok) {
-            const avatarBuffer = await avatarResponse.arrayBuffer();
-            const base64 = btoa(String.fromCharCode(...new Uint8Array(avatarBuffer)));
-            ownerAvatarBase64 = `data:image/png;base64,${base64}`;
-          }
-        } catch (e) {
-          console.log('Could not fetch avatar for webhook');
-        }
+        ownerAvatarUrl = `https://cdn.discordapp.com/avatars/${ownerDiscordId}/${ownerData.avatar}.png?size=256`;
       }
+      console.log(`Owner profile fetched: ${ownerUsername}, Avatar: ${ownerAvatarUrl ? 'Yes' : 'No'}`);
     }
 
-    console.log(`Owner profile: ${ownerUsername}`);
-
-    const webhook = await getOrCreateWebhook(rulesChannelId, discordBotToken, ownerUsername, ownerAvatarBase64);
+    const webhook = await getOrCreateWebhook(rulesChannelId, discordBotToken, ownerUsername, ownerAvatarUrl);
     
     const sendMessage = async (payload: any) => {
       if (webhook) {
+        // Use owner's avatar and username for webhook messages
         const webhookPayload = {
           ...payload,
           username: ownerUsername,
-          avatar_url: SLRP_LOGO_URL,
+          avatar_url: ownerAvatarUrl || SLRP_LOGO_URL, // Use owner avatar, fallback to logo
         };
         
         const response = await fetch(`https://discord.com/api/v10/webhooks/${webhook.id}/${webhook.token}`, {
@@ -216,24 +219,43 @@ serve(async (req) => {
       }
     };
 
-    // Beautiful header embed with SLRP logo
+    // Enhanced header embed with GTA theme and ANSI colors
     const headerEmbed = {
       author: {
-        name: "SKYLIFE ROLEPLAY INDIA",
+        name: "✧ SKYLIFE ROLEPLAY INDIA ✧",
         icon_url: SLRP_LOGO_URL,
       },
-      title: "╔═══════════════════════════════════════════╗\n║     📜  *S E R V E R   R U L E S*  📜    ║\n╚═══════════════════════════════════════════╝",
-      description: `\n\n> _**Welcome to SLRP - Skylife Roleplay India!**_ 🎮\n> \n> _Please read and follow all rules below to ensure_\n> _a fair and enjoyable experience for everyone._\n\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n\n⚠️ **_IMPORTANT NOTICE_**\n\`\`\`ansi\n[2;31m[1;31m⛔ Breaking these rules may result in:[0m[2;31m[0m\n\n   • Verbal Warning\n   • Temporary Kick  \n   • Permanent Ban\n\`\`\`\n\n✅ _Staff decisions are **final**_\n📝 _Appeal bans through our Discord server_\n\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬`,
+      title: "╔══════════════════════════════════════════════╗\n║   📜  ***S E R V E R   R U L E S***  📜   ║\n╚══════════════════════════════════════════════╝",
+      description: `
+> 🎮 ***Welcome to SLRP - Skylife Roleplay India!***
+> 
+> ***Please read and follow all rules below to ensure***
+> ***a fair and enjoyable experience for everyone.***
+
+\`\`\`ansi
+[1;33m╔════════════════════════════════════════════╗[0m
+[1;33m║[0m   [1;31m⚠️  IMPORTANT NOTICE  ⚠️[0m                  [1;33m║[0m
+[1;33m╠════════════════════════════════════════════╣[0m
+[1;33m║[0m  [1;37mBreaking these rules may result in:[0m       [1;33m║[0m
+[1;33m║[0m                                            [1;33m║[0m
+[1;33m║[0m  [1;32m➤[0m [0;37mVerbal Warning[0m                         [1;33m║[0m
+[1;33m║[0m  [1;32m➤[0m [0;37mTemporary Kick[0m                         [1;33m║[0m
+[1;33m║[0m  [1;32m➤[0m [1;31mPermanent Ban[0m                          [1;33m║[0m
+[1;33m╚════════════════════════════════════════════╝[0m
+\`\`\`
+
+> ✅ ***Staff decisions are FINAL***
+> 📝 ***Appeal bans through our Discord server***`,
       color: 0x00D9FF,
       thumbnail: {
         url: SLRP_LOGO_URL,
       },
       image: {
-        url: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200&h=400&fit=crop",
+        url: GTA_IMAGES.header,
       },
       footer: {
         text: `✦ SLRP ✦ Posted by ${ownerUsername} ✦ Last Updated`,
-        icon_url: SLRP_LOGO_URL,
+        icon_url: ownerAvatarUrl || SLRP_LOGO_URL,
       },
       timestamp: new Date().toISOString(),
     };
@@ -242,22 +264,32 @@ serve(async (req) => {
     await sendMessage({ embeds: [headerEmbed] });
     await new Promise(resolve => setTimeout(resolve, 1200));
 
-    // Send each rule section with enhanced italic design
+    // Send each rule section with enhanced bold/colored design
     for (let i = 0; i < rulesSections.length; i++) {
       const section = rulesSections[i];
       const sectionNumber = i + 1;
       
+      // Build colored rules text using ANSI codes in code blocks + bold markdown
       const rulesText = section.rules
         .map((rule, index) => `> ${rule.emoji} **${index + 1}.** ${rule.text}`)
         .join('\n>\n');
       
       const sectionEmbed = {
         author: {
-          name: `SLRP RULES • Section ${sectionNumber}`,
+          name: `✦ SLRP RULES • Section ${sectionNumber} ✦`,
           icon_url: SLRP_LOGO_URL,
         },
         title: section.title,
-        description: `▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n\n${rulesText}\n\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬`,
+        description: `
+\`\`\`ansi
+[1;36m▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬[0m
+\`\`\`
+
+${rulesText}
+
+\`\`\`ansi
+[1;36m▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬[0m
+\`\`\``,
         color: section.color,
         thumbnail: {
           url: SLRP_LOGO_URL,
@@ -267,7 +299,7 @@ serve(async (req) => {
         },
         footer: {
           text: `✦ Section ${sectionNumber} of ${rulesSections.length} ✦ SLRP ✦ ${ownerUsername}`,
-          icon_url: SLRP_LOGO_URL,
+          icon_url: ownerAvatarUrl || SLRP_LOGO_URL,
         },
       };
 
@@ -276,28 +308,46 @@ serve(async (req) => {
       await new Promise(resolve => setTimeout(resolve, 1200));
     }
 
-    // Beautiful closing embed
+    // Beautiful closing embed with GTA theme
     const closingEmbed = {
       author: {
-        name: "SKYLIFE ROLEPLAY INDIA",
+        name: "✧ SKYLIFE ROLEPLAY INDIA ✧",
         icon_url: SLRP_LOGO_URL,
       },
-      title: "〘 ✨ 〙 THANK YOU FOR READING!",
-      description: `▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n\n> 🎮 _**Enjoy your time at SLRP!**_\n> \n> _By playing on our server, you agree_\n> _to follow all rules listed above._\n> \n> _Questions? Contact our staff team!_\n\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n\n**_Quick Links:_**\n🌐 _[Website](https://slrp.com)_ • 💬 _[Support](https://slrp.com/support)_ • 📋 _[Apply](https://slrp.com/whitelist)_\n\n🇮🇳 _**SLRP - India's Premier GTA V Roleplay Server**_ 🇮🇳`,
+      title: "〘 ✨ 〙 **__THANK YOU FOR READING!__**",
+      description: `
+\`\`\`ansi
+[1;32m╔════════════════════════════════════════════╗[0m
+[1;32m║[0m      [1;33m🎮  ENJOY YOUR TIME AT SLRP!  🎮[0m       [1;32m║[0m
+[1;32m╚════════════════════════════════════════════╝[0m
+\`\`\`
+
+> 📋 ***By playing on our server, you agree***
+> ***to follow all rules listed above.***
+> 
+> ❓ ***Questions? Contact our staff team!***
+
+\`\`\`ansi
+[1;35m═══════════════ QUICK LINKS ═══════════════[0m
+
+[1;34m🌐[0m [1;37mWebsite[0m    [1;34m💬[0m [1;37mSupport[0m    [1;34m📋[0m [1;37mApply[0m
+
+[1;33m🇮🇳  SLRP - India's Premier GTA V Roleplay Server  🇮🇳[0m
+\`\`\``,
       color: 0x00FF88,
       thumbnail: {
         url: SLRP_LOGO_URL,
       },
       footer: {
         text: `✦ SLRP Community ✦ ${ownerUsername} ✦`,
-        icon_url: SLRP_LOGO_URL,
+        icon_url: ownerAvatarUrl || SLRP_LOGO_URL,
       },
       timestamp: new Date().toISOString(),
     };
 
     await sendMessage({ embeds: [closingEmbed] });
 
-    console.log('All rules sent successfully!');
+    console.log('All rules sent successfully with owner profile!');
 
     return new Response(
       JSON.stringify({ 
@@ -305,8 +355,9 @@ serve(async (req) => {
         message: 'Server rules sent to Discord successfully!',
         channelId: rulesChannelId,
         sectionsPosted: rulesSections.length + 2,
-        sentAs: webhook ? 'webhook' : 'bot',
+        sentAs: webhook ? 'webhook (owner profile)' : 'bot',
         ownerName: ownerUsername,
+        ownerAvatar: ownerAvatarUrl,
         logoUsed: SLRP_LOGO_URL,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
