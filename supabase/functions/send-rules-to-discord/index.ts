@@ -9,8 +9,8 @@ const corsHeaders = {
 // SLRP Logo URL - for thumbnail (top right corner)
 const SLRP_LOGO_URL = "https://preview--slrp-hub.lovable.app/images/slrp-logo.png";
 
-// Default header image - city skyline
-const DEFAULT_HEADER_IMAGE = "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=1920&h=1080&fit=crop";
+// Default header image - GTA V cityscape
+const DEFAULT_HEADER_IMAGE = "https://images.unsplash.com/photo-1534430480872-3498386e7856?w=1920&h=1080&fit=crop";
 
 interface RuleItem {
   emoji: string;
