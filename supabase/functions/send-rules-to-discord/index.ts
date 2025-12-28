@@ -6,10 +6,10 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// SLRP Logo URL - use a working public image
-const SLRP_LOGO_URL = "https://cdn.discordapp.com/embed/avatars/0.png";
+// SLRP Logo URL - for thumbnail (top right corner)
+const SLRP_LOGO_URL = "https://preview--slrp-hub.lovable.app/images/slrp-logo.png";
 
-// Default header image - placeholder that always works
+// Default header image - city skyline
 const DEFAULT_HEADER_IMAGE = "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=1920&h=1080&fit=crop";
 
 interface RuleItem {
@@ -278,7 +278,7 @@ serve(async (req) => {
     const headerEmbed = {
       author: {
         name: "✧ SKYLIFE ROLEPLAY INDIA ✧",
-        icon_url: SLRP_LOGO_URL,
+        icon_url: ownerAvatarUrl || SLRP_LOGO_URL, // Owner avatar for small icon
       },
       title: "📜  **S E R V E R   R U L E S**  📜",
       description: `
@@ -301,14 +301,14 @@ serve(async (req) => {
 > 📝 ***Appeal bans through our Discord server or our official website***`,
       color: 0x00D9FF,
       thumbnail: {
-        url: SLRP_LOGO_URL,
+        url: SLRP_LOGO_URL, // SLRP logo for top right corner
       },
       image: {
         url: DEFAULT_HEADER_IMAGE,
       },
       footer: {
         text: `✦ SLRP ✦ Posted by ${ownerUsername} ✦ Last Updated`,
-        icon_url: ownerAvatarUrl || SLRP_LOGO_URL,
+        icon_url: ownerAvatarUrl || SLRP_LOGO_URL, // Owner avatar for footer
       },
       timestamp: new Date().toISOString(),
     };
@@ -344,7 +344,7 @@ serve(async (req) => {
       const sectionEmbed = {
         author: {
           name: `✦ SLRP RULES • Section ${sectionNumber} ✦`,
-          icon_url: SLRP_LOGO_URL,
+          icon_url: ownerAvatarUrl || SLRP_LOGO_URL, // Owner avatar for small icon
         },
         title: section.title,
         description: `▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
@@ -354,14 +354,14 @@ ${rulesText}
 ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬`,
         color: section.color,
         thumbnail: {
-          url: SLRP_LOGO_URL,
+          url: SLRP_LOGO_URL, // SLRP logo for top right corner
         },
         image: {
           url: section.image_url || DEFAULT_HEADER_IMAGE,
         },
         footer: {
           text: `✦ Section ${sectionNumber} of ${rulesSections.length} ✦ SLRP ✦ ${ownerUsername}`,
-          icon_url: ownerAvatarUrl || SLRP_LOGO_URL,
+          icon_url: ownerAvatarUrl || SLRP_LOGO_URL, // Owner avatar for footer
         },
       };
 
@@ -377,7 +377,7 @@ ${rulesText}
     const closingEmbed = {
       author: {
         name: "✧ SKYLIFE ROLEPLAY INDIA ✧",
-        icon_url: SLRP_LOGO_URL,
+        icon_url: ownerAvatarUrl || SLRP_LOGO_URL, // Owner avatar for small icon
       },
       title: "〘 ✨ 〙 **__THANK YOU FOR READING!__**",
       description: `▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
@@ -398,11 +398,11 @@ ${rulesText}
 🇮🇳 ***SLRP - India's Premier GTA V Roleplay Server*** 🇮🇳`,
       color: 0x00FF88,
       thumbnail: {
-        url: SLRP_LOGO_URL,
+        url: SLRP_LOGO_URL, // SLRP logo for top right corner
       },
       footer: {
         text: `✦ SLRP Community ✦ ${ownerUsername} ✦`,
-        icon_url: ownerAvatarUrl || SLRP_LOGO_URL,
+        icon_url: ownerAvatarUrl || SLRP_LOGO_URL, // Owner avatar for footer
       },
       timestamp: new Date().toISOString(),
     };
