@@ -62,3 +62,6 @@ verify_jwt = false
 
 [functions.send-winner-announcement]
 verify_jwt = false
+
+[functions.send-rules-to-discord]
+verify_jwt = false
