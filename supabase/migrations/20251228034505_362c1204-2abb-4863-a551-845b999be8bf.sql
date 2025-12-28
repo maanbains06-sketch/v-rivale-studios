@@ -44,7 +44,7 @@ EXECUTE FUNCTION public.update_updated_at_column();
 
 -- Insert default rules sections including PD and State Department
 INSERT INTO public.discord_rules_sections (section_key, title, color, image_url, display_order, rules) VALUES
-('general', '〘 📜 〙 **__GENERAL SERVER RULES__**', 16766720, 'https://images.unsplash.com/photo-1493711662062-fa541f7f3d24?w=800&q=80', 1, '[
+('general', '〘 📜 〙 **__GENERAL SERVER RULES__**', 16766720, 'openart-image_lt9_MwL8_1764650420455_raw', 1, '[
   {"emoji": "🔸", "text": "***Respect all players and staff members at all times***"},
   {"emoji": "🔸", "text": "***No harassment, discrimination, or toxic behavior***"},
   {"emoji": "🔸", "text": "***English and Hindi are the primary languages in-game***"},
