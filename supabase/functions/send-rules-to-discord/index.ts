@@ -373,7 +373,7 @@ ${rulesText}
 
 ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
 
-🌐 [**Website**](https://slrp.lovable.app/) • 💬 [**Support**](https://slrp.lovable.app/support) • 📋 [**Apply**](https://slrp.lovable.app/whitelist)
+🌐 [**Website**](https://skyliferoleplay.com/) • 💬 [**Support**](https://skyliferoleplay.com/support) • 📋 [**Apply**](https://skyliferoleplay.com/whitelist)
 
 🇮🇳 ***SLRP - India's Premier GTA V Roleplay Server*** 🇮🇳`,
       color: 0x00FF88,
