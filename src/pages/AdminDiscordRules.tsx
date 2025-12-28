@@ -121,7 +121,10 @@ const AdminDiscordRules = () => {
 
   const publishRulesMutation = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke('send-rules-to-discord');
+      const imageUrl = `${window.location.origin}/images/discord-rules/skylife-banner.png`;
+      const { data, error } = await supabase.functions.invoke('send-rules-to-discord', {
+        body: { imageUrl },
+      });
       if (error) throw error;
       return data;
     },
