@@ -9,8 +9,8 @@ const corsHeaders = {
 // SLRP Logo URL - hosted on your domain
 const SLRP_LOGO_URL = "https://preview--slrp-hub.lovable.app/images/slrp-logo-discord.png";
 
-// Default header image
-const DEFAULT_HEADER_IMAGE = "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&q=80";
+// Default header image - GTA 5 themed
+const DEFAULT_HEADER_IMAGE = "https://preview--slrp-hub.lovable.app/images/rules/gta-header.jpg";
 
 interface RuleItem {
   emoji: string;
