@@ -36,7 +36,6 @@ const Navigation = () => {
   const [user, setUser] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
-  const [isMember, setIsMember] = useState<boolean | null>(null);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -54,28 +53,12 @@ const Navigation = () => {
     const { data: { user } } = await supabase.auth.getUser();
     setUser(user);
     
-    // Check if user is owner and Discord member
+    // Check if user is owner
     if (user) {
       const { data: ownerResult } = await supabase.rpc('is_owner', { _user_id: user.id });
       setIsOwner(ownerResult || false);
-      
-      // Check Discord server membership
-      const discordId = user.user_metadata?.provider_id || user.user_metadata?.sub;
-      if (discordId) {
-        try {
-          const { data, error } = await supabase.functions.invoke('verify-discord-membership', {
-            body: { discordId }
-          });
-          if (!error && data) {
-            setIsMember(data.isMember);
-          }
-        } catch (err) {
-          setIsMember(false);
-        }
-      }
     } else {
       setIsOwner(false);
-      setIsMember(null);
     }
   };
 
@@ -539,7 +522,7 @@ const Navigation = () => {
                     Contact Server Owner
                   </Button>
                   
-                  {user && isMember ? (
+                  {user ? (
                     <>
                       {/* Mobile User Profile Card */}
                       <div className="p-4 rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/20 mb-2">
@@ -552,10 +535,6 @@ const Navigation = () => {
                           </Avatar>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-foreground truncate">{getDiscordUsername()}</p>
-                            <Badge className="bg-green-500/15 text-green-400 border-green-500/25 text-[10px] px-1.5 py-0 mt-1">
-                              <CheckCircle2 className="w-2.5 h-2.5 mr-1" />
-                              Server Member
-                            </Badge>
                           </div>
                         </div>
                       </div>
@@ -592,31 +571,6 @@ const Navigation = () => {
                       >
                         <Shield className="w-4 h-4 mr-2" />
                         Application Status
-                      </Button>
-                      <Button 
-                        variant="outline"
-                        className="justify-start glass-effect text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          setShowLogoutDialog(true);
-                        }}
-                      >
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Sign Out
-                      </Button>
-                    </>
-                  ) : user ? (
-                    <>
-                      <Button 
-                        variant="outline"
-                        className="justify-start glass-effect"
-                        onClick={() => {
-                          navigate("/dashboard");
-                          setIsMenuOpen(false);
-                        }}
-                      >
-                        <UserCircle className="w-4 h-4 mr-2" />
-                        My Dashboard
                       </Button>
                       <Button 
                         variant="outline"
