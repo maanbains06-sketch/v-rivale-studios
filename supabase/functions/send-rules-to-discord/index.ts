@@ -416,7 +416,7 @@ ${rulesText}
           url: SLRP_LOGO_URL, // SLRP logo for top right corner
         },
         image: {
-          url: bannerUrl,
+          url: section.image_url || bannerUrl,
         },
         footer: {
           text: `✦ Section ${sectionNumber} of ${rulesSections.length} ✦ SLRP ✦ ${ownerUsername}`,
@@ -427,7 +427,7 @@ ${rulesText}
       console.log(`Sending ${section.title}...`);
       await sendMessage(
         { embeds: [sectionEmbed] },
-        { url: bannerUrl, baseName: `rules-${section.section_key}` }
+        { url: section.image_url || bannerUrl, baseName: `rules-${section.section_key}` }
       );
       await new Promise(resolve => setTimeout(resolve, 1200));
     }
