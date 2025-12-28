@@ -68,7 +68,7 @@ const About = () => {
                   <div className="space-y-6 text-muted-foreground leading-relaxed">
                     <p className="text-lg flex items-start gap-3">
                       <span className="text-2xl mt-1">🌟</span>
-                      <span>Skylife Roleplay India was founded in 2023 with a simple yet powerful vision: to create a roleplay server that combines professionalism, authenticity, and the rich cultural diversity of India. What started as a dream shared by a small group of passionate GTA 5 enthusiasts has grown into one of India's premier roleplay communities.</span>
+                      <span>Skylife Roleplay India was founded in 2025 with a simple yet powerful vision: to create a roleplay server that combines professionalism, authenticity, and the rich cultural diversity of India. What started as a dream shared by a small group of passionate GTA 5 enthusiasts has grown into one of India's premier roleplay communities.</span>
                     </p>
                     <p className="text-lg flex items-start gap-3">
                       <span className="text-2xl mt-1">🚀</span>
@@ -76,11 +76,11 @@ const About = () => {
                     </p>
                     <p className="text-lg flex items-start gap-3">
                       <span className="text-2xl mt-1">🏙️</span>
-                      <span>Today, Skylife Roleplay India stands as a testament to what a dedicated community can achieve. With over 750 active players, a professional staff team, and continuous development, we've created an ecosystem where every player can find their place.</span>
+                      <span>Today, Skylife Roleplay India stands as a testament to what a dedicated community can achieve. With a professional staff team and continuous development, we've created an ecosystem where every player can find their place.</span>
                     </p>
                     <p className="text-lg flex items-start gap-3">
                       <span className="text-2xl mt-1">💎</span>
-                      <span>Our server features custom-developed scripts tailored specifically for the Indian roleplay experience, including local businesses, authentic Indian vehicles, cultural events, and a dynamic economy that mirrors real-world scenarios. We're not just a server – we're a community that celebrates roleplay excellence.</span>
+                      <span>Our server features custom-developed scripts tailored specifically for the Indian roleplay experience, including local businesses, custom vehicles, cultural events, and a dynamic economy that mirrors real-world scenarios. We're not just a server – we're a community that celebrates roleplay excellence.</span>
                     </p>
                   </div>
                 </CardContent>
