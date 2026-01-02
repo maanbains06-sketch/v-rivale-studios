@@ -1161,3 +1161,133 @@ All colors MUST be HSL.
     animation: shimmer 2s ease-in-out infinite;
   }
 }
+
+/* ==========================================
+   PERFORMANCE & ACCESSIBILITY OPTIMIZATIONS
+   ========================================== */
+
+/* Reduced motion support - disable animations for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animate-spin,
+  .animate-pulse,
+  .animate-bounce,
+  .animate-float,
+  .animate-glow,
+  .animate-pulse-glow,
+  .animate-gradient,
+  .animate-shimmer,
+  .animate-spin-slow,
+  .animate-scan-line,
+  .breathing-glow,
+  .lightning-bolt-1,
+  .lightning-bolt-2,
+  .lightning-bolt-3,
+  .clouds-animation,
+  .rain-effect,
+  .animate-float-particle,
+  .animate-pulse-slow,
+  .animate-gradient-shift,
+  .animated-border {
+    animation: none !important;
+  }
+  
+  .card-hover:hover,
+  .hover-scale:hover {
+    transform: none !important;
+  }
+}
+
+/* GPU acceleration for smoother animations on capable devices */
+@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+  .gpu-accelerated,
+  .card-hover,
+  .btn-glow,
+  .glass-effect {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+}
+
+/* Optimize animations for low-end devices - reduce complexity */
+@media (max-width: 640px) {
+  /* Simplify glass effects on mobile */
+  .glass-effect {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  
+  /* Reduce shadow complexity on mobile */
+  .glow-cyan,
+  .glow-purple,
+  .glow-pink {
+    box-shadow: none;
+  }
+  
+  /* Disable heavy animations on mobile */
+  .clouds-animation,
+  .rain-effect,
+  .lightning-bolt-1,
+  .lightning-bolt-2,
+  .lightning-bolt-3,
+  .animate-float-particle {
+    animation: none !important;
+  }
+  
+  /* Simplify nav glow on mobile */
+  .nav-glow::before,
+  .nav-glow::after {
+    animation: none;
+  }
+  
+  /* Reduce text shadows on mobile */
+  h1, h2, h3, h4, h5, h6 {
+    text-shadow: 0 1px 2px hsl(0 0% 0% / 0.3);
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .card-hover:hover {
+    transform: none;
+  }
+  
+  .btn-glow:hover::before {
+    opacity: 0;
+  }
+  
+  /* Increase touch targets */
+  button,
+  a,
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Print styles - remove decorative elements */
+@media print {
+  .glass-effect,
+  .nav-glow,
+  .glow-cyan,
+  .glow-purple,
+  .glow-pink {
+    background: white !important;
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+  }
+  
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
