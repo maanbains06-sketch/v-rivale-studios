@@ -24,8 +24,8 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState, useMemo, lazy, Suspense, useRef, useCallback } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { useEffect, useState, useMemo, lazy, Suspense, useRef, useCallback, memo } from "react";
+import { motion, useScroll, useReducedMotion } from "framer-motion";
 import Navigation from "@/components/Navigation";
 import AnimatedLogo from "@/components/AnimatedLogo";
 import LaunchingSoonButton from "@/components/LaunchingSoonButton";
@@ -38,6 +38,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useServerStatus, useFeaturedYoutubers } from "@/hooks/useHomeData";
 
 // ========================================
 // 🎬 YOUTUBE VIDEO BACKGROUND CONFIGURATION
@@ -53,18 +54,21 @@ const VIDEO_TRIM_END = 4; // Seconds to trim from end
 // Lazy load heavy components
 const LiveFeedbackMarquee = lazy(() => import("@/components/LiveFeedbackMarquee"));
 
-// Lightweight floating particles - minimal for performance
-const FloatingParticles = () => {
-  const particles = useMemo(() => 
-    Array.from({ length: 6 }, (_, i) => ({
-      id: i,
-      x: 15 + (i * 15),
-      y: 20 + (i * 12),
-      size: 3 + (i % 2),
-      duration: 25 + (i * 3),
-      delay: i * 0.8,
-    })), []
-  );
+// Lightweight floating particles - only render on desktop with no reduced motion
+const FloatingParticles = memo(() => {
+  const prefersReducedMotion = useReducedMotion();
+  
+  // Skip on reduced motion or mobile
+  if (prefersReducedMotion || typeof window !== 'undefined' && window.innerWidth < 768) {
+    return null;
+  }
+
+  const particles = [
+    { id: 0, x: 15, y: 20, size: 3, duration: 25, delay: 0 },
+    { id: 1, x: 30, y: 32, size: 4, duration: 28, delay: 0.8 },
+    { id: 2, x: 45, y: 44, size: 3, duration: 31, delay: 1.6 },
+    { id: 3, x: 60, y: 56, size: 4, duration: 34, delay: 2.4 },
+  ];
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-[6]">
@@ -85,7 +89,8 @@ const FloatingParticles = () => {
       ))}
     </div>
   );
-};
+});
+FloatingParticles.displayName = "FloatingParticles";
 
 // Static text instead of typing animation for performance
 const StaticTitle = ({ text, className }: { text: string; className?: string }) => (
@@ -143,16 +148,21 @@ const Index = () => {
   const [isInDiscordServer, setIsInDiscordServer] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [serverConnectUrl, setServerConnectUrl] = useState("fivem://connect/cfx.re/join/abc123");
-  const [serverPlayers, setServerPlayers] = useState<number | null>(null);
-  const [maxPlayers, setMaxPlayers] = useState<number>(64);
-  const [serverStatus, setServerStatus] = useState<'online' | 'offline' | 'maintenance'>('offline');
-  const [featuredYoutubers, setFeaturedYoutubers] = useState<FeaturedYoutuber[]>([]);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isCheckingDiscord, setIsCheckingDiscord] = useState(false);
   const [mobileRequirementsOpen, setMobileRequirementsOpen] = useState(false);
   const isMobile = useIsMobile();
   const playerRef = useRef<any>(null);
   const [videoDuration, setVideoDuration] = useState<number>(0);
+  const prefersReducedMotion = useReducedMotion();
+  
+  // Use cached data hooks instead of direct API calls
+  const { data: serverStatusData, isLoading: isRefreshing, refetch: handleRefreshStatus } = useServerStatus();
+  const { data: featuredYoutubers = [] } = useFeaturedYoutubers();
+  
+  // Derived values from cached data
+  const serverStatus = serverStatusData?.status ?? 'offline';
+  const serverPlayers = serverStatusData?.players ?? 0;
+  const maxPlayers = serverStatusData?.maxPlayers ?? 64;
 
   // YouTube Player API for precise trimming
   useEffect(() => {
@@ -321,106 +331,19 @@ const Index = () => {
 
     checkUserStatus();
 
-    // Fetch server status
-    const fetchServerStatus = async () => {
-      setIsRefreshing(true);
-      try {
-        // Check maintenance mode first
-        const { data: maintenanceSetting } = await supabase
-          .from("site_settings")
-          .select("value")
-          .eq("key", "server_maintenance")
-          .maybeSingle();
-        
-        if (maintenanceSetting?.value === 'true') {
-          setServerStatus('maintenance');
-          setServerPlayers(0);
-          setIsRefreshing(false);
-          return;
-        }
-
-        const { data, error } = await supabase.functions.invoke('fivem-server-status');
-        if (!error && data) {
-          // Handle players as object {current, max} or as number
-          const playerCount = typeof data.players === 'object' ? data.players.current : (data.players || 0);
-          const maxCount = typeof data.players === 'object' ? data.players.max : (data.maxPlayers || 64);
-          setServerPlayers(playerCount);
-          setMaxPlayers(maxCount);
-          // Check status from response
-          setServerStatus(data.status === 'online' ? 'online' : 'offline');
-        } else {
-          setServerStatus('offline');
-        }
-      } catch (e) {
-        console.log('Server status fetch failed');
-        setServerStatus('offline');
-      } finally {
-        setIsRefreshing(false);
-      }
-    };
-
-    fetchServerStatus();
-    const interval = setInterval(fetchServerStatus, 60000);
-
-    // Fetch featured YouTubers
-    const fetchYoutubers = async () => {
-      const { data, error } = await supabase
-        .from('featured_youtubers')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order', { ascending: true });
-      
-      if (!error && data) {
-        setFeaturedYoutubers(data);
-      }
-    };
-    fetchYoutubers();
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
       checkUserStatus();
     });
 
     return () => {
       subscription.unsubscribe();
-      clearInterval(interval);
     };
   }, []);
 
-  const handleRefreshStatus = async () => {
-    if (isRefreshing) return;
-    setIsRefreshing(true);
-    try {
-      // Check maintenance mode first
-      const { data: maintenanceSetting } = await supabase
-        .from("site_settings")
-        .select("value")
-        .eq("key", "server_maintenance")
-        .maybeSingle();
-      
-      if (maintenanceSetting?.value === 'true') {
-        setServerStatus('maintenance');
-        setServerPlayers(0);
-        setIsRefreshing(false);
-        return;
-      }
-
-      const { data, error } = await supabase.functions.invoke('fivem-server-status');
-      if (!error && data) {
-        const playerCount = typeof data.players === 'object' ? data.players.current : (data.players || 0);
-        const maxCount = typeof data.players === 'object' ? data.players.max : (data.maxPlayers || 64);
-        setServerPlayers(playerCount);
-        setMaxPlayers(maxCount);
-        setServerStatus(data.status === 'online' ? 'online' : 'offline');
-      } else {
-        setServerStatus('offline');
-      }
-    } catch (e) {
-      console.log('Server status refresh failed');
-      setServerStatus('offline');
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
+  // Wrapper for refetch to work with onClick
+  const onRefreshStatus = useCallback(() => {
+    handleRefreshStatus();
+  }, [handleRefreshStatus]);
 
   const handleJoinServer = () => {
     if (!isLoggedIn) {
@@ -949,7 +872,7 @@ const Index = () => {
                   
                   {/* Refresh button */}
                   <motion.button
-                    onClick={handleRefreshStatus}
+                    onClick={onRefreshStatus}
                     disabled={isRefreshing}
                     className={`relative z-10 p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all disabled:opacity-50 ${
                       serverStatus === 'online' 

@@ -63,14 +63,16 @@ const AdminDiscordRules = lazy(() => import("./pages/AdminDiscordRules"));
 const Giveaway = lazy(() => import("./pages/Giveaway"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-// Optimized query client with better caching
+// Optimized query client with aggressive caching
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      gcTime: 1000 * 60 * 30, // 30 minutes (previously cacheTime)
+      staleTime: 1000 * 60 * 10, // 10 minutes
+      gcTime: 1000 * 60 * 60, // 1 hour
       retry: 1,
       refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
     },
   },
 });
@@ -78,7 +80,7 @@ const queryClient = new QueryClient({
 // Minimal page loading fallback
 const PageLoader = memo(() => (
   <div className="min-h-screen flex items-center justify-center bg-background">
-    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+    <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
   </div>
 ));
 PageLoader.displayName = "PageLoader";
@@ -193,7 +195,7 @@ const App = () => {
         <BrowserRouter>
           {isLoading && (
             <Suspense fallback={null}>
-              <LoadingScreen onComplete={handleLoadingComplete} minDuration={1500} />
+              <LoadingScreen onComplete={handleLoadingComplete} minDuration={800} />
             </Suspense>
           )}
           {showContent && <AppContent />}
