@@ -2003,6 +2003,75 @@ export type Database = {
         }
         Relationships: []
       }
+      weazel_news_applications: {
+        Row: {
+          additional_info: string | null
+          admin_notes: string | null
+          age: number
+          availability: string
+          camera_skills: string
+          character_background: string
+          character_name: string
+          created_at: string
+          id: string
+          interview_scenario: string
+          journalism_experience: string
+          phone_number: string
+          previous_experience: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          why_join: string
+          writing_sample: string
+        }
+        Insert: {
+          additional_info?: string | null
+          admin_notes?: string | null
+          age: number
+          availability: string
+          camera_skills: string
+          character_background: string
+          character_name: string
+          created_at?: string
+          id?: string
+          interview_scenario: string
+          journalism_experience: string
+          phone_number: string
+          previous_experience: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          why_join: string
+          writing_sample: string
+        }
+        Update: {
+          additional_info?: string | null
+          admin_notes?: string | null
+          age?: number
+          availability?: string
+          camera_skills?: string
+          character_background?: string
+          character_name?: string
+          created_at?: string
+          id?: string
+          interview_scenario?: string
+          journalism_experience?: string
+          phone_number?: string
+          previous_experience?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          why_join?: string
+          writing_sample?: string
+        }
+        Relationships: []
+      }
       whitelist_application_drafts: {
         Row: {
           age: number | null

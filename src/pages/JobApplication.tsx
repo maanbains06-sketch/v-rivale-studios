@@ -5,8 +5,9 @@ import JobApplicationForm from "@/components/JobApplicationForm";
 import FirefighterApplicationForm from "@/components/FirefighterApplicationForm";
 import PDMApplicationForm from "@/components/PDMApplicationForm";
 import DOJApplicationForm from "@/components/DOJApplicationForm";
+import WeazelNewsApplicationForm from "@/components/WeazelNewsApplicationForm";
 import { JobCardsSkeletonGrid } from "@/components/JobCardSkeleton";
-import { Shield, Heart, Wrench, Flame, AlertCircle, CheckCircle2, Car, Scale, Gavel } from "lucide-react";
+import { Shield, Heart, Wrench, Flame, AlertCircle, CheckCircle2, Car, Scale, Gavel, Newspaper } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -19,6 +20,7 @@ import jobMechanicImg from "@/assets/job-mechanic.jpg";
 import jobFirefighterImg from "@/assets/job-firefighter.jpg";
 import jobPdmImg from "@/assets/job-pdm.jpg";
 import headerDoj from "@/assets/header-doj.jpg";
+import jobWeazelNewsImg from "@/assets/job-weazel-news.jpg";
 
 const JobApplication = () => {
   const navigate = useNavigate();
@@ -124,6 +126,15 @@ const JobApplication = () => {
       description: "Represent clients in court and fight for justice as a defense attorney.",
       benefits: ["Legal Career", "Court Appearances", "Client Advocacy"],
     },
+    {
+      id: "weazel-news",
+      name: "Weazel News",
+      icon: Newspaper,
+      color: "red-500",
+      image: jobWeazelNewsImg,
+      description: "Report breaking news and cover the biggest stories in Los Santos.",
+      benefits: ["Media Exposure", "Exclusive Access", "Creative Freedom"],
+    },
   ];
 
   if (loading) {
@@ -167,6 +178,8 @@ const JobApplication = () => {
         return <DOJApplicationForm applicationType="judge" jobImage={headerDoj} />;
       case "lawyer":
         return <DOJApplicationForm applicationType="lawyer" jobImage={headerDoj} />;
+      case "weazel-news":
+        return <WeazelNewsApplicationForm jobImage={jobWeazelNewsImg} />;
       default:
         return null;
     }
