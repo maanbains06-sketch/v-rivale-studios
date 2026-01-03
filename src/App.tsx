@@ -195,7 +195,7 @@ const App = () => {
         <BrowserRouter>
           {isLoading && (
             <Suspense fallback={null}>
-              <LoadingScreen onComplete={handleLoadingComplete} minDuration={500} />
+              <LoadingScreen onComplete={handleLoadingComplete} minDuration={800} />
             </Suspense>
           )}
           {showContent && <AppContent />}

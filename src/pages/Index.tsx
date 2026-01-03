@@ -43,9 +43,12 @@ import { useServerStatus, useFeaturedYoutubers } from "@/hooks/useHomeData";
 // ========================================
 // 🎬 YOUTUBE VIDEO BACKGROUND CONFIGURATION
 // ========================================
-const YOUTUBE_VIDEO_ID = "hKt7nUCu7Kg";
-const VIDEO_TRIM_START = 3;
-const VIDEO_TRIM_END = 4;
+// To change the background video, replace the VIDEO_ID below with your YouTube video ID.
+// Example: For https://www.youtube.com/watch?v=ABC123xyz, the VIDEO_ID is "ABC123xyz"
+// ========================================
+const YOUTUBE_VIDEO_ID = "hKt7nUCu7Kg"; // <-- PASTE YOUR YOUTUBE VIDEO ID HERE
+const VIDEO_TRIM_START = 3; // Seconds to trim from start
+const VIDEO_TRIM_END = 4; // Seconds to trim from end
 // ========================================
 
 // Lazy load heavy components
@@ -150,8 +153,6 @@ const Index = () => {
   const isMobile = useIsMobile();
   const playerRef = useRef<any>(null);
   const [videoDuration, setVideoDuration] = useState<number>(0);
-  const [videoReady, setVideoReady] = useState(false);
-  const [videoBuffering, setVideoBuffering] = useState(false);
   const prefersReducedMotion = useReducedMotion();
   
   // Use cached data hooks instead of direct API calls
@@ -163,13 +164,11 @@ const Index = () => {
   const serverPlayers = serverStatusData?.players ?? 0;
   const maxPlayers = serverStatusData?.maxPlayers ?? 64;
 
-  // Optimized YouTube Player with buffering handling
+  // YouTube Player API for precise trimming
   useEffect(() => {
-    // Skip video on reduced motion
-    if (prefersReducedMotion) return;
-
     const initializePlayer = () => {
-      if (playerRef.current?.destroy) {
+      // Destroy existing player if it exists
+      if (playerRef.current && playerRef.current.destroy) {
         playerRef.current.destroy();
         playerRef.current = null;
       }
@@ -189,70 +188,61 @@ const Index = () => {
           disablekb: 1,
           playsinline: 1,
           start: VIDEO_TRIM_START,
-          enablejsapi: 1,
-          origin: window.location.origin,
         },
         events: {
           onReady: (event: any) => {
             const duration = event.target.getDuration();
             setVideoDuration(duration);
             event.target.seekTo(VIDEO_TRIM_START);
-            // Lower quality on mobile for faster loading
-            event.target.setPlaybackQuality(isMobile ? 'small' : 'hd720');
             event.target.playVideo();
-            setVideoReady(true);
           },
           onStateChange: (event: any) => {
-            const YT = (window as any).YT;
-            if (event.data === YT.PlayerState.ENDED) {
+            if (event.data === (window as any).YT.PlayerState.ENDED) {
               event.target.seekTo(VIDEO_TRIM_START);
               event.target.playVideo();
             }
-            if (event.data === YT.PlayerState.BUFFERING) {
-              setVideoBuffering(true);
-            } else if (event.data === YT.PlayerState.PLAYING) {
-              setVideoBuffering(false);
-            }
-            // Auto-resume if paused
-            if (event.data === YT.PlayerState.PAUSED) {
-              setTimeout(() => event.target.playVideo(), 100);
-            }
           },
-          onError: () => setVideoReady(false),
         },
       });
     };
 
-    if ((window as any).YT?.Player) {
+    // Check if YouTube API is already loaded
+    if ((window as any).YT && (window as any).YT.Player) {
       initializePlayer();
     } else {
+      // Load YouTube IFrame API if not already loaded
       if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
         const tag = document.createElement('script');
         tag.src = 'https://www.youtube.com/iframe_api';
-        tag.async = true;
-        document.head.appendChild(tag);
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
       }
+      
+      // Define the callback
       (window as any).onYouTubeIframeAPIReady = initializePlayer;
     }
 
+    // Check playback position periodically to handle end trimming
     const checkPlayback = setInterval(() => {
-      if (playerRef.current?.getCurrentTime && videoDuration > 0) {
+      if (playerRef.current && playerRef.current.getCurrentTime && videoDuration > 0) {
         const currentTime = playerRef.current.getCurrentTime();
-        if (currentTime >= videoDuration - VIDEO_TRIM_END) {
+        const endTime = videoDuration - VIDEO_TRIM_END;
+        if (currentTime >= endTime) {
           playerRef.current.seekTo(VIDEO_TRIM_START);
           playerRef.current.playVideo();
         }
       }
-    }, 1000);
+    }, 500);
 
     return () => {
       clearInterval(checkPlayback);
-      if (playerRef.current?.destroy) {
+      // Cleanup player on unmount
+      if (playerRef.current && playerRef.current.destroy) {
         playerRef.current.destroy();
         playerRef.current = null;
       }
     };
-  }, [videoDuration, prefersReducedMotion, isMobile]);
+  }, [videoDuration]);
 
   // Simplified scroll - removed heavy transforms
   const { scrollYProgress } = useScroll();
@@ -388,8 +378,8 @@ const Index = () => {
     <div className="min-h-screen relative">
       <Navigation />
 
-      {/* YouTube Video Background - Optimized with fallback */}
-      <div className={`fixed inset-0 z-0 overflow-hidden transition-opacity duration-500 ${videoReady ? 'opacity-100' : 'opacity-0'}`}>
+      {/* YouTube Video Background - Full coverage */}
+      <div className="fixed inset-0 z-0 overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div
             id="youtube-bg-player"
@@ -404,19 +394,9 @@ const Index = () => {
             }}
           />
         </div>
-        {/* Subtle overlay */}
+        {/* Subtle overlay for text readability */}
         <div className="absolute inset-0 bg-background/20" />
-        {/* Buffering indicator */}
-        {videoBuffering && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/40">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          </div>
-        )}
       </div>
-      {/* Fallback background when video not ready */}
-      {!videoReady && (
-        <div className="fixed inset-0 z-0 bg-gradient-to-b from-background via-background/95 to-background" />
-      )}
 
       {/* Hero Section */}
       <section 
