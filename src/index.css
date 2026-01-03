@@ -1218,40 +1218,81 @@ All colors MUST be HSL.
   }
 }
 
-/* Optimize animations for low-end devices - reduce complexity */
+/* Ultra performance mode for low-end devices */
 @media (max-width: 640px) {
-  /* Simplify glass effects on mobile */
+  /* Disable all heavy effects */
   .glass-effect {
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: hsl(var(--card) / 0.95) !important;
   }
   
-  /* Reduce shadow complexity on mobile */
+  /* Remove all shadows */
   .glow-cyan,
   .glow-purple,
-  .glow-pink {
-    box-shadow: none;
+  .glow-pink,
+  .shadow-lg,
+  .shadow-xl,
+  .shadow-2xl {
+    box-shadow: none !important;
   }
   
-  /* Disable heavy animations on mobile */
+  /* Disable ALL animations */
   .clouds-animation,
   .rain-effect,
   .lightning-bolt-1,
   .lightning-bolt-2,
   .lightning-bolt-3,
-  .animate-float-particle {
+  .animate-float-particle,
+  .animate-pulse,
+  .animate-pulse-slow,
+  .animate-bounce,
+  .animate-spin {
     animation: none !important;
   }
   
-  /* Simplify nav glow on mobile */
+  /* Disable nav glow */
   .nav-glow::before,
   .nav-glow::after {
-    animation: none;
+    display: none !important;
   }
   
-  /* Reduce text shadows on mobile */
+  /* Minimal text shadows */
   h1, h2, h3, h4, h5, h6 {
-    text-shadow: 0 1px 2px hsl(0 0% 0% / 0.3);
+    text-shadow: none !important;
+  }
+  
+  /* Disable blur effects */
+  .blur-3xl,
+  .blur-2xl,
+  .blur-xl {
+    filter: none !important;
+  }
+  
+  /* Disable transforms */
+  .card-hover:hover,
+  .hover-scale:hover {
+    transform: none !important;
+  }
+  
+  /* Simplify gradients */
+  .bg-gradient-to-r,
+  .bg-gradient-to-b,
+  .bg-gradient-to-t {
+    background: hsl(var(--background)) !important;
+  }
+}
+
+/* Extra small screens - maximum performance */
+@media (max-width: 480px) {
+  * {
+    animation-duration: 0ms !important;
+    transition-duration: 100ms !important;
+  }
+  
+  .gpu-accelerated {
+    will-change: auto !important;
+    transform: none !important;
   }
 }
 
@@ -1272,9 +1313,14 @@ All colors MUST be HSL.
     min-height: 44px;
     min-width: 44px;
   }
+  
+  /* Disable hover effects */
+  *:hover {
+    transform: none !important;
+  }
 }
 
-/* Print styles - remove decorative elements */
+/* Print styles */
 @media print {
   .glass-effect,
   .nav-glow,
