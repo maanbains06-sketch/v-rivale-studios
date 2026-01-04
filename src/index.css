@@ -1166,6 +1166,18 @@ All colors MUST be HSL.
    PERFORMANCE & ACCESSIBILITY OPTIMIZATIONS
    ========================================== */
 
+/* Content visibility for off-screen elements */
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 500px;
+}
+
+/* Lazy rendering for below-fold content */
+.lazy-render {
+  content-visibility: auto;
+  contain: layout style paint;
+}
+
 /* Reduced motion support - disable animations for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -1204,6 +1216,11 @@ All colors MUST be HSL.
   .hover-scale:hover {
     transform: none !important;
   }
+  
+  .glass-effect {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }
 
 /* GPU acceleration for smoother animations on capable devices */
@@ -1218,40 +1235,100 @@ All colors MUST be HSL.
   }
 }
 
-/* Optimize animations for low-end devices - reduce complexity */
+/* AGGRESSIVE optimizations for low-end mobile devices */
 @media (max-width: 640px) {
-  /* Simplify glass effects on mobile */
+  /* Disable all backdrop filters - very GPU intensive */
   .glass-effect {
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: hsl(var(--card)) !important;
   }
   
-  /* Reduce shadow complexity on mobile */
+  /* Remove all glow effects */
   .glow-cyan,
   .glow-purple,
-  .glow-pink {
-    box-shadow: none;
+  .glow-pink,
+  .animate-glow,
+  .animate-pulse-glow {
+    box-shadow: none !important;
+    animation: none !important;
   }
   
-  /* Disable heavy animations on mobile */
+  /* Disable ALL heavy animations on small screens */
   .clouds-animation,
   .rain-effect,
   .lightning-bolt-1,
   .lightning-bolt-2,
   .lightning-bolt-3,
-  .animate-float-particle {
+  .animate-float-particle,
+  .animate-shimmer,
+  .animate-gradient,
+  .animate-gradient-shift,
+  .animate-spin-slow,
+  .animate-scan-line,
+  .breathing-glow,
+  .animated-border,
+  .btn-glow::before,
+  .nav-glow::before,
+  .nav-glow::after {
     animation: none !important;
+    display: none !important;
   }
   
   /* Simplify nav glow on mobile */
   .nav-glow::before,
   .nav-glow::after {
-    animation: none;
+    display: none !important;
   }
   
-  /* Reduce text shadows on mobile */
+  /* Simplify all shadows */
+  * {
+    text-shadow: none !important;
+  }
+  
   h1, h2, h3, h4, h5, h6 {
-    text-shadow: 0 1px 2px hsl(0 0% 0% / 0.3);
+    text-shadow: 0 1px 2px hsl(0 0% 0% / 0.2) !important;
+  }
+  
+  /* Disable card hover transforms */
+  .card-hover:hover {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* Reduce border complexity */
+  .glass-effect {
+    border: 1px solid hsl(var(--border)) !important;
+    box-shadow: none !important;
+  }
+  
+  /* Disable gradient animations */
+  .text-gradient {
+    filter: none !important;
+  }
+  
+  /* Optimize images */
+  img {
+    content-visibility: auto;
+  }
+}
+
+/* Medium devices - still reduce some effects */
+@media (max-width: 768px) {
+  .glass-effect {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  
+  .animate-float,
+  .animate-pulse-glow {
+    animation: none !important;
+  }
+  
+  .glow-cyan,
+  .glow-purple,
+  .glow-pink {
+    box-shadow: none;
   }
 }
 
@@ -1272,6 +1349,13 @@ All colors MUST be HSL.
     min-height: 44px;
     min-width: 44px;
   }
+  
+  /* Disable all hover-dependent animations */
+  .card-hover,
+  .btn-glow,
+  .hover-scale {
+    transition: none !important;
+  }
 }
 
 /* Print styles - remove decorative elements */
@@ -1289,5 +1373,21 @@ All colors MUST be HSL.
   * {
     animation: none !important;
     transition: none !important;
+  }
+}
+
+/* Low data mode / Save-Data header support */
+@media (prefers-reduced-data: reduce) {
+  img,
+  video,
+  iframe {
+    content-visibility: auto;
+  }
+  
+  .animate-spin,
+  .animate-pulse,
+  .animate-bounce,
+  .animate-float {
+    animation: none !important;
   }
 }
