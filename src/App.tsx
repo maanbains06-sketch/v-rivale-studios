@@ -63,16 +63,18 @@ const AdminDiscordRules = lazy(() => import("./pages/AdminDiscordRules"));
 const Giveaway = lazy(() => import("./pages/Giveaway"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-// Optimized query client with aggressive caching
+// Optimized query client with aggressive caching for global performance
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 10, // 10 minutes
-      gcTime: 1000 * 60 * 60, // 1 hour
+      staleTime: 1000 * 60 * 15, // 15 minutes - longer cache for slower connections
+      gcTime: 1000 * 60 * 120, // 2 hours - keep data longer
       retry: 1,
+      retryDelay: 1000, // 1 second delay between retries
       refetchOnWindowFocus: false,
       refetchOnMount: false,
       refetchOnReconnect: false,
+      networkMode: 'offlineFirst', // Use cached data first
     },
   },
 });
@@ -178,13 +180,26 @@ const App = () => {
     if (hasVisited) {
       setIsLoading(false);
       setShowContent(true);
+      return;
+    }
+    
+    // For low-end devices, reduce loading time
+    const isLowEndDevice = navigator.hardwareConcurrency <= 4 || 
+      (navigator as any).deviceMemory <= 4 ||
+      window.innerWidth < 640;
+    
+    if (isLowEndDevice) {
+      // Skip loading screen on low-end devices
+      sessionStorage.setItem("slrp_visited", "true");
+      setIsLoading(false);
+      setShowContent(true);
     }
   }, []);
 
   const handleLoadingComplete = () => {
     sessionStorage.setItem("slrp_visited", "true");
     setShowContent(true);
-    setTimeout(() => setIsLoading(false), 300);
+    setTimeout(() => setIsLoading(false), 200);
   };
 
   return (
@@ -195,7 +210,7 @@ const App = () => {
         <BrowserRouter>
           {isLoading && (
             <Suspense fallback={null}>
-              <LoadingScreen onComplete={handleLoadingComplete} minDuration={800} />
+              <LoadingScreen onComplete={handleLoadingComplete} minDuration={500} />
             </Suspense>
           )}
           {showContent && <AppContent />}

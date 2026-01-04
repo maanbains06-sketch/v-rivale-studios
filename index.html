@@ -4,23 +4,27 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     
-    <!-- Performance optimizations -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <!-- Performance optimizations for global reach -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     
-    <!-- Preconnect to external domains for faster loading -->
+    <!-- Resource hints for faster loading worldwide -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+    
+    <!-- DNS Prefetch for Supabase and CDNs -->
+    <link rel="dns-prefetch" href="https://obirpzwvnqveddyuulsb.supabase.co" />
+    <link rel="preconnect" href="https://obirpzwvnqveddyuulsb.supabase.co" crossorigin />
+    <link rel="dns-prefetch" href="https://cdn.discordapp.com" />
+    <link rel="dns-prefetch" href="https://www.youtube.com" />
     
     <!-- Optimized font loading with display=swap for faster text rendering -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Italiana&family=Bebas+Neue&display=swap" media="print" onload="this.media='all'" />
     <noscript>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Italiana&family=Bebas+Neue&display=swap" />
     </noscript>
-    
-    <!-- DNS Prefetch for Supabase -->
-    <link rel="dns-prefetch" href="https://obirpzwvnqveddyuulsb.supabase.co" />
-    <link rel="preconnect" href="https://obirpzwvnqveddyuulsb.supabase.co" crossorigin />
     
     <title>Skylife Roleplay India</title>
     
@@ -51,21 +55,23 @@
     
     <!-- Critical CSS for faster first paint -->
     <style>
-      /* Critical above-the-fold styles */
-      *,*::before,*::after{box-sizing:border-box}
-      html{-webkit-text-size-adjust:100%;line-height:1.5}
-      body{margin:0;background:#0d1117;color:#fff;font-family:system-ui,-apple-system,sans-serif}
-      #root{min-height:100vh}
+      /* Critical above-the-fold styles - optimized for speed */
+      *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+      html{-webkit-text-size-adjust:100%;line-height:1.5;-webkit-font-smoothing:antialiased}
+      body{background:#0d1117;color:#fff;font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif}
+      #root{min-height:100vh;min-height:100dvh}
+      img,video{max-width:100%;height:auto;display:block}
       
       /* Loader styles inline to prevent FOUC */
       .initial-loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#0d1117;z-index:9999}
-      .initial-loader-spinner{width:40px;height:40px;border:3px solid rgba(14,165,233,0.2);border-top-color:#0ea5e9;border-radius:50%;animation:spin 0.8s linear infinite}
+      .initial-loader-spinner{width:32px;height:32px;border:2px solid rgba(14,165,233,0.2);border-top-color:#0ea5e9;border-radius:50%;animation:spin 0.6s linear infinite}
       @keyframes spin{to{transform:rotate(360deg)}}
       
-      /* Reduced motion preferences */
-      @media (prefers-reduced-motion: reduce) {
-        *,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}
-      }
+      /* Reduced motion preferences - applies globally */
+      @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}
+      
+      /* Low-end device optimizations */
+      @media(max-width:640px){.initial-loader-spinner{width:24px;height:24px}}
     </style>
   </head>
 
@@ -77,18 +83,20 @@
     
     <div id="root"></div>
     
-    <!-- Remove initial loader once React mounts -->
+    <!-- Remove initial loader once React mounts - optimized for speed -->
     <script>
-      window.addEventListener('DOMContentLoaded', function() {
-        var loader = document.getElementById('initial-loader');
-        if (loader) {
-          setTimeout(function() {
-            loader.style.opacity = '0';
-            loader.style.transition = 'opacity 0.3s';
-            setTimeout(function() { loader.remove(); }, 300);
-          }, 100);
-        }
-      });
+      (function(){
+        var l=document.getElementById('initial-loader');
+        if(!l)return;
+        // Remove faster on low-end devices
+        var d=navigator.hardwareConcurrency<=4||window.innerWidth<640?0:50;
+        window.addEventListener('DOMContentLoaded',function(){
+          setTimeout(function(){
+            l.style.cssText='opacity:0;transition:opacity .2s';
+            setTimeout(function(){l.remove()},200);
+          },d);
+        });
+      })();
     </script>
     
     <script type="module" src="/src/main.tsx"></script>
