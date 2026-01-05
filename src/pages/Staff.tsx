@@ -193,6 +193,29 @@ const Staff = () => {
   useEffect(() => {
     loadStaffMembers();
     loadOpenPositions();
+
+    // Subscribe to real-time updates for staff_members table
+    // This auto-updates when Discord profiles change (name, avatar, banner)
+    const channel = supabase
+      .channel('staff-profile-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'staff_members',
+        },
+        (payload) => {
+          console.log('Staff member updated:', payload);
+          // Reload staff members when any change occurs
+          loadStaffMembers();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const loadOpenPositions = async () => {
