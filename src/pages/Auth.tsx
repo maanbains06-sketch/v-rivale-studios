@@ -1,19 +1,33 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { User, Session } from "@supabase/supabase-js";
-import { MessageCircle, Shield, Users, Zap, Loader2, ExternalLink, UserPlus, LogIn, AlertCircle } from "lucide-react";
-import Navigation from "@/components/Navigation";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
-import SignupFormModal, { SignupFormData } from "@/components/SignupFormModal";
-import LoginFormModal, { LoginFormData } from "@/components/LoginFormModal";
+import { MessageCircle, Loader2, Eye, EyeOff, ExternalLink } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { z } from "zod";
+import AuthPanelLogo from "@/components/AuthPanelLogo";
 
 const DISCORD_INVITE_LINK = "https://discord.gg/W2nU97maBh";
+
+const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+const signupSchema = z.object({
+  username: z.string().min(3, "Username must be at least 3 characters").max(32, "Username must be less than 32 characters"),
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -22,107 +36,34 @@ const Auth = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
-  const [verifyingMembership, setVerifyingMembership] = useState(false);
-  const [showSignupModal, setShowSignupModal] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [rememberMe, setRememberMe] = useState(() => {
-    return localStorage.getItem('slrp_remember_me') === 'true';
-  });
+  const [isSignup, setIsSignup] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  // Form states
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
+  
   const location = window.location.pathname;
   const searchParams = new URLSearchParams(window.location.search);
   const tabParam = searchParams.get("tab");
-  const defaultTab = tabParam === "signup" || location === "/signup" ? "signup" : "login";
-
-  const handleRememberMeChange = (checked: boolean) => {
-    setRememberMe(checked);
-    if (checked) {
-      localStorage.setItem('slrp_remember_me', 'true');
-    } else {
-      localStorage.removeItem('slrp_remember_me');
-    }
-  };
-
-  const getDiscordId = (user: User) => {
-    return user.user_metadata?.provider_id || 
-           user.user_metadata?.sub || 
-           user.identities?.find(i => i.provider === 'discord')?.id;
-  };
-
-  const verifyDiscordMembership = async (user: User): Promise<boolean> => {
-    const discordId = getDiscordId(user);
-    if (!discordId) return false;
-
-    try {
-      const { data, error } = await supabase.functions.invoke('verify-discord-membership', {
-        body: { discordId }
-      });
-
-      if (error) {
-        console.error('Membership verification error:', error);
-        return false;
-      }
-
-      return data.isMember === true;
-    } catch (err) {
-      console.error('Membership check failed:', err);
-      return false;
-    }
-  };
 
   useEffect(() => {
-    const checkAuth = async (session: Session | null, event?: string) => {
-      if (session?.user) {
-        const urlParams = new URLSearchParams(window.location.search);
-        const isSignup = urlParams.get("signup") === "true";
-        
-        if (isSignup) {
-          navigate("/discord-signup");
-        } else {
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (error || !profile) {
-            await supabase.auth.signOut();
-            setUser(null);
-            setSession(null);
-            toast({
-              title: "Account Not Found",
-              description: "You are not registered. Please sign up first to create an account.",
-              variant: "destructive",
-            });
-            return;
-          }
+    if (tabParam === "signup" || location === "/signup") {
+      setIsSignup(true);
+    }
+  }, [tabParam, location]);
 
-          setVerifyingMembership(true);
-          const isMember = await verifyDiscordMembership(session.user);
-          setVerifyingMembership(false);
-
-          if (!isMember) {
-            await supabase.auth.signOut();
-            setUser(null);
-            setSession(null);
-            toast({
-              title: "Discord Membership Required",
-              description: "You must be a member of the Skylife Roleplay India Discord server to access your account.",
-              variant: "destructive",
-            });
-            return;
-          }
-          
-          navigate("/discord-profile");
-        }
-      }
-    };
-
+  useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        if (event === 'SIGNED_IN') {
-          checkAuth(session, event);
+        if (event === 'SIGNED_IN' && session?.user) {
+          navigate("/discord-profile");
         }
       }
     );
@@ -131,390 +72,387 @@ const Auth = () => {
       setSession(session);
       setUser(session?.user ?? null);
       setCheckingAuth(false);
+      if (session?.user) {
+        navigate("/discord-profile");
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, toast]);
+  }, [navigate]);
 
-  const handleOpenLoginModal = () => {
-    setShowLoginModal(true);
-  };
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const result = loginSchema.safeParse({ email, password });
+    if (!result.success) {
+      toast({
+        title: "Validation Error",
+        description: result.error.issues[0].message,
+        variant: "destructive",
+      });
+      return;
+    }
 
-  const handleLoginFormSubmit = async (data: LoginFormData) => {
     setLoading(true);
     
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'discord',
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      toast({
+        title: "Login Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
+    toast({
+      title: "Welcome back!",
+      description: "You have successfully logged in.",
+    });
+  };
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const result = signupSchema.safeParse({ username, email, password, confirmPassword });
+    if (!result.success) {
+      toast({
+        title: "Validation Error",
+        description: result.error.issues[0].message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!agreeToTerms) {
+      toast({
+        title: "Terms Required",
+        description: "You must agree to the Terms of Service and Privacy Policy.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
       options: {
-        redirectTo: `${window.location.origin}/auth`,
+        emailRedirectTo: `${window.location.origin}/auth`,
+        data: {
+          username,
+          display_name: username,
+        },
       },
     });
 
     if (error) {
       toast({
-        title: "Discord Sign In Failed",
+        title: "Signup Failed",
         description: error.message,
         variant: "destructive",
       });
       setLoading(false);
-      setShowLoginModal(false);
+      return;
     }
-  };
 
-  const handleOpenSignupModal = () => {
-    setShowSignupModal(true);
-  };
-
-  const handleSignupFormSubmit = async (data: SignupFormData) => {
-    setLoading(true);
-    
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'discord',
-      options: {
-        redirectTo: `${window.location.origin}/auth?signup=true`,
-      },
+    toast({
+      title: "Account Created!",
+      description: "Welcome to Skylife Roleplay India!",
     });
-
-    if (error) {
-      toast({
-        title: "Discord Sign Up Failed",
-        description: error.message,
-        variant: "destructive",
-      });
-      setLoading(false);
-      setShowSignupModal(false);
-    }
   };
 
-  if (checkingAuth || verifyingMembership) {
+  const handleDiscordJoin = () => {
+    window.open(DISCORD_INVITE_LINK, '_blank');
+  };
+
+  if (checkingAuth) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-10 h-10 animate-spin text-primary" />
-          <p className="text-muted-foreground text-sm">
-            {verifyingMembership ? "Verifying Discord membership..." : "Checking authentication..."}
-          </p>
+          <p className="text-muted-foreground text-sm">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      
-      <div className="container mx-auto px-4 pt-24 pb-12">
-        {/* Header Section */}
-        <div className="text-center mb-12 animate-fade-in">
-          <h1 className="text-4xl md:text-5xl font-bold text-gradient mb-4">
-            Welcome to SLRP
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Your gateway to immersive roleplay experiences. Login or create an account to get started.
-          </p>
-        </div>
-
-        {/* Main Auth Cards */}
-        <div className="max-w-5xl mx-auto">
-          <Tabs defaultValue={defaultTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-8 max-w-md mx-auto h-14">
-              <TabsTrigger value="login" className="text-lg gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <LogIn className="w-5 h-5" />
-                Login
-              </TabsTrigger>
-              <TabsTrigger value="signup" className="text-lg gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <UserPlus className="w-5 h-5" />
-                Sign Up
-              </TabsTrigger>
-            </TabsList>
-
-            {/* LOGIN TAB */}
-            <TabsContent value="login" className="animate-fade-in">
-              <div className="grid lg:grid-cols-2 gap-8 items-start">
-                {/* Login Form Card */}
-                <Card className="glass-effect border-border/30 shadow-xl">
-                  <CardHeader className="text-center pb-2">
-                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#5865F2]/20 flex items-center justify-center">
-                      <LogIn className="w-8 h-8 text-[#5865F2]" />
-                    </div>
-                    <CardTitle className="text-2xl">Login to Your Account</CardTitle>
-                    <CardDescription className="text-base">
-                      Already have an account? Sign in with Discord to continue.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6 pt-4">
-                    <Alert className="border-amber-500/30 bg-amber-500/10">
-                      <AlertCircle className="h-4 w-4 text-amber-500" />
-                      <AlertTitle className="text-amber-600 dark:text-amber-400 text-sm font-medium">
-                        Existing Members Only
-                      </AlertTitle>
-                      <AlertDescription className="text-amber-600/80 dark:text-amber-400/80 text-sm">
-                        If you're new to SLRP, please use the <strong>Sign Up</strong> tab to create an account first.
-                      </AlertDescription>
-                    </Alert>
-
-                    <div className="space-y-4">
-                      <Button
-                        onClick={handleOpenLoginModal}
-                        disabled={loading || !!user}
-                        size="lg"
-                        className="w-full h-14 text-lg bg-[#5865F2] hover:bg-[#4752C4] text-white disabled:opacity-50 shadow-lg"
-                      >
-                        <MessageCircle className="w-6 h-6 mr-3" />
-                        {user ? "✓ Connected - Redirecting..." : loading ? "Connecting to Discord..." : "Login with Discord"}
-                      </Button>
-                    </div>
-
-                    {user && (
-                      <Alert className="border-green-500/30 bg-green-500/10">
-                        <AlertDescription className="text-green-600 dark:text-green-400 text-center">
-                          ✓ Successfully authenticated! Redirecting to your profile...
-                        </AlertDescription>
-                      </Alert>
-                    )}
-
-                    <Separator />
-
-                    <div className="text-center text-sm text-muted-foreground">
-                      <p>Don't have an account?</p>
-                      <Button 
-                        variant="link" 
-                        className="text-primary p-0 h-auto font-semibold"
-                        onClick={() => {
-                          setShowSignupModal(true);
-                        }}
-                      >
-                        Create one now →
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Login Requirements */}
-                <div className="space-y-6">
-                  <Card className="glass-effect border-border/30">
-                    <CardHeader>
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Shield className="w-5 h-5 text-primary" />
-                        Login Requirements
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                          <span className="text-primary font-bold text-sm">1</span>
-                        </div>
-                        <div>
-                          <p className="font-medium">Registered Account</p>
-                          <p className="text-sm text-muted-foreground">You must have signed up previously</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                          <span className="text-primary font-bold text-sm">2</span>
-                        </div>
-                        <div>
-                          <p className="font-medium">Discord Server Member</p>
-                          <p className="text-sm text-muted-foreground">Must be in the Skylife Roleplay India Discord server</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                          <span className="text-primary font-bold text-sm">3</span>
-                        </div>
-                        <div>
-                          <p className="font-medium">Discord Authorization</p>
-                          <p className="text-sm text-muted-foreground">Allow SLRP to verify your identity</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Button
-                    variant="outline"
-                    className="w-full border-[#5865F2]/50 text-[#5865F2] hover:bg-[#5865F2]/10"
-                    onClick={() => window.open(DISCORD_INVITE_LINK, '_blank')}
-                  >
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    Not in Discord? Join Server
-                  </Button>
-                </div>
-              </div>
-            </TabsContent>
-
-            {/* SIGNUP TAB */}
-            <TabsContent value="signup" className="animate-fade-in">
-              <div className="grid lg:grid-cols-2 gap-8 items-start">
-                {/* Signup Form Card */}
-                <Card className="glass-effect border-border/30 shadow-xl">
-                  <CardHeader className="text-center pb-2">
-                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
-                      <UserPlus className="w-8 h-8 text-green-500" />
-                    </div>
-                    <CardTitle className="text-2xl">Create Your Account</CardTitle>
-                    <CardDescription className="text-base">
-                      New to SLRP? Start your journey by creating an account.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6 pt-4">
-                    <Alert className="border-blue-500/30 bg-blue-500/10">
-                      <MessageCircle className="h-4 w-4 text-blue-500" />
-                      <AlertTitle className="text-blue-600 dark:text-blue-400 text-sm font-medium">
-                        Discord Required
-                      </AlertTitle>
-                      <AlertDescription className="text-blue-600/80 dark:text-blue-400/80 text-sm">
-                        You'll need to join our Discord server to complete registration.
-                      </AlertDescription>
-                    </Alert>
-
-                    <div className="space-y-4">
-                      <Button
-                        variant="outline"
-                        size="lg"
-                        className="w-full h-12 border-[#5865F2]/50 text-[#5865F2] hover:bg-[#5865F2]/10"
-                        onClick={() => window.open(DISCORD_INVITE_LINK, '_blank')}
-                      >
-                        <ExternalLink className="w-5 h-5 mr-2" />
-                        Step 1: Join Discord Server
-                      </Button>
-
-                      <Button
-                        onClick={handleOpenSignupModal}
-                        disabled={loading || !!user}
-                        size="lg"
-                        className="w-full h-14 text-lg bg-[#5865F2] hover:bg-[#4752C4] text-white disabled:opacity-50 shadow-lg"
-                      >
-                        <MessageCircle className="w-6 h-6 mr-3" />
-                        {user ? "✓ Account Created!" : loading ? "Creating Account..." : "Step 2: Sign Up with Discord"}
-                      </Button>
-                    </div>
-
-                    {user && (
-                      <Alert className="border-green-500/30 bg-green-500/10">
-                        <AlertDescription className="text-green-600 dark:text-green-400 text-center">
-                          ✓ Discord connected! Redirecting to complete your profile...
-                        </AlertDescription>
-                      </Alert>
-                    )}
-
-                    <Separator />
-
-                    <div className="text-center text-sm text-muted-foreground">
-                      <p>Already have an account?</p>
-                      <Button 
-                        variant="link" 
-                        className="text-primary p-0 h-auto font-semibold"
-                        onClick={() => {
-                          setShowLoginModal(true);
-                        }}
-                      >
-                        Login instead →
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Registration Steps */}
-                <div className="space-y-6">
-                  <Card className="glass-effect border-border/30">
-                    <CardHeader>
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Users className="w-5 h-5 text-primary" />
-                        Registration Process
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[#5865F2]/20 flex items-center justify-center flex-shrink-0">
-                          <span className="text-[#5865F2] font-bold text-sm">1</span>
-                        </div>
-                        <div>
-                          <p className="font-medium">Join Discord Server</p>
-                          <p className="text-sm text-muted-foreground">Click the button to join our community</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[#5865F2]/20 flex items-center justify-center flex-shrink-0">
-                          <span className="text-[#5865F2] font-bold text-sm">2</span>
-                        </div>
-                        <div>
-                          <p className="font-medium">Authorize with Discord</p>
-                          <p className="text-sm text-muted-foreground">Allow SLRP to access your Discord account</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[#5865F2]/20 flex items-center justify-center flex-shrink-0">
-                          <span className="text-[#5865F2] font-bold text-sm">3</span>
-                        </div>
-                        <div>
-                          <p className="font-medium">Complete Your Profile</p>
-                          <p className="text-sm text-muted-foreground">Enter your Steam ID and character name</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                          <span className="text-green-500 font-bold text-sm">✓</span>
-                        </div>
-                        <div>
-                          <p className="font-medium">Start Playing!</p>
-                          <p className="text-sm text-muted-foreground">Apply for whitelist and join the server</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="glass-effect border-primary/30 bg-primary/5">
-                    <CardContent className="pt-6">
-                      <div className="flex items-center gap-3">
-                        <Zap className="w-8 h-8 text-primary" />
-                        <div>
-                          <p className="font-semibold">Quick Tip</p>
-                          <p className="text-sm text-muted-foreground">
-                            Join Discord first for a smoother signup experience!
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-
-        {/* Footer */}
-        <div className="text-center mt-12">
-          <p className="text-xs text-muted-foreground">
-            By continuing, you agree to our{" "}
-            <a href="/terms" className="text-primary hover:underline">Terms of Service</a>
-            {" "}and{" "}
-            <a href="/privacy" className="text-primary hover:underline">Privacy Policy</a>
-          </p>
-        </div>
+    <div className="min-h-screen flex">
+      {/* Left Panel - Animated Logo */}
+      <div className="hidden lg:flex lg:w-1/2 xl:w-[45%]">
+        <AuthPanelLogo />
       </div>
 
-      {/* Login Form Modal */}
-      <LoginFormModal
-        open={showLoginModal}
-        onOpenChange={setShowLoginModal}
-        onSubmit={handleLoginFormSubmit}
-        onSwitchToSignup={() => {
-          setShowLoginModal(false);
-          setShowSignupModal(true);
-        }}
-        loading={loading}
-        rememberMe={rememberMe}
-        onRememberMeChange={handleRememberMeChange}
-      />
+      {/* Right Panel - Form */}
+      <div className="w-full lg:w-1/2 xl:w-[55%] flex items-center justify-center p-6 md:p-12 bg-card/50 backdrop-blur-sm">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={isSignup ? "signup" : "login"}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            className="w-full max-w-md"
+          >
+            {/* Header */}
+            <div className="text-center mb-8">
+              <motion.h1
+                className="text-3xl md:text-4xl font-bold mb-2"
+                initial={{ y: -10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.1 }}
+              >
+                {isSignup ? "Welcome to Skylife" : "Welcome back"}
+              </motion.h1>
+              <motion.p
+                className="text-muted-foreground"
+                initial={{ y: -10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.15 }}
+              >
+                {isSignup 
+                  ? "We're excited to have you! Let's create your account." 
+                  : "Sign in to Skylife Roleplay India"}
+              </motion.p>
+            </div>
 
-      {/* Signup Form Modal */}
-      <SignupFormModal
-        open={showSignupModal}
-        onOpenChange={setShowSignupModal}
-        onSubmit={handleSignupFormSubmit}
-        onSwitchToLogin={() => setShowLoginModal(true)}
-        loading={loading}
-      />
+            {/* Discord Button - Mandatory */}
+            <motion.div
+              initial={{ y: 10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="mb-6"
+            >
+              <Button
+                type="button"
+                onClick={handleDiscordJoin}
+                className="w-full h-12 bg-[#5865F2] hover:bg-[#4752C4] text-white font-semibold rounded-lg flex items-center justify-center gap-2"
+              >
+                <MessageCircle className="w-5 h-5" />
+                Join Discord Server
+                <ExternalLink className="w-4 h-4 ml-1" />
+              </Button>
+              <p className="text-xs text-center text-muted-foreground mt-2">
+                Joining our Discord is required to access all features
+              </p>
+            </motion.div>
+
+            {/* Divider */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.25 }}
+              className="relative my-6"
+            >
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border/50" />
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-card/50 backdrop-blur-sm px-4 text-xs text-muted-foreground uppercase tracking-wider">
+                  {isSignup ? "Create account with" : "Or continue with"}
+                </span>
+              </div>
+            </motion.div>
+
+            {/* Form */}
+            <form onSubmit={isSignup ? handleSignup : handleLogin} className="space-y-5">
+              {/* Username - Signup only */}
+              {isSignup && (
+                <motion.div
+                  initial={{ y: 10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="space-y-2"
+                >
+                  <Label htmlFor="username" className="text-sm font-medium">
+                    Username
+                  </Label>
+                  <Input
+                    id="username"
+                    type="text"
+                    placeholder="Provide your desired username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="h-12 bg-background/80 border-border/50 rounded-lg focus:border-primary"
+                    required
+                  />
+                </motion.div>
+              )}
+
+              {/* Email */}
+              <motion.div
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: isSignup ? 0.35 : 0.3 }}
+                className="space-y-2"
+              >
+                <Label htmlFor="email" className="text-sm font-medium">
+                  Email
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder={isSignup ? "Enter an email" : "name@example.com"}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="h-12 bg-background/80 border-border/50 rounded-lg focus:border-primary"
+                  required
+                />
+              </motion.div>
+
+              {/* Password */}
+              <motion.div
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: isSignup ? 0.4 : 0.35 }}
+                className="space-y-2"
+              >
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password" className="text-sm font-medium">
+                    Password
+                  </Label>
+                  {!isSignup && (
+                    <button
+                      type="button"
+                      className="text-xs text-primary hover:underline"
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                </div>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder={isSignup ? "Enter a good password" : "••••••••"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="h-12 bg-background/80 border-border/50 rounded-lg focus:border-primary pr-12"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </motion.div>
+
+              {/* Confirm Password - Signup only */}
+              {isSignup && (
+                <motion.div
+                  initial={{ y: 10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.45 }}
+                  className="space-y-2"
+                >
+                  <Label htmlFor="confirmPassword" className="text-sm font-medium">
+                    Confirm Password
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Confirm your password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="h-12 bg-background/80 border-border/50 rounded-lg focus:border-primary pr-12"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Submit Button */}
+              <motion.div
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: isSignup ? 0.5 : 0.4 }}
+              >
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      {isSignup ? "Creating Account..." : "Signing in..."}
+                    </>
+                  ) : (
+                    isSignup ? "Create Account" : "Sign in with Email"
+                  )}
+                </Button>
+              </motion.div>
+
+              {/* Switch Mode */}
+              <motion.div
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: isSignup ? 0.55 : 0.45 }}
+                className="text-center pt-2"
+              >
+                <p className="text-sm text-muted-foreground">
+                  {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
+                  <button
+                    type="button"
+                    onClick={() => setIsSignup(!isSignup)}
+                    className="text-primary font-semibold hover:underline"
+                  >
+                    {isSignup ? "Sign In" : "Sign up"}
+                  </button>
+                </p>
+              </motion.div>
+            </form>
+
+            {/* Terms - Signup only */}
+            {isSignup && (
+              <motion.div
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.6 }}
+                className="mt-6"
+              >
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <Checkbox
+                    id="terms"
+                    checked={agreeToTerms}
+                    onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
+                    className="mt-0.5"
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    By creating account, you agree to our{" "}
+                    <Link to="/terms" className="text-primary hover:underline">
+                      Terms of Service
+                    </Link>{" "}
+                    and{" "}
+                    <Link to="/privacy" className="text-primary hover:underline">
+                      Privacy Policy
+                    </Link>
+                    .
+                  </span>
+                </label>
+              </motion.div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </div>
   );
 };
