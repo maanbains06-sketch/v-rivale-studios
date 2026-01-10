@@ -186,20 +186,12 @@ const AuthPanelLogo = () => {
           </div>
         </motion.div>
 
-        {/* Logo Image with 3D Rotation */}
+        {/* Logo Image with Earth-like Rotation */}
         <motion.div
           className="relative w-52 h-52"
           initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ 
-            scale: 1, 
-            opacity: 1,
-            rotateY: [0, 10, 0, -10, 0],
-          }}
-          transition={{ 
-            scale: { duration: 0.8, ease: "easeOut" },
-            opacity: { duration: 0.8, ease: "easeOut" },
-            rotateY: { duration: 8, repeat: Infinity, ease: "easeInOut" }
-          }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
           whileHover={{ scale: 1.08 }}
           style={{ perspective: "1000px" }}
         >
@@ -217,24 +209,38 @@ const AuthPanelLogo = () => {
             }}
           />
           
-          {/* Logo with enhanced glow */}
-          <motion.img
-            src={slrpLogo}
-            alt="Skylife Roleplay India"
-            className="relative w-full h-full object-contain"
-            animate={{
-              filter: [
-                "drop-shadow(0 0 30px hsl(var(--primary) / 0.6)) drop-shadow(0 0 60px hsl(var(--primary) / 0.3))",
-                "drop-shadow(0 0 40px hsl(var(--primary) / 0.8)) drop-shadow(0 0 80px hsl(var(--primary) / 0.4))",
-                "drop-shadow(0 0 30px hsl(var(--primary) / 0.6)) drop-shadow(0 0 60px hsl(var(--primary) / 0.3))",
-              ],
+          {/* Globe Container with 3D rotation */}
+          <motion.div
+            className="relative w-full h-full"
+            animate={{ rotateY: 360 }}
+            transition={{ 
+              duration: 8, 
+              repeat: Infinity, 
+              ease: "linear" 
             }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-          />
+            style={{ 
+              transformStyle: "preserve-3d",
+            }}
+          >
+            {/* Logo with enhanced glow */}
+            <motion.img
+              src={slrpLogo}
+              alt="Skylife Roleplay India"
+              className="relative w-full h-full object-contain"
+              animate={{
+                filter: [
+                  "drop-shadow(0 0 30px hsl(var(--primary) / 0.6)) drop-shadow(0 0 60px hsl(var(--primary) / 0.3))",
+                  "drop-shadow(0 0 40px hsl(var(--primary) / 0.8)) drop-shadow(0 0 80px hsl(var(--primary) / 0.4))",
+                  "drop-shadow(0 0 30px hsl(var(--primary) / 0.6)) drop-shadow(0 0 60px hsl(var(--primary) / 0.3))",
+                ],
+              }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            />
+          </motion.div>
 
           {/* Shine Effect */}
           <motion.div
-            className="absolute inset-0 rounded-full overflow-hidden"
+            className="absolute inset-0 rounded-full overflow-hidden pointer-events-none"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
@@ -255,7 +261,7 @@ const AuthPanelLogo = () => {
 
           {/* Rotating Border Effect */}
           <motion.div
-            className="absolute inset-0"
+            className="absolute inset-0 pointer-events-none"
             animate={{ rotate: 360 }}
             transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
           >
