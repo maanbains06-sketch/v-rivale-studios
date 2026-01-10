@@ -21,6 +21,7 @@ const loginSchema = z.object({
 
 const signupSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters").max(32, "Username must be less than 32 characters"),
+  discordId: z.string().regex(/^\d{17,19}$/, "Please enter a valid Discord ID (17-19 digits)"),
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   confirmPassword: z.string(),
@@ -44,8 +45,10 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
+  const [discordId, setDiscordId] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [verifyingDiscord, setVerifyingDiscord] = useState(false);
   
   const location = window.location.pathname;
   const searchParams = new URLSearchParams(window.location.search);
@@ -119,7 +122,7 @@ const Auth = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const result = signupSchema.safeParse({ username, email, password, confirmPassword });
+    const result = signupSchema.safeParse({ username, discordId, email, password, confirmPassword });
     if (!result.success) {
       toast({
         title: "Validation Error",
@@ -139,6 +142,47 @@ const Auth = () => {
     }
 
     setLoading(true);
+    setVerifyingDiscord(true);
+
+    // Verify Discord server membership
+    try {
+      const { data: verifyData, error: verifyError } = await supabase.functions.invoke('verify-discord-membership', {
+        body: { discordId }
+      });
+
+      if (verifyError) {
+        toast({
+          title: "Discord Verification Failed",
+          description: "Unable to verify Discord membership. Please try again.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        setVerifyingDiscord(false);
+        return;
+      }
+
+      if (!verifyData?.isMember) {
+        toast({
+          title: "Discord Membership Required",
+          description: "You must join our Discord server before signing up. Click the 'Join Discord Server' button above.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        setVerifyingDiscord(false);
+        return;
+      }
+
+      setVerifyingDiscord(false);
+    } catch (err) {
+      toast({
+        title: "Verification Error",
+        description: "Unable to verify Discord membership. Please try again later.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      setVerifyingDiscord(false);
+      return;
+    }
     
     const { error } = await supabase.auth.signUp({
       email,
@@ -148,6 +192,7 @@ const Auth = () => {
         data: {
           username,
           display_name: username,
+          discord_id: discordId,
         },
       },
     });
@@ -164,7 +209,7 @@ const Auth = () => {
 
     toast({
       title: "Account Created!",
-      description: "Welcome to Skylife Roleplay India!",
+      description: "Welcome to Skylife Roleplay India! Discord verified ✓",
     });
   };
 
@@ -286,6 +331,32 @@ const Auth = () => {
                 </motion.div>
               )}
 
+              {/* Discord ID - Signup only */}
+              {isSignup && (
+                <motion.div
+                  initial={{ y: 10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.32 }}
+                  className="space-y-2"
+                >
+                  <Label htmlFor="discordId" className="text-sm font-medium">
+                    Discord ID
+                  </Label>
+                  <Input
+                    id="discordId"
+                    type="text"
+                    placeholder="Your Discord User ID (e.g., 123456789012345678)"
+                    value={discordId}
+                    onChange={(e) => setDiscordId(e.target.value)}
+                    className="h-12 bg-background/80 border-border/50 rounded-lg focus:border-primary"
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Enable Developer Mode in Discord Settings → Copy your ID by right-clicking your profile
+                  </p>
+                </motion.div>
+              )}
+
               {/* Email */}
               <motion.div
                 initial={{ y: 10, opacity: 0 }}
@@ -393,7 +464,7 @@ const Auth = () => {
                   {loading ? (
                     <>
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      {isSignup ? "Creating Account..." : "Signing in..."}
+                      {verifyingDiscord ? "Verifying Discord..." : isSignup ? "Creating Account..." : "Signing in..."}
                     </>
                   ) : (
                     isSignup ? "Create Account" : "Sign in with Email"
