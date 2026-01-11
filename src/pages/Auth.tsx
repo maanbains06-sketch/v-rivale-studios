@@ -247,26 +247,52 @@ const Auth = () => {
 
     setSendingResetEmail(true);
     
-    const { error } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail, {
-      redirectTo: `${window.location.origin}/auth?reset=true`,
-    });
+    try {
+      // First generate a reset token via Supabase
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail, {
+        redirectTo: `${window.location.origin}/auth?reset=true`,
+      });
 
-    if (error) {
+      if (resetError) {
+        // If it's just a user not found error, still show success (security)
+        if (!resetError.message.includes("User not found")) {
+          toast({
+            title: "Error",
+            description: resetError.message,
+            variant: "destructive",
+          });
+          setSendingResetEmail(false);
+          return;
+        }
+      }
+
+      // Send custom email via our edge function for better deliverability
+      const { error: emailError } = await supabase.functions.invoke('send-password-reset', {
+        body: {
+          email: forgotPasswordEmail,
+          resetUrl: `${window.location.origin}/auth?reset=true`,
+        },
+      });
+
+      if (emailError) {
+        console.error("Custom email failed, but Supabase email may have been sent:", emailError);
+      }
+
+      setResetEmailSent(true);
+      toast({
+        title: "Reset Email Sent!",
+        description: "Check your inbox (and spam folder) for the password reset link.",
+      });
+    } catch (err) {
+      console.error("Password reset error:", err);
       toast({
         title: "Error",
-        description: error.message,
+        description: "Failed to send reset email. Please try again.",
         variant: "destructive",
       });
+    } finally {
       setSendingResetEmail(false);
-      return;
     }
-
-    setResetEmailSent(true);
-    setSendingResetEmail(false);
-    toast({
-      title: "Reset Email Sent!",
-      description: "Check your inbox for the password reset link.",
-    });
   };
 
   const closeForgotPasswordDialog = () => {
