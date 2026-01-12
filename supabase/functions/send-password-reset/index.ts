@@ -18,10 +18,20 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+    const RESEND_FROM = Deno.env.get("RESEND_FROM");
+    
     if (!RESEND_API_KEY) {
       console.error("RESEND_API_KEY not configured");
       return new Response(
         JSON.stringify({ error: "Email service not configured" }),
+        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    if (!RESEND_FROM) {
+      console.error("RESEND_FROM not configured");
+      return new Response(
+        JSON.stringify({ error: "Email sender not configured" }),
         { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
@@ -36,6 +46,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     console.log("Sending password reset email to:", email);
+    console.log("Using from address:", RESEND_FROM);
 
     const emailResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -44,7 +55,7 @@ const handler = async (req: Request): Promise<Response> => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "SkyLife RP <onboarding@resend.dev>",
+        from: RESEND_FROM,
         to: [email],
         subject: "Reset Your Password - SkyLife RP",
         html: `
