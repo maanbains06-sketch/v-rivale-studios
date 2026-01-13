@@ -10,7 +10,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui
 import { NotificationBell } from "./NotificationBell";
 import { useStaffRole } from "@/hooks/useStaffRole";
 import { ThemeToggle } from "./ThemeToggle";
-import UserProfileDropdown from "./UserProfileDropdown";
+import HeaderProfileDropdown from "./HeaderProfileDropdown";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import {
@@ -275,28 +275,19 @@ const Navigation = () => {
               </DropdownMenuContent>
             </DropdownMenu>
             
-            {/* User Profile Dropdown - Shows for authenticated Discord server members */}
-            <UserProfileDropdown className="hidden md:flex" />
-            {hasAdminAccess && (
-              <NavLink 
-                to="/admin" 
-                className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1"
-                activeClassName="text-primary"
-              >
-                <Shield className="w-4 h-4" />
-                Admin
-              </NavLink>
-            )}
+            {/* User Profile Dropdown - Right after Legal dropdown */}
+            <HeaderProfileDropdown className="hidden md:flex" />
           </div>
           
-          <div className="flex items-center gap-2 ml-auto md:ml-0">
+          <div className="flex items-center gap-2">
             {user && <NotificationBell />}
+            {/* Hamburger Menu - Moved to far right corner */}
             <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <SheetTrigger asChild>
                 <Button 
                   variant="outline"
-                  size="sm"
-                  className="glass-effect md:hidden order-last"
+                  size="icon"
+                  className="glass-effect ml-2"
                 >
                   <Menu className="w-5 h-5" />
                 </Button>
@@ -599,54 +590,6 @@ const Navigation = () => {
                 </div>
               </SheetContent>
             </Sheet>
-            
-            {/* Desktop User Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="outline"
-                  size="sm"
-                  className="glass-effect hidden md:flex"
-                >
-                  <Menu className="w-5 h-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-background/95 backdrop-blur-xl border border-border/20 shadow-xl z-50">
-                {hasAdminAccess && (
-                  <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/admin")}>
-                    <Shield className="w-4 h-4 mr-2" />
-                    Admin Panel
-                  </DropdownMenuItem>
-                )}
-                {isOwner && (
-                  <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/owner-panel")}>
-                    <Crown className="w-4 h-4 mr-2 text-primary" />
-                    Owner Panel
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/contact-owner")}>
-                  <Mail className="w-4 h-4 mr-2" />
-                  Contact Owner
-                </DropdownMenuItem>
-                {user ? (
-                  <>
-                    <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/dashboard")}>
-                      <UserCircle className="w-4 h-4 mr-2" />
-                      My Dashboard
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer" onClick={handleLogout}>
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Logout
-                    </DropdownMenuItem>
-                  </>
-                ) : (
-                  <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/auth")}>
-                    <Users className="w-4 h-4 mr-2" />
-                    Join Now
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
         </div>
       </div>
