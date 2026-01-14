@@ -115,17 +115,22 @@ const UserProfileDropdown = ({ className = "" }: UserProfileDropdownProps) => {
     });
   };
 
-  // Get Discord avatar and username from user metadata
-  const getDiscordAvatar = () => {
+  // Get user avatar from metadata (Discord or other OAuth providers)
+  const getUserAvatar = () => {
     if (!user) return null;
+    
+    // Try Discord CDN avatar first
     const discordId = user.user_metadata?.discord_id;
     const avatarHash = user.user_metadata?.avatar;
-    
-    // Construct Discord CDN avatar URL if we have the ID and hash
     if (discordId && avatarHash) {
-      return `https://cdn.discordapp.com/avatars/${discordId}/${avatarHash}.png`;
+      return `https://cdn.discordapp.com/avatars/${discordId}/${avatarHash}.png?size=128`;
     }
-    return user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
+    
+    // Try other avatar sources from OAuth metadata
+    return user.user_metadata?.avatar_url || 
+           user.user_metadata?.picture || 
+           user.user_metadata?.profile_picture ||
+           null;
   };
 
   const getDiscordUsername = () => {
@@ -153,7 +158,7 @@ const UserProfileDropdown = ({ className = "" }: UserProfileDropdownProps) => {
     return null;
   }
 
-  const avatarUrl = getDiscordAvatar();
+  const avatarUrl = getUserAvatar();
   const username = getDiscordUsername();
 
   return (
