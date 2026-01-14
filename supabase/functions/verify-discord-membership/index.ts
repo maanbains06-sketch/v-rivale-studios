@@ -174,7 +174,36 @@ serve(async (req) => {
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     } else if (memberResponse.status === 404) {
-      console.log(`User ${discordId} is NOT a member of server ${serverId}`);
+      // 404 can mean: user not in server OR bot can't see members due to missing intent
+      console.log(`Member lookup 404 for user ${discordId} in server ${serverId}`);
+      
+      // Try to search for the member using the search endpoint as a fallback
+      // This helps determine if the 404 is due to missing GUILD_MEMBERS intent
+      const searchResponse = await fetch(
+        `https://discord.com/api/v10/guilds/${serverId}/members/search?query=${discordId}&limit=1`,
+        {
+          headers: {
+            'Authorization': `Bot ${botToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      console.log(`Member search response status: ${searchResponse.status}`);
+      
+      if (searchResponse.status === 403) {
+        console.error('Bot lacks GUILD_MEMBERS intent - cannot search/list members');
+        return new Response(
+          JSON.stringify({ 
+            isMember: false, 
+            error: 'Discord bot configuration issue. The bot needs SERVER MEMBERS INTENT enabled in Discord Developer Portal.',
+            debug: 'GUILD_MEMBERS intent required',
+            configHelp: 'Go to Discord Developer Portal → Your Bot → Bot Settings → Enable SERVER MEMBERS INTENT'
+          }),
+          { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
       return new Response(
         JSON.stringify({ 
           isMember: false, 
@@ -184,14 +213,14 @@ serve(async (req) => {
       );
     } else if (memberResponse.status === 403) {
       const errorBody = await memberResponse.text();
-      console.error(`Discord API 403 Forbidden when fetching member. Bot may lack GUILD_MEMBERS intent. Error: ${errorBody}`);
+      console.error(`Discord API 403 Forbidden. Error: ${errorBody}`);
       
-      // This typically means the bot doesn't have GUILD_MEMBERS privileged intent enabled
       return new Response(
         JSON.stringify({ 
-          error: 'Discord verification requires bot configuration update. Please contact an administrator.',
+          error: 'Discord bot needs SERVER MEMBERS INTENT enabled in Discord Developer Portal.',
           isMember: false,
-          debug: 'Bot requires GUILD_MEMBERS intent'
+          debug: 'GUILD_MEMBERS intent required',
+          configHelp: 'Go to Discord Developer Portal → Your Bot → Bot Settings → Privileged Gateway Intents → Enable SERVER MEMBERS INTENT'
         }),
         { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
