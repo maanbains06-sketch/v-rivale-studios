@@ -61,6 +61,7 @@ const AdminYoutubers = lazy(() => import("./pages/AdminYoutubers"));
 const AdminStaffTeams = lazy(() => import("./pages/AdminStaffTeams"));
 const AdminDiscordRules = lazy(() => import("./pages/AdminDiscordRules"));
 const Giveaway = lazy(() => import("./pages/Giveaway"));
+const DirectMessage = lazy(() => import("./pages/DirectMessage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Optimized query client - balanced caching with proper data loading on navigation
@@ -141,6 +142,7 @@ const AppRoutes = memo(() => {
           <Route path="/gang-rp" element={<PageTransition><RequireAuth message="Login with Discord to access Gang RP applications."><GangRP /></RequireAuth></PageTransition>} />
           <Route path="/feedback" element={<PageTransition><RequireAuth message="Login with Discord to submit feedback."><Feedback /></RequireAuth></PageTransition>} />
           <Route path="/giveaway" element={<PageTransition><Giveaway /></PageTransition>} />
+          <Route path="/direct-message" element={<PageTransition><RequireAuth message="Login with Discord to send direct messages."><DirectMessage /></RequireAuth></PageTransition>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
         </Routes>

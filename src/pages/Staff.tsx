@@ -680,6 +680,20 @@ const Staff = () => {
                   Open Support
                 </Button>
                 
+                {/* Send Message Button - Direct Chat */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full gap-2 text-xs bg-secondary/5 border-secondary/30 hover:bg-secondary/10 hover:border-secondary/50 text-secondary-foreground"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/direct-message?staffId=${member.id}&staffName=${encodeURIComponent(member.name)}`);
+                  }}
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                  Send Message
+                </Button>
+                
                 {/* View Profile Link */}
                 <div className="flex items-center justify-center gap-2 text-xs font-medium text-muted-foreground group-hover:text-primary transition-all duration-300">
                   <UserCircle className="w-4 h-4" />
