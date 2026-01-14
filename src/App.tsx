@@ -175,29 +175,60 @@ const App = () => {
   const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
+    const safeGet = (key: string) => {
+      try {
+        return sessionStorage.getItem(key);
+      } catch {
+        return null;
+      }
+    };
+
+    const safeSet = (key: string, value: string) => {
+      try {
+        sessionStorage.setItem(key, value);
+      } catch {
+        // ignore (some browsers/private modes can block storage)
+      }
+    };
+
+    // If loading screen ever fails to complete, force-unblock the app.
+    const hardUnblock = window.setTimeout(() => {
+      setShowContent(true);
+      setIsLoading(false);
+    }, 2500);
+
     // Check if this is the first visit in this session
-    const hasVisited = sessionStorage.getItem("slrp_visited");
+    const hasVisited = safeGet("slrp_visited");
     if (hasVisited) {
+      window.clearTimeout(hardUnblock);
       setIsLoading(false);
       setShowContent(true);
       return;
     }
-    
+
     // For low-end devices, reduce loading time
-    const isLowEndDevice = navigator.hardwareConcurrency <= 4 || 
+    const isLowEndDevice =
+      navigator.hardwareConcurrency <= 4 ||
       (navigator as any).deviceMemory <= 4 ||
       window.innerWidth < 640;
-    
+
     if (isLowEndDevice) {
-      // Skip loading screen on low-end devices
-      sessionStorage.setItem("slrp_visited", "true");
+      safeSet("slrp_visited", "true");
+      window.clearTimeout(hardUnblock);
       setIsLoading(false);
       setShowContent(true);
+      return;
     }
+
+    return () => window.clearTimeout(hardUnblock);
   }, []);
 
   const handleLoadingComplete = () => {
-    sessionStorage.setItem("slrp_visited", "true");
+    try {
+      sessionStorage.setItem("slrp_visited", "true");
+    } catch {
+      // ignore
+    }
     setShowContent(true);
     setTimeout(() => setIsLoading(false), 200);
   };
