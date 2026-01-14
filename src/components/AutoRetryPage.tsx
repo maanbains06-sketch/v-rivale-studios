@@ -34,43 +34,45 @@ const AutoRetryPage = ({
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
-    let checkIntervalId: ReturnType<typeof setInterval>;
+    let checkTimeoutId: ReturnType<typeof setTimeout>;
+    let checkCount = 0;
 
-    // Check if actual content has rendered (not just the wrapper)
     const checkContentLoaded = () => {
       if (contentRef.current) {
-        // Check if there's meaningful content inside (lower threshold for faster detection)
         const hasContent = contentRef.current.children.length > 0 &&
           contentRef.current.innerHTML.trim().length > 50;
         
         if (hasContent) {
           setIsLoading(false);
-          clearTimeout(timeoutId);
-          clearInterval(checkIntervalId);
           return true;
         }
       }
       return false;
     };
 
-    // Check content every 100ms (faster detection)
-    checkIntervalId = setInterval(() => {
-      if (checkContentLoaded()) {
-        clearInterval(checkIntervalId);
+    // Check content less frequently - every 500ms instead of 100ms
+    const scheduleCheck = () => {
+      if (checkCount < 5) { // Only check 5 times max
+        checkCount++;
+        checkTimeoutId = setTimeout(() => {
+          if (!checkContentLoaded()) {
+            scheduleCheck();
+          }
+        }, 500);
       }
-    }, 100);
+    };
+    
+    // Start checking after a small delay
+    scheduleCheck();
 
     // Set timeout for auto-retry
     timeoutId = setTimeout(() => {
-      clearInterval(checkIntervalId);
-      
       if (!checkContentLoaded()) {
         if (retryCount < maxRetries) {
           console.log(`AutoRetryPage: ${pageName} - Retry ${retryCount + 1}/${maxRetries}`);
           retryKey.current += 1;
           setRetryCount((prev) => prev + 1);
         } else if (hardRefreshOnFinal && !hasTriedHardRefresh.current) {
-          // Force hard refresh on final attempt
           console.log(`AutoRetryPage: ${pageName} - Final attempt, forcing hard refresh`);
           hasTriedHardRefresh.current = true;
           window.location.reload();
@@ -83,7 +85,7 @@ const AutoRetryPage = ({
 
     return () => {
       clearTimeout(timeoutId);
-      clearInterval(checkIntervalId);
+      clearTimeout(checkTimeoutId);
     };
   }, [retryCount, timeout, maxRetries, pageName, hardRefreshOnFinal]);
 

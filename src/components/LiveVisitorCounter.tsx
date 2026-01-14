@@ -17,13 +17,6 @@ const LiveVisitorCounter = memo(() => {
         const count = Object.keys(channel.presenceState()).length;
         setVisitorCount(count > 0 ? count : 1);
       })
-      .on('presence', { event: 'join' }, () => {
-        setVisitorCount(Object.keys(channel.presenceState()).length);
-      })
-      .on('presence', { event: 'leave' }, () => {
-        const count = Object.keys(channel.presenceState()).length;
-        setVisitorCount(count > 0 ? count : 1);
-      })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           await channel.track({ online_at: new Date().toISOString() });
@@ -36,13 +29,10 @@ const LiveVisitorCounter = memo(() => {
   }, []);
 
   return (
-    <div className="fixed top-24 md:top-20 right-2 md:right-4 z-40 animate-fade-in">
+    <div className="fixed top-24 md:top-20 right-2 md:right-4 z-40">
       <div className="relative">
-        <div className="absolute inset-0 bg-green-500/20 rounded-full blur-lg animate-pulse" />
-        
         <div className="relative flex items-center gap-1.5 md:gap-2 px-2.5 md:px-4 py-1.5 md:py-2.5 rounded-full bg-card/90 border border-green-500/40 backdrop-blur-md shadow-lg">
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
           </span>
           
