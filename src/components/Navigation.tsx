@@ -4,7 +4,7 @@ import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail, Ban, Briefcas
 import { Button } from "./ui/button";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 import { NotificationBell } from "./NotificationBell";
@@ -314,26 +314,23 @@ const Navigation = () => {
                 <ChevronDown className="w-4 h-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-background/95 backdrop-blur-xl border border-border/20 shadow-xl z-50">
-                <DropdownMenuItem 
-                  className="cursor-pointer flex items-center gap-2"
-                  onClick={() => navigate("/privacy-policy")}
-                >
-                  <Lock className="w-4 h-4 text-primary" />
-                  Privacy Policy
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link to="/privacy-policy" className="flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-primary" />
+                    Privacy Policy
+                  </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem 
-                  className="cursor-pointer flex items-center gap-2"
-                  onClick={() => navigate("/terms-of-service")}
-                >
-                  <Scale className="w-4 h-4 text-secondary" />
-                  Terms of Service
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link to="/terms-of-service" className="flex items-center gap-2">
+                    <Scale className="w-4 h-4 text-secondary" />
+                    Terms of Service
+                  </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem 
-                  className="cursor-pointer flex items-center gap-2"
-                  onClick={() => navigate("/refund-policy")}
-                >
-                  <CreditCard className="w-4 h-4 text-primary" />
-                  Refund Policy
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link to="/refund-policy" className="flex items-center gap-2">
+                    <CreditCard className="w-4 h-4 text-primary" />
+                    Refund Policy
+                  </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -365,13 +362,13 @@ const Navigation = () => {
                         <Button 
                           variant="outline"
                           className="justify-start glass-effect border-primary/30"
-                          onClick={() => {
-                            navigate("/admin");
-                            setIsMenuOpen(false);
-                          }}
+                          asChild
+                          onClick={() => setIsMenuOpen(false)}
                         >
-                          <Shield className="w-4 h-4 mr-2 text-primary" />
-                          Admin Panel
+                          <Link to="/admin">
+                            <Shield className="w-4 h-4 mr-2 text-primary" />
+                            Admin Panel
+                          </Link>
                         </Button>
                       )}
                       {isOwner && (
@@ -379,24 +376,24 @@ const Navigation = () => {
                           <Button 
                             variant="outline"
                             className="justify-start glass-effect border-amber-500/30"
-                            onClick={() => {
-                              navigate("/owner-panel");
-                              setIsMenuOpen(false);
-                            }}
+                            asChild
+                            onClick={() => setIsMenuOpen(false)}
                           >
-                            <Crown className="w-4 h-4 mr-2 text-amber-400" />
-                            Owner Panel
+                            <Link to="/owner-panel">
+                              <Crown className="w-4 h-4 mr-2 text-amber-400" />
+                              Owner Panel
+                            </Link>
                           </Button>
                           <Button 
                             variant="outline"
                             className="justify-start glass-effect border-primary/30"
-                            onClick={() => {
-                              navigate("/admin");
-                              setIsMenuOpen(false);
-                            }}
+                            asChild
+                            onClick={() => setIsMenuOpen(false)}
                           >
-                            <Shield className="w-4 h-4 mr-2 text-primary" />
-                            Admin Panel
+                            <Link to="/admin">
+                              <Shield className="w-4 h-4 mr-2 text-primary" />
+                              Admin Panel
+                            </Link>
                           </Button>
                         </>
                       )}
@@ -405,50 +402,52 @@ const Navigation = () => {
 
                   {/* Main Navigation Links - Mobile Only */}
                   <div className="flex flex-col gap-1 pb-4 border-b border-border/30 md:hidden">
-                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/"); setIsMenuOpen(false); }}>
-                      Home
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/">Home</Link>
                     </Button>
-                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/about"); setIsMenuOpen(false); }}>
-                      About
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/about">About</Link>
                     </Button>
-                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/features"); setIsMenuOpen(false); }}>
-                      Features
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/features">Features</Link>
                     </Button>
-                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/guides"); setIsMenuOpen(false); }}>
-                      Guides
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/guides">Guides</Link>
                     </Button>
-                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/gallery"); setIsMenuOpen(false); }}>
-                      Gallery
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/gallery">Gallery</Link>
                     </Button>
-                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/staff"); setIsMenuOpen(false); }}>
-                      Staff
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/staff">Staff</Link>
                     </Button>
-                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/job-application"); setIsMenuOpen(false); }}>
-                      Jobs
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/job-application">Jobs</Link>
                     </Button>
-                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/gang-rp"); setIsMenuOpen(false); }}>
-                      Gang RP
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/gang-rp">Gang RP</Link>
                     </Button>
-                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/support"); setIsMenuOpen(false); }}>
-                      Support
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/support">Support</Link>
                     </Button>
-                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/support-chat"); setIsMenuOpen(false); }}>
-                      <MessageSquare className="w-4 h-4 mr-2" />
-                      Support Chat
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/support-chat" className="flex items-center">
+                        <MessageSquare className="w-4 h-4 mr-2" />
+                        Support Chat
+                      </Link>
                     </Button>
                     <Button variant="ghost" className="justify-start" asChild>
                       <a href={TEBEX_STORE_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
                         Store <ExternalLink className="w-3 h-3" />
                       </a>
                     </Button>
-                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/privacy-policy"); setIsMenuOpen(false); }}>
-                      Privacy Policy
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/privacy-policy">Privacy Policy</Link>
                     </Button>
-                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/terms-of-service"); setIsMenuOpen(false); }}>
-                      Terms of Service
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/terms-of-service">Terms of Service</Link>
                     </Button>
-                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/refund-policy"); setIsMenuOpen(false); }}>
-                      Refund Policy
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/refund-policy">Refund Policy</Link>
                     </Button>
                   </div>
 
@@ -459,47 +458,59 @@ const Navigation = () => {
                       <Button 
                         variant="ghost"
                         className="justify-start text-sm"
-                        onClick={() => { navigate("/admin-staff-applications"); setIsMenuOpen(false); }}
+                        asChild
+                        onClick={() => setIsMenuOpen(false)}
                       >
-                        <Users className="w-4 h-4 mr-2" />
-                        Staff Applications
+                        <Link to="/admin-staff-applications" className="flex items-center">
+                          <Users className="w-4 h-4 mr-2" />
+                          Staff Applications
+                        </Link>
                       </Button>
                       <Button 
                         variant="ghost"
                         className="justify-start text-sm"
-                        onClick={() => { navigate("/admin/support-chat"); setIsMenuOpen(false); }}
+                        asChild
+                        onClick={() => setIsMenuOpen(false)}
                       >
-                        <MessageSquare className="w-4 h-4 mr-2" />
-                        Support Chats
+                        <Link to="/admin/support-chat" className="flex items-center">
+                          <MessageSquare className="w-4 h-4 mr-2" />
+                          Support Chats
+                        </Link>
                       </Button>
                       <Button 
                         variant="ghost"
                         className="justify-start text-sm"
-                        onClick={() => { navigate("/admin/gallery"); setIsMenuOpen(false); }}
+                        asChild
+                        onClick={() => setIsMenuOpen(false)}
                       >
-                        <ImageIcon className="w-4 h-4 mr-2" />
-                        Gallery
+                        <Link to="/admin/gallery" className="flex items-center">
+                          <ImageIcon className="w-4 h-4 mr-2" />
+                          Gallery
+                        </Link>
                       </Button>
                       <Button 
                         variant="ghost"
                         className="justify-start text-sm"
-                        onClick={() => { navigate("/admin/staff-stats"); setIsMenuOpen(false); }}
+                        asChild
+                        onClick={() => setIsMenuOpen(false)}
                       >
-                        <BarChart3 className="w-4 h-4 mr-2" />
-                        Analytics
+                        <Link to="/admin/staff-stats" className="flex items-center">
+                          <BarChart3 className="w-4 h-4 mr-2" />
+                          Analytics
+                        </Link>
                       </Button>
                     </div>
                   )}
                   <Button 
                     variant="outline"
                     className="justify-start glass-effect"
-                    onClick={() => {
-                      navigate("/contact-owner");
-                      setIsMenuOpen(false);
-                    }}
+                    asChild
+                    onClick={() => setIsMenuOpen(false)}
                   >
-                    <Mail className="w-4 h-4 mr-2" />
-                    Contact Server Owner
+                    <Link to="/contact-owner" className="flex items-center">
+                      <Mail className="w-4 h-4 mr-2" />
+                      Contact Server Owner
+                    </Link>
                   </Button>
                   
                   {user ? (
@@ -523,35 +534,35 @@ const Navigation = () => {
                       <Button 
                         variant="outline"
                         className="justify-start glass-effect"
-                        onClick={() => {
-                          navigate("/discord-profile");
-                          setIsMenuOpen(false);
-                        }}
+                        asChild
+                        onClick={() => setIsMenuOpen(false)}
                       >
-                        <UserCircle className="w-4 h-4 mr-2" />
-                        My Profile
+                        <Link to="/discord-profile" className="flex items-center">
+                          <UserCircle className="w-4 h-4 mr-2" />
+                          My Profile
+                        </Link>
                       </Button>
                       <Button 
                         variant="outline"
                         className="justify-start glass-effect"
-                        onClick={() => {
-                          navigate("/dashboard");
-                          setIsMenuOpen(false);
-                        }}
+                        asChild
+                        onClick={() => setIsMenuOpen(false)}
                       >
-                        <LayoutDashboard className="w-4 h-4 mr-2" />
-                        Dashboard
+                        <Link to="/dashboard" className="flex items-center">
+                          <LayoutDashboard className="w-4 h-4 mr-2" />
+                          Dashboard
+                        </Link>
                       </Button>
                       <Button 
                         variant="outline"
                         className="justify-start glass-effect"
-                        onClick={() => {
-                          navigate("/application-status");
-                          setIsMenuOpen(false);
-                        }}
+                        asChild
+                        onClick={() => setIsMenuOpen(false)}
                       >
-                        <Shield className="w-4 h-4 mr-2" />
-                        Application Status
+                        <Link to="/application-status" className="flex items-center">
+                          <Shield className="w-4 h-4 mr-2" />
+                          Application Status
+                        </Link>
                       </Button>
                       <Button 
                         variant="outline"
@@ -568,13 +579,13 @@ const Navigation = () => {
                   ) : (
                     <Button 
                       className="justify-start bg-primary hover:bg-primary/90 text-primary-foreground"
-                      onClick={() => {
-                        navigate("/auth");
-                        setIsMenuOpen(false);
-                      }}
+                      asChild
+                      onClick={() => setIsMenuOpen(false)}
                     >
-                      <Users className="w-4 h-4 mr-2" />
-                      Join Now
+                      <Link to="/auth" className="flex items-center">
+                        <Users className="w-4 h-4 mr-2" />
+                        Join Now
+                      </Link>
                     </Button>
                   )}
                 </div>
