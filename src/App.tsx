@@ -178,11 +178,6 @@ const AppContent = memo(() => {
   const { isOnline } = useNetworkStatus();
   const { settings, loading: settingsLoading } = useSiteSettings();
   const { hasAccess, loading: accessLoading, checkAccess } = useMaintenanceAccess();
-  const navigate = useNavigate();
-
-  const handleStaffLogin = () => {
-    navigate("/auth");
-  };
 
   // Show maintenance page if maintenance mode is on and user doesn't have access
   const showMaintenance = !settingsLoading && !accessLoading && 
@@ -197,7 +192,7 @@ const AppContent = memo(() => {
       )}
       {showMaintenance ? (
         <Suspense fallback={<PageLoader />}>
-          <MaintenancePage onCheckAccess={handleStaffLogin} />
+          <MaintenancePage onAccessGranted={checkAccess} />
         </Suspense>
       ) : (
         <>
