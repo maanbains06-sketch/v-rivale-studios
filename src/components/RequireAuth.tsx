@@ -19,23 +19,44 @@ const RequireAuth = ({ children, message = "You need to login to access this pag
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
+    let didFinish = false;
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    // Safety timeout: never let auth-check hang forever on slow/broken networks
+    const timeout = window.setTimeout(() => {
+      if (!didFinish) setLoading(false);
+    }, 4000);
+
+    // Set up auth state listener FIRST
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+      setUser(nextSession?.user ?? null);
+      didFinish = true;
       setLoading(false);
+      window.clearTimeout(timeout);
     });
 
-    return () => subscription.unsubscribe();
+    // THEN check for existing session
+    supabase.auth
+      .getSession()
+      .then(({ data: { session: existingSession } }) => {
+        setSession(existingSession);
+        setUser(existingSession?.user ?? null);
+      })
+      .catch((err) => {
+        console.warn("RequireAuth getSession failed:", err);
+      })
+      .finally(() => {
+        didFinish = true;
+        setLoading(false);
+        window.clearTimeout(timeout);
+      });
+
+    return () => {
+      window.clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   if (loading) {
