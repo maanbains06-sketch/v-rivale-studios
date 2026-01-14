@@ -53,7 +53,9 @@ const DiscordProfile = () => {
   const { 
     username: discordUsername, 
     displayName, 
-    avatar: discordAvatar, 
+    avatar: discordAvatar,
+    banner: discordBanner,
+    bannerColor,
     isInServer, 
     hasWhitelistRole, 
     loading: discordLoading,
@@ -212,9 +214,20 @@ const DiscordProfile = () => {
             transition={{ duration: 0.5 }}
           >
             <Card className="glass-effect border-border/20 overflow-hidden">
-              {/* Banner */}
-              <div className="h-32 md:h-40 bg-gradient-to-r from-[#5865F2] via-primary to-[#5865F2] relative">
-                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIi8+PC9zdmc+')] opacity-30" />
+              {/* Banner - Use Discord banner if available */}
+              <div 
+                className="h-32 md:h-40 relative"
+                style={{
+                  background: discordBanner 
+                    ? `url(${discordBanner}) center/cover no-repeat`
+                    : bannerColor 
+                      ? bannerColor 
+                      : 'linear-gradient(135deg, #5865F2, hsl(var(--primary)), #5865F2)'
+                }}
+              >
+                {!discordBanner && (
+                  <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIi8+PC9zdmc+')] opacity-30" />
+                )}
               </div>
               
               <CardHeader className="relative pt-0 pb-4">

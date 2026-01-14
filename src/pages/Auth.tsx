@@ -161,7 +161,8 @@ const Auth = () => {
     setLoading(true);
     setVerifyingDiscord(true);
 
-    // Verify Discord server membership
+    // Verify Discord server membership and fetch Discord profile
+    let discordUserData: { avatar?: string; banner?: string; displayName?: string } = {};
     try {
       const { data: verifyData, error: verifyError } = await supabase.functions.invoke('verify-discord-membership', {
         body: { discordId }
@@ -189,6 +190,19 @@ const Auth = () => {
         return;
       }
 
+      // Fetch Discord user data (avatar, banner, etc.)
+      const { data: userData } = await supabase.functions.invoke('fetch-discord-user', {
+        body: { discordId }
+      });
+      
+      if (userData) {
+        discordUserData = {
+          avatar: userData.avatar,
+          banner: userData.banner,
+          displayName: userData.displayName || userData.globalName,
+        };
+      }
+
       setVerifyingDiscord(false);
     } catch (err) {
       toast({
@@ -208,8 +222,11 @@ const Auth = () => {
         emailRedirectTo: `${window.location.origin}/auth`,
         data: {
           username,
-          display_name: username,
+          display_name: discordUserData.displayName || username,
           discord_id: discordId,
+          avatar_url: discordUserData.avatar,
+          discord_avatar: discordUserData.avatar,
+          discord_banner: discordUserData.banner,
         },
       },
     });
