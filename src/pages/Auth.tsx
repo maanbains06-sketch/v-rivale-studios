@@ -210,9 +210,23 @@ const Auth = () => {
       });
 
       if (verifyError) {
+        console.error('Discord verification error:', verifyError);
         toast({
           title: "Discord Verification Failed",
-          description: "Unable to verify Discord membership. Please try again.",
+          description: "Unable to verify Discord membership. Please try again later.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        setVerifyingDiscord(false);
+        return;
+      }
+
+      // Check for service unavailability (bot configuration issues)
+      if (verifyData?.error && verifyData?.debug) {
+        console.error('Discord verification service issue:', verifyData.error, verifyData.debug);
+        toast({
+          title: "Verification Service Issue",
+          description: verifyData.error || "Discord verification is temporarily unavailable. Please contact an administrator.",
           variant: "destructive",
         });
         setLoading(false);
@@ -221,9 +235,10 @@ const Auth = () => {
       }
 
       if (!verifyData?.isMember) {
+        const reason = verifyData?.reason || "You must join our Discord server before signing up. Click the 'Join Discord Server' button above.";
         toast({
           title: "Discord Membership Required",
-          description: "You must join our Discord server before signing up. Click the 'Join Discord Server' button above.",
+          description: reason,
           variant: "destructive",
         });
         setLoading(false);
@@ -494,20 +509,37 @@ const Auth = () => {
                   className="space-y-2"
                 >
                   <Label htmlFor="discordId" className="text-sm font-medium">
-                    Discord ID
+                    Discord User ID <span className="text-muted-foreground font-normal">(not username)</span>
                   </Label>
                   <Input
                     id="discordId"
                     type="text"
-                    placeholder="Your Discord User ID (e.g., 123456789012345678)"
+                    placeholder="e.g., 833680146510381097"
                     value={discordId}
-                    onChange={(e) => setDiscordId(e.target.value)}
-                    className="h-12 bg-background/80 border-border/50 rounded-lg focus:border-primary"
+                    onChange={(e) => {
+                      // Only allow digits
+                      const value = e.target.value.replace(/\D/g, '');
+                      setDiscordId(value);
+                    }}
+                    className={`h-12 bg-background/80 border-border/50 rounded-lg focus:border-primary ${
+                      discordId && !/^\d{17,19}$/.test(discordId) ? 'border-destructive' : ''
+                    }`}
                     required
+                    maxLength={19}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Enable Developer Mode in Discord Settings → Copy your ID by right-clicking your profile
-                  </p>
+                  {discordId && !/^\d{17,19}$/.test(discordId) && (
+                    <p className="text-xs text-destructive">
+                      Discord ID must be 17-19 digits (numbers only)
+                    </p>
+                  )}
+                  <div className="text-xs text-muted-foreground space-y-1">
+                    <p className="font-medium">How to find your Discord User ID:</p>
+                    <ol className="list-decimal list-inside space-y-0.5 pl-1">
+                      <li>Open Discord Settings → App Settings → Advanced</li>
+                      <li>Enable "Developer Mode"</li>
+                      <li>Right-click your profile picture → "Copy User ID"</li>
+                    </ol>
+                  </div>
                 </motion.div>
               )}
 
