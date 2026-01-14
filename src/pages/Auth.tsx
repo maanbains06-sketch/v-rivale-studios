@@ -94,10 +94,22 @@ const Auth = () => {
   }, [tabParam, location]);
 
   useEffect(() => {
+    let isMounted = true;
+    
+    // Safety timeout to prevent infinite loading on slow networks or browser issues
+    const safetyTimeout = setTimeout(() => {
+      if (isMounted && checkingAuth) {
+        console.log("Auth check timeout - forcing completion");
+        setCheckingAuth(false);
+      }
+    }, 5000);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (!isMounted) return;
         setSession(session);
         setUser(session?.user ?? null);
+        setCheckingAuth(false);
         if (event === 'SIGNED_IN' && session?.user) {
           // Redirect to home page after login/signup
           navigate("/");
@@ -106,6 +118,7 @@ const Auth = () => {
     );
 
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!isMounted) return;
       setSession(session);
       setUser(session?.user ?? null);
       setCheckingAuth(false);
@@ -113,10 +126,19 @@ const Auth = () => {
         // Redirect to home page if already logged in
         navigate("/");
       }
+    }).catch((error) => {
+      console.error("Error getting session:", error);
+      if (isMounted) {
+        setCheckingAuth(false);
+      }
     });
 
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    return () => {
+      isMounted = false;
+      clearTimeout(safetyTimeout);
+      subscription.unsubscribe();
+    };
+  }, [navigate, checkingAuth]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
