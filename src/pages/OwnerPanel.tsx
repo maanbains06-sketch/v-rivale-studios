@@ -16,6 +16,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Owner2FAVerification } from "@/components/Owner2FAVerification";
 import { OwnerAuditLog } from "@/components/OwnerAuditLog";
+import { LiveMemberJoins } from "@/components/LiveMemberJoins";
+import { EnhancedSiteSettings } from "@/components/EnhancedSiteSettings";
 import { 
   Loader2, 
   Shield, 
@@ -35,7 +37,8 @@ import {
   Pencil,
   Trash2,
   RefreshCw,
-  UserCircle
+  UserCircle,
+  UserPlus
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StaffManagementDialog } from "@/components/StaffManagementDialog";
@@ -763,14 +766,18 @@ const OwnerPanel = () => {
       
       <div className="container mx-auto px-4 py-12">
         <Tabs defaultValue="settings" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:inline-flex">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 lg:w-auto lg:inline-flex gap-1">
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
-              <span className="hidden sm:inline">Site Settings</span>
+              <span className="hidden sm:inline">Settings</span>
             </TabsTrigger>
             <TabsTrigger value="roles" className="flex items-center gap-2">
               <Shield className="w-4 h-4" />
               <span className="hidden sm:inline">User Roles</span>
+            </TabsTrigger>
+            <TabsTrigger value="members" className="flex items-center gap-2">
+              <UserPlus className="w-4 h-4" />
+              <span className="hidden sm:inline">Member Joins</span>
             </TabsTrigger>
             <TabsTrigger value="staff" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
@@ -782,7 +789,7 @@ const OwnerPanel = () => {
             </TabsTrigger>
             <TabsTrigger value="pdm" className="flex items-center gap-2">
               <Car className="w-4 h-4" />
-              <span className="hidden sm:inline">PDM Applications</span>
+              <span className="hidden sm:inline">PDM</span>
             </TabsTrigger>
             <TabsTrigger value="audit" className="flex items-center gap-2">
               <History className="w-4 h-4" />
@@ -796,139 +803,12 @@ const OwnerPanel = () => {
 
           {/* Site Settings Tab */}
           <TabsContent value="settings">
-            <Card className="glass-effect border-border/20">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Settings className="w-5 h-5 text-primary" />
-                  <CardTitle className="text-gradient">Site Settings</CardTitle>
-                </div>
-                <CardDescription>Configure global site settings including Discord integration</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Discord Settings */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gradient">Discord Configuration</h3>
-                  
-                  <div className="grid gap-4">
-                    <div className="space-y-2">
-                      <Label>Discord Server ID</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={editedSettings["discord_server_id"] || ""}
-                          onChange={(e) => setEditedSettings({...editedSettings, discord_server_id: e.target.value})}
-                          placeholder="Enter your Discord server ID"
-                        />
-                        <Button onClick={() => saveSetting("discord_server_id")}>
-                          <Save className="w-4 h-4" />
-                        </Button>
-                      </div>
-                      <p className="text-xs text-muted-foreground">Used for Discord role assignment</p>
-                    </div>
+            <EnhancedSiteSettings settings={settings} onSettingsChange={loadSettings} />
+          </TabsContent>
 
-                    <div className="space-y-2">
-                      <Label>Whitelist Role ID</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={editedSettings["whitelist_discord_role_id"] || ""}
-                          onChange={(e) => setEditedSettings({...editedSettings, whitelist_discord_role_id: e.target.value})}
-                          placeholder="Enter the whitelist role ID"
-                        />
-                        <Button onClick={() => saveSetting("whitelist_discord_role_id")}>
-                          <Save className="w-4 h-4" />
-                        </Button>
-                      </div>
-                      <p className="text-xs text-muted-foreground">Role assigned when whitelist is approved</p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Staff Role ID</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={editedSettings["staff_discord_role_id"] || ""}
-                          onChange={(e) => setEditedSettings({...editedSettings, staff_discord_role_id: e.target.value})}
-                          placeholder="Enter the staff role ID"
-                        />
-                        <Button onClick={() => saveSetting("staff_discord_role_id")}>
-                          <Save className="w-4 h-4" />
-                        </Button>
-                      </div>
-                      <p className="text-xs text-muted-foreground">Role required for staff panel access</p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Owner Discord ID</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={editedSettings["owner_discord_id"] || ""}
-                          onChange={(e) => setEditedSettings({...editedSettings, owner_discord_id: e.target.value})}
-                          placeholder="Enter your Discord user ID"
-                        />
-                        <Button onClick={() => saveSetting("owner_discord_id")}>
-                          <Save className="w-4 h-4" />
-                        </Button>
-                      </div>
-                      <p className="text-xs text-muted-foreground">Your Discord ID for Owner Panel access verification</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Staff Page Settings */}
-                <div className="space-y-4 pt-6 border-t border-border/20">
-                  <h3 className="text-lg font-semibold text-gradient">Staff Page Settings</h3>
-                  
-                  <div className="space-y-2">
-                    <Label>Open Positions</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        type="number"
-                        value={editedSettings["open_positions"] || "7"}
-                        onChange={(e) => setEditedSettings({...editedSettings, open_positions: e.target.value})}
-                        placeholder="Number of open positions"
-                      />
-                      <Button onClick={() => saveSetting("open_positions")}>
-                        <Save className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground">Number displayed on the staff page</p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Enabled Staff Positions (comma-separated)</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        value={editedSettings["staff_positions_enabled"] || "administrator,moderator,support_staff,event_coordinator"}
-                        onChange={(e) => setEditedSettings({...editedSettings, staff_positions_enabled: e.target.value})}
-                        placeholder="administrator,moderator,support_staff"
-                      />
-                      <Button onClick={() => saveSetting("staff_positions_enabled")}>
-                        <Save className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground">Available: administrator, moderator, developer, support_staff, event_coordinator, content_creator</p>
-                  </div>
-                </div>
-
-                {/* Server Settings */}
-                <div className="space-y-4 pt-6 border-t border-border/20">
-                  <h3 className="text-lg font-semibold text-gradient">Server Settings</h3>
-                  
-                  <div className="space-y-2">
-                    <Label>FiveM Server Connect URL</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        value={editedSettings["fivem_server_connect"] || "fivem://connect/cfx.re/join/abc123"}
-                        onChange={(e) => setEditedSettings({...editedSettings, fivem_server_connect: e.target.value})}
-                        placeholder="fivem://connect/cfx.re/join/YOUR_CODE"
-                      />
-                      <Button onClick={() => saveSetting("fivem_server_connect")}>
-                        <Save className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground">Direct connect URL for the "Join Server" button</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          {/* Live Member Joins Tab */}
+          <TabsContent value="members">
+            <LiveMemberJoins />
           </TabsContent>
 
           {/* User Roles Tab */}
@@ -1372,7 +1252,7 @@ const OwnerPanel = () => {
                     <p className="text-sm text-muted-foreground mb-2">
                       Full control over all settings, user roles, and applications.
                     </p>
-                    <Badge>Verified by Discord ID: {editedSettings["owner_discord_id"] || "Not Set"}</Badge>
+                    <Badge>Verified by Discord ID: {settings.find(s => s.key === "owner_discord_id")?.value || "Not Set"}</Badge>
                   </div>
 
                   <div className="p-4 rounded-lg bg-secondary/10 border border-secondary/20">
