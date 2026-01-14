@@ -137,7 +137,7 @@ const AppRoutes = memo(() => {
             <Route path="/login" element={<PageTransition><Auth /></PageTransition>} />
             <Route path="/signup" element={<PageTransition><Auth /></PageTransition>} />
             <Route path="/discord-signup" element={<PageTransition><DiscordSignupForm /></PageTransition>} />
-            <Route path="/discord-profile" element={<PageTransition><DiscordProfile /></PageTransition>} />
+            <Route path="/discord-profile" element={<PageTransition><RequireAuth message="Login with Discord to view your profile."><AutoRetryPage pageName="My Profile"><DiscordProfile /></AutoRetryPage></RequireAuth></PageTransition>} />
             <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
             <Route path="/admin-staff-applications" element={<PageTransition><AdminStaffApplications /></PageTransition>} />
             <Route path="/admin-referrals" element={<PageTransition><AdminReferrals /></PageTransition>} />
