@@ -18,6 +18,7 @@ import { Owner2FAVerification } from "@/components/Owner2FAVerification";
 import { OwnerAuditLog } from "@/components/OwnerAuditLog";
 import { LiveMemberJoins } from "@/components/LiveMemberJoins";
 import { EnhancedSiteSettings } from "@/components/EnhancedSiteSettings";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Loader2, 
   Shield, 
@@ -38,7 +39,17 @@ import {
   Trash2,
   RefreshCw,
   UserCircle,
-  UserPlus
+  UserPlus,
+  FileText,
+  AlertTriangle,
+  Flame,
+  Tv,
+  Gavel,
+  Scale,
+  Siren,
+  Ambulance,
+  Wrench,
+  Youtube
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StaffManagementDialog } from "@/components/StaffManagementDialog";
@@ -83,6 +94,122 @@ interface PDMApplication {
   admin_notes?: string;
 }
 
+interface WhitelistApplication {
+  id: string;
+  user_id: string;
+  discord: string;
+  age: number;
+  experience: string;
+  backstory: string;
+  status: string;
+  created_at: string;
+  admin_notes?: string;
+}
+
+interface JobApplication {
+  id: string;
+  user_id: string;
+  job_type: string;
+  character_name: string;
+  age: number;
+  phone_number: string;
+  previous_experience: string;
+  why_join: string;
+  character_background: string;
+  availability: string;
+  status: string;
+  created_at: string;
+  admin_notes?: string;
+}
+
+interface StaffApplication {
+  id: string;
+  user_id: string;
+  full_name: string;
+  discord_username: string;
+  age: number;
+  position: string;
+  experience: string;
+  why_join: string;
+  availability: string;
+  status: string;
+  created_at: string;
+  admin_notes?: string;
+}
+
+interface BanAppeal {
+  id: string;
+  user_id: string;
+  discord_username: string;
+  steam_id: string;
+  ban_reason: string;
+  appeal_reason: string;
+  additional_info?: string;
+  status: string;
+  created_at: string;
+  admin_notes?: string;
+}
+
+interface CreatorApplication {
+  id: string;
+  user_id: string;
+  full_name: string;
+  discord_username: string;
+  platform: string;
+  channel_url: string;
+  average_viewers: string;
+  content_style: string;
+  content_frequency: string;
+  rp_experience: string;
+  why_join: string;
+  status: string;
+  created_at: string;
+  admin_notes?: string;
+}
+
+interface GangApplication {
+  id: string;
+  user_id: string;
+  gang_name: string;
+  leader_name: string;
+  member_count: number;
+  gang_backstory: string;
+  territory_plans: string;
+  activity_level: string;
+  status: string;
+  created_at: string;
+  admin_notes?: string;
+}
+
+interface FirefighterApplication {
+  id: string;
+  user_id: string;
+  real_name: string;
+  discord_id: string;
+  in_game_name: string;
+  steam_id: string;
+  weekly_availability: string;
+  status: string;
+  created_at: string;
+  admin_notes?: string;
+}
+
+interface WeazelNewsApplication {
+  id: string;
+  user_id: string;
+  character_name: string;
+  age: number;
+  phone_number: string;
+  journalism_experience: string;
+  writing_sample: string;
+  camera_skills: string;
+  interview_scenario: string;
+  why_join: string;
+  status: string;
+  created_at: string;
+  admin_notes?: string;
+}
+
 interface Testimonial {
   id: string;
   player_name: string;
@@ -121,11 +248,21 @@ const OwnerPanel = () => {
   const [settings, setSettings] = useState<SiteSetting[]>([]);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [pdmApplications, setPdmApplications] = useState<PDMApplication[]>([]);
+  const [whitelistApplications, setWhitelistApplications] = useState<WhitelistApplication[]>([]);
+  const [jobApplications, setJobApplications] = useState<JobApplication[]>([]);
+  const [staffApplications, setStaffApplications] = useState<StaffApplication[]>([]);
+  const [banAppeals, setBanAppeals] = useState<BanAppeal[]>([]);
+  const [creatorApplications, setCreatorApplications] = useState<CreatorApplication[]>([]);
+  const [gangApplications, setGangApplications] = useState<GangApplication[]>([]);
+  const [firefighterApplications, setFirefighterApplications] = useState<FirefighterApplication[]>([]);
+  const [weazelNewsApplications, setWeazelNewsApplications] = useState<WeazelNewsApplication[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [staffMembers, setStaffMembers] = useState<StaffMemberData[]>([]);
   const [editedSettings, setEditedSettings] = useState<Record<string, string>>({});
   const [selectedPdmApp, setSelectedPdmApp] = useState<PDMApplication | null>(null);
   const [pdmAdminNotes, setPdmAdminNotes] = useState("");
+  const [selectedAppType, setSelectedAppType] = useState<string>("all");
+  const [adminNotes, setAdminNotes] = useState<Record<string, string>>({});
   const [isStaffDialogOpen, setIsStaffDialogOpen] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<StaffMemberData | null>(null);
   const [staffToDelete, setStaffToDelete] = useState<string | null>(null);
@@ -311,6 +448,14 @@ const OwnerPanel = () => {
       loadSettings(),
       loadUserRoles(),
       loadPdmApplications(),
+      loadWhitelistApplications(),
+      loadJobApplications(),
+      loadStaffApplications(),
+      loadBanAppeals(),
+      loadCreatorApplications(),
+      loadGangApplications(),
+      loadFirefighterApplications(),
+      loadWeazelNewsApplications(),
       loadTestimonials(),
       loadStaffMembers(),
     ]);
@@ -455,6 +600,133 @@ const OwnerPanel = () => {
     }
 
     setPdmApplications(data || []);
+  };
+
+  const loadWhitelistApplications = async () => {
+    const { data, error } = await supabase
+      .from("whitelist_applications")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error loading whitelist applications:", error);
+      return;
+    }
+
+    setWhitelistApplications(data || []);
+  };
+
+  const loadJobApplications = async () => {
+    const { data, error } = await supabase
+      .from("job_applications")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error loading job applications:", error);
+      return;
+    }
+
+    setJobApplications(data || []);
+  };
+
+  const loadStaffApplications = async () => {
+    const { data, error } = await supabase
+      .from("staff_applications")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error loading staff applications:", error);
+      return;
+    }
+
+    setStaffApplications(data || []);
+  };
+
+  const loadBanAppeals = async () => {
+    const { data, error } = await supabase
+      .from("ban_appeals")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error loading ban appeals:", error);
+      return;
+    }
+
+    setBanAppeals(data || []);
+  };
+
+  const loadCreatorApplications = async () => {
+    const { data, error } = await supabase
+      .from("creator_applications")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error loading creator applications:", error);
+      return;
+    }
+
+    setCreatorApplications(data || []);
+  };
+
+  const loadGangApplications = async () => {
+    // Gang applications might be stored in job_applications with job_type = 'gang'
+    const { data, error } = await supabase
+      .from("job_applications")
+      .select("*")
+      .eq("job_type", "gang")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error loading gang applications:", error);
+      return;
+    }
+
+    // Map to gang application format
+    setGangApplications((data || []).map((app: any) => ({
+      id: app.id,
+      user_id: app.user_id,
+      gang_name: app.character_name,
+      leader_name: app.character_name,
+      member_count: 1,
+      gang_backstory: app.character_background,
+      territory_plans: app.why_join,
+      activity_level: app.availability,
+      status: app.status,
+      created_at: app.created_at,
+      admin_notes: app.admin_notes,
+    })));
+  };
+
+  const loadFirefighterApplications = async () => {
+    const { data, error } = await supabase
+      .from("firefighter_applications")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error loading firefighter applications:", error);
+      return;
+    }
+
+    setFirefighterApplications(data || []);
+  };
+
+  const loadWeazelNewsApplications = async () => {
+    const { data, error } = await supabase
+      .from("weazel_news_applications")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error loading Weazel News applications:", error);
+      return;
+    }
+
+    setWeazelNewsApplications(data || []);
   };
 
   const loadTestimonials = async () => {
@@ -705,6 +977,83 @@ const OwnerPanel = () => {
     loadPdmApplications();
   };
 
+  // Generic application status update function
+  const updateApplicationStatus = async (
+    table: "whitelist_applications" | "job_applications" | "staff_applications" | "ban_appeals" | "creator_applications" | "firefighter_applications" | "weazel_news_applications",
+    appId: string,
+    status: "approved" | "rejected",
+    appName: string,
+    loadFunction: () => Promise<void>
+  ) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const notes = adminNotes[appId] || null;
+    
+    const { error } = await supabase
+      .from(table)
+      .update({
+        status,
+        reviewed_by: user?.id,
+        reviewed_at: new Date().toISOString(),
+        admin_notes: notes,
+      } as any)
+      .eq("id", appId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: `Failed to update application.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    await logAction({
+      actionType: 'application_update',
+      actionDescription: `${status === 'approved' ? 'Approved' : 'Rejected'} ${appName}`,
+      targetTable: table,
+      targetId: appId,
+      newValue: { status, admin_notes: notes }
+    });
+
+    toast({
+      title: "Success",
+      description: `Application ${status} successfully.`,
+    });
+
+    setAdminNotes(prev => ({ ...prev, [appId]: "" }));
+    await loadFunction();
+  };
+
+  // Calculate application counts
+  const getApplicationCounts = () => {
+    const pending = {
+      whitelist: whitelistApplications.filter(a => a.status === "pending").length,
+      job: jobApplications.filter(a => a.status === "pending").length,
+      staff: staffApplications.filter(a => a.status === "pending").length,
+      ban: banAppeals.filter(a => a.status === "pending").length,
+      creator: creatorApplications.filter(a => a.status === "pending").length,
+      gang: gangApplications.filter(a => a.status === "pending").length,
+      firefighter: firefighterApplications.filter(a => a.status === "pending").length,
+      weazel: weazelNewsApplications.filter(a => a.status === "pending").length,
+      pdm: pdmApplications.filter(a => a.status === "pending").length,
+    };
+    return pending;
+  };
+
+  const counts = getApplicationCounts();
+  const totalPending = Object.values(counts).reduce((a, b) => a + b, 0);
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "approved":
+        return <Badge className="bg-green-500/20 text-green-400">Approved</Badge>;
+      case "rejected":
+        return <Badge variant="destructive">Rejected</Badge>;
+      default:
+        return <Badge variant="secondary">Pending</Badge>;
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -766,44 +1115,587 @@ const OwnerPanel = () => {
       
       <div className="container mx-auto px-4 py-12">
         <Tabs defaultValue="settings" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 lg:w-auto lg:inline-flex gap-1">
-            <TabsTrigger value="settings" className="flex items-center gap-2">
-              <Settings className="w-4 h-4" />
-              <span className="hidden sm:inline">Settings</span>
-            </TabsTrigger>
-            <TabsTrigger value="roles" className="flex items-center gap-2">
-              <Shield className="w-4 h-4" />
-              <span className="hidden sm:inline">User Roles</span>
-            </TabsTrigger>
-            <TabsTrigger value="members" className="flex items-center gap-2">
-              <UserPlus className="w-4 h-4" />
-              <span className="hidden sm:inline">Member Joins</span>
-            </TabsTrigger>
-            <TabsTrigger value="staff" className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              <span className="hidden sm:inline">Staff</span>
-            </TabsTrigger>
-            <TabsTrigger value="feedback" className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4" />
-              <span className="hidden sm:inline">Feedback</span>
-            </TabsTrigger>
-            <TabsTrigger value="pdm" className="flex items-center gap-2">
-              <Car className="w-4 h-4" />
-              <span className="hidden sm:inline">PDM</span>
-            </TabsTrigger>
-            <TabsTrigger value="audit" className="flex items-center gap-2">
-              <History className="w-4 h-4" />
-              <span className="hidden sm:inline">Audit Log</span>
-            </TabsTrigger>
-            <TabsTrigger value="permissions" className="flex items-center gap-2">
-              <Crown className="w-4 h-4" />
-              <span className="hidden sm:inline">Permissions</span>
-            </TabsTrigger>
-          </TabsList>
+          <ScrollArea className="w-full">
+            <TabsList className="inline-flex w-auto gap-1 p-1">
+              <TabsTrigger value="settings" className="flex items-center gap-2">
+                <Settings className="w-4 h-4" />
+                <span className="hidden sm:inline">Settings</span>
+              </TabsTrigger>
+              <TabsTrigger value="applications" className="flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                <span className="hidden sm:inline">Applications</span>
+                {totalPending > 0 && (
+                  <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                    {totalPending}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="roles" className="flex items-center gap-2">
+                <Shield className="w-4 h-4" />
+                <span className="hidden sm:inline">User Roles</span>
+              </TabsTrigger>
+              <TabsTrigger value="members" className="flex items-center gap-2">
+                <UserPlus className="w-4 h-4" />
+                <span className="hidden sm:inline">Member Joins</span>
+              </TabsTrigger>
+              <TabsTrigger value="staff" className="flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                <span className="hidden sm:inline">Staff</span>
+              </TabsTrigger>
+              <TabsTrigger value="feedback" className="flex items-center gap-2">
+                <MessageSquare className="w-4 h-4" />
+                <span className="hidden sm:inline">Feedback</span>
+              </TabsTrigger>
+              <TabsTrigger value="audit" className="flex items-center gap-2">
+                <History className="w-4 h-4" />
+                <span className="hidden sm:inline">Audit Log</span>
+              </TabsTrigger>
+              <TabsTrigger value="permissions" className="flex items-center gap-2">
+                <Crown className="w-4 h-4" />
+                <span className="hidden sm:inline">Permissions</span>
+              </TabsTrigger>
+            </TabsList>
+          </ScrollArea>
 
           {/* Site Settings Tab */}
           <TabsContent value="settings">
             <EnhancedSiteSettings settings={settings} onSettingsChange={loadSettings} />
+          </TabsContent>
+
+          {/* All Applications Tab */}
+          <TabsContent value="applications">
+            <Card className="glass-effect border-border/20">
+              <CardHeader>
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-primary" />
+                      <CardTitle className="text-gradient">All Applications</CardTitle>
+                    </div>
+                    <CardDescription>Review and manage all application types</CardDescription>
+                  </div>
+                  <Select value={selectedAppType} onValueChange={setSelectedAppType}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="Filter by type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Applications</SelectItem>
+                      <SelectItem value="whitelist">Whitelist ({counts.whitelist} pending)</SelectItem>
+                      <SelectItem value="job">Job ({counts.job} pending)</SelectItem>
+                      <SelectItem value="staff">Staff ({counts.staff} pending)</SelectItem>
+                      <SelectItem value="ban">Ban Appeals ({counts.ban} pending)</SelectItem>
+                      <SelectItem value="creator">Creator ({counts.creator} pending)</SelectItem>
+                      <SelectItem value="firefighter">Firefighter ({counts.firefighter} pending)</SelectItem>
+                      <SelectItem value="weazel">Weazel News ({counts.weazel} pending)</SelectItem>
+                      <SelectItem value="pdm">PDM ({counts.pdm} pending)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Quick Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 mt-4">
+                  <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                    <div className="flex items-center gap-2 text-sm text-blue-400">
+                      <Shield className="w-4 h-4" />
+                      Whitelist
+                    </div>
+                    <div className="text-2xl font-bold">{counts.whitelist}</div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                    <div className="flex items-center gap-2 text-sm text-green-400">
+                      <Briefcase className="w-4 h-4" />
+                      Jobs
+                    </div>
+                    <div className="text-2xl font-bold">{counts.job}</div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                    <div className="flex items-center gap-2 text-sm text-purple-400">
+                      <Users className="w-4 h-4" />
+                      Staff
+                    </div>
+                    <div className="text-2xl font-bold">{counts.staff}</div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                    <div className="flex items-center gap-2 text-sm text-red-400">
+                      <AlertTriangle className="w-4 h-4" />
+                      Ban Appeals
+                    </div>
+                    <div className="text-2xl font-bold">{counts.ban}</div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/20">
+                    <div className="flex items-center gap-2 text-sm text-orange-400">
+                      <Youtube className="w-4 h-4" />
+                      Creator
+                    </div>
+                    <div className="text-2xl font-bold">{counts.creator}</div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Whitelist Applications */}
+                {(selectedAppType === "all" || selectedAppType === "whitelist") && whitelistApplications.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Shield className="w-5 h-5 text-blue-400" />
+                      Whitelist Applications
+                      <Badge variant="secondary">{whitelistApplications.length}</Badge>
+                    </h3>
+                    {whitelistApplications.slice(0, selectedAppType === "whitelist" ? undefined : 5).map(app => (
+                      <Card key={app.id} className="border-border/20">
+                        <CardHeader className="pb-2">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <CardTitle className="text-base">{app.discord}</CardTitle>
+                              <CardDescription>Age: {app.age} | {new Date(app.created_at).toLocaleDateString()}</CardDescription>
+                            </div>
+                            {getStatusBadge(app.status)}
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Experience</Label>
+                            <p className="text-sm">{app.experience}</p>
+                          </div>
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Backstory</Label>
+                            <p className="text-sm line-clamp-3">{app.backstory}</p>
+                          </div>
+                          {app.status === "pending" && (
+                            <div className="flex gap-2 pt-2">
+                              <Textarea
+                                placeholder="Admin notes..."
+                                value={adminNotes[app.id] || ""}
+                                onChange={(e) => setAdminNotes(prev => ({ ...prev, [app.id]: e.target.value }))}
+                                className="h-20"
+                              />
+                            </div>
+                          )}
+                          {app.status === "pending" && (
+                            <div className="flex gap-2">
+                              <Button size="sm" onClick={() => updateApplicationStatus("whitelist_applications", app.id, "approved", `Whitelist for ${app.discord}`, loadWhitelistApplications)}>
+                                <Check className="w-4 h-4 mr-1" /> Approve
+                              </Button>
+                              <Button size="sm" variant="destructive" onClick={() => updateApplicationStatus("whitelist_applications", app.id, "rejected", `Whitelist for ${app.discord}`, loadWhitelistApplications)}>
+                                <X className="w-4 h-4 mr-1" /> Reject
+                              </Button>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+
+                {/* Job Applications */}
+                {(selectedAppType === "all" || selectedAppType === "job") && jobApplications.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Briefcase className="w-5 h-5 text-green-400" />
+                      Job Applications
+                      <Badge variant="secondary">{jobApplications.length}</Badge>
+                    </h3>
+                    {jobApplications.slice(0, selectedAppType === "job" ? undefined : 5).map(app => (
+                      <Card key={app.id} className="border-border/20">
+                        <CardHeader className="pb-2">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <CardTitle className="text-base">{app.character_name}</CardTitle>
+                              <CardDescription>
+                                <Badge variant="outline" className="mr-2">{app.job_type}</Badge>
+                                Age: {app.age} | {new Date(app.created_at).toLocaleDateString()}
+                              </CardDescription>
+                            </div>
+                            {getStatusBadge(app.status)}
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <Label className="text-xs text-muted-foreground">Previous Experience</Label>
+                              <p className="text-sm">{app.previous_experience}</p>
+                            </div>
+                            <div>
+                              <Label className="text-xs text-muted-foreground">Availability</Label>
+                              <p className="text-sm">{app.availability}</p>
+                            </div>
+                          </div>
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Why Join</Label>
+                            <p className="text-sm line-clamp-2">{app.why_join}</p>
+                          </div>
+                          {app.status === "pending" && (
+                            <>
+                              <Textarea
+                                placeholder="Admin notes..."
+                                value={adminNotes[app.id] || ""}
+                                onChange={(e) => setAdminNotes(prev => ({ ...prev, [app.id]: e.target.value }))}
+                                className="h-20"
+                              />
+                              <div className="flex gap-2">
+                                <Button size="sm" onClick={() => updateApplicationStatus("job_applications", app.id, "approved", `Job application for ${app.character_name}`, loadJobApplications)}>
+                                  <Check className="w-4 h-4 mr-1" /> Approve
+                                </Button>
+                                <Button size="sm" variant="destructive" onClick={() => updateApplicationStatus("job_applications", app.id, "rejected", `Job application for ${app.character_name}`, loadJobApplications)}>
+                                  <X className="w-4 h-4 mr-1" /> Reject
+                                </Button>
+                              </div>
+                            </>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+
+                {/* Staff Applications */}
+                {(selectedAppType === "all" || selectedAppType === "staff") && staffApplications.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Users className="w-5 h-5 text-purple-400" />
+                      Staff Applications
+                      <Badge variant="secondary">{staffApplications.length}</Badge>
+                    </h3>
+                    {staffApplications.slice(0, selectedAppType === "staff" ? undefined : 5).map(app => (
+                      <Card key={app.id} className="border-border/20">
+                        <CardHeader className="pb-2">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <CardTitle className="text-base">{app.full_name}</CardTitle>
+                              <CardDescription>
+                                <Badge variant="outline" className="mr-2">{app.position}</Badge>
+                                @{app.discord_username} | Age: {app.age}
+                              </CardDescription>
+                            </div>
+                            {getStatusBadge(app.status)}
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Experience</Label>
+                            <p className="text-sm">{app.experience}</p>
+                          </div>
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Why Join</Label>
+                            <p className="text-sm line-clamp-2">{app.why_join}</p>
+                          </div>
+                          {app.status === "pending" && (
+                            <>
+                              <Textarea
+                                placeholder="Admin notes..."
+                                value={adminNotes[app.id] || ""}
+                                onChange={(e) => setAdminNotes(prev => ({ ...prev, [app.id]: e.target.value }))}
+                                className="h-20"
+                              />
+                              <div className="flex gap-2">
+                                <Button size="sm" onClick={() => updateApplicationStatus("staff_applications", app.id, "approved", `Staff application for ${app.full_name}`, loadStaffApplications)}>
+                                  <Check className="w-4 h-4 mr-1" /> Approve
+                                </Button>
+                                <Button size="sm" variant="destructive" onClick={() => updateApplicationStatus("staff_applications", app.id, "rejected", `Staff application for ${app.full_name}`, loadStaffApplications)}>
+                                  <X className="w-4 h-4 mr-1" /> Reject
+                                </Button>
+                              </div>
+                            </>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+
+                {/* Ban Appeals */}
+                {(selectedAppType === "all" || selectedAppType === "ban") && banAppeals.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <AlertTriangle className="w-5 h-5 text-red-400" />
+                      Ban Appeals
+                      <Badge variant="secondary">{banAppeals.length}</Badge>
+                    </h3>
+                    {banAppeals.slice(0, selectedAppType === "ban" ? undefined : 5).map(app => (
+                      <Card key={app.id} className="border-border/20 border-red-500/20">
+                        <CardHeader className="pb-2">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <CardTitle className="text-base">{app.discord_username}</CardTitle>
+                              <CardDescription>Steam: {app.steam_id} | {new Date(app.created_at).toLocaleDateString()}</CardDescription>
+                            </div>
+                            {getStatusBadge(app.status)}
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Ban Reason</Label>
+                            <p className="text-sm text-red-400">{app.ban_reason}</p>
+                          </div>
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Appeal Reason</Label>
+                            <p className="text-sm">{app.appeal_reason}</p>
+                          </div>
+                          {app.status === "pending" && (
+                            <>
+                              <Textarea
+                                placeholder="Admin notes..."
+                                value={adminNotes[app.id] || ""}
+                                onChange={(e) => setAdminNotes(prev => ({ ...prev, [app.id]: e.target.value }))}
+                                className="h-20"
+                              />
+                              <div className="flex gap-2">
+                                <Button size="sm" onClick={() => updateApplicationStatus("ban_appeals", app.id, "approved", `Ban appeal for ${app.discord_username}`, loadBanAppeals)}>
+                                  <Check className="w-4 h-4 mr-1" /> Approve
+                                </Button>
+                                <Button size="sm" variant="destructive" onClick={() => updateApplicationStatus("ban_appeals", app.id, "rejected", `Ban appeal for ${app.discord_username}`, loadBanAppeals)}>
+                                  <X className="w-4 h-4 mr-1" /> Reject
+                                </Button>
+                              </div>
+                            </>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+
+                {/* Creator Applications */}
+                {(selectedAppType === "all" || selectedAppType === "creator") && creatorApplications.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Youtube className="w-5 h-5 text-orange-400" />
+                      Creator Applications
+                      <Badge variant="secondary">{creatorApplications.length}</Badge>
+                    </h3>
+                    {creatorApplications.slice(0, selectedAppType === "creator" ? undefined : 5).map(app => (
+                      <Card key={app.id} className="border-border/20">
+                        <CardHeader className="pb-2">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <CardTitle className="text-base">{app.full_name}</CardTitle>
+                              <CardDescription>
+                                <Badge variant="outline" className="mr-2">{app.platform}</Badge>
+                                @{app.discord_username} | {app.average_viewers} avg viewers
+                              </CardDescription>
+                            </div>
+                            {getStatusBadge(app.status)}
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Channel</Label>
+                            <a href={app.channel_url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
+                              {app.channel_url}
+                            </a>
+                          </div>
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Content Style</Label>
+                            <p className="text-sm">{app.content_style}</p>
+                          </div>
+                          {app.status === "pending" && (
+                            <>
+                              <Textarea
+                                placeholder="Admin notes..."
+                                value={adminNotes[app.id] || ""}
+                                onChange={(e) => setAdminNotes(prev => ({ ...prev, [app.id]: e.target.value }))}
+                                className="h-20"
+                              />
+                              <div className="flex gap-2">
+                                <Button size="sm" onClick={() => updateApplicationStatus("creator_applications", app.id, "approved", `Creator application for ${app.full_name}`, loadCreatorApplications)}>
+                                  <Check className="w-4 h-4 mr-1" /> Approve
+                                </Button>
+                                <Button size="sm" variant="destructive" onClick={() => updateApplicationStatus("creator_applications", app.id, "rejected", `Creator application for ${app.full_name}`, loadCreatorApplications)}>
+                                  <X className="w-4 h-4 mr-1" /> Reject
+                                </Button>
+                              </div>
+                            </>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+
+                {/* Firefighter Applications */}
+                {(selectedAppType === "all" || selectedAppType === "firefighter") && firefighterApplications.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Flame className="w-5 h-5 text-orange-500" />
+                      Firefighter Applications
+                      <Badge variant="secondary">{firefighterApplications.length}</Badge>
+                    </h3>
+                    {firefighterApplications.slice(0, selectedAppType === "firefighter" ? undefined : 5).map(app => (
+                      <Card key={app.id} className="border-border/20">
+                        <CardHeader className="pb-2">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <CardTitle className="text-base">{app.real_name}</CardTitle>
+                              <CardDescription>
+                                In-Game: {app.in_game_name} | Steam: {app.steam_id}
+                              </CardDescription>
+                            </div>
+                            {getStatusBadge(app.status)}
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Weekly Availability</Label>
+                            <p className="text-sm">{app.weekly_availability}</p>
+                          </div>
+                          {app.status === "pending" && (
+                            <>
+                              <Textarea
+                                placeholder="Admin notes..."
+                                value={adminNotes[app.id] || ""}
+                                onChange={(e) => setAdminNotes(prev => ({ ...prev, [app.id]: e.target.value }))}
+                                className="h-20"
+                              />
+                              <div className="flex gap-2">
+                                <Button size="sm" onClick={() => updateApplicationStatus("firefighter_applications", app.id, "approved", `Firefighter application for ${app.real_name}`, loadFirefighterApplications)}>
+                                  <Check className="w-4 h-4 mr-1" /> Approve
+                                </Button>
+                                <Button size="sm" variant="destructive" onClick={() => updateApplicationStatus("firefighter_applications", app.id, "rejected", `Firefighter application for ${app.real_name}`, loadFirefighterApplications)}>
+                                  <X className="w-4 h-4 mr-1" /> Reject
+                                </Button>
+                              </div>
+                            </>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+
+                {/* Weazel News Applications */}
+                {(selectedAppType === "all" || selectedAppType === "weazel") && weazelNewsApplications.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Tv className="w-5 h-5 text-cyan-400" />
+                      Weazel News Applications
+                      <Badge variant="secondary">{weazelNewsApplications.length}</Badge>
+                    </h3>
+                    {weazelNewsApplications.slice(0, selectedAppType === "weazel" ? undefined : 5).map(app => (
+                      <Card key={app.id} className="border-border/20">
+                        <CardHeader className="pb-2">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <CardTitle className="text-base">{app.character_name}</CardTitle>
+                              <CardDescription>Age: {app.age} | {new Date(app.created_at).toLocaleDateString()}</CardDescription>
+                            </div>
+                            {getStatusBadge(app.status)}
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Journalism Experience</Label>
+                            <p className="text-sm">{app.journalism_experience}</p>
+                          </div>
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Writing Sample</Label>
+                            <p className="text-sm line-clamp-2">{app.writing_sample}</p>
+                          </div>
+                          {app.status === "pending" && (
+                            <>
+                              <Textarea
+                                placeholder="Admin notes..."
+                                value={adminNotes[app.id] || ""}
+                                onChange={(e) => setAdminNotes(prev => ({ ...prev, [app.id]: e.target.value }))}
+                                className="h-20"
+                              />
+                              <div className="flex gap-2">
+                                <Button size="sm" onClick={() => updateApplicationStatus("weazel_news_applications", app.id, "approved", `Weazel News application for ${app.character_name}`, loadWeazelNewsApplications)}>
+                                  <Check className="w-4 h-4 mr-1" /> Approve
+                                </Button>
+                                <Button size="sm" variant="destructive" onClick={() => updateApplicationStatus("weazel_news_applications", app.id, "rejected", `Weazel News application for ${app.character_name}`, loadWeazelNewsApplications)}>
+                                  <X className="w-4 h-4 mr-1" /> Reject
+                                </Button>
+                              </div>
+                            </>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+
+                {/* PDM Applications */}
+                {(selectedAppType === "all" || selectedAppType === "pdm") && pdmApplications.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Car className="w-5 h-5 text-yellow-400" />
+                      PDM Applications
+                      <Badge variant="secondary">{pdmApplications.length}</Badge>
+                    </h3>
+                    {pdmApplications.slice(0, selectedAppType === "pdm" ? undefined : 5).map((app) => (
+                      <Card key={app.id} className="border-border/20">
+                        <CardHeader className="pb-2">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <CardTitle className="text-base">{app.character_name}</CardTitle>
+                              <CardDescription>Age: {app.age} | Phone: {app.phone_number}</CardDescription>
+                            </div>
+                            {getStatusBadge(app.status)}
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          <div className="grid md:grid-cols-2 gap-2">
+                            <div>
+                              <Label className="text-xs text-muted-foreground">Sales Experience</Label>
+                              <p className="text-sm">{app.sales_experience}</p>
+                            </div>
+                            <div>
+                              <Label className="text-xs text-muted-foreground">Vehicle Knowledge</Label>
+                              <p className="text-sm">{app.vehicle_knowledge}</p>
+                            </div>
+                          </div>
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Customer Scenario</Label>
+                            <p className="text-sm line-clamp-2">{app.customer_scenario}</p>
+                          </div>
+                          {app.status === "pending" && (
+                            <div className="space-y-2 pt-2">
+                              <Textarea
+                                placeholder="Admin notes (optional)"
+                                value={selectedPdmApp?.id === app.id ? pdmAdminNotes : ""}
+                                onChange={(e) => {
+                                  setSelectedPdmApp(app);
+                                  setPdmAdminNotes(e.target.value);
+                                }}
+                              />
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => updatePdmApplicationStatus(app.id, "approved")}
+                                >
+                                  <Check className="w-4 h-4 mr-1" /> Approve
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => updatePdmApplicationStatus(app.id, "rejected")}
+                                >
+                                  <X className="w-4 h-4 mr-1" /> Reject
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+
+                {/* Empty State */}
+                {whitelistApplications.length === 0 && 
+                 jobApplications.length === 0 && 
+                 staffApplications.length === 0 && 
+                 banAppeals.length === 0 && 
+                 creatorApplications.length === 0 && 
+                 firefighterApplications.length === 0 && 
+                 weazelNewsApplications.length === 0 && 
+                 pdmApplications.length === 0 && (
+                  <div className="text-center py-12">
+                    <FileText className="w-16 h-16 mx-auto text-muted-foreground/30 mb-4" />
+                    <p className="text-muted-foreground">No applications found</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Live Member Joins Tab */}
@@ -969,23 +1861,24 @@ const OwnerPanel = () => {
                           <span className="font-medium">{staff.name}</span>
                         </TableCell>
                         <TableCell>
-                          <div>
-                            <div className="font-medium">{staff.role}</div>
-                            <div className="text-xs text-muted-foreground capitalize">{staff.role_type}</div>
-                          </div>
+                          <Badge variant="secondary">{staff.role}</Badge>
                         </TableCell>
-                        <TableCell className="capitalize">{staff.department.replace("_", " ")}</TableCell>
-                        <TableCell>{staff.discord_username || staff.discord_id}</TableCell>
+                        <TableCell>{staff.department}</TableCell>
                         <TableCell>
-                          <Badge variant={staff.is_active ? "default" : "secondary"}>
+                          <code className="text-xs bg-muted px-2 py-1 rounded">
+                            {staff.discord_id}
+                          </code>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={staff.is_active ? "default" : "outline"}>
                             {staff.is_active ? "Active" : "Inactive"}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
                             <Button
-                              size="sm"
                               variant="outline"
+                              size="sm"
                               onClick={() => {
                                 setSelectedStaff(staff);
                                 setIsStaffDialogOpen(true);
@@ -994,8 +1887,8 @@ const OwnerPanel = () => {
                               <Pencil className="w-4 h-4" />
                             </Button>
                             <Button
-                              size="sm"
                               variant="destructive"
+                              size="sm"
                               onClick={() => setStaffToDelete(staff.id)}
                             >
                               <Trash2 className="w-4 h-4" />
@@ -1132,97 +2025,6 @@ const OwnerPanel = () => {
                     ))
                   )}
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* PDM Applications Tab */}
-          <TabsContent value="pdm">
-            <Card className="glass-effect border-border/20">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Car className="w-5 h-5 text-primary" />
-                  <CardTitle className="text-gradient">PDM Applications</CardTitle>
-                </div>
-                <CardDescription>Review Premium Deluxe Motorsport job applications</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {pdmApplications.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">No PDM applications yet</p>
-                ) : (
-                  pdmApplications.map((app) => (
-                    <Card key={app.id} className="border-border/20">
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <CardTitle className="text-lg">{app.character_name}</CardTitle>
-                            <CardDescription>
-                              Age: {app.age} | Phone: {app.phone_number}
-                            </CardDescription>
-                          </div>
-                          <Badge variant={
-                            app.status === "approved" ? "default" :
-                            app.status === "rejected" ? "destructive" :
-                            "secondary"
-                          }>
-                            {app.status}
-                          </Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div>
-                            <h4 className="font-semibold text-sm mb-1">Sales Experience</h4>
-                            <p className="text-sm text-muted-foreground">{app.sales_experience}</p>
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-sm mb-1">Vehicle Knowledge</h4>
-                            <p className="text-sm text-muted-foreground">{app.vehicle_knowledge}</p>
-                          </div>
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-sm mb-1">Customer Scenario</h4>
-                          <p className="text-sm text-muted-foreground">{app.customer_scenario}</p>
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-sm mb-1">Character Background</h4>
-                          <p className="text-sm text-muted-foreground">{app.character_background}</p>
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-sm mb-1">Why Join PDM?</h4>
-                          <p className="text-sm text-muted-foreground">{app.why_join}</p>
-                        </div>
-                        
-                        {app.status === "pending" && (
-                          <div className="space-y-3 pt-4 border-t">
-                            <Textarea
-                              placeholder="Admin notes (optional)"
-                              value={selectedPdmApp?.id === app.id ? pdmAdminNotes : ""}
-                              onChange={(e) => {
-                                setSelectedPdmApp(app);
-                                setPdmAdminNotes(e.target.value);
-                              }}
-                            />
-                            <div className="flex gap-2">
-                              <Button
-                                onClick={() => updatePdmApplicationStatus(app.id, "approved")}
-                                className="bg-primary hover:bg-primary/90"
-                              >
-                                Approve
-                              </Button>
-                              <Button
-                                onClick={() => updatePdmApplicationStatus(app.id, "rejected")}
-                                variant="destructive"
-                              >
-                                Reject
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))
-                )}
               </CardContent>
             </Card>
           </TabsContent>
