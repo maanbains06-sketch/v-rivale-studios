@@ -99,11 +99,11 @@ const HeroSlideshow = memo(() => {
         }}
       />
 
-      {/* Dark overlay for text readability */}
-      <div className="absolute inset-0 bg-background/40" />
+      {/* Dark overlay for text readability - reduced for better visibility */}
+      <div className="absolute inset-0 bg-background/25" />
       
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/60" />
+      {/* Gradient overlay - lighter for more visibility */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-transparent to-background/50" />
     </div>
   );
 });
