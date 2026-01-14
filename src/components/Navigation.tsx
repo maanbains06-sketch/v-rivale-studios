@@ -127,16 +127,22 @@ const Navigation = () => {
     await checkUserAccess(user);
   };
 
-  // Helper functions for Discord user info
-  const getDiscordAvatar = () => {
+  // Helper functions for user avatar
+  const getUserAvatar = () => {
     if (!user) return null;
+    
+    // Try Discord CDN avatar first
     const discordId = user.user_metadata?.discord_id;
     const avatarHash = user.user_metadata?.avatar;
-    // Construct Discord CDN avatar URL if we have the ID and hash
     if (discordId && avatarHash) {
-      return `https://cdn.discordapp.com/avatars/${discordId}/${avatarHash}.png`;
+      return `https://cdn.discordapp.com/avatars/${discordId}/${avatarHash}.png?size=128`;
     }
-    return user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
+    
+    // Try other avatar sources from OAuth metadata
+    return user.user_metadata?.avatar_url || 
+           user.user_metadata?.picture || 
+           user.user_metadata?.profile_picture ||
+           null;
   };
 
   const getDiscordUsername = () => {
@@ -527,14 +533,15 @@ const Navigation = () => {
                       {/* Mobile User Profile Card */}
                       <div className="p-4 rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/20 mb-2">
                         <div className="flex items-center gap-3">
-                          <Avatar className="w-12 h-12 border-2 border-primary/40">
-                            <AvatarImage src={getDiscordAvatar() || undefined} alt={getDiscordUsername()} />
-                            <AvatarFallback className="bg-primary/20 text-primary font-bold">
+                          <Avatar className="w-12 h-12 border-2 border-primary/40 shadow-lg shadow-primary/20">
+                            <AvatarImage src={getUserAvatar() || undefined} alt={getDiscordUsername()} />
+                            <AvatarFallback className="bg-primary/20 text-primary font-bold text-lg">
                               {getInitials(getDiscordUsername())}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-foreground truncate">{getDiscordUsername()}</p>
+                            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                           </div>
                         </div>
                       </div>
