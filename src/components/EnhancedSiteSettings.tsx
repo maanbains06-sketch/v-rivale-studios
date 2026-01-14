@@ -22,7 +22,9 @@ import {
   AlertTriangle,
   CheckCircle,
   Info,
-  XCircle
+  XCircle,
+  Send,
+  Trash2
 } from 'lucide-react';
 
 interface SiteSetting {
@@ -37,17 +39,125 @@ interface EnhancedSiteSettingsProps {
   onSettingsChange: () => void;
 }
 
+interface Announcement {
+  id: string;
+  message: string;
+  type: string;
+  created_at: string;
+  expires_at: string;
+}
+
 export const EnhancedSiteSettings = ({ settings, onSettingsChange }: EnhancedSiteSettingsProps) => {
   const { toast } = useToast();
   const { logAction } = useOwnerAuditLog();
   const [editedSettings, setEditedSettings] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState<string | null>(null);
+  const [announcementMessage, setAnnouncementMessage] = useState('');
+  const [announcementType, setAnnouncementType] = useState('info');
+  const [sendingAnnouncement, setSendingAnnouncement] = useState(false);
+  const [activeAnnouncements, setActiveAnnouncements] = useState<Announcement[]>([]);
 
   useEffect(() => {
     const settingsMap: Record<string, string> = {};
     settings.forEach(s => settingsMap[s.key] = s.value);
     setEditedSettings(settingsMap);
   }, [settings]);
+
+  // Fetch active announcements
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      const { data } = await supabase
+        .from('announcements')
+        .select('*')
+        .gt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false });
+      
+      if (data) setActiveAnnouncements(data);
+    };
+    
+    fetchAnnouncements();
+
+    // Subscribe to changes
+    const channel = supabase
+      .channel('announcements_admin')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'announcements' }, () => {
+        fetchAnnouncements();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const sendAnnouncement = async () => {
+    if (!announcementMessage.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter an announcement message.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSendingAnnouncement(true);
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const { error } = await supabase
+      .from('announcements')
+      .insert({
+        message: announcementMessage.trim(),
+        type: announcementType,
+        created_by: user?.id,
+        expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour from now
+      });
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send announcement.",
+        variant: "destructive",
+      });
+      setSendingAnnouncement(false);
+      return;
+    }
+
+    await logAction({
+      actionType: 'announcement_sent',
+      actionDescription: `Sent announcement: "${announcementMessage.substring(0, 50)}..."`,
+      targetTable: 'announcements',
+      newValue: { message: announcementMessage, type: announcementType }
+    });
+
+    toast({
+      title: "Announcement Sent!",
+      description: "Your announcement is now visible to all users.",
+    });
+
+    setAnnouncementMessage('');
+    setSendingAnnouncement(false);
+  };
+
+  const deleteAnnouncement = async (id: string) => {
+    const { error } = await supabase
+      .from('announcements')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete announcement.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Announcement Deleted",
+      description: "The announcement has been removed.",
+    });
+  };
 
   const getValue = (key: string, defaultValue: string = '') => {
     return editedSettings[key] ?? defaultValue;
@@ -234,34 +344,32 @@ export const EnhancedSiteSettings = ({ settings, onSettingsChange }: EnhancedSit
         </CardContent>
       </Card>
 
-      {/* Announcement Banner */}
+      {/* Announcement Banner - Send Announcements */}
       <Card className="glass-effect border-border/20">
         <CardHeader>
           <div className="flex items-center gap-2">
             <Bell className="w-5 h-5 text-primary" />
-            <CardTitle className="text-lg">Announcement Banner</CardTitle>
+            <CardTitle className="text-lg">Send Announcement</CardTitle>
           </div>
-          <CardDescription>Display a global announcement across the site</CardDescription>
+          <CardDescription>Broadcast announcements to all users in real-time (visible for 1 hour)</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Banner Message (leave empty to hide)</Label>
-            <div className="flex gap-2">
-              <Textarea
-                value={getValue("announcement_banner")}
-                onChange={(e) => setEditedSettings({...editedSettings, announcement_banner: e.target.value})}
-                placeholder="Enter announcement text..."
-                className="min-h-[80px]"
-              />
-            </div>
+            <Label>Announcement Message</Label>
+            <Textarea
+              value={announcementMessage}
+              onChange={(e) => setAnnouncementMessage(e.target.value)}
+              placeholder="Enter your announcement message..."
+              className="min-h-[80px]"
+            />
           </div>
           
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="space-y-2">
-              <Label>Banner Type</Label>
+              <Label>Announcement Type</Label>
               <Select 
-                value={getValue("announcement_type", "info")}
-                onValueChange={(value) => setEditedSettings({...editedSettings, announcement_type: value})}
+                value={announcementType}
+                onValueChange={setAnnouncementType}
               >
                 <SelectTrigger className="w-[200px]">
                   <SelectValue />
@@ -296,31 +404,66 @@ export const EnhancedSiteSettings = ({ settings, onSettingsChange }: EnhancedSit
             </div>
             
             <Button 
-              onClick={() => {
-                saveSetting("announcement_banner");
-                saveSetting("announcement_type");
-              }}
-              disabled={saving === "announcement_banner"}
+              onClick={sendAnnouncement}
+              disabled={sendingAnnouncement || !announcementMessage.trim()}
+              className="bg-primary hover:bg-primary/90"
             >
-              <Save className="w-4 h-4 mr-2" />
-              Save Announcement
+              <Send className="w-4 h-4 mr-2" />
+              {sendingAnnouncement ? 'Sending...' : 'Send Announcement'}
             </Button>
           </div>
           
-          {getValue("announcement_banner") && (
+          {/* Preview */}
+          {announcementMessage && (
             <div className={`p-3 rounded-lg border ${
-              getValue("announcement_type") === 'info' ? 'bg-blue-500/10 border-blue-500/30 text-blue-400' :
-              getValue("announcement_type") === 'success' ? 'bg-green-500/10 border-green-500/30 text-green-400' :
-              getValue("announcement_type") === 'warning' ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400' :
+              announcementType === 'info' ? 'bg-blue-500/10 border-blue-500/30 text-blue-400' :
+              announcementType === 'success' ? 'bg-green-500/10 border-green-500/30 text-green-400' :
+              announcementType === 'warning' ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400' :
               'bg-red-500/10 border-red-500/30 text-red-400'
             }`}>
               <p className="text-sm font-medium flex items-center gap-2">
-                {getValue("announcement_type") === 'info' && <Info className="w-4 h-4" />}
-                {getValue("announcement_type") === 'success' && <CheckCircle className="w-4 h-4" />}
-                {getValue("announcement_type") === 'warning' && <AlertTriangle className="w-4 h-4" />}
-                {getValue("announcement_type") === 'error' && <XCircle className="w-4 h-4" />}
-                Preview: {getValue("announcement_banner")}
+                {announcementType === 'info' && <Info className="w-4 h-4" />}
+                {announcementType === 'success' && <CheckCircle className="w-4 h-4" />}
+                {announcementType === 'warning' && <AlertTriangle className="w-4 h-4" />}
+                {announcementType === 'error' && <XCircle className="w-4 h-4" />}
+                Preview: {announcementMessage}
               </p>
+            </div>
+          )}
+
+          {/* Active Announcements */}
+          {activeAnnouncements.length > 0 && (
+            <div className="mt-6 space-y-3">
+              <Label className="text-base">Active Announcements ({activeAnnouncements.length})</Label>
+              <div className="space-y-2">
+                {activeAnnouncements.map((announcement) => (
+                  <div 
+                    key={announcement.id}
+                    className={`p-3 rounded-lg border flex items-center justify-between gap-3 ${
+                      announcement.type === 'info' ? 'bg-blue-500/10 border-blue-500/30 text-blue-400' :
+                      announcement.type === 'success' ? 'bg-green-500/10 border-green-500/30 text-green-400' :
+                      announcement.type === 'warning' ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400' :
+                      'bg-red-500/10 border-red-500/30 text-red-400'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      {announcement.type === 'info' && <Info className="w-4 h-4 flex-shrink-0" />}
+                      {announcement.type === 'success' && <CheckCircle className="w-4 h-4 flex-shrink-0" />}
+                      {announcement.type === 'warning' && <AlertTriangle className="w-4 h-4 flex-shrink-0" />}
+                      {announcement.type === 'error' && <XCircle className="w-4 h-4 flex-shrink-0" />}
+                      <p className="text-sm font-medium truncate">{announcement.message}</p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deleteAnnouncement(announcement.id)}
+                      className="text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </CardContent>
