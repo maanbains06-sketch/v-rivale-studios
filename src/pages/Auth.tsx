@@ -81,7 +81,8 @@ const Auth = () => {
         setSession(session);
         setUser(session?.user ?? null);
         if (event === 'SIGNED_IN' && session?.user) {
-          navigate("/discord-profile");
+          // Redirect to home page after login/signup
+          navigate("/");
         }
       }
     );
@@ -91,7 +92,8 @@ const Auth = () => {
       setUser(session?.user ?? null);
       setCheckingAuth(false);
       if (session?.user) {
-        navigate("/discord-profile");
+        // Redirect to home page if already logged in
+        navigate("/");
       }
     });
 

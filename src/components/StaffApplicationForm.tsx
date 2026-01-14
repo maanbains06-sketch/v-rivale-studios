@@ -120,11 +120,12 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
           return;
         }
 
-        // Fetch team settings from database
+        // Fetch team settings from database (excluding administration_team)
         const { data: teamSettings } = await supabase
           .from("staff_team_settings")
           .select("*")
-          .eq("is_enabled", true);
+          .eq("is_enabled", true)
+          .neq("team_value", "administration_team");
 
         if (!teamSettings || teamSettings.length === 0) {
           setIsEligible(false);
@@ -157,7 +158,20 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
           };
         });
 
-        setAvailablePositions(positionsWithStatus);
+        // Check if all positions are full
+        const allFull = positionsWithStatus.every(p => p.isLocked);
+        if (allFull) {
+          setIsEligible(false);
+          setEligibilityMessage("All staff positions are currently filled (3/3). Please check back later when positions become available.");
+          setAvailablePositions([]);
+          setIsCheckingEligibility(false);
+          return;
+        }
+
+        // Filter out full positions from the dropdown
+        const openPositions = positionsWithStatus.filter(p => !p.isLocked);
+        
+        setAvailablePositions(openPositions);
         setIsEligible(true);
         setEligibilityMessage("");
       } catch (error) {
@@ -170,6 +184,29 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
     }
 
     checkEligibilityAndTeamCapacity();
+
+    // Set up real-time subscription for live updates
+    const channel = supabase
+      .channel('staff_applications_changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'staff_applications' },
+        () => {
+          checkEligibilityAndTeamCapacity();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'staff_team_settings' },
+        () => {
+          checkEligibilityAndTeamCapacity();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [open]);
 
   const form = useForm<StaffApplicationFormData>({
