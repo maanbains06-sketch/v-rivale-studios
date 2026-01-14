@@ -48,7 +48,7 @@ import { useServerStatus, useFeaturedYoutubers } from "@/hooks/useHomeData";
 // ========================================
 const YOUTUBE_VIDEO_ID = "hKt7nUCu7Kg"; // <-- PASTE YOUR YOUTUBE VIDEO ID HERE
 const VIDEO_TRIM_START = 3; // Seconds to trim from start
-const VIDEO_TRIM_END = 4; // Seconds to trim from end
+const VIDEO_TRIM_END = 6; // Seconds to trim from end
 // ========================================
 
 // Lazy load heavy components
