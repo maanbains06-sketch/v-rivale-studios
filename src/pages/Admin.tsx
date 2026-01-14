@@ -313,14 +313,44 @@ const Admin = () => {
         return;
       }
 
-      const { data: roleData, error: roleError } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .in("role", ["admin", "moderator"])
-        .maybeSingle();
+      const discordId = user.user_metadata?.discord_id;
+      let hasAccess = false;
 
-      if (roleError || !roleData) {
+      // Check if user is owner (full access)
+      const OWNER_DISCORD_ID = "833680146510381097";
+      if (discordId === OWNER_DISCORD_ID) {
+        hasAccess = true;
+      }
+
+      // Check if user is in staff_members table (all staff get admin panel access)
+      if (!hasAccess && discordId && /^\d{17,19}$/.test(discordId)) {
+        const { data: staffMember } = await supabase
+          .from("staff_members")
+          .select("id, is_active")
+          .eq("discord_id", discordId)
+          .eq("is_active", true)
+          .maybeSingle();
+
+        if (staffMember) {
+          hasAccess = true;
+        }
+      }
+
+      // Fallback: check user_roles table for admin/moderator
+      if (!hasAccess) {
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .in("role", ["admin", "moderator"])
+          .maybeSingle();
+
+        if (roleData) {
+          hasAccess = true;
+        }
+      }
+
+      if (!hasAccess) {
         toast({
           title: "Access Denied",
           description: "You don't have permission to access this page.",
