@@ -48,27 +48,8 @@ const Support = () => {
 
   useEffect(() => {
     fetchSupportStats();
-
-    // Set up real-time subscription for support_chats changes
-    const channel = supabase
-      .channel('support-stats-realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'support_chats'
-        },
-        () => {
-          // Refetch stats when any chat is updated
-          fetchSupportStats();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    // Removed heavy realtime subscription - stats refresh on page load is sufficient
+    // The support chat page itself has proper realtime for individual chats
   }, []);
 
   useEffect(() => {

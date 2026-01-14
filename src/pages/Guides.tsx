@@ -28,11 +28,10 @@ const RPTerm = ({ term, definition }: { term: string; definition: string }) => (
 );
 
 const scrollRevealVariants = {
-  hidden: { opacity: 0, y: 40 },
+  hidden: { opacity: 0 },
   visible: { 
     opacity: 1, 
-    y: 0,
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const }
+    transition: { duration: 0.3 }
   }
 };
 

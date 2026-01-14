@@ -85,11 +85,10 @@ const roleIcons = {
 };
 
 const scrollRevealVariants = {
-  hidden: { opacity: 0, y: 40 },
+  hidden: { opacity: 0 },
   visible: { 
     opacity: 1, 
-    y: 0,
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const }
+    transition: { duration: 0.3 }
   }
 };
 
@@ -193,47 +192,7 @@ const Staff = () => {
   useEffect(() => {
     loadStaffMembers();
     loadOpenPositions();
-
-    // Subscribe to real-time updates for staff_members table
-    // This auto-updates when Discord profiles change (name, avatar, banner)
-    const staffChannel = supabase
-      .channel('staff-profile-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'staff_members',
-        },
-        (payload) => {
-          console.log('Staff member updated:', payload);
-          // Reload staff members when any change occurs
-          loadStaffMembers();
-        }
-      )
-      .subscribe();
-
-    // Subscribe to discord_presence changes for real-time online status
-    const presenceChannel = supabase
-      .channel('staff-presence-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'discord_presence',
-        },
-        (payload) => {
-          console.log('Staff presence updated:', payload);
-          // The useStaffOnlineStatus hook will auto-refresh
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(staffChannel);
-      supabase.removeChannel(presenceChannel);
-    };
+    // Realtime removed - data changes infrequently, manual refresh on page load is sufficient
   }, []);
 
   const loadOpenPositions = async () => {
@@ -440,18 +399,12 @@ const Staff = () => {
   };
 
   const cardVariants = {
-    hidden: { opacity: 0, y: 30, scale: 0.95 },
-    visible: (index: number) => ({
+    hidden: { opacity: 0, y: 20 },
+    visible: {
       opacity: 1,
       y: 0,
-      scale: 1,
-      transition: {
-        type: "spring" as const,
-        stiffness: 100,
-        damping: 15,
-        delay: index * 0.1,
-      },
-    }),
+      transition: { duration: 0.3 }
+    },
   };
 
   const renderStaffCard = (member: StaffMember, index: number) => {
@@ -471,11 +424,7 @@ const Staff = () => {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-50px" }}
-        custom={index}
-        whileHover={{ y: -8, rotateY: 2 }}
-        whileTap={{ scale: 0.98 }}
         onClick={() => handleStaffClick(member.id)}
-        style={{ perspective: 1000 }}
       >
         {/* Outer glow effect */}
         <div className="absolute -inset-1 bg-gradient-to-b from-primary/20 via-transparent to-primary/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500" />
@@ -519,33 +468,19 @@ const Staff = () => {
           
           {/* Online Status Badge - Top Right */}
           <div className="absolute top-3 right-3 z-20">
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: index * 0.05 + 0.2 }}
-            >
-              <StaffOnlineIndicator isOnline={staffIsOnline} lastSeen={lastSeenTime} status={staffStatus} size="lg" showLabel />
-            </motion.div>
+            <StaffOnlineIndicator isOnline={staffIsOnline} lastSeen={lastSeenTime} status={staffStatus} size="lg" showLabel />
           </div>
           
           {/* Favorite Button - Top Left */}
           <div className="absolute top-3 left-3 z-20" onClick={(e) => e.stopPropagation()}>
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: index * 0.05 + 0.1 }}
-            >
-              <FavoriteStaffButton isFavorite={isFavorite(member.id)} onToggle={() => toggleFavorite(member.id)} />
-            </motion.div>
+            <FavoriteStaffButton isFavorite={isFavorite(member.id)} onToggle={() => toggleFavorite(member.id)} />
           </div>
 
           <div className="relative px-5 pb-5 -mt-8">
             <div className="flex flex-col items-center text-center">
               {/* Avatar with enhanced design */}
-              <motion.div 
-                className="relative mb-4 cursor-pointer"
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 300 }}
+              <div 
+                className="relative mb-4 cursor-pointer hover:scale-105 transition-transform duration-200"
                 onClick={(e) => {
                   e.stopPropagation();
                   // Get high-resolution Discord avatar (4096px) for lightbox
@@ -575,13 +510,10 @@ const Staff = () => {
                 </div>
                 
                 {/* Role Icon Badge */}
-                <motion.div 
-                  className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-8 h-8 bg-gradient-to-b from-primary to-primary/80 rounded-lg flex items-center justify-center border-2 border-background shadow-lg"
-                  whileHover={{ scale: 1.15, rotate: 5 }}
-                >
+                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-8 h-8 bg-gradient-to-b from-primary to-primary/80 rounded-lg flex items-center justify-center border-2 border-background shadow-lg hover:scale-110 transition-transform">
                   <Icon className="w-4 h-4 text-primary-foreground" />
-                </motion.div>
-              </motion.div>
+                </div>
+              </div>
 
               {/* Name */}
               <h3 className="text-lg font-bold text-foreground mb-0.5 group-hover:text-primary transition-colors duration-300 tracking-tight">
@@ -612,19 +544,13 @@ const Staff = () => {
               {achievements.length > 0 && (
                 <div className="flex flex-wrap justify-center gap-1.5 mb-3">
                   {achievements.map((badge, idx) => (
-                    <motion.div
+                    <Badge 
                       key={idx}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: idx * 0.1 + 0.3 }}
+                      variant="outline"
+                      className="bg-primary/10 text-primary text-[10px] px-2 py-0.5 border-primary/30 font-medium"
                     >
-                      <Badge 
-                        variant="outline"
-                        className="bg-primary/10 text-primary text-[10px] px-2 py-0.5 border-primary/30 font-medium"
-                      >
-                        {badge.label}
-                      </Badge>
-                    </motion.div>
+                      {badge.label}
+                    </Badge>
                   ))}
                 </div>
               )}

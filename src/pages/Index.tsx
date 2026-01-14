@@ -107,16 +107,12 @@ interface FeaturedYoutuber {
   live_stream_url: string | null;
 }
 
-// Scroll animation variants
+// Scroll animation variants - simplified for performance
 const scrollRevealVariants = {
-  hidden: { opacity: 0, y: 60 },
+  hidden: { opacity: 0 },
   visible: { 
     opacity: 1, 
-    y: 0,
-    transition: { 
-      duration: 0.6, 
-      ease: [0.22, 1, 0.36, 1] as const
-    }
+    transition: { duration: 0.3 }
   }
 };
 
@@ -124,19 +120,15 @@ const staggerContainerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { 
-      staggerChildren: 0.1, 
-      delayChildren: 0.1 
-    },
+    transition: { staggerChildren: 0.05 },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as const },
+    transition: { duration: 0.2 },
   },
 };
 
