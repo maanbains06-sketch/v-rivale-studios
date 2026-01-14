@@ -1,28 +1,38 @@
 import { useState, useEffect, memo } from "react";
 
-// Import all header images for the slideshow
-import headerAbout from "@/assets/header-about.jpg";
-import headerCommunity from "@/assets/header-community.jpg";
-import headerFeatures from "@/assets/header-features.jpg";
-import headerGallery from "@/assets/header-gallery.jpg";
-import headerGang from "@/assets/header-gang.jpg";
-import headerGuides from "@/assets/header-guides-new.jpg";
-import headerRules from "@/assets/header-rules.jpg";
-import headerStaff from "@/assets/header-staff.jpg";
-import headerSupport from "@/assets/header-support.jpg";
-import headerWhitelist from "@/assets/header-whitelist.jpg";
+// Import all GTA 5 RP cinematic slideshow images
+import cityNight from "@/assets/slideshow/city-night.jpg";
+import policeChase from "@/assets/slideshow/police-chase.jpg";
+import streetRacing from "@/assets/slideshow/street-racing.jpg";
+import carDealership from "@/assets/slideshow/car-dealership.jpg";
+import beachSunset from "@/assets/slideshow/beach-sunset.jpg";
+import gangTerritory from "@/assets/slideshow/gang-territory.jpg";
+import emsResponse from "@/assets/slideshow/ems-response.jpg";
+import nightclub from "@/assets/slideshow/nightclub.jpg";
+import mechanicGarage from "@/assets/slideshow/mechanic-garage.jpg";
+import policeStation from "@/assets/slideshow/police-station.jpg";
+import fireResponse from "@/assets/slideshow/fire-response.jpg";
+import newsCrew from "@/assets/slideshow/news-crew.jpg";
+import mansion from "@/assets/slideshow/mansion.jpg";
+import highwaySunset from "@/assets/slideshow/highway-sunset.jpg";
+import downtown from "@/assets/slideshow/downtown.jpg";
 
 const SLIDESHOW_IMAGES = [
-  headerAbout,
-  headerCommunity,
-  headerFeatures,
-  headerGallery,
-  headerGang,
-  headerGuides,
-  headerRules,
-  headerStaff,
-  headerSupport,
-  headerWhitelist,
+  cityNight,
+  policeChase,
+  streetRacing,
+  carDealership,
+  beachSunset,
+  gangTerritory,
+  emsResponse,
+  nightclub,
+  mechanicGarage,
+  policeStation,
+  fireResponse,
+  newsCrew,
+  mansion,
+  highwaySunset,
+  downtown,
 ];
 
 const SLIDE_DURATION = 5000; // 5 seconds per slide
@@ -77,18 +87,6 @@ const HeroSlideshow = memo(() => {
           transitionTimingFunction: 'ease-in-out',
         }}
       />
-
-      {/* Subtle Ken Burns effect */}
-      <style>{`
-        @keyframes kenBurns {
-          0% {
-            transform: scale(1) translate(0, 0);
-          }
-          100% {
-            transform: scale(1.08) translate(-1%, -1%);
-          }
-        }
-      `}</style>
 
       {/* Dark overlay for text readability */}
       <div className="absolute inset-0 bg-background/40" />
