@@ -261,23 +261,16 @@ const Index = () => {
 
       setIsLoggedIn(true);
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("discord_username")
-        .eq("id", user.id)
-        .single();
+      // Get Discord ID from user metadata (stored during signup)
+      const discordId = user.user_metadata?.discord_id;
+      setHasDiscord(!!discordId);
 
-      const discordUsername = profile?.discord_username?.trim() || "";
-      setHasDiscord(!!discordUsername);
-
-      // If user has Discord username, check if they're in the server and have whitelist role
-      if (discordUsername) {
+      // If user has Discord ID, check if they're in the server and have whitelist role
+      if (discordId && /^\d{17,19}$/.test(discordId)) {
         setIsCheckingDiscord(true);
         try {
-          // Extract Discord ID from username if it's in the format "username#1234" or just the ID
-          // The profile should store the Discord ID for API lookups
           const { data: discordData, error: discordError } = await supabase.functions.invoke('verify-discord-requirements', {
-            body: { discordId: discordUsername }
+            body: { discordId }
           });
 
           if (!discordError && discordData) {
@@ -308,7 +301,7 @@ const Index = () => {
           setIsCheckingDiscord(false);
         }
       } else {
-        // No Discord, check whitelist from database
+        // No valid Discord ID, check whitelist from database
         const { data: whitelistApp } = await supabase
           .from("whitelist_applications")
           .select("status")
@@ -728,7 +721,7 @@ const Index = () => {
               <Button
                 size="lg"
                 className="bg-background/75 border-2 border-sky-500/50 text-sky-400 hover:bg-background/85 hover:border-sky-400 text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 hover:scale-105"
-                onClick={() => navigate("/auth")}
+                onClick={() => navigate(isLoggedIn ? "/whitelist" : "/auth")}
               >
                 <Play className="w-5 h-5 mr-2" />
                 Get Whitelisted

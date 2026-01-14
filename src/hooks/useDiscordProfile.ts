@@ -83,11 +83,11 @@ export const useDiscordProfile = (discordId?: string) => {
         return;
       }
 
-      // Get from user metadata
+      // Get from user metadata - look for discord_id first (stored during signup)
       const { data: { user } } = await supabase.auth.getUser();
       const userDiscordId = user?.user_metadata?.discord_id;
       
-      if (userDiscordId) {
+      if (userDiscordId && /^\d{17,19}$/.test(userDiscordId)) {
         fetchDiscordProfile(userDiscordId);
       } else {
         setProfileData(prev => ({ ...prev, loading: false }));
@@ -96,9 +96,9 @@ export const useDiscordProfile = (discordId?: string) => {
 
     getDiscordId();
 
-    // Set up real-time refresh every 30 seconds
+    // Set up real-time refresh every 30 seconds (only if we have a valid Discord ID)
     const interval = setInterval(() => {
-      if (profileData.discordId) {
+      if (profileData.discordId && /^\d{17,19}$/.test(profileData.discordId)) {
         fetchDiscordProfile(profileData.discordId);
       }
     }, 30000);
