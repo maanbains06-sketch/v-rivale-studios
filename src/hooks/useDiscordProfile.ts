@@ -6,6 +6,8 @@ interface DiscordProfileData {
   username: string | null;
   displayName: string | null;
   avatar: string | null;
+  banner: string | null;
+  bannerColor: string | null;
   isInServer: boolean;
   hasWhitelistRole: boolean;
   loading: boolean;
@@ -18,6 +20,8 @@ export const useDiscordProfile = (discordId?: string) => {
     username: null,
     displayName: null,
     avatar: null,
+    banner: null,
+    bannerColor: null,
     isInServer: false,
     hasWhitelistRole: false,
     loading: true,
@@ -52,8 +56,10 @@ export const useDiscordProfile = (discordId?: string) => {
       setProfileData({
         discordId: id,
         username: userData?.username || null,
-        displayName: userData?.displayName || userData?.username || null,
-        avatar: userData?.avatarUrl || null,
+        displayName: userData?.displayName || userData?.globalName || userData?.username || null,
+        avatar: userData?.avatar || null,
+        banner: userData?.banner || null,
+        bannerColor: userData?.bannerColor || null,
         isInServer: reqData?.isInServer || false,
         hasWhitelistRole: reqData?.hasWhitelistRole || false,
         loading: false,
