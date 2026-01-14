@@ -10,6 +10,8 @@ interface AutoRetryPageProps {
   maxRetries?: number;
   /** Page name for display */
   pageName?: string;
+  /** Force hard refresh on final retry */
+  hardRefreshOnFinal?: boolean;
 }
 
 /**
@@ -18,15 +20,17 @@ interface AutoRetryPageProps {
  */
 const AutoRetryPage = ({
   children,
-  timeout = 5000,
-  maxRetries = 3,
+  timeout = 2500,
+  maxRetries = 6,
   pageName = "Page",
+  hardRefreshOnFinal = true,
 }: AutoRetryPageProps) => {
   const [retryCount, setRetryCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [showManualRetry, setShowManualRetry] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const retryKey = useRef(0);
+  const hasTriedHardRefresh = useRef(false);
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
@@ -35,9 +39,9 @@ const AutoRetryPage = ({
     // Check if actual content has rendered (not just the wrapper)
     const checkContentLoaded = () => {
       if (contentRef.current) {
-        // Check if there's meaningful content inside (more than just whitespace)
+        // Check if there's meaningful content inside (lower threshold for faster detection)
         const hasContent = contentRef.current.children.length > 0 &&
-          contentRef.current.innerHTML.trim().length > 100;
+          contentRef.current.innerHTML.trim().length > 50;
         
         if (hasContent) {
           setIsLoading(false);
@@ -49,12 +53,12 @@ const AutoRetryPage = ({
       return false;
     };
 
-    // Check content every 200ms
+    // Check content every 100ms (faster detection)
     checkIntervalId = setInterval(() => {
       if (checkContentLoaded()) {
         clearInterval(checkIntervalId);
       }
-    }, 200);
+    }, 100);
 
     // Set timeout for auto-retry
     timeoutId = setTimeout(() => {
@@ -65,6 +69,11 @@ const AutoRetryPage = ({
           console.log(`AutoRetryPage: ${pageName} - Retry ${retryCount + 1}/${maxRetries}`);
           retryKey.current += 1;
           setRetryCount((prev) => prev + 1);
+        } else if (hardRefreshOnFinal && !hasTriedHardRefresh.current) {
+          // Force hard refresh on final attempt
+          console.log(`AutoRetryPage: ${pageName} - Final attempt, forcing hard refresh`);
+          hasTriedHardRefresh.current = true;
+          window.location.reload();
         } else {
           setIsLoading(false);
           setShowManualRetry(true);
@@ -76,9 +85,10 @@ const AutoRetryPage = ({
       clearTimeout(timeoutId);
       clearInterval(checkIntervalId);
     };
-  }, [retryCount, timeout, maxRetries, pageName]);
+  }, [retryCount, timeout, maxRetries, pageName, hardRefreshOnFinal]);
 
   const handleManualRetry = () => {
+    hasTriedHardRefresh.current = false;
     setRetryCount(0);
     setShowManualRetry(false);
     setIsLoading(true);
