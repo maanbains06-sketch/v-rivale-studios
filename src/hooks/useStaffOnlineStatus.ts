@@ -79,22 +79,28 @@ export const useStaffOnlineStatus = () => {
         // Check Discord presence using staff_member_id (primary and only source for public)
         const presence = presenceMap.get(member.id);
         if (presence) {
-          isOnline = presence.is_online;
-          presenceStatus = presence.status || 'offline';
+          // Check if presence data is stale (more than 2 minutes old)
+          // This allows for heartbeat intervals of 15 seconds + some buffer
+          const updatedAt = new Date(presence.updated_at);
+          const minutesSinceUpdate = (now.getTime() - updatedAt.getTime()) / 1000 / 60;
+          
+          if (minutesSinceUpdate <= 2) {
+            // Recent presence data - trust the is_online and status values
+            isOnline = presence.is_online;
+            presenceStatus = presence.status || 'offline';
+          } else if (minutesSinceUpdate <= 15) {
+            // Slightly stale but still usable - might be idle
+            isOnline = presence.is_online;
+            presenceStatus = presence.is_online ? 'idle' : 'offline';
+          } else {
+            // Very stale data - assume offline
+            isOnline = false;
+            presenceStatus = 'offline';
+          }
           
           // Use Discord's last_online_at if available
           if (presence.last_online_at) {
             lastSeenTime = presence.last_online_at;
-          }
-
-          // Check if presence data is stale (more than 15 minutes old)
-          const updatedAt = new Date(presence.updated_at);
-          const minutesSinceUpdate = (now.getTime() - updatedAt.getTime()) / 1000 / 60;
-          
-          if (minutesSinceUpdate > 15) {
-            // Presence data is stale, mark as potentially offline
-            isOnline = false;
-            presenceStatus = 'unknown';
           }
         }
 
@@ -119,8 +125,8 @@ export const useStaffOnlineStatus = () => {
   useEffect(() => {
     fetchStaffStatus();
 
-    // Refresh status every 30 seconds
-    const interval = setInterval(fetchStaffStatus, 30000);
+    // Refresh status every 10 seconds for real-time updates
+    const interval = setInterval(fetchStaffStatus, 10000);
 
     // Subscribe to realtime updates for discord_presence table
     const presenceChannel = supabase
