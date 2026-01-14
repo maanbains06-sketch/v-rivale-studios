@@ -1,4 +1,4 @@
-import { useState, useEffect, memo, useCallback } from "react";
+import { useState, useEffect, memo, useRef } from "react";
 
 // Import all GTA 5 RP cinematic slideshow images
 import cityNight from "@/assets/slideshow/city-night.jpg";
@@ -16,7 +16,6 @@ import newsCrew from "@/assets/slideshow/news-crew.jpg";
 import mansion from "@/assets/slideshow/mansion.jpg";
 import highwaySunset from "@/assets/slideshow/highway-sunset.jpg";
 import downtown from "@/assets/slideshow/downtown.jpg";
-// New images
 import carMeet from "@/assets/slideshow/car-meet.jpg";
 import helicopterView from "@/assets/slideshow/helicopter-view.jpg";
 import hospitalEmergency from "@/assets/slideshow/hospital-emergency.jpg";
@@ -47,63 +46,56 @@ const SLIDESHOW_IMAGES = [
 ];
 
 const SLIDE_DURATION = 7000; // 7 seconds per slide
-const TRANSITION_DURATION = 1200; // 1.2 second smooth fade transition
 
 const HeroSlideshow = memo(() => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [nextIndex, setNextIndex] = useState(1);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [showFirst, setShowFirst] = useState(true);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const advanceSlide = useCallback(() => {
-    setIsTransitioning(true);
-    
-    // Wait for fade out, then switch
-    const timeout = setTimeout(() => {
-      setCurrentIndex((prev) => (prev + 1) % SLIDESHOW_IMAGES.length);
-      setNextIndex((prev) => (prev + 1) % SLIDESHOW_IMAGES.length);
-      setIsTransitioning(false);
-    }, TRANSITION_DURATION);
-
-    return () => clearTimeout(timeout);
+  // Preload all images on mount
+  useEffect(() => {
+    SLIDESHOW_IMAGES.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(advanceSlide, SLIDE_DURATION);
-    return () => clearInterval(interval);
-  }, [advanceSlide]);
+    timerRef.current = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % SLIDESHOW_IMAGES.length);
+      setShowFirst((prev) => !prev);
+    }, SLIDE_DURATION);
 
-  // Preload next 2 images for smoother transitions
-  useEffect(() => {
-    const preloadIndices = [
-      (currentIndex + 1) % SLIDESHOW_IMAGES.length,
-      (currentIndex + 2) % SLIDESHOW_IMAGES.length,
-    ];
-    
-    preloadIndices.forEach((index) => {
-      const img = new Image();
-      img.src = SLIDESHOW_IMAGES[index];
-    });
-  }, [currentIndex]);
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);
+
+  // Calculate which image goes on which layer
+  const currentImage = SLIDESHOW_IMAGES[activeIndex];
+  const prevImage = SLIDESHOW_IMAGES[(activeIndex - 1 + SLIDESHOW_IMAGES.length) % SLIDESHOW_IMAGES.length];
 
   return (
     <div className="fixed inset-0 z-0 overflow-hidden">
-      {/* Current slide */}
+      {/* Layer 1 */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat will-change-opacity"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url(${SLIDESHOW_IMAGES[currentIndex]})`,
-          opacity: isTransitioning ? 0 : 1,
-          transition: `opacity ${TRANSITION_DURATION}ms ease-in-out`,
+          backgroundImage: `url(${showFirst ? currentImage : prevImage})`,
+          opacity: showFirst ? 1 : 0,
+          transition: "opacity 1.5s ease-in-out",
         }}
       />
       
-      {/* Next slide (for smooth crossfade) */}
+      {/* Layer 2 */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat will-change-opacity"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url(${SLIDESHOW_IMAGES[nextIndex]})`,
-          opacity: isTransitioning ? 1 : 0,
-          transition: `opacity ${TRANSITION_DURATION}ms ease-in-out`,
+          backgroundImage: `url(${showFirst ? prevImage : currentImage})`,
+          opacity: showFirst ? 0 : 1,
+          transition: "opacity 1.5s ease-in-out",
         }}
       />
 
