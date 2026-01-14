@@ -1,4 +1,4 @@
-import { MessageCircle, FileText, Users, HelpCircle, AlertCircle, CheckCircle, Ban, Search, TrendingUp, Activity, UserCheck } from "lucide-react";
+import { MessageCircle, FileText, Users, HelpCircle, AlertCircle, CheckCircle, Ban, Search, TrendingUp, Activity, UserCheck, MessageSquareOff } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
 import headerSupport from "@/assets/header-support.jpg";
@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { useStaffOnlineStatus } from "@/hooks/useStaffOnlineStatus";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 interface BanAppeal {
   id: string;
@@ -33,6 +34,7 @@ interface BanAppeal {
 const Support = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { settings } = useSiteSettings();
   const [showResultsDialog, setShowResultsDialog] = useState(false);
   const [banAppeals, setBanAppeals] = useState<BanAppeal[]>([]);
   const [loading, setLoading] = useState(false);
@@ -386,16 +388,27 @@ const Support = () => {
           </div>
           
           <div className="flex flex-wrap gap-4 justify-center">
-            <Button 
-              size="lg"
-              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/25"
-              asChild
-            >
-              <Link to="/support-chat">
-                <MessageCircle className="w-5 h-5 mr-2" />
-                Live Chat Support
-              </Link>
-            </Button>
+            {settings.support_chat_enabled ? (
+              <Button 
+                size="lg"
+                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/25"
+                asChild
+              >
+                <Link to="/support-chat">
+                  <MessageCircle className="w-5 h-5 mr-2" />
+                  Live Chat Support
+                </Link>
+              </Button>
+            ) : (
+              <Button 
+                size="lg"
+                className="bg-muted text-muted-foreground cursor-not-allowed"
+                disabled
+              >
+                <MessageSquareOff className="w-5 h-5 mr-2" />
+                Chat Support Unavailable
+              </Button>
+            )}
             
             
             <Button 

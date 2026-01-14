@@ -7,6 +7,7 @@ interface SiteSettings {
   registration_enabled: boolean;
   support_chat_enabled: boolean;
   gallery_submissions_enabled: boolean;
+  auto_approve_veterans: boolean;
   announcement_banner: string;
   announcement_type: string;
 }
@@ -23,6 +24,7 @@ const defaultSettings: SiteSettings = {
   registration_enabled: true,
   support_chat_enabled: true,
   gallery_submissions_enabled: true,
+  auto_approve_veterans: false,
   announcement_banner: '',
   announcement_type: 'info',
 };
@@ -42,6 +44,7 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
           'registration_enabled',
           'support_chat_enabled',
           'gallery_submissions_enabled',
+          'auto_approve_veterans',
           'announcement_banner',
           'announcement_type',
         ]);
@@ -63,6 +66,7 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
           registration_enabled: settingsMap.registration_enabled !== 'false',
           support_chat_enabled: settingsMap.support_chat_enabled !== 'false',
           gallery_submissions_enabled: settingsMap.gallery_submissions_enabled !== 'false',
+          auto_approve_veterans: settingsMap.auto_approve_veterans === 'true',
           announcement_banner: settingsMap.announcement_banner || '',
           announcement_type: settingsMap.announcement_type || 'info',
         });
