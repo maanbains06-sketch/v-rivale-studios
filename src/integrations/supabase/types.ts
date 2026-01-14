@@ -2285,12 +2285,16 @@ export type Database = {
         Returns: boolean
       }
       assign_chat_to_staff: { Args: { chat_id: string }; Returns: string }
+      auto_assign_chat_to_online_staff: {
+        Args: { chat_id: string }
+        Returns: string
+      }
       auto_assign_unassigned_chats: {
         Args: never
         Returns: {
           assigned_to: string
           chat_id: string
-          chat_subject: string
+          subject: string
         }[]
       }
       check_sla_breach: { Args: never; Returns: undefined }
@@ -2300,6 +2304,14 @@ export type Database = {
       get_gallery_like_count: {
         Args: { submission_uuid: string }
         Returns: number
+      }
+      get_online_staff_for_chat_assignment: {
+        Args: never
+        Returns: {
+          current_workload: number
+          staff_member_id: string
+          staff_user_id: string
+        }[]
       }
       has_role: {
         Args: {
@@ -2342,6 +2354,13 @@ export type Database = {
       }
       notify_staff_sla_breach: { Args: never; Returns: undefined }
       purge_old_rejected_applications: { Args: never; Returns: undefined }
+      rebalance_chats_to_online_staff: {
+        Args: never
+        Returns: {
+          chat_id: string
+          new_assigned_to: string
+        }[]
+      }
       rebalance_staff_workload: {
         Args: never
         Returns: {
