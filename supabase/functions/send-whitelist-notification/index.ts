@@ -66,9 +66,9 @@ serve(async (req) => {
       ? `Your Application has been **Accepted**, Welcome aboard!`
       : `Your Application has been **Rejected**.`;
 
-    // Image URLs - these should be hosted publicly
-    const approvedImageUrl = 'https://obirpzwvnqveddyuulsb.supabase.co/storage/v1/object/public/discord-assets/whitelist-approved.png';
-    const rejectedImageUrl = 'https://obirpzwvnqveddyuulsb.supabase.co/storage/v1/object/public/discord-assets/whitelist-rejected.png';
+    // Image URLs - hosted on the published site
+    const approvedImageUrl = 'https://roleplay-horizon.lovable.app/images/whitelist-approved.jpg';
+    const rejectedImageUrl = 'https://roleplay-horizon.lovable.app/images/whitelist-rejected.jpg';
     const imageUrl = isApproved ? approvedImageUrl : rejectedImageUrl;
 
     // Build applicant mention
