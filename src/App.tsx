@@ -60,7 +60,7 @@ const Feedback = lazy(() => import("./pages/Feedback"));
 const AdminYoutubers = lazy(() => import("./pages/AdminYoutubers"));
 const AdminStaffTeams = lazy(() => import("./pages/AdminStaffTeams"));
 const AdminDiscordRules = lazy(() => import("./pages/AdminDiscordRules"));
-const Giveaway = lazy(() => import("./pages/Giveaway"));
+
 const DirectMessage = lazy(() => import("./pages/DirectMessage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -141,7 +141,7 @@ const AppRoutes = memo(() => {
           <Route path="/owner-panel" element={<PageTransition><OwnerPanel /></PageTransition>} />
           <Route path="/gang-rp" element={<PageTransition><GangRP /></PageTransition>} />
           <Route path="/feedback" element={<PageTransition><Feedback /></PageTransition>} />
-          <Route path="/giveaway" element={<PageTransition><Giveaway /></PageTransition>} />
+          
           <Route path="/direct-message" element={<PageTransition><RequireAuth message="Login with Discord to send direct messages."><DirectMessage /></RequireAuth></PageTransition>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
