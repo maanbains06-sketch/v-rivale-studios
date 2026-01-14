@@ -355,8 +355,6 @@ const Navigation = () => {
               </DropdownMenuContent>
             </DropdownMenu>
             
-            {/* User Profile Dropdown - Shows for authenticated Discord server members */}
-            <UserProfileDropdown className="hidden md:flex" />
             {/* Admin link moved to hamburger menu only */}
           </div>
           
