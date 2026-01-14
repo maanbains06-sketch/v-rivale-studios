@@ -281,11 +281,15 @@ const SupportChat = () => {
     const staffId = tagStaffId || dmStaffId;
     if (staffId) {
       // Get the staff member's user_id from staff_members table
-      const { data: staffData } = await supabase
+      const { data: staffData, error: staffError } = await supabase
         .from("staff_members")
         .select("user_id, name")
         .eq("id", staffId)
-        .single();
+        .maybeSingle();
+
+      if (staffError) {
+        console.warn("Staff lookup failed:", staffError);
+      }
       
       if (staffData?.user_id) {
         assignedTo = staffData.user_id;
@@ -311,10 +315,10 @@ const SupportChat = () => {
         .single();
 
       if (error) {
-        console.error("Error creating chat:", error.message, error.details, error.hint, error.code);
+        console.error("Error creating chat:", error);
         toast({
-          title: "Error",
-          description: error.message || "Failed to create support chat. Please try again.",
+          title: "Error creating chat",
+          description: `${error.message}${error.code ? ` (code: ${error.code})` : ""}`,
           variant: "destructive",
         });
         setLoading(false);
@@ -368,26 +372,16 @@ const SupportChat = () => {
       
       // Trigger AI response for non-assigned chats
       if (!assignedTo && newChatInitialMessage.trim()) {
-        const { data: session } = await supabase.auth.getSession();
-        
         try {
-          const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-support-chat`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session.session?.access_token}`,
+          await supabase.functions.invoke("ai-support-chat", {
+            body: {
+              messages: [{ role: "user", content: newChatInitialMessage }],
+              chatId: data.id,
             },
-            body: JSON.stringify({
-              messages: [{ role: 'user', content: newChatInitialMessage }],
-              chatId: data.id
-            }),
           });
-
-          if (!response.ok) {
-            console.error('AI response failed:', response.status);
-          }
         } catch (aiError) {
-          console.error('AI call error:', aiError);
+          console.error("AI call error:", aiError);
+          // AI is optional enhancement; don't block chat creation
         }
       }
       
@@ -567,36 +561,26 @@ const SupportChat = () => {
         }));
         chatMessages.push({ role: 'user', content: messageToSend });
 
-        const { data: session } = await supabase.auth.getSession();
-        
         try {
-          const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-support-chat`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session.session?.access_token}`,
-            },
-            body: JSON.stringify({
+          const { data, error } = await supabase.functions.invoke("ai-support-chat", {
+            body: {
               messages: chatMessages,
-              chatId: selectedChat.id
-            }),
+              chatId: selectedChat.id,
+            },
           });
 
-          if (response.ok) {
-            const data = await response.json();
+          if (error) {
+            console.error("AI response failed:", error);
+          } else if (data?.escalated) {
             // If chat was auto-escalated, refresh chat data to show updated status
-            if (data.escalated) {
-              await fetchChats();
-              toast({
-                title: "Escalated to Human Support",
-                description: "Your request has been prioritized for immediate assistance.",
-              });
-            }
-          } else {
-            console.error('AI response failed:', response.status);
+            await fetchChats();
+            toast({
+              title: "Escalated to Human Support",
+              description: "Your request has been prioritized for immediate assistance.",
+            });
           }
         } catch (aiError) {
-          console.error('AI call error:', aiError);
+          console.error("AI call error:", aiError);
           // Don't show error to user, AI is optional enhancement
         }
       }
