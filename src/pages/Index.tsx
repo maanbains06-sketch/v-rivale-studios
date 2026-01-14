@@ -34,22 +34,13 @@ import CreatorProgramSection from "@/components/CreatorProgramSection";
 import { MessageSquarePlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import HeroSlideshow from "@/components/HeroSlideshow";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useServerStatus, useFeaturedYoutubers } from "@/hooks/useHomeData";
 
-// ========================================
-// 🎬 YOUTUBE VIDEO BACKGROUND CONFIGURATION
-// ========================================
-// To change the background video, replace the VIDEO_ID below with your YouTube video ID.
-// Example: For https://www.youtube.com/watch?v=ABC123xyz, the VIDEO_ID is "ABC123xyz"
-// ========================================
-const YOUTUBE_VIDEO_ID = "hKt7nUCu7Kg"; // <-- PASTE YOUR YOUTUBE VIDEO ID HERE
-const VIDEO_TRIM_START = 3; // Seconds to trim from start
-const VIDEO_TRIM_END = 6; // Seconds to trim from end
-// ========================================
 
 // Lazy load heavy components
 const LiveFeedbackMarquee = lazy(() => import("@/components/LiveFeedbackMarquee"));
@@ -101,8 +92,6 @@ const Index = () => {
   const [isCheckingDiscord, setIsCheckingDiscord] = useState(false);
   const [mobileRequirementsOpen, setMobileRequirementsOpen] = useState(false);
   const isMobile = useIsMobile();
-  const playerRef = useRef<any>(null);
-  const [videoDuration, setVideoDuration] = useState<number>(0);
   const prefersReducedMotion = useReducedMotion();
   
   // Use cached data hooks instead of direct API calls
@@ -114,80 +103,6 @@ const Index = () => {
   const serverPlayers = serverStatusData?.players ?? 0;
   const maxPlayers = serverStatusData?.maxPlayers ?? 64;
 
-  // YouTube Player API - optimized with reduced interval frequency
-  useEffect(() => {
-    let checkPlaybackInterval: ReturnType<typeof setInterval> | null = null;
-    
-    const initializePlayer = () => {
-      if (playerRef.current?.destroy) {
-        playerRef.current.destroy();
-        playerRef.current = null;
-      }
-
-      playerRef.current = new (window as any).YT.Player('youtube-bg-player', {
-        videoId: YOUTUBE_VIDEO_ID,
-        playerVars: {
-          autoplay: 1,
-          mute: 1,
-          loop: 1,
-          playlist: YOUTUBE_VIDEO_ID,
-          controls: 0,
-          showinfo: 0,
-          modestbranding: 1,
-          rel: 0,
-          iv_load_policy: 3,
-          disablekb: 1,
-          playsinline: 1,
-          start: VIDEO_TRIM_START,
-        },
-        events: {
-          onReady: (event: any) => {
-            const duration = event.target.getDuration();
-            setVideoDuration(duration);
-            event.target.seekTo(VIDEO_TRIM_START);
-            event.target.playVideo();
-          },
-          onStateChange: (event: any) => {
-            if (event.data === (window as any).YT.PlayerState.ENDED) {
-              event.target.seekTo(VIDEO_TRIM_START);
-              event.target.playVideo();
-            }
-          },
-        },
-      });
-    };
-
-    if ((window as any).YT?.Player) {
-      initializePlayer();
-    } else {
-      if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
-        const tag = document.createElement('script');
-        tag.src = 'https://www.youtube.com/iframe_api';
-        document.head.appendChild(tag);
-      }
-      (window as any).onYouTubeIframeAPIReady = initializePlayer;
-    }
-
-    // Reduced frequency interval - only check every 2 seconds
-    if (videoDuration > 0) {
-      checkPlaybackInterval = setInterval(() => {
-        if (playerRef.current?.getCurrentTime) {
-          const currentTime = playerRef.current.getCurrentTime();
-          if (currentTime >= videoDuration - VIDEO_TRIM_END) {
-            playerRef.current.seekTo(VIDEO_TRIM_START);
-          }
-        }
-      }, 2000);
-    }
-
-    return () => {
-      if (checkPlaybackInterval) clearInterval(checkPlaybackInterval);
-      if (playerRef.current?.destroy) {
-        playerRef.current.destroy();
-        playerRef.current = null;
-      }
-    };
-  }, [videoDuration]);
 
   // Simplified scroll - removed heavy transforms
   const { scrollYProgress } = useScroll();
@@ -319,25 +234,8 @@ const Index = () => {
     <div className="min-h-screen relative">
       <Navigation />
 
-      {/* YouTube Video Background - Full coverage */}
-      <div className="fixed inset-0 z-0 overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div
-            id="youtube-bg-player"
-            className="w-full h-full pointer-events-none"
-            style={{ 
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              width: '200vmax',
-              height: '200vmax',
-              transform: 'translate(-50%, -50%)',
-            }}
-          />
-        </div>
-        {/* Subtle overlay for text readability */}
-        <div className="absolute inset-0 bg-background/20" />
-      </div>
+      {/* Hero Slideshow Background */}
+      <HeroSlideshow />
 
       {/* Hero Section */}
       <section 
