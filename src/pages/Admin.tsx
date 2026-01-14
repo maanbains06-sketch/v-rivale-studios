@@ -111,6 +111,8 @@ interface JobApplication {
   character_background: string;
   availability: string;
   additional_info?: string;
+  job_specific_answer?: string;
+  strengths?: string;
   status: string;
   created_at: string;
   admin_notes?: string;
@@ -1104,30 +1106,58 @@ const Admin = () => {
           <TabsContent value="jobs">
             <Card className="glass-effect border-border/20">
               <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Briefcase className="w-5 h-5 text-primary" />
-                  <CardTitle className="text-gradient">All Job Applications</CardTitle>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="w-5 h-5 text-primary" />
+                    <div>
+                      <CardTitle className="text-gradient">All Job Applications</CardTitle>
+                      <CardDescription>Review all submitted job applications ({jobApplications.length + pdmApplications.length + firefighterApplications.length + weazelNewsApplications.length} total)</CardDescription>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="outline" className="text-xs">
+                      🚔 Police: {jobApplications.filter(j => j.job_type === "Police Department").length}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      🚑 EMS: {jobApplications.filter(j => j.job_type === "EMS").length}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      🔧 Mechanic: {jobApplications.filter(j => j.job_type === "Mechanic").length}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      ⚖️ DOJ: {jobApplications.filter(j => j.job_type.includes("DOJ")).length}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      🔫 Gang: {jobApplications.filter(j => j.job_type === "Gang Roleplay").length}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      🚗 PDM: {pdmApplications.length}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      🚒 Firefighter: {firefighterApplications.length}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      📰 Weazel: {weazelNewsApplications.length}
+                    </Badge>
+                  </div>
                 </div>
-                <CardDescription>Review all submitted job applications</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* General Job Applications */}
-                <div>
-                  <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                    <Briefcase className="w-4 h-4" /> General Job Applications 
-                    <Badge variant="outline">{jobApplications.length}</Badge>
-                  </h3>
-                  {jobApplications.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-4">No job applications</p>
-                  ) : (
+                {/* Police Department Applications */}
+                {jobApplications.filter(j => j.job_type === "Police Department").length > 0 && (
+                  <div>
+                    <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                      🚔 Police Department Applications 
+                      <Badge variant="outline">{jobApplications.filter(j => j.job_type === "Police Department").length}</Badge>
+                    </h3>
                     <div className="space-y-4">
-                      {jobApplications.map((jobApp) => (
-                        <Card key={jobApp.id} className="border-border/20">
+                      {jobApplications.filter(j => j.job_type === "Police Department").map((jobApp) => (
+                        <Card key={jobApp.id} className="border-blue-500/20">
                           <CardHeader>
                             <div className="flex items-start justify-between">
                               <div>
                                 <CardTitle className="text-lg">{jobApp.character_name}</CardTitle>
-                                <CardDescription>Position: {jobApp.job_type} | Age: {jobApp.age}</CardDescription>
+                                <CardDescription>Age: {jobApp.age} | Phone: {jobApp.phone_number}</CardDescription>
                               </div>
                               <Badge variant={jobApp.status === "approved" ? "default" : jobApp.status === "rejected" ? "destructive" : "secondary"}>
                                 {jobApp.status}
@@ -1135,14 +1165,26 @@ const Admin = () => {
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
-                            <div>
-                              <h4 className="font-semibold text-sm mb-1">Why Join</h4>
-                              <p className="text-sm text-muted-foreground">{jobApp.why_join}</p>
+                            <div className="grid gap-4 md:grid-cols-2">
+                              <div>
+                                <h4 className="font-semibold text-sm mb-1">Why Join</h4>
+                                <p className="text-sm text-muted-foreground">{jobApp.why_join}</p>
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-sm mb-1">Previous Experience</h4>
+                                <p className="text-sm text-muted-foreground">{jobApp.previous_experience}</p>
+                              </div>
                             </div>
                             <div>
-                              <h4 className="font-semibold text-sm mb-1">Previous Experience</h4>
-                              <p className="text-sm text-muted-foreground">{jobApp.previous_experience}</p>
+                              <h4 className="font-semibold text-sm mb-1">Character Background</h4>
+                              <p className="text-sm text-muted-foreground">{jobApp.character_background}</p>
                             </div>
+                            {jobApp.job_specific_answer && (
+                              <div>
+                                <h4 className="font-semibold text-sm mb-1">Scenario Response</h4>
+                                <p className="text-sm text-muted-foreground">{jobApp.job_specific_answer}</p>
+                              </div>
+                            )}
                             
                             {jobApp.status === "pending" && (
                               <div className="space-y-3 pt-4 border-t">
@@ -1152,7 +1194,7 @@ const Admin = () => {
                                   onChange={(e) => { setSelectedJobApp(jobApp); setJobAdminNotes(e.target.value); }}
                                 />
                                 <div className="flex gap-2">
-                                  <Button onClick={() => updateJobApplicationStatus(jobApp.id, "approved")} className="bg-primary hover:bg-primary/90">Approve</Button>
+                                  <Button onClick={() => updateJobApplicationStatus(jobApp.id, "approved")} className="bg-blue-600 hover:bg-blue-700">Approve</Button>
                                   <Button onClick={() => updateJobApplicationStatus(jobApp.id, "rejected")} variant="destructive">Reject</Button>
                                 </div>
                               </div>
@@ -1161,13 +1203,280 @@ const Admin = () => {
                         </Card>
                       ))}
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
+
+                {/* EMS Applications */}
+                {jobApplications.filter(j => j.job_type === "EMS").length > 0 && (
+                  <div className="pt-6 border-t">
+                    <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                      🚑 EMS Applications 
+                      <Badge variant="outline">{jobApplications.filter(j => j.job_type === "EMS").length}</Badge>
+                    </h3>
+                    <div className="space-y-4">
+                      {jobApplications.filter(j => j.job_type === "EMS").map((jobApp) => (
+                        <Card key={jobApp.id} className="border-red-500/20">
+                          <CardHeader>
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <CardTitle className="text-lg">{jobApp.character_name}</CardTitle>
+                                <CardDescription>Age: {jobApp.age} | Phone: {jobApp.phone_number}</CardDescription>
+                              </div>
+                              <Badge variant={jobApp.status === "approved" ? "default" : jobApp.status === "rejected" ? "destructive" : "secondary"}>
+                                {jobApp.status}
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="grid gap-4 md:grid-cols-2">
+                              <div>
+                                <h4 className="font-semibold text-sm mb-1">Why Join</h4>
+                                <p className="text-sm text-muted-foreground">{jobApp.why_join}</p>
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-sm mb-1">Previous Experience</h4>
+                                <p className="text-sm text-muted-foreground">{jobApp.previous_experience}</p>
+                              </div>
+                            </div>
+                            {jobApp.job_specific_answer && (
+                              <div>
+                                <h4 className="font-semibold text-sm mb-1">Scenario Response</h4>
+                                <p className="text-sm text-muted-foreground">{jobApp.job_specific_answer}</p>
+                              </div>
+                            )}
+                            
+                            {jobApp.status === "pending" && (
+                              <div className="space-y-3 pt-4 border-t">
+                                <Textarea
+                                  placeholder="Admin notes (optional)"
+                                  value={selectedJobApp?.id === jobApp.id ? jobAdminNotes : ""}
+                                  onChange={(e) => { setSelectedJobApp(jobApp); setJobAdminNotes(e.target.value); }}
+                                />
+                                <div className="flex gap-2">
+                                  <Button onClick={() => updateJobApplicationStatus(jobApp.id, "approved")} className="bg-red-600 hover:bg-red-700">Approve</Button>
+                                  <Button onClick={() => updateJobApplicationStatus(jobApp.id, "rejected")} variant="destructive">Reject</Button>
+                                </div>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Mechanic Applications */}
+                {jobApplications.filter(j => j.job_type === "Mechanic").length > 0 && (
+                  <div className="pt-6 border-t">
+                    <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                      🔧 Mechanic Applications 
+                      <Badge variant="outline">{jobApplications.filter(j => j.job_type === "Mechanic").length}</Badge>
+                    </h3>
+                    <div className="space-y-4">
+                      {jobApplications.filter(j => j.job_type === "Mechanic").map((jobApp) => (
+                        <Card key={jobApp.id} className="border-yellow-500/20">
+                          <CardHeader>
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <CardTitle className="text-lg">{jobApp.character_name}</CardTitle>
+                                <CardDescription>Age: {jobApp.age} | Phone: {jobApp.phone_number}</CardDescription>
+                              </div>
+                              <Badge variant={jobApp.status === "approved" ? "default" : jobApp.status === "rejected" ? "destructive" : "secondary"}>
+                                {jobApp.status}
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="grid gap-4 md:grid-cols-2">
+                              <div>
+                                <h4 className="font-semibold text-sm mb-1">Why Join</h4>
+                                <p className="text-sm text-muted-foreground">{jobApp.why_join}</p>
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-sm mb-1">Previous Experience</h4>
+                                <p className="text-sm text-muted-foreground">{jobApp.previous_experience}</p>
+                              </div>
+                            </div>
+                            {jobApp.job_specific_answer && (
+                              <div>
+                                <h4 className="font-semibold text-sm mb-1">Scenario Response</h4>
+                                <p className="text-sm text-muted-foreground">{jobApp.job_specific_answer}</p>
+                              </div>
+                            )}
+                            
+                            {jobApp.status === "pending" && (
+                              <div className="space-y-3 pt-4 border-t">
+                                <Textarea
+                                  placeholder="Admin notes (optional)"
+                                  value={selectedJobApp?.id === jobApp.id ? jobAdminNotes : ""}
+                                  onChange={(e) => { setSelectedJobApp(jobApp); setJobAdminNotes(e.target.value); }}
+                                />
+                                <div className="flex gap-2">
+                                  <Button onClick={() => updateJobApplicationStatus(jobApp.id, "approved")} className="bg-yellow-600 hover:bg-yellow-700">Approve</Button>
+                                  <Button onClick={() => updateJobApplicationStatus(jobApp.id, "rejected")} variant="destructive">Reject</Button>
+                                </div>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* DOJ Applications (Judge & Attorney) */}
+                {jobApplications.filter(j => j.job_type.includes("DOJ")).length > 0 && (
+                  <div className="pt-6 border-t">
+                    <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                      ⚖️ DOJ Applications (Judge & Attorney)
+                      <Badge variant="outline">{jobApplications.filter(j => j.job_type.includes("DOJ")).length}</Badge>
+                    </h3>
+                    <div className="space-y-4">
+                      {jobApplications.filter(j => j.job_type.includes("DOJ")).map((jobApp) => (
+                        <Card key={jobApp.id} className="border-purple-500/20">
+                          <CardHeader>
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <CardTitle className="text-lg">{jobApp.character_name}</CardTitle>
+                                <CardDescription>Position: {jobApp.job_type} | Age: {jobApp.age} | Phone: {jobApp.phone_number}</CardDescription>
+                              </div>
+                              <div className="flex gap-2">
+                                <Badge variant="outline">{jobApp.job_type.replace("DOJ - ", "")}</Badge>
+                                <Badge variant={jobApp.status === "approved" ? "default" : jobApp.status === "rejected" ? "destructive" : "secondary"}>
+                                  {jobApp.status}
+                                </Badge>
+                              </div>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="grid gap-4 md:grid-cols-2">
+                              <div>
+                                <h4 className="font-semibold text-sm mb-1">Why Join DOJ</h4>
+                                <p className="text-sm text-muted-foreground">{jobApp.why_join}</p>
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-sm mb-1">Legal Experience</h4>
+                                <p className="text-sm text-muted-foreground">{jobApp.previous_experience}</p>
+                              </div>
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-sm mb-1">Character Legal Background</h4>
+                              <p className="text-sm text-muted-foreground">{jobApp.character_background}</p>
+                            </div>
+                            {jobApp.job_specific_answer && (
+                              <div>
+                                <h4 className="font-semibold text-sm mb-1">Law Knowledge & Court Scenario</h4>
+                                <p className="text-sm text-muted-foreground whitespace-pre-line">{jobApp.job_specific_answer}</p>
+                              </div>
+                            )}
+                            
+                            {jobApp.status === "pending" && (
+                              <div className="space-y-3 pt-4 border-t">
+                                <Textarea
+                                  placeholder="Admin notes (optional)"
+                                  value={selectedJobApp?.id === jobApp.id ? jobAdminNotes : ""}
+                                  onChange={(e) => { setSelectedJobApp(jobApp); setJobAdminNotes(e.target.value); }}
+                                />
+                                <div className="flex gap-2">
+                                  <Button onClick={() => updateJobApplicationStatus(jobApp.id, "approved")} className="bg-purple-600 hover:bg-purple-700">Approve</Button>
+                                  <Button onClick={() => updateJobApplicationStatus(jobApp.id, "rejected")} variant="destructive">Reject</Button>
+                                </div>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Gang Roleplay Applications */}
+                {jobApplications.filter(j => j.job_type === "Gang Roleplay").length > 0 && (
+                  <div className="pt-6 border-t">
+                    <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                      🔫 Gang Roleplay Applications 
+                      <Badge variant="outline">{jobApplications.filter(j => j.job_type === "Gang Roleplay").length}</Badge>
+                    </h3>
+                    <div className="space-y-4">
+                      {jobApplications.filter(j => j.job_type === "Gang Roleplay").map((jobApp) => {
+                        let gangDetails = null;
+                        try {
+                          gangDetails = jobApp.job_specific_answer ? JSON.parse(jobApp.job_specific_answer) : null;
+                        } catch { gangDetails = null; }
+                        
+                        return (
+                          <Card key={jobApp.id} className="border-red-600/20">
+                            <CardHeader>
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <CardTitle className="text-lg">{jobApp.character_name}</CardTitle>
+                                  <CardDescription>
+                                    Age: {jobApp.age} | Discord: {jobApp.phone_number}
+                                    {gangDetails?.gang_type_preference && ` | Preference: ${gangDetails.gang_type_preference}`}
+                                  </CardDescription>
+                                </div>
+                                <Badge variant={jobApp.status === "approved" ? "default" : jobApp.status === "rejected" ? "destructive" : "secondary"}>
+                                  {jobApp.status}
+                                </Badge>
+                              </div>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                              <div className="grid gap-4 md:grid-cols-2">
+                                <div>
+                                  <h4 className="font-semibold text-sm mb-1">Why Join Gang RP</h4>
+                                  <p className="text-sm text-muted-foreground">{jobApp.why_join}</p>
+                                </div>
+                                <div>
+                                  <h4 className="font-semibold text-sm mb-1">RP Experience</h4>
+                                  <p className="text-sm text-muted-foreground">{jobApp.previous_experience}</p>
+                                </div>
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-sm mb-1">Character Backstory</h4>
+                                <p className="text-sm text-muted-foreground">{jobApp.character_background}</p>
+                              </div>
+                              {gangDetails && (
+                                <div className="grid gap-4 md:grid-cols-2">
+                                  {gangDetails.criminal_rp_experience && (
+                                    <div>
+                                      <h4 className="font-semibold text-sm mb-1">Criminal RP Experience</h4>
+                                      <p className="text-sm text-muted-foreground">{gangDetails.criminal_rp_experience}</p>
+                                    </div>
+                                  )}
+                                  {gangDetails.conflict_scenario && (
+                                    <div>
+                                      <h4 className="font-semibold text-sm mb-1">Conflict Scenario</h4>
+                                      <p className="text-sm text-muted-foreground">{gangDetails.conflict_scenario}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                              
+                              {jobApp.status === "pending" && (
+                                <div className="space-y-3 pt-4 border-t">
+                                  <Textarea
+                                    placeholder="Admin notes (optional)"
+                                    value={selectedJobApp?.id === jobApp.id ? jobAdminNotes : ""}
+                                    onChange={(e) => { setSelectedJobApp(jobApp); setJobAdminNotes(e.target.value); }}
+                                  />
+                                  <div className="flex gap-2">
+                                    <Button onClick={() => updateJobApplicationStatus(jobApp.id, "approved")} className="bg-red-700 hover:bg-red-800">Approve</Button>
+                                    <Button onClick={() => updateJobApplicationStatus(jobApp.id, "rejected")} variant="destructive">Reject</Button>
+                                  </div>
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* PDM Applications */}
                 <div className="pt-6 border-t">
                   <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                    🚗 PDM Applications 
+                    🚗 PDM (Premium Deluxe Motorsport) Applications 
                     <Badge variant="outline">{pdmApplications.length}</Badge>
                   </h3>
                   {pdmApplications.length === 0 ? (
@@ -1175,7 +1484,7 @@ const Admin = () => {
                   ) : (
                     <div className="space-y-4">
                       {pdmApplications.map((pdmApp) => (
-                        <Card key={pdmApp.id} className="border-border/20">
+                        <Card key={pdmApp.id} className="border-green-500/20">
                           <CardHeader>
                             <div className="flex items-start justify-between">
                               <div>
@@ -1188,13 +1497,23 @@ const Admin = () => {
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
-                            <div>
-                              <h4 className="font-semibold text-sm mb-1">Sales Experience</h4>
-                              <p className="text-sm text-muted-foreground">{pdmApp.sales_experience}</p>
+                            <div className="grid gap-4 md:grid-cols-2">
+                              <div>
+                                <h4 className="font-semibold text-sm mb-1">Sales Experience</h4>
+                                <p className="text-sm text-muted-foreground">{pdmApp.sales_experience}</p>
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-sm mb-1">Vehicle Knowledge</h4>
+                                <p className="text-sm text-muted-foreground">{pdmApp.vehicle_knowledge}</p>
+                              </div>
                             </div>
                             <div>
-                              <h4 className="font-semibold text-sm mb-1">Vehicle Knowledge</h4>
-                              <p className="text-sm text-muted-foreground">{pdmApp.vehicle_knowledge}</p>
+                              <h4 className="font-semibold text-sm mb-1">Customer Scenario</h4>
+                              <p className="text-sm text-muted-foreground">{pdmApp.customer_scenario}</p>
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-sm mb-1">Why Join</h4>
+                              <p className="text-sm text-muted-foreground">{pdmApp.why_join}</p>
                             </div>
                             
                             {pdmApp.status === "pending" && (
@@ -1205,7 +1524,7 @@ const Admin = () => {
                                   onChange={(e) => { setSelectedPdmApp(pdmApp); setPdmAdminNotes(e.target.value); }}
                                 />
                                 <div className="flex gap-2">
-                                  <Button onClick={() => updatePdmApplicationStatus(pdmApp.id, "approved")} className="bg-primary hover:bg-primary/90">Approve</Button>
+                                  <Button onClick={() => updatePdmApplicationStatus(pdmApp.id, "approved")} className="bg-green-600 hover:bg-green-700">Approve</Button>
                                   <Button onClick={() => updatePdmApplicationStatus(pdmApp.id, "rejected")} variant="destructive">Reject</Button>
                                 </div>
                               </div>
@@ -1243,13 +1562,15 @@ const Admin = () => {
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
-                            <div>
-                              <h4 className="font-semibold text-sm mb-1">Steam ID</h4>
-                              <p className="text-sm text-muted-foreground">{ffApp.steam_id}</p>
-                            </div>
-                            <div>
-                              <h4 className="font-semibold text-sm mb-1">Weekly Availability</h4>
-                              <p className="text-sm text-muted-foreground">{ffApp.weekly_availability}</p>
+                            <div className="grid gap-4 md:grid-cols-2">
+                              <div>
+                                <h4 className="font-semibold text-sm mb-1">Steam ID</h4>
+                                <p className="text-sm text-muted-foreground">{ffApp.steam_id}</p>
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-sm mb-1">Weekly Availability</h4>
+                                <p className="text-sm text-muted-foreground">{ffApp.weekly_availability}</p>
+                              </div>
                             </div>
                             
                             {ffApp.status === "pending" && (
@@ -1283,7 +1604,7 @@ const Admin = () => {
                   ) : (
                     <div className="space-y-4">
                       {weazelNewsApplications.map((wnApp) => (
-                        <Card key={wnApp.id} className="border-blue-500/20">
+                        <Card key={wnApp.id} className="border-cyan-500/20">
                           <CardHeader>
                             <div className="flex items-start justify-between">
                               <div>
@@ -1296,17 +1617,27 @@ const Admin = () => {
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
-                            <div>
-                              <h4 className="font-semibold text-sm mb-1">Journalism Experience</h4>
-                              <p className="text-sm text-muted-foreground">{wnApp.journalism_experience}</p>
+                            <div className="grid gap-4 md:grid-cols-2">
+                              <div>
+                                <h4 className="font-semibold text-sm mb-1">Journalism Experience</h4>
+                                <p className="text-sm text-muted-foreground">{wnApp.journalism_experience}</p>
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-sm mb-1">Camera Skills</h4>
+                                <p className="text-sm text-muted-foreground">{wnApp.camera_skills}</p>
+                              </div>
                             </div>
                             <div>
                               <h4 className="font-semibold text-sm mb-1">Writing Sample</h4>
                               <p className="text-sm text-muted-foreground">{wnApp.writing_sample}</p>
                             </div>
                             <div>
-                              <h4 className="font-semibold text-sm mb-1">Camera Skills</h4>
-                              <p className="text-sm text-muted-foreground">{wnApp.camera_skills}</p>
+                              <h4 className="font-semibold text-sm mb-1">Interview Scenario</h4>
+                              <p className="text-sm text-muted-foreground">{wnApp.interview_scenario}</p>
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-sm mb-1">Why Join</h4>
+                              <p className="text-sm text-muted-foreground">{wnApp.why_join}</p>
                             </div>
                             
                             {wnApp.status === "pending" && (
@@ -1317,7 +1648,7 @@ const Admin = () => {
                                   onChange={(e) => { setSelectedWeazelApp(wnApp); setWeazelAdminNotes(e.target.value); }}
                                 />
                                 <div className="flex gap-2">
-                                  <Button onClick={() => updateWeazelApplicationStatus(wnApp.id, "approved")} className="bg-blue-600 hover:bg-blue-700">Approve</Button>
+                                  <Button onClick={() => updateWeazelApplicationStatus(wnApp.id, "approved")} className="bg-cyan-600 hover:bg-cyan-700">Approve</Button>
                                   <Button onClick={() => updateWeazelApplicationStatus(wnApp.id, "rejected")} variant="destructive">Reject</Button>
                                 </div>
                               </div>
@@ -1328,6 +1659,14 @@ const Admin = () => {
                     </div>
                   )}
                 </div>
+
+                {/* Empty State */}
+                {jobApplications.length === 0 && pdmApplications.length === 0 && firefighterApplications.length === 0 && weazelNewsApplications.length === 0 && (
+                  <div className="text-center py-12">
+                    <Briefcase className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
+                    <p className="text-muted-foreground">No job applications submitted yet</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
