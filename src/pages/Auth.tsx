@@ -165,6 +165,14 @@ const Auth = () => {
       title: "Welcome back!",
       description: "You have successfully logged in.",
     });
+    
+    setLoading(false);
+    
+    // Navigate to home page after successful login
+    // The onAuthStateChange should handle this, but we add a fallback
+    setTimeout(() => {
+      navigate("/");
+    }, 500);
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -301,6 +309,14 @@ const Auth = () => {
       title: "Account Created!",
       description: "Welcome to Skylife Roleplay India! Discord verified ✓",
     });
+    
+    setLoading(false);
+    
+    // Navigate to home page after successful signup
+    // The onAuthStateChange should handle this, but we add a fallback
+    setTimeout(() => {
+      navigate("/");
+    }, 500);
   };
 
   const handleDiscordJoin = () => {
