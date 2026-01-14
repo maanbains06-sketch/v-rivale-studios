@@ -91,6 +91,14 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
     error: whitelistError
   } = useWhitelistAccess();
 
+  // Map team_value to staff_members department
+  const teamToDepartmentMap: Record<string, string> = {
+    'staff_team': 'staff',
+    'support_team': 'support',
+    'event_team': 'event',
+    'administration_team': 'administration',
+  };
+
   useEffect(() => {
     async function checkEligibilityAndTeamCapacity() {
       if (!open) return;
@@ -138,20 +146,25 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
           return;
         }
 
-        // Count approved applications per team position
-        const { data: approvedApps } = await supabase
-          .from("staff_applications")
-          .select("position")
-          .eq("status", "approved");
+        // Count ACTUAL active staff members by department (not applications)
+        const { data: staffMembers } = await supabase
+          .from("staff_members")
+          .select("department")
+          .eq("is_active", true);
 
-        const teamCounts: Record<string, number> = {};
-        approvedApps?.forEach(app => {
-          teamCounts[app.position] = (teamCounts[app.position] || 0) + 1;
+        const departmentCounts: Record<string, number> = {};
+        staffMembers?.forEach(member => {
+          const dept = member.department?.toLowerCase();
+          if (dept) {
+            departmentCounts[dept] = (departmentCounts[dept] || 0) + 1;
+          }
         });
 
-        // Build positions from database settings with lock status
+        // Build positions from database settings with lock status based on actual staff
         const positionsWithStatus: PositionOption[] = teamSettings.map(setting => {
-          const memberCount = teamCounts[setting.team_value] || 0;
+          // Map team_value to department name
+          const department = teamToDepartmentMap[setting.team_value] || setting.team_value.replace('_team', '');
+          const memberCount = departmentCounts[department] || 0;
           return {
             value: setting.team_value,
             label: setting.team_label,
@@ -166,16 +179,14 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
         const allFull = positionsWithStatus.every(p => p.isLocked);
         if (allFull) {
           setIsEligible(false);
-          setEligibilityMessage("All staff positions are currently filled (3/3). Please check back later when positions become available.");
+          setEligibilityMessage("All staff positions are currently filled. Please check back later when positions become available.");
           setAvailablePositions([]);
           setIsCheckingEligibility(false);
           return;
         }
 
-        // Filter out full positions from the dropdown
-        const openPositions = positionsWithStatus.filter(p => !p.isLocked);
-        
-        setAvailablePositions(openPositions);
+        // Show all positions but mark full ones as locked
+        setAvailablePositions(positionsWithStatus);
         setIsEligible(true);
         setEligibilityMessage("");
       } catch (error) {
@@ -189,12 +200,12 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
 
     checkEligibilityAndTeamCapacity();
 
-    // Set up real-time subscription for live updates
+    // Set up real-time subscription for live updates on ACTUAL staff members
     const channel = supabase
-      .channel('staff_applications_changes')
+      .channel('staff_live_tracking')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'staff_applications' },
+        { event: '*', schema: 'public', table: 'staff_members' },
         () => {
           checkEligibilityAndTeamCapacity();
         }
