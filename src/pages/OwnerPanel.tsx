@@ -31,8 +31,12 @@ import {
   MessageSquare,
   Star,
   Check,
-  X
+  X,
+  Pencil,
+  Trash2
 } from "lucide-react";
+import { StaffManagementDialog } from "@/components/StaffManagementDialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import headerAdminBg from "@/assets/header-staff.jpg";
 
 const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
@@ -81,6 +85,23 @@ interface Testimonial {
   created_at: string;
 }
 
+interface StaffMemberData {
+  id: string;
+  name: string;
+  discord_id: string;
+  discord_username?: string;
+  discord_avatar?: string;
+  email?: string;
+  steam_id?: string;
+  role: string;
+  role_type: string;
+  department: string;
+  bio?: string;
+  responsibilities: string[];
+  is_active: boolean;
+  display_order: number;
+}
+
 const OwnerPanel = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -93,9 +114,13 @@ const OwnerPanel = () => {
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [pdmApplications, setPdmApplications] = useState<PDMApplication[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [staffMembers, setStaffMembers] = useState<StaffMemberData[]>([]);
   const [editedSettings, setEditedSettings] = useState<Record<string, string>>({});
   const [selectedPdmApp, setSelectedPdmApp] = useState<PDMApplication | null>(null);
   const [pdmAdminNotes, setPdmAdminNotes] = useState("");
+  const [isStaffDialogOpen, setIsStaffDialogOpen] = useState(false);
+  const [selectedStaff, setSelectedStaff] = useState<StaffMemberData | null>(null);
+  const [staffToDelete, setStaffToDelete] = useState<string | null>(null);
   const [showInactivityWarning, setShowInactivityWarning] = useState(false);
   const [remainingTime, setRemainingTime] = useState(0);
   
@@ -279,6 +304,7 @@ const OwnerPanel = () => {
       loadUserRoles(),
       loadPdmApplications(),
       loadTestimonials(),
+      loadStaffMembers(),
     ]);
   };
 
@@ -354,6 +380,53 @@ const OwnerPanel = () => {
     }
 
     setTestimonials(data || []);
+  };
+
+  const loadStaffMembers = async () => {
+    const { data, error } = await supabase
+      .from("staff_members")
+      .select("*")
+      .order("display_order", { ascending: true });
+
+    if (error) {
+      console.error("Error loading staff members:", error);
+      return;
+    }
+
+    setStaffMembers(data || []);
+  };
+
+  const deleteStaffMember = async (id: string) => {
+    const staff = staffMembers.find(s => s.id === id);
+    
+    const { error } = await supabase
+      .from("staff_members")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete staff member.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    await logAction({
+      actionType: 'staff_delete',
+      actionDescription: `Deleted staff member "${staff?.name}"`,
+      targetTable: 'staff_members',
+      targetId: id,
+    });
+
+    toast({
+      title: "Success",
+      description: "Staff member deleted successfully.",
+    });
+
+    setStaffToDelete(null);
+    loadStaffMembers();
   };
 
   const updateTestimonialStatus = async (id: string, isFeatured: boolean) => {
@@ -597,7 +670,7 @@ const OwnerPanel = () => {
       
       <div className="container mx-auto px-4 py-12">
         <Tabs defaultValue="settings" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-flex">
+          <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:inline-flex">
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
               <span className="hidden sm:inline">Site Settings</span>
@@ -605,6 +678,10 @@ const OwnerPanel = () => {
             <TabsTrigger value="roles" className="flex items-center gap-2">
               <Shield className="w-4 h-4" />
               <span className="hidden sm:inline">User Roles</span>
+            </TabsTrigger>
+            <TabsTrigger value="staff" className="flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              <span className="hidden sm:inline">Staff</span>
             </TabsTrigger>
             <TabsTrigger value="feedback" className="flex items-center gap-2">
               <MessageSquare className="w-4 h-4" />
@@ -807,6 +884,103 @@ const OwnerPanel = () => {
                               <SelectItem value="admin">Admin</SelectItem>
                             </SelectContent>
                           </Select>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Staff Management Tab */}
+          <TabsContent value="staff">
+            <Card className="glass-effect border-border/20">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <Users className="w-5 h-5 text-primary" />
+                      <CardTitle className="text-gradient">Staff Management</CardTitle>
+                    </div>
+                    <CardDescription>Manage staff members and their information</CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate("/staff-setup")}
+                      className="border-primary/50 text-primary hover:bg-primary/10"
+                    >
+                      <Shield className="w-4 h-4 mr-2" />
+                      Staff Setup
+                    </Button>
+                    <Button onClick={() => {
+                      setSelectedStaff(null);
+                      setIsStaffDialogOpen(true);
+                    }}>
+                      Add Staff Member
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Department</TableHead>
+                      <TableHead>Discord</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {staffMembers.map((staff) => (
+                      <TableRow key={staff.id}>
+                        <TableCell className="flex items-center gap-2">
+                          {staff.discord_avatar && (
+                            <img 
+                              src={staff.discord_avatar} 
+                              alt={staff.name}
+                              className="w-8 h-8 rounded-full"
+                            />
+                          )}
+                          <span className="font-medium">{staff.name}</span>
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{staff.role}</div>
+                            <div className="text-xs text-muted-foreground capitalize">{staff.role_type}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="capitalize">{staff.department.replace("_", " ")}</TableCell>
+                        <TableCell>{staff.discord_username || staff.discord_id}</TableCell>
+                        <TableCell>
+                          <Badge variant={staff.is_active ? "default" : "secondary"}>
+                            {staff.is_active ? "Active" : "Inactive"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedStaff(staff);
+                                setIsStaffDialogOpen(true);
+                              }}
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => setStaffToDelete(staff.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -1117,6 +1291,30 @@ const OwnerPanel = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <StaffManagementDialog
+        open={isStaffDialogOpen}
+        onOpenChange={setIsStaffDialogOpen}
+        staffMember={selectedStaff}
+        onSuccess={loadStaffMembers}
+      />
+
+      <AlertDialog open={!!staffToDelete} onOpenChange={() => setStaffToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this staff member. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => staffToDelete && deleteStaffMember(staffToDelete)}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
