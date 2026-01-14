@@ -144,12 +144,12 @@ const UserProfileDropdown = ({ className = "" }: UserProfileDropdownProps) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  // Don't show if not logged in or not a server member
-  if (loading || checkingMembership) {
+  // Don't show if not logged in
+  if (loading) {
     return null;
   }
 
-  if (!user || !isMember) {
+  if (!user) {
     return null;
   }
 
@@ -174,7 +174,7 @@ const UserProfileDropdown = ({ className = "" }: UserProfileDropdownProps) => {
           <span className="text-xs font-medium text-foreground/90 max-w-[88px] truncate hidden lg:block">
             {username}
           </span>
-          <CheckCircle2 className="w-3 h-3 text-green-400 hidden lg:block" />
+          {isMember && <CheckCircle2 className="w-3 h-3 text-green-400 hidden lg:block" />}
           <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
         </motion.div>
       </DropdownMenuTrigger>
@@ -193,12 +193,14 @@ const UserProfileDropdown = ({ className = "" }: UserProfileDropdownProps) => {
             </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground truncate">{username}</p>
-              <div className="flex items-center gap-1 mt-1">
-                <Badge className="bg-green-500/15 text-green-400 border-green-500/25 text-[10px] px-1.5 py-0">
-                  <CheckCircle2 className="w-2.5 h-2.5 mr-1" />
-                  Server Member
-                </Badge>
-              </div>
+              {isMember && (
+                <div className="flex items-center gap-1 mt-1">
+                  <Badge className="bg-green-500/15 text-green-400 border-green-500/25 text-[10px] px-1.5 py-0">
+                    <CheckCircle2 className="w-2.5 h-2.5 mr-1" />
+                    Server Member
+                  </Badge>
+                </div>
+              )}
             </div>
           </div>
         </div>

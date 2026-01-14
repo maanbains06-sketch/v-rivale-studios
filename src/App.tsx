@@ -108,9 +108,9 @@ const AppRoutes = memo(() => {
           <Route path="/staff-setup" element={<PageTransition><StaffSetup /></PageTransition>} />
           <Route path="/ban-appeal" element={<PageTransition><RequireAuth message="Login with Discord to submit a ban appeal."><BanAppeal /></RequireAuth></PageTransition>} />
           <Route path="/guides" element={<PageTransition><Guides /></PageTransition>} />
-          <Route path="/gallery" element={<PageTransition><RequireAuth message="Login with Discord to view the gallery."><Gallery /></RequireAuth></PageTransition>} />
-          <Route path="/status" element={<PageTransition><RequireAuth message="Login with Discord to view server status."><Status /></RequireAuth></PageTransition>} />
-          <Route path="/support" element={<PageTransition><RequireAuth message="Login with Discord to access support."><Support /></RequireAuth></PageTransition>} />
+          <Route path="/gallery" element={<PageTransition><Gallery /></PageTransition>} />
+          <Route path="/status" element={<PageTransition><Status /></PageTransition>} />
+          <Route path="/support" element={<PageTransition><Support /></PageTransition>} />
           <Route path="/confirmation" element={<PageTransition><Confirmation /></PageTransition>} />
           <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
           <Route path="/login" element={<PageTransition><Auth /></PageTransition>} />
@@ -130,7 +130,7 @@ const AppRoutes = memo(() => {
           <Route path="/admin/staff-teams" element={<PageTransition><AdminStaffTeams /></PageTransition>} />
           <Route path="/admin/discord-rules" element={<PageTransition><AdminDiscordRules /></PageTransition>} />
           <Route path="/support-chat" element={<PageTransition><RequireAuth message="Login with Discord to access support chat."><SupportChat /></RequireAuth></PageTransition>} />
-          <Route path="/job-application" element={<PageTransition><RequireAuth message="Login with Discord to apply for jobs."><JobApplication /></RequireAuth></PageTransition>} />
+          <Route path="/job-application" element={<PageTransition><JobApplication /></PageTransition>} />
           <Route path="/dashboard" element={<PageTransition><RequireAuth message="Login with Discord to access your dashboard."><Dashboard /></RequireAuth></PageTransition>} />
           <Route path="/staff-onboarding" element={<PageTransition><StaffOnboarding /></PageTransition>} />
           <Route path="/application-status" element={<PageTransition><RequireAuth message="Login with Discord to check your application status."><ApplicationStatus /></RequireAuth></PageTransition>} />
@@ -139,8 +139,8 @@ const AppRoutes = memo(() => {
           <Route path="/terms-of-service" element={<PageTransition><TermsOfService /></PageTransition>} />
           <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
           <Route path="/owner-panel" element={<PageTransition><OwnerPanel /></PageTransition>} />
-          <Route path="/gang-rp" element={<PageTransition><RequireAuth message="Login with Discord to access Gang RP applications."><GangRP /></RequireAuth></PageTransition>} />
-          <Route path="/feedback" element={<PageTransition><RequireAuth message="Login with Discord to submit feedback."><Feedback /></RequireAuth></PageTransition>} />
+          <Route path="/gang-rp" element={<PageTransition><GangRP /></PageTransition>} />
+          <Route path="/feedback" element={<PageTransition><Feedback /></PageTransition>} />
           <Route path="/giveaway" element={<PageTransition><Giveaway /></PageTransition>} />
           <Route path="/direct-message" element={<PageTransition><RequireAuth message="Login with Discord to send direct messages."><DirectMessage /></RequireAuth></PageTransition>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
