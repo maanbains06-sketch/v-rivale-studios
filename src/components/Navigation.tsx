@@ -178,12 +178,12 @@ const Navigation = () => {
           <div className="flex items-center gap-2">
             {/* Animated Brand Text */}
             <motion.div 
-              className="flex flex-col leading-none cursor-pointer"
+              className="flex flex-col items-center leading-none cursor-pointer"
               whileHover={{ scale: 1.02 }}
               onClick={() => navigate("/")}
             >
               <motion.span 
-                className="text-base md:text-lg font-bold tracking-wide"
+                className="text-base md:text-lg font-bold tracking-wide whitespace-nowrap"
                 style={{
                   background: 'linear-gradient(135deg, hsl(185 100% 50%), hsl(199 89% 48%), hsl(260 90% 60%))',
                   WebkitBackgroundClip: 'text',
@@ -199,7 +199,7 @@ const Navigation = () => {
                 SKYLIFE ROLEPLAY
               </motion.span>
               <motion.span 
-                className="text-[10px] md:text-xs font-bold tracking-[0.25em] flex gap-0.5 justify-center w-full"
+                className="text-[10px] md:text-xs font-bold tracking-[0.3em] flex gap-0.5 justify-center"
                 style={{
                   fontStyle: 'italic',
                   transform: 'skewX(-12deg)',
