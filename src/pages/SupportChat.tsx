@@ -9,7 +9,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Send, MessageCircle, Plus, Paperclip, X, Download, Star, Sparkles, UserPlus, ThumbsUp, ThumbsDown, CreditCard } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import headerSupport from "@/assets/header-support.jpg";
@@ -57,10 +56,9 @@ const SupportChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [newChatSubject, setNewChatSubject] = useState("");
-  const [newChatPriority, setNewChatPriority] = useState("normal");
+  const [newChatInitialMessage, setNewChatInitialMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [aiAssisting, setAiAssisting] = useState(false);
   const [ratingDialogOpen, setRatingDialogOpen] = useState(false);
   const [rating, setRating] = useState(0);
   const [feedback, setFeedback] = useState("");
@@ -247,9 +245,27 @@ const SupportChat = () => {
       return;
     }
 
+    if (!newChatInitialMessage.trim()) {
+      toast({
+        title: "Message Required",
+        description: "Please describe your issue or question.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to create a support chat.",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      setLoading(false);
+      return;
+    }
 
     // Prepare tags based on category or staff tagging
     let tags: string[] = [];
@@ -280,86 +296,146 @@ const SupportChat = () => {
       }
     }
 
-    const { data, error } = await supabase
-      .from("support_chats")
-      .insert({
-        user_id: user.id,
-        subject: newChatSubject,
-        tags: tags,
-        priority: priority,
-        assigned_to: assignedTo,
-        status: assignedTo ? 'in_progress' : 'open',
-      })
-      .select()
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from("support_chats")
+        .insert({
+          user_id: user.id,
+          subject: newChatSubject,
+          tags: tags,
+          priority: priority,
+          assigned_to: assignedTo,
+          status: assignedTo ? 'in_progress' : 'open',
+        })
+        .select()
+        .single();
 
-    if (error) {
-      console.error("Error creating chat:", error.message, error.details, error.hint, error.code);
+      if (error) {
+        console.error("Error creating chat:", error.message, error.details, error.hint, error.code);
+        toast({
+          title: "Error",
+          description: error.message || "Failed to create support chat. Please try again.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Send the initial message
+      const { error: messageError } = await supabase.from("support_messages").insert({
+        chat_id: data.id,
+        user_id: user.id,
+        message: newChatInitialMessage,
+        is_staff: false,
+      });
+
+      if (messageError) {
+        console.error("Error sending initial message:", messageError);
+      }
+
+      // Update last_message_at
+      await supabase
+        .from("support_chats")
+        .update({ last_message_at: new Date().toISOString() })
+        .eq("id", data.id);
+
+      // Send notification to the tagged/assigned staff member
+      if (assignedTo) {
+        const notificationType = dmStaffId ? 'direct_message' : 'staff_tagged';
+        const notificationTitle = dmStaffId ? 'New Direct Message' : 'You were tagged in a support ticket';
+        const notificationMessage = dmStaffId 
+          ? `Someone has sent you a direct message: "${newChatSubject}"`
+          : `Someone has opened a support ticket and tagged you: "${newChatSubject}"`;
+        
+        try {
+          await supabase.from("notifications").insert({
+            user_id: assignedTo,
+            title: notificationTitle,
+            message: notificationMessage,
+            type: notificationType,
+            reference_id: data.id,
+          });
+        } catch (notifError) {
+          console.error("Error sending notification:", notifError);
+        }
+      }
+
+      setChats(prev => [data, ...prev]);
+      setSelectedChat(data);
+      setNewChatSubject("");
+      setNewChatInitialMessage("");
+      setCreateDialogOpen(false);
+      
+      // Trigger AI response for non-assigned chats
+      if (!assignedTo && newChatInitialMessage.trim()) {
+        const { data: session } = await supabase.auth.getSession();
+        
+        try {
+          const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-support-chat`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.session?.access_token}`,
+            },
+            body: JSON.stringify({
+              messages: [{ role: 'user', content: newChatInitialMessage }],
+              chatId: data.id
+            }),
+          });
+
+          if (!response.ok) {
+            console.error('AI response failed:', response.status);
+          }
+        } catch (aiError) {
+          console.error('AI call error:', aiError);
+        }
+      }
+      
+      // Send refund notification email to staff if it's a refund request
+      if (category === 'refund') {
+        try {
+          await supabase.functions.invoke('send-refund-notification', {
+            body: {
+              chatId: data.id,
+              subject: newChatSubject,
+              userId: user.id,
+            }
+          });
+        } catch (error) {
+          console.error("Error sending refund notification:", error);
+        }
+      }
+      
+      // Show appropriate toast message
+      let toastMessage = 'Your support chat has been created. Our AI assistant will respond first, and staff will join if needed.';
+      if (dmStaffId && tagStaffName) {
+        toastMessage = `Your direct message to ${decodeURIComponent(tagStaffName)} has been sent. They will be notified.`;
+      } else if (tagStaffId && tagStaffName) {
+        toastMessage = `Your support ticket has been created and ${decodeURIComponent(tagStaffName)} has been notified.`;
+      } else if (category === 'refund') {
+        toastMessage = 'Your refund request has been created. Our team will respond shortly.';
+      }
+      
+      toast({
+        title: dmStaffId ? "Message Sent" : "Chat Created",
+        description: toastMessage,
+      });
+
+      // Fetch messages for the new chat
+      setTimeout(() => {
+        fetchMessages(data.id);
+      }, 1000);
+
+    } catch (err) {
+      console.error("Unexpected error:", err);
       toast({
         title: "Error",
-        description: error.message || "Failed to create support chat. Please try again.",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
+    } finally {
       setLoading(false);
-      return;
     }
-
-    // Send notification to the tagged/assigned staff member
-    if (assignedTo) {
-      const notificationType = dmStaffId ? 'direct_message' : 'staff_tagged';
-      const notificationTitle = dmStaffId ? 'New Direct Message' : 'You were tagged in a support ticket';
-      const notificationMessage = dmStaffId 
-        ? `Someone has sent you a direct message: "${newChatSubject}"`
-        : `Someone has opened a support ticket and tagged you: "${newChatSubject}"`;
-      
-      try {
-        await supabase.from("notifications").insert({
-          user_id: assignedTo,
-          title: notificationTitle,
-          message: notificationMessage,
-          type: notificationType,
-          reference_id: data.id,
-        });
-      } catch (notifError) {
-        console.error("Error sending notification:", notifError);
-      }
-    }
-
-    setChats(prev => [data, ...prev]);
-    setSelectedChat(data);
-    setNewChatSubject("");
-    setCreateDialogOpen(false);
-    setLoading(false);
-    
-    // Send refund notification email to staff if it's a refund request
-    if (category === 'refund') {
-      try {
-        await supabase.functions.invoke('send-refund-notification', {
-          body: {
-            chatId: data.id,
-            subject: newChatSubject,
-            userId: user.id,
-          }
-        });
-      } catch (error) {
-        console.error("Error sending refund notification:", error);
-      }
-    }
-    
-    // Show appropriate toast message
-    let toastMessage = 'Your support chat has been created. Our team will respond shortly.';
-    if (dmStaffId && tagStaffName) {
-      toastMessage = `Your direct message to ${decodeURIComponent(tagStaffName)} has been sent. They will be notified.`;
-    } else if (tagStaffId && tagStaffName) {
-      toastMessage = `Your support ticket has been created and ${decodeURIComponent(tagStaffName)} has been notified.`;
-    } else if (category === 'refund') {
-      toastMessage = 'Your refund request has been created. Our team will respond shortly.';
-    }
-    
-    toast({
-      title: dmStaffId ? "Message Sent" : "Chat Created",
-      description: toastMessage,
-    });
   };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -597,7 +673,7 @@ const SupportChat = () => {
                     Skylife Support
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="sm:max-w-md">
                   <DialogHeader>
                     <DialogTitle>
                       {category === 'refund' ? (
@@ -623,13 +699,34 @@ const SupportChat = () => {
                       <Label htmlFor="subject">Subject</Label>
                       <Input
                         id="subject"
-                        placeholder={category === 'refund' ? "Refund Request - Order #" : "What do you need help with?"}
+                        placeholder={category === 'refund' ? "Refund Request - Order #" : "Brief title for your request"}
                         value={newChatSubject}
                         onChange={(e) => setNewChatSubject(e.target.value)}
                       />
                     </div>
-                    <Button onClick={createNewChat} disabled={loading} className="w-full">
-                      {loading ? "Creating..." : "Create Chat"}
+                    <div className="space-y-2">
+                      <Label htmlFor="initialMessage">Describe your issue</Label>
+                      <Textarea
+                        id="initialMessage"
+                        placeholder={category === 'refund' 
+                          ? "Please include your order number, what you purchased, and why you're requesting a refund..." 
+                          : "Please describe your issue or question in detail. Our AI assistant will respond first, and a staff member will join if needed..."
+                        }
+                        value={newChatInitialMessage}
+                        onChange={(e) => setNewChatInitialMessage(e.target.value)}
+                        rows={4}
+                        className="resize-none"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        The more details you provide, the faster we can help you.
+                      </p>
+                    </div>
+                    <Button 
+                      onClick={createNewChat} 
+                      disabled={loading || !newChatSubject.trim() || !newChatInitialMessage.trim()} 
+                      className="w-full"
+                    >
+                      {loading ? "Creating..." : "Start Support Chat"}
                     </Button>
                   </div>
                 </DialogContent>
