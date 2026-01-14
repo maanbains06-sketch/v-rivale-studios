@@ -2,13 +2,11 @@ import { useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 const IDLE_TIMEOUT_MS = 2 * 60 * 1000; // 2 minutes of inactivity = idle
-const HEARTBEAT_INTERVAL_MS = 15000; // 15 seconds
+const HEARTBEAT_INTERVAL_MS = 30000; // 30 seconds (increased from 15s)
 
 /**
  * Tracks staff presence on the website with proper idle detection.
- * - Online: Active on website (mouse/keyboard/scroll activity)
- * - Idle: No activity for 2+ minutes but website still open
- * - Offline: Logged out or website closed
+ * Optimized to reduce event listener overhead.
  */
 export const StaffPresenceTracker = () => {
   const staffMemberIdRef = useRef<string | null>(null);
@@ -17,6 +15,7 @@ export const StaffPresenceTracker = () => {
   const currentStatusRef = useRef<string>('offline');
   const sessionTokenRef = useRef<string | null>(null);
   const isInitializedRef = useRef(false);
+  const activityThrottleRef = useRef<number>(0);
 
   const updatePresence = useCallback(async (isOnline: boolean, status: string) => {
     const staffId = staffMemberIdRef.current;
@@ -44,7 +43,6 @@ export const StaffPresenceTracker = () => {
           }),
         }
       );
-      console.log(`[Presence] Updated: ${status}`);
     } catch (err) {
       console.error('[Presence] Update failed:', err);
     }
@@ -57,7 +55,6 @@ export const StaffPresenceTracker = () => {
       status: 'offline',
     });
 
-    // Try keepalive fetch first, fallback to sendBeacon
     try {
       fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-discord-presence`,
@@ -79,8 +76,13 @@ export const StaffPresenceTracker = () => {
     }
   }, []);
 
+  // Throttled activity handler - only process once per second
   const handleUserActivity = useCallback(() => {
-    lastActivityRef.current = Date.now();
+    const now = Date.now();
+    if (now - activityThrottleRef.current < 1000) return;
+    activityThrottleRef.current = now;
+    
+    lastActivityRef.current = now;
     
     // If we were idle, update to online
     if (currentStatusRef.current === 'idle' && staffMemberIdRef.current) {
@@ -118,8 +120,8 @@ export const StaffPresenceTracker = () => {
       // Set online immediately
       updatePresence(true, 'online');
 
-      // Activity listeners
-      const activityEvents = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'];
+      // Only listen to click and keydown - removed mousemove for performance
+      const activityEvents = ['keydown', 'click', 'touchstart'];
       activityEvents.forEach(event => {
         document.addEventListener(event, handleUserActivity, { passive: true });
       });
@@ -143,7 +145,7 @@ export const StaffPresenceTracker = () => {
       };
       window.addEventListener('beforeunload', handleBeforeUnload);
 
-      // Heartbeat to check idle status and keep presence alive
+      // Heartbeat to check idle status
       heartbeatRef.current = window.setInterval(checkIdleStatus, HEARTBEAT_INTERVAL_MS);
 
       return () => {
@@ -184,7 +186,7 @@ export const StaffPresenceTracker = () => {
         const userMetadata = session.user.user_metadata;
         const discordId = userMetadata?.discord_id;
 
-        // First, check if user is already linked as staff member by user_id
+        // Check if user is already linked as staff member by user_id
         const { data: staffMember } = await supabase
           .from('staff_members')
           .select('id, discord_id')
@@ -196,7 +198,6 @@ export const StaffPresenceTracker = () => {
           if (staffMemberIdRef.current !== staffMember.id) {
             cleanup?.();
             cleanup = startTracking(staffMember.id);
-            console.log(`[Presence] Started tracking staff: ${staffMember.id}`);
           }
           return;
         }
@@ -211,48 +212,16 @@ export const StaffPresenceTracker = () => {
             .single();
 
           if (staffByDiscordId?.id) {
-            // If user_id is not set, link it now
             if (!staffByDiscordId.user_id) {
               await supabase
                 .from('staff_members')
                 .update({ user_id: session.user.id, updated_at: new Date().toISOString() })
                 .eq('id', staffByDiscordId.id);
-              console.log(`[Presence] Linked staff member ${staffByDiscordId.id} to user ${session.user.id}`);
             }
 
             if (staffMemberIdRef.current !== staffByDiscordId.id) {
               cleanup?.();
               cleanup = startTracking(staffByDiscordId.id);
-              console.log(`[Presence] Started tracking staff (by discord_id): ${staffByDiscordId.id}`);
-            }
-            return;
-          }
-        }
-
-        // Fallback: check by discord_username
-        const discordUsername = userMetadata?.discord_username;
-        if (discordUsername) {
-          const { data: staffByUsername } = await supabase
-            .from('staff_members')
-            .select('id, discord_id, user_id')
-            .ilike('discord_username', discordUsername)
-            .eq('is_active', true)
-            .single();
-
-          if (staffByUsername?.id) {
-            // If user_id is not set, link it now
-            if (!staffByUsername.user_id) {
-              await supabase
-                .from('staff_members')
-                .update({ user_id: session.user.id, updated_at: new Date().toISOString() })
-                .eq('id', staffByUsername.id);
-              console.log(`[Presence] Linked staff member ${staffByUsername.id} to user ${session.user.id} (by username)`);
-            }
-
-            if (staffMemberIdRef.current !== staffByUsername.id) {
-              cleanup?.();
-              cleanup = startTracking(staffByUsername.id);
-              console.log(`[Presence] Started tracking staff (by username): ${staffByUsername.id}`);
             }
             return;
           }

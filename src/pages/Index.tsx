@@ -54,42 +54,8 @@ const VIDEO_TRIM_END = 4; // Seconds to trim from end
 // Lazy load heavy components
 const LiveFeedbackMarquee = lazy(() => import("@/components/LiveFeedbackMarquee"));
 
-// Lightweight floating particles - only render on desktop with no reduced motion
-const FloatingParticles = memo(() => {
-  const prefersReducedMotion = useReducedMotion();
-  
-  // Skip on reduced motion or mobile
-  if (prefersReducedMotion || typeof window !== 'undefined' && window.innerWidth < 768) {
-    return null;
-  }
-
-  const particles = [
-    { id: 0, x: 15, y: 20, size: 3, duration: 25, delay: 0 },
-    { id: 1, x: 30, y: 32, size: 4, duration: 28, delay: 0.8 },
-    { id: 2, x: 45, y: 44, size: 3, duration: 31, delay: 1.6 },
-    { id: 3, x: 60, y: 56, size: 4, duration: 34, delay: 2.4 },
-  ];
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none z-[6]">
-      {particles.map((particle) => (
-        <div
-          key={particle.id}
-          className="absolute rounded-full gpu-accelerated"
-          style={{
-            left: `${particle.x}%`,
-            top: `${particle.y}%`,
-            width: particle.size,
-            height: particle.size,
-            background: `hsl(var(--primary) / 0.3)`,
-            animation: `float-particle ${particle.duration}s ease-in-out infinite`,
-            animationDelay: `${particle.delay}s`,
-          }}
-        />
-      ))}
-    </div>
-  );
-});
+// Disabled floating particles for performance
+const FloatingParticles = memo(() => null);
 FloatingParticles.displayName = "FloatingParticles";
 
 // Static text instead of typing animation for performance
@@ -107,29 +73,20 @@ interface FeaturedYoutuber {
   live_stream_url: string | null;
 }
 
-// Scroll animation variants - simplified for performance
+// Scroll animation variants - disabled for performance
 const scrollRevealVariants = {
-  hidden: { opacity: 0 },
-  visible: { 
-    opacity: 1, 
-    transition: { duration: 0.3 }
-  }
+  hidden: {},
+  visible: {}
 };
 
 const staggerContainerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 },
-  },
+  hidden: {},
+  visible: {},
 };
 
 const itemVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { duration: 0.2 },
-  },
+  hidden: {},
+  visible: {},
 };
 
 const Index = () => {
@@ -156,11 +113,12 @@ const Index = () => {
   const serverPlayers = serverStatusData?.players ?? 0;
   const maxPlayers = serverStatusData?.maxPlayers ?? 64;
 
-  // YouTube Player API for precise trimming
+  // YouTube Player API - optimized with reduced interval frequency
   useEffect(() => {
+    let checkPlaybackInterval: ReturnType<typeof setInterval> | null = null;
+    
     const initializePlayer = () => {
-      // Destroy existing player if it exists
-      if (playerRef.current && playerRef.current.destroy) {
+      if (playerRef.current?.destroy) {
         playerRef.current.destroy();
         playerRef.current = null;
       }
@@ -198,38 +156,32 @@ const Index = () => {
       });
     };
 
-    // Check if YouTube API is already loaded
-    if ((window as any).YT && (window as any).YT.Player) {
+    if ((window as any).YT?.Player) {
       initializePlayer();
     } else {
-      // Load YouTube IFrame API if not already loaded
       if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
         const tag = document.createElement('script');
         tag.src = 'https://www.youtube.com/iframe_api';
-        const firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+        document.head.appendChild(tag);
       }
-      
-      // Define the callback
       (window as any).onYouTubeIframeAPIReady = initializePlayer;
     }
 
-    // Check playback position periodically to handle end trimming
-    const checkPlayback = setInterval(() => {
-      if (playerRef.current && playerRef.current.getCurrentTime && videoDuration > 0) {
-        const currentTime = playerRef.current.getCurrentTime();
-        const endTime = videoDuration - VIDEO_TRIM_END;
-        if (currentTime >= endTime) {
-          playerRef.current.seekTo(VIDEO_TRIM_START);
-          playerRef.current.playVideo();
+    // Reduced frequency interval - only check every 2 seconds
+    if (videoDuration > 0) {
+      checkPlaybackInterval = setInterval(() => {
+        if (playerRef.current?.getCurrentTime) {
+          const currentTime = playerRef.current.getCurrentTime();
+          if (currentTime >= videoDuration - VIDEO_TRIM_END) {
+            playerRef.current.seekTo(VIDEO_TRIM_START);
+          }
         }
-      }
-    }, 500);
+      }, 2000);
+    }
 
     return () => {
-      clearInterval(checkPlayback);
-      // Cleanup player on unmount
-      if (playerRef.current && playerRef.current.destroy) {
+      if (checkPlaybackInterval) clearInterval(checkPlaybackInterval);
+      if (playerRef.current?.destroy) {
         playerRef.current.destroy();
         playerRef.current = null;
       }
@@ -436,19 +388,8 @@ const Index = () => {
                   >
                     SK
                   </span>
-                  {/* Cloud Icon replacing Y with floating animation */}
-                  <motion.div
-                    animate={{ 
-                      y: [0, -8, 0],
-                    }}
-                    transition={{ 
-                      duration: 3,
-                      repeat: Infinity,
-                      ease: "easeInOut"
-                    }}
-                    className="inline-flex"
-                    style={{ transform: 'skewX(8deg)' }}
-                  >
+                  {/* Cloud Icon replacing Y - static for performance */}
+                  <span className="inline-flex" style={{ transform: 'skewX(8deg)' }}>
                     <Cloud 
                       className="w-16 h-16 md:w-28 md:h-28 lg:w-36 lg:h-36 -mx-1 md:-mx-2 text-primary"
                       style={{ 
@@ -457,7 +398,7 @@ const Index = () => {
                       strokeWidth={2.5}
                       fill="hsl(var(--accent))"
                     />
-                  </motion.div>
+                  </span>
                   <span 
                     className="bg-gradient-to-b from-primary via-accent to-secondary bg-clip-text text-transparent"
                     style={{ filter: 'drop-shadow(0 2px 8px hsl(var(--primary) / 0.15))' }}
