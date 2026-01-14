@@ -14,6 +14,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useWhitelistAccess } from "@/hooks/useWhitelistAccess";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
+import ApplicationsPausedAlert from "@/components/ApplicationsPausedAlert";
 import headerJobs from "@/assets/feature-jobs.jpg";
 import jobPoliceImg from "@/assets/job-police.jpg";
 import jobEmsImg from "@/assets/job-ems.jpg";
@@ -31,6 +33,7 @@ const JobApplication = () => {
   
   // Use Discord whitelist role for access control
   const { hasAccess, isInServer, hasWhitelistRole, loading: accessLoading, refreshAccess } = useWhitelistAccess();
+  const { settings: siteSettings, loading: settingsLoading } = useSiteSettings();
 
   useEffect(() => {
     checkUser();
@@ -122,7 +125,7 @@ const JobApplication = () => {
     },
   ];
 
-  const isPageLoading = loading || accessLoading;
+  const isPageLoading = loading || accessLoading || settingsLoading;
 
   if (isPageLoading) {
     return (
@@ -251,7 +254,9 @@ const JobApplication = () => {
       
       <main className="container mx-auto px-4 pb-16">
         <div className="max-w-6xl mx-auto">
-          {!hasAccess ? (
+          {siteSettings.applications_paused ? (
+            <ApplicationsPausedAlert variant="card" applicationType="Job Applications" />
+          ) : !hasAccess ? (
             renderAccessDenied()
           ) : selectedForm ? (
             <div className="space-y-6">

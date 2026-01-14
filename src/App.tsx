@@ -2,9 +2,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { useReferralTracking } from "@/hooks/useReferralTracking";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { useMaintenanceAccess } from "@/hooks/useMaintenanceAccess";
 import { lazy, Suspense, useState, useEffect, memo } from "react";
 import { PageTransition } from "@/components/PageTransition";
 import RequireAuth from "@/components/RequireAuth";
@@ -16,7 +18,7 @@ import AutoRetryPage from "@/components/AutoRetryPage";
 const LiveVisitorCounter = lazy(() => import("@/components/LiveVisitorCounter"));
 const StaffPresenceTracker = lazy(() => import("@/components/StaffPresenceTracker"));
 const NetworkOfflineScreen = lazy(() => import("@/components/NetworkOfflineScreen"));
-
+const MaintenancePage = lazy(() => import("@/components/MaintenancePage"));
 // Safer lazy loader (prevents blank screens when a chunk load fails on slow networks)
 const lazyWithRetry = <T extends { default: React.ComponentType<any> }>(
   factory: () => Promise<T>,
@@ -173,6 +175,17 @@ AppRoutes.displayName = "AppRoutes";
 
 const AppContent = memo(() => {
   const { isOnline } = useNetworkStatus();
+  const { settings, loading: settingsLoading } = useSiteSettings();
+  const { hasAccess, loading: accessLoading, checkAccess } = useMaintenanceAccess();
+  const navigate = useNavigate();
+
+  const handleStaffLogin = () => {
+    navigate("/auth");
+  };
+
+  // Show maintenance page if maintenance mode is on and user doesn't have access
+  const showMaintenance = !settingsLoading && !accessLoading && 
+    settings.maintenance_mode && !hasAccess;
 
   return (
     <>
@@ -181,11 +194,19 @@ const AppContent = memo(() => {
           <NetworkOfflineScreen />
         </Suspense>
       )}
-      <Suspense fallback={null}>
-        <LiveVisitorCounter />
-        <StaffPresenceTracker />
-      </Suspense>
-      <AppRoutes />
+      {showMaintenance ? (
+        <Suspense fallback={<PageLoader />}>
+          <MaintenancePage onCheckAccess={handleStaffLogin} />
+        </Suspense>
+      ) : (
+        <>
+          <Suspense fallback={null}>
+            <LiveVisitorCounter />
+            <StaffPresenceTracker />
+          </Suspense>
+          <AppRoutes />
+        </>
+      )}
     </>
   );
 });

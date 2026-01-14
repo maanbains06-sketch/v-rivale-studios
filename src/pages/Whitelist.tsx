@@ -17,6 +17,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { CheckCircle2, Clock, XCircle, Loader2, LogOut, Timer, Save, FileText, Mail } from "lucide-react";
 import { differenceInDays, differenceInHours, differenceInMinutes, addDays } from "date-fns";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
+import ApplicationsPausedAlert from "@/components/ApplicationsPausedAlert";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -82,6 +84,8 @@ const Whitelist = () => {
   const [loadingDraft, setLoadingDraft] = useState(false);
   const [existingDraft, setExistingDraft] = useState<ApplicationDraft | null>(null);
   const [showLoadDraftDialog, setShowLoadDraftDialog] = useState(false);
+  
+  const { settings: siteSettings, loading: settingsLoading } = useSiteSettings();
 
   const form = useForm<WhitelistFormValues>({
     resolver: zodResolver(whitelistSchema),
@@ -367,13 +371,34 @@ const Whitelist = () => {
     }
   };
 
-  if (loading) {
+  if (loading || settingsLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
         <div className="container mx-auto px-4 pt-24 pb-12 flex items-center justify-center min-h-screen">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
+      </div>
+    );
+  }
+
+  // Show paused message if applications are paused and user has no existing application
+  if (siteSettings.applications_paused && !existingApplication) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <PageHeader 
+          title="Whitelist Application"
+          description="Apply to join SLRP and become part of our exclusive roleplay community"
+          backgroundImage={headerWhitelist}
+        />
+        <main className="pb-16">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mx-auto">
+              <ApplicationsPausedAlert variant="card" applicationType="Whitelist Applications" />
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
