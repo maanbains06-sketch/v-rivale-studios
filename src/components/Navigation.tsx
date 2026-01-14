@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield, FileCheck, LogOut, AlignJustify, UserCircle, Mail, Ban, Briefcase, Gift, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, Ticket, ExternalLink, Crown, CheckCircle2, LayoutDashboard } from "lucide-react";
+import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail, Ban, Briefcase, Gift, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, Ticket, ExternalLink, Crown, CheckCircle2, LayoutDashboard } from "lucide-react";
 import { Button } from "./ui/button";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -363,7 +363,7 @@ const Navigation = () => {
                   size="sm"
                   className="glass-effect order-last md:hidden"
                 >
-                  <AlignJustify className="w-5 h-5" />
+                  <Menu className="w-5 h-5" />
                 </Button>
               </SheetTrigger>
               <SheetContent className="w-[300px] bg-background/95 backdrop-blur-xl border-border/20 overflow-y-auto">
@@ -604,7 +604,7 @@ const Navigation = () => {
                   size="sm"
                   className="glass-effect hidden md:flex"
                 >
-                  <AlignJustify className="w-5 h-5" />
+                  <Menu className="w-5 h-5" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 bg-background/95 backdrop-blur-xl border border-border/20 shadow-xl z-50">
