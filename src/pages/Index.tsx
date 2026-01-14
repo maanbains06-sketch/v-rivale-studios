@@ -23,7 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useEffect, useState, useMemo, lazy, Suspense, useRef, useCallback, memo } from "react";
 import { motion, useScroll, useReducedMotion } from "framer-motion";
 import Navigation from "@/components/Navigation";
@@ -720,24 +720,13 @@ const Index = () => {
 
               <Button
                 size="lg"
-                className="bg-background/75 border-2 border-sky-500/50 text-sky-400 hover:bg-background/85 hover:border-sky-400 text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 hover:scale-105 touch-manipulation select-none"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  const targetPath = isLoggedIn ? "/whitelist" : "/auth";
-                  console.log("Get Whitelisted clicked, navigating to:", targetPath);
-                  navigate(targetPath);
-                }}
-                onTouchEnd={(e) => {
-                  e.preventDefault();
-                  const targetPath = isLoggedIn ? "/whitelist" : "/auth";
-                  console.log("Get Whitelisted touch, navigating to:", targetPath);
-                  navigate(targetPath);
-                }}
-                type="button"
+                className="bg-background/75 border-2 border-sky-500/50 text-sky-400 hover:bg-background/85 hover:border-sky-400 text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 hover:scale-105"
+                asChild
               >
-                <Play className="w-5 h-5 mr-2" />
-                Get Whitelisted
+                <Link to={isLoggedIn ? "/whitelist" : "/auth"}>
+                  <Play className="w-5 h-5 mr-2" />
+                  Get Whitelisted
+                </Link>
               </Button>
 
               <Button
