@@ -73,12 +73,39 @@ const Navigation = () => {
       return;
     }
 
-    // Check if user's Discord ID is in admin list
+    // Check if user's Discord ID is in hardcoded admin list
     if (userDiscordId && ADMIN_DISCORD_IDS.includes(userDiscordId)) {
       setHasStaffAdminAccess(true);
+      return;
     }
 
-    // Also check database role
+    // Also check staff_members table by Discord ID for dynamic staff verification
+    if (userDiscordId && /^\d{17,19}$/.test(userDiscordId)) {
+      const { data: staffMember } = await supabase
+        .from('staff_members')
+        .select('role_type, department, is_active')
+        .eq('discord_id', userDiscordId)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (staffMember) {
+        // Owner, admin, developer roles get admin access
+        const adminRoles = ['owner', 'admin', 'developer'];
+        // Leadership, Management, Administration departments get admin access
+        const adminDepartments = ['leadership', 'management', 'administration', 'development'];
+        
+        if (adminRoles.includes(staffMember.role_type?.toLowerCase() || '') ||
+            adminDepartments.includes(staffMember.department?.toLowerCase() || '')) {
+          if (staffMember.role_type === 'owner') {
+            setIsOwner(true);
+          }
+          setHasStaffAdminAccess(true);
+          return;
+        }
+      }
+    }
+
+    // Fallback: check database role by user_id
     const { data: ownerResult } = await supabase.rpc('is_owner', { _user_id: currentUser.id });
     if (ownerResult) {
       setIsOwner(true);
@@ -99,15 +126,24 @@ const Navigation = () => {
   // Helper functions for Discord user info
   const getDiscordAvatar = () => {
     if (!user) return null;
+    const discordId = user.user_metadata?.discord_id;
+    const avatarHash = user.user_metadata?.avatar;
+    // Construct Discord CDN avatar URL if we have the ID and hash
+    if (discordId && avatarHash) {
+      return `https://cdn.discordapp.com/avatars/${discordId}/${avatarHash}.png`;
+    }
     return user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
   };
 
   const getDiscordUsername = () => {
     if (!user) return "User";
-    return user.user_metadata?.full_name || 
+    return user.user_metadata?.username ||
+           user.user_metadata?.display_name ||
+           user.user_metadata?.full_name || 
            user.user_metadata?.name || 
            user.user_metadata?.user_name ||
            user.user_metadata?.preferred_username ||
+           user.email?.split("@")[0] ||
            "User";
   };
 

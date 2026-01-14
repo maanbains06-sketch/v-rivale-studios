@@ -28,27 +28,52 @@ export const useStaffRole = () => {
           return;
         }
 
-        // Check if user is an admin or moderator
+        // Get Discord ID from user metadata (stored during signup)
+        const discordId = user.user_metadata?.discord_id;
+
+        // Check if user is an admin or moderator from user_roles table
         const { data: userRoles } = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', user.id)
           .in('role', ['admin', 'moderator']);
 
-        const isAdmin = userRoles && userRoles.length > 0;
+        const isAdminFromRoles = userRoles && userRoles.length > 0;
 
-        // Check if user is a staff member
-        const { data: staffMember } = await supabase
-          .from('staff_members')
-          .select('department, role_type, is_active')
-          .eq('user_id', user.id)
-          .eq('is_active', true)
-          .maybeSingle();
+        // Check if user is a staff member by Discord ID (primary) or user_id (fallback)
+        let staffMember = null;
+        
+        if (discordId && /^\d{17,19}$/.test(discordId)) {
+          // First try to match by Discord ID
+          const { data } = await supabase
+            .from('staff_members')
+            .select('department, role_type, is_active')
+            .eq('discord_id', discordId)
+            .eq('is_active', true)
+            .maybeSingle();
+          staffMember = data;
+        }
+        
+        // Fallback to user_id if no match by Discord ID
+        if (!staffMember) {
+          const { data } = await supabase
+            .from('staff_members')
+            .select('department, role_type, is_active')
+            .eq('user_id', user.id)
+            .eq('is_active', true)
+            .maybeSingle();
+          staffMember = data;
+        }
 
-        if (staffMember || isAdmin) {
+        // Determine admin status from staff role_type or user_roles
+        const isAdminFromStaff = staffMember?.role_type === 'admin' || 
+                                  staffMember?.role_type === 'owner' ||
+                                  staffMember?.role_type === 'developer';
+
+        if (staffMember || isAdminFromRoles) {
           setStaffRole({
             isStaff: staffMember ? true : false,
-            isAdmin,
+            isAdmin: isAdminFromRoles || isAdminFromStaff,
             department: staffMember?.department || null,
             roleType: staffMember?.role_type || null,
             loading: false,
