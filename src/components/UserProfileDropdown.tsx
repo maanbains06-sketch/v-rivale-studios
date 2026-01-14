@@ -174,10 +174,7 @@ const UserProfileDropdown = ({ className = "" }: UserProfileDropdownProps) => {
           <span className="text-xs font-medium text-foreground/90 max-w-[88px] truncate hidden lg:block">
             {username}
           </span>
-          <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/30 text-[9px] px-1 py-0 hidden lg:flex items-center gap-1">
-            <CheckCircle2 className="w-2.5 h-2.5" />
-            Member
-          </Badge>
+          <CheckCircle2 className="w-3 h-3 text-green-400 hidden lg:block" />
           <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
         </motion.div>
       </DropdownMenuTrigger>
