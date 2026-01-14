@@ -9,11 +9,11 @@ import { AnimatePresence } from "framer-motion";
 import { lazy, Suspense, useState, useEffect, memo } from "react";
 import { PageTransition } from "@/components/PageTransition";
 import RequireAuth from "@/components/RequireAuth";
+import LoadingScreen from "@/components/LoadingScreen";
 
 // Lazy load utility components
 const LiveVisitorCounter = lazy(() => import("@/components/LiveVisitorCounter"));
 const StaffPresenceTracker = lazy(() => import("@/components/StaffPresenceTracker"));
-const LoadingScreen = lazy(() => import("@/components/LoadingScreen"));
 const NetworkOfflineScreen = lazy(() => import("@/components/NetworkOfflineScreen"));
 
 // Lazy load all pages for code splitting
@@ -240,9 +240,7 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           {isLoading && (
-            <Suspense fallback={null}>
-              <LoadingScreen onComplete={handleLoadingComplete} minDuration={500} />
-            </Suspense>
+            <LoadingScreen onComplete={handleLoadingComplete} minDuration={500} />
           )}
           {showContent && <AppContent />}
         </BrowserRouter>
