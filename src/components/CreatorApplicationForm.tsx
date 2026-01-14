@@ -146,6 +146,15 @@ const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
       4: ['complyWithPolicies'],
     };
 
+    // Minimum character requirements for text fields
+    const minCharRequirements: Partial<Record<keyof CreatorFormData, { min: number; label: string }>> = {
+      rpExperience: { min: 20, label: "RP Experience" },
+      contentStyle: { min: 20, label: "Content Style" },
+      whyJoin: { min: 50, label: "Why Join" },
+      expectedBenefits: { min: 20, label: "Expected Benefits" },
+      valueContribution: { min: 20, label: "Value Contribution" },
+    };
+
     const fieldsToValidate = stepFields[step] || [];
     const newErrors: Partial<Record<keyof CreatorFormData, string>> = {};
     let isValid = true;
@@ -160,10 +169,26 @@ const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
       } else if (!value || (typeof value === 'string' && value.trim() === '')) {
         newErrors[field] = "This field is required";
         isValid = false;
+      } else if (typeof value === 'string' && minCharRequirements[field]) {
+        const { min, label } = minCharRequirements[field]!;
+        if (value.trim().length < min) {
+          newErrors[field] = `${label} must be at least ${min} characters`;
+          isValid = false;
+        }
       }
     });
 
     setErrors(prev => ({ ...prev, ...newErrors }));
+    
+    // Show toast if validation fails to alert user
+    if (!isValid && Object.keys(newErrors).length > 0) {
+      toast({
+        title: "Please fill all required fields",
+        description: "Check the highlighted fields for errors",
+        variant: "destructive",
+      });
+    }
+    
     return isValid;
   };
 
