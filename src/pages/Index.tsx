@@ -96,6 +96,7 @@ const Index = () => {
   const [hasDiscord, setHasDiscord] = useState(false);
   const [isInDiscordServer, setIsInDiscordServer] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [serverConnectUrl, setServerConnectUrl] = useState("fivem://connect/cfx.re/join/abc123");
   const [isCheckingDiscord, setIsCheckingDiscord] = useState(false);
   const [mobileRequirementsOpen, setMobileRequirementsOpen] = useState(false);
@@ -193,6 +194,7 @@ const Index = () => {
 
   useEffect(() => {
     const checkUserStatus = async () => {
+      setIsAuthLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
@@ -200,10 +202,12 @@ const Index = () => {
         setIsWhitelisted(false);
         setHasDiscord(false);
         setIsInDiscordServer(false);
+        setIsAuthLoading(false);
         return;
       }
 
       setIsLoggedIn(true);
+      setIsAuthLoading(false);
 
       // Get Discord ID from user metadata (stored during signup)
       const discordId = user.user_metadata?.discord_id;
@@ -659,10 +663,19 @@ const Index = () => {
                 size="lg"
                 className="bg-background/75 border-2 border-sky-500/50 text-sky-400 hover:bg-background/85 hover:border-sky-400 text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 hover:scale-105"
                 asChild
+                disabled={isAuthLoading}
               >
-                <Link to={isLoggedIn ? "/whitelist" : "/auth"}>
-                  <Play className="w-5 h-5 mr-2" />
-                  Get Whitelisted
+                <Link to={isAuthLoading ? "#" : (isLoggedIn ? "/whitelist" : "/auth")} onClick={(e) => {
+                  if (isAuthLoading) {
+                    e.preventDefault();
+                  }
+                }}>
+                  {isAuthLoading ? (
+                    <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
+                  ) : (
+                    <Play className="w-5 h-5 mr-2" />
+                  )}
+                  {isAuthLoading ? "Loading..." : "Get Whitelisted"}
                 </Link>
               </Button>
 
