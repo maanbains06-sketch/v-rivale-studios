@@ -367,7 +367,7 @@ const Navigation = () => {
                 <Button 
                   variant="outline"
                   size="sm"
-                  className="glass-effect order-last"
+                  className="glass-effect order-last md:hidden"
                 >
                   <Menu className="w-5 h-5" />
                 </Button>
