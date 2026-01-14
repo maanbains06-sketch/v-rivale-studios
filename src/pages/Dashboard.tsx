@@ -80,75 +80,68 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    // Set up realtime subscriptions
+    // Set up realtime subscriptions ONLY after we know the current user.
+    // This prevents subscribing to *all rows* (which can be very noisy and cause UI jank).
+    if (!userId) return;
+
     const channel = supabase
-      .channel('dashboard-changes')
+      .channel("dashboard-changes")
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'whitelist_applications'
+          event: "*",
+          schema: "public",
+          table: "whitelist_applications",
+          filter: `user_id=eq.${userId}`,
         },
-        (payload) => {
-          console.log('Whitelist application change:', payload);
-          handleWhitelistChange(payload);
-        }
+        (payload) => handleWhitelistChange(payload)
       )
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'job_applications'
+          event: "*",
+          schema: "public",
+          table: "job_applications",
+          filter: `user_id=eq.${userId}`,
         },
-        (payload) => {
-          console.log('Job application change:', payload);
-          handleJobChange(payload);
-        }
+        (payload) => handleJobChange(payload)
       )
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'ban_appeals'
+          event: "*",
+          schema: "public",
+          table: "ban_appeals",
+          filter: `user_id=eq.${userId}`,
         },
-        (payload) => {
-          console.log('Ban appeal change:', payload);
-          handleBanAppealChange(payload);
-        }
+        (payload) => handleBanAppealChange(payload)
       )
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'staff_applications'
+          event: "*",
+          schema: "public",
+          table: "staff_applications",
+          filter: `user_id=eq.${userId}`,
         },
-        (payload) => {
-          console.log('Staff application change:', payload);
-          handleStaffAppChange(payload);
-        }
+        (payload) => handleStaffAppChange(payload)
       )
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'gallery_submissions'
+          event: "*",
+          schema: "public",
+          table: "gallery_submissions",
+          filter: `user_id=eq.${userId}`,
         },
-        (payload) => {
-          console.log('Gallery submission change:', payload);
-          handleGalleryChange(payload);
-        }
+        (payload) => handleGalleryChange(payload)
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [userId]);
 
   const handleWhitelistChange = (payload: any) => {
     // Only update if the change is for the current user
