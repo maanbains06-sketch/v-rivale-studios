@@ -155,6 +155,39 @@ interface CreatorApplication {
   admin_notes: string | null;
 }
 
+interface FirefighterApplication {
+  id: string;
+  user_id: string;
+  real_name: string;
+  in_game_name: string;
+  discord_id: string;
+  steam_id: string;
+  weekly_availability: string;
+  status: string;
+  created_at: string;
+  admin_notes: string | null;
+}
+
+interface WeazelNewsApplication {
+  id: string;
+  user_id: string;
+  character_name: string;
+  age: number;
+  phone_number: string;
+  previous_experience: string;
+  why_join: string;
+  character_background: string;
+  availability: string;
+  journalism_experience: string;
+  writing_sample: string;
+  camera_skills: string;
+  interview_scenario: string;
+  additional_info: string | null;
+  status: string;
+  created_at: string;
+  admin_notes: string | null;
+}
+
 interface ReferralStats {
   totalReferrals: number;
   totalDiscountsGiven: number;
@@ -222,6 +255,8 @@ const Admin = () => {
   const [jobApplications, setJobApplications] = useState<JobApplication[]>([]);
   const [pdmApplications, setPdmApplications] = useState<PDMApplication[]>([]);
   const [creatorApplications, setCreatorApplications] = useState<CreatorApplication[]>([]);
+  const [firefighterApplications, setFirefighterApplications] = useState<FirefighterApplication[]>([]);
+  const [weazelNewsApplications, setWeazelNewsApplications] = useState<WeazelNewsApplication[]>([]);
   const [submissions, setSubmissions] = useState<GallerySubmission[]>([]);
   
   // Analytics
@@ -249,6 +284,10 @@ const Admin = () => {
   const [pdmAdminNotes, setPdmAdminNotes] = useState("");
   const [selectedCreatorApp, setSelectedCreatorApp] = useState<CreatorApplication | null>(null);
   const [creatorAdminNotes, setCreatorAdminNotes] = useState("");
+  const [selectedFirefighterApp, setSelectedFirefighterApp] = useState<FirefighterApplication | null>(null);
+  const [firefighterAdminNotes, setFirefighterAdminNotes] = useState("");
+  const [selectedWeazelApp, setSelectedWeazelApp] = useState<WeazelNewsApplication | null>(null);
+  const [weazelAdminNotes, setWeazelAdminNotes] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   
   // Player action dialog
@@ -307,6 +346,8 @@ const Admin = () => {
       loadJobApplications(),
       loadPdmApplications(),
       loadCreatorApplications(),
+      loadFirefighterApplications(),
+      loadWeazelNewsApplications(),
       loadReferralData(),
       loadPromoData(),
       loadStaffStats(),
@@ -367,6 +408,24 @@ const Admin = () => {
       .order("created_at", { ascending: false });
 
     if (!error) setCreatorApplications(data || []);
+  };
+
+  const loadFirefighterApplications = async () => {
+    const { data, error } = await supabase
+      .from("firefighter_applications")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (!error) setFirefighterApplications(data || []);
+  };
+
+  const loadWeazelNewsApplications = async () => {
+    const { data, error } = await supabase
+      .from("weazel_news_applications")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (!error) setWeazelNewsApplications(data || []);
   };
 
   const loadReferralData = async () => {
@@ -713,6 +772,54 @@ const Admin = () => {
     loadCreatorApplications();
   };
 
+  const updateFirefighterApplicationStatus = async (appId: string, status: "approved" | "rejected") => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    const { error } = await supabase
+      .from("firefighter_applications")
+      .update({
+        status,
+        reviewed_by: user?.id,
+        reviewed_at: new Date().toISOString(),
+        admin_notes: firefighterAdminNotes || null,
+      })
+      .eq("id", appId);
+
+    if (error) {
+      toast({ title: "Error", description: "Failed to update firefighter application.", variant: "destructive" });
+      return;
+    }
+
+    toast({ title: "Success", description: `Firefighter application ${status} successfully.` });
+    setSelectedFirefighterApp(null);
+    setFirefighterAdminNotes("");
+    loadFirefighterApplications();
+  };
+
+  const updateWeazelApplicationStatus = async (appId: string, status: "approved" | "rejected") => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    const { error } = await supabase
+      .from("weazel_news_applications")
+      .update({
+        status,
+        reviewed_by: user?.id,
+        reviewed_at: new Date().toISOString(),
+        admin_notes: weazelAdminNotes || null,
+      })
+      .eq("id", appId);
+
+    if (error) {
+      toast({ title: "Error", description: "Failed to update Weazel News application.", variant: "destructive" });
+      return;
+    }
+
+    toast({ title: "Success", description: `Weazel News application ${status} successfully.` });
+    setSelectedWeazelApp(null);
+    setWeazelAdminNotes("");
+    loadWeazelNewsApplications();
+  };
+
   const getOwnershipProofUrl = (path: string | null) => {
     if (!path) return null;
     const { data } = supabase.storage.from('creator-proofs').getPublicUrl(path);
@@ -759,7 +866,10 @@ const Admin = () => {
   const pendingWhitelist = applications.filter(a => a.status === 'pending').length;
   const pendingBanAppeals = banAppeals.filter(a => a.status === 'pending').length;
   const pendingGallery = submissions.filter(s => s.status === 'pending').length;
-  const pendingJobs = jobApplications.filter(j => j.status === 'pending').length;
+  const pendingJobs = jobApplications.filter(j => j.status === 'pending').length + 
+    pdmApplications.filter(p => p.status === 'pending').length +
+    firefighterApplications.filter(f => f.status === 'pending').length +
+    weazelNewsApplications.filter(w => w.status === 'pending').length;
 
   return (
     <div className="min-h-screen bg-background">
@@ -996,92 +1106,228 @@ const Admin = () => {
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <Briefcase className="w-5 h-5 text-primary" />
-                  <CardTitle className="text-gradient">Job Applications</CardTitle>
+                  <CardTitle className="text-gradient">All Job Applications</CardTitle>
                 </div>
-                <CardDescription>Review job and PDM applications</CardDescription>
+                <CardDescription>Review all submitted job applications</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <h3 className="font-semibold text-lg">General Job Applications</h3>
-                {jobApplications.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-4">No job applications</p>
-                ) : (
-                  jobApplications.map((jobApp) => (
-                    <Card key={jobApp.id} className="border-border/20">
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <CardTitle className="text-lg">{jobApp.character_name}</CardTitle>
-                            <CardDescription>Position: {jobApp.job_type} | Age: {jobApp.age}</CardDescription>
-                          </div>
-                          <Badge variant={jobApp.status === "approved" ? "default" : jobApp.status === "rejected" ? "destructive" : "secondary"}>
-                            {jobApp.status}
-                          </Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div>
-                          <h4 className="font-semibold text-sm mb-1">Why Join</h4>
-                          <p className="text-sm text-muted-foreground">{jobApp.why_join}</p>
-                        </div>
-                        
-                        {jobApp.status === "pending" && (
-                          <div className="space-y-3 pt-4 border-t">
-                            <Textarea
-                              placeholder="Admin notes (optional)"
-                              value={selectedJobApp?.id === jobApp.id ? jobAdminNotes : ""}
-                              onChange={(e) => { setSelectedJobApp(jobApp); setJobAdminNotes(e.target.value); }}
-                            />
-                            <div className="flex gap-2">
-                              <Button onClick={() => updateJobApplicationStatus(jobApp.id, "approved")} className="bg-primary hover:bg-primary/90">Approve</Button>
-                              <Button onClick={() => updateJobApplicationStatus(jobApp.id, "rejected")} variant="destructive">Reject</Button>
+              <CardContent className="space-y-6">
+                {/* General Job Applications */}
+                <div>
+                  <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                    <Briefcase className="w-4 h-4" /> General Job Applications 
+                    <Badge variant="outline">{jobApplications.length}</Badge>
+                  </h3>
+                  {jobApplications.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-4">No job applications</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {jobApplications.map((jobApp) => (
+                        <Card key={jobApp.id} className="border-border/20">
+                          <CardHeader>
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <CardTitle className="text-lg">{jobApp.character_name}</CardTitle>
+                                <CardDescription>Position: {jobApp.job_type} | Age: {jobApp.age}</CardDescription>
+                              </div>
+                              <Badge variant={jobApp.status === "approved" ? "default" : jobApp.status === "rejected" ? "destructive" : "secondary"}>
+                                {jobApp.status}
+                              </Badge>
                             </div>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))
-                )}
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div>
+                              <h4 className="font-semibold text-sm mb-1">Why Join</h4>
+                              <p className="text-sm text-muted-foreground">{jobApp.why_join}</p>
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-sm mb-1">Previous Experience</h4>
+                              <p className="text-sm text-muted-foreground">{jobApp.previous_experience}</p>
+                            </div>
+                            
+                            {jobApp.status === "pending" && (
+                              <div className="space-y-3 pt-4 border-t">
+                                <Textarea
+                                  placeholder="Admin notes (optional)"
+                                  value={selectedJobApp?.id === jobApp.id ? jobAdminNotes : ""}
+                                  onChange={(e) => { setSelectedJobApp(jobApp); setJobAdminNotes(e.target.value); }}
+                                />
+                                <div className="flex gap-2">
+                                  <Button onClick={() => updateJobApplicationStatus(jobApp.id, "approved")} className="bg-primary hover:bg-primary/90">Approve</Button>
+                                  <Button onClick={() => updateJobApplicationStatus(jobApp.id, "rejected")} variant="destructive">Reject</Button>
+                                </div>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
-                <h3 className="font-semibold text-lg mt-8">PDM Applications</h3>
-                {pdmApplications.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-4">No PDM applications</p>
-                ) : (
-                  pdmApplications.map((pdmApp) => (
-                    <Card key={pdmApp.id} className="border-border/20">
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <CardTitle className="text-lg">{pdmApp.character_name}</CardTitle>
-                            <CardDescription>Age: {pdmApp.age} | Phone: {pdmApp.phone_number}</CardDescription>
-                          </div>
-                          <Badge variant={pdmApp.status === "approved" ? "default" : pdmApp.status === "rejected" ? "destructive" : "secondary"}>
-                            {pdmApp.status}
-                          </Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div>
-                          <h4 className="font-semibold text-sm mb-1">Sales Experience</h4>
-                          <p className="text-sm text-muted-foreground">{pdmApp.sales_experience}</p>
-                        </div>
-                        
-                        {pdmApp.status === "pending" && (
-                          <div className="space-y-3 pt-4 border-t">
-                            <Textarea
-                              placeholder="Admin notes (optional)"
-                              value={selectedPdmApp?.id === pdmApp.id ? pdmAdminNotes : ""}
-                              onChange={(e) => { setSelectedPdmApp(pdmApp); setPdmAdminNotes(e.target.value); }}
-                            />
-                            <div className="flex gap-2">
-                              <Button onClick={() => updatePdmApplicationStatus(pdmApp.id, "approved")} className="bg-primary hover:bg-primary/90">Approve</Button>
-                              <Button onClick={() => updatePdmApplicationStatus(pdmApp.id, "rejected")} variant="destructive">Reject</Button>
+                {/* PDM Applications */}
+                <div className="pt-6 border-t">
+                  <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                    🚗 PDM Applications 
+                    <Badge variant="outline">{pdmApplications.length}</Badge>
+                  </h3>
+                  {pdmApplications.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-4">No PDM applications</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {pdmApplications.map((pdmApp) => (
+                        <Card key={pdmApp.id} className="border-border/20">
+                          <CardHeader>
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <CardTitle className="text-lg">{pdmApp.character_name}</CardTitle>
+                                <CardDescription>Age: {pdmApp.age} | Phone: {pdmApp.phone_number}</CardDescription>
+                              </div>
+                              <Badge variant={pdmApp.status === "approved" ? "default" : pdmApp.status === "rejected" ? "destructive" : "secondary"}>
+                                {pdmApp.status}
+                              </Badge>
                             </div>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))
-                )}
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div>
+                              <h4 className="font-semibold text-sm mb-1">Sales Experience</h4>
+                              <p className="text-sm text-muted-foreground">{pdmApp.sales_experience}</p>
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-sm mb-1">Vehicle Knowledge</h4>
+                              <p className="text-sm text-muted-foreground">{pdmApp.vehicle_knowledge}</p>
+                            </div>
+                            
+                            {pdmApp.status === "pending" && (
+                              <div className="space-y-3 pt-4 border-t">
+                                <Textarea
+                                  placeholder="Admin notes (optional)"
+                                  value={selectedPdmApp?.id === pdmApp.id ? pdmAdminNotes : ""}
+                                  onChange={(e) => { setSelectedPdmApp(pdmApp); setPdmAdminNotes(e.target.value); }}
+                                />
+                                <div className="flex gap-2">
+                                  <Button onClick={() => updatePdmApplicationStatus(pdmApp.id, "approved")} className="bg-primary hover:bg-primary/90">Approve</Button>
+                                  <Button onClick={() => updatePdmApplicationStatus(pdmApp.id, "rejected")} variant="destructive">Reject</Button>
+                                </div>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Firefighter Applications */}
+                <div className="pt-6 border-t">
+                  <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                    🚒 Firefighter Applications 
+                    <Badge variant="outline">{firefighterApplications.length}</Badge>
+                  </h3>
+                  {firefighterApplications.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-4">No firefighter applications</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {firefighterApplications.map((ffApp) => (
+                        <Card key={ffApp.id} className="border-orange-500/20">
+                          <CardHeader>
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <CardTitle className="text-lg">{ffApp.in_game_name}</CardTitle>
+                                <CardDescription>
+                                  Real Name: {ffApp.real_name} | Discord: {ffApp.discord_id}
+                                </CardDescription>
+                              </div>
+                              <Badge variant={ffApp.status === "approved" ? "default" : ffApp.status === "rejected" ? "destructive" : "secondary"}>
+                                {ffApp.status}
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div>
+                              <h4 className="font-semibold text-sm mb-1">Steam ID</h4>
+                              <p className="text-sm text-muted-foreground">{ffApp.steam_id}</p>
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-sm mb-1">Weekly Availability</h4>
+                              <p className="text-sm text-muted-foreground">{ffApp.weekly_availability}</p>
+                            </div>
+                            
+                            {ffApp.status === "pending" && (
+                              <div className="space-y-3 pt-4 border-t">
+                                <Textarea
+                                  placeholder="Admin notes (optional)"
+                                  value={selectedFirefighterApp?.id === ffApp.id ? firefighterAdminNotes : ""}
+                                  onChange={(e) => { setSelectedFirefighterApp(ffApp); setFirefighterAdminNotes(e.target.value); }}
+                                />
+                                <div className="flex gap-2">
+                                  <Button onClick={() => updateFirefighterApplicationStatus(ffApp.id, "approved")} className="bg-orange-600 hover:bg-orange-700">Approve</Button>
+                                  <Button onClick={() => updateFirefighterApplicationStatus(ffApp.id, "rejected")} variant="destructive">Reject</Button>
+                                </div>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Weazel News Applications */}
+                <div className="pt-6 border-t">
+                  <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                    📰 Weazel News Applications 
+                    <Badge variant="outline">{weazelNewsApplications.length}</Badge>
+                  </h3>
+                  {weazelNewsApplications.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-4">No Weazel News applications</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {weazelNewsApplications.map((wnApp) => (
+                        <Card key={wnApp.id} className="border-blue-500/20">
+                          <CardHeader>
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <CardTitle className="text-lg">{wnApp.character_name}</CardTitle>
+                                <CardDescription>Age: {wnApp.age} | Phone: {wnApp.phone_number}</CardDescription>
+                              </div>
+                              <Badge variant={wnApp.status === "approved" ? "default" : wnApp.status === "rejected" ? "destructive" : "secondary"}>
+                                {wnApp.status}
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div>
+                              <h4 className="font-semibold text-sm mb-1">Journalism Experience</h4>
+                              <p className="text-sm text-muted-foreground">{wnApp.journalism_experience}</p>
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-sm mb-1">Writing Sample</h4>
+                              <p className="text-sm text-muted-foreground">{wnApp.writing_sample}</p>
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-sm mb-1">Camera Skills</h4>
+                              <p className="text-sm text-muted-foreground">{wnApp.camera_skills}</p>
+                            </div>
+                            
+                            {wnApp.status === "pending" && (
+                              <div className="space-y-3 pt-4 border-t">
+                                <Textarea
+                                  placeholder="Admin notes (optional)"
+                                  value={selectedWeazelApp?.id === wnApp.id ? weazelAdminNotes : ""}
+                                  onChange={(e) => { setSelectedWeazelApp(wnApp); setWeazelAdminNotes(e.target.value); }}
+                                />
+                                <div className="flex gap-2">
+                                  <Button onClick={() => updateWeazelApplicationStatus(wnApp.id, "approved")} className="bg-blue-600 hover:bg-blue-700">Approve</Button>
+                                  <Button onClick={() => updateWeazelApplicationStatus(wnApp.id, "rejected")} variant="destructive">Reject</Button>
+                                </div>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
