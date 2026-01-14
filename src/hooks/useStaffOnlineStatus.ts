@@ -79,26 +79,27 @@ export const useStaffOnlineStatus = () => {
         // Check Discord presence using staff_member_id (primary and only source for public)
         const presence = presenceMap.get(member.id);
         if (presence) {
-          // Check if presence data is stale (more than 2 minutes old)
-          // This allows for heartbeat intervals of 15 seconds + some buffer
+          // Check how old the presence data is
           const updatedAt = new Date(presence.updated_at);
-          const minutesSinceUpdate = (now.getTime() - updatedAt.getTime()) / 1000 / 60;
+          const secondsSinceUpdate = (now.getTime() - updatedAt.getTime()) / 1000;
           
-          if (minutesSinceUpdate <= 2) {
+          // Heartbeat is every 15 seconds, so data up to 60 seconds old is valid
+          // Beyond 60 seconds, consider it stale
+          if (secondsSinceUpdate <= 60) {
             // Recent presence data - trust the is_online and status values
             isOnline = presence.is_online;
             presenceStatus = presence.status || 'offline';
-          } else if (minutesSinceUpdate <= 15) {
-            // Slightly stale but still usable - might be idle
+          } else if (secondsSinceUpdate <= 120) {
+            // Slightly stale (1-2 minutes) - might be idle or transitioning
             isOnline = presence.is_online;
             presenceStatus = presence.is_online ? 'idle' : 'offline';
           } else {
-            // Very stale data - assume offline
+            // Very stale data (>2 minutes) - assume offline
             isOnline = false;
             presenceStatus = 'offline';
           }
           
-          // Use Discord's last_online_at if available
+          // Use last_online_at for last seen time
           if (presence.last_online_at) {
             lastSeenTime = presence.last_online_at;
           }
