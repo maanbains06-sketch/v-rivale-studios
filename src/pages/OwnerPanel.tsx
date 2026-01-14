@@ -1028,25 +1028,53 @@ const OwnerPanel = () => {
     // Send Discord notification for whitelist applications
     if (table === "whitelist_applications" && applicantDiscord) {
       try {
-        // Get moderator info from staff_members
-        const discordId = user?.user_metadata?.provider_id;
-        const { data: staffData } = await supabase
-          .from("staff_members")
-          .select("name, discord_id")
-          .eq("discord_id", discordId)
-          .single();
+        // Get moderator info - try multiple ways to find Discord ID
+        const userDiscordId = user?.user_metadata?.provider_id || user?.user_metadata?.discord_id;
+        console.log("Looking up moderator Discord info. User Discord ID:", userDiscordId);
+        
+        // First try to find by Discord ID in user metadata
+        let staffData = null;
+        if (userDiscordId) {
+          const { data } = await supabase
+            .from("staff_members")
+            .select("name, discord_id")
+            .eq("discord_id", userDiscordId)
+            .single();
+          staffData = data;
+        }
+        
+        // If not found, try to find by user_id
+        if (!staffData && user?.id) {
+          const { data } = await supabase
+            .from("staff_members")
+            .select("name, discord_id")
+            .eq("user_id", user.id)
+            .single();
+          staffData = data;
+        }
+        
+        console.log("Staff data found:", staffData);
 
-        await supabase.functions.invoke("send-whitelist-notification", {
-          body: {
-            applicantDiscord,
-            applicantDiscordId,
-            status,
-            moderatorName: staffData?.name || user?.email || "Staff",
-            moderatorDiscordId: staffData?.discord_id || discordId,
-            adminNotes: notes
-          }
+        const notificationPayload = {
+          applicantDiscord,
+          applicantDiscordId,
+          status,
+          moderatorName: staffData?.name || user?.email || "Staff",
+          moderatorDiscordId: staffData?.discord_id || userDiscordId,
+          adminNotes: notes
+        };
+        
+        console.log("Sending Discord notification with payload:", notificationPayload);
+
+        const { data: notifyResult, error: notifyError } = await supabase.functions.invoke("send-whitelist-notification", {
+          body: notificationPayload
         });
-        console.log("Discord notification sent for whitelist application");
+        
+        if (notifyError) {
+          console.error("Failed to send Discord notification:", notifyError);
+        } else {
+          console.log("Discord notification sent successfully:", notifyResult);
+        }
       } catch (notifyError) {
         console.error("Failed to send Discord notification:", notifyError);
         // Don't fail the whole operation if notification fails
