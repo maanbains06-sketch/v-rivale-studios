@@ -371,6 +371,17 @@ const Index = () => {
     <div className="min-h-screen relative">
       <Navigation />
 
+      {/* Fixed Legal Button - Right Side */}
+      <div className="fixed right-0 top-1/2 -translate-y-1/2 z-50">
+        <Link
+          to="/terms-of-service"
+          className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-3 rounded-l-full shadow-lg transition-all duration-300 hover:pr-6 group"
+        >
+          <Shield className="w-5 h-5" />
+          <span className="font-semibold">Legal</span>
+        </Link>
+      </div>
+
       {/* YouTube Video Background - Full coverage */}
       <div className="fixed inset-0 z-0 overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
