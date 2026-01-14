@@ -55,6 +55,33 @@ export type Database = {
           },
         ]
       }
+      announcements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          expires_at: string
+          id: string
+          message: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          message: string
+          type?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          message?: string
+          type?: string
+        }
+        Relationships: []
+      }
       ban_appeals: {
         Row: {
           additional_info: string | null
