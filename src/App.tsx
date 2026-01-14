@@ -4,7 +4,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useReferralTracking } from "@/hooks/useReferralTracking";
-import { useStaffPresence } from "@/hooks/useStaffPresence";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { AnimatePresence } from "framer-motion";
 import { lazy, Suspense, useState, useEffect, memo } from "react";
@@ -90,7 +89,6 @@ PageLoader.displayName = "PageLoader";
 
 const AppRoutes = memo(() => {
   useReferralTracking();
-  useStaffPresence();
   const location = useLocation();
   
   return (
