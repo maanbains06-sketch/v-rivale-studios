@@ -73,12 +73,23 @@ const DiscordProfile = () => {
 
   const getDiscordAvatar = () => {
     if (!user) return null;
+    // Check for avatar URL from Discord CDN using discord_id
+    const discordId = user.user_metadata?.discord_id;
+    if (discordId) {
+      // If we have a Discord avatar hash, construct the URL
+      const avatarHash = user.user_metadata?.avatar;
+      if (avatarHash) {
+        return `https://cdn.discordapp.com/avatars/${discordId}/${avatarHash}.png`;
+      }
+    }
     return user.user_metadata?.avatar_url || user.user_metadata?.picture;
   };
 
   const getDiscordName = () => {
     if (!user) return "User";
-    return user.user_metadata?.full_name || 
+    return user.user_metadata?.username || 
+           user.user_metadata?.display_name ||
+           user.user_metadata?.full_name || 
            user.user_metadata?.name || 
            user.user_metadata?.preferred_username || 
            user.email?.split("@")[0] || 
@@ -87,7 +98,10 @@ const DiscordProfile = () => {
 
   const getDiscordId = () => {
     if (!user) return null;
-    return user.user_metadata?.provider_id || user.user_metadata?.sub;
+    // Discord ID is stored in user metadata during signup
+    return user.user_metadata?.discord_id || 
+           user.user_metadata?.provider_id || 
+           user.user_metadata?.sub;
   };
 
   const formatDate = (dateString: string) => {
@@ -299,8 +313,8 @@ const DiscordProfile = () => {
             <CardContent>
               <div className="grid md:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-muted-foreground">Provider</p>
-                  <p className="font-medium">Discord OAuth</p>
+                  <p className="text-muted-foreground">Auth Method</p>
+                  <p className="font-medium">Email + Discord ID Verification</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Last Sign In</p>

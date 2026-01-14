@@ -74,9 +74,10 @@ const UserProfileDropdown = ({ className = "" }: UserProfileDropdownProps) => {
         return;
       }
 
-      const discordId = user.user_metadata?.provider_id || user.user_metadata?.sub;
+      // Get discord_id from user metadata (stored during signup)
+      const discordId = user.user_metadata?.discord_id;
       
-      if (!discordId) {
+      if (!discordId || !/^\d{17,19}$/.test(discordId)) {
         setIsMember(false);
         return;
       }
@@ -117,16 +118,25 @@ const UserProfileDropdown = ({ className = "" }: UserProfileDropdownProps) => {
   // Get Discord avatar and username from user metadata
   const getDiscordAvatar = () => {
     if (!user) return null;
-    const avatarId = user.user_metadata?.avatar_url || user.user_metadata?.picture;
-    return avatarId || null;
+    const discordId = user.user_metadata?.discord_id;
+    const avatarHash = user.user_metadata?.avatar;
+    
+    // Construct Discord CDN avatar URL if we have the ID and hash
+    if (discordId && avatarHash) {
+      return `https://cdn.discordapp.com/avatars/${discordId}/${avatarHash}.png`;
+    }
+    return user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
   };
 
   const getDiscordUsername = () => {
     if (!user) return "User";
-    return user.user_metadata?.full_name || 
+    return user.user_metadata?.username ||
+           user.user_metadata?.display_name ||
+           user.user_metadata?.full_name || 
            user.user_metadata?.name || 
            user.user_metadata?.user_name ||
            user.user_metadata?.preferred_username ||
+           user.email?.split("@")[0] ||
            "User";
   };
 
