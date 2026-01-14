@@ -9,8 +9,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 import { NotificationBell } from "./NotificationBell";
 import { useStaffRole } from "@/hooks/useStaffRole";
-import { ThemeToggle } from "./ThemeToggle";
-import UserProfileDropdown from "./UserProfileDropdown";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import { useWebsitePresence } from "@/hooks/useWebsitePresence";
