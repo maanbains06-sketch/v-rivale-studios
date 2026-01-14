@@ -349,6 +349,7 @@ export const StaffManagementDialog = ({ open, onOpenChange, staffMember, onSucce
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="management">Management Team</SelectItem>
                 <SelectItem value="leadership">Leadership Team</SelectItem>
                 <SelectItem value="administration">Administration Team</SelectItem>
                 <SelectItem value="moderation">Moderation Team</SelectItem>
