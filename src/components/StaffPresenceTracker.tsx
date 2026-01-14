@@ -2,7 +2,8 @@ import { useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 const IDLE_TIMEOUT_MS = 2 * 60 * 1000; // 2 minutes of inactivity = idle
-const HEARTBEAT_INTERVAL_MS = 15000; // 15 seconds
+const HEARTBEAT_INTERVAL_MS = 30000; // 30 seconds (was 15s - reduced for performance)
+const ACTIVITY_THROTTLE_MS = 5000; // Throttle activity updates
 
 /**
  * Tracks staff presence on the website with proper idle detection.
@@ -79,8 +80,16 @@ export const StaffPresenceTracker = () => {
     }
   }, []);
 
+  // Throttled activity handler to prevent excessive updates
+  const lastActivityUpdateRef = useRef<number>(0);
+  
   const handleUserActivity = useCallback(() => {
-    lastActivityRef.current = Date.now();
+    const now = Date.now();
+    lastActivityRef.current = now;
+    
+    // Throttle activity updates
+    if (now - lastActivityUpdateRef.current < ACTIVITY_THROTTLE_MS) return;
+    lastActivityUpdateRef.current = now;
     
     // If we were idle, update to online
     if (currentStatusRef.current === 'idle' && staffMemberIdRef.current) {
