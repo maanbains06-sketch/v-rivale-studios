@@ -53,51 +53,19 @@ const LiveFeedbackMarquee = () => {
     setIsLoading(false);
   };
 
-  // Default feedbacks if none exist in database
-  const defaultFeedbacks: Feedback[] = [
-    {
-      id: '1',
-      player_name: 'RajeshGamer',
-      player_role: 'Police Officer',
-      rating: 5,
-      testimonial: 'Best Indian RP server! The community is amazing and staff is super helpful.',
-      avatar_url: null
-    },
-    {
-      id: '2',
-      player_name: 'MumbaiKing',
-      player_role: 'Business Owner',
-      rating: 5,
-      testimonial: 'Incredible roleplay experience. Been playing for 6 months and loving every moment!',
-      avatar_url: null
-    },
-    {
-      id: '3',
-      player_name: 'DesiGangster',
-      player_role: 'Gang Leader',
-      rating: 5,
-      testimonial: 'The gang RP here is top notch. Great scripts and even better community.',
-      avatar_url: null
-    },
-    {
-      id: '4',
-      player_name: 'DrPatel',
-      player_role: 'EMS',
-      rating: 5,
-      testimonial: 'Professional server with amazing medical RP. Highly recommended!',
-      avatar_url: null
-    },
-    {
-      id: '5',
-      player_name: 'SpeedRacer',
-      player_role: 'Mechanic',
-      rating: 5,
-      testimonial: 'Custom vehicles and great economy system. This server has it all!',
-      avatar_url: null
-    },
+  // Show empty animation cards if no real feedback exists
+  const hasRealFeedback = feedbacks.length > 0;
+
+  // Generate empty placeholder cards for animation when no feedback
+  const emptyPlaceholders: Feedback[] = hasRealFeedback ? [] : [
+    { id: 'empty-1', player_name: '', player_role: null, rating: 0, testimonial: '', avatar_url: null },
+    { id: 'empty-2', player_name: '', player_role: null, rating: 0, testimonial: '', avatar_url: null },
+    { id: 'empty-3', player_name: '', player_role: null, rating: 0, testimonial: '', avatar_url: null },
+    { id: 'empty-4', player_name: '', player_role: null, rating: 0, testimonial: '', avatar_url: null },
+    { id: 'empty-5', player_name: '', player_role: null, rating: 0, testimonial: '', avatar_url: null },
   ];
 
-  const displayFeedbacks = feedbacks.length > 0 ? feedbacks : defaultFeedbacks;
+  const displayFeedbacks = hasRealFeedback ? feedbacks : emptyPlaceholders;
   
   // Duplicate for seamless loop
   const duplicatedFeedbacks = [...displayFeedbacks, ...displayFeedbacks];
@@ -157,38 +125,70 @@ const LiveFeedbackMarquee = () => {
 };
 
 const FeedbackCard = ({ feedback }: { feedback: Feedback }) => {
-  const getInitials = (name: string) => name.slice(0, 2).toUpperCase();
+  const getInitials = (name: string) => name ? name.slice(0, 2).toUpperCase() : '??';
+  const isEmpty = !feedback.player_name;
 
   return (
     <div className="flex-shrink-0 w-[280px] md:w-[350px]">
-      <div className="glass-effect rounded-xl md:rounded-2xl p-4 md:p-5 border border-border/30 h-full">
-        <Quote className="absolute top-3 right-3 md:top-4 md:right-4 w-6 h-6 md:w-8 md:h-8 text-primary/20" />
-        
-        <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
-          <div className="relative">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 flex items-center justify-center border border-primary/30">
-              {feedback.avatar_url ? (
-                <img src={feedback.avatar_url} alt={feedback.player_name} className="w-full h-full rounded-full object-cover" loading="lazy" />
-              ) : (
-                <span className="text-xs md:text-sm font-bold text-primary">{getInitials(feedback.player_name)}</span>
-              )}
+      <div className={`glass-effect rounded-xl md:rounded-2xl p-4 md:p-5 border h-full relative overflow-hidden ${
+        isEmpty ? 'border-border/20 bg-muted/20' : 'border-border/30'
+      }`}>
+        {isEmpty ? (
+          // Empty placeholder card with animated skeleton
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-muted/40 animate-pulse" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 bg-muted/40 rounded animate-pulse w-24" />
+                <div className="h-3 bg-muted/30 rounded animate-pulse w-16" />
+              </div>
+              <div className="flex gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="w-3 h-3 rounded bg-muted/30 animate-pulse" />
+                ))}
+              </div>
             </div>
-            <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-card" />
+            <div className="space-y-2">
+              <div className="h-3 bg-muted/30 rounded animate-pulse w-full" />
+              <div className="h-3 bg-muted/30 rounded animate-pulse w-4/5" />
+              <div className="h-3 bg-muted/30 rounded animate-pulse w-3/5" />
+            </div>
+            <p className="text-xs text-muted-foreground/50 text-center italic">
+              Be the first to share feedback!
+            </p>
           </div>
-          
-          <div className="flex-1 min-w-0">
-            <h4 className="font-bold text-foreground truncate text-sm md:text-base">{feedback.player_name}</h4>
-            {feedback.player_role && <p className="text-[10px] md:text-xs text-primary/80 truncate">{feedback.player_role}</p>}
-          </div>
-          
-          <div className="flex items-center gap-0.5">
-            {[...Array(5)].map((_, i) => (
-              <Star key={i} className={`w-3 h-3 md:w-3.5 md:h-3.5 ${i < feedback.rating ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground/30'}`} />
-            ))}
-          </div>
-        </div>
-        
-        <p className="text-xs md:text-sm text-muted-foreground leading-relaxed line-clamp-3">"{feedback.testimonial}"</p>
+        ) : (
+          // Real feedback card
+          <>
+            <Quote className="absolute top-3 right-3 md:top-4 md:right-4 w-6 h-6 md:w-8 md:h-8 text-primary/20" />
+            
+            <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
+              <div className="relative">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 flex items-center justify-center border border-primary/30">
+                  {feedback.avatar_url ? (
+                    <img src={feedback.avatar_url} alt={feedback.player_name} className="w-full h-full rounded-full object-cover" loading="lazy" />
+                  ) : (
+                    <span className="text-xs md:text-sm font-bold text-primary">{getInitials(feedback.player_name)}</span>
+                  )}
+                </div>
+                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-card" />
+              </div>
+              
+              <div className="flex-1 min-w-0">
+                <h4 className="font-bold text-foreground truncate text-sm md:text-base">{feedback.player_name}</h4>
+                {feedback.player_role && <p className="text-[10px] md:text-xs text-primary/80 truncate">{feedback.player_role}</p>}
+              </div>
+              
+              <div className="flex items-center gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className={`w-3 h-3 md:w-3.5 md:h-3.5 ${i < feedback.rating ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground/30'}`} />
+                ))}
+              </div>
+            </div>
+            
+            <p className="text-xs md:text-sm text-muted-foreground leading-relaxed line-clamp-3">"{feedback.testimonial}"</p>
+          </>
+        )}
       </div>
     </div>
   );

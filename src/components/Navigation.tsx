@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { NavLink } from "./NavLink";
 import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail, Ban, Briefcase, Gift, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, Ticket, ExternalLink, Crown, CheckCircle2, LayoutDashboard } from "lucide-react";
 import { Button } from "./ui/button";
@@ -32,18 +32,59 @@ import {
 
 const TEBEX_STORE_URL = "https://skylife-roleplay-india.tebex.io";
 
+// Owner Discord ID for verification
+const OWNER_DISCORD_ID = "833680146510381097";
+
+// Staff Discord IDs with admin access (Leadership, Management, Administration, Development)
+const ADMIN_DISCORD_IDS = [
+  "833680146510381097", // Maan - Owner/Leadership
+  "727581954408710272", // ASCENDOR - Management
+  "1417622059617357824", // Sexy - Management  
+  "407091450560643073", // TheKid™ - Management
+  "299129047177363466", // Shroud - Administration
+  "916158803928567858", // Yug - Administration
+  "1055766042871349248", // DagoBato - Development
+];
+
 const Navigation = () => {
   const [user, setUser] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
+  const [hasStaffAdminAccess, setHasStaffAdminAccess] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAdmin, department, loading } = useStaffRole();
 
-  // Check if user has admin panel access (admin role OR leadership/administration/development department)
-  const hasAdminAccess = isAdmin || 
-    (department && ['leadership', 'administration', 'development'].includes(department.toLowerCase()));
+  // Check if user has admin panel access based on Discord ID
+  const checkUserAccess = useCallback(async (currentUser: any) => {
+    if (!currentUser) {
+      setIsOwner(false);
+      setHasStaffAdminAccess(false);
+      return;
+    }
+
+    const userDiscordId = currentUser.user_metadata?.discord_id;
+    
+    // Check owner status by Discord ID
+    if (userDiscordId === OWNER_DISCORD_ID) {
+      setIsOwner(true);
+      setHasStaffAdminAccess(true);
+      return;
+    }
+
+    // Check if user's Discord ID is in admin list
+    if (userDiscordId && ADMIN_DISCORD_IDS.includes(userDiscordId)) {
+      setHasStaffAdminAccess(true);
+    }
+
+    // Also check database role
+    const { data: ownerResult } = await supabase.rpc('is_owner', { _user_id: currentUser.id });
+    if (ownerResult) {
+      setIsOwner(true);
+      setHasStaffAdminAccess(true);
+    }
+  }, []);
 
   useEffect(() => {
     checkUser();
@@ -52,14 +93,7 @@ const Navigation = () => {
   const checkUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     setUser(user);
-    
-    // Check if user is owner
-    if (user) {
-      const { data: ownerResult } = await supabase.rpc('is_owner', { _user_id: user.id });
-      setIsOwner(ownerResult || false);
-    } else {
-      setIsOwner(false);
-    }
+    await checkUserAccess(user);
   };
 
   // Helper functions for Discord user info
@@ -277,7 +311,7 @@ const Navigation = () => {
             
             {/* User Profile Dropdown - Shows for authenticated Discord server members */}
             <UserProfileDropdown className="hidden md:flex" />
-            {hasAdminAccess && (
+            {hasStaffAdminAccess && (
               <NavLink 
                 to="/admin" 
                 className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1"
@@ -359,7 +393,7 @@ const Navigation = () => {
                   </div>
 
                   {/* Admin & User Options */}
-                  {hasAdminAccess && (
+                  {hasStaffAdminAccess && (
                     <Button 
                       variant="outline"
                       className="justify-start glass-effect"
@@ -372,7 +406,7 @@ const Navigation = () => {
                       Admin Panel
                     </Button>
                   )}
-                  {hasAdminAccess && (
+                  {hasStaffAdminAccess && (
                     <>
                       <Button 
                         variant="outline"
@@ -612,7 +646,7 @@ const Navigation = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 bg-background/95 backdrop-blur-xl border border-border/20 shadow-xl z-50">
-                {hasAdminAccess && (
+                {hasStaffAdminAccess && (
                   <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/admin")}>
                     <Shield className="w-4 h-4 mr-2" />
                     Admin Panel
