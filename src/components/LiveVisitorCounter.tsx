@@ -36,7 +36,7 @@ const LiveVisitorCounter = memo(() => {
   }, []);
 
   return (
-    <div className="fixed top-20 right-2 md:right-4 z-50 animate-fade-in">
+    <div className="fixed top-24 md:top-20 right-2 md:right-4 z-40 animate-fade-in">
       <div className="relative">
         <div className="absolute inset-0 bg-green-500/20 rounded-full blur-lg animate-pulse" />
         
