@@ -68,3 +68,6 @@ verify_jwt = false
 
 [functions.upload-rules-images]
 verify_jwt = false
+
+[functions.send-whitelist-notification]
+verify_jwt = false

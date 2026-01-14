@@ -98,6 +98,7 @@ interface WhitelistApplication {
   id: string;
   user_id: string;
   discord: string;
+  discord_id?: string;
   age: number;
   experience: string;
   backstory: string;
@@ -613,7 +614,22 @@ const OwnerPanel = () => {
       return;
     }
 
-    setWhitelistApplications(data || []);
+    // Enrich with discord_id from profiles
+    if (data && data.length > 0) {
+      const userIds = data.map(app => app.user_id);
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, discord_id")
+        .in("id", userIds);
+
+      const enrichedData = data.map(app => ({
+        ...app,
+        discord_id: profiles?.find(p => p.id === app.user_id)?.discord_id || undefined
+      }));
+      setWhitelistApplications(enrichedData);
+    } else {
+      setWhitelistApplications([]);
+    }
   };
 
   const loadJobApplications = async () => {
@@ -983,7 +999,9 @@ const OwnerPanel = () => {
     appId: string,
     status: "approved" | "rejected",
     appName: string,
-    loadFunction: () => Promise<void>
+    loadFunction: () => Promise<void>,
+    applicantDiscord?: string,
+    applicantDiscordId?: string
   ) => {
     const { data: { user } } = await supabase.auth.getUser();
     const notes = adminNotes[appId] || null;
@@ -1005,6 +1023,34 @@ const OwnerPanel = () => {
         variant: "destructive",
       });
       return;
+    }
+
+    // Send Discord notification for whitelist applications
+    if (table === "whitelist_applications" && applicantDiscord) {
+      try {
+        // Get moderator info from staff_members
+        const discordId = user?.user_metadata?.provider_id;
+        const { data: staffData } = await supabase
+          .from("staff_members")
+          .select("name, discord_id")
+          .eq("discord_id", discordId)
+          .single();
+
+        await supabase.functions.invoke("send-whitelist-notification", {
+          body: {
+            applicantDiscord,
+            applicantDiscordId,
+            status,
+            moderatorName: staffData?.name || user?.email || "Staff",
+            moderatorDiscordId: staffData?.discord_id || discordId,
+            adminNotes: notes
+          }
+        });
+        console.log("Discord notification sent for whitelist application");
+      } catch (notifyError) {
+        console.error("Failed to send Discord notification:", notifyError);
+        // Don't fail the whole operation if notification fails
+      }
     }
 
     await logAction({
@@ -1272,10 +1318,10 @@ const OwnerPanel = () => {
                           )}
                           {app.status === "pending" && (
                             <div className="flex gap-2">
-                              <Button size="sm" onClick={() => updateApplicationStatus("whitelist_applications", app.id, "approved", `Whitelist for ${app.discord}`, loadWhitelistApplications)}>
+                              <Button size="sm" onClick={() => updateApplicationStatus("whitelist_applications", app.id, "approved", `Whitelist for ${app.discord}`, loadWhitelistApplications, app.discord, app.discord_id)}>
                                 <Check className="w-4 h-4 mr-1" /> Approve
                               </Button>
-                              <Button size="sm" variant="destructive" onClick={() => updateApplicationStatus("whitelist_applications", app.id, "rejected", `Whitelist for ${app.discord}`, loadWhitelistApplications)}>
+                              <Button size="sm" variant="destructive" onClick={() => updateApplicationStatus("whitelist_applications", app.id, "rejected", `Whitelist for ${app.discord}`, loadWhitelistApplications, app.discord, app.discord_id)}>
                                 <X className="w-4 h-4 mr-1" /> Reject
                               </Button>
                             </div>
