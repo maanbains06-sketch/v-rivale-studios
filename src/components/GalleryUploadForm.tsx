@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Upload, X, CheckCircle, Lock } from "lucide-react";
 import { useStaffRole } from "@/hooks/useStaffRole";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { FeatureDisabledAlert } from "@/components/FeatureDisabledAlert";
 
 interface GalleryUploadFormProps {
   onSuccess?: () => void;
@@ -19,6 +21,7 @@ const GalleryUploadForm = ({ onSuccess }: GalleryUploadFormProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { canAccessCategory, loading: staffLoading } = useStaffRole();
+  const { settings, loading: settingsLoading } = useSiteSettings();
   const [uploading, setUploading] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -193,6 +196,23 @@ const GalleryUploadForm = ({ onSuccess }: GalleryUploadFormProps) => {
       setUploading(false);
     }
   };
+
+  // If gallery submissions are disabled, show alert
+  if (!settingsLoading && !settings.gallery_submissions_enabled) {
+    return (
+      <Card className="glass-effect border-border/20">
+        <CardHeader>
+          <CardTitle className="text-2xl text-gradient">Submit to Gallery</CardTitle>
+          <CardDescription>
+            Share your amazing screenshots and videos with the SLRP community
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <FeatureDisabledAlert feature="gallery_submissions" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="glass-effect border-border/20">

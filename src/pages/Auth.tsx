@@ -11,6 +11,8 @@ import { MessageCircle, Loader2, Eye, EyeOff, ExternalLink, ArrowLeft, Mail } fr
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
 import AuthPanelLogo from "@/components/AuthPanelLogo";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { FeatureDisabledAlert } from "@/components/FeatureDisabledAlert";
 import {
   Dialog,
   DialogContent,
@@ -44,6 +46,7 @@ const forgotPasswordSchema = z.object({
 const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { settings, loading: settingsLoading } = useSiteSettings();
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(false);
@@ -166,6 +169,16 @@ const Auth = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check if registration is disabled
+    if (!settings.registration_enabled) {
+      toast({
+        title: "Registration Disabled",
+        description: "New registrations are currently disabled. Please check back later.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     const result = signupSchema.safeParse({ username, discordId, email, password, confirmPassword });
     if (!result.success) {
@@ -399,7 +412,17 @@ const Auth = () => {
               </motion.p>
             </div>
 
-            {/* Discord Button - Mandatory */}
+            {/* Registration Disabled Alert */}
+            {isSignup && !settings.registration_enabled && !settingsLoading && (
+              <motion.div
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.18 }}
+                className="mb-6"
+              >
+                <FeatureDisabledAlert feature="registration" />
+              </motion.div>
+            )}
             <motion.div
               initial={{ y: 10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}

@@ -14,6 +14,8 @@ import { Label } from "@/components/ui/label";
 import headerSupport from "@/assets/header-support.jpg";
 import { format } from "date-fns";
 import { Textarea } from "@/components/ui/textarea";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { FeatureDisabledAlert } from "@/components/FeatureDisabledAlert";
 
 interface Message {
   id: string;
@@ -46,6 +48,7 @@ interface Chat {
 const SupportChat = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { settings, loading: settingsLoading } = useSiteSettings();
   const [searchParams] = useSearchParams();
   const category = searchParams.get('category');
   const tagStaffId = searchParams.get('tagStaff');
@@ -634,6 +637,25 @@ const SupportChat = () => {
     setRating(0);
     setFeedback("");
   };
+
+  // If support chat is disabled, show alert
+  if (!settingsLoading && !settings.support_chat_enabled) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <PageHeader
+          title="Live Support Chat"
+          description="Get real-time assistance from our support team"
+          backgroundImage={headerSupport}
+        />
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-2xl mx-auto">
+            <FeatureDisabledAlert feature="support_chat" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
