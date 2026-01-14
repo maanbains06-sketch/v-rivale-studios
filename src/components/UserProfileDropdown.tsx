@@ -161,20 +161,20 @@ const UserProfileDropdown = ({ className = "" }: UserProfileDropdownProps) => {
     <DropdownMenu>
       <DropdownMenuTrigger className={`outline-none ${className}`}>
         <motion.div 
-          className="flex items-center gap-2 px-2 py-1.5 rounded-full bg-primary/5 border border-primary/20 hover:bg-primary/10 hover:border-primary/30 transition-all cursor-pointer"
+          className="flex items-center gap-2 px-1.5 py-1 rounded-full bg-primary/5 border border-primary/20 hover:bg-primary/10 hover:border-primary/30 transition-all cursor-pointer"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
-          <Avatar className="w-7 h-7 border-2 border-primary/30">
+          <Avatar className="w-6 h-6 border border-primary/30">
             <AvatarImage src={avatarUrl || undefined} alt={username} />
-            <AvatarFallback className="bg-primary/20 text-primary text-xs font-semibold">
+            <AvatarFallback className="bg-primary/20 text-primary text-[10px] font-semibold">
               {getInitials(username)}
             </AvatarFallback>
           </Avatar>
-          <span className="text-sm font-medium text-foreground/90 max-w-[100px] truncate hidden lg:block">
+          <span className="text-xs font-medium text-foreground/90 max-w-[88px] truncate hidden lg:block">
             {username}
           </span>
-          <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/30 text-[10px] px-1.5 py-0 hidden lg:flex items-center gap-1">
+          <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/30 text-[9px] px-1 py-0 hidden lg:flex items-center gap-1">
             <CheckCircle2 className="w-2.5 h-2.5" />
             Member
           </Badge>
