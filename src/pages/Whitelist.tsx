@@ -338,7 +338,7 @@ const Whitelist = () => {
     }
 
     const rejectionDate = new Date(existingApplication.reviewed_at || existingApplication.created_at);
-    const reapplyDate = addDays(rejectionDate, 7);
+    const reapplyDate = addDays(rejectionDate, 1);
     const now = currentTime;
 
     const canReapply = now >= reapplyDate;
