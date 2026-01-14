@@ -9,9 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, AlertCircle, Users } from "lucide-react";
+import { Loader2, AlertCircle, Users, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useWhitelistAccess } from "@/hooks/useWhitelistAccess";
 import headerStaff from "@/assets/header-staff.jpg";
 
 const staffApplicationSchema = z.object({
@@ -80,10 +81,22 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
   const [eligibilityMessage, setEligibilityMessage] = useState("");
   const [availablePositions, setAvailablePositions] = useState<PositionOption[]>([]);
   const { toast } = useToast();
+  
+  // Use the same whitelist access hook as Job/Gang applications
+  const { 
+    hasAccess: hasWhitelistRole, 
+    isInServer,
+    loading: isWhitelistLoading, 
+    discordId,
+    error: whitelistError
+  } = useWhitelistAccess();
 
   useEffect(() => {
     async function checkEligibilityAndTeamCapacity() {
       if (!open) return;
+      
+      // Wait for whitelist check to complete
+      if (isWhitelistLoading) return;
       
       setIsCheckingEligibility(true);
       
@@ -97,25 +110,16 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
           return;
         }
 
-        // Check whitelist status
-        const { data: whitelistApp, error } = await supabase
-          .from("whitelist_applications")
-          .select("status")
-          .eq("user_id", user.id)
-          .eq("status", "approved")
-          .maybeSingle();
-
-        if (error) {
-          console.error("Error checking whitelist status:", error);
+        // Check whitelist role access (same as Job/Gang applications)
+        if (!hasWhitelistRole) {
           setIsEligible(false);
-          setEligibilityMessage("Unable to verify your whitelist status. Please try again later.");
-          setIsCheckingEligibility(false);
-          return;
-        }
-        
-        if (!whitelistApp) {
-          setIsEligible(false);
-          setEligibilityMessage("You must have an approved whitelist application before applying for staff positions. Please complete the whitelist application first.");
+          if (!discordId) {
+            setEligibilityMessage("You must be logged in with a Discord account to apply for staff positions.");
+          } else if (!isInServer) {
+            setEligibilityMessage("You must be a member of the SLRP Discord server to apply for staff positions. Please join our Discord server first.");
+          } else {
+            setEligibilityMessage("You must have the Whitelisted role on Discord to apply for staff positions. Please complete your whitelist application and get approved first.");
+          }
           setIsCheckingEligibility(false);
           return;
         }
@@ -207,7 +211,7 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [open]);
+  }, [open, isWhitelistLoading, hasWhitelistRole, isInServer, discordId]);
 
   const form = useForm<StaffApplicationFormData>({
     resolver: zodResolver(staffApplicationSchema),
