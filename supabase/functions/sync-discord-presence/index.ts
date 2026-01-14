@@ -342,6 +342,20 @@ const handler = async (req: Request): Promise<Response> => {
       let onlineDiscordIds = new Set<string>();
       let widgetMemberData = new Map<string, WidgetMember>();
       
+      // First, get CURRENT presence from database to preserve recent website updates
+      const { data: currentPresence } = await supabase
+        .from("discord_presence")
+        .select("discord_id, is_online, status, updated_at");
+      
+      const currentPresenceMap = new Map<string, { is_online: boolean; status: string; updated_at: string }>();
+      currentPresence?.forEach((p) => {
+        currentPresenceMap.set(p.discord_id, {
+          is_online: p.is_online,
+          status: p.status,
+          updated_at: p.updated_at
+        });
+      });
+      
       try {
         const widgetResponse = await fetch(
           `https://discord.com/api/v10/guilds/${guildId}/widget.json`
@@ -361,23 +375,17 @@ const handler = async (req: Request): Promise<Response> => {
             });
           }
         } else {
-          console.log("Widget API not available (widget may be disabled). Using Gateway presence fallback...");
+          console.log("Widget API not available (widget may be disabled). Preserving recent presence...");
           
-          // Fallback: Try to get presence from bot's perspective using Gateway status
-          // The REST API doesn't provide presence, but we can check if we have recent updates
-          const { data: recentPresence } = await supabase
-            .from("discord_presence")
-            .select("discord_id, is_online, updated_at")
-            .gt("updated_at", new Date(Date.now() - 5 * 60 * 1000).toISOString()); // Last 5 minutes
-          
-          if (recentPresence) {
-            recentPresence.forEach((p) => {
-              if (p.is_online) {
-                onlineDiscordIds.add(p.discord_id);
-              }
-            });
-            console.log(`Found ${onlineDiscordIds.size} recently online from database cache`);
-          }
+          // Widget unavailable - preserve ALL recent presence data (updated in last 2 minutes)
+          currentPresence?.forEach((p) => {
+            const updatedAt = new Date(p.updated_at);
+            const secondsSinceUpdate = (Date.now() - updatedAt.getTime()) / 1000;
+            if (p.is_online && secondsSinceUpdate < 120) {
+              onlineDiscordIds.add(p.discord_id);
+            }
+          });
+          console.log(`Preserved ${onlineDiscordIds.size} recently online from database`);
         }
       } catch (error) {
         console.error("Error fetching widget data:", error);
@@ -408,13 +416,35 @@ const handler = async (req: Request): Promise<Response> => {
           // Update each staff member
           for (const [discordId, staffInfo] of staffByDiscordId) {
             const discordUser = discordUserData.get(discordId);
-            const isOnline = onlineDiscordIds.has(discordId);
             const widgetMember = widgetMemberData.get(discordId);
+            const currentP = currentPresenceMap.get(discordId);
             
-            // Determine status from widget or default
+            // Check if this user has a recent website presence update (within 60 seconds)
+            let preserveWebsitePresence = false;
+            if (currentP) {
+              const updatedAt = new Date(currentP.updated_at);
+              const secondsSinceUpdate = (Date.now() - updatedAt.getTime()) / 1000;
+              // If updated within 60 seconds and was online, preserve that status
+              if (secondsSinceUpdate < 60 && currentP.is_online) {
+                preserveWebsitePresence = true;
+              }
+            }
+            
+            // Determine online status
+            let isOnline = onlineDiscordIds.has(discordId);
+            
+            // IMPORTANT: If there's a recent website presence, preserve it
+            if (preserveWebsitePresence && !isOnline) {
+              isOnline = true;
+              console.log(`Preserving website presence for ${staffInfo.name}`);
+            }
+            
+            // Determine status
             let status = 'offline';
             if (isOnline && widgetMember) {
               status = widgetMember.status; // online, idle, dnd
+            } else if (isOnline && preserveWebsitePresence && currentP) {
+              status = currentP.status; // Keep the website status
             } else if (isOnline) {
               status = 'online';
             }
@@ -440,27 +470,32 @@ const handler = async (req: Request): Promise<Response> => {
               }
             }
             
-            // Upsert presence record with REAL online status
-            const { error: upsertError } = await supabase
-              .from("discord_presence")
-              .upsert({
-                discord_id: discordId,
-                staff_member_id: staffInfo.id,
-                is_online: isOnline,
-                status: status,
-                last_online_at: isOnline ? now : undefined,
-                updated_at: now,
-              }, {
-                onConflict: 'discord_id'
-              });
+            // Only update presence if NOT preserving website presence
+            // This prevents cron from overwriting active website sessions
+            if (!preserveWebsitePresence) {
+              const { error: upsertError } = await supabase
+                .from("discord_presence")
+                .upsert({
+                  discord_id: discordId,
+                  staff_member_id: staffInfo.id,
+                  is_online: isOnline,
+                  status: status,
+                  last_online_at: isOnline ? now : undefined,
+                  updated_at: now,
+                }, {
+                  onConflict: 'discord_id'
+                });
 
-            if (!upsertError) {
-              updatedCount++;
-              if (isOnline) {
-                console.log(`${staffInfo.name} is ONLINE (${status})`);
+              if (!upsertError) {
+                updatedCount++;
+                if (isOnline) {
+                  console.log(`${staffInfo.name} is ONLINE (${status})`);
+                }
+              } else {
+                console.error(`Error upserting presence for ${discordId}:`, upsertError);
               }
             } else {
-              console.error(`Error upserting presence for ${discordId}:`, upsertError);
+              console.log(`Skipped update for ${staffInfo.name} - preserving website presence`);
             }
           }
         }
