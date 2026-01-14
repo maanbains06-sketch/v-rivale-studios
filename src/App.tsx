@@ -16,6 +16,26 @@ const LiveVisitorCounter = lazy(() => import("@/components/LiveVisitorCounter"))
 const StaffPresenceTracker = lazy(() => import("@/components/StaffPresenceTracker"));
 const NetworkOfflineScreen = lazy(() => import("@/components/NetworkOfflineScreen"));
 
+// Safer lazy loader (prevents blank screens when a chunk load fails on slow networks)
+const lazyWithRetry = <T extends { default: React.ComponentType<any> }>(
+  factory: () => Promise<T>,
+  retries = 2,
+  delayMs = 300
+) =>
+  lazy(async () => {
+    let lastErr: unknown;
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        return await factory();
+      } catch (err) {
+        lastErr = err;
+        // small backoff and retry
+        await new Promise((r) => setTimeout(r, delayMs * (attempt + 1)));
+      }
+    }
+    throw lastErr;
+  });
+
 // Lazy load all pages for code splitting
 const Index = lazy(() => import("./pages/Index"));
 const About = lazy(() => import("./pages/About"));
@@ -44,10 +64,10 @@ const SupportAnalytics = lazy(() => import("./pages/SupportAnalytics"));
 const AdminStaffStats = lazy(() => import("./pages/AdminStaffStats"));
 const AdminPlayers = lazy(() => import("./pages/AdminPlayers"));
 const JobApplication = lazy(() => import("./pages/JobApplication"));
-const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
 const StaffOnboarding = lazy(() => import("./pages/StaffOnboarding"));
-const ApplicationStatus = lazy(() => import("./pages/ApplicationStatus"));
-const ContactOwner = lazy(() => import("./pages/ContactOwner"));
+const ApplicationStatus = lazyWithRetry(() => import("./pages/ApplicationStatus"));
+const ContactOwner = lazyWithRetry(() => import("./pages/ContactOwner"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const RefundPolicy = lazy(() => import("./pages/RefundPolicy"));
