@@ -32,12 +32,12 @@ import {
 
 const TEBEX_STORE_URL = "https://skylife-roleplay-india.tebex.io";
 
-// Owner Discord ID for verification
+// Owner Discord ID for verification - ONLY Maan has owner access
 const OWNER_DISCORD_ID = "833680146510381097";
 
 // Staff Discord IDs with admin access (Leadership, Management, Administration, Development)
+// NOTE: Owner ID is NOT included here - owner has separate elevated access
 const ADMIN_DISCORD_IDS = [
-  "833680146510381097", // Maan - Owner/Leadership
   "727581954408710272", // ASCENDOR - Management
   "1417622059617357824", // Sexy - Management  
   "407091450560643073", // TheKid™ - Management
