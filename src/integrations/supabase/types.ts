@@ -1179,6 +1179,9 @@ export type Database = {
         Row: {
           age: number | null
           created_at: string
+          discord_avatar: string | null
+          discord_banner: string | null
+          discord_id: string | null
           discord_username: string | null
           id: string
           steam_id: string | null
@@ -1187,6 +1190,9 @@ export type Database = {
         Insert: {
           age?: number | null
           created_at?: string
+          discord_avatar?: string | null
+          discord_banner?: string | null
+          discord_id?: string | null
           discord_username?: string | null
           id: string
           steam_id?: string | null
@@ -1195,6 +1201,9 @@ export type Database = {
         Update: {
           age?: number | null
           created_at?: string
+          discord_avatar?: string | null
+          discord_banner?: string | null
+          discord_id?: string | null
           discord_username?: string | null
           id?: string
           steam_id?: string | null
@@ -2349,6 +2358,18 @@ export type Database = {
       generate_owner_2fa_token: { Args: never; Returns: string }
       generate_promo_code: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
+      get_all_users_for_owner: {
+        Args: never
+        Returns: {
+          out_created_at: string
+          out_discord_avatar: string
+          out_discord_id: string
+          out_discord_username: string
+          out_email: string
+          out_role: string
+          out_user_id: string
+        }[]
+      }
       get_gallery_like_count: {
         Args: { submission_uuid: string }
         Returns: number
@@ -2431,6 +2452,15 @@ export type Database = {
           staff_discord_id: string
           staff_name: string
         }[]
+      }
+      sync_user_discord_info: {
+        Args: {
+          p_discord_avatar?: string
+          p_discord_banner?: string
+          p_discord_username: string
+          p_user_id: string
+        }
+        Returns: boolean
       }
       verify_owner_2fa: { Args: { p_token: string }; Returns: boolean }
     }

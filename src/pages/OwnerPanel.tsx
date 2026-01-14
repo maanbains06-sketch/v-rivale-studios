@@ -33,8 +33,11 @@ import {
   Check,
   X,
   Pencil,
-  Trash2
+  Trash2,
+  RefreshCw,
+  UserCircle
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StaffManagementDialog } from "@/components/StaffManagementDialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import headerAdminBg from "@/assets/header-staff.jpg";
@@ -54,6 +57,8 @@ interface UserRole {
   user_id: string;
   role: "admin" | "moderator" | "user";
   discord_username?: string;
+  discord_id?: string;
+  discord_avatar?: string;
 }
 
 interface PDMApplication {
@@ -326,32 +331,113 @@ const OwnerPanel = () => {
   };
 
   const loadUserRoles = async () => {
-    const { data: rolesData, error } = await supabase
-      .from("user_roles")
-      .select("id, user_id, role")
-      .order("role");
+    // Use the new function to get all users with their Discord info
+    const { data: usersData, error: usersError } = await supabase
+      .rpc('get_all_users_for_owner');
 
-    if (error) {
-      console.error("Error loading user roles:", error);
+    if (usersError) {
+      console.error("Error loading users via RPC:", usersError);
+      // Fallback to old method
+      const { data: rolesData, error } = await supabase
+        .from("user_roles")
+        .select("id, user_id, role")
+        .order("role");
+
+      if (error) {
+        console.error("Error loading user roles:", error);
+        return;
+      }
+
+      if (!rolesData) {
+        setUserRoles([]);
+        return;
+      }
+
+      const { data: profilesData } = await supabase
+        .from("profiles")
+        .select("id, discord_username, discord_id, discord_avatar")
+        .in("id", rolesData.map(r => r.user_id));
+
+      const rolesWithProfiles = rolesData.map(role => ({
+        ...role,
+        discord_username: profilesData?.find(p => p.id === role.user_id)?.discord_username,
+        discord_id: profilesData?.find(p => p.id === role.user_id)?.discord_id,
+        discord_avatar: profilesData?.find(p => p.id === role.user_id)?.discord_avatar,
+      }));
+
+      setUserRoles(rolesWithProfiles);
       return;
     }
 
-    if (!rolesData) {
-      setUserRoles([]);
-      return;
-    }
-
-    const { data: profilesData } = await supabase
-      .from("profiles")
-      .select("id, discord_username")
-      .in("id", rolesData.map(r => r.user_id));
-
-    const rolesWithProfiles = rolesData.map(role => ({
-      ...role,
-      discord_username: profilesData?.find(p => p.id === role.user_id)?.discord_username,
+    // Map the RPC results to our UserRole interface
+    const mappedRoles = (usersData || []).map((user: any, index: number) => ({
+      id: `user-${index}`,
+      user_id: user.out_user_id,
+      role: user.out_role as "admin" | "moderator" | "user",
+      discord_username: user.out_discord_username,
+      discord_id: user.out_discord_id,
+      discord_avatar: user.out_discord_avatar,
     }));
 
-    setUserRoles(rolesWithProfiles);
+    setUserRoles(mappedRoles);
+  };
+
+  const syncDiscordNames = async () => {
+    toast({
+      title: "Syncing Discord Names",
+      description: "Fetching latest Discord info for all users...",
+    });
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const user of userRoles) {
+      if (!user.discord_id) continue;
+
+      try {
+        const { data: discordData, error: fetchError } = await supabase.functions.invoke('fetch-discord-user', {
+          body: { discordId: user.discord_id }
+        });
+
+        if (fetchError || !discordData) {
+          errorCount++;
+          continue;
+        }
+
+        // Update the profile with synced Discord info
+        const { error: updateError } = await supabase.rpc('sync_user_discord_info', {
+          p_user_id: user.user_id,
+          p_discord_username: discordData.displayName || discordData.globalName || discordData.username,
+          p_discord_avatar: discordData.avatar,
+          p_discord_banner: discordData.banner,
+        });
+
+        if (updateError) {
+          console.error("Error syncing user:", user.user_id, updateError);
+          errorCount++;
+        } else {
+          successCount++;
+        }
+
+        // Small delay to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 200));
+      } catch (err) {
+        console.error("Error fetching Discord user:", err);
+        errorCount++;
+      }
+    }
+
+    await logAction({
+      actionType: 'sync_action',
+      actionDescription: `Synced Discord names for ${successCount} users (${errorCount} errors)`,
+    });
+
+    toast({
+      title: "Sync Complete",
+      description: `Successfully synced ${successCount} users. ${errorCount > 0 ? `${errorCount} errors.` : ''}`,
+    });
+
+    loadUserRoles();
   };
 
   const loadPdmApplications = async () => {
@@ -535,12 +621,19 @@ const OwnerPanel = () => {
     const oldRole = userRoles.find(r => r.user_id === userId)?.role;
     const username = userRoles.find(r => r.user_id === userId)?.discord_username;
     
+    // First, try to delete any existing roles for this user (to handle unique constraint)
+    await supabase
+      .from("user_roles")
+      .delete()
+      .eq("user_id", userId);
+    
+    // Then insert the new role
     const { error } = await supabase
       .from("user_roles")
-      .update({ role: newRole })
-      .eq("user_id", userId);
+      .insert({ user_id: userId, role: newRole });
 
     if (error) {
+      console.error("Error updating user role:", error);
       toast({
         title: "Error",
         description: "Failed to update user role.",
@@ -552,7 +645,7 @@ const OwnerPanel = () => {
     // Log the action
     await logAction({
       actionType: 'role_update',
-      actionDescription: `Changed role for user "${username || userId}" from "${oldRole}" to "${newRole}"`,
+      actionDescription: `Changed role for user "${username || userId}" from "${oldRole || 'none'}" to "${newRole}"`,
       targetTable: 'user_roles',
       targetId: userId,
       oldValue: { role: oldRole },
@@ -842,53 +935,100 @@ const OwnerPanel = () => {
           <TabsContent value="roles">
             <Card className="glass-effect border-border/20">
               <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Shield className="w-5 h-5 text-primary" />
-                  <CardTitle className="text-gradient">User Roles Management</CardTitle>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Shield className="w-5 h-5 text-primary" />
+                    <CardTitle className="text-gradient">User Roles Management</CardTitle>
+                  </div>
+                  <Button 
+                    onClick={syncDiscordNames} 
+                    variant="outline" 
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Sync Discord Names
+                  </Button>
                 </div>
-                <CardDescription>Manage admin and moderator access for all users</CardDescription>
+                <CardDescription>
+                  Manage admin and moderator access for all {userRoles.length} registered users
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>User</TableHead>
-                      <TableHead>Current Role</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {userRoles.map((userRole) => (
-                      <TableRow key={userRole.id}>
-                        <TableCell>{userRole.discord_username || "Unknown User"}</TableCell>
-                        <TableCell>
-                          <Badge variant={
-                            userRole.role === "admin" ? "default" :
-                            userRole.role === "moderator" ? "secondary" :
-                            "outline"
-                          }>
-                            {userRole.role}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Select
-                            value={userRole.role}
-                            onValueChange={(value) => updateUserRole(userRole.user_id, value as "admin" | "moderator" | "user")}
-                          >
-                            <SelectTrigger className="w-[150px]">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="user">User</SelectItem>
-                              <SelectItem value="moderator">Moderator</SelectItem>
-                              <SelectItem value="admin">Admin</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[300px]">User</TableHead>
+                        <TableHead>Discord ID</TableHead>
+                        <TableHead>Current Role</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {userRoles.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                            <UserCircle className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                            No registered users found
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        userRoles.map((userRole) => (
+                          <TableRow key={userRole.id}>
+                            <TableCell>
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-8 w-8">
+                                  <AvatarImage src={userRole.discord_avatar || ''} alt={userRole.discord_username || 'User'} />
+                                  <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                                    {(userRole.discord_username || 'U').charAt(0).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex flex-col">
+                                  <span className="font-medium">
+                                    {userRole.discord_username || "Unknown User"}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground truncate max-w-[200px]">
+                                    {userRole.user_id.slice(0, 8)}...
+                                  </span>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <code className="text-xs bg-muted px-2 py-1 rounded">
+                                {userRole.discord_id || "Not linked"}
+                              </code>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={
+                                userRole.role === "admin" ? "default" :
+                                userRole.role === "moderator" ? "secondary" :
+                                "outline"
+                              }>
+                                {userRole.role}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Select
+                                value={userRole.role}
+                                onValueChange={(value) => updateUserRole(userRole.user_id, value as "admin" | "moderator" | "user")}
+                              >
+                                <SelectTrigger className="w-[130px]">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="user">User</SelectItem>
+                                  <SelectItem value="moderator">Moderator</SelectItem>
+                                  <SelectItem value="admin">Admin</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
