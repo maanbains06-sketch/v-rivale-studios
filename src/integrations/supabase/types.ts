@@ -929,6 +929,39 @@ export type Database = {
         }
         Relationships: []
       }
+      member_joins: {
+        Row: {
+          discord_avatar: string | null
+          discord_id: string | null
+          discord_username: string | null
+          id: string
+          ip_country: string | null
+          joined_at: string
+          referral_source: string | null
+          user_id: string
+        }
+        Insert: {
+          discord_avatar?: string | null
+          discord_id?: string | null
+          discord_username?: string | null
+          id?: string
+          ip_country?: string | null
+          joined_at?: string
+          referral_source?: string | null
+          user_id: string
+        }
+        Update: {
+          discord_avatar?: string | null
+          discord_id?: string | null
+          discord_username?: string | null
+          id?: string
+          ip_country?: string | null
+          joined_at?: string
+          referral_source?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
