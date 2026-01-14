@@ -141,15 +141,17 @@ const DiscordProfile = () => {
       description: "Join our exclusive RP community",
       icon: FileText,
       href: "/whitelist",
-      color: "primary",
+      colorClass: "bg-primary/20 group-hover:bg-primary/30",
+      iconColorClass: "text-primary",
       available: true,
     },
     {
       title: "Job Applications",
       description: "Apply for in-game jobs",
       icon: Briefcase,
-      href: "/jobs",
-      color: "green-500",
+      href: "/job-application",
+      colorClass: "bg-green-500/20 group-hover:bg-green-500/30",
+      iconColorClass: "text-green-500",
       available: hasWhitelistRole,
     },
     {
@@ -157,7 +159,8 @@ const DiscordProfile = () => {
       description: "Join the criminal underworld",
       icon: Skull,
       href: "/gang-rp",
-      color: "red-500",
+      colorClass: "bg-red-500/20 group-hover:bg-red-500/30",
+      iconColorClass: "text-red-500",
       available: hasWhitelistRole,
     },
     {
@@ -165,7 +168,8 @@ const DiscordProfile = () => {
       description: "Get help from our team",
       icon: MessageSquare,
       href: "/support",
-      color: "blue-500",
+      colorClass: "bg-blue-500/20 group-hover:bg-blue-500/30",
+      iconColorClass: "text-blue-500",
       available: true,
     },
     {
@@ -173,7 +177,8 @@ const DiscordProfile = () => {
       description: "Events and announcements",
       icon: Users,
       href: "/community",
-      color: "purple-500",
+      colorClass: "bg-purple-500/20 group-hover:bg-purple-500/30",
+      iconColorClass: "text-purple-500",
       available: true,
     },
     {
@@ -181,7 +186,8 @@ const DiscordProfile = () => {
       description: "Meet our staff team",
       icon: Crown,
       href: "/staff",
-      color: "amber-500",
+      colorClass: "bg-amber-500/20 group-hover:bg-amber-500/30",
+      iconColorClass: "text-amber-500",
       available: true,
     },
   ];
@@ -421,8 +427,8 @@ const DiscordProfile = () => {
                             <Link to={action.href}>
                               <div className="p-4 rounded-xl bg-muted/30 border border-border/50 hover:border-primary/50 hover:bg-muted/50 transition-all cursor-pointer group">
                                 <div className="flex items-center gap-3">
-                                  <div className={`p-2 rounded-lg bg-${action.color}/20 group-hover:bg-${action.color}/30 transition-colors`}>
-                                    <Icon className={`w-5 h-5 text-${action.color}`} />
+                                  <div className={`p-2 rounded-lg ${action.colorClass} transition-colors`}>
+                                    <Icon className={`w-5 h-5 ${action.iconColorClass}`} />
                                   </div>
                                   <div className="flex-1 min-w-0">
                                     <p className="font-medium text-sm group-hover:text-primary transition-colors">{action.title}</p>
