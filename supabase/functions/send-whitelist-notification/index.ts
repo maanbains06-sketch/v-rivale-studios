@@ -52,13 +52,20 @@ serve(async (req) => {
     const DISCORD_BOT_TOKEN = Deno.env.get('DISCORD_WHITELIST_BOT_TOKEN');
     const DISCORD_WHITELIST_CHANNEL_ID = Deno.env.get('DISCORD_WHITELIST_CHANNEL_ID');
 
+    console.log('Checking Discord configuration...');
+    console.log('DISCORD_BOT_TOKEN exists:', !!DISCORD_BOT_TOKEN);
+    console.log('DISCORD_WHITELIST_CHANNEL_ID:', DISCORD_WHITELIST_CHANNEL_ID);
+
     if (!DISCORD_BOT_TOKEN || !DISCORD_WHITELIST_CHANNEL_ID) {
-      console.error('Missing Discord configuration');
+      console.error('Missing Discord configuration - BOT_TOKEN:', !!DISCORD_BOT_TOKEN, 'CHANNEL_ID:', !!DISCORD_WHITELIST_CHANNEL_ID);
       return new Response(
-        JSON.stringify({ error: 'Discord configuration missing' }),
+        JSON.stringify({ error: 'Discord configuration missing', details: { hasToken: !!DISCORD_BOT_TOKEN, hasChannelId: !!DISCORD_WHITELIST_CHANNEL_ID } }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    const requestBody = await req.json();
+    console.log('Received request body:', JSON.stringify(requestBody, null, 2));
 
     const { 
       applicantDiscord, 
@@ -67,9 +74,10 @@ serve(async (req) => {
       moderatorName,
       moderatorDiscordId,
       adminNotes 
-    }: WhitelistNotificationRequest = await req.json();
+    }: WhitelistNotificationRequest = requestBody;
 
-    console.log(`Processing whitelist notification for ${applicantDiscord}, status: ${status}`);
+    console.log(`Processing whitelist notification for ${applicantDiscord} (ID: ${applicantDiscordId || 'none'}), status: ${status}`);
+    console.log(`Moderator: ${moderatorName} (Discord ID: ${moderatorDiscordId || 'none'})`);
 
     // Fetch moderator's real Discord name if Discord ID is provided
     let moderatorDisplayName = moderatorName;
