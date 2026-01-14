@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { 
@@ -9,17 +9,28 @@ import {
   Mail, 
   Calendar, 
   Shield, 
-  ExternalLink, 
   ArrowRight,
   CheckCircle,
   Clock,
-  LogOut
+  LogOut,
+  Users,
+  Briefcase,
+  FileText,
+  MessageSquare,
+  Loader2,
+  RefreshCw,
+  Crown,
+  Skull,
+  AlertCircle,
+  ExternalLink
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { useDiscordProfile } from "@/hooks/useDiscordProfile";
+import { motion } from "framer-motion";
 
 interface Profile {
   id: string;
@@ -36,6 +47,18 @@ const DiscordProfile = () => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Get Discord ID from user metadata
+  const discordId = user?.user_metadata?.discord_id;
+  const { 
+    username: discordUsername, 
+    displayName, 
+    avatar: discordAvatar, 
+    isInServer, 
+    hasWhitelistRole, 
+    loading: discordLoading,
+    refreshProfile 
+  } = useDiscordProfile(discordId);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -72,20 +95,25 @@ const DiscordProfile = () => {
   };
 
   const getDiscordAvatar = () => {
+    // Prefer live Discord avatar from hook
+    if (discordAvatar) return discordAvatar;
+    
     if (!user) return null;
-    // Check for avatar URL from Discord CDN using discord_id
-    const discordId = user.user_metadata?.discord_id;
-    if (discordId) {
-      // If we have a Discord avatar hash, construct the URL
+    const id = user.user_metadata?.discord_id;
+    if (id) {
       const avatarHash = user.user_metadata?.avatar;
       if (avatarHash) {
-        return `https://cdn.discordapp.com/avatars/${discordId}/${avatarHash}.png`;
+        return `https://cdn.discordapp.com/avatars/${id}/${avatarHash}.png?size=256`;
       }
     }
     return user.user_metadata?.avatar_url || user.user_metadata?.picture;
   };
 
   const getDiscordName = () => {
+    // Prefer live Discord name from hook
+    if (displayName) return displayName;
+    if (discordUsername) return discordUsername;
+    
     if (!user) return "User";
     return user.user_metadata?.username || 
            user.user_metadata?.display_name ||
@@ -96,30 +124,75 @@ const DiscordProfile = () => {
            "User";
   };
 
-  const getDiscordId = () => {
-    if (!user) return null;
-    // Discord ID is stored in user metadata during signup
-    return user.user_metadata?.discord_id || 
-           user.user_metadata?.provider_id || 
-           user.user_metadata?.sub;
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
     });
   };
+
+  // Quick action cards data
+  const quickActions = [
+    {
+      title: "Apply for Whitelist",
+      description: "Join our exclusive RP community",
+      icon: FileText,
+      href: "/whitelist",
+      color: "primary",
+      available: true,
+    },
+    {
+      title: "Job Applications",
+      description: "Apply for in-game jobs",
+      icon: Briefcase,
+      href: "/jobs",
+      color: "green-500",
+      available: hasWhitelistRole,
+    },
+    {
+      title: "Gang Roleplay",
+      description: "Join the criminal underworld",
+      icon: Skull,
+      href: "/gang-rp",
+      color: "red-500",
+      available: hasWhitelistRole,
+    },
+    {
+      title: "Support Chat",
+      description: "Get help from our team",
+      icon: MessageSquare,
+      href: "/support",
+      color: "blue-500",
+      available: true,
+    },
+    {
+      title: "Community",
+      description: "Events and announcements",
+      icon: Users,
+      href: "/community",
+      color: "purple-500",
+      available: true,
+    },
+    {
+      title: "View Staff",
+      description: "Meet our staff team",
+      icon: Crown,
+      href: "/staff",
+      color: "amber-500",
+      available: true,
+    },
+  ];
 
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
-        <div className="container mx-auto px-4 pt-24 pb-12 flex items-center justify-center">
-          <div className="animate-pulse text-muted-foreground">Loading your profile...</div>
+        <div className="container mx-auto px-4 pt-24 pb-12 flex items-center justify-center min-h-[70vh]">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <p className="text-muted-foreground">Loading your profile...</p>
+          </div>
         </div>
       </div>
     );
@@ -130,218 +203,318 @@ const DiscordProfile = () => {
       <Navigation />
       
       <div className="container mx-auto px-4 pt-24 pb-12">
-        <div className="max-w-3xl mx-auto space-y-6">
-          {/* Discord Account Card */}
-          <Card className="glass-effect border-border/20 animate-fade-in overflow-hidden">
-            <div className="h-24 bg-gradient-to-r from-[#5865F2] via-[#7289DA] to-[#5865F2]" />
-            <CardHeader className="relative pt-0">
-              <div className="absolute -top-12 left-6">
-                <Avatar className="w-24 h-24 border-4 border-background shadow-xl">
-                  <AvatarImage src={getDiscordAvatar() || undefined} alt={getDiscordName()} />
-                  <AvatarFallback className="bg-[#5865F2] text-white text-2xl">
-                    {getDiscordName().charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+        <div className="max-w-4xl mx-auto space-y-6">
+          
+          {/* Hero Profile Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Card className="glass-effect border-border/20 overflow-hidden">
+              {/* Banner */}
+              <div className="h-32 md:h-40 bg-gradient-to-r from-[#5865F2] via-primary to-[#5865F2] relative">
+                <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIi8+PC9zdmc+')] opacity-30" />
               </div>
-              <div className="pt-14 flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-2xl flex items-center gap-2">
-                    {getDiscordName()}
+              
+              <CardHeader className="relative pt-0 pb-4">
+                {/* Avatar */}
+                <div className="absolute -top-16 md:-top-20 left-6">
+                  <div className="relative">
+                    <Avatar className="w-28 h-28 md:w-36 md:h-36 border-4 border-background shadow-2xl ring-4 ring-primary/20">
+                      <AvatarImage src={getDiscordAvatar() || undefined} alt={getDiscordName()} />
+                      <AvatarFallback className="bg-gradient-to-br from-[#5865F2] to-primary text-white text-3xl md:text-4xl font-bold">
+                        {getDiscordName().charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    {/* Online indicator */}
+                    <div className="absolute bottom-2 right-2 w-5 h-5 bg-green-500 rounded-full border-4 border-background" />
+                  </div>
+                </div>
+                
+                {/* Header actions */}
+                <div className="flex justify-end pt-4 gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => refreshProfile()}
+                    disabled={discordLoading}
+                    className="glass-effect"
+                  >
+                    <RefreshCw className={`w-4 h-4 mr-2 ${discordLoading ? 'animate-spin' : ''}`} />
+                    Sync
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleLogout}
+                    className="glass-effect hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </Button>
+                </div>
+                
+                {/* User info */}
+                <div className="pt-12 md:pt-16">
+                  <div className="flex flex-wrap items-center gap-3 mb-2">
+                    <CardTitle className="text-2xl md:text-3xl font-bold">
+                      {getDiscordName()}
+                    </CardTitle>
                     <Badge className="bg-[#5865F2] hover:bg-[#5865F2] text-white">
                       <CheckCircle className="w-3 h-3 mr-1" />
                       Discord Connected
                     </Badge>
-                  </CardTitle>
-                  <CardDescription className="mt-1">
-                    Your SLRP account is linked to Discord
-                  </CardDescription>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleLogout}
-                  className="glass-effect"
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Logout
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Discord Info Grid */}
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 rounded-full bg-[#5865F2]/20">
-                      <UserCircle className="w-4 h-4 text-[#5865F2]" />
-                    </div>
-                    <span className="text-sm text-muted-foreground">Discord Username</span>
                   </div>
-                  <p className="font-semibold text-lg">
-                    {profile?.discord_username || getDiscordName()}
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 rounded-full bg-primary/20">
-                      <Mail className="w-4 h-4 text-primary" />
-                    </div>
-                    <span className="text-sm text-muted-foreground">Email Address</span>
-                  </div>
-                  <p className="font-semibold text-lg truncate">
-                    {user?.email || "Not available"}
-                  </p>
-                </div>
-
-                {getDiscordId() && (
-                  <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="p-2 rounded-full bg-[#5865F2]/20">
-                        <Shield className="w-4 h-4 text-[#5865F2]" />
-                      </div>
-                      <span className="text-sm text-muted-foreground">Discord ID</span>
-                    </div>
-                    <p className="font-mono text-lg">
-                      {getDiscordId()}
-                    </p>
-                  </div>
-                )}
-
-                <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 rounded-full bg-primary/20">
-                      <Calendar className="w-4 h-4 text-primary" />
-                    </div>
-                    <span className="text-sm text-muted-foreground">Account Created</span>
-                  </div>
-                  <p className="font-semibold">
-                    {user?.created_at ? formatDate(user.created_at) : "Unknown"}
-                  </p>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* SLRP Profile Info */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <Shield className="w-5 h-5 text-primary" />
-                  SLRP Profile Information
-                </h3>
-                
-                {profile ? (
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
-                      <p className="text-sm text-muted-foreground mb-1">Age</p>
-                      <p className="font-semibold text-lg">
-                        {profile.age || "Not set"}
-                      </p>
-                    </div>
-                    <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
-                      <p className="text-sm text-muted-foreground mb-1">Steam ID</p>
-                      <p className="font-mono">
-                        {profile.steam_id || "Not set"}
-                      </p>
-                    </div>
-                    <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
-                      <p className="text-sm text-muted-foreground mb-1">Last Updated</p>
-                      <p className="text-sm">
-                        {profile.updated_at ? formatDate(profile.updated_at) : "Never"}
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-6 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-center">
-                    <Clock className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
-                    <p className="text-yellow-600 dark:text-yellow-400 font-medium mb-2">
-                      Profile Not Complete
-                    </p>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Complete your profile to unlock all SLRP features
-                    </p>
-                    <Button
-                      onClick={() => navigate("/discord-signup")}
-                      className="bg-yellow-500 hover:bg-yellow-600 text-black"
-                    >
-                      Complete Profile
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              <Separator />
-
-              {/* Quick Actions */}
-              <div className="flex flex-wrap gap-3">
-                <Button
-                  onClick={() => navigate("/dashboard")}
-                  className="flex-1 min-w-[150px]"
-                >
-                  <UserCircle className="w-4 h-4 mr-2" />
-                  Go to Dashboard
-                </Button>
-                <Button
-                  onClick={() => navigate("/whitelist")}
-                  variant="outline"
-                  className="flex-1 min-w-[150px] glass-effect"
-                >
-                  Apply for Whitelist
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-                <Button
-                  onClick={() => navigate("/discord-signup")}
-                  variant="outline"
-                  className="flex-1 min-w-[150px] glass-effect"
-                >
-                  Edit Profile
-                  <ExternalLink className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Session Info */}
-          <Card className="glass-effect border-border/20">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Clock className="w-5 h-5 text-primary" />
-                Session Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-muted-foreground">Auth Method</p>
-                  <p className="font-medium">Email + Discord ID Verification</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Last Sign In</p>
-                  <p className="font-medium">
-                    {user?.last_sign_in_at ? formatDate(user.last_sign_in_at) : "Unknown"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Email Verified</p>
-                  <p className="font-medium flex items-center gap-1">
-                    {user?.email_confirmed_at ? (
-                      <>
-                        <CheckCircle className="w-4 h-4 text-green-500" />
-                        Verified
-                      </>
+                  
+                  {/* Status badges */}
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {isInServer ? (
+                      <Badge variant="outline" className="border-green-500/50 text-green-500 bg-green-500/10">
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        In SLRP Server
+                      </Badge>
                     ) : (
-                      "Not verified"
+                      <Badge variant="outline" className="border-yellow-500/50 text-yellow-500 bg-yellow-500/10">
+                        <AlertCircle className="w-3 h-3 mr-1" />
+                        Not in Server
+                      </Badge>
                     )}
-                  </p>
+                    
+                    {hasWhitelistRole ? (
+                      <Badge variant="outline" className="border-primary/50 text-primary bg-primary/10">
+                        <Shield className="w-3 h-3 mr-1" />
+                        Whitelisted
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="border-muted-foreground/50 text-muted-foreground">
+                        <Clock className="w-3 h-3 mr-1" />
+                        Not Whitelisted
+                      </Badge>
+                    )}
+                  </div>
                 </div>
+              </CardHeader>
+              
+              <CardContent className="space-y-6">
+                {/* Info Grid */}
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="p-4 rounded-xl bg-muted/30 border border-border/50 hover:border-[#5865F2]/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2 rounded-lg bg-[#5865F2]/20">
+                        <UserCircle className="w-4 h-4 text-[#5865F2]" />
+                      </div>
+                      <span className="text-xs text-muted-foreground uppercase tracking-wider">Username</span>
+                    </div>
+                    <p className="font-semibold truncate">
+                      {discordUsername || profile?.discord_username || getDiscordName()}
+                    </p>
+                  </motion.div>
+
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                    className="p-4 rounded-xl bg-muted/30 border border-border/50 hover:border-primary/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2 rounded-lg bg-primary/20">
+                        <Mail className="w-4 h-4 text-primary" />
+                      </div>
+                      <span className="text-xs text-muted-foreground uppercase tracking-wider">Email</span>
+                    </div>
+                    <p className="font-semibold truncate">
+                      {user?.email || "Not available"}
+                    </p>
+                  </motion.div>
+
+                  {discordId && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                      className="p-4 rounded-xl bg-muted/30 border border-border/50 hover:border-[#5865F2]/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 rounded-lg bg-[#5865F2]/20">
+                          <Shield className="w-4 h-4 text-[#5865F2]" />
+                        </div>
+                        <span className="text-xs text-muted-foreground uppercase tracking-wider">Discord ID</span>
+                      </div>
+                      <p className="font-mono text-sm truncate">
+                        {discordId}
+                      </p>
+                    </motion.div>
+                  )}
+
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.25 }}
+                    className="p-4 rounded-xl bg-muted/30 border border-border/50 hover:border-primary/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2 rounded-lg bg-primary/20">
+                        <Calendar className="w-4 h-4 text-primary" />
+                      </div>
+                      <span className="text-xs text-muted-foreground uppercase tracking-wider">Member Since</span>
+                    </div>
+                    <p className="font-semibold text-sm">
+                      {user?.created_at ? formatDate(user.created_at) : "Unknown"}
+                    </p>
+                  </motion.div>
+                </div>
+
+                <Separator className="bg-border/30" />
+
+                {/* Quick Actions */}
                 <div>
-                  <p className="text-muted-foreground">User ID</p>
-                  <p className="font-mono text-xs truncate">{user?.id}</p>
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <ArrowRight className="w-5 h-5 text-primary" />
+                    Quick Actions
+                  </h3>
+                  
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {quickActions.map((action, index) => {
+                      const Icon = action.icon;
+                      const isLocked = !action.available;
+                      
+                      return (
+                        <motion.div
+                          key={action.title}
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 0.3 + index * 0.05 }}
+                        >
+                          {isLocked ? (
+                            <div className="p-4 rounded-xl bg-muted/20 border border-border/30 opacity-60 cursor-not-allowed">
+                              <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-muted/50">
+                                  <Icon className="w-5 h-5 text-muted-foreground" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-sm text-muted-foreground">{action.title}</p>
+                                  <p className="text-xs text-muted-foreground/70">Requires whitelist role</p>
+                                </div>
+                                <Shield className="w-4 h-4 text-muted-foreground/50" />
+                              </div>
+                            </div>
+                          ) : (
+                            <Link to={action.href}>
+                              <div className="p-4 rounded-xl bg-muted/30 border border-border/50 hover:border-primary/50 hover:bg-muted/50 transition-all cursor-pointer group">
+                                <div className="flex items-center gap-3">
+                                  <div className={`p-2 rounded-lg bg-${action.color}/20 group-hover:bg-${action.color}/30 transition-colors`}>
+                                    <Icon className={`w-5 h-5 text-${action.color}`} />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-sm group-hover:text-primary transition-colors">{action.title}</p>
+                                    <p className="text-xs text-muted-foreground">{action.description}</p>
+                                  </div>
+                                  <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                                </div>
+                              </div>
+                            </Link>
+                          )}
+                        </motion.div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+
+                {/* Whitelist CTA if not whitelisted */}
+                {!hasWhitelistRole && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    <div className="p-6 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border border-primary/30">
+                      <div className="flex flex-col md:flex-row items-center gap-4">
+                        <div className="p-3 rounded-xl bg-primary/20">
+                          <Shield className="w-8 h-8 text-primary" />
+                        </div>
+                        <div className="flex-1 text-center md:text-left">
+                          <h4 className="font-bold text-lg mb-1">Get Whitelisted to Unlock All Features</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Join our Discord server and get the whitelist role to access job applications, gang RP, and more!
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button asChild variant="outline" className="glass-effect">
+                            <a href="https://discord.gg/slrp" target="_blank" rel="noopener noreferrer">
+                              <ExternalLink className="w-4 h-4 mr-2" />
+                              Join Discord
+                            </a>
+                          </Button>
+                          <Button asChild>
+                            <Link to="/whitelist">
+                              Apply Now
+                              <ArrowRight className="w-4 h-4 ml-2" />
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Session Info Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <Card className="glass-effect border-border/20">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-primary" />
+                  Session Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Auth Method</p>
+                    <p className="font-medium">Email + Discord ID</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Last Sign In</p>
+                    <p className="font-medium">
+                      {user?.last_sign_in_at ? formatDate(user.last_sign_in_at) : "Unknown"}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Email Status</p>
+                    <p className="font-medium flex items-center gap-1">
+                      {user?.email_confirmed_at ? (
+                        <>
+                          <CheckCircle className="w-3 h-3 text-green-500" />
+                          Verified
+                        </>
+                      ) : (
+                        <>
+                          <AlertCircle className="w-3 h-3 text-yellow-500" />
+                          Not verified
+                        </>
+                      )}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">User ID</p>
+                    <p className="font-mono text-xs truncate">{user?.id}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       </div>
     </div>

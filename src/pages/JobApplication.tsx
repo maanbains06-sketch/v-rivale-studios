@@ -7,12 +7,13 @@ import PDMApplicationForm from "@/components/PDMApplicationForm";
 import DOJApplicationForm from "@/components/DOJApplicationForm";
 import WeazelNewsApplicationForm from "@/components/WeazelNewsApplicationForm";
 import { JobCardsSkeletonGrid } from "@/components/JobCardSkeleton";
-import { Shield, Heart, Wrench, Flame, AlertCircle, CheckCircle2, Car, Scale, Gavel, Newspaper } from "lucide-react";
+import { Shield, Heart, Wrench, Flame, AlertCircle, CheckCircle2, Car, Scale, Gavel, Newspaper, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useWhitelistAccess } from "@/hooks/useWhitelistAccess";
 import headerJobs from "@/assets/feature-jobs.jpg";
 import jobPoliceImg from "@/assets/job-police.jpg";
 import jobEmsImg from "@/assets/job-ems.jpg";
@@ -25,38 +26,22 @@ import jobWeazelNewsImg from "@/assets/job-weazel-news.jpg";
 const JobApplication = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [whitelistStatus, setWhitelistStatus] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [selectedForm, setSelectedForm] = useState<string | null>(null);
+  
+  // Use Discord whitelist role for access control
+  const { hasAccess, isInServer, hasWhitelistRole, loading: accessLoading, refreshAccess } = useWhitelistAccess();
 
   useEffect(() => {
-    checkWhitelistStatus();
+    checkUser();
   }, []);
 
-  const checkWhitelistStatus = async () => {
+  const checkUser = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        setUser(null);
-        setLoading(false);
-        return;
-      }
-
-      setUser(user);
-
-      // Check whitelist application status
-      const { data: application } = await supabase
-        .from("whitelist_applications")
-        .select("status")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      setWhitelistStatus(application?.status || null);
+      setUser(user || null);
     } catch (error) {
-      console.error("Error checking whitelist status:", error);
+      console.error("Error checking user:", error);
     } finally {
       setLoading(false);
     }
@@ -137,7 +122,9 @@ const JobApplication = () => {
     },
   ];
 
-  if (loading) {
+  const isPageLoading = loading || accessLoading;
+
+  if (isPageLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
@@ -185,6 +172,72 @@ const JobApplication = () => {
     }
   };
 
+  const renderAccessDenied = () => {
+    if (!user) {
+      return (
+        <Alert className="glass-effect border-border/20">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Authentication Required</AlertTitle>
+          <AlertDescription className="mt-2">
+            You must be logged in to access job applications.
+            <div className="mt-4">
+              <Button onClick={() => navigate("/auth")}>
+                Login / Sign Up
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      );
+    }
+
+    if (!isInServer) {
+      return (
+        <Alert className="glass-effect border-border/20">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Join Our Discord Server</AlertTitle>
+          <AlertDescription className="mt-2">
+            You must be a member of our Discord server to access job applications.
+            <div className="mt-4 flex gap-3">
+              <Button asChild>
+                <a href="https://discord.gg/slrp" target="_blank" rel="noopener noreferrer">
+                  Join Discord Server
+                </a>
+              </Button>
+              <Button variant="outline" onClick={refreshAccess}>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Check Again
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      );
+    }
+
+    if (!hasWhitelistRole) {
+      return (
+        <Alert className="glass-effect border-border/20">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Whitelist Role Required</AlertTitle>
+          <AlertDescription className="mt-2">
+            You need the whitelist role in our Discord server to access job applications. 
+            Apply for whitelist or contact server staff if you believe you should have access.
+            <div className="mt-4 flex gap-3">
+              <Button onClick={() => navigate("/whitelist")}>
+                Apply for Whitelist
+              </Button>
+              <Button variant="outline" onClick={refreshAccess}>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Check Again
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -198,44 +251,8 @@ const JobApplication = () => {
       
       <main className="container mx-auto px-4 pb-16">
         <div className="max-w-6xl mx-auto">
-          {!user ? (
-            <Alert className="glass-effect border-border/20">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Authentication Required</AlertTitle>
-              <AlertDescription className="mt-2">
-                You must be logged in to access job applications.
-                <div className="mt-4">
-                  <Button onClick={() => navigate("/auth")}>
-                    Login / Sign Up
-                  </Button>
-                </div>
-              </AlertDescription>
-            </Alert>
-          ) : whitelistStatus !== "approved" ? (
-            <Alert className="glass-effect border-border/20">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Whitelist Required</AlertTitle>
-              <AlertDescription className="mt-2">
-                {whitelistStatus === "pending" ? (
-                  <>
-                    Your whitelist application is currently under review. You'll be able to apply for jobs once your whitelist application is approved.
-                  </>
-                ) : whitelistStatus === "rejected" ? (
-                  <>
-                    Your whitelist application was not approved. Please contact server administration for more information.
-                  </>
-                ) : (
-                  <>
-                    You must be whitelisted to access job applications. Please submit a whitelist application first.
-                    <div className="mt-4">
-                      <Button onClick={() => navigate("/whitelist")}>
-                        Apply for Whitelist
-                      </Button>
-                    </div>
-                  </>
-                )}
-              </AlertDescription>
-            </Alert>
+          {!hasAccess ? (
+            renderAccessDenied()
           ) : selectedForm ? (
             <div className="space-y-6">
               <Button 
