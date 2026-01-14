@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail, Ban, Briefcase, Gift, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, Ticket, ExternalLink, Crown, CheckCircle2, LayoutDashboard } from "lucide-react";
+import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail, Ban, Briefcase, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, Ticket, ExternalLink, Crown, CheckCircle2, LayoutDashboard } from "lucide-react";
 import { Button } from "./ui/button";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -310,14 +310,6 @@ const Navigation = () => {
               Store
               <ExternalLink className="w-3 h-3" />
             </a>
-            <NavLink 
-              to="/giveaway" 
-              className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1"
-              activeClassName="text-primary"
-            >
-              <Gift className="w-4 h-4" />
-              Giveaway
-            </NavLink>
             <DropdownMenu>
               <DropdownMenuTrigger className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1 outline-none">
                 Legal
@@ -450,10 +442,6 @@ const Navigation = () => {
                       <a href={TEBEX_STORE_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
                         Store <ExternalLink className="w-3 h-3" />
                       </a>
-                    </Button>
-                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/giveaway"); setIsMenuOpen(false); }}>
-                      <Gift className="w-4 h-4 mr-2" />
-                      Giveaway
                     </Button>
                     <Button variant="ghost" className="justify-start" onClick={() => { navigate("/privacy-policy"); setIsMenuOpen(false); }}>
                       Privacy Policy
