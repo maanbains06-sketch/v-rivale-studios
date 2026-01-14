@@ -89,29 +89,23 @@ const Navigation = () => {
       return;
     }
 
-    // Also check staff_members table by Discord ID for dynamic staff verification
+    // All staff members get admin panel access
     if (discordId && /^\d{17,19}$/.test(discordId)) {
       const { data: staffMember } = await supabase
         .from('staff_members')
-        .select('role_type, department, is_active')
+        .select('role_type, is_active')
         .eq('discord_id', discordId)
         .eq('is_active', true)
         .maybeSingle();
 
       if (staffMember) {
-        // Owner, admin, developer roles get admin access
-        const adminRoles = ['owner', 'admin', 'developer'];
-        // Leadership, Management, Administration departments get admin access
-        const adminDepartments = ['leadership', 'management', 'administration', 'development'];
-        
-        if (adminRoles.includes(staffMember.role_type?.toLowerCase() || '') ||
-            adminDepartments.includes(staffMember.department?.toLowerCase() || '')) {
-          if (staffMember.role_type === 'owner') {
-            setIsOwner(true);
-          }
-          setHasStaffAdminAccess(true);
-          return;
+        // Check if this staff member is the owner
+        if (staffMember.role_type === 'owner') {
+          setIsOwner(true);
         }
+        // All active staff members get admin panel access
+        setHasStaffAdminAccess(true);
+        return;
       }
     }
 
