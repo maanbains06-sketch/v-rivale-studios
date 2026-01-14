@@ -80,11 +80,11 @@ const Support = () => {
 
   const fetchSupportStats = async () => {
     try {
-      // Fetch active chats count
+      // Fetch active chats count (open and in_progress)
       const { count: activeChatsCount } = await supabase
         .from("support_chats")
         .select("*", { count: "exact", head: true })
-        .eq("status", "open");
+        .in("status", ["open", "in_progress"]);
 
       // Fetch resolved chats today
       const todayStart = new Date();

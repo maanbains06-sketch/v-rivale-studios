@@ -196,7 +196,7 @@ const Staff = () => {
 
     // Subscribe to real-time updates for staff_members table
     // This auto-updates when Discord profiles change (name, avatar, banner)
-    const channel = supabase
+    const staffChannel = supabase
       .channel('staff-profile-changes')
       .on(
         'postgres_changes',
@@ -213,8 +213,26 @@ const Staff = () => {
       )
       .subscribe();
 
+    // Subscribe to discord_presence changes for real-time online status
+    const presenceChannel = supabase
+      .channel('staff-presence-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'discord_presence',
+        },
+        (payload) => {
+          console.log('Staff presence updated:', payload);
+          // The useStaffOnlineStatus hook will auto-refresh
+        }
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(staffChannel);
+      supabase.removeChannel(presenceChannel);
     };
   }, []);
 

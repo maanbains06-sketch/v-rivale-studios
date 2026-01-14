@@ -181,7 +181,10 @@ export const StaffPresenceTracker = () => {
           return;
         }
 
-        // Check if user is a staff member
+        const userMetadata = session.user.user_metadata;
+        const discordId = userMetadata?.discord_id;
+
+        // First, check if user is already linked as staff member by user_id
         const { data: staffMember } = await supabase
           .from('staff_members')
           .select('id, discord_id')
@@ -198,17 +201,54 @@ export const StaffPresenceTracker = () => {
           return;
         }
 
+        // Try to find and link by discord_id from user metadata
+        if (discordId && /^\d{17,19}$/.test(discordId)) {
+          const { data: staffByDiscordId } = await supabase
+            .from('staff_members')
+            .select('id, discord_id, user_id')
+            .eq('discord_id', discordId)
+            .eq('is_active', true)
+            .single();
+
+          if (staffByDiscordId?.id) {
+            // If user_id is not set, link it now
+            if (!staffByDiscordId.user_id) {
+              await supabase
+                .from('staff_members')
+                .update({ user_id: session.user.id, updated_at: new Date().toISOString() })
+                .eq('id', staffByDiscordId.id);
+              console.log(`[Presence] Linked staff member ${staffByDiscordId.id} to user ${session.user.id}`);
+            }
+
+            if (staffMemberIdRef.current !== staffByDiscordId.id) {
+              cleanup?.();
+              cleanup = startTracking(staffByDiscordId.id);
+              console.log(`[Presence] Started tracking staff (by discord_id): ${staffByDiscordId.id}`);
+            }
+            return;
+          }
+        }
+
         // Fallback: check by discord_username
-        const discordUsername = session.user.user_metadata?.discord_username;
+        const discordUsername = userMetadata?.discord_username;
         if (discordUsername) {
           const { data: staffByUsername } = await supabase
             .from('staff_members')
-            .select('id, discord_id')
+            .select('id, discord_id, user_id')
             .ilike('discord_username', discordUsername)
             .eq('is_active', true)
             .single();
 
           if (staffByUsername?.id) {
+            // If user_id is not set, link it now
+            if (!staffByUsername.user_id) {
+              await supabase
+                .from('staff_members')
+                .update({ user_id: session.user.id, updated_at: new Date().toISOString() })
+                .eq('id', staffByUsername.id);
+              console.log(`[Presence] Linked staff member ${staffByUsername.id} to user ${session.user.id} (by username)`);
+            }
+
             if (staffMemberIdRef.current !== staffByUsername.id) {
               cleanup?.();
               cleanup = startTracking(staffByUsername.id);
