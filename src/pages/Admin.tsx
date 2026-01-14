@@ -78,6 +78,7 @@ interface WhitelistApplication {
   user_id: string;
   steam_id: string;
   discord: string;
+  discord_id?: string;
   age: number;
   experience: string;
   backstory: string;
@@ -394,7 +395,27 @@ const Admin = () => {
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (!error) setApplications(data || []);
+    if (error) {
+      console.error("Error loading whitelist applications:", error);
+      return;
+    }
+
+    // Enrich with discord_id from profiles
+    if (data && data.length > 0) {
+      const userIds = data.map(app => app.user_id);
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, discord_id")
+        .in("id", userIds);
+
+      const enrichedData = data.map(app => ({
+        ...app,
+        discord_id: profiles?.find(p => p.id === app.user_id)?.discord_id || undefined
+      }));
+      setApplications(enrichedData);
+    } else {
+      setApplications([]);
+    }
   };
 
   const loadSubmissions = async () => {
@@ -663,6 +684,9 @@ const Admin = () => {
   const updateApplicationStatus = async (appId: string, status: "approved" | "rejected") => {
     const { data: { user } } = await supabase.auth.getUser();
     
+    // Get application details for notification
+    const app = applications.find(a => a.id === appId);
+    
     const { error } = await supabase
       .from("whitelist_applications")
       .update({
@@ -676,6 +700,34 @@ const Admin = () => {
     if (error) {
       toast({ title: "Error", description: "Failed to update application.", variant: "destructive" });
       return;
+    }
+
+    // Send Discord notification for whitelist applications
+    if (app?.discord) {
+      try {
+        // Get moderator info from staff_members
+        const discordId = user?.user_metadata?.provider_id || user?.user_metadata?.discord_id;
+        const { data: staffData } = await supabase
+          .from("staff_members")
+          .select("name, discord_id")
+          .eq("discord_id", discordId)
+          .single();
+
+        await supabase.functions.invoke("send-whitelist-notification", {
+          body: {
+            applicantDiscord: app.discord,
+            applicantDiscordId: app.discord_id,
+            status,
+            moderatorName: staffData?.name || user?.email || "Staff",
+            moderatorDiscordId: staffData?.discord_id || discordId,
+            adminNotes: adminNotes || null
+          }
+        });
+        console.log("Discord notification sent for whitelist application");
+      } catch (notifyError) {
+        console.error("Failed to send Discord notification:", notifyError);
+        // Don't fail the whole operation if notification fails
+      }
     }
 
     // If approved, automatically assign Discord whitelist role
