@@ -8,19 +8,57 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Shield, FileText, Image, Ban, Users as UsersIcon, Pencil, Trash2, Briefcase, Car, Video, ExternalLink } from "lucide-react";
-import { StaffManagementDialog } from "@/components/StaffManagementDialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { 
+  Loader2, 
+  Shield, 
+  FileText, 
+  Image, 
+  Ban, 
+  Briefcase, 
+  Video, 
+  ExternalLink,
+  Users,
+  TrendingUp,
+  Gift,
+  Search,
+  Ticket,
+  DollarSign,
+  CheckCircle,
+  XCircle,
+  Clock,
+  RefreshCw,
+  MessageSquare,
+  Activity,
+  Timer,
+  Award,
+  User,
+  Hash,
+  MoreVertical,
+  UserX,
+  BarChart3
+} from "lucide-react";
 import headerAdminBg from "@/assets/header-staff.jpg";
-
-interface UserRole {
-  id: string;
-  user_id: string;
-  role: "admin" | "moderator" | "user";
-  discord_username?: string;
-}
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface BanAppeal {
   id: string;
@@ -59,23 +97,6 @@ interface GallerySubmission {
   status: string;
   created_at: string;
   rejection_reason?: string;
-}
-
-interface StaffMemberData {
-  id: string;
-  name: string;
-  discord_id: string;
-  discord_username?: string;
-  discord_avatar?: string;
-  email?: string;
-  steam_id?: string;
-  role: string;
-  role_type: string;
-  department: string;
-  bio?: string;
-  responsibilities: string[];
-  is_active: boolean;
-  display_order: number;
 }
 
 interface JobApplication {
@@ -134,42 +155,109 @@ interface CreatorApplication {
   admin_notes: string | null;
 }
 
+interface ReferralStats {
+  totalReferrals: number;
+  totalDiscountsGiven: number;
+  activeReferrers: number;
+  averageReferralsPerUser: number;
+}
+
+interface PromoStats {
+  totalCodes: number;
+  usedCodes: number;
+  unusedCodes: number;
+  expiredCodes: number;
+  totalDiscountGiven: number;
+  redemptionRate: number;
+}
+
+interface PromoCodeDetail {
+  id: string;
+  code: string;
+  discount_percentage: number;
+  is_used: boolean;
+  used_at: string | null;
+  expires_at: string | null;
+  created_at: string;
+}
+
+interface StaffStats {
+  id: string;
+  name: string;
+  discord_avatar?: string;
+  role: string;
+  department: string;
+  totalActivities: number;
+  ticketsResolved: number;
+  ticketsAssigned: number;
+  avgResponseTime: number | null;
+  lastSeen: string | null;
+}
+
+interface Player {
+  id: number;
+  name: string;
+  identifiers?: string[];
+  ping?: number;
+}
+
+interface SupportAnalyticsData {
+  totalChats: number;
+  openChats: number;
+  closedChats: number;
+  avgResponseTime: number;
+  avgResolutionTime: number;
+  satisfactionScore: number;
+}
+
 const Admin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   
-  const [userRoles, setUserRoles] = useState<UserRole[]>([]);
+  // Applications
   const [applications, setApplications] = useState<WhitelistApplication[]>([]);
-  const [submissions, setSubmissions] = useState<GallerySubmission[]>([]);
   const [banAppeals, setBanAppeals] = useState<BanAppeal[]>([]);
-  const [staffMembers, setStaffMembers] = useState<StaffMemberData[]>([]);
   const [jobApplications, setJobApplications] = useState<JobApplication[]>([]);
   const [pdmApplications, setPdmApplications] = useState<PDMApplication[]>([]);
   const [creatorApplications, setCreatorApplications] = useState<CreatorApplication[]>([]);
+  const [submissions, setSubmissions] = useState<GallerySubmission[]>([]);
   
+  // Analytics
+  const [referralStats, setReferralStats] = useState<ReferralStats>({ totalReferrals: 0, totalDiscountsGiven: 0, activeReferrers: 0, averageReferralsPerUser: 0 });
+  const [promoStats, setPromoStats] = useState<PromoStats>({ totalCodes: 0, usedCodes: 0, unusedCodes: 0, expiredCodes: 0, totalDiscountGiven: 0, redemptionRate: 0 });
+  const [promoCodes, setPromoCodes] = useState<PromoCodeDetail[]>([]);
+  const [staffStats, setStaffStats] = useState<StaffStats[]>([]);
+  const [supportAnalytics, setSupportAnalytics] = useState<SupportAnalyticsData | null>(null);
+  
+  // Players
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [serverStatus, setServerStatus] = useState<'online' | 'offline'>('offline');
+  const [playersLoading, setPlayersLoading] = useState(false);
+  
+  // Selection states
   const [selectedApp, setSelectedApp] = useState<WhitelistApplication | null>(null);
   const [adminNotes, setAdminNotes] = useState("");
-  
   const [selectedSubmission, setSelectedSubmission] = useState<GallerySubmission | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
-  
   const [selectedAppeal, setSelectedAppeal] = useState<BanAppeal | null>(null);
   const [appealAdminNotes, setAppealAdminNotes] = useState("");
-  
   const [selectedJobApp, setSelectedJobApp] = useState<JobApplication | null>(null);
   const [jobAdminNotes, setJobAdminNotes] = useState("");
-  
   const [selectedPdmApp, setSelectedPdmApp] = useState<PDMApplication | null>(null);
   const [pdmAdminNotes, setPdmAdminNotes] = useState("");
-  
   const [selectedCreatorApp, setSelectedCreatorApp] = useState<CreatorApplication | null>(null);
   const [creatorAdminNotes, setCreatorAdminNotes] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   
-  const [isStaffDialogOpen, setIsStaffDialogOpen] = useState(false);
-  const [selectedStaff, setSelectedStaff] = useState<StaffMemberData | null>(null);
-  const [staffToDelete, setStaffToDelete] = useState<string | null>(null);
+  // Player action dialog
+  const [actionDialog, setActionDialog] = useState<{
+    open: boolean;
+    type: 'kick' | 'ban' | null;
+    player: Player | null;
+  }>({ open: false, type: null, player: null });
+  const [actionReason, setActionReason] = useState("");
 
   useEffect(() => {
     checkAdminAccess();
@@ -184,7 +272,6 @@ const Admin = () => {
         return;
       }
 
-      // Check if user has admin or moderator role
       const { data: roleData, error: roleError } = await supabase
         .from("user_roles")
         .select("role")
@@ -195,7 +282,7 @@ const Admin = () => {
       if (roleError || !roleData) {
         toast({
           title: "Access Denied",
-          description: "You don't have permission to access this page. Admin or Moderator role required.",
+          description: "You don't have permission to access this page.",
           variant: "destructive",
         });
         navigate("/");
@@ -214,73 +301,18 @@ const Admin = () => {
 
   const loadAllData = async () => {
     await Promise.all([
-      loadUserRoles(),
       loadApplications(),
       loadSubmissions(),
       loadBanAppeals(),
-      loadStaffMembers(),
       loadJobApplications(),
       loadPdmApplications(),
       loadCreatorApplications(),
+      loadReferralData(),
+      loadPromoData(),
+      loadStaffStats(),
+      loadSupportAnalytics(),
+      fetchPlayers(),
     ]);
-  };
-
-  const loadCreatorApplications = async () => {
-    const { data, error } = await supabase
-      .from("creator_applications")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Error loading creator applications:", error);
-      return;
-    }
-
-    setCreatorApplications(data || []);
-  };
-
-  const loadPdmApplications = async () => {
-    const { data, error } = await supabase
-      .from("pdm_applications")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Error loading PDM applications:", error);
-      return;
-    }
-
-    setPdmApplications(data || []);
-  };
-
-  const loadUserRoles = async () => {
-    const { data: rolesData, error: rolesError } = await supabase
-      .from("user_roles")
-      .select("id, user_id, role")
-      .order("role", { ascending: true });
-
-    if (rolesError) {
-      console.error("Error loading user roles:", rolesError);
-      return;
-    }
-
-    if (!rolesData) {
-      setUserRoles([]);
-      return;
-    }
-
-    // Fetch profiles for each user
-    const { data: profilesData } = await supabase
-      .from("profiles")
-      .select("id, discord_username")
-      .in("id", rolesData.map(r => r.user_id));
-
-    const rolesWithProfiles = rolesData.map(role => ({
-      ...role,
-      discord_username: profilesData?.find(p => p.id === role.user_id)?.discord_username,
-    }));
-
-    setUserRoles(rolesWithProfiles);
   };
 
   const loadApplications = async () => {
@@ -289,12 +321,7 @@ const Admin = () => {
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error("Error loading applications:", error);
-      return;
-    }
-
-    setApplications(data || []);
+    if (!error) setApplications(data || []);
   };
 
   const loadSubmissions = async () => {
@@ -303,40 +330,16 @@ const Admin = () => {
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error("Error loading submissions:", error);
-      return;
-    }
-
-    setSubmissions(data || []);
+    if (!error) setSubmissions(data || []);
   };
 
   const loadBanAppeals = async () => {
     const { data, error } = await supabase
       .from("ban_appeals")
       .select("*")
-      .order("created_at", { ascending: false});
+      .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error("Error loading ban appeals:", error);
-      return;
-    }
-
-    setBanAppeals(data || []);
-  };
-
-  const loadStaffMembers = async () => {
-    const { data, error } = await supabase
-      .from("staff_members")
-      .select("*")
-      .order("display_order", { ascending: true });
-
-    if (error) {
-      console.error("Error loading staff members:", error);
-      return;
-    }
-
-    setStaffMembers(data || []);
+    if (!error) setBanAppeals(data || []);
   };
 
   const loadJobApplications = async () => {
@@ -345,69 +348,229 @@ const Admin = () => {
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error("Error loading job applications:", error);
-      return;
-    }
-
-    setJobApplications(data || []);
+    if (!error) setJobApplications(data || []);
   };
 
-  const deleteStaffMember = async (id: string) => {
-    const { error } = await supabase
-      .from("staff_members")
-      .delete()
-      .eq("id", id);
+  const loadPdmApplications = async () => {
+    const { data, error } = await supabase
+      .from("pdm_applications")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-    if (error) {
+    if (!error) setPdmApplications(data || []);
+  };
+
+  const loadCreatorApplications = async () => {
+    const { data, error } = await supabase
+      .from("creator_applications")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (!error) setCreatorApplications(data || []);
+  };
+
+  const loadReferralData = async () => {
+    try {
+      const { data: rewardsData } = await supabase
+        .from("referral_rewards")
+        .select("*");
+
+      if (rewardsData) {
+        const totalReferrals = rewardsData.reduce((sum, r) => sum + r.total_referrals, 0);
+        const activeReferrers = rewardsData.filter(r => r.total_referrals > 0).length;
+        const totalDiscountsGiven = rewardsData.reduce((sum, r) => sum + r.discount_percentage, 0);
+        const averageReferrals = activeReferrers > 0 ? totalReferrals / activeReferrers : 0;
+
+        setReferralStats({
+          totalReferrals,
+          totalDiscountsGiven,
+          activeReferrers,
+          averageReferralsPerUser: Math.round(averageReferrals * 10) / 10,
+        });
+      }
+    } catch (error) {
+      console.error("Error loading referral data:", error);
+    }
+  };
+
+  const loadPromoData = async () => {
+    try {
+      const { data: codes } = await supabase
+        .from("promo_codes")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (codes) {
+        setPromoCodes(codes);
+        const now = new Date();
+        const used = codes.filter(c => c.is_used).length;
+        const expired = codes.filter(c => 
+          c.expires_at && new Date(c.expires_at) < now && !c.is_used
+        ).length;
+        const totalDiscount = codes
+          .filter(c => c.is_used)
+          .reduce((sum, c) => sum + c.discount_percentage, 0);
+
+        setPromoStats({
+          totalCodes: codes.length,
+          usedCodes: used,
+          unusedCodes: codes.length - used,
+          expiredCodes: expired,
+          totalDiscountGiven: totalDiscount,
+          redemptionRate: codes.length > 0 ? (used / codes.length) * 100 : 0,
+        });
+      }
+    } catch (error) {
+      console.error("Error loading promo data:", error);
+    }
+  };
+
+  const loadStaffStats = async () => {
+    try {
+      const { data: staffMembers } = await supabase
+        .from("staff_members")
+        .select("*")
+        .eq("is_active", true)
+        .order("name");
+
+      if (staffMembers) {
+        const statsPromises = staffMembers.map(async (staff) => {
+          const { count: activityCount } = await supabase
+            .from("staff_activity_log")
+            .select("*", { count: "exact", head: true })
+            .eq("staff_user_id", staff.user_id || "");
+
+          const { count: resolvedCount } = await supabase
+            .from("support_chats")
+            .select("*", { count: "exact", head: true })
+            .eq("assigned_to", staff.user_id || "")
+            .eq("status", "closed");
+
+          const { count: assignedCount } = await supabase
+            .from("support_chats")
+            .select("*", { count: "exact", head: true })
+            .eq("assigned_to", staff.user_id || "");
+
+          return {
+            id: staff.id,
+            name: staff.name,
+            discord_avatar: staff.discord_avatar,
+            role: staff.role,
+            department: staff.department,
+            totalActivities: activityCount || 0,
+            ticketsResolved: resolvedCount || 0,
+            ticketsAssigned: assignedCount || 0,
+            avgResponseTime: null,
+            lastSeen: staff.last_seen,
+          };
+        });
+
+        const stats = await Promise.all(statsPromises);
+        setStaffStats(stats);
+      }
+    } catch (error) {
+      console.error("Error loading staff stats:", error);
+    }
+  };
+
+  const loadSupportAnalytics = async () => {
+    try {
+      const { data: chats } = await supabase.from("support_chats").select("*");
+      const { data: ratings } = await supabase.from("support_chat_ratings").select("*");
+
+      if (chats) {
+        const totalChats = chats.length;
+        const openChats = chats.filter(c => c.status === 'open' || c.status === 'pending').length;
+        const closedChats = chats.filter(c => c.status === 'closed').length;
+        
+        const chatsWithResponse = chats.filter(c => c.first_response_at);
+        const avgResponseTime = chatsWithResponse.length > 0
+          ? chatsWithResponse.reduce((sum, c) => {
+              const diff = new Date(c.first_response_at!).getTime() - new Date(c.created_at).getTime();
+              return sum + diff / 60000;
+            }, 0) / chatsWithResponse.length
+          : 0;
+
+        const closedChatsWithTime = chats.filter(c => c.resolved_at);
+        const avgResolutionTime = closedChatsWithTime.length > 0
+          ? closedChatsWithTime.reduce((sum, c) => {
+              const diff = new Date(c.resolved_at!).getTime() - new Date(c.created_at).getTime();
+              return sum + diff / 60000;
+            }, 0) / closedChatsWithTime.length
+          : 0;
+
+        const satisfactionScore = ratings && ratings.length > 0
+          ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length
+          : 0;
+
+        setSupportAnalytics({
+          totalChats,
+          openChats,
+          closedChats,
+          avgResponseTime: Math.round(avgResponseTime),
+          avgResolutionTime: Math.round(avgResolutionTime),
+          satisfactionScore: Math.round(satisfactionScore * 10) / 10,
+        });
+      }
+    } catch (error) {
+      console.error("Error loading support analytics:", error);
+    }
+  };
+
+  const fetchPlayers = async () => {
+    setPlayersLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('fivem-server-status');
+      
+      if (!error && data) {
+        setServerStatus(data.status);
+        if (data.status === 'online' && data.playerList) {
+          setPlayers(data.playerList);
+        } else {
+          setPlayers([]);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching players:', error);
+    } finally {
+      setPlayersLoading(false);
+    }
+  };
+
+  const handlePlayerAction = async () => {
+    if (!actionDialog.player || !actionDialog.type) return;
+
+    try {
+      const { error } = await supabase.functions.invoke('admin-player-action', {
+        body: {
+          playerId: actionDialog.player.id,
+          action: actionDialog.type,
+          reason: actionReason || 'No reason provided',
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Player ${actionDialog.player.name} has been ${actionDialog.type}ed`,
+      });
+
+      setActionDialog({ open: false, type: null, player: null });
+      setActionReason("");
+      fetchPlayers();
+    } catch (error) {
+      console.error('Error performing action:', error);
       toast({
         title: "Error",
-        description: "Failed to delete staff member.",
+        description: `Failed to ${actionDialog.type} player`,
         variant: "destructive",
       });
-      return;
     }
-
-    toast({
-      title: "Success",
-      description: "Staff member deleted successfully.",
-    });
-
-    setStaffToDelete(null);
-    loadStaffMembers();
   };
 
-  const updateUserRole = async (userId: string, newRole: "admin" | "moderator" | "user") => {
-    const { error } = await supabase
-      .from("user_roles")
-      .update({ role: newRole })
-      .eq("user_id", userId);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update user role.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    toast({
-      title: "Success",
-      description: "User role updated successfully.",
-    });
-
-    loadUserRoles();
-  };
-
-  const updateApplicationStatus = async (
-    appId: string,
-    status: "approved" | "rejected"
-  ) => {
+  const updateApplicationStatus = async (appId: string, status: "approved" | "rejected") => {
     const { data: { user } } = await supabase.auth.getUser();
-    
-    // Get the application details for Discord role assignment
-    const application = applications.find(a => a.id === appId);
     
     const { error } = await supabase
       .from("whitelist_applications")
@@ -420,112 +583,44 @@ const Admin = () => {
       .eq("id", appId);
 
     if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update application.",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to update application.", variant: "destructive" });
       return;
     }
 
-    // If approved, try to assign Discord role
-    if (status === "approved" && application) {
-      try {
-        // Extract Discord ID from the discord field (could be username or ID)
-        const discordValue = application.discord;
-        
-        // Try to assign the Discord role
-        const { error: roleError } = await supabase.functions.invoke('assign-discord-role', {
-          body: {
-            userId: application.user_id,
-            discordUserId: discordValue,
-            action: 'add'
-          }
-        });
-
-        if (roleError) {
-          console.error("Error assigning Discord role:", roleError);
-          toast({
-            title: "Partial Success",
-            description: "Application approved, but Discord role assignment failed. Please assign the role manually.",
-            variant: "default",
-          });
-        } else {
-          toast({
-            title: "Success",
-            description: "Application approved and Discord role assigned successfully.",
-          });
-        }
-      } catch (roleError) {
-        console.error("Error invoking Discord role function:", roleError);
-        toast({
-          title: "Partial Success",
-          description: "Application approved, but Discord role assignment failed.",
-          variant: "default",
-        });
-      }
-    } else {
-      toast({
-        title: "Success",
-        description: `Application ${status} successfully.`,
-      });
-    }
-
+    toast({ title: "Success", description: `Application ${status} successfully.` });
     setSelectedApp(null);
     setAdminNotes("");
     loadApplications();
   };
 
-  const updateSubmissionStatus = async (
-    submissionId: string,
-    status: "approved" | "rejected"
-  ) => {
+  const updateSubmissionStatus = async (submissionId: string, status: "approved" | "rejected") => {
     const { data: { user } } = await supabase.auth.getUser();
     
-    const updateData: any = {
-      status,
-      approved_by: status === "approved" ? user?.id : null,
-      approved_at: status === "approved" ? new Date().toISOString() : null,
-    };
-
-    if (status === "rejected") {
-      updateData.rejection_reason = rejectionReason || null;
-    }
-
     const { error } = await supabase
       .from("gallery_submissions")
-      .update(updateData)
+      .update({
+        status,
+        approved_by: status === "approved" ? user?.id : null,
+        approved_at: status === "approved" ? new Date().toISOString() : null,
+        rejection_reason: status === "rejected" ? rejectionReason || null : null,
+      })
       .eq("id", submissionId);
 
     if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update submission.",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to update submission.", variant: "destructive" });
       return;
     }
 
-    toast({
-      title: "Success",
-      description: `Submission ${status} successfully.`,
-    });
-
+    toast({ title: "Success", description: `Submission ${status} successfully.` });
     setSelectedSubmission(null);
     setRejectionReason("");
     loadSubmissions();
   };
 
-  const updateBanAppealStatus = async (
-    appealId: string,
-    status: "approved" | "rejected"
-  ) => {
+  const updateBanAppealStatus = async (appealId: string, status: "approved" | "rejected") => {
     const { data: { user } } = await supabase.auth.getUser();
     
-    const appeal = banAppeals.find(a => a.id === appealId);
-    if (!appeal) return;
-
-    const { error: updateError } = await supabase
+    const { error } = await supabase
       .from("ban_appeals")
       .update({
         status,
@@ -535,56 +630,18 @@ const Admin = () => {
       })
       .eq("id", appealId);
 
-    if (updateError) {
-      toast({
-        title: "Error",
-        description: "Failed to update ban appeal.",
-        variant: "destructive",
-      });
+    if (error) {
+      toast({ title: "Error", description: "Failed to update ban appeal.", variant: "destructive" });
       return;
     }
 
-    // Send email notification
-    try {
-      const { error: emailError } = await supabase.functions.invoke('send-ban-appeal-notification', {
-        body: {
-          userId: appeal.user_id,
-          discordUsername: appeal.discord_username,
-          status,
-          adminNotes: appealAdminNotes || undefined,
-        }
-      });
-
-      if (emailError) {
-        console.error("Error sending email notification:", emailError);
-        toast({
-          title: "Warning",
-          description: "Ban appeal updated but email notification failed.",
-          variant: "default",
-        });
-      } else {
-        toast({
-          title: "Success",
-          description: `Ban appeal ${status} and notification sent.`,
-        });
-      }
-    } catch (error) {
-      console.error("Error invoking notification function:", error);
-      toast({
-        title: "Success",
-        description: `Ban appeal ${status} (email notification pending).`,
-      });
-    }
-
+    toast({ title: "Success", description: `Ban appeal ${status} successfully.` });
     setSelectedAppeal(null);
     setAppealAdminNotes("");
     loadBanAppeals();
   };
 
-  const updateJobApplicationStatus = async (
-    jobAppId: string,
-    status: "approved" | "rejected"
-  ) => {
+  const updateJobApplicationStatus = async (jobAppId: string, status: "approved" | "rejected") => {
     const { data: { user } } = await supabase.auth.getUser();
     
     const { error } = await supabase
@@ -598,28 +655,17 @@ const Admin = () => {
       .eq("id", jobAppId);
 
     if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update job application.",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to update job application.", variant: "destructive" });
       return;
     }
 
-    toast({
-      title: "Success",
-      description: `Job application ${status} successfully.`,
-    });
-
+    toast({ title: "Success", description: `Job application ${status} successfully.` });
     setSelectedJobApp(null);
     setJobAdminNotes("");
     loadJobApplications();
   };
 
-  const updatePdmApplicationStatus = async (
-    pdmAppId: string,
-    status: "approved" | "rejected"
-  ) => {
+  const updatePdmApplicationStatus = async (pdmAppId: string, status: "approved" | "rejected") => {
     const { data: { user } } = await supabase.auth.getUser();
     
     const { error } = await supabase
@@ -633,32 +679,18 @@ const Admin = () => {
       .eq("id", pdmAppId);
 
     if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update PDM application.",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to update PDM application.", variant: "destructive" });
       return;
     }
 
-    toast({
-      title: "Success",
-      description: `PDM application ${status} successfully.`,
-    });
-
+    toast({ title: "Success", description: `PDM application ${status} successfully.` });
     setSelectedPdmApp(null);
     setPdmAdminNotes("");
     loadPdmApplications();
   };
 
-  const updateCreatorApplicationStatus = async (
-    creatorAppId: string,
-    status: "approved" | "rejected"
-  ) => {
+  const updateCreatorApplicationStatus = async (creatorAppId: string, status: "approved" | "rejected") => {
     const { data: { user } } = await supabase.auth.getUser();
-    
-    // Find the application to get details for email
-    const application = creatorApplications.find(a => a.id === creatorAppId);
     
     const { error } = await supabase
       .from("creator_applications")
@@ -671,69 +703,11 @@ const Admin = () => {
       .eq("id", creatorAppId);
 
     if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update creator application.",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to update creator application.", variant: "destructive" });
       return;
     }
 
-    // Send email notification
-    if (application) {
-      try {
-        // Try to get email from user profile if user_id exists
-        let applicantEmail: string | undefined;
-        if (application.user_id) {
-          const { data: profileData } = await supabase
-            .from("profiles")
-            .select("discord_username")
-            .eq("id", application.user_id)
-            .single();
-          
-          // Get email from auth.users via edge function would be ideal,
-          // but for now we'll rely on discord username notification
-        }
-
-        const { error: notifyError } = await supabase.functions.invoke('send-creator-notification', {
-          body: {
-            applicantName: application.full_name,
-            discordUsername: application.discord_username,
-            status: status,
-            adminNotes: creatorAdminNotes || undefined,
-            channelUrl: application.channel_url,
-            platform: application.platform,
-          }
-        });
-
-        if (notifyError) {
-          console.error("Error sending creator notification:", notifyError);
-          toast({
-            title: "Partial Success",
-            description: `Application ${status}, but email notification failed.`,
-            variant: "default",
-          });
-        } else {
-          toast({
-            title: "Success",
-            description: `Creator application ${status} and notification sent.`,
-          });
-        }
-      } catch (notifyError) {
-        console.error("Error invoking notification function:", notifyError);
-        toast({
-          title: "Partial Success",
-          description: `Application ${status}, but notification failed.`,
-          variant: "default",
-        });
-      }
-    } else {
-      toast({
-        title: "Success",
-        description: `Creator application ${status} successfully.`,
-      });
-    }
-
+    toast({ title: "Success", description: `Creator application ${status} successfully.` });
     setSelectedCreatorApp(null);
     setCreatorAdminNotes("");
     loadCreatorApplications();
@@ -743,6 +717,31 @@ const Admin = () => {
     if (!path) return null;
     const { data } = supabase.storage.from('creator-proofs').getPublicUrl(path);
     return data.publicUrl;
+  };
+
+  const formatLastSeen = (lastSeen: string | null) => {
+    if (!lastSeen) return "Never";
+    const date = new Date(lastSeen);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays}d ago`;
+  };
+
+  const getPromoStatusBadge = (code: PromoCodeDetail) => {
+    if (code.is_used) {
+      return <Badge className="bg-green-500"><CheckCircle className="w-3 h-3 mr-1" />Used</Badge>;
+    }
+    if (code.expires_at && new Date(code.expires_at) < new Date()) {
+      return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Expired</Badge>;
+    }
+    return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />Active</Badge>;
   };
 
   if (loading) {
@@ -757,508 +756,813 @@ const Admin = () => {
     return null;
   }
 
+  const pendingWhitelist = applications.filter(a => a.status === 'pending').length;
+  const pendingBanAppeals = banAppeals.filter(a => a.status === 'pending').length;
+  const pendingGallery = submissions.filter(s => s.status === 'pending').length;
+  const pendingJobs = jobApplications.filter(j => j.status === 'pending').length;
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
       <PageHeader 
         title="Admin Dashboard"
-        description="Manage users, applications, and content"
+        description="Manage applications, analytics, and server"
         backgroundImage={headerAdminBg}
       />
       
-      <div className="container mx-auto px-4 py-12 space-y-8">
-        {/* Whitelist Applications Section */}
-        <Card className="glass-effect border-border/20">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-primary" />
-              <CardTitle className="text-gradient">Whitelist Applications</CardTitle>
-            </div>
-            <CardDescription>Review and manage whitelist applications</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {applications.map((app) => (
-              <Card key={app.id} className="border-border/20">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-lg">{app.discord}</CardTitle>
-                      <CardDescription>
-                        Steam ID: {app.steam_id} | Age: {app.age}
-                      </CardDescription>
-                    </div>
-                    <Badge variant={
-                      app.status === "approved" ? "default" :
-                      app.status === "rejected" ? "destructive" :
-                      "secondary"
-                    }>
-                      {app.status}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <h4 className="font-semibold text-sm mb-1">Experience</h4>
-                    <p className="text-sm text-muted-foreground">{app.experience}</p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-sm mb-1">Backstory</h4>
-                    <p className="text-sm text-muted-foreground">{app.backstory}</p>
-                  </div>
-                  
-                  {app.status === "pending" && (
-                    <div className="space-y-3 pt-4 border-t">
-                      <Textarea
-                        placeholder="Admin notes (optional)"
-                        value={selectedApp?.id === app.id ? adminNotes : ""}
-                        onChange={(e) => {
-                          setSelectedApp(app);
-                          setAdminNotes(e.target.value);
-                        }}
-                      />
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => updateApplicationStatus(app.id, "approved")}
-                          className="bg-primary hover:bg-primary/90"
-                        >
-                          Approve
-                        </Button>
-                        <Button
-                          onClick={() => updateApplicationStatus(app.id, "rejected")}
-                          variant="destructive"
-                        >
-                          Reject
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </CardContent>
-        </Card>
+      <div className="container mx-auto px-4 py-8">
+        <Tabs defaultValue="whitelist" className="space-y-6">
+          <TabsList className="flex flex-wrap gap-1 h-auto p-1 bg-muted/50">
+            <TabsTrigger value="whitelist" className="flex items-center gap-1 text-xs sm:text-sm">
+              <FileText className="w-4 h-4" />
+              <span className="hidden sm:inline">Whitelist</span>
+              {pendingWhitelist > 0 && <Badge variant="destructive" className="ml-1 text-xs">{pendingWhitelist}</Badge>}
+            </TabsTrigger>
+            <TabsTrigger value="ban-appeals" className="flex items-center gap-1 text-xs sm:text-sm">
+              <Ban className="w-4 h-4" />
+              <span className="hidden sm:inline">Ban Appeals</span>
+              {pendingBanAppeals > 0 && <Badge variant="destructive" className="ml-1 text-xs">{pendingBanAppeals}</Badge>}
+            </TabsTrigger>
+            <TabsTrigger value="gallery" className="flex items-center gap-1 text-xs sm:text-sm">
+              <Image className="w-4 h-4" />
+              <span className="hidden sm:inline">Gallery</span>
+              {pendingGallery > 0 && <Badge variant="destructive" className="ml-1 text-xs">{pendingGallery}</Badge>}
+            </TabsTrigger>
+            <TabsTrigger value="jobs" className="flex items-center gap-1 text-xs sm:text-sm">
+              <Briefcase className="w-4 h-4" />
+              <span className="hidden sm:inline">Jobs</span>
+              {pendingJobs > 0 && <Badge variant="destructive" className="ml-1 text-xs">{pendingJobs}</Badge>}
+            </TabsTrigger>
+            <TabsTrigger value="creators" className="flex items-center gap-1 text-xs sm:text-sm">
+              <Video className="w-4 h-4" />
+              <span className="hidden sm:inline">Creators</span>
+            </TabsTrigger>
+            <TabsTrigger value="referrals" className="flex items-center gap-1 text-xs sm:text-sm">
+              <Gift className="w-4 h-4" />
+              <span className="hidden sm:inline">Referrals</span>
+            </TabsTrigger>
+            <TabsTrigger value="promo" className="flex items-center gap-1 text-xs sm:text-sm">
+              <Ticket className="w-4 h-4" />
+              <span className="hidden sm:inline">Promo</span>
+            </TabsTrigger>
+            <TabsTrigger value="support" className="flex items-center gap-1 text-xs sm:text-sm">
+              <MessageSquare className="w-4 h-4" />
+              <span className="hidden sm:inline">Support</span>
+            </TabsTrigger>
+            <TabsTrigger value="staff-stats" className="flex items-center gap-1 text-xs sm:text-sm">
+              <BarChart3 className="w-4 h-4" />
+              <span className="hidden sm:inline">Staff Stats</span>
+            </TabsTrigger>
+            <TabsTrigger value="players" className="flex items-center gap-1 text-xs sm:text-sm">
+              <Users className="w-4 h-4" />
+              <span className="hidden sm:inline">Players</span>
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Gallery Submissions Section */}
-        <Card className="glass-effect border-border/20">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Image className="w-5 h-5 text-primary" />
-              <CardTitle className="text-gradient">Gallery Submissions</CardTitle>
-            </div>
-            <CardDescription>Review and manage gallery submissions</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {submissions.map((submission) => (
-              <Card key={submission.id} className="border-border/20">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-lg">{submission.title}</CardTitle>
-                      <CardDescription>
-                        Category: {submission.category} | Type: {submission.file_type}
-                      </CardDescription>
-                    </div>
-                    <Badge variant={
-                      submission.status === "approved" ? "default" :
-                      submission.status === "rejected" ? "destructive" :
-                      "secondary"
-                    }>
-                      {submission.status}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {submission.description && (
-                    <div>
-                      <h4 className="font-semibold text-sm mb-1">Description</h4>
-                      <p className="text-sm text-muted-foreground">{submission.description}</p>
-                    </div>
-                  )}
-                  
-                  <div>
-                    <img
-                      src={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/gallery/${submission.file_path}`}
-                      alt={submission.title}
-                      className="w-full max-w-md rounded-lg"
-                    />
-                  </div>
-                  
-                  {submission.status === "pending" && (
-                    <div className="space-y-3 pt-4 border-t">
-                      <Textarea
-                        placeholder="Rejection reason (optional)"
-                        value={selectedSubmission?.id === submission.id ? rejectionReason : ""}
-                        onChange={(e) => {
-                          setSelectedSubmission(submission);
-                          setRejectionReason(e.target.value);
-                        }}
-                      />
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => updateSubmissionStatus(submission.id, "approved")}
-                          className="bg-primary hover:bg-primary/90"
-                        >
-                          Approve
-                        </Button>
-                        <Button
-                          onClick={() => updateSubmissionStatus(submission.id, "rejected")}
-                          variant="destructive"
-                        >
-                          Reject
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </CardContent>
-        </Card>
+          {/* Whitelist Applications Tab */}
+          <TabsContent value="whitelist">
+            <Card className="glass-effect border-border/20">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-primary" />
+                  <CardTitle className="text-gradient">Whitelist Applications</CardTitle>
+                </div>
+                <CardDescription>Review and manage whitelist applications</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {applications.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">No whitelist applications</p>
+                ) : (
+                  applications.map((app) => (
+                    <Card key={app.id} className="border-border/20">
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <CardTitle className="text-lg">{app.discord}</CardTitle>
+                            <CardDescription>Steam ID: {app.steam_id} | Age: {app.age}</CardDescription>
+                          </div>
+                          <Badge variant={app.status === "approved" ? "default" : app.status === "rejected" ? "destructive" : "secondary"}>
+                            {app.status}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <h4 className="font-semibold text-sm mb-1">Experience</h4>
+                          <p className="text-sm text-muted-foreground">{app.experience}</p>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-sm mb-1">Backstory</h4>
+                          <p className="text-sm text-muted-foreground">{app.backstory}</p>
+                        </div>
+                        
+                        {app.status === "pending" && (
+                          <div className="space-y-3 pt-4 border-t">
+                            <Textarea
+                              placeholder="Admin notes (optional)"
+                              value={selectedApp?.id === app.id ? adminNotes : ""}
+                              onChange={(e) => { setSelectedApp(app); setAdminNotes(e.target.value); }}
+                            />
+                            <div className="flex gap-2">
+                              <Button onClick={() => updateApplicationStatus(app.id, "approved")} className="bg-primary hover:bg-primary/90">Approve</Button>
+                              <Button onClick={() => updateApplicationStatus(app.id, "rejected")} variant="destructive">Reject</Button>
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        {/* Ban Appeals Section */}
-        <Card className="glass-effect border-border/20">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Ban className="w-5 h-5 text-primary" />
-              <CardTitle className="text-gradient">Ban Appeals</CardTitle>
-            </div>
-            <CardDescription>Review and manage ban appeals</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {banAppeals.map((appeal) => (
-              <Card key={appeal.id} className="border-border/20">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-lg">{appeal.discord_username}</CardTitle>
-                      <CardDescription>
-                        Steam ID: {appeal.steam_id} | Submitted: {new Date(appeal.created_at).toLocaleDateString()}
-                      </CardDescription>
-                    </div>
-                    <Badge variant={
-                      appeal.status === "approved" ? "default" :
-                      appeal.status === "rejected" ? "destructive" :
-                      "secondary"
-                    }>
-                      {appeal.status}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <h4 className="font-semibold text-sm mb-1">Ban Reason</h4>
-                    <p className="text-sm text-muted-foreground">{appeal.ban_reason}</p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-sm mb-1">Appeal Reason</h4>
-                    <p className="text-sm text-muted-foreground">{appeal.appeal_reason}</p>
-                  </div>
-                  {appeal.additional_info && (
-                    <div>
-                      <h4 className="font-semibold text-sm mb-1">Additional Information</h4>
-                      <p className="text-sm text-muted-foreground">{appeal.additional_info}</p>
-                    </div>
-                  )}
-                  
-                  {appeal.status === "pending" && (
-                    <div className="space-y-3 pt-4 border-t">
-                      <Textarea
-                        placeholder="Admin notes (optional)"
-                        value={selectedAppeal?.id === appeal.id ? appealAdminNotes : ""}
-                        onChange={(e) => {
-                          setSelectedAppeal(appeal);
-                          setAppealAdminNotes(e.target.value);
-                        }}
-                      />
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => updateBanAppealStatus(appeal.id, "approved")}
-                          className="bg-primary hover:bg-primary/90"
-                        >
-                          Approve
-                        </Button>
-                        <Button
-                          onClick={() => updateBanAppealStatus(appeal.id, "rejected")}
-                          variant="destructive"
-                        >
-                          Reject
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {appeal.admin_notes && (
-                    <div className="pt-4 border-t">
-                      <h4 className="font-semibold text-sm mb-1">Admin Notes</h4>
-                      <p className="text-sm text-muted-foreground">{appeal.admin_notes}</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </CardContent>
-        </Card>
+          {/* Ban Appeals Tab */}
+          <TabsContent value="ban-appeals">
+            <Card className="glass-effect border-border/20">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Ban className="w-5 h-5 text-primary" />
+                  <CardTitle className="text-gradient">Ban Appeals</CardTitle>
+                </div>
+                <CardDescription>Review and manage ban appeals</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {banAppeals.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">No ban appeals</p>
+                ) : (
+                  banAppeals.map((appeal) => (
+                    <Card key={appeal.id} className="border-border/20">
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <CardTitle className="text-lg">{appeal.discord_username}</CardTitle>
+                            <CardDescription>Steam ID: {appeal.steam_id}</CardDescription>
+                          </div>
+                          <Badge variant={appeal.status === "approved" ? "default" : appeal.status === "rejected" ? "destructive" : "secondary"}>
+                            {appeal.status}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <h4 className="font-semibold text-sm mb-1">Ban Reason</h4>
+                          <p className="text-sm text-muted-foreground">{appeal.ban_reason}</p>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-sm mb-1">Appeal Reason</h4>
+                          <p className="text-sm text-muted-foreground">{appeal.appeal_reason}</p>
+                        </div>
+                        
+                        {appeal.status === "pending" && (
+                          <div className="space-y-3 pt-4 border-t">
+                            <Textarea
+                              placeholder="Admin notes (optional)"
+                              value={selectedAppeal?.id === appeal.id ? appealAdminNotes : ""}
+                              onChange={(e) => { setSelectedAppeal(appeal); setAppealAdminNotes(e.target.value); }}
+                            />
+                            <div className="flex gap-2">
+                              <Button onClick={() => updateBanAppealStatus(appeal.id, "approved")} className="bg-primary hover:bg-primary/90">Approve</Button>
+                              <Button onClick={() => updateBanAppealStatus(appeal.id, "rejected")} variant="destructive">Reject</Button>
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        {/* Job Applications Section */}
-        <Card className="glass-effect border-border/20">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Briefcase className="w-5 h-5 text-primary" />
-              <CardTitle className="text-gradient">Job Applications</CardTitle>
-            </div>
-            <CardDescription>Review and manage job applications</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {jobApplications.map((jobApp) => (
-              <Card key={jobApp.id} className="border-border/20">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-lg">{jobApp.character_name}</CardTitle>
-                      <CardDescription>
-                        Position: {jobApp.job_type} | Age: {jobApp.age} | Phone: {jobApp.phone_number}
-                      </CardDescription>
-                    </div>
-                    <Badge variant={
-                      jobApp.status === "approved" ? "default" :
-                      jobApp.status === "rejected" ? "destructive" :
-                      "secondary"
-                    }>
-                      {jobApp.status}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <h4 className="font-semibold text-sm mb-1">Why Join</h4>
-                    <p className="text-sm text-muted-foreground">{jobApp.why_join}</p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-sm mb-1">Previous Experience</h4>
-                    <p className="text-sm text-muted-foreground">{jobApp.previous_experience}</p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-sm mb-1">Character Background</h4>
-                    <p className="text-sm text-muted-foreground">{jobApp.character_background}</p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-sm mb-1">Availability</h4>
-                    <p className="text-sm text-muted-foreground">{jobApp.availability}</p>
-                  </div>
-                  {jobApp.additional_info && (
-                    <div>
-                      <h4 className="font-semibold text-sm mb-1">Additional Info</h4>
-                      <p className="text-sm text-muted-foreground">{jobApp.additional_info}</p>
-                    </div>
-                  )}
-                  
-                  {jobApp.status === "pending" && (
-                    <div className="space-y-3 pt-4 border-t">
-                      <Textarea
-                        placeholder="Admin notes (optional)"
-                        value={selectedJobApp?.id === jobApp.id ? jobAdminNotes : ""}
-                        onChange={(e) => {
-                          setSelectedJobApp(jobApp);
-                          setJobAdminNotes(e.target.value);
-                        }}
-                      />
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => updateJobApplicationStatus(jobApp.id, "approved")}
-                          className="bg-primary hover:bg-primary/90"
-                        >
-                          Approve
-                        </Button>
-                        <Button
-                          onClick={() => updateJobApplicationStatus(jobApp.id, "rejected")}
-                          variant="destructive"
-                        >
-                          Reject
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {jobApp.admin_notes && (
-                    <div className="pt-4 border-t">
-                      <h4 className="font-semibold text-sm mb-1">Admin Notes</h4>
-                      <p className="text-sm text-muted-foreground">{jobApp.admin_notes}</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* Creator Program Applications Section */}
-        <Card className="glass-effect border-border/20">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Video className="w-5 h-5 text-purple-500" />
-              <CardTitle className="text-gradient">Creator Program Applications</CardTitle>
-            </div>
-            <CardDescription>Review streamer and content creator applications</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {creatorApplications.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">No creator applications yet</p>
-            ) : (
-              creatorApplications.map((creatorApp) => (
-                <Card key={creatorApp.id} className="border-purple-500/20">
-                  <CardContent className="p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-semibold">{creatorApp.full_name}</h3>
-                        <p className="text-sm text-muted-foreground">Discord: {creatorApp.discord_username}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant={
-                          creatorApp.status === "approved" ? "default" :
-                          creatorApp.status === "rejected" ? "destructive" :
-                          "secondary"
-                        }>
-                          {creatorApp.status}
-                        </Badge>
-                        <Badge variant="outline" className="capitalize">
-                          {creatorApp.platform}
-                        </Badge>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <span className="text-muted-foreground">Steam ID:</span>
-                        <p className="font-medium">{creatorApp.steam_id}</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Avg Viewers:</span>
-                        <p className="font-medium">{creatorApp.average_viewers}</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Frequency:</span>
-                        <p className="font-medium capitalize">{creatorApp.content_frequency.replace(/-/g, ' ')}</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Applied:</span>
-                        <p className="font-medium">{new Date(creatorApp.created_at).toLocaleDateString()}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => window.open(creatorApp.channel_url, '_blank')}
-                      >
-                        <ExternalLink className="w-4 h-4 mr-1" />
-                        View Channel
-                      </Button>
-                      {creatorApp.ownership_proof_url && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            const url = getOwnershipProofUrl(creatorApp.ownership_proof_url);
-                            if (url) window.open(url, '_blank');
-                          }}
-                        >
-                          <FileText className="w-4 h-4 mr-1" />
-                          View Proof
-                        </Button>
-                      )}
-                    </div>
-                    
-                    <div>
-                      <h4 className="font-semibold text-sm mb-1">RP Experience</h4>
-                      <p className="text-sm text-muted-foreground">{creatorApp.rp_experience}</p>
-                    </div>
-                    
-                    <div>
-                      <h4 className="font-semibold text-sm mb-1">Content Style</h4>
-                      <p className="text-sm text-muted-foreground">{creatorApp.content_style}</p>
-                    </div>
-                    
-                    <div>
-                      <h4 className="font-semibold text-sm mb-1">Why Join SLRP?</h4>
-                      <p className="text-sm text-muted-foreground">{creatorApp.why_join}</p>
-                    </div>
-
-                    {creatorApp.social_links && (
-                      <div>
-                        <h4 className="font-semibold text-sm mb-1">Other Socials</h4>
-                        <p className="text-sm text-muted-foreground whitespace-pre-line">{creatorApp.social_links}</p>
-                      </div>
-                    )}
-                    
-                    {creatorApp.status === "pending" && (
-                      <div className="space-y-3 pt-4 border-t">
-                        <Textarea
-                          placeholder="Admin notes (optional)"
-                          value={selectedCreatorApp?.id === creatorApp.id ? creatorAdminNotes : ""}
-                          onChange={(e) => {
-                            setSelectedCreatorApp(creatorApp);
-                            setCreatorAdminNotes(e.target.value);
-                          }}
+          {/* Gallery Tab */}
+          <TabsContent value="gallery">
+            <Card className="glass-effect border-border/20">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Image className="w-5 h-5 text-primary" />
+                  <CardTitle className="text-gradient">Gallery Submissions</CardTitle>
+                </div>
+                <CardDescription>Review and manage gallery submissions</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {submissions.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">No gallery submissions</p>
+                ) : (
+                  submissions.map((submission) => (
+                    <Card key={submission.id} className="border-border/20">
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <CardTitle className="text-lg">{submission.title}</CardTitle>
+                            <CardDescription>Category: {submission.category}</CardDescription>
+                          </div>
+                          <Badge variant={submission.status === "approved" ? "default" : submission.status === "rejected" ? "destructive" : "secondary"}>
+                            {submission.status}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <img
+                          src={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/gallery/${submission.file_path}`}
+                          alt={submission.title}
+                          className="w-full max-w-md rounded-lg"
                         />
+                        
+                        {submission.status === "pending" && (
+                          <div className="space-y-3 pt-4 border-t">
+                            <Textarea
+                              placeholder="Rejection reason (optional)"
+                              value={selectedSubmission?.id === submission.id ? rejectionReason : ""}
+                              onChange={(e) => { setSelectedSubmission(submission); setRejectionReason(e.target.value); }}
+                            />
+                            <div className="flex gap-2">
+                              <Button onClick={() => updateSubmissionStatus(submission.id, "approved")} className="bg-primary hover:bg-primary/90">Approve</Button>
+                              <Button onClick={() => updateSubmissionStatus(submission.id, "rejected")} variant="destructive">Reject</Button>
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Job Applications Tab */}
+          <TabsContent value="jobs">
+            <Card className="glass-effect border-border/20">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Briefcase className="w-5 h-5 text-primary" />
+                  <CardTitle className="text-gradient">Job Applications</CardTitle>
+                </div>
+                <CardDescription>Review job and PDM applications</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <h3 className="font-semibold text-lg">General Job Applications</h3>
+                {jobApplications.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-4">No job applications</p>
+                ) : (
+                  jobApplications.map((jobApp) => (
+                    <Card key={jobApp.id} className="border-border/20">
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <CardTitle className="text-lg">{jobApp.character_name}</CardTitle>
+                            <CardDescription>Position: {jobApp.job_type} | Age: {jobApp.age}</CardDescription>
+                          </div>
+                          <Badge variant={jobApp.status === "approved" ? "default" : jobApp.status === "rejected" ? "destructive" : "secondary"}>
+                            {jobApp.status}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <h4 className="font-semibold text-sm mb-1">Why Join</h4>
+                          <p className="text-sm text-muted-foreground">{jobApp.why_join}</p>
+                        </div>
+                        
+                        {jobApp.status === "pending" && (
+                          <div className="space-y-3 pt-4 border-t">
+                            <Textarea
+                              placeholder="Admin notes (optional)"
+                              value={selectedJobApp?.id === jobApp.id ? jobAdminNotes : ""}
+                              onChange={(e) => { setSelectedJobApp(jobApp); setJobAdminNotes(e.target.value); }}
+                            />
+                            <div className="flex gap-2">
+                              <Button onClick={() => updateJobApplicationStatus(jobApp.id, "approved")} className="bg-primary hover:bg-primary/90">Approve</Button>
+                              <Button onClick={() => updateJobApplicationStatus(jobApp.id, "rejected")} variant="destructive">Reject</Button>
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+
+                <h3 className="font-semibold text-lg mt-8">PDM Applications</h3>
+                {pdmApplications.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-4">No PDM applications</p>
+                ) : (
+                  pdmApplications.map((pdmApp) => (
+                    <Card key={pdmApp.id} className="border-border/20">
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <CardTitle className="text-lg">{pdmApp.character_name}</CardTitle>
+                            <CardDescription>Age: {pdmApp.age} | Phone: {pdmApp.phone_number}</CardDescription>
+                          </div>
+                          <Badge variant={pdmApp.status === "approved" ? "default" : pdmApp.status === "rejected" ? "destructive" : "secondary"}>
+                            {pdmApp.status}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <h4 className="font-semibold text-sm mb-1">Sales Experience</h4>
+                          <p className="text-sm text-muted-foreground">{pdmApp.sales_experience}</p>
+                        </div>
+                        
+                        {pdmApp.status === "pending" && (
+                          <div className="space-y-3 pt-4 border-t">
+                            <Textarea
+                              placeholder="Admin notes (optional)"
+                              value={selectedPdmApp?.id === pdmApp.id ? pdmAdminNotes : ""}
+                              onChange={(e) => { setSelectedPdmApp(pdmApp); setPdmAdminNotes(e.target.value); }}
+                            />
+                            <div className="flex gap-2">
+                              <Button onClick={() => updatePdmApplicationStatus(pdmApp.id, "approved")} className="bg-primary hover:bg-primary/90">Approve</Button>
+                              <Button onClick={() => updatePdmApplicationStatus(pdmApp.id, "rejected")} variant="destructive">Reject</Button>
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Creators Tab */}
+          <TabsContent value="creators">
+            <Card className="glass-effect border-border/20">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Video className="w-5 h-5 text-purple-500" />
+                  <CardTitle className="text-gradient">Creator Applications</CardTitle>
+                </div>
+                <CardDescription>Review content creator applications</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {creatorApplications.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">No creator applications</p>
+                ) : (
+                  creatorApplications.map((creatorApp) => (
+                    <Card key={creatorApp.id} className="border-purple-500/20">
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="font-semibold">{creatorApp.full_name}</h3>
+                            <p className="text-sm text-muted-foreground">Discord: {creatorApp.discord_username}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={creatorApp.status === "approved" ? "default" : creatorApp.status === "rejected" ? "destructive" : "secondary"}>
+                              {creatorApp.status}
+                            </Badge>
+                            <Badge variant="outline" className="capitalize">{creatorApp.platform}</Badge>
+                          </div>
+                        </div>
+                        
                         <div className="flex gap-2">
-                          <Button
-                            variant="default"
-                            className="bg-green-600 hover:bg-green-700"
-                            onClick={() => {
-                              setSelectedCreatorApp(creatorApp);
-                              updateCreatorApplicationStatus(creatorApp.id, "approved");
-                            }}
-                          >
-                            Approve
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            onClick={() => {
-                              setSelectedCreatorApp(creatorApp);
-                              updateCreatorApplicationStatus(creatorApp.id, "rejected");
-                            }}
-                          >
-                            Reject
+                          <Button size="sm" variant="outline" onClick={() => window.open(creatorApp.channel_url, '_blank')}>
+                            <ExternalLink className="w-4 h-4 mr-1" />View Channel
                           </Button>
                         </div>
-                      </div>
-                    )}
-                    
-                    {creatorApp.admin_notes && (
-                      <div className="pt-4 border-t">
-                        <h4 className="font-semibold text-sm mb-1">Admin Notes</h4>
-                        <p className="text-sm text-muted-foreground">{creatorApp.admin_notes}</p>
-                      </div>
-                    )}
+                        
+                        {creatorApp.status === "pending" && (
+                          <div className="space-y-3 pt-4 border-t">
+                            <Textarea
+                              placeholder="Admin notes (optional)"
+                              value={selectedCreatorApp?.id === creatorApp.id ? creatorAdminNotes : ""}
+                              onChange={(e) => { setSelectedCreatorApp(creatorApp); setCreatorAdminNotes(e.target.value); }}
+                            />
+                            <div className="flex gap-2">
+                              <Button onClick={() => updateCreatorApplicationStatus(creatorApp.id, "approved")} className="bg-green-600 hover:bg-green-700">Approve</Button>
+                              <Button onClick={() => updateCreatorApplicationStatus(creatorApp.id, "rejected")} variant="destructive">Reject</Button>
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Referral Analytics Tab */}
+          <TabsContent value="referrals">
+            <div className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-4">
+                <Card className="glass-effect border-primary/30">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <Users className="w-4 h-4 text-primary" />Total Referrals
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-primary">{referralStats.totalReferrals}</div>
                   </CardContent>
                 </Card>
-              ))
-            )}
-          </CardContent>
-        </Card>
+                <Card className="glass-effect border-accent/30">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4 text-accent" />Active Referrers
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-accent">{referralStats.activeReferrers}</div>
+                  </CardContent>
+                </Card>
+                <Card className="glass-effect border-secondary/30">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <Gift className="w-4 h-4 text-secondary" />Total Discounts
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-secondary">{referralStats.totalDiscountsGiven}%</div>
+                  </CardContent>
+                </Card>
+                <Card className="glass-effect border-primary/30">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Avg per User</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-primary">{referralStats.averageReferralsPerUser}</div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
 
+          {/* Promo Code Analytics Tab */}
+          <TabsContent value="promo">
+            <div className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-4">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <Ticket className="w-4 h-4" />Total Codes
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{promoStats.totalCodes}</div>
+                    <p className="text-xs text-muted-foreground">{promoStats.unusedCodes} active</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4" />Redemption Rate
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{promoStats.redemptionRate.toFixed(1)}%</div>
+                    <p className="text-xs text-muted-foreground">{promoStats.usedCodes} redeemed</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <DollarSign className="w-4 h-4" />Total Discount Given
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{promoStats.totalDiscountGiven}%</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <XCircle className="w-4 h-4" />Expired Codes
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{promoStats.expiredCodes}</div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>All Promo Codes</CardTitle>
+                    <Input
+                      placeholder="Search codes..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="max-w-xs"
+                    />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Code</TableHead>
+                        <TableHead>Discount</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Created</TableHead>
+                        <TableHead>Expires</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {promoCodes
+                        .filter(code => code.code.toLowerCase().includes(searchTerm.toLowerCase()))
+                        .map((code) => (
+                          <TableRow key={code.id}>
+                            <TableCell className="font-mono font-semibold">{code.code}</TableCell>
+                            <TableCell>{code.discount_percentage}%</TableCell>
+                            <TableCell>{getPromoStatusBadge(code)}</TableCell>
+                            <TableCell>{new Date(code.created_at).toLocaleDateString()}</TableCell>
+                            <TableCell>{code.expires_at ? new Date(code.expires_at).toLocaleDateString() : "Never"}</TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Support Analytics Tab */}
+          <TabsContent value="support">
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold">Support Analytics</h2>
+                <Button onClick={() => navigate('/admin/support-chat')} variant="outline">
+                  <MessageSquare className="w-4 h-4 mr-2" />Open Support Chat
+                </Button>
+              </div>
+              
+              {supportAnalytics && (
+                <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">Total Chats</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{supportAnalytics.totalChats}</div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">Open</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-orange-500">{supportAnalytics.openChats}</div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">Closed</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-green-500">{supportAnalytics.closedChats}</div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">Avg Response</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{supportAnalytics.avgResponseTime}m</div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">Avg Resolution</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{supportAnalytics.avgResolutionTime}m</div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">Satisfaction</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{supportAnalytics.satisfactionScore}/5</div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          {/* Staff Stats Tab */}
+          <TabsContent value="staff-stats">
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card className="glass-effect border-border/20">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <Users className="w-4 h-4 text-primary" />Active Staff
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-gradient">{staffStats.length}</div>
+                  </CardContent>
+                </Card>
+                <Card className="glass-effect border-border/20">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-500" />Tickets Resolved
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-gradient">
+                      {staffStats.reduce((sum, s) => sum + s.ticketsResolved, 0)}
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="glass-effect border-border/20">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <Activity className="w-4 h-4 text-blue-500" />Total Activities
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-gradient">
+                      {staffStats.reduce((sum, s) => sum + s.totalActivities, 0)}
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="glass-effect border-border/20">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <Award className="w-4 h-4 text-yellow-500" />Top Performer
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-lg font-bold text-gradient">
+                      {staffStats.sort((a, b) => b.ticketsResolved - a.ticketsResolved)[0]?.name || "N/A"}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card className="glass-effect border-border/20">
+                <CardHeader>
+                  <CardTitle>Staff Performance</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {staffStats.map((staff) => (
+                    <div key={staff.id} className="flex items-center gap-4 p-4 bg-muted/30 rounded-lg">
+                      <Avatar className="w-12 h-12 border-2 border-primary">
+                        <AvatarImage src={staff.discord_avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${staff.name}`} />
+                        <AvatarFallback>{staff.name.substring(0, 2)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="font-semibold">{staff.name}</div>
+                        <div className="text-xs text-muted-foreground">{staff.role} • {staff.department}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-green-500">{staff.ticketsResolved}</div>
+                        <div className="text-xs text-muted-foreground">Resolved</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-blue-500">{staff.ticketsAssigned}</div>
+                        <div className="text-xs text-muted-foreground">Assigned</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-bold">{staff.totalActivities}</div>
+                        <div className="text-xs text-muted-foreground">Activities</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm">{formatLastSeen(staff.lastSeen)}</div>
+                        <div className="text-xs text-muted-foreground">Last Seen</div>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Players Tab */}
+          <TabsContent value="players">
+            <Card className="glass-effect border-border/20">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Users className="w-6 h-6 text-primary" />
+                    <div>
+                      <CardTitle>Connected Players</CardTitle>
+                      <CardDescription>Real-time player list from FiveM server</CardDescription>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={serverStatus === 'online' ? 'default' : 'destructive'}>
+                      {serverStatus === 'online' ? 'Server Online' : 'Server Offline'}
+                    </Badge>
+                    <Button onClick={fetchPlayers} disabled={playersLoading} variant="outline" size="sm">
+                      <RefreshCw className={`w-4 h-4 mr-2 ${playersLoading ? 'animate-spin' : ''}`} />
+                      Refresh
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {playersLoading ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="h-16 bg-muted/50 rounded-lg animate-pulse" />
+                    ))}
+                  </div>
+                ) : serverStatus === 'offline' ? (
+                  <div className="text-center py-12">
+                    <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-lg text-muted-foreground">Server is currently offline</p>
+                  </div>
+                ) : players.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-lg text-muted-foreground">No players connected</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {players.map((player) => (
+                      <Card key={player.id} className="bg-background/50 border-border/40">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                                <User className="w-5 h-5 text-primary" />
+                              </div>
+                              <div>
+                                <div className="font-medium">{player.name}</div>
+                                <div className="text-sm text-muted-foreground flex items-center gap-1">
+                                  <Hash className="w-3 h-3" />ID: {player.id}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {player.ping !== undefined && (
+                                <Badge variant="outline">{player.ping}ms</Badge>
+                              )}
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon">
+                                    <MoreVertical className="w-4 h-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    onClick={() => setActionDialog({ open: true, type: 'kick', player })}
+                                    className="text-orange-600"
+                                  >
+                                    <UserX className="w-4 h-4 mr-2" />Kick Player
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => setActionDialog({ open: true, type: 'ban', player })}
+                                    className="text-destructive"
+                                  >
+                                    <Ban className="w-4 h-4 mr-2" />Ban Player
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
 
-      <StaffManagementDialog
-        open={isStaffDialogOpen}
-        onOpenChange={setIsStaffDialogOpen}
-        staffMember={selectedStaff}
-        onSuccess={loadStaffMembers}
-      />
-
-      <AlertDialog open={!!staffToDelete} onOpenChange={() => setStaffToDelete(null)}>
+      {/* Player Action Dialog */}
+      <AlertDialog open={actionDialog.open} onOpenChange={(open) => {
+        if (!open) {
+          setActionDialog({ open: false, type: null, player: null });
+          setActionReason("");
+        }
+      }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {actionDialog.type === 'kick' ? 'Kick Player' : 'Ban Player'}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete this staff member. This action cannot be undone.
+              Are you sure you want to {actionDialog.type} {actionDialog.player?.name}?
+              {actionDialog.type === 'ban' && ' This action will permanently ban the player.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="reason">Reason</Label>
+            <Textarea
+              id="reason"
+              placeholder="Enter reason for this action..."
+              value={actionReason}
+              onChange={(e) => setActionReason(e.target.value)}
+              className="min-h-[100px]"
+            />
+          </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => staffToDelete && deleteStaffMember(staffToDelete)}>
-              Delete
+            <AlertDialogAction
+              onClick={handlePlayerAction}
+              className={actionDialog.type === 'ban' ? 'bg-destructive hover:bg-destructive/90' : ''}
+            >
+              {actionDialog.type === 'kick' ? 'Kick' : 'Ban'} Player
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
