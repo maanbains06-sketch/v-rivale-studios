@@ -448,6 +448,10 @@ const Navigation = () => {
                     <Button variant="ghost" className="justify-start" onClick={() => { navigate("/support"); setIsMenuOpen(false); }}>
                       Support
                     </Button>
+                    <Button variant="ghost" className="justify-start" onClick={() => { navigate("/support-chat"); setIsMenuOpen(false); }}>
+                      <MessageSquare className="w-4 h-4 mr-2" />
+                      Support Chat
+                    </Button>
                     <Button variant="ghost" className="justify-start" asChild>
                       <a href={TEBEX_STORE_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
                         Store <ExternalLink className="w-3 h-3" />

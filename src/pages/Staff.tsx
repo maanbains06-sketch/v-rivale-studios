@@ -660,12 +660,27 @@ const Staff = () => {
                 </div>
               </div>
 
-              {/* View Profile Button */}
+              {/* Action Buttons */}
               <motion.div 
-                className="mt-auto pt-3 w-full border-t border-border/30"
+                className="mt-auto pt-3 w-full border-t border-border/30 space-y-2"
                 initial={{ opacity: 0.7 }}
                 whileHover={{ opacity: 1 }}
               >
+                {/* Open Support Button */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full gap-2 text-xs bg-primary/5 border-primary/30 hover:bg-primary/10 hover:border-primary/50 text-primary"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/support-chat?tagStaff=${member.id}&staffName=${encodeURIComponent(member.name)}`);
+                  }}
+                >
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  Open Support
+                </Button>
+                
+                {/* View Profile Link */}
                 <div className="flex items-center justify-center gap-2 text-xs font-medium text-muted-foreground group-hover:text-primary transition-all duration-300">
                   <UserCircle className="w-4 h-4" />
                   <span>View Full Profile</span>
