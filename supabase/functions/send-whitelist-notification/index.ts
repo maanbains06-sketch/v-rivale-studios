@@ -14,6 +14,33 @@ interface WhitelistNotificationRequest {
   adminNotes?: string;
 }
 
+interface DiscordUser {
+  id: string;
+  username: string;
+  global_name?: string;
+  avatar?: string;
+}
+
+async function fetchDiscordUser(discordId: string, botToken: string): Promise<DiscordUser | null> {
+  try {
+    const response = await fetch(`https://discord.com/api/v10/users/${discordId}`, {
+      headers: {
+        'Authorization': `Bot ${botToken}`,
+      },
+    });
+    
+    if (!response.ok) {
+      console.error(`Failed to fetch Discord user ${discordId}:`, response.status);
+      return null;
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error(`Error fetching Discord user ${discordId}:`, error);
+    return null;
+  }
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -21,7 +48,8 @@ serve(async (req) => {
   }
 
   try {
-    const DISCORD_BOT_TOKEN = Deno.env.get('DISCORD_BOT_TOKEN');
+    // Use the new dedicated whitelist bot token
+    const DISCORD_BOT_TOKEN = Deno.env.get('DISCORD_WHITELIST_BOT_TOKEN');
     const DISCORD_WHITELIST_CHANNEL_ID = Deno.env.get('DISCORD_WHITELIST_CHANNEL_ID');
 
     if (!DISCORD_BOT_TOKEN || !DISCORD_WHITELIST_CHANNEL_ID) {
@@ -43,6 +71,21 @@ serve(async (req) => {
 
     console.log(`Processing whitelist notification for ${applicantDiscord}, status: ${status}`);
 
+    // Fetch moderator's real Discord name if Discord ID is provided
+    let moderatorDisplayName = moderatorName;
+    let moderatorAvatarUrl: string | null = null;
+    
+    if (moderatorDiscordId) {
+      const moderatorUser = await fetchDiscordUser(moderatorDiscordId, DISCORD_BOT_TOKEN);
+      if (moderatorUser) {
+        moderatorDisplayName = moderatorUser.global_name || moderatorUser.username;
+        if (moderatorUser.avatar) {
+          moderatorAvatarUrl = `https://cdn.discordapp.com/avatars/${moderatorUser.id}/${moderatorUser.avatar}.png?size=128`;
+        }
+        console.log(`Fetched moderator Discord info: ${moderatorDisplayName}`);
+      }
+    }
+
     const now = new Date();
     const formattedDate = now.toLocaleDateString('en-US', {
       month: '2-digit',
@@ -57,14 +100,17 @@ serve(async (req) => {
 
     const isApproved = status === 'approved';
     
-    // Embed color: Green for approved, Red for rejected
-    const embedColor = isApproved ? 0x00ff00 : 0xff0000;
+    // Enhanced embed colors with more vibrant tones
+    const embedColor = isApproved ? 0x57F287 : 0xED4245;
     
-    // Title and description based on status
-    const title = isApproved ? '✅ Application Accepted' : '❌ Application Rejected';
+    // Enhanced title with more visual appeal
+    const title = isApproved 
+      ? '🎉 Application Approved!' 
+      : '📋 Application Status Update';
+    
     const description = isApproved 
-      ? `Your Application has been **Accepted**, Welcome aboard!`
-      : `Your Application has been **Rejected**.`;
+      ? `Congratulations! Your whitelist application has been **approved**!\n\n✨ Welcome to **SkyLife RP**! We're excited to have you join our community.`
+      : `Your whitelist application has been **reviewed** and unfortunately was not approved at this time.`;
 
     // Image URLs - hosted on the published site
     const approvedImageUrl = 'https://roleplay-horizon.lovable.app/images/whitelist-approved.jpg';
@@ -76,12 +122,12 @@ serve(async (req) => {
       ? `<@${applicantDiscordId}>` 
       : `@${applicantDiscord}`;
 
-    // Build moderator mention
+    // Build moderator display with real Discord name
     const moderatorMention = moderatorDiscordId 
       ? `<@${moderatorDiscordId}>` 
-      : moderatorName;
+      : moderatorDisplayName;
 
-    // Build embed fields
+    // Build enhanced embed fields with better formatting
     const fields = [
       {
         name: '👤 Applicant',
@@ -89,27 +135,58 @@ serve(async (req) => {
         inline: true
       },
       {
-        name: '⏰ Time of Response',
-        value: formattedDate,
+        name: '📊 Status',
+        value: isApproved ? '```diff\n+ APPROVED\n```' : '```diff\n- REJECTED\n```',
         inline: true
       },
       {
-        name: '🛡️ Moderator',
+        name: '\u200B', // Empty field for spacing
+        value: '\u200B',
+        inline: true
+      },
+      {
+        name: '🛡️ Reviewed By',
         value: moderatorMention,
+        inline: true
+      },
+      {
+        name: '⏰ Review Time',
+        value: `\`${formattedDate}\``,
+        inline: true
+      },
+      {
+        name: '\u200B',
+        value: '\u200B',
         inline: true
       }
     ];
 
-    // Add admin notes if provided and rejected
+    // Add rejection reason with enhanced formatting
     if (!isApproved && adminNotes) {
       fields.push({
-        name: '📝 Reason',
-        value: adminNotes,
+        name: '📝 Feedback',
+        value: `>>> ${adminNotes}`,
         inline: false
       });
     }
 
-    const embed = {
+    // Add next steps for approved applications
+    if (isApproved) {
+      fields.push({
+        name: '📌 Next Steps',
+        value: '1. Make sure to read our server rules\n2. Join the server and create your character\n3. Have fun and enjoy your roleplay experience!',
+        inline: false
+      });
+    } else {
+      fields.push({
+        name: '💡 What\'s Next?',
+        value: 'You may reapply after reviewing your application and addressing the feedback provided. Take your time to improve and try again!',
+        inline: false
+      });
+    }
+
+    // Build the embed with author (moderator info)
+    const embed: Record<string, unknown> = {
       title,
       description,
       color: embedColor,
@@ -118,10 +195,19 @@ serve(async (req) => {
         url: imageUrl
       },
       footer: {
-        text: '#SkyLife'
+        text: 'SkyLife RP • Whitelist System',
+        icon_url: 'https://roleplay-horizon.lovable.app/images/slrp-logo.png'
       },
       timestamp: now.toISOString()
     };
+
+    // Add moderator as author if we have their avatar
+    if (moderatorAvatarUrl) {
+      embed.author = {
+        name: `Reviewed by ${moderatorDisplayName}`,
+        icon_url: moderatorAvatarUrl
+      };
+    }
 
     // Send message to Discord channel
     const discordResponse = await fetch(
