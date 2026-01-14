@@ -361,7 +361,7 @@ const Navigation = () => {
                 <Button 
                   variant="outline"
                   size="sm"
-                  className="glass-effect order-last md:hidden"
+                  className="glass-effect order-last"
                 >
                   <Menu className="w-5 h-5" />
                 </Button>
@@ -596,53 +596,6 @@ const Navigation = () => {
               </SheetContent>
             </Sheet>
             
-            {/* Desktop User Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="outline"
-                  size="sm"
-                  className="glass-effect hidden md:flex"
-                >
-                  <Menu className="w-5 h-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-background/95 backdrop-blur-xl border border-border/20 shadow-xl z-50">
-                {hasStaffAdminAccess && (
-                  <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/admin")}>
-                    <Shield className="w-4 h-4 mr-2" />
-                    Admin Panel
-                  </DropdownMenuItem>
-                )}
-                {isOwner && (
-                  <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/owner-panel")}>
-                    <Crown className="w-4 h-4 mr-2 text-primary" />
-                    Owner Panel
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/contact-owner")}>
-                  <Mail className="w-4 h-4 mr-2" />
-                  Contact Owner
-                </DropdownMenuItem>
-                {user ? (
-                  <>
-                    <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/dashboard")}>
-                      <UserCircle className="w-4 h-4 mr-2" />
-                      My Dashboard
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer" onClick={handleLogout}>
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Logout
-                    </DropdownMenuItem>
-                  </>
-                ) : (
-                  <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/auth")}>
-                    <Users className="w-4 h-4 mr-2" />
-                    Join Now
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
         </div>
       </div>
