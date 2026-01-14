@@ -648,7 +648,38 @@ const Admin = () => {
       return;
     }
 
-    toast({ title: "Success", description: `Application ${status} successfully.` });
+    // If approved, automatically assign Discord whitelist role
+    if (status === "approved") {
+      try {
+        const { data: roleResult, error: roleError } = await supabase.functions.invoke('assign-whitelist-role', {
+          body: { applicationId: appId }
+        });
+        
+        if (roleError || !roleResult?.success) {
+          console.error("Failed to assign Discord role:", roleError || roleResult?.error);
+          toast({ 
+            title: "Warning", 
+            description: `Application approved but failed to assign Discord role: ${roleResult?.error || 'Unknown error'}. The user may need to be in the Discord server.`, 
+            variant: "destructive" 
+          });
+        } else {
+          toast({ 
+            title: "Success", 
+            description: "Application approved and Discord whitelist role assigned!" 
+          });
+        }
+      } catch (roleErr) {
+        console.error("Error assigning Discord role:", roleErr);
+        toast({ 
+          title: "Warning", 
+          description: "Application approved but failed to assign Discord role automatically.", 
+          variant: "destructive" 
+        });
+      }
+    } else {
+      toast({ title: "Success", description: `Application ${status} successfully.` });
+    }
+
     setSelectedApp(null);
     setAdminNotes("");
     loadApplications();
