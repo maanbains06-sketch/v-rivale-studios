@@ -59,11 +59,26 @@ const Auth = () => {
   const [discordId, setDiscordId] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [verifyingDiscord, setVerifyingDiscord] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const [sendingResetEmail, setSendingResetEmail] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
+
+  // Load remembered email on mount
+  useEffect(() => {
+    try {
+      const rememberedEmail = localStorage.getItem("slrp_remembered_email");
+      const isRemembered = localStorage.getItem("slrp_remember_me") === "true";
+      if (rememberedEmail && isRemembered) {
+        setEmail(rememberedEmail);
+        setRememberMe(true);
+      }
+    } catch (e) {
+      // localStorage not available (private browsing)
+    }
+  }, []);
   
   const location = window.location.pathname;
   const searchParams = new URLSearchParams(window.location.search);
@@ -128,6 +143,19 @@ const Auth = () => {
       });
       setLoading(false);
       return;
+    }
+
+    // Handle Remember Me - save email to localStorage
+    try {
+      if (rememberMe) {
+        localStorage.setItem("slrp_remembered_email", email);
+        localStorage.setItem("slrp_remember_me", "true");
+      } else {
+        localStorage.removeItem("slrp_remembered_email");
+        localStorage.removeItem("slrp_remember_me");
+      }
+    } catch (e) {
+      // localStorage not available
     }
 
     toast({
@@ -521,6 +549,25 @@ const Auth = () => {
                   </button>
                 </div>
               </motion.div>
+
+              {/* Remember Me - Login only */}
+              {!isSignup && (
+                <motion.div
+                  initial={{ y: 10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.38 }}
+                  className="flex items-center justify-between"
+                >
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <Checkbox
+                      id="rememberMe"
+                      checked={rememberMe}
+                      onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                    />
+                    <span className="text-sm text-muted-foreground">Remember me</span>
+                  </label>
+                </motion.div>
+              )}
 
               {/* Confirm Password - Signup only */}
               {isSignup && (
