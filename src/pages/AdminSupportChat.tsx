@@ -158,9 +158,17 @@ const AdminSupportChat = () => {
           event: "*",
           schema: "public",
           table: "support_chats",
+          filter: `status=eq.${statusFilter}`,
         },
-        () => {
-          fetchChats();
+        (payload) => {
+          // Update state directly instead of refetching all
+          if (payload.eventType === "INSERT") {
+            setChats(prev => [payload.new as Chat, ...prev]);
+          } else if (payload.eventType === "UPDATE") {
+            setChats(prev => prev.map(c => c.id === (payload.new as Chat).id ? payload.new as Chat : c));
+          } else if (payload.eventType === "DELETE") {
+            setChats(prev => prev.filter(c => c.id !== (payload.old as Chat).id));
+          }
         }
       )
       .subscribe();
