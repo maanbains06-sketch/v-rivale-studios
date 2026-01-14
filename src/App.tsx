@@ -30,7 +30,7 @@ const StaffSetup = lazy(() => import("./pages/StaffSetup"));
 const BanAppeal = lazy(() => import("./pages/BanAppeal"));
 const Guides = lazy(() => import("./pages/Guides"));
 const Gallery = lazy(() => import("./pages/Gallery"));
-const Status = lazy(() => import("./pages/Status"));
+
 const Support = lazy(() => import("./pages/Support"));
 const Confirmation = lazy(() => import("./pages/Confirmation"));
 const Auth = lazy(() => import("./pages/Auth"));
@@ -109,7 +109,7 @@ const AppRoutes = memo(() => {
           <Route path="/ban-appeal" element={<PageTransition><RequireAuth message="Login with Discord to submit a ban appeal."><BanAppeal /></RequireAuth></PageTransition>} />
           <Route path="/guides" element={<PageTransition><Guides /></PageTransition>} />
           <Route path="/gallery" element={<PageTransition><Gallery /></PageTransition>} />
-          <Route path="/status" element={<PageTransition><Status /></PageTransition>} />
+          
           <Route path="/support" element={<PageTransition><Support /></PageTransition>} />
           <Route path="/confirmation" element={<PageTransition><Confirmation /></PageTransition>} />
           <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
