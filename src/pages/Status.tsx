@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import Navigation from "@/components/Navigation";
-import PageHeader from "@/components/PageHeader";
-import headerStatus from "@/assets/header-status.jpg";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -424,20 +422,7 @@ const Status = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
 
-      <PageHeader
-        title="Server Status"
-        description="Real-time server statistics and performance metrics"
-        badge={
-          serverData.status === "online"
-            ? "🟢 Live & Operational"
-            : serverData.status === "maintenance"
-              ? "🟡 Under Maintenance"
-              : "🔴 Server Offline"
-        }
-        backgroundImage={headerStatus}
-      />
-
-      <main className="pb-16">
+      <main className="pb-16 pt-24">
         <div className="container mx-auto px-4">
           {/* Server Restart Notification Banner */}
           {showRestartBanner && (
