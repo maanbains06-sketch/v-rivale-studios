@@ -63,18 +63,18 @@ const AdminDiscordRules = lazy(() => import("./pages/AdminDiscordRules"));
 const Giveaway = lazy(() => import("./pages/Giveaway"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-// Optimized query client with aggressive caching for global performance
+// Optimized query client - balanced caching with proper data loading on navigation
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 15, // 15 minutes - longer cache for slower connections
-      gcTime: 1000 * 60 * 120, // 2 hours - keep data longer
-      retry: 1,
-      retryDelay: 1000, // 1 second delay between retries
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-      networkMode: 'offlineFirst', // Use cached data first
+      staleTime: 1000 * 60 * 5, // 5 minutes - data considered fresh
+      gcTime: 1000 * 60 * 30, // 30 minutes - garbage collection
+      retry: 2,
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
+      refetchOnWindowFocus: false, // Don't refetch on window focus
+      refetchOnMount: 'always', // Always check data freshness on mount - CRITICAL for navigation
+      refetchOnReconnect: true, // Refetch when reconnecting
+      networkMode: 'online', // Normal network mode for reliable data fetching
     },
   },
 });
