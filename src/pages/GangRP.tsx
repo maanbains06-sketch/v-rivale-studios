@@ -26,6 +26,8 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWhitelistAccess } from "@/hooks/useWhitelistAccess";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
+import ApplicationsPausedAlert from "@/components/ApplicationsPausedAlert";
 import GangApplicationForm from "@/components/GangApplicationForm";
 import headerGang from "@/assets/header-gang.jpg";
 
@@ -140,6 +142,7 @@ const GangRP = () => {
   
   // Use Discord whitelist role for access control
   const { hasAccess, isInServer, hasWhitelistRole, loading: accessLoading, refreshAccess } = useWhitelistAccess();
+  const { settings: siteSettings, loading: settingsLoading } = useSiteSettings();
 
   useEffect(() => {
     checkUser();
@@ -156,7 +159,7 @@ const GangRP = () => {
     }
   };
 
-  const isPageLoading = loading || accessLoading;
+  const isPageLoading = loading || accessLoading || settingsLoading;
 
   if (isPageLoading) {
     return (
@@ -342,7 +345,9 @@ const GangRP = () => {
                 ← Back to Rules
               </Button>
 
-              {!hasAccess ? (
+              {siteSettings.applications_paused ? (
+                <ApplicationsPausedAlert variant="card" applicationType="Gang Applications" />
+              ) : !hasAccess ? (
                 renderAccessDenied()
               ) : (
                 <GangApplicationForm />

@@ -9,7 +9,9 @@ import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield } from "lucide-react";
+import { Shield, Loader2 } from "lucide-react";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
+import ApplicationsPausedAlert from "@/components/ApplicationsPausedAlert";
 import headerBg from "@/assets/header-support.jpg";
 
 const BanAppeal = () => {
@@ -22,6 +24,8 @@ const BanAppeal = () => {
     appealReason: "",
     additionalInfo: "",
   });
+  
+  const { settings: siteSettings, loading: settingsLoading } = useSiteSettings();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,6 +81,35 @@ const BanAppeal = () => {
       [e.target.name]: e.target.value,
     });
   };
+
+  if (settingsLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <div className="container mx-auto px-4 pt-24 pb-12 flex items-center justify-center min-h-screen">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
+
+  if (siteSettings.applications_paused) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <PageHeader
+          title="Ban Appeal"
+          description="Submit an appeal if you believe your ban was unjustified"
+          backgroundImage={headerBg}
+        />
+        <div className="container mx-auto px-4 py-16">
+          <div className="max-w-3xl mx-auto">
+            <ApplicationsPausedAlert variant="card" applicationType="Ban Appeals" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
