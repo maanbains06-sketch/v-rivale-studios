@@ -153,8 +153,6 @@ All colors MUST be HSL.
     transition: background-color 0.3s ease, color 0.3s ease;
   }
   
-  /* Background overlay - removed for clarity */
-  
   #root {
     position: relative;
     z-index: 1;
@@ -197,6 +195,40 @@ All colors MUST be HSL.
   /* Hero section optimized background */
   .hero-section {
     background-attachment: scroll;
+  }
+
+  /* CRITICAL: Disable heavy effects on mobile/low-end devices */
+  @media (max-width: 640px), (prefers-reduced-motion: reduce) {
+    .glass-effect {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      background: hsl(var(--card) / 0.95) !important;
+    }
+    
+    .animate-pulse, .animate-glow, .animate-pulse-glow, .animate-float, .animate-gradient-shift {
+      animation: none !important;
+    }
+    
+    .rain-effect {
+      display: none !important;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+      text-shadow: none !important;
+    }
+  }
+
+  /* Content visibility optimization for off-screen content */
+  .content-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 500px;
+  }
+
+  /* Optimize scrolling performance */
+  .scroll-optimized {
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
   }
 
   @media (min-width: 768px) {
@@ -278,28 +310,35 @@ All colors MUST be HSL.
   }
   
   .glass-effect {
-    background: transparent;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: hsl(var(--card) / 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border: 1px solid hsl(var(--primary) / 0.2);
-    box-shadow: 
-      0 4px 30px 0 hsl(var(--primary) / 0.1),
-      inset 0 1px 0 0 hsl(var(--primary) / 0.1);
+    box-shadow: 0 4px 20px 0 hsl(var(--primary) / 0.08);
     position: relative;
     z-index: 1;
   }
 
+  /* Only apply blur on desktop with good performance */
+  @media (min-width: 641px) and (prefers-reduced-motion: no-preference) {
+    @supports (backdrop-filter: blur(8px)) {
+      .glass-effect {
+        background: transparent;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+      }
+    }
+  }
+
   :root.light .glass-effect {
-    background: transparent;
+    background: hsl(var(--card) / 0.9);
     border: 1px solid hsl(var(--border));
     box-shadow: 0 4px 20px 0 hsl(220 20% 10% / 0.08);
   }
   
   .glass-effect:hover {
     border-color: hsl(var(--primary) / 0.35);
-    box-shadow: 
-      0 8px 40px 0 hsl(var(--primary) / 0.15),
-      inset 0 1px 0 0 hsl(var(--primary) / 0.15);
+    box-shadow: 0 8px 30px 0 hsl(var(--primary) / 0.12);
   }
 
   :root.light .glass-effect:hover {
@@ -1389,5 +1428,89 @@ All colors MUST be HSL.
   .animate-bounce,
   .animate-float {
     animation: none !important;
+  }
+}
+
+/* ===========================================
+   PERFORMANCE CRITICAL STYLES
+   =========================================== */
+
+/* Force GPU acceleration on interactive elements */
+.interactive-element {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Optimize will-change for elements that animate */
+.will-animate {
+  will-change: transform, opacity;
+}
+
+/* After animation completes, remove will-change */
+.animation-complete {
+  will-change: auto;
+}
+
+/* Reduce paint areas */
+.contain-paint {
+  contain: paint;
+}
+
+.contain-layout {
+  contain: layout;
+}
+
+.contain-strict {
+  contain: strict;
+}
+
+/* Optimize large lists */
+.virtualized-list {
+  contain: strict;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 400px;
+}
+
+/* Optimize scrolling containers */
+.scroll-container {
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-container {
+    scroll-behavior: auto;
+  }
+}
+
+/* Hide elements below the fold until scrolled into view */
+.lazy-section {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 300px;
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 640px) {
+  /* Force all animations off on small screens */
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  
+  /* Exception: keep essential UI feedback animations */
+  .animate-spin {
+    animation-duration: 1s !important;
+    animation-iteration-count: infinite !important;
+  }
+  
+  /* Reduce box shadows */
+  .glass-effect,
+  .card-hover,
+  .btn-glow {
+    box-shadow: 0 2px 8px hsl(0 0% 0% / 0.1) !important;
   }
 }

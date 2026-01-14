@@ -79,7 +79,7 @@ const queryClient = new QueryClient({
   },
 });
 
-// Minimal page loading fallback
+// Minimal page loading fallback - optimized with no animations
 const PageLoader = memo(() => (
   <div className="min-h-screen flex items-center justify-center bg-background">
     <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -87,64 +87,83 @@ const PageLoader = memo(() => (
 ));
 PageLoader.displayName = "PageLoader";
 
+// Check if device is low-end for conditional rendering
+const isLowEndDevice = () => {
+  if (typeof window === 'undefined') return false;
+  return (
+    (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) ||
+    ((navigator as any).deviceMemory && (navigator as any).deviceMemory <= 4) ||
+    window.innerWidth < 640 ||
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
+};
+
 const AppRoutes = memo(() => {
   useReferralTracking();
   useStaffPresence();
   const location = useLocation();
+  const prefersReducedMotion = isLowEndDevice();
+  
+  // If low-end device, skip AnimatePresence for better performance
+  const routesContent = (
+    <Routes location={location} key={prefersReducedMotion ? undefined : location.pathname}>
+      <Route path="/" element={<PageTransition><Index /></PageTransition>} />
+      <Route path="/about" element={<PageTransition><About /></PageTransition>} />
+      <Route path="/features" element={<PageTransition><Features /></PageTransition>} />
+      <Route path="/rules" element={<PageTransition><Rules /></PageTransition>} />
+      <Route path="/community" element={<PageTransition><Community /></PageTransition>} />
+      <Route path="/whitelist" element={<PageTransition><RequireAuth message="Login with Discord to apply for whitelist."><Whitelist /></RequireAuth></PageTransition>} />
+      <Route path="/staff" element={<PageTransition><Staff /></PageTransition>} />
+      <Route path="/staff/:name" element={<PageTransition><StaffProfile /></PageTransition>} />
+      <Route path="/staff-setup" element={<PageTransition><StaffSetup /></PageTransition>} />
+      <Route path="/ban-appeal" element={<PageTransition><RequireAuth message="Login with Discord to submit a ban appeal."><BanAppeal /></RequireAuth></PageTransition>} />
+      <Route path="/guides" element={<PageTransition><Guides /></PageTransition>} />
+      <Route path="/gallery" element={<PageTransition><RequireAuth message="Login with Discord to view the gallery."><Gallery /></RequireAuth></PageTransition>} />
+      <Route path="/status" element={<PageTransition><RequireAuth message="Login with Discord to view server status."><Status /></RequireAuth></PageTransition>} />
+      <Route path="/support" element={<PageTransition><RequireAuth message="Login with Discord to access support."><Support /></RequireAuth></PageTransition>} />
+      <Route path="/confirmation" element={<PageTransition><Confirmation /></PageTransition>} />
+      <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
+      <Route path="/login" element={<PageTransition><Auth /></PageTransition>} />
+      <Route path="/signup" element={<PageTransition><Auth /></PageTransition>} />
+      <Route path="/discord-signup" element={<PageTransition><DiscordSignupForm /></PageTransition>} />
+      <Route path="/discord-profile" element={<PageTransition><DiscordProfile /></PageTransition>} />
+      <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
+      <Route path="/admin-staff-applications" element={<PageTransition><AdminStaffApplications /></PageTransition>} />
+      <Route path="/admin-referrals" element={<PageTransition><AdminReferrals /></PageTransition>} />
+      <Route path="/admin-promo-analytics" element={<PageTransition><AdminPromoAnalytics /></PageTransition>} />
+      <Route path="/admin/gallery" element={<PageTransition><AdminGallery /></PageTransition>} />
+      <Route path="/admin/support-chat" element={<PageTransition><AdminSupportChat /></PageTransition>} />
+      <Route path="/admin/support-analytics" element={<PageTransition><SupportAnalytics /></PageTransition>} />
+      <Route path="/admin/staff-stats" element={<PageTransition><AdminStaffStats /></PageTransition>} />
+      <Route path="/admin/players-active" element={<PageTransition><AdminPlayers /></PageTransition>} />
+      <Route path="/admin/youtubers" element={<PageTransition><AdminYoutubers /></PageTransition>} />
+      <Route path="/admin/staff-teams" element={<PageTransition><AdminStaffTeams /></PageTransition>} />
+      <Route path="/admin/discord-rules" element={<PageTransition><AdminDiscordRules /></PageTransition>} />
+      <Route path="/support-chat" element={<PageTransition><RequireAuth message="Login with Discord to access support chat."><SupportChat /></RequireAuth></PageTransition>} />
+      <Route path="/job-application" element={<PageTransition><RequireAuth message="Login with Discord to apply for jobs."><JobApplication /></RequireAuth></PageTransition>} />
+      <Route path="/dashboard" element={<PageTransition><RequireAuth message="Login with Discord to access your dashboard."><Dashboard /></RequireAuth></PageTransition>} />
+      <Route path="/staff-onboarding" element={<PageTransition><StaffOnboarding /></PageTransition>} />
+      <Route path="/application-status" element={<PageTransition><RequireAuth message="Login with Discord to check your application status."><ApplicationStatus /></RequireAuth></PageTransition>} />
+      <Route path="/contact-owner" element={<PageTransition><RequireAuth message="Login with Discord to contact the owner."><ContactOwner /></RequireAuth></PageTransition>} />
+      <Route path="/privacy-policy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
+      <Route path="/terms-of-service" element={<PageTransition><TermsOfService /></PageTransition>} />
+      <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
+      <Route path="/owner-panel" element={<PageTransition><OwnerPanel /></PageTransition>} />
+      <Route path="/gang-rp" element={<PageTransition><RequireAuth message="Login with Discord to access Gang RP applications."><GangRP /></RequireAuth></PageTransition>} />
+      <Route path="/feedback" element={<PageTransition><RequireAuth message="Login with Discord to submit feedback."><Feedback /></RequireAuth></PageTransition>} />
+      <Route path="/giveaway" element={<PageTransition><Giveaway /></PageTransition>} />
+      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+      <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+    </Routes>
+  );
   
   return (
     <Suspense fallback={<PageLoader />}>
-      <AnimatePresence mode="wait">
-        <Routes location={location} key={location.pathname}>
-          <Route path="/" element={<PageTransition><Index /></PageTransition>} />
-          <Route path="/about" element={<PageTransition><About /></PageTransition>} />
-          <Route path="/features" element={<PageTransition><Features /></PageTransition>} />
-          <Route path="/rules" element={<PageTransition><Rules /></PageTransition>} />
-          <Route path="/community" element={<PageTransition><Community /></PageTransition>} />
-          <Route path="/whitelist" element={<PageTransition><RequireAuth message="Login with Discord to apply for whitelist."><Whitelist /></RequireAuth></PageTransition>} />
-          <Route path="/staff" element={<PageTransition><Staff /></PageTransition>} />
-          <Route path="/staff/:name" element={<PageTransition><StaffProfile /></PageTransition>} />
-          <Route path="/staff-setup" element={<PageTransition><StaffSetup /></PageTransition>} />
-          <Route path="/ban-appeal" element={<PageTransition><RequireAuth message="Login with Discord to submit a ban appeal."><BanAppeal /></RequireAuth></PageTransition>} />
-          <Route path="/guides" element={<PageTransition><Guides /></PageTransition>} />
-          <Route path="/gallery" element={<PageTransition><RequireAuth message="Login with Discord to view the gallery."><Gallery /></RequireAuth></PageTransition>} />
-          <Route path="/status" element={<PageTransition><RequireAuth message="Login with Discord to view server status."><Status /></RequireAuth></PageTransition>} />
-          <Route path="/support" element={<PageTransition><RequireAuth message="Login with Discord to access support."><Support /></RequireAuth></PageTransition>} />
-          <Route path="/confirmation" element={<PageTransition><Confirmation /></PageTransition>} />
-          <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
-          <Route path="/login" element={<PageTransition><Auth /></PageTransition>} />
-          <Route path="/signup" element={<PageTransition><Auth /></PageTransition>} />
-          <Route path="/discord-signup" element={<PageTransition><DiscordSignupForm /></PageTransition>} />
-          <Route path="/discord-profile" element={<PageTransition><DiscordProfile /></PageTransition>} />
-          <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
-          <Route path="/admin-staff-applications" element={<PageTransition><AdminStaffApplications /></PageTransition>} />
-          <Route path="/admin-referrals" element={<PageTransition><AdminReferrals /></PageTransition>} />
-          <Route path="/admin-promo-analytics" element={<PageTransition><AdminPromoAnalytics /></PageTransition>} />
-          <Route path="/admin/gallery" element={<PageTransition><AdminGallery /></PageTransition>} />
-          <Route path="/admin/support-chat" element={<PageTransition><AdminSupportChat /></PageTransition>} />
-          <Route path="/admin/support-analytics" element={<PageTransition><SupportAnalytics /></PageTransition>} />
-          <Route path="/admin/staff-stats" element={<PageTransition><AdminStaffStats /></PageTransition>} />
-          <Route path="/admin/players-active" element={<PageTransition><AdminPlayers /></PageTransition>} />
-          <Route path="/admin/youtubers" element={<PageTransition><AdminYoutubers /></PageTransition>} />
-          <Route path="/admin/staff-teams" element={<PageTransition><AdminStaffTeams /></PageTransition>} />
-          <Route path="/admin/discord-rules" element={<PageTransition><AdminDiscordRules /></PageTransition>} />
-          <Route path="/support-chat" element={<PageTransition><RequireAuth message="Login with Discord to access support chat."><SupportChat /></RequireAuth></PageTransition>} />
-          <Route path="/job-application" element={<PageTransition><RequireAuth message="Login with Discord to apply for jobs."><JobApplication /></RequireAuth></PageTransition>} />
-          <Route path="/dashboard" element={<PageTransition><RequireAuth message="Login with Discord to access your dashboard."><Dashboard /></RequireAuth></PageTransition>} />
-          <Route path="/staff-onboarding" element={<PageTransition><StaffOnboarding /></PageTransition>} />
-          <Route path="/application-status" element={<PageTransition><RequireAuth message="Login with Discord to check your application status."><ApplicationStatus /></RequireAuth></PageTransition>} />
-          <Route path="/contact-owner" element={<PageTransition><RequireAuth message="Login with Discord to contact the owner."><ContactOwner /></RequireAuth></PageTransition>} />
-          <Route path="/privacy-policy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
-          <Route path="/terms-of-service" element={<PageTransition><TermsOfService /></PageTransition>} />
-          <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
-          <Route path="/owner-panel" element={<PageTransition><OwnerPanel /></PageTransition>} />
-          <Route path="/gang-rp" element={<PageTransition><RequireAuth message="Login with Discord to access Gang RP applications."><GangRP /></RequireAuth></PageTransition>} />
-          <Route path="/feedback" element={<PageTransition><RequireAuth message="Login with Discord to submit feedback."><Feedback /></RequireAuth></PageTransition>} />
-          <Route path="/giveaway" element={<PageTransition><Giveaway /></PageTransition>} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
-        </Routes>
-      </AnimatePresence>
+      {prefersReducedMotion ? routesContent : (
+        <AnimatePresence mode="wait">
+          {routesContent}
+        </AnimatePresence>
+      )}
     </Suspense>
   );
 });
