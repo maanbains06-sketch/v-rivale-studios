@@ -11,6 +11,7 @@ import { PageTransition } from "@/components/PageTransition";
 import RequireAuth from "@/components/RequireAuth";
 import LoadingScreen from "@/components/LoadingScreen";
 import RouteErrorBoundary from "@/components/RouteErrorBoundary";
+import AutoRetryPage from "@/components/AutoRetryPage";
 
 // Lazy load utility components
 const LiveVisitorCounter = lazy(() => import("@/components/LiveVisitorCounter"));
@@ -151,10 +152,10 @@ const AppRoutes = memo(() => {
             <Route path="/admin/discord-rules" element={<PageTransition><AdminDiscordRules /></PageTransition>} />
             <Route path="/support-chat" element={<PageTransition><RequireAuth message="Login with Discord to access support chat."><SupportChat /></RequireAuth></PageTransition>} />
             <Route path="/job-application" element={<PageTransition><JobApplication /></PageTransition>} />
-            <Route path="/dashboard" element={<PageTransition><RequireAuth message="Login with Discord to access your dashboard."><Dashboard /></RequireAuth></PageTransition>} />
+            <Route path="/dashboard" element={<PageTransition><RequireAuth message="Login with Discord to access your dashboard."><AutoRetryPage pageName="Dashboard"><Dashboard /></AutoRetryPage></RequireAuth></PageTransition>} />
             <Route path="/staff-onboarding" element={<PageTransition><StaffOnboarding /></PageTransition>} />
-            <Route path="/application-status" element={<PageTransition><RequireAuth message="Login with Discord to check your application status."><ApplicationStatus /></RequireAuth></PageTransition>} />
-            <Route path="/contact-owner" element={<PageTransition><RequireAuth message="Login with Discord to contact the owner."><ContactOwner /></RequireAuth></PageTransition>} />
+            <Route path="/application-status" element={<PageTransition><RequireAuth message="Login with Discord to check your application status."><AutoRetryPage pageName="Application Status"><ApplicationStatus /></AutoRetryPage></RequireAuth></PageTransition>} />
+            <Route path="/contact-owner" element={<PageTransition><RequireAuth message="Login with Discord to contact the owner."><AutoRetryPage pageName="Contact Owner"><ContactOwner /></AutoRetryPage></RequireAuth></PageTransition>} />
             <Route path="/privacy-policy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
             <Route path="/terms-of-service" element={<PageTransition><TermsOfService /></PageTransition>} />
             <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
