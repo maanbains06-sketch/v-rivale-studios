@@ -21,9 +21,11 @@ import {
   MapPin,
   Clock,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  RefreshCw
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useWhitelistAccess } from "@/hooks/useWhitelistAccess";
 import GangApplicationForm from "@/components/GangApplicationForm";
 import headerGang from "@/assets/header-gang.jpg";
 
@@ -135,41 +137,28 @@ const GangRP = () => {
   const [showApplication, setShowApplication] = useState(false);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
-  const [whitelistStatus, setWhitelistStatus] = useState<string | null>(null);
+  
+  // Use Discord whitelist role for access control
+  const { hasAccess, isInServer, hasWhitelistRole, loading: accessLoading, refreshAccess } = useWhitelistAccess();
 
   useEffect(() => {
-    checkUserStatus();
+    checkUser();
   }, []);
 
-  const checkUserStatus = async () => {
+  const checkUser = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        setUser(null);
-        setLoading(false);
-        return;
-      }
-
-      setUser(user);
-
-      const { data: application } = await supabase
-        .from("whitelist_applications")
-        .select("status")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      setWhitelistStatus(application?.status || null);
+      setUser(user || null);
     } catch (error) {
-      console.error("Error checking user status:", error);
+      console.error("Error checking user:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) {
+  const isPageLoading = loading || accessLoading;
+
+  if (isPageLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
@@ -185,6 +174,72 @@ const GangRP = () => {
       </div>
     );
   }
+
+  const renderAccessDenied = () => {
+    if (!user) {
+      return (
+        <Alert className="glass-effect border-border/20">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Authentication Required</AlertTitle>
+          <AlertDescription className="mt-2">
+            You must be logged in to submit a gang application.
+            <div className="mt-4">
+              <Button onClick={() => navigate("/auth")}>
+                Login / Sign Up
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      );
+    }
+
+    if (!isInServer) {
+      return (
+        <Alert className="glass-effect border-border/20">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Join Our Discord Server</AlertTitle>
+          <AlertDescription className="mt-2">
+            You must be a member of our Discord server to apply for gang RP.
+            <div className="mt-4 flex gap-3">
+              <Button asChild>
+                <a href="https://discord.gg/slrp" target="_blank" rel="noopener noreferrer">
+                  Join Discord Server
+                </a>
+              </Button>
+              <Button variant="outline" onClick={refreshAccess}>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Check Again
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      );
+    }
+
+    if (!hasWhitelistRole) {
+      return (
+        <Alert className="glass-effect border-border/20">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Whitelist Role Required</AlertTitle>
+          <AlertDescription className="mt-2">
+            You need the whitelist role in our Discord server to apply for gang RP.
+            Apply for whitelist or contact server staff if you believe you should have access.
+            <div className="mt-4 flex gap-3">
+              <Button onClick={() => navigate("/whitelist")}>
+                Apply for Whitelist
+              </Button>
+              <Button variant="outline" onClick={refreshAccess}>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Check Again
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      );
+    }
+
+    return null;
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -287,40 +342,8 @@ const GangRP = () => {
                 ← Back to Rules
               </Button>
 
-              {!user ? (
-                <Alert className="glass-effect border-border/20">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Authentication Required</AlertTitle>
-                  <AlertDescription className="mt-2">
-                    You must be logged in to submit a gang application.
-                    <div className="mt-4">
-                      <Button onClick={() => navigate("/auth")}>
-                        Login / Sign Up
-                      </Button>
-                    </div>
-                  </AlertDescription>
-                </Alert>
-              ) : whitelistStatus !== "approved" ? (
-                <Alert className="glass-effect border-border/20">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Whitelist Required</AlertTitle>
-                  <AlertDescription className="mt-2">
-                    {whitelistStatus === "pending" ? (
-                      <>Your whitelist application is under review. You can apply for gang RP once approved.</>
-                    ) : whitelistStatus === "rejected" ? (
-                      <>Your whitelist was not approved. Contact administration for more information.</>
-                    ) : (
-                      <>
-                        You must be whitelisted to apply for gang RP.
-                        <div className="mt-4">
-                          <Button onClick={() => navigate("/whitelist")}>
-                            Apply for Whitelist
-                          </Button>
-                        </div>
-                      </>
-                    )}
-                  </AlertDescription>
-                </Alert>
+              {!hasAccess ? (
+                renderAccessDenied()
               ) : (
                 <GangApplicationForm />
               )}
