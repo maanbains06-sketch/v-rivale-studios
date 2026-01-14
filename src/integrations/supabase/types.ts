@@ -2359,9 +2359,9 @@ export type Database = {
       sync_all_staff_user_ids: {
         Args: never
         Returns: {
-          discord_username: string
           linked: boolean
           message: string
+          staff_discord_id: string
           staff_name: string
         }[]
       }

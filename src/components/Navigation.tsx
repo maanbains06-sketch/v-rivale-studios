@@ -13,6 +13,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import UserProfileDropdown from "./UserProfileDropdown";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
+import { useWebsitePresence } from "@/hooks/useWebsitePresence";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,39 +53,48 @@ const Navigation = () => {
   const [isOwner, setIsOwner] = useState(false);
   const [hasStaffAdminAccess, setHasStaffAdminAccess] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [userDiscordId, setUserDiscordId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAdmin, department, loading } = useStaffRole();
+
+  // Track staff presence when logged in with Discord ID
+  useWebsitePresence({ 
+    visitorId: userDiscordId || undefined, 
+    enabled: !!userDiscordId && hasStaffAdminAccess 
+  });
 
   // Check if user has admin panel access based on Discord ID
   const checkUserAccess = useCallback(async (currentUser: any) => {
     if (!currentUser) {
       setIsOwner(false);
       setHasStaffAdminAccess(false);
+      setUserDiscordId(null);
       return;
     }
 
-    const userDiscordId = currentUser.user_metadata?.discord_id;
+    const discordId = currentUser.user_metadata?.discord_id;
+    setUserDiscordId(discordId || null);
     
     // Check owner status by Discord ID
-    if (userDiscordId === OWNER_DISCORD_ID) {
+    if (discordId === OWNER_DISCORD_ID) {
       setIsOwner(true);
       setHasStaffAdminAccess(true);
       return;
     }
 
     // Check if user's Discord ID is in hardcoded admin list
-    if (userDiscordId && ADMIN_DISCORD_IDS.includes(userDiscordId)) {
+    if (discordId && ADMIN_DISCORD_IDS.includes(discordId)) {
       setHasStaffAdminAccess(true);
       return;
     }
 
     // Also check staff_members table by Discord ID for dynamic staff verification
-    if (userDiscordId && /^\d{17,19}$/.test(userDiscordId)) {
+    if (discordId && /^\d{17,19}$/.test(discordId)) {
       const { data: staffMember } = await supabase
         .from('staff_members')
         .select('role_type, department, is_active')
-        .eq('discord_id', userDiscordId)
+        .eq('discord_id', discordId)
         .eq('is_active', true)
         .maybeSingle();
 
@@ -347,16 +357,7 @@ const Navigation = () => {
             
             {/* User Profile Dropdown - Shows for authenticated Discord server members */}
             <UserProfileDropdown className="hidden md:flex" />
-            {hasStaffAdminAccess && (
-              <NavLink 
-                to="/admin" 
-                className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1"
-                activeClassName="text-primary"
-              >
-                <Shield className="w-4 h-4" />
-                Admin
-              </NavLink>
-            )}
+            {/* Admin link moved to hamburger menu only */}
           </div>
           
           <div className="flex items-center gap-2 ml-auto md:ml-0">
@@ -366,7 +367,7 @@ const Navigation = () => {
                 <Button 
                   variant="outline"
                   size="sm"
-                  className="glass-effect md:hidden order-last"
+                  className="glass-effect order-last"
                 >
                   <Menu className="w-5 h-5" />
                 </Button>
@@ -376,8 +377,53 @@ const Navigation = () => {
                   <SheetTitle className="text-gradient">Menu</SheetTitle>
                 </SheetHeader>
                 <div className="flex flex-col gap-2 mt-6">
+                  {/* Staff & Owner Panel Access - Always at top */}
+                  {(hasStaffAdminAccess || isOwner) && (
+                    <div className="flex flex-col gap-1 pb-4 border-b border-border/30">
+                      {hasStaffAdminAccess && !isOwner && (
+                        <Button 
+                          variant="outline"
+                          className="justify-start glass-effect border-primary/30"
+                          onClick={() => {
+                            navigate("/admin");
+                            setIsMenuOpen(false);
+                          }}
+                        >
+                          <Shield className="w-4 h-4 mr-2 text-primary" />
+                          Admin Panel
+                        </Button>
+                      )}
+                      {isOwner && (
+                        <>
+                          <Button 
+                            variant="outline"
+                            className="justify-start glass-effect border-amber-500/30"
+                            onClick={() => {
+                              navigate("/owner-panel");
+                              setIsMenuOpen(false);
+                            }}
+                          >
+                            <Crown className="w-4 h-4 mr-2 text-amber-400" />
+                            Owner Panel
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            className="justify-start glass-effect border-primary/30"
+                            onClick={() => {
+                              navigate("/admin");
+                              setIsMenuOpen(false);
+                            }}
+                          >
+                            <Shield className="w-4 h-4 mr-2 text-primary" />
+                            Admin Panel
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  )}
+
                   {/* Main Navigation Links - Mobile Only */}
-                  <div className="flex flex-col gap-1 pb-4 border-b border-border/30">
+                  <div className="flex flex-col gap-1 pb-4 border-b border-border/30 md:hidden">
                     <Button variant="ghost" className="justify-start" onClick={() => { navigate("/"); setIsMenuOpen(false); }}>
                       Home
                     </Button>
@@ -428,157 +474,43 @@ const Navigation = () => {
                     </Button>
                   </div>
 
-                  {/* Admin & User Options */}
+                  {/* Quick Admin Links - Only visible to staff */}
                   {hasStaffAdminAccess && (
-                    <Button 
-                      variant="outline"
-                      className="justify-start glass-effect"
-                      onClick={() => {
-                        navigate("/admin");
-                        setIsMenuOpen(false);
-                      }}
-                    >
-                      <Shield className="w-4 h-4 mr-2" />
-                      Admin Panel
-                    </Button>
-                  )}
-                  {hasStaffAdminAccess && (
-                    <>
+                    <div className="flex flex-col gap-1 pb-4 border-b border-border/30">
+                      <p className="text-xs text-muted-foreground px-2 py-1">Quick Access</p>
                       <Button 
-                        variant="outline"
-                        className="justify-start glass-effect"
-                        onClick={() => {
-                          navigate("/admin");
-                          setIsMenuOpen(false);
-                        }}
-                      >
-                        <FileCheck className="w-4 h-4 mr-2" />
-                        Checking
-                      </Button>
-                      <Button 
-                        variant="outline"
-                        className="justify-start glass-effect"
-                        onClick={() => {
-                          navigate("/admin");
-                          setIsMenuOpen(false);
-                        }}
-                      >
-                        <Ban className="w-4 h-4 mr-2" />
-                        Ban Appeals
-                      </Button>
-                      <Button 
-                        variant="outline"
-                        className="justify-start glass-effect"
-                        onClick={() => {
-                          navigate("/admin");
-                          setIsMenuOpen(false);
-                        }}
-                      >
-                        <Briefcase className="w-4 h-4 mr-2" />
-                        Job Applications
-                      </Button>
-                      <Button 
-                        variant="outline"
-                        className="justify-start glass-effect"
-                        onClick={() => {
-                          navigate("/admin-staff-applications");
-                          setIsMenuOpen(false);
-                        }}
+                        variant="ghost"
+                        className="justify-start text-sm"
+                        onClick={() => { navigate("/admin-staff-applications"); setIsMenuOpen(false); }}
                       >
                         <Users className="w-4 h-4 mr-2" />
                         Staff Applications
                       </Button>
                       <Button 
-                        variant="outline"
-                        className="justify-start glass-effect"
-                        onClick={() => {
-                          navigate("/admin-referrals");
-                          setIsMenuOpen(false);
-                        }}
-                      >
-                        <Gift className="w-4 h-4 mr-2" />
-                        Referral Analytics
-                      </Button>
-                      <Button 
-                        variant="outline"
-                        className="justify-start glass-effect"
-                        onClick={() => {
-                          navigate("/admin-promo-analytics");
-                          setIsMenuOpen(false);
-                        }}
-                      >
-                        <Ticket className="w-4 h-4 mr-2" />
-                        Promo Code Analytics
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="justify-start glass-effect"
-                        onClick={() => {
-                          navigate("/admin/gallery");
-                          setIsMenuOpen(false);
-                        }}
-                      >
-                        <ImageIcon className="w-4 h-4 mr-2" />
-                        Gallery Management
-                      </Button>
-                      <Button 
-                        variant="outline"
-                        className="justify-start glass-effect"
-                        onClick={() => {
-                          navigate("/admin/support-chat");
-                          setIsMenuOpen(false);
-                        }}
+                        variant="ghost"
+                        className="justify-start text-sm"
+                        onClick={() => { navigate("/admin/support-chat"); setIsMenuOpen(false); }}
                       >
                         <MessageSquare className="w-4 h-4 mr-2" />
-                        Support Chat Management
+                        Support Chats
                       </Button>
                       <Button 
-                        variant="outline"
-                        className="justify-start glass-effect"
-                        onClick={() => {
-                          navigate("/admin/support-analytics");
-                          setIsMenuOpen(false);
-                        }}
+                        variant="ghost"
+                        className="justify-start text-sm"
+                        onClick={() => { navigate("/admin/gallery"); setIsMenuOpen(false); }}
+                      >
+                        <ImageIcon className="w-4 h-4 mr-2" />
+                        Gallery
+                      </Button>
+                      <Button 
+                        variant="ghost"
+                        className="justify-start text-sm"
+                        onClick={() => { navigate("/admin/staff-stats"); setIsMenuOpen(false); }}
                       >
                         <BarChart3 className="w-4 h-4 mr-2" />
-                        Support Analytics
+                        Analytics
                       </Button>
-                      <Button 
-                        variant="outline"
-                        className="justify-start glass-effect"
-                        onClick={() => {
-                          navigate("/admin/staff-stats");
-                          setIsMenuOpen(false);
-                        }}
-                      >
-                        <Users className="w-4 h-4 mr-2" />
-                        Staff Statistics
-                      </Button>
-                      <Button 
-                        variant="outline"
-                        className="justify-start glass-effect"
-                        onClick={() => {
-                          navigate("/admin/players-active");
-                          setIsMenuOpen(false);
-                        }}
-                      >
-                        <Users className="w-4 h-4 mr-2" />
-                        Players Active
-                      </Button>
-                    </>
-                  )}
-                  {isOwner && (
-                    <Button 
-                      variant="outline"
-                      className="justify-start glass-effect border-primary/30"
-                      onClick={() => {
-                        navigate("/owner-panel");
-                        setIsMenuOpen(false);
-                      }}
-                    >
-                      <Crown className="w-4 h-4 mr-2 text-primary" />
-                      Owner Panel
-                    </Button>
+                    </div>
                   )}
                   <Button 
                     variant="outline"
