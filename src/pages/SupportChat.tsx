@@ -294,10 +294,10 @@ const SupportChat = () => {
       .single();
 
     if (error) {
-      console.error("Error creating chat:", error);
+      console.error("Error creating chat:", error.message, error.details, error.hint, error.code);
       toast({
         title: "Error",
-        description: "Failed to create support chat.",
+        description: error.message || "Failed to create support chat. Please try again.",
         variant: "destructive",
       });
       setLoading(false);
