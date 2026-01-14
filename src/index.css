@@ -51,6 +51,11 @@ All colors MUST be HSL.
     --neon-orange: 25 95% 55%;
     --dark-bg: 220 20% 6%;
     --glass-bg: 220 18% 10%;
+
+    /* India brand colors (HSL) */
+    --flag-saffron: 30 100% 60%;
+    --flag-white: 0 0% 100%;
+    --flag-green: 128 55% 40%;
     
     /* Gradients - Vivid */
     --gradient-hero: linear-gradient(135deg, hsl(199 89% 48%), hsl(210 85% 55%), hsl(185 90% 50%));
@@ -271,6 +276,28 @@ All colors MUST be HSL.
     line-height: 1.2;
     display: inline-block;
     filter: drop-shadow(0 2px 10px hsl(var(--primary) / 0.3));
+  }
+
+  .brand-title {
+    @apply text-gradient;
+    transform: skewX(-12deg);
+  }
+
+  .brand-subtitle {
+    transform: skewX(-12deg);
+  }
+
+  .india-gradient-text {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--flag-saffron)),
+      hsl(var(--flag-white)),
+      hsl(var(--flag-green))
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 6px hsl(var(--primary) / 0.35);
   }
 
   :root.light .text-gradient {

@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield, FileCheck, LogOut, Menu, UserCircle, Mail, Ban, Briefcase, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, Ticket, ExternalLink, Crown, CheckCircle2, LayoutDashboard } from "lucide-react";
+import { Users, Shield, LogOut, Menu, UserCircle, Mail, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, ExternalLink, Crown, LayoutDashboard } from "lucide-react";
 import { Button } from "./ui/button";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,7 +10,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui
 import { NotificationBell } from "./NotificationBell";
 import { useStaffRole } from "@/hooks/useStaffRole";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Badge } from "./ui/badge";
 import { useWebsitePresence } from "@/hooks/useWebsitePresence";
 import {
   AlertDialog,
@@ -174,65 +173,24 @@ const Navigation = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {/* Animated Brand Text */}
-            <motion.div 
-              className="flex flex-col items-center leading-none cursor-pointer"
-              whileHover={{ scale: 1.02 }}
-              onClick={() => navigate("/")}
+            {/* Brand */}
+            <Link
+              to="/"
+              className="flex flex-col items-center leading-none focus:outline-none"
+              aria-label="Go to home"
+              onClick={() => setIsMenuOpen(false)}
             >
-              <motion.span 
-                className="text-base md:text-lg font-bold tracking-wide whitespace-nowrap"
-                style={{
-                  background: 'linear-gradient(135deg, hsl(185 100% 50%), hsl(199 89% 48%), hsl(260 90% 60%))',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  fontStyle: 'italic',
-                  transform: 'skewX(-12deg)',
-                }}
-                initial={{ opacity: 0, y: -5 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
+              <span
+                className="brand-title text-base md:text-lg font-bold tracking-wide whitespace-nowrap"
               >
                 SKYLIFE ROLEPLAY
-              </motion.span>
-              <motion.span 
-                className="text-[10px] md:text-xs font-bold tracking-[0.3em] flex gap-0.5 justify-center"
-                style={{
-                  fontStyle: 'italic',
-                  transform: 'skewX(-12deg)',
-                }}
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.1 }}
+              </span>
+              <span
+                className="text-[10px] md:text-xs font-bold tracking-[0.3em] flex gap-0.5 justify-center brand-subtitle"
               >
-                <motion.span 
-                  animate={{ color: ['#FF9933', '#FFFFFF', '#138808', '#FF9933'] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                  style={{ textShadow: '0 0 6px currentColor' }}
-                >I</motion.span>
-                <motion.span 
-                  animate={{ color: ['#FFFFFF', '#138808', '#FF9933', '#FFFFFF'] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.15 }}
-                  style={{ textShadow: '0 0 6px currentColor' }}
-                >N</motion.span>
-                <motion.span 
-                  animate={{ color: ['#138808', '#FF9933', '#FFFFFF', '#138808'] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
-                  style={{ textShadow: '0 0 6px currentColor' }}
-                >D</motion.span>
-                <motion.span 
-                  animate={{ color: ['#FF9933', '#FFFFFF', '#138808', '#FF9933'] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.45 }}
-                  style={{ textShadow: '0 0 6px currentColor' }}
-                >I</motion.span>
-                <motion.span 
-                  animate={{ color: ['#FFFFFF', '#138808', '#FF9933', '#FFFFFF'] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
-                  style={{ textShadow: '0 0 6px currentColor' }}
-                >A</motion.span>
-              </motion.span>
-            </motion.div>
+                <span className="india-gradient-text">INDIA</span>
+              </span>
+            </Link>
           </div>
           
           <div className="hidden md:flex items-center gap-6">
