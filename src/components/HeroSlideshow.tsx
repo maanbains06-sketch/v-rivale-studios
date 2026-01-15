@@ -45,7 +45,7 @@ const SLIDESHOW_IMAGES = [
   tunnelRacing,
 ];
 
-const SLIDE_DURATION = 7000; // 7 seconds per slide
+const SLIDE_DURATION = 4000; // 4 seconds per slide
 
 const HeroSlideshow = memo(() => {
   const [activeIndex, setActiveIndex] = useState(0);

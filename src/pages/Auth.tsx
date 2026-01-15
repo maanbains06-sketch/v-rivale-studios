@@ -276,6 +276,28 @@ const Auth = () => {
         return;
       }
 
+      // Check if this Discord ID is already registered
+      const { data: existingProfile, error: profileCheckError } = await supabase
+        .from('profiles')
+        .select('id, discord_id')
+        .eq('discord_id', discordId)
+        .maybeSingle();
+
+      if (profileCheckError) {
+        console.error("Error checking existing Discord ID:", profileCheckError);
+      }
+
+      if (existingProfile) {
+        toast({
+          title: "Account Already Exists",
+          description: "This Discord ID is already registered with an existing account. Please login instead or use a different Discord ID.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        setVerifyingDiscord(false);
+        return;
+      }
+
       // Fetch Discord user data (avatar, banner, etc.)
       const { data: userData } = await supabase.functions.invoke('fetch-discord-user', {
         body: { discordId }

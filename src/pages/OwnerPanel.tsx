@@ -997,14 +997,27 @@ const OwnerPanel = () => {
   const updateApplicationStatus = async (
     table: "whitelist_applications" | "job_applications" | "staff_applications" | "ban_appeals" | "creator_applications" | "firefighter_applications" | "weazel_news_applications",
     appId: string,
-    status: "approved" | "rejected",
+    status: "approved" | "rejected" | "on_hold",
     appName: string,
     loadFunction: () => Promise<void>,
     applicantDiscord?: string,
-    applicantDiscordId?: string
+    applicantDiscordId?: string,
+    holdReason?: string
   ) => {
     const { data: { user } } = await supabase.auth.getUser();
-    const notes = adminNotes[appId] || null;
+    let notes = adminNotes[appId] || null;
+    
+    // If placing on hold, require a reason
+    if (status === "on_hold" && holdReason) {
+      notes = holdReason;
+    } else if (status === "on_hold" && !notes) {
+      toast({
+        title: "Reason Required",
+        description: "Please provide a reason for placing this application on hold in the notes field.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     const { error } = await supabase
       .from(table)
@@ -1098,18 +1111,18 @@ const OwnerPanel = () => {
     await loadFunction();
   };
 
-  // Calculate application counts
+  // Calculate application counts - include on_hold
   const getApplicationCounts = () => {
     const pending = {
-      whitelist: whitelistApplications.filter(a => a.status === "pending").length,
-      job: jobApplications.filter(a => a.status === "pending").length,
-      staff: staffApplications.filter(a => a.status === "pending").length,
-      ban: banAppeals.filter(a => a.status === "pending").length,
-      creator: creatorApplications.filter(a => a.status === "pending").length,
-      gang: gangApplications.filter(a => a.status === "pending").length,
-      firefighter: firefighterApplications.filter(a => a.status === "pending").length,
-      weazel: weazelNewsApplications.filter(a => a.status === "pending").length,
-      pdm: pdmApplications.filter(a => a.status === "pending").length,
+      whitelist: whitelistApplications.filter(a => a.status === "pending" || a.status === "on_hold").length,
+      job: jobApplications.filter(a => a.status === "pending" || a.status === "on_hold").length,
+      staff: staffApplications.filter(a => a.status === "pending" || a.status === "on_hold").length,
+      ban: banAppeals.filter(a => a.status === "pending" || a.status === "on_hold").length,
+      creator: creatorApplications.filter(a => a.status === "pending" || a.status === "on_hold").length,
+      gang: gangApplications.filter(a => a.status === "pending" || a.status === "on_hold").length,
+      firefighter: firefighterApplications.filter(a => a.status === "pending" || a.status === "on_hold").length,
+      weazel: weazelNewsApplications.filter(a => a.status === "pending" || a.status === "on_hold").length,
+      pdm: pdmApplications.filter(a => a.status === "pending" || a.status === "on_hold").length,
     };
     return pending;
   };
@@ -1123,6 +1136,8 @@ const OwnerPanel = () => {
         return <Badge className="bg-green-500/20 text-green-400">Approved</Badge>;
       case "rejected":
         return <Badge variant="destructive">Rejected</Badge>;
+      case "on_hold":
+        return <Badge className="bg-amber-500/20 text-amber-400">On Hold</Badge>;
       default:
         return <Badge variant="secondary">Pending</Badge>;
     }
@@ -1334,25 +1349,31 @@ const OwnerPanel = () => {
                             <Label className="text-xs text-muted-foreground">Backstory</Label>
                             <p className="text-sm line-clamp-3">{app.backstory}</p>
                           </div>
-                          {app.status === "pending" && (
-                            <div className="flex gap-2 pt-2">
+                          {(app.status === "pending" || app.status === "on_hold") && (
+                            <>
                               <Textarea
-                                placeholder="Admin notes..."
+                                placeholder="Admin notes (required for On Hold)..."
                                 value={adminNotes[app.id] || ""}
                                 onChange={(e) => setAdminNotes(prev => ({ ...prev, [app.id]: e.target.value }))}
                                 className="h-20"
                               />
-                            </div>
-                          )}
-                          {app.status === "pending" && (
-                            <div className="flex gap-2">
-                              <Button size="sm" onClick={() => updateApplicationStatus("whitelist_applications", app.id, "approved", `Whitelist for ${app.discord}`, loadWhitelistApplications, app.discord, app.discord_id)}>
-                                <Check className="w-4 h-4 mr-1" /> Approve
-                              </Button>
-                              <Button size="sm" variant="destructive" onClick={() => updateApplicationStatus("whitelist_applications", app.id, "rejected", `Whitelist for ${app.discord}`, loadWhitelistApplications, app.discord, app.discord_id)}>
-                                <X className="w-4 h-4 mr-1" /> Reject
-                              </Button>
-                            </div>
+                              {app.status === "on_hold" && app.admin_notes && (
+                                <div className="p-2 rounded bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400">
+                                  <strong>Hold Reason:</strong> {app.admin_notes}
+                                </div>
+                              )}
+                              <div className="flex gap-2 flex-wrap">
+                                <Button size="sm" onClick={() => updateApplicationStatus("whitelist_applications", app.id, "approved", `Whitelist for ${app.discord}`, loadWhitelistApplications, app.discord, app.discord_id)}>
+                                  <Check className="w-4 h-4 mr-1" /> Approve
+                                </Button>
+                                <Button size="sm" variant="outline" className="border-amber-500/50 text-amber-500 hover:bg-amber-500/10" onClick={() => updateApplicationStatus("whitelist_applications", app.id, "on_hold", `Whitelist for ${app.discord}`, loadWhitelistApplications, app.discord, app.discord_id)}>
+                                  <Clock className="w-4 h-4 mr-1" /> {app.status === "on_hold" ? "Update Hold" : "On Hold"}
+                                </Button>
+                                <Button size="sm" variant="destructive" onClick={() => updateApplicationStatus("whitelist_applications", app.id, "rejected", `Whitelist for ${app.discord}`, loadWhitelistApplications, app.discord, app.discord_id)}>
+                                  <X className="w-4 h-4 mr-1" /> Reject
+                                </Button>
+                              </div>
+                            </>
                           )}
                         </CardContent>
                       </Card>
@@ -1397,17 +1418,25 @@ const OwnerPanel = () => {
                             <Label className="text-xs text-muted-foreground">Why Join</Label>
                             <p className="text-sm line-clamp-2">{app.why_join}</p>
                           </div>
-                          {app.status === "pending" && (
+                          {(app.status === "pending" || app.status === "on_hold") && (
                             <>
                               <Textarea
-                                placeholder="Admin notes..."
+                                placeholder="Admin notes (required for On Hold)..."
                                 value={adminNotes[app.id] || ""}
                                 onChange={(e) => setAdminNotes(prev => ({ ...prev, [app.id]: e.target.value }))}
                                 className="h-20"
                               />
-                              <div className="flex gap-2">
+                              {app.status === "on_hold" && app.admin_notes && (
+                                <div className="p-2 rounded bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400">
+                                  <strong>Hold Reason:</strong> {app.admin_notes}
+                                </div>
+                              )}
+                              <div className="flex gap-2 flex-wrap">
                                 <Button size="sm" onClick={() => updateApplicationStatus("job_applications", app.id, "approved", `Job application for ${app.character_name}`, loadJobApplications)}>
                                   <Check className="w-4 h-4 mr-1" /> Approve
+                                </Button>
+                                <Button size="sm" variant="outline" className="border-amber-500/50 text-amber-500 hover:bg-amber-500/10" onClick={() => updateApplicationStatus("job_applications", app.id, "on_hold", `Job application for ${app.character_name}`, loadJobApplications)}>
+                                  <Clock className="w-4 h-4 mr-1" /> {app.status === "on_hold" ? "Update Hold" : "On Hold"}
                                 </Button>
                                 <Button size="sm" variant="destructive" onClick={() => updateApplicationStatus("job_applications", app.id, "rejected", `Job application for ${app.character_name}`, loadJobApplications)}>
                                   <X className="w-4 h-4 mr-1" /> Reject
@@ -1452,17 +1481,25 @@ const OwnerPanel = () => {
                             <Label className="text-xs text-muted-foreground">Why Join</Label>
                             <p className="text-sm line-clamp-2">{app.why_join}</p>
                           </div>
-                          {app.status === "pending" && (
+                          {(app.status === "pending" || app.status === "on_hold") && (
                             <>
                               <Textarea
-                                placeholder="Admin notes..."
+                                placeholder="Admin notes (required for On Hold)..."
                                 value={adminNotes[app.id] || ""}
                                 onChange={(e) => setAdminNotes(prev => ({ ...prev, [app.id]: e.target.value }))}
                                 className="h-20"
                               />
-                              <div className="flex gap-2">
+                              {app.status === "on_hold" && app.admin_notes && (
+                                <div className="p-2 rounded bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400">
+                                  <strong>Hold Reason:</strong> {app.admin_notes}
+                                </div>
+                              )}
+                              <div className="flex gap-2 flex-wrap">
                                 <Button size="sm" onClick={() => updateApplicationStatus("staff_applications", app.id, "approved", `Staff application for ${app.full_name}`, loadStaffApplications)}>
                                   <Check className="w-4 h-4 mr-1" /> Approve
+                                </Button>
+                                <Button size="sm" variant="outline" className="border-amber-500/50 text-amber-500 hover:bg-amber-500/10" onClick={() => updateApplicationStatus("staff_applications", app.id, "on_hold", `Staff application for ${app.full_name}`, loadStaffApplications)}>
+                                  <Clock className="w-4 h-4 mr-1" /> {app.status === "on_hold" ? "Update Hold" : "On Hold"}
                                 </Button>
                                 <Button size="sm" variant="destructive" onClick={() => updateApplicationStatus("staff_applications", app.id, "rejected", `Staff application for ${app.full_name}`, loadStaffApplications)}>
                                   <X className="w-4 h-4 mr-1" /> Reject
@@ -1504,17 +1541,25 @@ const OwnerPanel = () => {
                             <Label className="text-xs text-muted-foreground">Appeal Reason</Label>
                             <p className="text-sm">{app.appeal_reason}</p>
                           </div>
-                          {app.status === "pending" && (
+                          {(app.status === "pending" || app.status === "on_hold") && (
                             <>
                               <Textarea
-                                placeholder="Admin notes..."
+                                placeholder="Admin notes (required for On Hold)..."
                                 value={adminNotes[app.id] || ""}
                                 onChange={(e) => setAdminNotes(prev => ({ ...prev, [app.id]: e.target.value }))}
                                 className="h-20"
                               />
-                              <div className="flex gap-2">
+                              {app.status === "on_hold" && app.admin_notes && (
+                                <div className="p-2 rounded bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400">
+                                  <strong>Hold Reason:</strong> {app.admin_notes}
+                                </div>
+                              )}
+                              <div className="flex gap-2 flex-wrap">
                                 <Button size="sm" onClick={() => updateApplicationStatus("ban_appeals", app.id, "approved", `Ban appeal for ${app.discord_username}`, loadBanAppeals)}>
                                   <Check className="w-4 h-4 mr-1" /> Approve
+                                </Button>
+                                <Button size="sm" variant="outline" className="border-amber-500/50 text-amber-500 hover:bg-amber-500/10" onClick={() => updateApplicationStatus("ban_appeals", app.id, "on_hold", `Ban appeal for ${app.discord_username}`, loadBanAppeals)}>
+                                  <Clock className="w-4 h-4 mr-1" /> {app.status === "on_hold" ? "Update Hold" : "On Hold"}
                                 </Button>
                                 <Button size="sm" variant="destructive" onClick={() => updateApplicationStatus("ban_appeals", app.id, "rejected", `Ban appeal for ${app.discord_username}`, loadBanAppeals)}>
                                   <X className="w-4 h-4 mr-1" /> Reject
@@ -1561,17 +1606,25 @@ const OwnerPanel = () => {
                             <Label className="text-xs text-muted-foreground">Content Style</Label>
                             <p className="text-sm">{app.content_style}</p>
                           </div>
-                          {app.status === "pending" && (
+                          {(app.status === "pending" || app.status === "on_hold") && (
                             <>
                               <Textarea
-                                placeholder="Admin notes..."
+                                placeholder="Admin notes (required for On Hold)..."
                                 value={adminNotes[app.id] || ""}
                                 onChange={(e) => setAdminNotes(prev => ({ ...prev, [app.id]: e.target.value }))}
                                 className="h-20"
                               />
-                              <div className="flex gap-2">
+                              {app.status === "on_hold" && app.admin_notes && (
+                                <div className="p-2 rounded bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400">
+                                  <strong>Hold Reason:</strong> {app.admin_notes}
+                                </div>
+                              )}
+                              <div className="flex gap-2 flex-wrap">
                                 <Button size="sm" onClick={() => updateApplicationStatus("creator_applications", app.id, "approved", `Creator application for ${app.full_name}`, loadCreatorApplications)}>
                                   <Check className="w-4 h-4 mr-1" /> Approve
+                                </Button>
+                                <Button size="sm" variant="outline" className="border-amber-500/50 text-amber-500 hover:bg-amber-500/10" onClick={() => updateApplicationStatus("creator_applications", app.id, "on_hold", `Creator application for ${app.full_name}`, loadCreatorApplications)}>
+                                  <Clock className="w-4 h-4 mr-1" /> {app.status === "on_hold" ? "Update Hold" : "On Hold"}
                                 </Button>
                                 <Button size="sm" variant="destructive" onClick={() => updateApplicationStatus("creator_applications", app.id, "rejected", `Creator application for ${app.full_name}`, loadCreatorApplications)}>
                                   <X className="w-4 h-4 mr-1" /> Reject

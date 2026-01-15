@@ -175,17 +175,10 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
           };
         });
 
-        // Check if all positions are full
+        // Check if all positions are full - BUT still allow submission (will be placed "on hold")
         const allFull = positionsWithStatus.every(p => p.isLocked);
-        if (allFull) {
-          setIsEligible(false);
-          setEligibilityMessage("All staff positions are currently filled. Please check back later when positions become available.");
-          setAvailablePositions([]);
-          setIsCheckingEligibility(false);
-          return;
-        }
-
-        // Show all positions but mark full ones as locked
+        
+        // Show all positions - full ones can still be selected but will be placed on hold
         setAvailablePositions(positionsWithStatus);
         setIsEligible(true);
         setEligibilityMessage("");
@@ -255,6 +248,11 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
         return;
       }
 
+      // Check if the selected position is currently full
+      const selectedPosition = availablePositions.find(p => p.value === data.position);
+      const isPositionFull = selectedPosition?.isLocked || false;
+      const applicationStatus = isPositionFull ? 'on_hold' : 'pending';
+
       const { error } = await supabase
         .from("staff_applications")
         .insert({
@@ -269,13 +267,19 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
           why_join: data.whyJoin,
           availability: data.availability,
           previous_experience: data.previousExperience || null,
+          status: applicationStatus,
+          admin_notes: isPositionFull ? 'Application placed on hold - position currently at full capacity' : null,
         });
 
       if (error) throw error;
       
+      const statusMessage = isPositionFull 
+        ? "Your application has been placed on hold as this position is currently full. You'll be notified when a slot opens up."
+        : "Thank you for your interest! Our team will review your application and contact you on Discord within 3-5 business days if you're selected for an interview.";
+      
       toast({
-        title: "Application Submitted Successfully!",
-        description: "Thank you for your interest! Our team will review your application and contact you on Discord within 3-5 business days if you're selected for an interview.",
+        title: isPositionFull ? "Application On Hold" : "Application Submitted Successfully!",
+        description: statusMessage,
       });
       
       form.reset();
@@ -425,25 +429,27 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
                         <SelectItem 
                           key={position.value} 
                           value={position.value}
-                          disabled={position.isLocked}
                         >
                           <div className="flex flex-col">
                             <div className="flex items-center gap-2">
-                              <span className={`font-semibold ${position.isLocked ? 'text-muted-foreground' : ''}`}>
+                              <span className={`font-semibold ${position.isLocked ? 'text-amber-500' : ''}`}>
                                 {position.label}
                               </span>
                               <span className={`text-xs px-2 py-0.5 rounded-full ${
                                 position.isLocked 
-                                  ? 'bg-destructive/20 text-destructive' 
+                                  ? 'bg-amber-500/20 text-amber-500' 
                                   : 'bg-primary/20 text-primary'
                               }`}>
                                 {position.memberCount}/{position.maxMembers}
                               </span>
                               {position.isLocked && (
-                                <span className="text-xs text-destructive font-medium">FULL</span>
+                                <span className="text-xs text-amber-500 font-medium">WAITLIST</span>
                               )}
                             </div>
                             <span className="text-xs text-muted-foreground">{position.description}</span>
+                            {position.isLocked && (
+                              <span className="text-xs text-amber-500/80 mt-0.5">Applications will be placed on hold until a slot opens</span>
+                            )}
                           </div>
                         </SelectItem>
                       ))}
