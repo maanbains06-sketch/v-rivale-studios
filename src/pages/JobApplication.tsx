@@ -6,8 +6,9 @@ import FirefighterApplicationForm from "@/components/FirefighterApplicationForm"
 import PDMApplicationForm from "@/components/PDMApplicationForm";
 import DOJApplicationForm from "@/components/DOJApplicationForm";
 import WeazelNewsApplicationForm from "@/components/WeazelNewsApplicationForm";
+import StateDepartmentApplicationForm from "@/components/StateDepartmentApplicationForm";
 import { JobCardsSkeletonGrid } from "@/components/JobCardSkeleton";
-import { Shield, Heart, Wrench, Flame, AlertCircle, CheckCircle2, Car, Scale, Gavel, Newspaper, RefreshCw } from "lucide-react";
+import { Shield, Heart, Wrench, Flame, AlertCircle, CheckCircle2, Car, Scale, Gavel, Newspaper, RefreshCw, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -24,6 +25,9 @@ import jobFirefighterImg from "@/assets/job-firefighter.jpg";
 import jobPdmImg from "@/assets/job-pdm.jpg";
 import headerDoj from "@/assets/header-doj.jpg";
 import jobWeazelNewsImg from "@/assets/job-weazel-news.jpg";
+
+// Use an existing header image for state department
+import headerStaffImg from "@/assets/header-staff.jpg";
 
 const JobApplication = () => {
   const navigate = useNavigate();
@@ -123,6 +127,15 @@ const JobApplication = () => {
       description: "Report breaking news and cover the biggest stories in Los Santos.",
       benefits: ["Media Exposure", "Exclusive Access", "Creative Freedom"],
     },
+    {
+      id: "state-department",
+      name: "State Department",
+      icon: Building2,
+      color: "amber-500",
+      image: headerStaffImg,
+      description: "Serve in the State Government. Shape policies and manage public affairs.",
+      benefits: ["Political Power", "Public Service", "Leadership Opportunities"],
+    },
   ];
 
   const isPageLoading = loading || accessLoading || settingsLoading;
@@ -170,6 +183,8 @@ const JobApplication = () => {
         return <DOJApplicationForm applicationType="lawyer" jobImage={headerDoj} />;
       case "weazel-news":
         return <WeazelNewsApplicationForm jobImage={jobWeazelNewsImg} />;
+      case "state-department":
+        return <StateDepartmentApplicationForm jobImage={headerStaffImg} />;
       default:
         return null;
     }

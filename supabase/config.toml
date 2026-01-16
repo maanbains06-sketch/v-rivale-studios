@@ -71,3 +71,9 @@ verify_jwt = false
 
 [functions.send-whitelist-notification]
 verify_jwt = false
+
+[functions.notify-staff-discord-dm]
+verify_jwt = false
+
+[functions.assign-creator-roles]
+verify_jwt = false
