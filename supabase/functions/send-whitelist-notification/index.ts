@@ -169,10 +169,10 @@ serve(async (req) => {
       }
     ];
 
-    // Add rejection reason with enhanced formatting
-    if (!isApproved && adminNotes) {
+    // Always add admin notes/reason if provided (for both approved and rejected)
+    if (adminNotes && adminNotes.trim()) {
       fields.push({
-        name: '📝 Feedback',
+        name: isApproved ? '📝 Notes from Staff' : '📝 Reason / Feedback',
         value: `>>> ${adminNotes}`,
         inline: false
       });
@@ -186,11 +186,20 @@ serve(async (req) => {
         inline: false
       });
     } else {
-      fields.push({
-        name: '💡 What\'s Next?',
-        value: 'You may reapply after reviewing your application and addressing the feedback provided. Take your time to improve and try again!',
-        inline: false
-      });
+      // Only show reapply message if no specific notes were given
+      if (!adminNotes || !adminNotes.trim()) {
+        fields.push({
+          name: '💡 What\'s Next?',
+          value: 'You may reapply after reviewing your application and addressing any issues. Take your time to improve and try again!',
+          inline: false
+        });
+      } else {
+        fields.push({
+          name: '💡 What\'s Next?',
+          value: 'Please review the feedback above. You may reapply after addressing the concerns mentioned. Take your time to improve and try again!',
+          inline: false
+        });
+      }
     }
 
     // Build the embed with author (moderator info)

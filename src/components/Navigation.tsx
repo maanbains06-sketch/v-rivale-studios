@@ -465,7 +465,7 @@ const Navigation = () => {
                         asChild
                         onClick={() => setIsMenuOpen(false)}
                       >
-                        <Link to="/admin/gallery" className="flex items-center">
+                        <Link to="/gallery" className="flex items-center">
                           <ImageIcon className="w-4 h-4 mr-2" />
                           Gallery
                         </Link>

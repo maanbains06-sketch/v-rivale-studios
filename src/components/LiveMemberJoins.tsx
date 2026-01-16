@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,11 +18,40 @@ interface MemberJoin {
   referral_source: string | null;
 }
 
+interface DiscordUserData {
+  username: string;
+  displayName: string;
+  avatar: string | null;
+}
+
 export const LiveMemberJoins = () => {
   const [memberJoins, setMemberJoins] = useState<MemberJoin[]>([]);
+  const [discordData, setDiscordData] = useState<Record<string, DiscordUserData>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isLive, setIsLive] = useState(true);
   const [newJoinAnimation, setNewJoinAnimation] = useState<string | null>(null);
+
+  // Fetch Discord user data for a member
+  const fetchDiscordUserData = useCallback(async (discordId: string): Promise<DiscordUserData | null> => {
+    if (!discordId || !/^\d{17,19}$/.test(discordId)) return null;
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-discord-user', {
+        body: { discordId }
+      });
+      
+      if (error || !data) return null;
+      
+      return {
+        username: data.username || data.displayName || 'Unknown',
+        displayName: data.displayName || data.globalName || data.username || 'Unknown',
+        avatar: data.avatar ? `https://cdn.discordapp.com/avatars/${discordId}/${data.avatar}.png?size=128` : null
+      };
+    } catch (err) {
+      console.error('Error fetching Discord user:', err);
+      return null;
+    }
+  }, []);
 
   const fetchMemberJoins = async () => {
     setIsLoading(true);
@@ -35,6 +64,25 @@ export const LiveMemberJoins = () => {
 
       if (error) throw error;
       setMemberJoins(data || []);
+      
+      // Fetch Discord data for members with discord_id but no username
+      const membersToFetch = (data || []).filter(m => 
+        m.discord_id && 
+        /^\d{17,19}$/.test(m.discord_id) && 
+        (!m.discord_username || m.discord_username === 'Unknown User')
+      );
+      
+      // Fetch Discord data in batches
+      const newDiscordData: Record<string, DiscordUserData> = {};
+      for (const member of membersToFetch.slice(0, 10)) { // Limit to 10 to avoid rate limits
+        const userData = await fetchDiscordUserData(member.discord_id!);
+        if (userData) {
+          newDiscordData[member.discord_id!] = userData;
+        }
+        await new Promise(resolve => setTimeout(resolve, 200)); // Rate limit delay
+      }
+      
+      setDiscordData(prev => ({ ...prev, ...newDiscordData }));
     } catch (error) {
       console.error('Error fetching member joins:', error);
     } finally {
@@ -55,10 +103,18 @@ export const LiveMemberJoins = () => {
           schema: 'public',
           table: 'member_joins'
         },
-        (payload) => {
+        async (payload) => {
           const newMember = payload.new as MemberJoin;
           setMemberJoins(prev => [newMember, ...prev].slice(0, 50));
           setNewJoinAnimation(newMember.id);
+          
+          // Fetch Discord data for new member
+          if (newMember.discord_id && /^\d{17,19}$/.test(newMember.discord_id)) {
+            const userData = await fetchDiscordUserData(newMember.discord_id);
+            if (userData) {
+              setDiscordData(prev => ({ ...prev, [newMember.discord_id!]: userData }));
+            }
+          }
           
           // Clear animation after 3 seconds
           setTimeout(() => {
@@ -71,7 +127,7 @@ export const LiveMemberJoins = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [fetchDiscordUserData]);
 
   const getTodayCount = () => {
     const today = new Date();
@@ -143,20 +199,33 @@ export const LiveMemberJoins = () => {
                       : 'bg-muted/30 border-border/50 hover:border-primary/30'
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10 border-2 border-primary/20">
                         <AvatarImage 
-                          src={member.discord_avatar || ''} 
-                          alt={member.discord_username || 'User'} 
+                          src={
+                            (member.discord_id && discordData[member.discord_id]?.avatar) ||
+                            member.discord_avatar || 
+                            ''
+                          } 
+                          alt={
+                            (member.discord_id && discordData[member.discord_id]?.displayName) ||
+                            member.discord_username || 
+                            'User'
+                          } 
                         />
                         <AvatarFallback className="bg-primary/10 text-primary">
-                          {(member.discord_username || 'U').charAt(0).toUpperCase()}
+                          {((member.discord_id && discordData[member.discord_id]?.displayName) || 
+                            member.discord_username || 
+                            'U'
+                          ).charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div>
                         <p className="font-medium flex items-center gap-2">
-                          {member.discord_username || 'Unknown User'}
+                          {(member.discord_id && discordData[member.discord_id]?.displayName) ||
+                           member.discord_username || 
+                           (member.discord_id ? `User ${member.discord_id.slice(-4)}` : 'Unknown User')}
                           {newJoinAnimation === member.id && (
                             <Badge className="bg-green-500 text-white text-[10px] px-1.5">NEW</Badge>
                           )}
@@ -166,6 +235,11 @@ export const LiveMemberJoins = () => {
                             <code className="bg-muted px-1.5 py-0.5 rounded">
                               {member.discord_id}
                             </code>
+                          )}
+                          {member.discord_id && discordData[member.discord_id]?.username && (
+                            <span className="text-muted-foreground">
+                              @{discordData[member.discord_id].username}
+                            </span>
                           )}
                         </div>
                       </div>
