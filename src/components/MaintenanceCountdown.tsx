@@ -5,10 +5,14 @@ import { Card, CardContent } from '@/components/ui/card';
 
 interface MaintenanceCountdownProps {
   scheduledEnd?: string;
+  endTime?: Date;
   customMessage?: string;
+  title?: string;
 }
 
-export const MaintenanceCountdown = ({ scheduledEnd, customMessage }: MaintenanceCountdownProps) => {
+export const MaintenanceCountdown = ({ scheduledEnd, endTime, customMessage, title }: MaintenanceCountdownProps) => {
+  // Support both string and Date formats
+  const endDateString = scheduledEnd || (endTime ? endTime.toISOString() : undefined);
   const [timeRemaining, setTimeRemaining] = useState<{
     days: number;
     hours: number;
@@ -18,10 +22,10 @@ export const MaintenanceCountdown = ({ scheduledEnd, customMessage }: Maintenanc
   }>({ days: 0, hours: 0, minutes: 0, seconds: 0, isExpired: false });
 
   useEffect(() => {
-    if (!scheduledEnd) return;
+    if (!endDateString) return;
 
     const calculateTimeRemaining = () => {
-      const endDate = new Date(scheduledEnd);
+      const endDate = new Date(endDateString);
       const now = new Date();
       const diff = endDate.getTime() - now.getTime();
 
@@ -42,9 +46,9 @@ export const MaintenanceCountdown = ({ scheduledEnd, customMessage }: Maintenanc
     const interval = setInterval(calculateTimeRemaining, 1000);
 
     return () => clearInterval(interval);
-  }, [scheduledEnd]);
+  }, [endDateString]);
 
-  if (!scheduledEnd) {
+  if (!endDateString) {
     return (
       <div className="flex items-center gap-3 p-4 rounded-xl bg-orange-500/10 border border-orange-500/30">
         <AlertCircle className="w-5 h-5 text-orange-400 flex-shrink-0" />
@@ -154,9 +158,12 @@ export const MaintenanceCountdown = ({ scheduledEnd, customMessage }: Maintenanc
       </div>
 
       {/* Scheduled End Time */}
-      <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-        <Calendar className="w-3 h-3" />
-        <span>Scheduled completion: {new Date(scheduledEnd).toLocaleString()}</span>
+      <div className="flex flex-col items-center justify-center gap-1 text-xs text-muted-foreground">
+        {title && <span className="font-medium text-foreground">{title}</span>}
+        <div className="flex items-center gap-2">
+          <Calendar className="w-3 h-3" />
+          <span>Scheduled completion: {new Date(endDateString).toLocaleString()}</span>
+        </div>
       </div>
     </motion.div>
   );
