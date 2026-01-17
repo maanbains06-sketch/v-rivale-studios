@@ -68,8 +68,8 @@ interface CreatorApplicationFormProps {
 const steps = [
   { id: 1, title: "Personal Info", icon: User, description: "Your basic details" },
   { id: 2, title: "Channel Details", icon: Video, description: "Streaming platform info" },
-  { id: 3, title: "Experience", icon: Gamepad2, description: "Your RP background" },
-  { id: 4, title: "Additional Info", icon: Sparkles, description: "Final details" },
+  { id: 3, title: "Experience", icon: Gamepad2, description: "Your RP & content" },
+  { id: 4, title: "Final Step", icon: Sparkles, description: "Verification" },
 ];
 
 const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
@@ -145,6 +145,9 @@ const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
       3: ['rpExperience', 'contentStyle', 'whyJoin', 'expectedBenefits', 'valueContribution'],
       4: ['complyWithPolicies'],
     };
+    
+    // Update step 3 fields to now include expectedBenefits and valueContribution
+    // Step 4 is now just for verification
 
     // Minimum character requirements for text fields
     const minCharRequirements: Partial<Record<keyof CreatorFormData, { min: number; label: string }>> = {
