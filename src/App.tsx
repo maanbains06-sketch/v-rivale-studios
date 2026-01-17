@@ -7,6 +7,7 @@ import { useReferralTracking } from "@/hooks/useReferralTracking";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useMaintenanceAccess } from "@/hooks/useMaintenanceAccess";
+import { useWhitelistAutoVerification } from "@/hooks/useWhitelistAutoVerification";
 import { lazy, Suspense, useState, useEffect, memo } from "react";
 import { PageTransition } from "@/components/PageTransition";
 import RequireAuth from "@/components/RequireAuth";
@@ -178,6 +179,9 @@ const AppContent = memo(() => {
   const { isOnline } = useNetworkStatus();
   const { settings, loading: settingsLoading } = useSiteSettings();
   const { hasAccess, loading: accessLoading, checkAccess } = useMaintenanceAccess();
+  
+  // Auto-verify whitelist role on signup
+  useWhitelistAutoVerification();
 
   // Show maintenance page if maintenance mode is on and user doesn't have access
   const showMaintenance = !settingsLoading && !accessLoading && 

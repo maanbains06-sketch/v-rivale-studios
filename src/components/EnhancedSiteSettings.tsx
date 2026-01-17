@@ -545,6 +545,72 @@ export const EnhancedSiteSettings = ({ settings, onSettingsChange }: EnhancedSit
                 onCheckedChange={() => toggleSetting("auto_approve_veterans")}
               />
             </div>
+
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
+              <div className="space-y-0.5">
+                <Label className="text-base">Giveaways Enabled</Label>
+                <p className="text-sm text-muted-foreground">Enable giveaway system</p>
+              </div>
+              <Switch 
+                checked={getValue("giveaways_enabled", "true") === "true"}
+                onCheckedChange={() => toggleSetting("giveaways_enabled")}
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
+              <div className="space-y-0.5">
+                <Label className="text-base">Community Events</Label>
+                <p className="text-sm text-muted-foreground">Show community events</p>
+              </div>
+              <Switch 
+                checked={getValue("events_enabled", "true") === "true"}
+                onCheckedChange={() => toggleSetting("events_enabled")}
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
+              <div className="space-y-0.5">
+                <Label className="text-base">Creator Applications</Label>
+                <p className="text-sm text-muted-foreground">Accept creator program apps</p>
+              </div>
+              <Switch 
+                checked={getValue("creator_applications_enabled", "true") === "true"}
+                onCheckedChange={() => toggleSetting("creator_applications_enabled")}
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
+              <div className="space-y-0.5">
+                <Label className="text-base">Staff Applications</Label>
+                <p className="text-sm text-muted-foreground">Accept staff applications</p>
+              </div>
+              <Switch 
+                checked={getValue("staff_applications_enabled", "true") === "true"}
+                onCheckedChange={() => toggleSetting("staff_applications_enabled")}
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
+              <div className="space-y-0.5">
+                <Label className="text-base">Job Applications</Label>
+                <p className="text-sm text-muted-foreground">Accept job applications</p>
+              </div>
+              <Switch 
+                checked={getValue("job_applications_enabled", "true") === "true"}
+                onCheckedChange={() => toggleSetting("job_applications_enabled")}
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
+              <div className="space-y-0.5">
+                <Label className="text-base">Discord Sync</Label>
+                <p className="text-sm text-muted-foreground">Auto-sync Discord profiles</p>
+              </div>
+              <Switch 
+                checked={getValue("discord_sync_enabled", "true") === "true"}
+                onCheckedChange={() => toggleSetting("discord_sync_enabled")}
+              />
+            </div>
           </div>
         </CardContent>
       </Card>

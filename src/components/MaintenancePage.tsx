@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Wrench, Clock, Shield, Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,20 +6,59 @@ import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { MaintenanceCountdown } from "./MaintenanceCountdown";
 
 interface MaintenancePageProps {
   onAccessGranted?: () => void;
 }
 
+interface MaintenanceSchedule {
+  id: string;
+  title: string;
+  description: string | null;
+  scheduled_start: string;
+  scheduled_end: string;
+  status: string;
+}
+
 const OWNER_DISCORD_ID = '833680146510381097';
 
 const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
+  const [activeMaintenance, setActiveMaintenance] = useState<MaintenanceSchedule | null>(null);
   const { toast } = useToast();
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchMaintenance = async () => {
+      const { data } = await supabase
+        .from('maintenance_schedules')
+        .select('*')
+        .in('status', ['scheduled', 'active'])
+        .order('scheduled_start', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      
+      if (data) setActiveMaintenance(data);
+    };
+    
+    fetchMaintenance();
+    
+    // Subscribe to changes
+    const channel = supabase
+      .channel('maintenance_realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'maintenance_schedules' }, () => {
+        fetchMaintenance();
+      })
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const handleStaffLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -170,6 +209,21 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
             The site will be back online shortly.
           </motion.p>
 
+          {/* Countdown Display */}
+          {activeMaintenance && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.45 }}
+              className="mb-4"
+            >
+              <MaintenanceCountdown 
+                endTime={new Date(activeMaintenance.scheduled_end)} 
+                title={activeMaintenance.title}
+              />
+            </motion.div>
+          )}
+
           {/* Info Cards */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -180,7 +234,11 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
             <div className="p-4 rounded-lg bg-muted/30 border border-border/20 text-center">
               <Clock className="w-6 h-6 text-primary mx-auto mb-2" />
               <p className="text-sm text-muted-foreground">Expected Duration</p>
-              <p className="font-semibold text-foreground">Brief Downtime</p>
+              <p className="font-semibold text-foreground">
+                {activeMaintenance ? 
+                  `${Math.ceil((new Date(activeMaintenance.scheduled_end).getTime() - new Date(activeMaintenance.scheduled_start).getTime()) / (1000 * 60 * 60))}h` 
+                  : 'Brief Downtime'}
+              </p>
             </div>
             <div className="p-4 rounded-lg bg-muted/30 border border-border/20 text-center">
               <Shield className="w-6 h-6 text-green-400 mx-auto mb-2" />
