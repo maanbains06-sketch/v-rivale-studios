@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield, LogOut, Menu, UserCircle, Mail, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, ExternalLink, Crown, LayoutDashboard } from "lucide-react";
+import { Users, Shield, LogOut, Menu, UserCircle, Mail, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, ExternalLink, Crown, LayoutDashboard, Gift } from "lucide-react";
 import { Button } from "./ui/button";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -281,6 +281,14 @@ const Navigation = () => {
             >
               Support
             </NavLink>
+            <NavLink 
+              to="/community" 
+              className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1"
+              activeClassName="text-primary"
+            >
+              <Gift className="w-4 h-4" />
+              Giveaway
+            </NavLink>
             <a
               href={TEBEX_STORE_URL}
               target="_blank"
@@ -415,6 +423,12 @@ const Navigation = () => {
                       <Link to="/support-chat" className="flex items-center">
                         <MessageSquare className="w-4 h-4 mr-2" />
                         Support Chat
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/community" className="flex items-center">
+                        <Gift className="w-4 h-4 mr-2" />
+                        Giveaway
                       </Link>
                     </Button>
                     <Button variant="ghost" className="justify-start" asChild>

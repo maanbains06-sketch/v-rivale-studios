@@ -27,11 +27,18 @@ export const useMaintenanceAccess = (): MaintenanceAccessReturn => {
         return;
       }
 
-      // Get Discord ID from user metadata
-      const discordId = user.user_metadata?.provider_id || user.user_metadata?.sub;
+      // Get Discord ID from user metadata - check ALL possible locations for mobile compatibility
+      const discordId = user.user_metadata?.discord_id || 
+                        user.user_metadata?.provider_id || 
+                        user.user_metadata?.sub ||
+                        user.identities?.[0]?.identity_data?.provider_id ||
+                        user.identities?.[0]?.id;
+      
+      console.log('Maintenance access check - Discord ID:', discordId, 'User metadata:', user.user_metadata);
       
       // Check if owner
       if (discordId === OWNER_DISCORD_ID) {
+        console.log('Maintenance access: Owner detected');
         setHasAccess(true);
         setIsStaffOrOwner(true);
         setLoading(false);
@@ -47,6 +54,7 @@ export const useMaintenanceAccess = (): MaintenanceAccessReturn => {
         .maybeSingle();
 
       if (roleData) {
+        console.log('Maintenance access: Admin/moderator role detected');
         setHasAccess(true);
         setIsStaffOrOwner(true);
         setLoading(false);
@@ -54,7 +62,7 @@ export const useMaintenanceAccess = (): MaintenanceAccessReturn => {
       }
 
       // Check if user is a staff member via discord_id
-      if (discordId) {
+      if (discordId && /^\d{17,19}$/.test(discordId)) {
         const { data: staffData } = await supabase
           .from('staff_members')
           .select('id, is_active')
@@ -63,11 +71,28 @@ export const useMaintenanceAccess = (): MaintenanceAccessReturn => {
           .maybeSingle();
 
         if (staffData) {
+          console.log('Maintenance access: Staff member detected');
           setHasAccess(true);
           setIsStaffOrOwner(true);
           setLoading(false);
           return;
         }
+      }
+
+      // Also check by user_id in staff_members
+      const { data: staffByUserId } = await supabase
+        .from('staff_members')
+        .select('id, is_active')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (staffByUserId) {
+        console.log('Maintenance access: Staff member by user_id detected');
+        setHasAccess(true);
+        setIsStaffOrOwner(true);
+        setLoading(false);
+        return;
       }
 
       setHasAccess(false);

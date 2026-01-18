@@ -1269,6 +1269,9 @@ const Admin = () => {
                       ⚖️ DOJ: {jobApplications.filter(j => j.job_type.includes("DOJ")).length}
                     </Badge>
                     <Badge variant="outline" className="text-xs">
+                      🏛️ State: {jobApplications.filter(j => j.job_type === "State Department").length}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
                       🔫 Gang: {jobApplications.filter(j => j.job_type === "Gang Roleplay").length}
                     </Badge>
                     <Badge variant="outline" className="text-xs">
@@ -1293,37 +1296,37 @@ const Admin = () => {
                     </h3>
                     <div className="space-y-4">
                       {jobApplications.filter(j => j.job_type === "Police Department").map((jobApp) => (
-                        <Card key={jobApp.id} className="border-blue-500/20">
+                        <Card key={jobApp.id} className="border-blue-500/20 cursor-pointer hover:border-blue-400/40 transition-all overflow-hidden">
                           <CardHeader>
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <CardTitle className="text-lg">{jobApp.character_name}</CardTitle>
-                                <CardDescription>Age: {jobApp.age} | Phone: {jobApp.phone_number}</CardDescription>
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0 flex-1">
+                                <CardTitle className="text-lg truncate">{jobApp.character_name}</CardTitle>
+                                <CardDescription className="truncate">Age: {jobApp.age} | Phone: {jobApp.phone_number}</CardDescription>
                               </div>
-                              <Badge variant={jobApp.status === "approved" ? "default" : jobApp.status === "rejected" ? "destructive" : "secondary"}>
+                              <Badge variant={jobApp.status === "approved" ? "default" : jobApp.status === "rejected" ? "destructive" : "secondary"} className="flex-shrink-0">
                                 {jobApp.status}
                               </Badge>
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
                             <div className="grid gap-4 md:grid-cols-2">
-                              <div>
-                                <h4 className="font-semibold text-sm mb-1">Why Join</h4>
-                                <p className="text-sm text-muted-foreground">{jobApp.why_join}</p>
+                              <div className="min-w-0">
+                                <h4 className="font-semibold text-sm text-primary mb-1">Why Join</h4>
+                                <p className="text-sm text-muted-foreground line-clamp-3 break-words">{jobApp.why_join}</p>
                               </div>
-                              <div>
-                                <h4 className="font-semibold text-sm mb-1">Previous Experience</h4>
-                                <p className="text-sm text-muted-foreground">{jobApp.previous_experience}</p>
+                              <div className="min-w-0">
+                                <h4 className="font-semibold text-sm text-primary mb-1">Previous Experience</h4>
+                                <p className="text-sm text-muted-foreground line-clamp-3 break-words">{jobApp.previous_experience}</p>
                               </div>
                             </div>
-                            <div>
-                              <h4 className="font-semibold text-sm mb-1">Character Background</h4>
-                              <p className="text-sm text-muted-foreground">{jobApp.character_background}</p>
+                            <div className="min-w-0">
+                              <h4 className="font-semibold text-sm text-primary mb-1">Character Background</h4>
+                              <p className="text-sm text-muted-foreground line-clamp-4 break-words">{jobApp.character_background}</p>
                             </div>
                             {jobApp.job_specific_answer && (
-                              <div>
-                                <h4 className="font-semibold text-sm mb-1">Scenario Response</h4>
-                                <p className="text-sm text-muted-foreground">{jobApp.job_specific_answer}</p>
+                              <div className="min-w-0">
+                                <h4 className="font-semibold text-sm text-primary mb-1">Scenario Response</h4>
+                                <p className="text-sm text-muted-foreground line-clamp-4 break-words">{jobApp.job_specific_answer}</p>
                               </div>
                             )}
                             
@@ -1356,33 +1359,33 @@ const Admin = () => {
                     </h3>
                     <div className="space-y-4">
                       {jobApplications.filter(j => j.job_type === "EMS").map((jobApp) => (
-                        <Card key={jobApp.id} className="border-red-500/20">
+                        <Card key={jobApp.id} className="border-red-500/20 cursor-pointer hover:border-red-400/40 transition-all overflow-hidden">
                           <CardHeader>
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <CardTitle className="text-lg">{jobApp.character_name}</CardTitle>
-                                <CardDescription>Age: {jobApp.age} | Phone: {jobApp.phone_number}</CardDescription>
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0 flex-1">
+                                <CardTitle className="text-lg truncate">{jobApp.character_name}</CardTitle>
+                                <CardDescription className="truncate">Age: {jobApp.age} | Phone: {jobApp.phone_number}</CardDescription>
                               </div>
-                              <Badge variant={jobApp.status === "approved" ? "default" : jobApp.status === "rejected" ? "destructive" : "secondary"}>
+                              <Badge variant={jobApp.status === "approved" ? "default" : jobApp.status === "rejected" ? "destructive" : "secondary"} className="flex-shrink-0">
                                 {jobApp.status}
                               </Badge>
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
                             <div className="grid gap-4 md:grid-cols-2">
-                              <div>
-                                <h4 className="font-semibold text-sm mb-1">Why Join</h4>
-                                <p className="text-sm text-muted-foreground">{jobApp.why_join}</p>
+                              <div className="min-w-0">
+                                <h4 className="font-semibold text-sm text-primary mb-1">Why Join</h4>
+                                <p className="text-sm text-muted-foreground line-clamp-3 break-words">{jobApp.why_join}</p>
                               </div>
-                              <div>
-                                <h4 className="font-semibold text-sm mb-1">Previous Experience</h4>
-                                <p className="text-sm text-muted-foreground">{jobApp.previous_experience}</p>
+                              <div className="min-w-0">
+                                <h4 className="font-semibold text-sm text-primary mb-1">Previous Experience</h4>
+                                <p className="text-sm text-muted-foreground line-clamp-3 break-words">{jobApp.previous_experience}</p>
                               </div>
                             </div>
                             {jobApp.job_specific_answer && (
-                              <div>
-                                <h4 className="font-semibold text-sm mb-1">Scenario Response</h4>
-                                <p className="text-sm text-muted-foreground">{jobApp.job_specific_answer}</p>
+                              <div className="min-w-0">
+                                <h4 className="font-semibold text-sm text-primary mb-1">Scenario Response</h4>
+                                <p className="text-sm text-muted-foreground line-clamp-4 break-words">{jobApp.job_specific_answer}</p>
                               </div>
                             )}
                             
@@ -1415,33 +1418,33 @@ const Admin = () => {
                     </h3>
                     <div className="space-y-4">
                       {jobApplications.filter(j => j.job_type === "Mechanic").map((jobApp) => (
-                        <Card key={jobApp.id} className="border-yellow-500/20">
+                        <Card key={jobApp.id} className="border-yellow-500/20 cursor-pointer hover:border-yellow-400/40 transition-all overflow-hidden">
                           <CardHeader>
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <CardTitle className="text-lg">{jobApp.character_name}</CardTitle>
-                                <CardDescription>Age: {jobApp.age} | Phone: {jobApp.phone_number}</CardDescription>
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0 flex-1">
+                                <CardTitle className="text-lg truncate">{jobApp.character_name}</CardTitle>
+                                <CardDescription className="truncate">Age: {jobApp.age} | Phone: {jobApp.phone_number}</CardDescription>
                               </div>
-                              <Badge variant={jobApp.status === "approved" ? "default" : jobApp.status === "rejected" ? "destructive" : "secondary"}>
+                              <Badge variant={jobApp.status === "approved" ? "default" : jobApp.status === "rejected" ? "destructive" : "secondary"} className="flex-shrink-0">
                                 {jobApp.status}
                               </Badge>
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
                             <div className="grid gap-4 md:grid-cols-2">
-                              <div>
-                                <h4 className="font-semibold text-sm mb-1">Why Join</h4>
-                                <p className="text-sm text-muted-foreground">{jobApp.why_join}</p>
+                              <div className="min-w-0">
+                                <h4 className="font-semibold text-sm text-primary mb-1">Why Join</h4>
+                                <p className="text-sm text-muted-foreground line-clamp-3 break-words">{jobApp.why_join}</p>
                               </div>
-                              <div>
-                                <h4 className="font-semibold text-sm mb-1">Previous Experience</h4>
-                                <p className="text-sm text-muted-foreground">{jobApp.previous_experience}</p>
+                              <div className="min-w-0">
+                                <h4 className="font-semibold text-sm text-primary mb-1">Previous Experience</h4>
+                                <p className="text-sm text-muted-foreground line-clamp-3 break-words">{jobApp.previous_experience}</p>
                               </div>
                             </div>
                             {jobApp.job_specific_answer && (
-                              <div>
-                                <h4 className="font-semibold text-sm mb-1">Scenario Response</h4>
-                                <p className="text-sm text-muted-foreground">{jobApp.job_specific_answer}</p>
+                              <div className="min-w-0">
+                                <h4 className="font-semibold text-sm text-primary mb-1">Scenario Response</h4>
+                                <p className="text-sm text-muted-foreground line-clamp-4 break-words">{jobApp.job_specific_answer}</p>
                               </div>
                             )}
                             
@@ -1474,14 +1477,14 @@ const Admin = () => {
                     </h3>
                     <div className="space-y-4">
                       {jobApplications.filter(j => j.job_type.includes("DOJ")).map((jobApp) => (
-                        <Card key={jobApp.id} className="border-purple-500/20">
+                        <Card key={jobApp.id} className="border-purple-500/20 cursor-pointer hover:border-purple-400/40 transition-all overflow-hidden">
                           <CardHeader>
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <CardTitle className="text-lg">{jobApp.character_name}</CardTitle>
-                                <CardDescription>Position: {jobApp.job_type} | Age: {jobApp.age} | Phone: {jobApp.phone_number}</CardDescription>
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0 flex-1">
+                                <CardTitle className="text-lg truncate">{jobApp.character_name}</CardTitle>
+                                <CardDescription className="truncate">Position: {jobApp.job_type} | Age: {jobApp.age} | Phone: {jobApp.phone_number}</CardDescription>
                               </div>
-                              <div className="flex gap-2">
+                              <div className="flex gap-2 flex-shrink-0">
                                 <Badge variant="outline">{jobApp.job_type.replace("DOJ - ", "")}</Badge>
                                 <Badge variant={jobApp.status === "approved" ? "default" : jobApp.status === "rejected" ? "destructive" : "secondary"}>
                                   {jobApp.status}
@@ -1491,23 +1494,23 @@ const Admin = () => {
                           </CardHeader>
                           <CardContent className="space-y-4">
                             <div className="grid gap-4 md:grid-cols-2">
-                              <div>
-                                <h4 className="font-semibold text-sm mb-1">Why Join DOJ</h4>
-                                <p className="text-sm text-muted-foreground">{jobApp.why_join}</p>
+                              <div className="min-w-0">
+                                <h4 className="font-semibold text-sm text-primary mb-1">Why Join DOJ</h4>
+                                <p className="text-sm text-muted-foreground line-clamp-3 break-words">{jobApp.why_join}</p>
                               </div>
-                              <div>
-                                <h4 className="font-semibold text-sm mb-1">Legal Experience</h4>
-                                <p className="text-sm text-muted-foreground">{jobApp.previous_experience}</p>
+                              <div className="min-w-0">
+                                <h4 className="font-semibold text-sm text-primary mb-1">Legal Experience</h4>
+                                <p className="text-sm text-muted-foreground line-clamp-3 break-words">{jobApp.previous_experience}</p>
                               </div>
                             </div>
-                            <div>
-                              <h4 className="font-semibold text-sm mb-1">Character Legal Background</h4>
-                              <p className="text-sm text-muted-foreground">{jobApp.character_background}</p>
+                            <div className="min-w-0">
+                              <h4 className="font-semibold text-sm text-primary mb-1">Character Legal Background</h4>
+                              <p className="text-sm text-muted-foreground line-clamp-4 break-words">{jobApp.character_background}</p>
                             </div>
                             {jobApp.job_specific_answer && (
-                              <div>
-                                <h4 className="font-semibold text-sm mb-1">Law Knowledge & Court Scenario</h4>
-                                <p className="text-sm text-muted-foreground whitespace-pre-line">{jobApp.job_specific_answer}</p>
+                              <div className="min-w-0">
+                                <h4 className="font-semibold text-sm text-primary mb-1">Law Knowledge & Court Scenario</h4>
+                                <p className="text-sm text-muted-foreground line-clamp-4 break-words whitespace-pre-line">{jobApp.job_specific_answer}</p>
                               </div>
                             )}
                             
@@ -1546,48 +1549,48 @@ const Admin = () => {
                         } catch { gangDetails = null; }
                         
                         return (
-                          <Card key={jobApp.id} className="border-red-600/20">
+                          <Card key={jobApp.id} className="border-red-600/20 cursor-pointer hover:border-red-500/40 transition-all overflow-hidden">
                             <CardHeader>
-                              <div className="flex items-start justify-between">
-                                <div>
-                                  <CardTitle className="text-lg">{jobApp.character_name}</CardTitle>
-                                  <CardDescription>
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0 flex-1">
+                                  <CardTitle className="text-lg truncate">{jobApp.character_name}</CardTitle>
+                                  <CardDescription className="truncate">
                                     Age: {jobApp.age} | Discord: {jobApp.phone_number}
                                     {gangDetails?.gang_type_preference && ` | Preference: ${gangDetails.gang_type_preference}`}
                                   </CardDescription>
                                 </div>
-                                <Badge variant={jobApp.status === "approved" ? "default" : jobApp.status === "rejected" ? "destructive" : "secondary"}>
+                                <Badge variant={jobApp.status === "approved" ? "default" : jobApp.status === "rejected" ? "destructive" : "secondary"} className="flex-shrink-0">
                                   {jobApp.status}
                                 </Badge>
                               </div>
                             </CardHeader>
                             <CardContent className="space-y-4">
                               <div className="grid gap-4 md:grid-cols-2">
-                                <div>
-                                  <h4 className="font-semibold text-sm mb-1">Why Join Gang RP</h4>
-                                  <p className="text-sm text-muted-foreground">{jobApp.why_join}</p>
+                                <div className="min-w-0">
+                                  <h4 className="font-semibold text-sm text-primary mb-1">Why Join Gang RP</h4>
+                                  <p className="text-sm text-muted-foreground line-clamp-3 break-words">{jobApp.why_join}</p>
                                 </div>
-                                <div>
-                                  <h4 className="font-semibold text-sm mb-1">RP Experience</h4>
-                                  <p className="text-sm text-muted-foreground">{jobApp.previous_experience}</p>
+                                <div className="min-w-0">
+                                  <h4 className="font-semibold text-sm text-primary mb-1">RP Experience</h4>
+                                  <p className="text-sm text-muted-foreground line-clamp-3 break-words">{jobApp.previous_experience}</p>
                                 </div>
                               </div>
-                              <div>
-                                <h4 className="font-semibold text-sm mb-1">Character Backstory</h4>
-                                <p className="text-sm text-muted-foreground">{jobApp.character_background}</p>
+                              <div className="min-w-0">
+                                <h4 className="font-semibold text-sm text-primary mb-1">Character Backstory</h4>
+                                <p className="text-sm text-muted-foreground line-clamp-4 break-words">{jobApp.character_background}</p>
                               </div>
                               {gangDetails && (
                                 <div className="grid gap-4 md:grid-cols-2">
                                   {gangDetails.criminal_rp_experience && (
-                                    <div>
-                                      <h4 className="font-semibold text-sm mb-1">Criminal RP Experience</h4>
-                                      <p className="text-sm text-muted-foreground">{gangDetails.criminal_rp_experience}</p>
+                                    <div className="min-w-0">
+                                      <h4 className="font-semibold text-sm text-primary mb-1">Criminal RP Experience</h4>
+                                      <p className="text-sm text-muted-foreground line-clamp-3 break-words">{gangDetails.criminal_rp_experience}</p>
                                     </div>
                                   )}
                                   {gangDetails.conflict_scenario && (
-                                    <div>
-                                      <h4 className="font-semibold text-sm mb-1">Conflict Scenario</h4>
-                                      <p className="text-sm text-muted-foreground">{gangDetails.conflict_scenario}</p>
+                                    <div className="min-w-0">
+                                      <h4 className="font-semibold text-sm text-primary mb-1">Conflict Scenario</h4>
+                                      <p className="text-sm text-muted-foreground line-clamp-3 break-words">{gangDetails.conflict_scenario}</p>
                                     </div>
                                   )}
                                 </div>
@@ -1610,6 +1613,69 @@ const Admin = () => {
                           </Card>
                         );
                       })}
+                    </div>
+                  </div>
+                )}
+
+                {/* State Department Applications */}
+                {jobApplications.filter(j => j.job_type === "State Department").length > 0 && (
+                  <div className="pt-6 border-t">
+                    <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                      🏛️ State Department Applications 
+                      <Badge variant="outline">{jobApplications.filter(j => j.job_type === "State Department").length}</Badge>
+                    </h3>
+                    <div className="space-y-4">
+                      {jobApplications.filter(j => j.job_type === "State Department").map((jobApp) => (
+                        <Card key={jobApp.id} className="border-emerald-500/20 cursor-pointer hover:border-emerald-400/40 transition-all">
+                          <CardHeader>
+                            <div className="flex items-start justify-between">
+                              <div className="min-w-0 flex-1">
+                                <CardTitle className="text-lg truncate">{jobApp.character_name}</CardTitle>
+                                <CardDescription className="truncate">Age: {jobApp.age} | Phone: {jobApp.phone_number}</CardDescription>
+                              </div>
+                              <Badge variant={jobApp.status === "approved" ? "default" : jobApp.status === "rejected" ? "destructive" : "secondary"} className="flex-shrink-0 ml-2">
+                                {jobApp.status}
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="grid gap-4 md:grid-cols-2">
+                              <div className="min-w-0">
+                                <h4 className="font-semibold text-sm text-primary mb-1">Why Join</h4>
+                                <p className="text-sm text-muted-foreground line-clamp-3 break-words">{jobApp.why_join}</p>
+                              </div>
+                              <div className="min-w-0">
+                                <h4 className="font-semibold text-sm text-primary mb-1">Previous Experience</h4>
+                                <p className="text-sm text-muted-foreground line-clamp-3 break-words">{jobApp.previous_experience}</p>
+                              </div>
+                            </div>
+                            <div className="min-w-0">
+                              <h4 className="font-semibold text-sm text-primary mb-1">Character Background</h4>
+                              <p className="text-sm text-muted-foreground line-clamp-4 break-words">{jobApp.character_background}</p>
+                            </div>
+                            {jobApp.job_specific_answer && (
+                              <div className="min-w-0">
+                                <h4 className="font-semibold text-sm text-primary mb-1">Scenario Response</h4>
+                                <p className="text-sm text-muted-foreground line-clamp-4 break-words">{jobApp.job_specific_answer}</p>
+                              </div>
+                            )}
+                            
+                            {jobApp.status === "pending" && (
+                              <div className="space-y-3 pt-4 border-t">
+                                <Textarea
+                                  placeholder="Admin notes (optional)"
+                                  value={selectedJobApp?.id === jobApp.id ? jobAdminNotes : ""}
+                                  onChange={(e) => { setSelectedJobApp(jobApp); setJobAdminNotes(e.target.value); }}
+                                />
+                                <div className="flex gap-2">
+                                  <Button onClick={() => updateJobApplicationStatus(jobApp.id, "approved")} className="bg-emerald-600 hover:bg-emerald-700">Approve</Button>
+                                  <Button onClick={() => updateJobApplicationStatus(jobApp.id, "rejected")} variant="destructive">Reject</Button>
+                                </div>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -1688,29 +1754,29 @@ const Admin = () => {
                   ) : (
                     <div className="space-y-4">
                       {firefighterApplications.map((ffApp) => (
-                        <Card key={ffApp.id} className="border-orange-500/20">
+                        <Card key={ffApp.id} className="border-orange-500/20 cursor-pointer hover:border-orange-400/40 transition-all overflow-hidden">
                           <CardHeader>
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <CardTitle className="text-lg">{ffApp.in_game_name}</CardTitle>
-                                <CardDescription>
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0 flex-1">
+                                <CardTitle className="text-lg truncate">{ffApp.in_game_name}</CardTitle>
+                                <CardDescription className="truncate">
                                   Real Name: {ffApp.real_name} | Discord: {ffApp.discord_id}
                                 </CardDescription>
                               </div>
-                              <Badge variant={ffApp.status === "approved" ? "default" : ffApp.status === "rejected" ? "destructive" : "secondary"}>
+                              <Badge variant={ffApp.status === "approved" ? "default" : ffApp.status === "rejected" ? "destructive" : "secondary"} className="flex-shrink-0">
                                 {ffApp.status}
                               </Badge>
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
                             <div className="grid gap-4 md:grid-cols-2">
-                              <div>
-                                <h4 className="font-semibold text-sm mb-1">Steam ID</h4>
-                                <p className="text-sm text-muted-foreground">{ffApp.steam_id}</p>
+                              <div className="min-w-0">
+                                <h4 className="font-semibold text-sm text-primary mb-1">Steam ID</h4>
+                                <p className="text-sm text-muted-foreground break-words">{ffApp.steam_id}</p>
                               </div>
-                              <div>
-                                <h4 className="font-semibold text-sm mb-1">Weekly Availability</h4>
-                                <p className="text-sm text-muted-foreground">{ffApp.weekly_availability}</p>
+                              <div className="min-w-0">
+                                <h4 className="font-semibold text-sm text-primary mb-1">Weekly Availability</h4>
+                                <p className="text-sm text-muted-foreground line-clamp-3 break-words">{ffApp.weekly_availability}</p>
                               </div>
                             </div>
                             
@@ -1745,40 +1811,40 @@ const Admin = () => {
                   ) : (
                     <div className="space-y-4">
                       {weazelNewsApplications.map((wnApp) => (
-                        <Card key={wnApp.id} className="border-cyan-500/20">
+                        <Card key={wnApp.id} className="border-cyan-500/20 cursor-pointer hover:border-cyan-400/40 transition-all overflow-hidden">
                           <CardHeader>
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <CardTitle className="text-lg">{wnApp.character_name}</CardTitle>
-                                <CardDescription>Age: {wnApp.age} | Phone: {wnApp.phone_number}</CardDescription>
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0 flex-1">
+                                <CardTitle className="text-lg truncate">{wnApp.character_name}</CardTitle>
+                                <CardDescription className="truncate">Age: {wnApp.age} | Phone: {wnApp.phone_number}</CardDescription>
                               </div>
-                              <Badge variant={wnApp.status === "approved" ? "default" : wnApp.status === "rejected" ? "destructive" : "secondary"}>
+                              <Badge variant={wnApp.status === "approved" ? "default" : wnApp.status === "rejected" ? "destructive" : "secondary"} className="flex-shrink-0">
                                 {wnApp.status}
                               </Badge>
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
                             <div className="grid gap-4 md:grid-cols-2">
-                              <div>
-                                <h4 className="font-semibold text-sm mb-1">Journalism Experience</h4>
-                                <p className="text-sm text-muted-foreground">{wnApp.journalism_experience}</p>
+                              <div className="min-w-0">
+                                <h4 className="font-semibold text-sm text-primary mb-1">Journalism Experience</h4>
+                                <p className="text-sm text-muted-foreground line-clamp-3 break-words">{wnApp.journalism_experience}</p>
                               </div>
-                              <div>
-                                <h4 className="font-semibold text-sm mb-1">Camera Skills</h4>
-                                <p className="text-sm text-muted-foreground">{wnApp.camera_skills}</p>
+                              <div className="min-w-0">
+                                <h4 className="font-semibold text-sm text-primary mb-1">Camera Skills</h4>
+                                <p className="text-sm text-muted-foreground line-clamp-3 break-words">{wnApp.camera_skills}</p>
                               </div>
                             </div>
-                            <div>
-                              <h4 className="font-semibold text-sm mb-1">Writing Sample</h4>
-                              <p className="text-sm text-muted-foreground">{wnApp.writing_sample}</p>
+                            <div className="min-w-0">
+                              <h4 className="font-semibold text-sm text-primary mb-1">Writing Sample</h4>
+                              <p className="text-sm text-muted-foreground line-clamp-4 break-words">{wnApp.writing_sample}</p>
                             </div>
-                            <div>
-                              <h4 className="font-semibold text-sm mb-1">Interview Scenario</h4>
-                              <p className="text-sm text-muted-foreground">{wnApp.interview_scenario}</p>
+                            <div className="min-w-0">
+                              <h4 className="font-semibold text-sm text-primary mb-1">Interview Scenario</h4>
+                              <p className="text-sm text-muted-foreground line-clamp-4 break-words">{wnApp.interview_scenario}</p>
                             </div>
-                            <div>
-                              <h4 className="font-semibold text-sm mb-1">Why Join</h4>
-                              <p className="text-sm text-muted-foreground">{wnApp.why_join}</p>
+                            <div className="min-w-0">
+                              <h4 className="font-semibold text-sm text-primary mb-1">Why Join</h4>
+                              <p className="text-sm text-muted-foreground line-clamp-3 break-words">{wnApp.why_join}</p>
                             </div>
                             
                             {wnApp.status === "pending" && (
