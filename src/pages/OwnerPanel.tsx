@@ -18,6 +18,9 @@ import { Owner2FAVerification } from "@/components/Owner2FAVerification";
 import { OwnerAuditLog } from "@/components/OwnerAuditLog";
 import { LiveMemberJoins } from "@/components/LiveMemberJoins";
 import { EnhancedSiteSettings } from "@/components/EnhancedSiteSettings";
+import { MaintenanceCountdownControl } from "@/components/MaintenanceCountdownControl";
+import { FeaturedStreamersManager } from "@/components/FeaturedStreamersManager";
+import { PromoCodeManager } from "@/components/PromoCodeManager";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Loader2, 
@@ -48,6 +51,8 @@ import {
   Scale,
   Siren,
   Ambulance,
+  Ticket,
+  Radio,
   Wrench,
   Youtube
 } from "lucide-react";
@@ -1243,12 +1248,39 @@ const OwnerPanel = () => {
                 <Crown className="w-4 h-4" />
                 <span className="hidden sm:inline">Permissions</span>
               </TabsTrigger>
+              <TabsTrigger value="maintenance" className="flex items-center gap-2">
+                <Wrench className="w-4 h-4" />
+                <span className="hidden sm:inline">Maintenance</span>
+              </TabsTrigger>
+              <TabsTrigger value="promo" className="flex items-center gap-2">
+                <Ticket className="w-4 h-4" />
+                <span className="hidden sm:inline">Promo Codes</span>
+              </TabsTrigger>
+              <TabsTrigger value="streamers" className="flex items-center gap-2">
+                <Radio className="w-4 h-4" />
+                <span className="hidden sm:inline">Streamers</span>
+              </TabsTrigger>
             </TabsList>
           </ScrollArea>
 
           {/* Site Settings Tab */}
           <TabsContent value="settings">
             <EnhancedSiteSettings settings={settings} onSettingsChange={loadSettings} />
+          </TabsContent>
+
+          {/* Maintenance Control Tab */}
+          <TabsContent value="maintenance">
+            <MaintenanceCountdownControl />
+          </TabsContent>
+
+          {/* Promo Codes Tab */}
+          <TabsContent value="promo">
+            <PromoCodeManager />
+          </TabsContent>
+
+          {/* Featured Streamers Tab */}
+          <TabsContent value="streamers">
+            <FeaturedStreamersManager />
           </TabsContent>
 
           {/* All Applications Tab */}

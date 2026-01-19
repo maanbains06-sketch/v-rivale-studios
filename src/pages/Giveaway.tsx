@@ -4,7 +4,6 @@ import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -12,17 +11,12 @@ import {
   Gift, 
   Trophy, 
   Clock, 
-  Users, 
   Sparkles, 
   CheckCircle2,
   XCircle,
-  Timer,
-  Star,
-  Crown,
   Ticket,
   CalendarDays,
-  TrendingUp,
-  Award,
+  Crown,
   Loader2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -90,7 +84,6 @@ const Giveaway = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Fetch all giveaways
       const { data: giveawaysData, error } = await supabase
         .from("giveaways")
         .select("*")
@@ -99,16 +92,12 @@ const Giveaway = () => {
       if (error) throw error;
       setGiveaways(giveawaysData || []);
 
-      // Calculate stats
       const active = giveawaysData?.filter(g => g.status === "active") || [];
-      const ended = giveawaysData?.filter(g => g.status === "ended") || [];
 
-      // Fetch total entries count
       const { count: entriesCount } = await supabase
         .from("giveaway_entries")
         .select("*", { count: "exact", head: true });
 
-      // Fetch total winners count
       const { count: winnersCount } = await supabase
         .from("giveaway_winners")
         .select("*", { count: "exact", head: true });
@@ -149,7 +138,6 @@ const Giveaway = () => {
 
     setEnteringId(giveawayId);
     try {
-      // Get user's Discord info
       const { data: profile } = await supabase
         .from("profiles")
         .select("discord_username, discord_id")
@@ -343,8 +331,8 @@ const Giveaway = () => {
       <Navigation />
       
       <PageHeader
-        title="Community Giveaways"
-        description="Win exclusive prizes, in-game items, and more! Enter our active giveaways for a chance to win."
+        title="Exclusive Giveaways"
+        description="Win epic prizes, in-game items, and exclusive rewards! Enter our active giveaways for your chance to win."
         backgroundImage={headerGiveaway}
       />
 
@@ -358,7 +346,7 @@ const Giveaway = () => {
           >
             {[
               { icon: Gift, label: "Total Giveaways", value: stats.totalGiveaways, color: "text-primary" },
-              { icon: Sparkles, label: "Active Now", value: stats.activeGiveaways, color: "text-green-400" },
+              { icon: Sparkles, label: "Running Now", value: stats.activeGiveaways, color: "text-green-400" },
               { icon: Ticket, label: "Total Entries", value: stats.totalEntries, color: "text-amber-400" },
               { icon: Crown, label: "Winners", value: stats.totalWinners, color: "text-purple-400" }
             ].map((stat, i) => (
@@ -470,46 +458,41 @@ const Giveaway = () => {
               animate={{ opacity: 1, y: 0 }}
               className="mt-12"
             >
-              <Card className="glass-effect border-primary/20">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Ticket className="w-5 h-5 text-primary" />
-                    Your Entries
-                  </CardTitle>
-                  <CardDescription>Track all the giveaways you've entered</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {userEntries.map((entry) => {
-                      const giveaway = giveaways.find(g => g.id === entry.giveaway_id);
-                      if (!giveaway) return null;
-                      return (
-                        <div
-                          key={entry.id}
-                          className={`p-4 rounded-lg border ${
-                            entry.is_winner 
-                              ? "bg-amber-500/10 border-amber-500/30" 
-                              : "bg-muted/30 border-border/30"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              {entry.is_winner && <Crown className="w-5 h-5 text-amber-400" />}
-                              <div>
-                                <p className="font-medium">{giveaway.title}</p>
-                                <p className="text-sm text-muted-foreground">{giveaway.prize}</p>
-                              </div>
-                            </div>
-                            <Badge variant={entry.is_winner ? "default" : "secondary"}>
-                              {entry.is_winner ? "🎉 Winner!" : `${entry.entry_count} Entries`}
-                            </Badge>
+              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                <Ticket className="w-6 h-6 text-primary" />
+                Your Entries
+              </h2>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {userEntries.map((entry) => {
+                  const giveaway = giveaways.find(g => g.id === entry.giveaway_id);
+                  if (!giveaway) return null;
+                  return (
+                    <Card key={entry.id} className="glass-effect border-border/30">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-semibold">{giveaway.title}</p>
+                            <p className="text-sm text-muted-foreground">
+                              Entries: {entry.entry_count}
+                            </p>
                           </div>
+                          {entry.is_winner ? (
+                            <Badge className="bg-amber-500">
+                              <Crown className="w-3 h-3 mr-1" />
+                              Winner!
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary">
+                              <CheckCircle2 className="w-3 h-3 mr-1" />
+                              Entered
+                            </Badge>
+                          )}
                         </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
             </motion.div>
           )}
         </div>
