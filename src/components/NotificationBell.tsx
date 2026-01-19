@@ -165,18 +165,42 @@ export const NotificationBell = () => {
     setOpen(false);
     
     // Navigate based on notification type
-    if (notification.type === "support_messages" || 
-        notification.type === "support_chats" || 
-        notification.type === "sla_breach" ||
-        notification.type === "direct_message" ||
-        notification.type === "staff_tagged") {
-      if (notification.reference_id) {
-        navigate(`/admin-support-chat?chat_id=${notification.reference_id}`);
-      } else {
-        navigate("/admin-support-chat");
-      }
-    } else {
-      navigate("/dashboard");
+    switch (notification.type) {
+      case "support_chats":
+      case "support_messages":
+      case "sla_breach":
+      case "staff_tagged":
+        // Redirect to support chat with specific chat ID
+        if (notification.reference_id) {
+          navigate(`/support-chat?id=${notification.reference_id}`);
+        } else {
+          navigate("/admin/support-chat");
+        }
+        break;
+      case "direct_message":
+        navigate("/direct-message");
+        break;
+      case "whitelist_applications":
+        navigate("/application-status");
+        break;
+      case "job_applications":
+        navigate("/application-status");
+        break;
+      case "staff_applications":
+        navigate("/application-status");
+        break;
+      case "ban_appeals":
+        navigate("/application-status");
+        break;
+      case "gallery_submissions":
+        navigate("/gallery");
+        break;
+      case "giveaway_entries":
+      case "giveaway_winners":
+        navigate("/giveaway");
+        break;
+      default:
+        navigate("/dashboard");
     }
   };
 
