@@ -56,20 +56,27 @@ const AddStaffDialog = ({
 
     setLoading(true);
     try {
+      // Determine role_type based on department
+      const getRoleType = (deptKey: string): string => {
+        if (deptKey === 'staff') return 'staff';
+        // For other departments, use 'member' as they are RP department members
+        return 'member';
+      };
+
       const { error } = await supabase
         .from('staff_members')
         .insert({
           name: formData.name,
           role: formData.rank,
-          role_type: 'user',
+          role_type: getRoleType(departmentKey),
           department: departmentKey,
           badge_number: formData.badge_number || null,
           status: formData.status,
           division: formData.division || null,
           call_sign: formData.call_sign || null,
           strikes: formData.strikes || '0/3',
-          // Required by current schema; if unknown, store a placeholder until linked.
-          discord_id: formData.badge_number || `NEW-${Date.now()}`,
+          // Generate a unique discord_id placeholder if not linked
+          discord_id: `NEW-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
           is_active: formData.status === 'active',
         });
 

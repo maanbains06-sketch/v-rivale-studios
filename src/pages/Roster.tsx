@@ -335,10 +335,26 @@ const Roster = () => {
     }
   }, [hasAccess, accessLoading]);
 
-  const handleOpenAddStaffDialog = (dept: { department: string; shortName: string; ranks?: string[] }, deptKey: string) => {
+  // Map display keys to database-compatible department values
+  const getDatabaseDepartmentKey = (shortName: string): string => {
+    const mapping: Record<string, string> = {
+      'police': 'police',
+      'ems': 'ems',
+      'fire': 'fire',
+      'mechanic': 'mechanic',
+      'doj': 'doj',
+      'weazel': 'weazel',
+      'pdm': 'pdm',
+      'staff': 'staff',
+    };
+    return mapping[shortName.toLowerCase()] || shortName.toLowerCase();
+  };
+
+  const handleOpenAddStaffDialog = (dept: { department: string; shortName: string; ranks?: string[] }, shortKey: string) => {
+    const dbKey = getDatabaseDepartmentKey(shortKey);
     setSelectedDeptForAdd({
       departmentLabel: dept.department,
-      departmentKey: deptKey,
+      departmentKey: dbKey, // Use database-compatible key
       shortName: dept.shortName,
       ranks: dept.ranks || [],
     });
@@ -726,7 +742,7 @@ const Roster = () => {
                             <Button
                               size="sm"
                               variant="default"
-                              onClick={() => handleOpenAddStaffDialog(dept, deptKey)}
+                              onClick={() => handleOpenAddStaffDialog(dept, shortKey)}
                               className="gap-2"
                             >
                               <UserPlus className="w-4 h-4" />
