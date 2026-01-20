@@ -310,13 +310,21 @@ const Roster = () => {
       setLoading(false);
       return;
     }
+
     setLoading(true);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('staff_members')
       .select('*')
-      .eq('is_active', true)
       .order('display_order', { ascending: true });
-    setStaffMembers(data || []);
+
+    if (error) {
+      console.error('Error fetching staff:', error);
+      toast.error(error.message || 'Failed to load roster data');
+      setStaffMembers([]);
+    } else {
+      setStaffMembers(data || []);
+    }
+
     setLoading(false);
   };
 
@@ -341,18 +349,20 @@ const Roster = () => {
   };
 
   const getDepartmentMembers = (key: string, filters: string[]): RosterMember[] => {
-    const staff = staffMembers.filter(s => 
-      filters.some(f => s.department?.toLowerCase().includes(f))
-    ).map(s => ({
-      id: s.id,
-      name: s.name,
-      rank: s.role,
-      badge_number: s.discord_id?.slice(-6) || '-',
-      status: 'active' as const,
-      division: s.department || 'Staff',
-      discord_avatar: s.discord_avatar,
-      strikes: '0/3',
-    }));
+    const staff = staffMembers
+      .filter((s) => filters.some((f) => s.department?.toLowerCase().includes(f)))
+      .map((s) => ({
+        id: s.id,
+        name: s.name,
+        rank: s.role,
+        badge_number: s.badge_number || s.discord_id?.slice(-6) || '-',
+        status: (s.status || (s.is_active ? 'active' : 'inactive')) as RosterMember['status'],
+        division: s.division || '-',
+        call_sign: s.call_sign || '-',
+        discord_avatar: s.discord_avatar,
+        strikes: s.strikes || '0/3',
+      }));
+
     return staff.length ? staff : exampleRosterData[key] || [];
   };
 
@@ -418,21 +428,25 @@ const Roster = () => {
       shortName: "Staff",
       icon: <Shield className="w-4 h-4" />,
       accentColor: "violet",
-      members: staffMembers.filter(s => 
-        s.department?.toLowerCase().includes('staff') || 
-        s.department?.toLowerCase().includes('admin') ||
-        s.department?.toLowerCase().includes('management') ||
-        !s.department
-      ).map(s => ({
-        id: s.id,
-        name: s.name,
-        rank: s.role,
-        badge_number: s.discord_id?.slice(-6) || '-',
-        status: 'active' as const,
-        division: s.department || 'Staff',
-        discord_avatar: s.discord_avatar,
-        strikes: '-',
-      })),
+      members: staffMembers
+        .filter(
+          (s) =>
+            s.department?.toLowerCase().includes('staff') ||
+            s.department?.toLowerCase().includes('admin') ||
+            s.department?.toLowerCase().includes('management') ||
+            !s.department
+        )
+        .map((s) => ({
+          id: s.id,
+          name: s.name,
+          rank: s.role,
+          badge_number: s.badge_number || s.discord_id?.slice(-6) || '-',
+          status: (s.status || (s.is_active ? 'active' : 'inactive')) as RosterMember['status'],
+          division: s.division || '-',
+          call_sign: s.call_sign || '-',
+          discord_avatar: s.discord_avatar,
+          strikes: s.strikes || '-',
+        })),
       ranks: ['Owner', 'Co-Owner', 'Head Admin', 'Admin', 'Senior Moderator', 'Moderator', 'Trial Mod'],
     }
   ];
@@ -486,16 +500,18 @@ const Roster = () => {
         return;
       }
 
-      // Prepare updates for each member
       const updates = Object.entries(deptData).map(([memberId, member]) => ({
         id: memberId,
         name: member.name,
         role: member.rank,
-        department: member.division || '',
+        badge_number: member.badge_number || null,
+        status: member.status,
+        division: member.division || null,
+        call_sign: member.call_sign || null,
+        strikes: member.strikes || null,
         is_active: member.status === 'active',
       }));
 
-      // Update each member in the database
       let successCount = 0;
       let errorCount = 0;
 
@@ -505,7 +521,11 @@ const Roster = () => {
           .update({
             name: update.name,
             role: update.role,
-            department: update.department,
+            badge_number: update.badge_number,
+            status: update.status,
+            division: update.division,
+            call_sign: update.call_sign,
+            strikes: update.strikes,
             is_active: update.is_active,
             updated_at: new Date().toISOString(),
           })
@@ -525,12 +545,10 @@ const Roster = () => {
         toast.success(`Roster changes saved successfully! (${successCount} members updated)`);
       }
 
-      // Refresh the data to show updated values
       await fetchStaff();
-      
-      // Exit edit mode and clear edited data
-      setEditMode(prev => ({ ...prev, [deptKey]: false }));
-      setEditedData(prev => {
+
+      setEditMode((prev) => ({ ...prev, [deptKey]: false }));
+      setEditedData((prev) => {
         const newData = { ...prev };
         delete newData[deptKey];
         return newData;

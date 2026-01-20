@@ -10,8 +10,7 @@ interface RosterAccess {
   isStaff: boolean;
 }
 
-// Owner Discord ID
-const OWNER_DISCORD_ID = "833680146510381097";
+// Owner status is verified via backend function (keeps UI in sync with DB permissions).
 
 export const useRosterAccess = () => {
   const [access, setAccess] = useState<RosterAccess>({
@@ -34,17 +33,20 @@ export const useRosterAccess = () => {
         }
 
         const discordId = user.user_metadata?.discord_id;
-        
-        // Check if owner - full access including edit
-        const isOwner = discordId === OWNER_DISCORD_ID;
-        
+
+        // Check if owner (server-side, matches DB RLS)
+        const { data: isOwner, error: ownerError } = await supabase.rpc('is_owner', { _user_id: user.id });
+        if (ownerError) {
+          console.error('Error checking owner status:', ownerError);
+        }
+
         if (isOwner) {
-          setAccess({ 
-            hasAccess: true, 
+          setAccess({
+            hasAccess: true,
             canEdit: true,
-            loading: false, 
-            isOwner: true, 
-            isStaff: false 
+            loading: false,
+            isOwner: true,
+            isStaff: false,
           });
           return;
         }
@@ -58,12 +60,12 @@ export const useRosterAccess = () => {
             });
 
             if (!error && data) {
-              setAccess({ 
-                hasAccess: true, 
-                canEdit: data?.canEdit || false, // Staff only gets edit if they have edit role
+              setAccess({
+                hasAccess: true,
+                canEdit: false, // Editing is owner-only (matches DB permissions)
                 loading: false,
                 isOwner: false,
-                isStaff: true
+                isStaff: true,
               });
               return;
             }
@@ -92,12 +94,12 @@ export const useRosterAccess = () => {
             return;
           }
 
-          setAccess({ 
-            hasAccess: data?.hasAccess || false, 
-            canEdit: data?.canEdit || false,
+          setAccess({
+            hasAccess: data?.hasAccess || false,
+            canEdit: false, // Editing is owner-only (matches DB permissions)
             loading: false,
             isOwner: false,
-            isStaff: false
+            isStaff: false,
           });
         } else {
           setAccess({ hasAccess: false, canEdit: false, loading: false, isOwner: false, isStaff: false });

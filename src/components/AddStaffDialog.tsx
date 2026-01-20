@@ -59,9 +59,15 @@ const AddStaffDialog = ({
         .insert({
           name: formData.name,
           role: formData.rank,
-          department: formData.division || department,
-          discord_id: formData.badge_number || `NEW-${Date.now()}`,
           role_type: 'user',
+          department,
+          badge_number: formData.badge_number || null,
+          status: formData.status,
+          division: formData.division || null,
+          call_sign: formData.call_sign || null,
+          strikes: formData.strikes || '0/3',
+          // Required by current schema; if unknown, store a placeholder until linked.
+          discord_id: formData.badge_number || `NEW-${Date.now()}`,
           is_active: formData.status === 'active',
         });
 
