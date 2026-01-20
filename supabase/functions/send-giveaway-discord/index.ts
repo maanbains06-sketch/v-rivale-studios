@@ -37,78 +37,123 @@ serve(async (req) => {
       throw new Error("DISCORD_BOT_TOKEN not configured");
     }
 
+    console.log("Processing giveaway notification:", payload.type);
+
     let channelId: string;
     let embed: any;
+    let content: string;
 
     if (payload.type === 'new_giveaway') {
       channelId = GIVEAWAY_CHANNEL_ID || "";
       if (!channelId) throw new Error("DISCORD_GIVEAWAY_CHANNEL_ID not configured");
 
       const endDate = new Date(payload.giveaway.end_date);
-      const formattedEndDate = endDate.toLocaleString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZoneName: 'short'
-      });
+      const discordTimestamp = Math.floor(endDate.getTime() / 1000);
 
       embed = {
-        title: "🎉 NEW GIVEAWAY ALERT! 🎉",
-        description: `**${payload.giveaway.title}**\n\n${payload.giveaway.description || 'No description provided.'}\n\n🎁 **Prize:** ${payload.giveaway.prize}\n🏆 **Winners:** ${payload.giveaway.winner_count}\n⏰ **Ends:** ${formattedEndDate}`,
-        color: 0xFFD700, // Gold color
+        title: "🎁 NEW GIVEAWAY ALERT! 🎁",
+        description: `# ${payload.giveaway.title}\n\n${payload.giveaway.description || '*No description provided*'}\n\n━━━━━━━━━━━━━━━━━━━━━━`,
+        color: 0xFFD700,
         thumbnail: payload.giveaway.prize_image_url ? { url: payload.giveaway.prize_image_url } : undefined,
         fields: [
           {
-            name: "📝 How to Enter",
-            value: "Visit our website and click 'Enter Giveaway' on the Giveaway page!",
+            name: "🎁 Prize",
+            value: `\`\`\`${payload.giveaway.prize}\`\`\``,
             inline: false
           },
           {
-            name: "🔗 Enter Now",
-            value: "[Click here to enter!](https://skyliferoleplay.com/giveaway)",
+            name: "🏆 Winners",
+            value: `${payload.giveaway.winner_count} lucky winner${payload.giveaway.winner_count > 1 ? 's' : ''}`,
+            inline: true
+          },
+          {
+            name: "⏰ Ends",
+            value: `<t:${discordTimestamp}:R>`,
+            inline: true
+          },
+          {
+            name: "\u200B",
+            value: "━━━━━━━━━━━━━━━━━━━━━━",
+            inline: false
+          },
+          {
+            name: "📝 How to Enter",
+            value: "Visit our website and click **'Enter Giveaway'** on the [Giveaway Page](https://skyliferoleplay.com/giveaway)!",
             inline: false
           }
         ],
+        image: payload.giveaway.prize_image_url ? { url: payload.giveaway.prize_image_url } : undefined,
         footer: {
-          text: "SkyLife Roleplay • Good Luck! 🍀",
+          text: "🍀 SkyLife Roleplay • Good Luck! 🍀",
           icon_url: "https://skyliferoleplay.com/images/slrp-logo.png"
         },
         timestamp: new Date().toISOString()
       };
+
+      content = "# 🎉 @everyone NEW GIVEAWAY! 🎉\n\n> Don't miss your chance to win amazing prizes!";
+
     } else if (payload.type === 'winner_selected') {
       channelId = WINNER_CHANNEL_ID || "";
       if (!channelId) throw new Error("DISCORD_WINNER_CHANNEL_ID not configured");
 
       const winners = payload.winners || [];
-      const winnerMentions = winners.map((w, i) => {
-        const mention = w.discord_id ? `<@${w.discord_id}>` : `**${w.discord_username || 'Unknown User'}**`;
-        return `${i + 1}. ${mention}`;
-      }).join('\n');
+      
+      // Build winner mentions and list
+      const winnerMentions: string[] = [];
+      const winnerList: string[] = [];
+      
+      winners.forEach((w, i) => {
+        if (w.discord_id) {
+          winnerMentions.push(`<@${w.discord_id}>`);
+          winnerList.push(`${i + 1}. <@${w.discord_id}> (${w.discord_username || 'Unknown'})`);
+        } else {
+          winnerList.push(`${i + 1}. **${w.discord_username || 'Unknown User'}**`);
+        }
+      });
 
       embed = {
         title: "🏆 GIVEAWAY WINNERS ANNOUNCED! 🏆",
-        description: `**${payload.giveaway.title}**\n\n🎁 **Prize:** ${payload.giveaway.prize}\n\n**🎊 Congratulations to our winners!**\n\n${winnerMentions}`,
-        color: 0x00FF00, // Green color
+        description: `# ${payload.giveaway.title}\n\n🎊 **Congratulations to our lucky winner${winners.length > 1 ? 's' : ''}!** 🎊\n\n━━━━━━━━━━━━━━━━━━━━━━`,
+        color: 0x00FF00,
         thumbnail: payload.giveaway.prize_image_url ? { url: payload.giveaway.prize_image_url } : undefined,
         fields: [
           {
+            name: "🎁 Prize Won",
+            value: `\`\`\`${payload.giveaway.prize}\`\`\``,
+            inline: false
+          },
+          {
+            name: "👑 Winner" + (winners.length > 1 ? 's' : ''),
+            value: winnerList.join('\n') || 'No winners',
+            inline: false
+          },
+          {
+            name: "\u200B",
+            value: "━━━━━━━━━━━━━━━━━━━━━━",
+            inline: false
+          },
+          {
             name: "📬 Claim Your Prize",
-            value: "Winners will be contacted via Discord DM to claim their prizes!",
+            value: "Winners will be contacted via **Discord DM** to claim their prizes!\nPlease make sure your DMs are open.",
             inline: false
           }
         ],
         footer: {
-          text: "SkyLife Roleplay • Thank you for participating! 🙏",
+          text: "🙏 SkyLife Roleplay • Thank you for participating!",
           icon_url: "https://skyliferoleplay.com/images/slrp-logo.png"
         },
         timestamp: new Date().toISOString()
       };
+
+      // Build the content message with winner mentions
+      const mentionString = winnerMentions.length > 0 ? winnerMentions.join(' ') : '';
+      content = `# 🎉 CONGRATULATIONS! 🎉\n\n${mentionString}\n\n> You have won the **${payload.giveaway.title}** giveaway!`;
+
     } else {
       throw new Error("Invalid payload type");
     }
+
+    console.log("Sending to Discord channel:", channelId);
 
     // Send to Discord
     const discordResponse = await fetch(
@@ -120,10 +165,11 @@ serve(async (req) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          content: payload.type === 'winner_selected' && payload.winners?.length 
-            ? `🎉 ${payload.winners.map(w => w.discord_id ? `<@${w.discord_id}>` : '').filter(Boolean).join(' ')} 🎉`
-            : "@everyone 🎁",
-          embeds: [embed]
+          content: content,
+          embeds: [embed],
+          allowed_mentions: {
+            parse: ["everyone", "users"]
+          }
         }),
       }
     );
@@ -131,11 +177,14 @@ serve(async (req) => {
     if (!discordResponse.ok) {
       const errorText = await discordResponse.text();
       console.error("Discord API error:", errorText);
-      throw new Error(`Discord API error: ${discordResponse.status}`);
+      throw new Error(`Discord API error: ${discordResponse.status} - ${errorText}`);
     }
 
+    const result = await discordResponse.json();
+    console.log("Discord message sent successfully:", result.id);
+
     return new Response(
-      JSON.stringify({ success: true }),
+      JSON.stringify({ success: true, message_id: result.id }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: any) {
