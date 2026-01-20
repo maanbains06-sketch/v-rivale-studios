@@ -9,6 +9,7 @@ const corsHeaders = {
 interface GiveawayPayload {
   type: 'new_giveaway' | 'winner_selected';
   giveaway: {
+    id?: string;
     title: string;
     description: string;
     prize: string;
@@ -45,12 +46,17 @@ serve(async (req) => {
     console.log("Type:", payload.type);
     console.log("Giveaway:", payload.giveaway.title);
 
-    // Create Supabase client to fetch Discord IDs if needed
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
     let channelId: string;
     let embed: any;
     let content: string;
+    let components: any[] = [];
+
+    // Website URLs
+    const WEBSITE_URL = "https://roleplay-horizon.lovable.app";
+    const GIVEAWAY_URL = `${WEBSITE_URL}/giveaway`;
+    const LOGO_URL = `${WEBSITE_URL}/images/slrp-logo.png`;
 
     if (payload.type === 'new_giveaway') {
       channelId = GIVEAWAY_CHANNEL_ID || "";
@@ -65,48 +71,104 @@ serve(async (req) => {
       const discordTimestamp = Math.floor(endDate.getTime() / 1000);
 
       embed = {
-        title: "🎁 NEW GIVEAWAY ALERT! 🎁",
-        description: `# ${payload.giveaway.title}\n\n${payload.giveaway.description || '*An amazing prize awaits!*'}\n\n━━━━━━━━━━━━━━━━━━━━━━`,
-        color: 0xFFD700, // Gold color
-        thumbnail: {
-          url: "https://cdn.discordapp.com/emojis/1234567890.gif" // You can replace with actual gif
-        },
+        title: "🎁✨ NEW GIVEAWAY ALERT ✨🎁",
+        description: [
+          `# ${payload.giveaway.title}`,
+          "",
+          payload.giveaway.description || "*An incredible prize is up for grabs!*",
+          "",
+          "```",
+          "╔═══════════════════════════════════════╗",
+          "║     🌟 DON'T MISS THIS OPPORTUNITY! 🌟     ║",
+          "╚═══════════════════════════════════════╝",
+          "```"
+        ].join("\n"),
+        color: 0xFFD700,
         fields: [
           {
-            name: "🎁 Prize",
-            value: `\`\`\`fix\n${payload.giveaway.prize}\n\`\`\``,
+            name: "🎁 PRIZE",
+            value: `>>> **${payload.giveaway.prize}**`,
             inline: false
           },
           {
             name: "🏆 Winners",
-            value: `**${payload.giveaway.winner_count}** lucky winner${payload.giveaway.winner_count > 1 ? 's' : ''} will be selected!`,
+            value: `\`${payload.giveaway.winner_count}\` lucky winner${payload.giveaway.winner_count > 1 ? 's' : ''}`,
             inline: true
           },
           {
-            name: "⏰ Ends In",
-            value: `<t:${discordTimestamp}:R>\n(<t:${discordTimestamp}:F>)`,
+            name: "⏰ Ends",
+            value: `<t:${discordTimestamp}:R>`,
             inline: true
           },
           {
-            name: "\u200B",
-            value: "━━━━━━━━━━━━━━━━━━━━━━",
+            name: "📅 End Date",
+            value: `<t:${discordTimestamp}:F>`,
+            inline: true
+          },
+          {
+            name: "━━━━━━━━━━━━━━━━━━━━",
+            value: "\u200B",
             inline: false
           },
           {
-            name: "📝 How to Enter",
-            value: "🔗 **[Click Here to Enter](https://roleplay-horizon.lovable.app/giveaway)**\n\n> Visit our website and click the **'Enter Giveaway'** button!",
+            name: "🎮 How to Enter",
+            value: [
+              ">>> 1️⃣ Click the **Enter Giveaway** button below",
+              "2️⃣ Login/Register on our website",
+              "3️⃣ Click **Enter Giveaway** on the page",
+              "",
+              "*That's it! You're in! 🎉*"
+            ].join("\n"),
             inline: false
           }
         ],
         image: payload.giveaway.prize_image_url ? { url: payload.giveaway.prize_image_url } : undefined,
+        thumbnail: {
+          url: LOGO_URL
+        },
         footer: {
-          text: "🍀 SkyLife Roleplay Giveaways • Good Luck! 🍀",
-          icon_url: "https://roleplay-horizon.lovable.app/images/slrp-logo.png"
+          text: "🍀 SkyLife Roleplay • May luck be with you! 🍀",
+          icon_url: LOGO_URL
         },
         timestamp: new Date().toISOString()
       };
 
-      content = "# 🎉 @everyone NEW GIVEAWAY! 🎉\n\n> 🎁 Don't miss your chance to win amazing prizes! 🎁";
+      content = [
+        "# 🎊 @everyone NEW GIVEAWAY! 🎊",
+        "",
+        "> 🎁 **An amazing prize awaits one lucky winner!**",
+        "> ⏰ **Limited time only - Enter now!**"
+      ].join("\n");
+
+      // Add action buttons
+      components = [
+        {
+          type: 1, // Action Row
+          components: [
+            {
+              type: 2, // Button
+              style: 5, // Link button
+              label: "🎉 Enter Giveaway",
+              url: GIVEAWAY_URL,
+              emoji: { name: "🎁" }
+            },
+            {
+              type: 2,
+              style: 5,
+              label: "📋 View All Giveaways",
+              url: GIVEAWAY_URL,
+              emoji: { name: "📋" }
+            },
+            {
+              type: 2,
+              style: 5,
+              label: "🌐 Visit Website",
+              url: WEBSITE_URL,
+              emoji: { name: "🌐" }
+            }
+          ]
+        }
+      ];
 
     } else if (payload.type === 'winner_selected') {
       channelId = WINNER_CHANNEL_ID || "";
@@ -123,13 +185,11 @@ serve(async (req) => {
       // Fetch Discord IDs for all winners from profiles if not already provided
       const enrichedWinners = await Promise.all(
         winners.map(async (winner) => {
-          // If discord_id is already provided, use it
           if (winner.discord_id) {
             console.log(`Winner ${winner.discord_username} already has Discord ID: ${winner.discord_id}`);
             return winner;
           }
           
-          // Otherwise, fetch from profiles table
           console.log(`Fetching Discord ID for user: ${winner.user_id}`);
           const { data: profile, error } = await supabase
             .from("profiles")
@@ -158,9 +218,10 @@ serve(async (req) => {
       // Build winner mentions and list
       const winnerMentions: string[] = [];
       const winnerListForEmbed: string[] = [];
+      const emojis = ['🥇', '🥈', '🥉', '🏅', '🎖️', '⭐', '✨', '💫', '🌟', '💎'];
       
       enrichedWinners.forEach((w, i) => {
-        const emoji = ['🥇', '🥈', '🥉'][i] || '🏅';
+        const emoji = emojis[i] || '🏆';
         if (w.discord_id) {
           winnerMentions.push(`<@${w.discord_id}>`);
           winnerListForEmbed.push(`${emoji} <@${w.discord_id}>`);
@@ -175,16 +236,26 @@ serve(async (req) => {
       console.log("Winner list for embed:", winnerListForEmbed);
 
       embed = {
-        title: "🏆 GIVEAWAY WINNERS ANNOUNCED! 🏆",
-        description: `# 🎊 ${payload.giveaway.title} 🎊\n\n**Congratulations to our amazing winner${enrichedWinners.length > 1 ? 's' : ''}!**\n\n━━━━━━━━━━━━━━━━━━━━━━`,
-        color: 0x00FF00, // Green color for winners
+        title: "🏆🎊 WINNERS ANNOUNCED! 🎊🏆",
+        description: [
+          `# 🎉 ${payload.giveaway.title}`,
+          "",
+          "```",
+          "╔═══════════════════════════════════════╗",
+          "║    🌟 CONGRATULATIONS WINNERS! 🌟    ║",
+          "╚═══════════════════════════════════════╝",
+          "```",
+          "",
+          "*The wait is over! Our lucky winners have been selected!*"
+        ].join("\n"),
+        color: 0x00FF00,
         thumbnail: {
-          url: payload.giveaway.prize_image_url || "https://roleplay-horizon.lovable.app/images/slrp-logo.png"
+          url: payload.giveaway.prize_image_url || LOGO_URL
         },
         fields: [
           {
             name: "🎁 Prize Won",
-            value: `\`\`\`fix\n${payload.giveaway.prize}\n\`\`\``,
+            value: `>>> **${payload.giveaway.prize}**`,
             inline: false
           },
           {
@@ -193,41 +264,94 @@ serve(async (req) => {
             inline: false
           },
           {
-            name: "\u200B",
-            value: "━━━━━━━━━━━━━━━━━━━━━━",
+            name: "━━━━━━━━━━━━━━━━━━━━",
+            value: "\u200B",
             inline: false
           },
           {
-            name: "📬 How to Claim Your Prize",
-            value: "```\n1. Check your Discord DMs\n2. Respond within 24 hours\n3. Follow the instructions to claim!\n```",
+            name: "📬 Prize Claim Instructions",
+            value: [
+              ">>> **Step 1:** Check your Discord DMs 📩",
+              "**Step 2:** Respond within 24 hours ⏰",
+              "**Step 3:** Follow the claim instructions 📋",
+              "**Step 4:** Enjoy your prize! 🎉"
+            ].join("\n"),
             inline: false
           },
           {
-            name: "⚠️ Important",
-            value: "> Make sure your DMs are **open** so we can contact you!\n> Prize must be claimed within **48 hours** or a new winner will be selected.",
+            name: "⚠️ Important Notice",
+            value: [
+              "```diff",
+              "+ Make sure your DMs are OPEN!",
+              "- Prize must be claimed within 48 hours",
+              "- Unclaimed prizes will be redrawn",
+              "```"
+            ].join("\n"),
             inline: false
           }
         ],
+        image: {
+          url: payload.giveaway.prize_image_url || undefined
+        },
         footer: {
           text: "🙏 Thank you to everyone who participated! • SkyLife Roleplay",
-          icon_url: "https://roleplay-horizon.lovable.app/images/slrp-logo.png"
+          icon_url: LOGO_URL
         },
         timestamp: new Date().toISOString()
       };
 
       // Build the content message with all winner mentions at the start
       const mentionString = winnerMentions.length > 0 ? winnerMentions.join(' ') : '';
-      content = `# 🎉🎊 CONGRATULATIONS TO OUR WINNERS! 🎊🎉\n\n${mentionString}\n\n> 🏆 You have won the **${payload.giveaway.title}** giveaway!\n> 📬 Check your DMs for prize claim instructions!`;
+      content = [
+        "# 🎊✨ GIVEAWAY WINNERS! ✨🎊",
+        "",
+        `${mentionString}`,
+        "",
+        `> 🏆 **Congratulations! You won the ${payload.giveaway.title}!**`,
+        "> 📬 **Check your DMs for prize claim instructions!**"
+      ].join("\n");
       
       console.log("Final content message:", content);
+
+      // Add action buttons for winners
+      components = [
+        {
+          type: 1,
+          components: [
+            {
+              type: 2,
+              style: 5,
+              label: "🎁 View More Giveaways",
+              url: GIVEAWAY_URL,
+              emoji: { name: "🎁" }
+            },
+            {
+              type: 2,
+              style: 5,
+              label: "🌐 Visit Website",
+              url: WEBSITE_URL,
+              emoji: { name: "🌐" }
+            }
+          ]
+        }
+      ];
 
     } else {
       throw new Error("Invalid payload type: " + payload.type);
     }
 
-    console.log("Sending message to Discord channel:", channelId);
+    // Build allowed_mentions properly - users and parse:["users"] are mutually exclusive
+    const winnerDiscordIds = payload.winners?.filter(w => w.discord_id).map(w => w.discord_id) || [];
+    const allowedMentions: any = {
+      parse: ["everyone"]
+    };
+    
+    // If we have specific user IDs, use those instead of parse: ["users"]
+    if (winnerDiscordIds.length > 0) {
+      allowedMentions.users = winnerDiscordIds;
+    }
 
-    // Send to Discord
+    // Send to Discord with components (buttons)
     const discordResponse = await fetch(
       `https://discord.com/api/v10/channels/${channelId}/messages`,
       {
@@ -239,10 +363,8 @@ serve(async (req) => {
         body: JSON.stringify({
           content: content,
           embeds: [embed],
-          allowed_mentions: {
-            parse: ["everyone", "users"],
-            users: payload.winners?.filter(w => w.discord_id).map(w => w.discord_id) || []
-          }
+          components: components,
+          allowed_mentions: allowedMentions
         }),
       }
     );
