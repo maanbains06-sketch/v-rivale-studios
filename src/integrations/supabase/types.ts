@@ -1639,7 +1639,9 @@ export type Database = {
       }
       staff_members: {
         Row: {
+          badge_number: string | null
           bio: string | null
+          call_sign: string | null
           created_at: string | null
           department: string
           discord_avatar: string | null
@@ -1647,6 +1649,7 @@ export type Database = {
           discord_id: string
           discord_username: string | null
           display_order: number | null
+          division: string | null
           email: string | null
           id: string
           is_active: boolean | null
@@ -1655,13 +1658,17 @@ export type Database = {
           responsibilities: string[] | null
           role: string
           role_type: string
+          status: string
           steam_id: string | null
+          strikes: string | null
           timezone: string | null
           updated_at: string | null
           user_id: string | null
         }
         Insert: {
+          badge_number?: string | null
           bio?: string | null
+          call_sign?: string | null
           created_at?: string | null
           department: string
           discord_avatar?: string | null
@@ -1669,6 +1676,7 @@ export type Database = {
           discord_id: string
           discord_username?: string | null
           display_order?: number | null
+          division?: string | null
           email?: string | null
           id?: string
           is_active?: boolean | null
@@ -1677,13 +1685,17 @@ export type Database = {
           responsibilities?: string[] | null
           role: string
           role_type: string
+          status?: string
           steam_id?: string | null
+          strikes?: string | null
           timezone?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
         Update: {
+          badge_number?: string | null
           bio?: string | null
+          call_sign?: string | null
           created_at?: string | null
           department?: string
           discord_avatar?: string | null
@@ -1691,6 +1703,7 @@ export type Database = {
           discord_id?: string
           discord_username?: string | null
           display_order?: number | null
+          division?: string | null
           email?: string | null
           id?: string
           is_active?: boolean | null
@@ -1699,7 +1712,9 @@ export type Database = {
           responsibilities?: string[] | null
           role?: string
           role_type?: string
+          status?: string
           steam_id?: string | null
+          strikes?: string | null
           timezone?: string | null
           updated_at?: string | null
           user_id?: string | null
