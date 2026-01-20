@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useRosterAccess } from "@/hooks/useRosterAccess";
 import { 
   Shield, 
   Siren, 
@@ -27,7 +28,8 @@ import {
   ChevronRight,
   Pencil,
   Save,
-  X
+  X,
+  Lock
 } from "lucide-react";
 import headerJobsBg from "@/assets/header-guides-new.jpg";
 
@@ -156,9 +158,14 @@ const Roster = () => {
   const [editMode, setEditMode] = useState<Record<string, boolean>>({});
   const [editedData, setEditedData] = useState<Record<string, Record<string, RosterMember>>>({});
   const [saving, setSaving] = useState(false);
+  const { hasAccess, loading: accessLoading, isOwner } = useRosterAccess();
 
   useEffect(() => {
     const fetchStaff = async () => {
+      if (!hasAccess && !accessLoading) {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       const { data } = await supabase
         .from('staff_members')
@@ -168,8 +175,11 @@ const Roster = () => {
       setStaffMembers(data || []);
       setLoading(false);
     };
-    fetchStaff();
-  }, []);
+    
+    if (!accessLoading) {
+      fetchStaff();
+    }
+  }, [hasAccess, accessLoading]);
 
   const getDepartmentMembers = (key: string, filters: string[]): RosterMember[] => {
     const staff = staffMembers.filter(s => 
@@ -329,6 +339,55 @@ const Roster = () => {
     return (member[field] as string) || '';
   };
 
+  // Show loading while checking access
+  if (accessLoading || loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <PageHeader 
+          title="Department Rosters"
+          description="Official personnel listings for all departments"
+          badge="Official Rosters"
+          backgroundImage={headerJobsBg}
+        />
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show access denied message for unauthorized users
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <PageHeader 
+          title="Department Rosters"
+          description="Official personnel listings for all departments"
+          badge="Restricted Access"
+          backgroundImage={headerJobsBg}
+        />
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="w-20 h-20 rounded-full bg-destructive/10 flex items-center justify-center mb-6">
+              <Lock className="w-10 h-10 text-destructive" />
+            </div>
+            <h2 className="text-2xl font-bold text-foreground mb-3">Access Restricted</h2>
+            <p className="text-muted-foreground max-w-md mb-6">
+              You don't have permission to view the department rosters. This page is only accessible to staff members and users with specific Discord roles.
+            </p>
+            <Button variant="outline" onClick={() => window.history.back()}>
+              Go Back
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -340,11 +399,7 @@ const Roster = () => {
       />
 
       <div className="container mx-auto px-4 py-8">
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          </div>
-        ) : (
+        {(
           <Tabs defaultValue="police-department" className="space-y-8">
             <ScrollArea className="w-full">
               <TabsList className="inline-flex w-auto gap-1 p-1.5 bg-card/80 backdrop-blur-sm rounded-xl border border-border shadow-xl">
