@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 import { NotificationBell } from "./NotificationBell";
 import { useStaffRole } from "@/hooks/useStaffRole";
+import { useRosterAccess } from "@/hooks/useRosterAccess";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useWebsitePresence } from "@/hooks/useWebsitePresence";
 import {
@@ -54,6 +55,7 @@ const Navigation = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAdmin, department, loading } = useStaffRole();
+  const { hasAccess: hasRosterAccess, loading: rosterLoading } = useRosterAccess();
 
   // Track staff presence when logged in with Discord ID
   useWebsitePresence({ 
@@ -281,13 +283,15 @@ const Navigation = () => {
             >
               Support
             </NavLink>
-            <NavLink 
-              to="/roster" 
-              className="text-foreground/80 hover:text-primary transition-colors"
-              activeClassName="text-primary"
-            >
-              Roster
-            </NavLink>
+            {hasRosterAccess && (
+              <NavLink 
+                to="/roster" 
+                className="text-foreground/80 hover:text-primary transition-colors"
+                activeClassName="text-primary"
+              >
+                Roster
+              </NavLink>
+            )}
             <NavLink 
               to="/giveaway" 
               className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1"
@@ -432,9 +436,11 @@ const Navigation = () => {
                         Support Chat
                       </Link>
                     </Button>
-                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
-                      <Link to="/roster">Roster</Link>
-                    </Button>
+                    {hasRosterAccess && (
+                      <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                        <Link to="/roster">Roster</Link>
+                      </Button>
+                    )}
                     <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
                       <Link to="/giveaway" className="flex items-center">
                         <Gift className="w-4 h-4 mr-2" />

@@ -30,8 +30,19 @@ import {
   Save,
   X,
   Lock,
-  UserPlus
+  UserPlus,
+  Trash2
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import AddStaffDialog from "@/components/AddStaffDialog";
 import headerJobsBg from "@/assets/header-guides-new.jpg";
 
@@ -232,6 +243,9 @@ const Roster = () => {
   const [editedData, setEditedData] = useState<Record<string, Record<string, RosterMember>>>({});
   const [saving, setSaving] = useState(false);
   const [addStaffDialogOpen, setAddStaffDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [memberToDelete, setMemberToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [selectedDeptForAdd, setSelectedDeptForAdd] = useState<{
     departmentLabel: string;
     departmentKey: string;
@@ -297,6 +311,38 @@ const Roster = () => {
 
   const handleAddStaffSuccess = () => {
     fetchStaff();
+  };
+
+  const handleDeleteStaff = async () => {
+    if (!memberToDelete || !canEdit) return;
+    
+    setDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('staff_members')
+        .delete()
+        .eq('id', memberToDelete.id);
+
+      if (error) {
+        console.error('Error deleting staff member:', error);
+        toast.error('Failed to delete staff member');
+      } else {
+        toast.success(`${memberToDelete.name || 'Staff member'} has been removed from the roster`);
+        await fetchStaff();
+      }
+    } catch (error: any) {
+      console.error('Error deleting staff:', error);
+      toast.error(error.message || 'Failed to delete staff member');
+    } finally {
+      setDeleting(false);
+      setDeleteDialogOpen(false);
+      setMemberToDelete(null);
+    }
+  };
+
+  const confirmDelete = (member: RosterMember) => {
+    setMemberToDelete({ id: member.id, name: member.name });
+    setDeleteDialogOpen(true);
   };
 
   const getDepartmentMembers = (key: string, filters: string[]): RosterMember[] => {
@@ -731,7 +777,7 @@ const Roster = () => {
                             </div>
 
                             {/* Table Header */}
-                            <div className="grid grid-cols-7 px-5 py-3 bg-muted/30 border-b border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            <div className={`grid ${canEdit ? 'grid-cols-8' : 'grid-cols-7'} px-5 py-3 bg-muted/30 border-b border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground`}>
                               <div className="flex items-center gap-2">
                                 <span className="w-8" />
                                 <span>Officer</span>
@@ -742,6 +788,7 @@ const Roster = () => {
                               <div className="text-center">Status</div>
                               <div className="text-center">Division</div>
                               <div className="text-center">Unit</div>
+                              {canEdit && <div className="text-center">Actions</div>}
                             </div>
 
                             {/* Members */}
@@ -749,7 +796,7 @@ const Roster = () => {
                               {members.length > 0 ? members.map((member, idx) => (
                                 <div 
                                   key={member.id}
-                                  className={`grid grid-cols-7 px-5 py-3 items-center transition-colors hover:bg-muted/30
+                                  className={`grid ${canEdit ? 'grid-cols-8' : 'grid-cols-7'} px-5 py-3 items-center transition-colors hover:bg-muted/30
                                     ${idx % 2 === 0 ? 'bg-transparent' : 'bg-muted/10'}`}
                                 >
                                   {/* Officer */}
@@ -914,6 +961,21 @@ const Roster = () => {
                                       <span className="text-muted-foreground text-sm">{member.call_sign || '-'}</span>
                                     )}
                                   </div>
+
+                                  {/* Actions - Delete */}
+                                  {canEdit && (
+                                    <div className="flex justify-center">
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => confirmDelete(member)}
+                                        className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                        title="Delete staff member"
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </Button>
+                                    </div>
+                                  )}
                                 </div>
                               )) : (
                                 <div className="flex items-center justify-center py-6 text-muted-foreground text-sm italic">
@@ -1000,6 +1062,35 @@ const Roster = () => {
             onSuccess={handleAddStaffSuccess}
           />
         )}
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Staff Member</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to remove <strong>{memberToDelete?.name || 'this staff member'}</strong> from the roster? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteStaff}
+                disabled={deleting}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  'Delete'
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
