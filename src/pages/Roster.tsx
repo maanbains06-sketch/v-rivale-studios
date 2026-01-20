@@ -19,6 +19,7 @@ import {
   Gavel,
   Tv,
   Car,
+  Building,
   Loader2,
   Users,
   Star,
@@ -137,6 +138,13 @@ const divisionOptionsByDept: Record<string, { value: string; label: string }[]> 
     { value: 'Defense', label: 'Defense' },
     { value: 'Administration', label: 'Administration' },
   ],
+  state: [
+    { value: 'Executive Office', label: 'Executive Office' },
+    { value: 'Highway Patrol', label: 'Highway Patrol' },
+    { value: 'Investigations', label: 'Investigations' },
+    { value: 'Licensing', label: 'Licensing' },
+    { value: 'Administration', label: 'Administration' },
+  ],
   weazel: [
     { value: 'Management', label: 'Management' },
     { value: 'On-Air', label: 'On-Air' },
@@ -202,6 +210,13 @@ const unitOptionsByDept: Record<string, { value: string; label: string }[]> = {
     { value: 'CHAMBERS', label: 'CHAMBERS' },
     { value: 'PROSECUTION', label: 'PROSECUTION' },
     { value: 'DEFENSE', label: 'DEFENSE' },
+  ],
+  state: [
+    { value: 'GOVERNOR', label: 'GOVERNOR' },
+    { value: 'HIGHWAY-1', label: 'HIGHWAY-1' },
+    { value: 'HIGHWAY-2', label: 'HIGHWAY-2' },
+    { value: 'SPECIAL-OPS', label: 'SPECIAL-OPS' },
+    { value: 'ADMIN', label: 'ADMIN' },
   ],
   weazel: [
     { value: 'NEWS-VAN-1', label: 'NEWS-VAN-1' },
@@ -417,6 +432,14 @@ const Roster = () => {
       accentColor: "cyan",
       members: getDepartmentMembers('pdm', ['pdm', 'motorsport', 'dealership', 'deluxe']),
       ranks: ['General Manager', 'Sales Manager', 'Senior Sales', 'Sales Associate', 'Sales Trainee'],
+    },
+    {
+      department: "State Department",
+      shortName: "State",
+      icon: <Building className="w-4 h-4" />,
+      accentColor: "emerald",
+      members: getDepartmentMembers('state', ['state', 'government', 'governor', 'sahp', 'highway']),
+      ranks: ['Governor', 'Lieutenant Governor', 'Secretary of State', 'State Trooper Commander', 'Senior Trooper', 'State Trooper', 'Trooper Cadet'],
     },
     {
       department: "Server Staff",
