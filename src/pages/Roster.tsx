@@ -206,6 +206,7 @@ const divisionOptionsByDept: Record<string, { value: string; label: string }[]> 
     { value: 'Training', label: 'Training' },
   ],
   staff: [
+    { value: 'Leadership', label: 'Leadership' },
     { value: 'Administration', label: 'Administration' },
     { value: 'Management', label: 'Management' },
     { value: 'Support', label: 'Support' },
@@ -298,10 +299,10 @@ const Roster = () => {
   const [saving, setSaving] = useState(false);
   const [addStaffDialogOpen, setAddStaffDialogOpen] = useState(false);
   const [selectedDeptForAdd, setSelectedDeptForAdd] = useState<{
-    department: string;
+    departmentLabel: string;
+    departmentKey: string;
     shortName: string;
     ranks: string[];
-    deptKey: string;
   } | null>(null);
   const { hasAccess, canEdit, loading: accessLoading, isOwner } = useRosterAccess();
 
@@ -336,10 +337,10 @@ const Roster = () => {
 
   const handleOpenAddStaffDialog = (dept: { department: string; shortName: string; ranks?: string[] }, deptKey: string) => {
     setSelectedDeptForAdd({
-      department: dept.department,
+      departmentLabel: dept.department,
+      departmentKey: deptKey,
       shortName: dept.shortName,
       ranks: dept.ranks || [],
-      deptKey,
     });
     setAddStaffDialogOpen(true);
   };
@@ -1014,7 +1015,8 @@ const Roster = () => {
           <AddStaffDialog
             open={addStaffDialogOpen}
             onOpenChange={setAddStaffDialogOpen}
-            department={selectedDeptForAdd.department}
+            departmentLabel={selectedDeptForAdd.departmentLabel}
+            departmentKey={selectedDeptForAdd.departmentKey}
             ranks={selectedDeptForAdd.ranks}
             divisionOptions={divisionOptionsByDept[selectedDeptForAdd.shortName.toLowerCase()] || divisionOptions}
             unitOptions={unitOptionsByDept[selectedDeptForAdd.shortName.toLowerCase()] || []}

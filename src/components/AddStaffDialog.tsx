@@ -11,7 +11,8 @@ import { Loader2, UserPlus } from "lucide-react";
 interface AddStaffDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  department: string;
+  departmentLabel: string;
+  departmentKey: string;
   ranks: string[];
   divisionOptions: { value: string; label: string }[];
   unitOptions: { value: string; label: string }[];
@@ -27,7 +28,8 @@ const statusOptions = [
 const AddStaffDialog = ({
   open,
   onOpenChange,
-  department,
+  departmentLabel,
+  departmentKey,
   ranks,
   divisionOptions,
   unitOptions,
@@ -60,7 +62,7 @@ const AddStaffDialog = ({
           name: formData.name,
           role: formData.rank,
           role_type: 'user',
-          department,
+          department: departmentKey,
           badge_number: formData.badge_number || null,
           status: formData.status,
           division: formData.division || null,
@@ -111,7 +113,7 @@ const AddStaffDialog = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <UserPlus className="w-5 h-5 text-primary" />
-            Add Staff to {department}
+            Add Staff to {departmentLabel}
           </DialogTitle>
         </DialogHeader>
 
