@@ -56,73 +56,7 @@ interface DepartmentRoster {
   ranks?: string[];
 }
 
-const exampleRosterData: Record<string, RosterMember[]> = {
-  police: [
-    { id: 'ex1', name: 'Aero Souls', rank: 'Police Supervisor', badge_number: '1-ADAM-1', status: 'active', division: 'Administration', strikes: '-' },
-    { id: 'ex2', name: 'Jose Hernandez', rank: 'Police Supervisor', badge_number: '1-ADAM-2', status: 'active', division: 'Administration', strikes: '-' },
-    { id: 'ex3', name: 'Jose Hernandez', rank: 'Police Commissioner', badge_number: '2-BRAVO-3', status: 'active', division: 'Administration', strikes: '-' },
-    { id: 'ex4', name: '', rank: 'Police Chief', badge_number: '3-CHARLIE-4', status: 'inactive', division: 'Administration', strikes: '0/2' },
-    { id: 'ex5', name: '', rank: 'Police Asst. Chief', badge_number: '3-CHARLIE-5', status: 'inactive', division: 'Administration', strikes: '0/2' },
-    { id: 'ex6', name: '', rank: 'Police Deputy Chief', badge_number: '3-CHARLIE-6', status: 'inactive', division: 'Administration', strikes: '0/2' },
-    { id: 'ex7', name: 'Jason Flynn', rank: 'Major', badge_number: '4-DELTA-7', status: 'inactive', division: 'Administration', strikes: '0/2' },
-    { id: 'ex8', name: '', rank: 'Captain', badge_number: '5-ECHO-8', status: 'inactive', division: 'Patrol', strikes: '0/2' },
-    { id: 'ex9', name: '', rank: 'Captain', badge_number: '5-ECHO-9', status: 'inactive', division: 'Patrol', strikes: '0/2' },
-    { id: 'ex10', name: '', rank: 'Captain', badge_number: '5-ECHO-10', status: 'inactive', division: 'Traffic Enforcement', strikes: '0/2' },
-    { id: 'ex11', name: '', rank: 'Lieutenant', badge_number: '6-FOXTROT-10', status: 'inactive', division: 'Patrol', strikes: '0/2' },
-    { id: 'ex12', name: '', rank: 'Lieutenant', badge_number: '6-FOXTROT-11', status: 'inactive', division: 'Investigations', strikes: '0/2' },
-    { id: 'ex13', name: '', rank: 'Sergeant', badge_number: '7-GOLF-14', status: 'inactive', division: 'Patrol', strikes: '0/3' },
-    { id: 'ex14', name: '', rank: 'Sergeant', badge_number: '7-GOLF-15', status: 'inactive', division: 'Traffic Enforcement', strikes: '0/3' },
-    { id: 'ex15', name: 'John Helper', rank: 'Corporal', badge_number: '8-HOTEL-20', status: 'active', division: 'Patrol', strikes: '0/3' },
-    { id: 'ex16', name: '', rank: 'Senior Officer', badge_number: '9-INDIA-25', status: 'inactive', division: 'Patrol', strikes: '0/3' },
-    { id: 'ex17', name: '', rank: 'Officer', badge_number: '10-JULIET-30', status: 'inactive', division: 'Patrol', strikes: '0/3' },
-    { id: 'ex18', name: '', rank: 'Cadet', badge_number: '11-KILO-35', status: 'inactive', division: 'Training', strikes: '0/3' },
-    { id: 'ex19', name: '', rank: 'Solo Cadet', badge_number: '12-LIMA-40', status: 'inactive', division: 'Training', strikes: '0/3' },
-  ],
-  ems: [
-    { id: 'ems1', name: 'Sarah Hayes', rank: 'EMS Director', badge_number: 'MED-1', status: 'active', division: 'Administration', strikes: '-' },
-    { id: 'ems2', name: 'Michael Foster', rank: 'Chief Physician', badge_number: 'DOC-1', status: 'active', division: 'Medical', strikes: '-' },
-    { id: 'ems3', name: 'Lisa Wong', rank: 'Senior Paramedic', badge_number: 'PARA-5', status: 'active', division: 'Field Ops', strikes: '0/3' },
-    { id: 'ems4', name: 'John Blake', rank: 'Paramedic', badge_number: 'PARA-10', status: 'active', division: 'Field Ops', strikes: '0/3' },
-    { id: 'ems5', name: 'Rachel Green', rank: 'EMT', badge_number: 'EMT-15', status: 'active', division: 'Field Ops', strikes: '0/3' },
-    { id: 'ems6', name: 'David Kim', rank: 'EMT Trainee', badge_number: 'EMT-20', status: 'on_leave', division: 'Training', strikes: '0/3' },
-  ],
-  fire: [
-    { id: 'fire1', name: 'Marcus Brown', rank: 'Fire Chief', badge_number: 'FC-1', status: 'active', division: 'Command', strikes: '-' },
-    { id: 'fire2', name: 'James Walker', rank: 'Captain', badge_number: 'FC-5', status: 'active', division: 'Engine 1', strikes: '0/2' },
-    { id: 'fire3', name: 'Anna Torres', rank: 'Lieutenant', badge_number: 'FC-10', status: 'active', division: 'Ladder 1', strikes: '0/2' },
-    { id: 'fire4', name: 'Mike Stone', rank: 'Senior Firefighter', badge_number: 'FF-15', status: 'active', division: 'Engine 2', strikes: '0/3' },
-    { id: 'fire5', name: 'Emily Ross', rank: 'Firefighter', badge_number: 'FF-20', status: 'active', division: 'Engine 1', strikes: '0/3' },
-    { id: 'fire6', name: 'Jake Hill', rank: 'Probationary', badge_number: 'FF-25', status: 'active', division: 'Training', strikes: '0/3' },
-  ],
-  mechanic: [
-    { id: 'mech1', name: 'Tony Rizzo', rank: 'Head Mechanic', badge_number: 'M-001', status: 'active', division: 'Management', strikes: '-' },
-    { id: 'mech2', name: 'Carlos Mendez', rank: 'Senior Mechanic', badge_number: 'M-002', status: 'active', division: 'Repairs', strikes: '0/3' },
-    { id: 'mech3', name: 'Nina Patel', rank: 'Mechanic', badge_number: 'M-003', status: 'active', division: 'Repairs', strikes: '0/3' },
-    { id: 'mech4', name: 'Chris O\'Brien', rank: 'Junior Mechanic', badge_number: 'M-004', status: 'active', division: 'Repairs', strikes: '0/3' },
-    { id: 'mech5', name: 'Alex Turner', rank: 'Apprentice', badge_number: 'M-005', status: 'on_leave', division: 'Training', strikes: '0/3' },
-  ],
-  doj: [
-    { id: 'doj1', name: 'Hon. Robert Clarke', rank: 'Chief Justice', badge_number: 'J-001', status: 'active', division: 'Judiciary', strikes: '-' },
-    { id: 'doj2', name: 'Hon. Maria Santos', rank: 'Senior Judge', badge_number: 'J-002', status: 'active', division: 'Judiciary', strikes: '-' },
-    { id: 'doj3', name: 'Smith', rank: 'Attorney General', badge_number: 'AG-001', status: 'active', division: 'Prosecution', strikes: '-' },
-    { id: 'doj4', name: 'Jennifer White', rank: 'Asst. District Attorney', badge_number: 'ADA-001', status: 'active', division: 'Prosecution', strikes: '0/2' },
-    { id: 'doj5', name: 'Mark Lee', rank: 'Public Defender', badge_number: 'PD-001', status: 'active', division: 'Defense', strikes: '0/2' },
-  ],
-  weazel: [
-    { id: 'wz1', name: 'Victoria Sterling', rank: 'News Director', badge_number: 'WN-001', status: 'active', division: 'Management', strikes: '-' },
-    { id: 'wz2', name: 'Ryan Cooper', rank: 'Lead Anchor', badge_number: 'WN-002', status: 'active', division: 'On-Air', strikes: '0/2' },
-    { id: 'wz3', name: 'Jessica Lane', rank: 'Field Reporter', badge_number: 'WN-003', status: 'active', division: 'Field', strikes: '0/3' },
-    { id: 'wz4', name: 'Tommy Vance', rank: 'Cameraman', badge_number: 'WN-004', status: 'active', division: 'Production', strikes: '0/3' },
-    { id: 'wz5', name: 'Sophie Chen', rank: 'Intern Reporter', badge_number: 'WN-005', status: 'on_leave', division: 'Training', strikes: '0/3' },
-  ],
-  pdm: [
-    { id: 'pdm1', name: 'Vincent Romano', rank: 'General Manager', badge_number: 'PDM-001', status: 'active', division: 'Management', strikes: '-' },
-    { id: 'pdm2', name: 'Ashley Brooks', rank: 'Sales Manager', badge_number: 'PDM-002', status: 'active', division: 'Sales', strikes: '0/2' },
-    { id: 'pdm3', name: 'Derek Miles', rank: 'Senior Sales', badge_number: 'PDM-003', status: 'active', division: 'Sales', strikes: '0/3' },
-    { id: 'pdm4', name: 'Natalie Reed', rank: 'Sales Associate', badge_number: 'PDM-004', status: 'active', division: 'Sales', strikes: '0/3' },
-    { id: 'pdm5', name: 'Kevin Hart', rank: 'Sales Trainee', badge_number: 'PDM-005', status: 'active', division: 'Training', strikes: '0/3' },
-  ],
-};
+// No example data - all rank sections always visible
 
 const getRankIcon = (index: number) => {
   if (index === 0) return <Crown className="w-4 h-4 text-yellow-400" />;
@@ -366,7 +300,7 @@ const Roster = () => {
   };
 
   const getDepartmentMembers = (key: string, filters: string[]): RosterMember[] => {
-    const staff = staffMembers
+    return staffMembers
       .filter((s) => filters.some((f) => s.department?.toLowerCase().includes(f)))
       .map((s) => ({
         id: s.id,
@@ -379,8 +313,6 @@ const Roster = () => {
         discord_avatar: s.discord_avatar,
         strikes: s.strikes || '0/3',
       }));
-
-    return staff.length ? staff : exampleRosterData[key] || [];
   };
 
   const departments: DepartmentRoster[] = [
@@ -767,14 +699,12 @@ const Roster = () => {
                     </div>
                   </div>
 
-                  {/* Rank Sections */}
-                  {sorted.length > 0 ? (
-                    <div className="space-y-6">
-                      {dept.ranks?.map((rankName, rankIdx) => {
-                        const members = byRank[rankName];
-                        if (!members?.length) return null;
-
-                        return (
+                  {/* Rank Sections - Always show all ranks with proper spacing */}
+                  <div className="space-y-8">
+                    {dept.ranks?.map((rankName, rankIdx) => {
+                      const members = byRank[rankName] || [];
+                      // Always render rank section even when empty
+                      return (
                           <div 
                             key={rankName}
                             className="relative rounded-xl overflow-hidden border border-border bg-card shadow-xl"
@@ -815,8 +745,8 @@ const Roster = () => {
                             </div>
 
                             {/* Members */}
-                            <div className="divide-y divide-border/50">
-                              {members.map((member, idx) => (
+                            <div className="divide-y divide-border/50 min-h-[60px]">
+                              {members.length > 0 ? members.map((member, idx) => (
                                 <div 
                                   key={member.id}
                                   className={`grid grid-cols-7 px-5 py-3 items-center transition-colors hover:bg-muted/30
@@ -985,7 +915,11 @@ const Roster = () => {
                                     )}
                                   </div>
                                 </div>
-                              ))}
+                              )) : (
+                                <div className="flex items-center justify-center py-6 text-muted-foreground text-sm italic">
+                                  <span>No members assigned to this rank</span>
+                                </div>
+                              )}
                             </div>
                           </div>
                         );
@@ -1039,12 +973,14 @@ const Roster = () => {
                           </div>
                         ))}
                     </div>
-                  ) : (
-                    <div className="rounded-xl border border-dashed border-border p-16 text-center bg-muted/20">
-                      <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
-                      <p className="text-muted-foreground">No members in this department yet</p>
-                    </div>
-                  )}
+                    
+                    {/* Empty state when no ranks exist at all */}
+                    {!dept.ranks?.length && !sorted.length && (
+                      <div className="rounded-xl border border-dashed border-border p-16 text-center bg-muted/20">
+                        <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
+                        <p className="text-muted-foreground">No members in this department yet</p>
+                      </div>
+                    )}
                 </TabsContent>
               );
             })}
