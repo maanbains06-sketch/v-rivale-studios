@@ -16,6 +16,7 @@ interface ChannelConfig {
 
 const BASE_URL = 'https://roleplay-horizon.lovable.app/images/applications';
 
+// Only channels with images available
 const channelConfigs: ChannelConfig[] = [
   {
     name: 'Police Department',
@@ -56,38 +57,6 @@ const channelConfigs: ChannelConfig[] = [
     rejectedImage: `${BASE_URL}/doj-attorney-rejected.jpg`,
     title: 'DOJ Attorney Application',
     color: { approved: 0x8B5CF6, rejected: 0xED4245 }
-  },
-  {
-    name: 'Gang RP',
-    channelEnvKey: 'DISCORD_GANG_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/gang-approved.jpg`,
-    rejectedImage: `${BASE_URL}/gang-rejected.jpg`,
-    title: 'Gang RP Application',
-    color: { approved: 0x991B1B, rejected: 0xED4245 }
-  },
-  {
-    name: 'PDM',
-    channelEnvKey: 'DISCORD_PDM_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/pdm-approved.jpg`,
-    rejectedImage: `${BASE_URL}/pdm-rejected.jpg`,
-    title: 'PDM Dealership Application',
-    color: { approved: 0xEAB308, rejected: 0xED4245 }
-  },
-  {
-    name: 'Firefighter',
-    channelEnvKey: 'DISCORD_FIREFIGHTER_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/firefighter-approved.jpg`,
-    rejectedImage: `${BASE_URL}/firefighter-rejected.jpg`,
-    title: 'Firefighter Application',
-    color: { approved: 0xDC2626, rejected: 0xED4245 }
-  },
-  {
-    name: 'Weazel News',
-    channelEnvKey: 'DISCORD_WEAZEL_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/weazel-approved.jpg`,
-    rejectedImage: `${BASE_URL}/weazel-rejected.jpg`,
-    title: 'Weazel News Application',
-    color: { approved: 0x06B6D4, rejected: 0xED4245 }
   },
   {
     name: 'State Department',
