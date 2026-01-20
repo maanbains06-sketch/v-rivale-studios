@@ -31,7 +31,7 @@ interface AppConfig {
   color: { approved: number; rejected: number };
 }
 
-const BASE_URL = 'https://roleplay-horizon.lovable.app/images';
+const BASE_URL = 'https://obirpzwvnqveddyuulsb.supabase.co/storage/v1/object/public/discord-assets/applications';
 
 const applicationConfigs: Record<string, AppConfig> = {
   'Police Department': {
