@@ -374,63 +374,156 @@ const Roster = () => {
 
                       <CardContent className="p-0">
                         {sortedMembers.length > 0 ? (
-                          <div className="overflow-x-auto">
-                            <table className="w-full">
-                              <thead className={`${colors.bg} border-b ${colors.border}`}>
-                                <tr className="text-left text-sm">
-                                  <th className={`px-6 py-4 font-bold ${colors.text} uppercase tracking-wider`}>Rank</th>
-                                  <th className={`px-6 py-4 font-bold ${colors.text} uppercase tracking-wider`}>Name</th>
-                                  {dept.department === "Police Department" && (
-                                    <th className={`px-6 py-4 font-bold ${colors.text} uppercase tracking-wider`}>Badge #</th>
-                                  )}
-                                  {(dept.department === "Police Department" || dept.department === "Fire Department") && (
-                                    <th className={`px-6 py-4 font-bold ${colors.text} uppercase tracking-wider`}>Division</th>
-                                  )}
-                                  <th className={`px-6 py-4 font-bold ${colors.text} uppercase tracking-wider`}>Status</th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-border/30">
-                                {sortedMembers.map((member, index) => (
-                                  <motion.tr 
-                                    key={member.id}
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: index * 0.05 }}
-                                    className={`${colors.row} transition-colors`}
-                                  >
-                                    <td className={`px-6 py-4 font-semibold ${colors.text}`}>
-                                      {member.rank}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                      <div className="flex items-center gap-3">
-                                        <Avatar className="h-8 w-8 border border-border/30">
-                                          <AvatarImage src={member.discord_avatar} />
-                                          <AvatarFallback className={`${colors.bg} ${colors.text}`}>
-                                            {member.name.charAt(0)}
-                                          </AvatarFallback>
-                                        </Avatar>
-                                        <span className="font-medium">{member.name}</span>
-                                      </div>
-                                    </td>
-                                    {dept.department === "Police Department" && (
-                                      <td className="px-6 py-4 text-muted-foreground font-mono text-sm">
-                                        {member.badge_number ? `#${member.badge_number}` : '-'}
-                                      </td>
-                                    )}
-                                    {(dept.department === "Police Department" || dept.department === "Fire Department") && (
-                                      <td className="px-6 py-4">
-                                        {member.division && (
-                                          <Badge className={`${colors.bg} ${colors.text} ${colors.border}`}>
-                                            {member.division}
-                                          </Badge>
-                                        )}
-                                      </td>
-                                    )}
-                                    <td className="px-6 py-4">{getStatusBadge(member.status)}</td>
-                                  </motion.tr>
-                                ))}
-                              </tbody>
-                            </table>
+                          <div className="space-y-0">
+                            {/* Group members by rank */}
+                            {dept.ranks?.map((rankName, rankIndex) => {
+                              const membersInRank = sortedMembers.filter(m => 
+                                m.rank.toLowerCase().includes(rankName.toLowerCase()) ||
+                                rankName.toLowerCase().includes(m.rank.toLowerCase())
+                              );
+                              
+                              if (membersInRank.length === 0) return null;
+                              
+                              return (
+                                <div key={rankName} className="border-b border-border/20 last:border-b-0">
+                                  {/* Rank Section Header */}
+                                  <div className={`${colors.bg} px-6 py-3 flex items-center justify-between border-b border-border/20`}>
+                                    <div className="flex items-center gap-3">
+                                      <div className={`w-2 h-2 rounded-full ${colors.text.replace('text-', 'bg-')}`} />
+                                      <h3 className={`font-bold uppercase tracking-wider text-sm ${colors.text}`}>
+                                        {rankName}
+                                      </h3>
+                                    </div>
+                                    <Badge variant="outline" className={`${colors.border} ${colors.text} text-xs`}>
+                                      {membersInRank.length} {membersInRank.length === 1 ? 'Member' : 'Members'}
+                                    </Badge>
+                                  </div>
+                                  
+                                  {/* Members Table for this Rank */}
+                                  <div className="overflow-x-auto">
+                                    <table className="w-full">
+                                      <thead className="sr-only">
+                                        <tr>
+                                          <th>Name</th>
+                                          {dept.department === "Police Department" && <th>Badge #</th>}
+                                          {(dept.department === "Police Department" || dept.department === "Fire Department") && <th>Division</th>}
+                                          <th>Status</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody className="divide-y divide-border/10">
+                                        {membersInRank.map((member, index) => (
+                                          <motion.tr 
+                                            key={member.id}
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: (rankIndex * 0.1) + (index * 0.03) }}
+                                            className={`${colors.row} transition-colors`}
+                                          >
+                                            <td className="px-6 py-3">
+                                              <div className="flex items-center gap-3">
+                                                <Avatar className="h-9 w-9 border-2 border-border/30">
+                                                  <AvatarImage src={member.discord_avatar} />
+                                                  <AvatarFallback className={`${colors.bg} ${colors.text} font-bold`}>
+                                                    {member.name.charAt(0)}
+                                                  </AvatarFallback>
+                                                </Avatar>
+                                                <div>
+                                                  <span className="font-medium block">{member.name}</span>
+                                                  {member.call_sign && (
+                                                    <span className="text-xs text-muted-foreground">{member.call_sign}</span>
+                                                  )}
+                                                </div>
+                                              </div>
+                                            </td>
+                                            {dept.department === "Police Department" && (
+                                              <td className="px-6 py-3 text-muted-foreground font-mono text-sm">
+                                                {member.badge_number ? `#${member.badge_number}` : '-'}
+                                              </td>
+                                            )}
+                                            {(dept.department === "Police Department" || dept.department === "Fire Department") && (
+                                              <td className="px-6 py-3">
+                                                {member.division && (
+                                                  <Badge className={`${colors.bg} ${colors.text} ${colors.border} text-xs`}>
+                                                    {member.division}
+                                                  </Badge>
+                                                )}
+                                              </td>
+                                            )}
+                                            <td className="px-6 py-3">{getStatusBadge(member.status)}</td>
+                                          </motion.tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                            
+                            {/* Catch any members that don't match defined ranks */}
+                            {(() => {
+                              const unmatchedMembers = sortedMembers.filter(m => 
+                                !dept.ranks?.some(rankName => 
+                                  m.rank.toLowerCase().includes(rankName.toLowerCase()) ||
+                                  rankName.toLowerCase().includes(m.rank.toLowerCase())
+                                )
+                              );
+                              
+                              if (unmatchedMembers.length === 0) return null;
+                              
+                              return (
+                                <div className="border-t border-border/20">
+                                  <div className={`${colors.bg} px-6 py-3 flex items-center justify-between border-b border-border/20`}>
+                                    <div className="flex items-center gap-3">
+                                      <div className={`w-2 h-2 rounded-full ${colors.text.replace('text-', 'bg-')}`} />
+                                      <h3 className={`font-bold uppercase tracking-wider text-sm ${colors.text}`}>
+                                        Other Positions
+                                      </h3>
+                                    </div>
+                                    <Badge variant="outline" className={`${colors.border} ${colors.text} text-xs`}>
+                                      {unmatchedMembers.length} {unmatchedMembers.length === 1 ? 'Member' : 'Members'}
+                                    </Badge>
+                                  </div>
+                                  <div className="overflow-x-auto">
+                                    <table className="w-full">
+                                      <thead className="sr-only">
+                                        <tr>
+                                          <th>Rank</th>
+                                          <th>Name</th>
+                                          <th>Status</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody className="divide-y divide-border/10">
+                                        {unmatchedMembers.map((member, index) => (
+                                          <motion.tr 
+                                            key={member.id}
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: index * 0.03 }}
+                                            className={`${colors.row} transition-colors`}
+                                          >
+                                            <td className={`px-6 py-3 font-semibold ${colors.text} text-sm`}>
+                                              {member.rank}
+                                            </td>
+                                            <td className="px-6 py-3">
+                                              <div className="flex items-center gap-3">
+                                                <Avatar className="h-9 w-9 border-2 border-border/30">
+                                                  <AvatarImage src={member.discord_avatar} />
+                                                  <AvatarFallback className={`${colors.bg} ${colors.text} font-bold`}>
+                                                    {member.name.charAt(0)}
+                                                  </AvatarFallback>
+                                                </Avatar>
+                                                <span className="font-medium">{member.name}</span>
+                                              </div>
+                                            </td>
+                                            <td className="px-6 py-3">{getStatusBadge(member.status)}</td>
+                                          </motion.tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+                              );
+                            })()}
                           </div>
                         ) : (
                           <div className="text-center py-16 text-muted-foreground">
