@@ -45,7 +45,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import AddStaffDialog from "@/components/AddStaffDialog";
+import AddStaffByDiscordDialog from "@/components/AddStaffByDiscordDialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -1269,7 +1269,7 @@ const Roster = () => {
 
         {/* Add Staff Dialog */}
         {selectedDeptForAdd && (
-          <AddStaffDialog
+          <AddStaffByDiscordDialog
             open={addStaffDialogOpen}
             onOpenChange={setAddStaffDialogOpen}
             departmentLabel={selectedDeptForAdd.departmentLabel}
