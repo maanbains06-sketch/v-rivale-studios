@@ -178,7 +178,7 @@ const Roster = () => {
       icon: <Siren className="w-4 h-4" />,
       accentColor: "blue",
       members: getDepartmentMembers('police', ['police', 'pd', 'lspd']),
-      ranks: ['Police Supervisor', 'Police Commissioner', 'Police Chief', 'Police Asst. Chief', 'Police Deputy Chief', 'Major', 'Captain', 'Lieutenant', 'Sergeant', 'Corporal', 'Senior Officer', 'Officer', 'Cadet', 'Solo Cadet'],
+      ranks: ['Police Supervisor', 'Police Commissioner', 'Police Chief', 'Police Asst. Chief', 'Police Deputy Chief', 'Major', 'Captain', 'Lieutenant', 'Sergeant', 'Corporal', 'Senior Officer', 'Officer', 'Solo Cadet', 'Cadet'],
     },
     {
       department: "EMS Department",
