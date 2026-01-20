@@ -38,7 +38,6 @@ export const FeaturedStreamersManager = () => {
   const { logAction } = useOwnerAuditLog();
   const [youtubers, setYoutubers] = useState<FeaturedYoutuber[]>([]);
   const [loading, setLoading] = useState(true);
-  const [adding, setAdding] = useState(false);
   const [channelUrl, setChannelUrl] = useState('');
   const [fetchingChannel, setFetchingChannel] = useState(false);
 
@@ -63,27 +62,6 @@ export const FeaturedStreamersManager = () => {
     }
   };
 
-  const extractChannelInfo = (url: string) => {
-    // Basic extraction - in production this would use YouTube API
-    const patterns = [
-      /youtube\.com\/channel\/([^\/]+)/,
-      /youtube\.com\/c\/([^\/]+)/,
-      /youtube\.com\/@([^\/]+)/,
-      /youtube\.com\/user\/([^\/]+)/
-    ];
-
-    for (const pattern of patterns) {
-      const match = url.match(pattern);
-      if (match) {
-        return {
-          channelId: match[1],
-          channelName: match[1].replace(/@/, '').replace(/-/g, ' '),
-        };
-      }
-    }
-    return null;
-  };
-
   const addYoutuber = async () => {
     if (!channelUrl.trim()) {
       toast({
@@ -96,24 +74,24 @@ export const FeaturedStreamersManager = () => {
 
     setFetchingChannel(true);
     try {
-      const channelInfo = extractChannelInfo(channelUrl);
+      // Call edge function to fetch YouTube channel info
+      const { data: channelInfo, error: fetchError } = await supabase.functions.invoke('fetch-youtube-channel', {
+        body: { channelUrl }
+      });
+
+      if (fetchError) throw fetchError;
       
-      if (!channelInfo) {
-        toast({
-          title: "Invalid URL",
-          description: "Please enter a valid YouTube channel URL",
-          variant: "destructive",
-        });
-        return;
+      if (!channelInfo || channelInfo.error) {
+        throw new Error(channelInfo?.error || 'Failed to fetch channel info');
       }
 
-      // Create entry with extracted info
+      // Create entry with fetched info
       const { data, error } = await supabase
         .from('featured_youtubers')
         .insert({
           name: channelInfo.channelName,
           channel_url: channelUrl,
-          avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent(channelInfo.channelName)}&background=random&size=128`,
+          avatar_url: channelInfo.avatarUrl,
           role: 'Content Creator',
           is_active: true,
           is_live: false,
@@ -284,7 +262,7 @@ export const FeaturedStreamersManager = () => {
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
-            Supported formats: youtube.com/@username, youtube.com/c/channelname, youtube.com/channel/ID
+            The channel name and profile image will be automatically fetched from YouTube.
           </p>
         </div>
 
