@@ -282,7 +282,14 @@ const Navigation = () => {
               Support
             </NavLink>
             <NavLink 
-              to="/community" 
+              to="/roster" 
+              className="text-foreground/80 hover:text-primary transition-colors"
+              activeClassName="text-primary"
+            >
+              Roster
+            </NavLink>
+            <NavLink 
+              to="/giveaway" 
               className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1"
               activeClassName="text-primary"
             >
@@ -426,7 +433,10 @@ const Navigation = () => {
                       </Link>
                     </Button>
                     <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
-                      <Link to="/community" className="flex items-center">
+                      <Link to="/roster">Roster</Link>
+                    </Button>
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/giveaway" className="flex items-center">
                         <Gift className="w-4 h-4 mr-2" />
                         Giveaway
                       </Link>
