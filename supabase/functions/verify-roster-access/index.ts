@@ -81,7 +81,7 @@ serve(async (req: Request): Promise<Response> => {
 
     console.log(`Checking roster access for Discord ID: ${discordId}`);
 
-    // Fetch guild member data
+    // Fetch guild member data to get their roles
     const memberResponse = await fetch(
       `https://discord.com/api/v10/guilds/${discordServerId}/members/${discordId}`,
       {
@@ -120,19 +120,20 @@ serve(async (req: Request): Promise<Response> => {
     const userRoles: string[] = memberData.roles || [];
     
     // Check if user has any of the allowed VIEW roles
-    const hasAccess = userRoles.some(roleId => VIEW_ROLE_IDS.includes(roleId));
+    const hasViewAccess = userRoles.some(roleId => VIEW_ROLE_IDS.includes(roleId));
     
     // Check if user has any of the allowed EDIT roles
-    const canEdit = userRoles.some(roleId => EDIT_ROLE_IDS.includes(roleId));
+    const hasEditAccess = userRoles.some(roleId => EDIT_ROLE_IDS.includes(roleId));
 
     console.log(`User ${discordId} roles: ${userRoles.join(", ")}`);
-    console.log(`Has roster view access: ${hasAccess}, Can edit: ${canEdit}`);
+    console.log(`Has roster view access: ${hasViewAccess}, Can edit: ${hasEditAccess}`);
 
     return new Response(
       JSON.stringify({
-        hasAccess: hasAccess || canEdit, // Edit access implies view access
-        canEdit,
+        hasAccess: hasViewAccess || hasEditAccess, // Edit access implies view access
+        canEdit: hasEditAccess,
         username: memberData.user?.username || null,
+        userRoles: userRoles,
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
