@@ -10,12 +10,25 @@ interface MaintenanceAccessReturn {
 
 const OWNER_DISCORD_ID = '833680146510381097';
 
+// Store access state in sessionStorage to persist across refreshes
+const STORAGE_KEY = 'slrp_maintenance_access';
+
 export const useMaintenanceAccess = (): MaintenanceAccessReturn => {
   const [hasAccess, setHasAccess] = useState(false);
   const [isStaffOrOwner, setIsStaffOrOwner] = useState(false);
   const [loading, setLoading] = useState(true);
   const accessCheckedRef = useRef(false);
-  const sessionAccessRef = useRef<boolean | null>(null);
+
+  // Clear cached access on logout
+  const clearCachedAccess = useCallback(() => {
+    try {
+      sessionStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Ignore storage errors
+    }
+    setHasAccess(false);
+    setIsStaffOrOwner(false);
+  }, []);
 
   const checkAccess = useCallback(async () => {
     setLoading(true);
@@ -25,18 +38,17 @@ export const useMaintenanceAccess = (): MaintenanceAccessReturn => {
       
       if (userError || !user) {
         console.log('Maintenance access: No authenticated user');
-        setHasAccess(false);
-        setIsStaffOrOwner(false);
-        sessionAccessRef.current = false;
+        clearCachedAccess();
         setLoading(false);
         return;
       }
 
-      // Get Discord ID from user metadata - check ALL possible locations for mobile compatibility
+      // Get Discord ID from user metadata - check ALL possible locations
       const discordId = user.user_metadata?.discord_id || 
                         user.user_metadata?.provider_id || 
                         user.user_metadata?.sub ||
                         user.identities?.[0]?.identity_data?.provider_id ||
+                        user.identities?.[0]?.identity_data?.sub ||
                         user.identities?.[0]?.id;
       
       console.log('Maintenance access check - Discord ID:', discordId, 'User ID:', user.id);
@@ -46,7 +58,11 @@ export const useMaintenanceAccess = (): MaintenanceAccessReturn => {
         console.log('Maintenance access: Owner detected by Discord ID');
         setHasAccess(true);
         setIsStaffOrOwner(true);
-        sessionAccessRef.current = true;
+        try {
+          sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ hasAccess: true, userId: user.id }));
+        } catch {
+          // Ignore storage errors
+        }
         setLoading(false);
         return;
       }
@@ -63,7 +79,11 @@ export const useMaintenanceAccess = (): MaintenanceAccessReturn => {
         console.log('Maintenance access: Admin/moderator role detected');
         setHasAccess(true);
         setIsStaffOrOwner(true);
-        sessionAccessRef.current = true;
+        try {
+          sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ hasAccess: true, userId: user.id }));
+        } catch {
+          // Ignore storage errors
+        }
         setLoading(false);
         return;
       }
@@ -81,7 +101,11 @@ export const useMaintenanceAccess = (): MaintenanceAccessReturn => {
           console.log('Maintenance access: Staff member detected by discord_id');
           setHasAccess(true);
           setIsStaffOrOwner(true);
-          sessionAccessRef.current = true;
+          try {
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ hasAccess: true, userId: user.id }));
+          } catch {
+            // Ignore storage errors
+          }
           setLoading(false);
           return;
         }
@@ -99,36 +123,42 @@ export const useMaintenanceAccess = (): MaintenanceAccessReturn => {
         console.log('Maintenance access: Staff member by user_id detected');
         setHasAccess(true);
         setIsStaffOrOwner(true);
-        sessionAccessRef.current = true;
+        try {
+          sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ hasAccess: true, userId: user.id }));
+        } catch {
+          // Ignore storage errors
+        }
         setLoading(false);
         return;
       }
 
       // No access - user is not staff/owner
       console.log('Maintenance access: No special access detected');
-      setHasAccess(false);
-      setIsStaffOrOwner(false);
-      sessionAccessRef.current = false;
+      clearCachedAccess();
     } catch (err) {
       console.error('Error checking maintenance access:', err);
-      setHasAccess(false);
-      setIsStaffOrOwner(false);
-      sessionAccessRef.current = false;
+      clearCachedAccess();
     } finally {
       accessCheckedRef.current = true;
       setLoading(false);
     }
-  }, []);
+  }, [clearCachedAccess]);
 
   useEffect(() => {
-    // Always check access on mount
+    // Always verify access on mount - don't trust cached values
+    // This ensures maintenance mode works after refresh
     checkAccess();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state changed:', event, 'Session:', !!session);
-      // Re-check access on any auth change
-      checkAccess();
+      
+      if (event === 'SIGNED_OUT') {
+        clearCachedAccess();
+      } else {
+        // Re-check access on any auth change
+        checkAccess();
+      }
     });
 
     // Also listen for visibility changes to re-check when user returns to tab
@@ -143,7 +173,7 @@ export const useMaintenanceAccess = (): MaintenanceAccessReturn => {
       subscription.unsubscribe();
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [checkAccess]);
+  }, [checkAccess, clearCachedAccess]);
 
   return { hasAccess, isStaffOrOwner, loading, checkAccess };
 };

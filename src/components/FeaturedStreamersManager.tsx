@@ -18,7 +18,8 @@ import {
   RefreshCw,
   Check,
   X,
-  Radio
+  Radio,
+  Zap
 } from 'lucide-react';
 
 interface FeaturedYoutuber {
@@ -207,6 +208,30 @@ export const FeaturedStreamersManager = () => {
     }
   };
 
+  const syncLiveStatus = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-youtube-live-status');
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Live Status Synced",
+        description: data.message || "Live status updated for all streamers.",
+      });
+      
+      fetchYoutubers();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to sync live status",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <Card className="glass-effect border-border/20">
@@ -228,14 +253,29 @@ export const FeaturedStreamersManager = () => {
             </div>
             <CardDescription>Manage featured content creators on the homepage</CardDescription>
           </div>
-          <Button
-            onClick={fetchYoutubers}
-            variant="outline"
-            size="sm"
-          >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={syncLiveStatus}
+              variant="secondary"
+              size="sm"
+              disabled={loading}
+            >
+              {loading ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Zap className="w-4 h-4 mr-2" />
+              )}
+              Sync Live Status
+            </Button>
+            <Button
+              onClick={fetchYoutubers}
+              variant="outline"
+              size="sm"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">

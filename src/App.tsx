@@ -187,9 +187,23 @@ const AppContent = memo(() => {
   // Auto-verify whitelist role on signup
   useWhitelistAutoVerification();
 
-  // Show maintenance page if maintenance mode is on and user doesn't have access
-  const showMaintenance = !settingsLoading && !accessLoading && 
-    settings.maintenance_mode && !hasAccess;
+  // Wait for both settings and access to be loaded before making a decision
+  const isFullyLoaded = !settingsLoading && !accessLoading;
+  
+  // Show maintenance page if:
+  // 1. Both checks are complete
+  // 2. Maintenance mode is enabled
+  // 3. User does NOT have access (not staff/owner)
+  const showMaintenance = isFullyLoaded && settings.maintenance_mode && !hasAccess;
+
+  // While loading, show nothing (prevents flash of content)
+  if (!isFullyLoaded && settings.maintenance_mode) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <>
