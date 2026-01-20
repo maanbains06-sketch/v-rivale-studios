@@ -73,9 +73,31 @@ interface GiveawayWinner {
 interface GiveawayStats {
   totalGiveaways: number;
   activeGiveaways: number;
+  upcomingGiveaways: number;
   totalEntries: number;
   totalWinners: number;
 }
+
+// Helper to determine giveaway status based on dates
+const getGiveawayStatus = (giveaway: Giveaway): 'upcoming' | 'active' | 'ended' => {
+  const now = new Date();
+  const startDate = new Date(giveaway.start_date);
+  const endDate = new Date(giveaway.end_date);
+  
+  if (giveaway.status === 'ended' || giveaway.status === 'completed') {
+    return 'ended';
+  }
+  
+  if (now < startDate) {
+    return 'upcoming';
+  }
+  
+  if (now >= startDate && now <= endDate) {
+    return 'active';
+  }
+  
+  return 'ended';
+};
 
 const Giveaway = () => {
   const { toast } = useToast();
@@ -85,6 +107,7 @@ const Giveaway = () => {
   const [stats, setStats] = useState<GiveawayStats>({
     totalGiveaways: 0,
     activeGiveaways: 0,
+    upcomingGiveaways: 0,
     totalEntries: 0,
     totalWinners: 0
   });
@@ -117,9 +140,11 @@ const Giveaway = () => {
     description: '',
     prize: '',
     prize_image_url: '',
+    start_date: '',
     end_date: '',
     winner_count: 1,
-    category: 'general'
+    category: 'general',
+    startNow: true
   });
 
   useEffect(() => {
@@ -155,7 +180,17 @@ const Giveaway = () => {
       if (error) throw error;
       setGiveaways(giveawaysData || []);
 
-      const active = giveawaysData?.filter(g => g.status === "active") || [];
+      // Calculate stats using proper status detection
+      const now = new Date();
+      const activeCount = giveawaysData?.filter(g => {
+        const status = getGiveawayStatus(g as Giveaway);
+        return status === 'active';
+      }).length || 0;
+      
+      const upcomingCount = giveawaysData?.filter(g => {
+        const status = getGiveawayStatus(g as Giveaway);
+        return status === 'upcoming';
+      }).length || 0;
 
       const { count: entriesCount } = await supabase
         .from("giveaway_entries")
@@ -167,7 +202,8 @@ const Giveaway = () => {
 
       setStats({
         totalGiveaways: giveawaysData?.length || 0,
-        activeGiveaways: active.length,
+        activeGiveaways: activeCount,
+        upcomingGiveaways: upcomingCount,
         totalEntries: entriesCount || 0,
         totalWinners: winnersCount || 0
       });
@@ -294,41 +330,61 @@ const Giveaway = () => {
       return;
     }
 
+    // Validate scheduled start date if not starting now
+    if (!newGiveaway.startNow && !newGiveaway.start_date) {
+      toast({
+        title: "Missing Start Date",
+        description: "Please set a start date for scheduled giveaways.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setCreating(true);
     try {
+      const startDate = newGiveaway.startNow 
+        ? new Date().toISOString() 
+        : new Date(newGiveaway.start_date).toISOString();
+      
+      const status = newGiveaway.startNow ? 'active' : 'upcoming';
+
       const { data, error } = await supabase.from("giveaways").insert({
         title: newGiveaway.title,
         description: newGiveaway.description || null,
         prize: newGiveaway.prize,
         prize_image_url: newGiveaway.prize_image_url || null,
-        end_date: newGiveaway.end_date,
-        start_date: new Date().toISOString(),
+        end_date: new Date(newGiveaway.end_date).toISOString(),
+        start_date: startDate,
         winner_count: newGiveaway.winner_count,
         category: newGiveaway.category,
-        status: 'active',
+        status: status,
         created_by: user?.id
       }).select().single();
 
       if (error) throw error;
 
-      // Send Discord notification
-      await supabase.functions.invoke('send-giveaway-discord', {
-        body: {
-          type: 'new_giveaway',
-          giveaway: {
-            title: newGiveaway.title,
-            description: newGiveaway.description,
-            prize: newGiveaway.prize,
-            end_date: newGiveaway.end_date,
-            winner_count: newGiveaway.winner_count,
-            prize_image_url: newGiveaway.prize_image_url || null
+      // Send Discord notification only for active giveaways
+      if (status === 'active') {
+        await supabase.functions.invoke('send-giveaway-discord', {
+          body: {
+            type: 'new_giveaway',
+            giveaway: {
+              title: newGiveaway.title,
+              description: newGiveaway.description,
+              prize: newGiveaway.prize,
+              end_date: newGiveaway.end_date,
+              winner_count: newGiveaway.winner_count,
+              prize_image_url: newGiveaway.prize_image_url || null
+            }
           }
-        }
-      });
+        });
+      }
 
       toast({
-        title: "Giveaway Created! 🎉",
-        description: "The giveaway has been created and announced on Discord!",
+        title: status === 'active' ? "Giveaway Created! 🎉" : "Giveaway Scheduled! 📅",
+        description: status === 'active' 
+          ? "The giveaway is now live and announced on Discord!" 
+          : "The giveaway has been scheduled and will start automatically.",
       });
 
       setShowCreateDialog(false);
@@ -337,12 +393,15 @@ const Giveaway = () => {
         description: '',
         prize: '',
         prize_image_url: '',
+        start_date: '',
         end_date: '',
         winner_count: 1,
-        category: 'general'
+        category: 'general',
+        startNow: true
       });
       fetchData();
     } catch (error: any) {
+      console.error("Giveaway creation error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to create giveaway.",
@@ -496,21 +555,41 @@ const Giveaway = () => {
     };
   };
 
-  const activeGiveaways = giveaways.filter(g => g.status === "active");
-  const upcomingGiveaways = giveaways.filter(g => g.status === "scheduled" || new Date(g.start_date) > new Date());
-  const pastGiveaways = giveaways.filter(g => g.status === "ended" || g.status === "completed");
+  // Categorize giveaways using proper status detection
+  const activeGiveaways = giveaways.filter(g => getGiveawayStatus(g) === 'active');
+  const upcomingGiveaways = giveaways.filter(g => getGiveawayStatus(g) === 'upcoming');
+  const pastGiveaways = giveaways.filter(g => getGiveawayStatus(g) === 'ended');
 
   const GiveawayCard = ({ giveaway, showCountdown = true }: { giveaway: Giveaway; showCountdown?: boolean }) => {
     const [timeLeft, setTimeLeft] = useState(getTimeRemaining(giveaway.end_date));
+    const [startTimeLeft, setStartTimeLeft] = useState(getTimeRemaining(giveaway.start_date));
     const entered = hasEntered(giveaway.id);
+    const currentStatus = getGiveawayStatus(giveaway);
 
     useEffect(() => {
-      if (!showCountdown || giveaway.status !== "active") return;
+      if (!showCountdown) return;
       const timer = setInterval(() => {
-        setTimeLeft(getTimeRemaining(giveaway.end_date));
+        if (currentStatus === 'active') {
+          setTimeLeft(getTimeRemaining(giveaway.end_date));
+        } else if (currentStatus === 'upcoming') {
+          setStartTimeLeft(getTimeRemaining(giveaway.start_date));
+        }
       }, 1000);
       return () => clearInterval(timer);
-    }, [giveaway.end_date, giveaway.status, showCountdown]);
+    }, [giveaway.end_date, giveaway.start_date, currentStatus, showCountdown]);
+
+    const getStatusBadge = () => {
+      switch (currentStatus) {
+        case 'active':
+          return { text: '🔴 LIVE', color: 'bg-green-500' };
+        case 'upcoming':
+          return { text: '📅 Scheduled', color: 'bg-amber-500' };
+        case 'ended':
+          return { text: '✅ Ended', color: 'bg-muted' };
+      }
+    };
+
+    const statusBadge = getStatusBadge();
 
     return (
       <motion.div
@@ -520,7 +599,13 @@ const Giveaway = () => {
         whileHover={{ scale: 1.02 }}
         className="group"
       >
-        <Card className="glass-effect border-border/30 overflow-hidden hover:border-primary/50 transition-all duration-300">
+        <Card className={`glass-effect overflow-hidden transition-all duration-300 ${
+          currentStatus === 'active' 
+            ? 'border-green-500/50 hover:border-green-400' 
+            : currentStatus === 'upcoming'
+            ? 'border-amber-500/30 hover:border-amber-400'
+            : 'border-border/30 hover:border-primary/50'
+        }`}>
           {giveaway.prize_image_url && (
             <div className="relative h-48 overflow-hidden">
               <img
@@ -529,13 +614,17 @@ const Giveaway = () => {
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent" />
-              <Badge 
-                className={`absolute top-3 right-3 ${
-                  giveaway.status === "active" ? "bg-green-500" : 
-                  giveaway.status === "ended" ? "bg-red-500" : "bg-amber-500"
-                }`}
-              >
-                {giveaway.status === "active" ? "🔴 LIVE" : giveaway.status}
+              <Badge className={`absolute top-3 right-3 ${statusBadge.color}`}>
+                {statusBadge.text}
+              </Badge>
+            </div>
+          )}
+          
+          {!giveaway.prize_image_url && (
+            <div className="relative h-32 bg-gradient-to-br from-primary/20 to-amber-500/20 flex items-center justify-center">
+              <Gift className="w-12 h-12 text-primary/50" />
+              <Badge className={`absolute top-3 right-3 ${statusBadge.color}`}>
+                {statusBadge.text}
               </Badge>
             </div>
           )}
@@ -548,25 +637,51 @@ const Giveaway = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
-              <p className="text-sm text-muted-foreground mb-1">Prize</p>
+              <p className="text-sm text-muted-foreground mb-1">🎁 Prize</p>
               <p className="font-semibold text-primary">{giveaway.prize}</p>
             </div>
 
-            {showCountdown && giveaway.status === "active" && !timeLeft.expired && (
-              <div className="grid grid-cols-4 gap-2 text-center">
-                {[
-                  { value: timeLeft.days, label: "Days" },
-                  { value: timeLeft.hours, label: "Hrs" },
-                  { value: timeLeft.minutes, label: "Min" },
-                  { value: timeLeft.seconds, label: "Sec" }
-                ].map((item, i) => (
-                  <div key={i} className="p-2 rounded-lg bg-muted/50 border border-border/30">
-                    <div className="text-xl font-mono font-bold text-primary">
-                      {String(item.value).padStart(2, '0')}
+            {/* Countdown for Active Giveaways */}
+            {showCountdown && currentStatus === "active" && !timeLeft.expired && (
+              <div className="space-y-2">
+                <p className="text-xs text-center text-muted-foreground">⏰ Ends in</p>
+                <div className="grid grid-cols-4 gap-2 text-center">
+                  {[
+                    { value: timeLeft.days, label: "Days" },
+                    { value: timeLeft.hours, label: "Hrs" },
+                    { value: timeLeft.minutes, label: "Min" },
+                    { value: timeLeft.seconds, label: "Sec" }
+                  ].map((item, i) => (
+                    <div key={i} className="p-2 rounded-lg bg-green-500/10 border border-green-500/30">
+                      <div className="text-xl font-mono font-bold text-green-400">
+                        {String(item.value).padStart(2, '0')}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground uppercase">{item.label}</div>
                     </div>
-                    <div className="text-[10px] text-muted-foreground uppercase">{item.label}</div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Countdown for Upcoming Giveaways */}
+            {showCountdown && currentStatus === "upcoming" && !startTimeLeft.expired && (
+              <div className="space-y-2">
+                <p className="text-xs text-center text-amber-400">🚀 Starts in</p>
+                <div className="grid grid-cols-4 gap-2 text-center">
+                  {[
+                    { value: startTimeLeft.days, label: "Days" },
+                    { value: startTimeLeft.hours, label: "Hrs" },
+                    { value: startTimeLeft.minutes, label: "Min" },
+                    { value: startTimeLeft.seconds, label: "Sec" }
+                  ].map((item, i) => (
+                    <div key={i} className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                      <div className="text-xl font-mono font-bold text-amber-400">
+                        {String(item.value).padStart(2, '0')}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground uppercase">{item.label}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -581,12 +696,13 @@ const Giveaway = () => {
               </div>
             </div>
 
-            {giveaway.status === "active" && (
+            {/* Active giveaway buttons */}
+            {currentStatus === "active" && (
               <div className="space-y-2">
                 <Button
                   onClick={() => enterGiveaway(giveaway.id)}
                   disabled={entered || enteringId === giveaway.id}
-                  className={`w-full ${entered ? "bg-green-600 hover:bg-green-700" : ""}`}
+                  className={`w-full ${entered ? "bg-green-600 hover:bg-green-700" : "bg-gradient-to-r from-primary to-green-500 hover:from-primary/90 hover:to-green-500/90"}`}
                 >
                   {enteringId === giveaway.id ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -595,7 +711,7 @@ const Giveaway = () => {
                   ) : (
                     <Ticket className="w-4 h-4 mr-2" />
                   )}
-                  {entered ? "Entered!" : "Enter Giveaway"}
+                  {entered ? "You're Entered! 🎉" : "Enter Giveaway"}
                 </Button>
                 
                 {isOwner && (
@@ -611,11 +727,24 @@ const Giveaway = () => {
               </div>
             )}
 
-            {giveaway.status === "ended" && (
-              <Button variant="outline" disabled className="w-full">
-                <XCircle className="w-4 h-4 mr-2" />
-                Giveaway Ended
-              </Button>
+            {/* Upcoming giveaway info */}
+            {currentStatus === "upcoming" && (
+              <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-center">
+                <p className="text-sm text-amber-400">
+                  <Clock className="w-4 h-4 inline mr-1" />
+                  Giveaway starts on {format(new Date(giveaway.start_date), "MMM d, yyyy 'at' h:mm a")}
+                </p>
+              </div>
+            )}
+
+            {/* Ended giveaway */}
+            {currentStatus === "ended" && (
+              <div className="p-3 rounded-lg bg-muted/30 border border-border/30 text-center">
+                <p className="text-sm text-muted-foreground">
+                  <CheckCircle2 className="w-4 h-4 inline mr-1" />
+                  This giveaway has ended
+                </p>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -866,10 +995,12 @@ const Giveaway = () => {
 
       {/* Create Giveaway Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Gift className="w-5 h-5 text-primary" />
+              <div className="p-2 rounded-lg bg-gradient-to-br from-primary/20 to-amber-500/20">
+                <Gift className="w-5 h-5 text-primary" />
+              </div>
               Create New Giveaway
             </DialogTitle>
             <DialogDescription>
@@ -877,17 +1008,22 @@ const Giveaway = () => {
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4">
+          <div className="space-y-5">
+            {/* Title */}
             <div className="space-y-2">
-              <Label htmlFor="title">Title *</Label>
+              <Label htmlFor="title" className="flex items-center gap-1">
+                Title <span className="text-destructive">*</span>
+              </Label>
               <Input
                 id="title"
                 placeholder="Epic VIP Giveaway"
                 value={newGiveaway.title}
                 onChange={(e) => setNewGiveaway({ ...newGiveaway, title: e.target.value })}
+                className="h-11"
               />
             </div>
 
+            {/* Description */}
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               <Textarea
@@ -895,19 +1031,25 @@ const Giveaway = () => {
                 placeholder="Enter to win amazing prizes..."
                 value={newGiveaway.description}
                 onChange={(e) => setNewGiveaway({ ...newGiveaway, description: e.target.value })}
+                rows={3}
               />
             </div>
 
+            {/* Prize */}
             <div className="space-y-2">
-              <Label htmlFor="prize">Prize *</Label>
+              <Label htmlFor="prize" className="flex items-center gap-1">
+                🎁 Prize <span className="text-destructive">*</span>
+              </Label>
               <Input
                 id="prize"
                 placeholder="VIP Package + $50 Store Credit"
                 value={newGiveaway.prize}
                 onChange={(e) => setNewGiveaway({ ...newGiveaway, prize: e.target.value })}
+                className="h-11"
               />
             </div>
 
+            {/* Prize Image */}
             <div className="space-y-2">
               <Label htmlFor="prize_image_url">Prize Image URL</Label>
               <Input
@@ -918,19 +1060,73 @@ const Giveaway = () => {
               />
             </div>
 
+            {/* Start Time Toggle */}
+            <div className="p-4 rounded-lg bg-muted/30 border border-border/50 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-medium">Start Immediately</Label>
+                  <p className="text-xs text-muted-foreground">Toggle off to schedule for later</p>
+                </div>
+                <Button
+                  type="button"
+                  variant={newGiveaway.startNow ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setNewGiveaway({ ...newGiveaway, startNow: !newGiveaway.startNow })}
+                  className={newGiveaway.startNow ? "bg-green-500 hover:bg-green-600" : ""}
+                >
+                  {newGiveaway.startNow ? (
+                    <>
+                      <Sparkles className="w-4 h-4 mr-1" />
+                      Start Now
+                    </>
+                  ) : (
+                    <>
+                      <Clock className="w-4 h-4 mr-1" />
+                      Schedule
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {/* Scheduled Start Date */}
+              {!newGiveaway.startNow && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="space-y-2"
+                >
+                  <Label htmlFor="start_date" className="flex items-center gap-1">
+                    📅 Start Date <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="start_date"
+                    type="datetime-local"
+                    value={newGiveaway.start_date}
+                    onChange={(e) => setNewGiveaway({ ...newGiveaway, start_date: e.target.value })}
+                    className="h-11"
+                  />
+                </motion.div>
+              )}
+            </div>
+
+            {/* End Date & Winners */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="end_date">End Date *</Label>
+                <Label htmlFor="end_date" className="flex items-center gap-1">
+                  ⏰ End Date <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   id="end_date"
                   type="datetime-local"
                   value={newGiveaway.end_date}
                   onChange={(e) => setNewGiveaway({ ...newGiveaway, end_date: e.target.value })}
+                  className="h-11"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="winner_count">Number of Winners</Label>
+                <Label htmlFor="winner_count">🏆 Number of Winners</Label>
                 <Input
                   id="winner_count"
                   type="number"
@@ -938,41 +1134,52 @@ const Giveaway = () => {
                   max="10"
                   value={newGiveaway.winner_count}
                   onChange={(e) => setNewGiveaway({ ...newGiveaway, winner_count: parseInt(e.target.value) || 1 })}
+                  className="h-11"
                 />
               </div>
             </div>
 
+            {/* Category */}
             <div className="space-y-2">
               <Label>Category</Label>
               <Select
                 value={newGiveaway.category}
                 onValueChange={(value) => setNewGiveaway({ ...newGiveaway, category: value })}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-11">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="general">General</SelectItem>
-                  <SelectItem value="vip">VIP</SelectItem>
-                  <SelectItem value="ingame">In-Game</SelectItem>
-                  <SelectItem value="store">Store Credit</SelectItem>
-                  <SelectItem value="special">Special Event</SelectItem>
+                  <SelectItem value="general">🎯 General</SelectItem>
+                  <SelectItem value="vip">⭐ VIP</SelectItem>
+                  <SelectItem value="ingame">🎮 In-Game</SelectItem>
+                  <SelectItem value="store">💰 Store Credit</SelectItem>
+                  <SelectItem value="special">🎊 Special Event</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={createGiveaway} disabled={creating}>
+            <Button 
+              onClick={createGiveaway} 
+              disabled={creating}
+              className={newGiveaway.startNow 
+                ? "bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700" 
+                : "bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700"
+              }
+            >
               {creating ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
+              ) : newGiveaway.startNow ? (
                 <Send className="w-4 h-4 mr-2" />
+              ) : (
+                <CalendarDays className="w-4 h-4 mr-2" />
               )}
-              Create & Announce
+              {newGiveaway.startNow ? "Create & Start Now" : "Schedule Giveaway"}
             </Button>
           </DialogFooter>
         </DialogContent>
