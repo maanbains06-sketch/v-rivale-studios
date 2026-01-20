@@ -65,7 +65,25 @@ export const MaintenanceCountdownControl = () => {
       
       const { data: { user } } = await supabase.auth.getUser();
       
-      const { error } = await supabase
+      // First, check if there's an existing active maintenance
+      const { data: existingMaintenance } = await supabase
+        .from('maintenance_schedules')
+        .select('id')
+        .in('status', ['scheduled', 'active'])
+        .maybeSingle();
+
+      if (existingMaintenance) {
+        toast({
+          title: "Error",
+          description: "There's already an active or scheduled maintenance. End it first.",
+          variant: "destructive",
+        });
+        setSaving(false);
+        return;
+      }
+
+      // Insert the maintenance schedule
+      const { error: scheduleError } = await supabase
         .from('maintenance_schedules')
         .insert({
           title,
@@ -76,13 +94,45 @@ export const MaintenanceCountdownControl = () => {
           created_by: user?.id
         });
 
-      if (error) throw error;
+      if (scheduleError) {
+        console.error('Schedule error:', scheduleError);
+        throw scheduleError;
+      }
 
-      // Enable maintenance mode
-      await supabase
+      // Enable maintenance mode in site_settings
+      // First check if the setting exists
+      const { data: existingSetting } = await supabase
         .from('site_settings')
-        .update({ value: 'true' })
-        .eq('key', 'maintenance_mode');
+        .select('id')
+        .eq('key', 'maintenance_mode')
+        .maybeSingle();
+
+      if (existingSetting) {
+        // Update existing setting
+        const { error: updateError } = await supabase
+          .from('site_settings')
+          .update({ value: 'true', updated_at: new Date().toISOString() })
+          .eq('key', 'maintenance_mode');
+          
+        if (updateError) {
+          console.error('Update setting error:', updateError);
+          throw updateError;
+        }
+      } else {
+        // Insert new setting
+        const { error: insertError } = await supabase
+          .from('site_settings')
+          .insert({
+            key: 'maintenance_mode',
+            value: 'true',
+            description: 'Enable maintenance mode to block non-staff access'
+          });
+          
+        if (insertError) {
+          console.error('Insert setting error:', insertError);
+          throw insertError;
+        }
+      }
 
       await logAction({
         actionType: 'maintenance_start',
@@ -91,12 +141,13 @@ export const MaintenanceCountdownControl = () => {
       });
 
       toast({
-        title: "Maintenance Scheduled",
+        title: "Maintenance Started",
         description: `Maintenance will ${scheduleInFuture ? 'start at ' + format(start, 'PPp') : 'start now'} and end at ${format(end, 'PPp')}`,
       });
 
       fetchActiveMaintenance();
     } catch (error: any) {
+      console.error('Maintenance start error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to start maintenance",

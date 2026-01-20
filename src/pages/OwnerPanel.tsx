@@ -21,6 +21,7 @@ import { EnhancedSiteSettings } from "@/components/EnhancedSiteSettings";
 import { MaintenanceCountdownControl } from "@/components/MaintenanceCountdownControl";
 import { FeaturedStreamersManager } from "@/components/FeaturedStreamersManager";
 import { PromoCodeManager } from "@/components/PromoCodeManager";
+import { UnifiedApplicationsTable, ApplicationType } from "@/components/UnifiedApplicationsTable";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Loader2, 
@@ -1134,6 +1135,104 @@ const OwnerPanel = () => {
 
   const counts = getApplicationCounts();
   const totalPending = Object.values(counts).reduce((a, b) => a + b, 0);
+
+  // Transform all applications into unified format
+  const getUnifiedApplications = () => {
+    const unified: any[] = [];
+    
+    whitelistApplications.forEach(app => unified.push({
+      id: app.id,
+      applicantName: app.discord,
+      organization: 'Whitelist',
+      contactNumber: app.discord_id?.slice(-6),
+      status: app.status,
+      handledBy: app.admin_notes ? 'Reviewed' : undefined,
+      applicationType: 'whitelist' as ApplicationType,
+      fields: [
+        { label: 'Age', value: app.age },
+        { label: 'Experience', value: app.experience },
+        { label: 'Backstory', value: app.backstory },
+      ],
+      adminNotes: app.admin_notes,
+      createdAt: app.created_at,
+    }));
+
+    jobApplications.forEach(app => unified.push({
+      id: app.id,
+      applicantName: app.character_name,
+      organization: app.job_type,
+      contactNumber: app.phone_number,
+      status: app.status,
+      applicationType: (app.job_type?.toLowerCase().includes('police') ? 'police' : 
+                       app.job_type?.toLowerCase().includes('ems') ? 'ems' : 
+                       app.job_type?.toLowerCase().includes('mechanic') ? 'mechanic' : 'police') as ApplicationType,
+      fields: [
+        { label: 'Age', value: app.age },
+        { label: 'Previous Experience', value: app.previous_experience },
+        { label: 'Why Join', value: app.why_join },
+        { label: 'Character Background', value: app.character_background },
+        { label: 'Availability', value: app.availability },
+      ],
+      adminNotes: app.admin_notes,
+      createdAt: app.created_at,
+    }));
+
+    staffApplications.forEach(app => unified.push({
+      id: app.id,
+      applicantName: app.full_name,
+      organization: app.position,
+      contactNumber: app.discord_username,
+      status: app.status,
+      applicationType: 'staff' as ApplicationType,
+      fields: [
+        { label: 'Age', value: app.age },
+        { label: 'Discord', value: app.discord_username },
+        { label: 'Experience', value: app.experience },
+        { label: 'Why Join', value: app.why_join },
+        { label: 'Availability', value: app.availability },
+      ],
+      adminNotes: app.admin_notes,
+      createdAt: app.created_at,
+    }));
+
+    banAppeals.forEach(app => unified.push({
+      id: app.id,
+      applicantName: app.discord_username,
+      organization: 'Ban Appeal',
+      contactNumber: app.steam_id,
+      status: app.status,
+      applicationType: 'ban_appeal' as ApplicationType,
+      fields: [
+        { label: 'Steam ID', value: app.steam_id },
+        { label: 'Ban Reason', value: app.ban_reason },
+        { label: 'Appeal Reason', value: app.appeal_reason },
+        { label: 'Additional Info', value: app.additional_info },
+      ],
+      adminNotes: app.admin_notes,
+      createdAt: app.created_at,
+    }));
+
+    creatorApplications.forEach(app => unified.push({
+      id: app.id,
+      applicantName: app.full_name,
+      organization: app.platform,
+      contactNumber: app.channel_url,
+      status: app.status,
+      applicationType: 'creator' as ApplicationType,
+      fields: [
+        { label: 'Discord', value: app.discord_username },
+        { label: 'Platform', value: app.platform },
+        { label: 'Channel URL', value: app.channel_url },
+        { label: 'Average Viewers', value: app.average_viewers },
+        { label: 'Content Style', value: app.content_style },
+        { label: 'Why Join', value: app.why_join },
+      ],
+      adminNotes: app.admin_notes,
+      createdAt: app.created_at,
+    }));
+
+    return unified.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
