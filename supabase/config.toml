@@ -1,82 +1,109 @@
 project_id = "obirpzwvnqveddyuulsb"
 
-[functions.send-reapplication-notifications]
+[functions.admin-player-action]
 verify_jwt = false
 
-[functions.send-ban-appeal-notification]
-verify_jwt = true
-
-[functions.fetch-discord-user]
-verify_jwt = false
-
-[functions.send-gallery-notification]
-verify_jwt = false
-
-[functions.check-sla-notifications]
-verify_jwt = false
-
-[functions.auto-assign-chats]
-verify_jwt = false
-
-[functions.send-owner-message]
-verify_jwt = true
-
-[functions.send-refund-notification]
-verify_jwt = true
-
-[functions.send-promo-code-email]
-verify_jwt = true
-
-[functions.notify-unauthorized-owner-access]
-verify_jwt = true
-
-[functions.send-feedback-notification]
-verify_jwt = true
-
-[functions.verify-discord-requirements]
-verify_jwt = true
-
-[functions.sync-discord-presence]
-verify_jwt = false
-
-[functions.send-creator-notification]
-verify_jwt = true
-
-[functions.sync-staff-discord-info]
-verify_jwt = false
-
-[functions.sync-discord-events]
-verify_jwt = false
-
-[functions.verify-roster-permissions]
-verify_jwt = false
-
-[functions.verify-discord-membership]
-verify_jwt = false
-
-[functions.send-giveaway-notification]
-verify_jwt = false
-
-[functions.check-giveaway-status]
-verify_jwt = false
-
-[functions.send-winner-announcement]
-verify_jwt = false
-
-[functions.send-rules-to-discord]
-verify_jwt = false
-
-[functions.upload-rules-images]
-verify_jwt = false
-
-[functions.send-whitelist-notification]
-verify_jwt = false
-
-[functions.notify-staff-discord-dm]
+[functions.ai-support-chat]
 verify_jwt = false
 
 [functions.assign-creator-roles]
 verify_jwt = false
 
+[functions.assign-discord-role]
+verify_jwt = false
+
+[functions.assign-whitelist-role]
+verify_jwt = false
+
+[functions.auto-assign-chats]
+verify_jwt = false
+
+[functions.check-sla-notifications]
+verify_jwt = false
+
+[functions.fetch-discord-user]
+verify_jwt = false
+
+[functions.fetch-youtube-channel]
+verify_jwt = false
+
+[functions.notify-staff-discord-dm]
+verify_jwt = false
+
+[functions.notify-unauthorized-owner-access]
+verify_jwt = false
+
+[functions.send-application-notification]
+verify_jwt = false
+
+[functions.send-application-test-notifications]
+verify_jwt = false
+
+[functions.send-ban-appeal-notification]
+verify_jwt = false
+
+[functions.send-creator-notification]
+verify_jwt = false
+
+[functions.send-feedback-notification]
+verify_jwt = false
+
+[functions.send-gallery-notification]
+verify_jwt = false
+
 [functions.send-giveaway-discord]
+verify_jwt = false
+
+[functions.send-owner-message]
+verify_jwt = false
+
+[functions.send-password-reset]
+verify_jwt = false
+
+[functions.send-promo-code-email]
+verify_jwt = false
+
+[functions.send-purchase-confirmation]
+verify_jwt = false
+
+[functions.send-reapplication-notifications]
+verify_jwt = false
+
+[functions.send-refund-notification]
+verify_jwt = false
+
+[functions.send-rules-to-discord]
+verify_jwt = false
+
+[functions.send-whitelist-notification]
+verify_jwt = false
+
+[functions.sync-discord-events]
+verify_jwt = false
+
+[functions.sync-discord-presence]
+verify_jwt = false
+
+[functions.sync-staff-discord-info]
+verify_jwt = false
+
+[functions.upload-application-images]
+verify_jwt = false
+
+[functions.upload-local-banner]
+verify_jwt = false
+
+[functions.upload-rules-images]
+verify_jwt = false
+
+[functions.validate-referral-code]
+verify_jwt = false
+
+[functions.verify-discord-membership]
+verify_jwt = false
+
+[functions.verify-discord-requirements]
+verify_jwt = false
+
+[functions.verify-roster-access]
 verify_jwt = false
