@@ -53,10 +53,16 @@ serve(async (req) => {
     let content: string;
     let components: any[] = [];
 
-    // Website URLs
+    // Website URLs and Banner Images
     const WEBSITE_URL = "https://roleplay-horizon.lovable.app";
     const GIVEAWAY_URL = `${WEBSITE_URL}/giveaway`;
     const LOGO_URL = `${WEBSITE_URL}/images/slrp-logo.png`;
+    
+    // Pre-made banner image URLs (using Discord-compatible image hosting)
+    // These are placeholder URLs - you can replace with actual hosted banner images
+    const GIVEAWAY_BANNER_URL = "https://i.imgur.com/8K5lXJj.png"; // Golden giveaway banner
+    const WINNER_BANNER_URL = "https://i.imgur.com/VGQhVbq.png"; // Celebration winner banner
+    const OPPORTUNITY_BANNER_URL = "https://i.imgur.com/7vQxYbA.png"; // Don't miss out banner
 
     if (payload.type === 'new_giveaway') {
       channelId = GIVEAWAY_CHANNEL_ID || "";
@@ -71,63 +77,65 @@ serve(async (req) => {
       const discordTimestamp = Math.floor(endDate.getTime() / 1000);
 
       embed = {
-        title: "🎁✨ NEW GIVEAWAY ALERT ✨🎁",
+        title: "🎁 ━━━━━ NEW GIVEAWAY ━━━━━ 🎁",
         description: [
-          `# ${payload.giveaway.title}`,
+          `## ✨ ${payload.giveaway.title} ✨`,
           "",
           payload.giveaway.description || "*An incredible prize is up for grabs!*",
           "",
-          "```",
-          "╔═══════════════════════════════════════╗",
-          "║     🌟 DON'T MISS THIS OPPORTUNITY! 🌟     ║",
-          "╚═══════════════════════════════════════╝",
-          "```"
+          "**🔥 Don't miss this amazing opportunity! 🔥**"
         ].join("\n"),
         color: 0xFFD700,
         fields: [
           {
-            name: "🎁 PRIZE",
-            value: `>>> **${payload.giveaway.prize}**`,
+            name: "╔══════════════════════════╗",
+            value: "🎁 **PRIZE DETAILS** 🎁",
+            inline: false
+          },
+          {
+            name: "💎 Prize",
+            value: `\`\`\`${payload.giveaway.prize}\`\`\``,
             inline: false
           },
           {
             name: "🏆 Winners",
-            value: `\`${payload.giveaway.winner_count}\` lucky winner${payload.giveaway.winner_count > 1 ? 's' : ''}`,
+            value: `> **${payload.giveaway.winner_count}** lucky winner${payload.giveaway.winner_count > 1 ? 's' : ''}!`,
             inline: true
           },
           {
-            name: "⏰ Ends",
-            value: `<t:${discordTimestamp}:R>`,
+            name: "⏰ Time Left",
+            value: `> <t:${discordTimestamp}:R>`,
             inline: true
           },
           {
-            name: "📅 End Date",
-            value: `<t:${discordTimestamp}:F>`,
+            name: "📅 Ends On",
+            value: `> <t:${discordTimestamp}:F>`,
             inline: true
           },
           {
-            name: "━━━━━━━━━━━━━━━━━━━━",
+            name: "╚══════════════════════════╝",
             value: "\u200B",
             inline: false
           },
           {
-            name: "🎮 How to Enter",
+            name: "📝 HOW TO ENTER",
             value: [
-              ">>> 1️⃣ Click the **Enter Giveaway** button below",
-              "2️⃣ Login/Register on our website",
-              "3️⃣ Click **Enter Giveaway** on the page",
+              "> 1️⃣ Click **Enter Giveaway** button below",
+              "> 2️⃣ Login or Register on our website",
+              "> 3️⃣ Click the **Enter** button on the page",
+              "> 4️⃣ Wait for the results! 🎉",
               "",
-              "*That's it! You're in! 🎉*"
+              "**Good luck to everyone! 🍀**"
             ].join("\n"),
             inline: false
           }
         ],
-        image: payload.giveaway.prize_image_url ? { url: payload.giveaway.prize_image_url } : undefined,
+        image: payload.giveaway.prize_image_url ? { url: payload.giveaway.prize_image_url } : { url: GIVEAWAY_BANNER_URL },
         thumbnail: {
           url: LOGO_URL
         },
         footer: {
-          text: "🍀 SkyLife Roleplay • May luck be with you! 🍀",
+          text: "🎮 SkyLife Roleplay Giveaways • Best of luck! 🍀",
           icon_url: LOGO_URL
         },
         timestamp: new Date().toISOString()
@@ -236,65 +244,62 @@ serve(async (req) => {
       console.log("Winner list for embed:", winnerListForEmbed);
 
       embed = {
-        title: "🏆🎊 WINNERS ANNOUNCED! 🎊🏆",
+        title: "🏆 ━━━━━ WINNERS ANNOUNCED ━━━━━ 🏆",
         description: [
-          `# 🎉 ${payload.giveaway.title}`,
+          `## 🎉 ${payload.giveaway.title} 🎉`,
           "",
-          "```",
-          "╔═══════════════════════════════════════╗",
-          "║    🌟 CONGRATULATIONS WINNERS! 🌟    ║",
-          "╚═══════════════════════════════════════╝",
-          "```",
+          "**🌟 Congratulations to our amazing winners! 🌟**",
           "",
-          "*The wait is over! Our lucky winners have been selected!*"
+          "*The moment you've been waiting for is here!*"
         ].join("\n"),
         color: 0x00FF00,
         thumbnail: {
-          url: payload.giveaway.prize_image_url || LOGO_URL
+          url: LOGO_URL
         },
         fields: [
           {
-            name: "🎁 Prize Won",
-            value: `>>> **${payload.giveaway.prize}**`,
+            name: "╔══════════════════════════╗",
+            value: "🎁 **PRIZE WON** 🎁",
             inline: false
           },
           {
-            name: `👑 Winner${enrichedWinners.length > 1 ? 's' : ''} (${enrichedWinners.length})`,
-            value: winnerListForEmbed.join('\n') || '❌ No winners selected',
+            name: "💎 Prize",
+            value: `\`\`\`${payload.giveaway.prize}\`\`\``,
             inline: false
           },
           {
-            name: "━━━━━━━━━━━━━━━━━━━━",
+            name: "╚══════════════════════════╝",
             value: "\u200B",
             inline: false
           },
           {
-            name: "📬 Prize Claim Instructions",
+            name: `👑 WINNER${enrichedWinners.length > 1 ? 'S' : ''} (${enrichedWinners.length})`,
+            value: winnerListForEmbed.join('\n') || '❌ No winners selected',
+            inline: false
+          },
+          {
+            name: "📬 CLAIM YOUR PRIZE",
             value: [
-              ">>> **Step 1:** Check your Discord DMs 📩",
-              "**Step 2:** Respond within 24 hours ⏰",
-              "**Step 3:** Follow the claim instructions 📋",
-              "**Step 4:** Enjoy your prize! 🎉"
+              "> 📩 **Step 1:** Check your Discord DMs",
+              "> ⏰ **Step 2:** Respond within 24 hours",
+              "> 📋 **Step 3:** Follow claim instructions",
+              "> 🎉 **Step 4:** Enjoy your prize!"
             ].join("\n"),
             inline: false
           },
           {
-            name: "⚠️ Important Notice",
+            name: "⚠️ IMPORTANT",
             value: [
-              "```diff",
-              "+ Make sure your DMs are OPEN!",
-              "- Prize must be claimed within 48 hours",
-              "- Unclaimed prizes will be redrawn",
-              "```"
+              "> ✅ Make sure your DMs are **OPEN**",
+              "> ⏳ Claim within **48 hours**",
+              "> 🔄 Unclaimed = New winner selected"
             ].join("\n"),
             inline: false
           }
         ],
-        image: {
-          url: payload.giveaway.prize_image_url || undefined
-        },
+        image: payload.giveaway.prize_image_url ? { url: payload.giveaway.prize_image_url } : { url: WINNER_BANNER_URL },
         footer: {
-          text: "🙏 Thank you to everyone who participated! • SkyLife Roleplay",
+          text: "🙏 Thank you all for participating! • SkyLife Roleplay",
           icon_url: LOGO_URL
         },
         timestamp: new Date().toISOString()
