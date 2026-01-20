@@ -301,10 +301,15 @@ const Roster = () => {
 
               const byRank: Record<string, RosterMember[]> = {};
               sorted.forEach(m => {
-                const match = dept.ranks?.find(r => 
-                  m.rank.toLowerCase() === r.toLowerCase() ||
-                  m.rank.toLowerCase().includes(r.toLowerCase())
-                ) || m.rank;
+                // Exact match first, then partial match
+                const exactMatch = dept.ranks?.find(r => 
+                  m.rank.toLowerCase().trim() === r.toLowerCase().trim()
+                );
+                const partialMatch = !exactMatch ? dept.ranks?.find(r => 
+                  m.rank.toLowerCase().includes(r.toLowerCase()) ||
+                  r.toLowerCase().includes(m.rank.toLowerCase())
+                ) : null;
+                const match = exactMatch || partialMatch || m.rank;
                 if (!byRank[match]) byRank[match] = [];
                 byRank[match].push(m);
               });
