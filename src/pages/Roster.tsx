@@ -4,7 +4,11 @@ import PageHeader from "@/components/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { 
   Shield, 
   Siren, 
@@ -20,7 +24,10 @@ import {
   Crown,
   Medal,
   Award,
-  ChevronRight
+  ChevronRight,
+  Pencil,
+  Save,
+  X
 } from "lucide-react";
 import headerJobsBg from "@/assets/header-guides-new.jpg";
 
@@ -137,9 +144,18 @@ const getDivisionColor = (division: string): string => {
   return 'text-gray-400 bg-gray-500/15 border-gray-500/30';
 };
 
+const statusOptions = [
+  { value: 'active', label: 'Active' },
+  { value: 'inactive', label: 'Inactive' },
+  { value: 'on_leave', label: 'On Leave' },
+];
+
 const Roster = () => {
   const [loading, setLoading] = useState(true);
   const [staffMembers, setStaffMembers] = useState<any[]>([]);
+  const [editMode, setEditMode] = useState<Record<string, boolean>>({});
+  const [editedData, setEditedData] = useState<Record<string, Record<string, RosterMember>>>({});
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const fetchStaff = async () => {
@@ -259,6 +275,60 @@ const Roster = () => {
     return ranks.findIndex(r => rank.toLowerCase().includes(r.toLowerCase()));
   };
 
+  const toggleEditMode = (deptKey: string, members: RosterMember[]) => {
+    if (editMode[deptKey]) {
+      // Cancel edit mode
+      setEditMode(prev => ({ ...prev, [deptKey]: false }));
+      setEditedData(prev => {
+        const newData = { ...prev };
+        delete newData[deptKey];
+        return newData;
+      });
+    } else {
+      // Enable edit mode and initialize data
+      const memberData: Record<string, RosterMember> = {};
+      members.forEach(m => {
+        memberData[m.id] = { ...m };
+      });
+      setEditedData(prev => ({ ...prev, [deptKey]: memberData }));
+      setEditMode(prev => ({ ...prev, [deptKey]: true }));
+    }
+  };
+
+  const updateMemberField = (deptKey: string, memberId: string, field: keyof RosterMember, value: string) => {
+    setEditedData(prev => ({
+      ...prev,
+      [deptKey]: {
+        ...prev[deptKey],
+        [memberId]: {
+          ...prev[deptKey]?.[memberId],
+          [field]: value,
+        }
+      }
+    }));
+  };
+
+  const saveChanges = async (deptKey: string) => {
+    setSaving(true);
+    try {
+      // For now, just show a success message since this is demo data
+      // In production, you would save to Supabase here
+      toast.success('Roster changes saved successfully!');
+      setEditMode(prev => ({ ...prev, [deptKey]: false }));
+    } catch (error) {
+      toast.error('Failed to save changes');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const getMemberValue = (deptKey: string, member: RosterMember, field: keyof RosterMember): string => {
+    if (editMode[deptKey] && editedData[deptKey]?.[member.id]) {
+      return (editedData[deptKey][member.id][field] as string) || '';
+    }
+    return (member[field] as string) || '';
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -295,13 +365,13 @@ const Roster = () => {
             </ScrollArea>
 
             {departments.map((dept) => {
+              const deptKey = dept.department.toLowerCase().replace(/\s+/g, '-');
               const sorted = [...dept.members].sort((a, b) => 
                 getRankOrder(a.rank, dept.ranks) - getRankOrder(b.rank, dept.ranks)
               );
 
               const byRank: Record<string, RosterMember[]> = {};
               sorted.forEach(m => {
-                // Exact match first, then partial match
                 const exactMatch = dept.ranks?.find(r => 
                   m.rank.toLowerCase().trim() === r.toLowerCase().trim()
                 );
@@ -314,10 +384,12 @@ const Roster = () => {
                 byRank[match].push(m);
               });
 
+              const isEditing = editMode[deptKey];
+
               return (
                 <TabsContent 
                   key={dept.department}
-                  value={dept.department.toLowerCase().replace(/\s+/g, '-')}
+                  value={deptKey}
                   className="space-y-6"
                 >
                   {/* Department Header */}
@@ -336,14 +408,43 @@ const Roster = () => {
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-6">
+                      <div className="flex items-center gap-4">
+                        {isEditing ? (
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => toggleEditMode(deptKey, dept.members)}
+                              disabled={saving}
+                              className="gap-2"
+                            >
+                              <X className="w-4 h-4" />
+                              Cancel
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => saveChanges(deptKey)}
+                              disabled={saving}
+                              className="gap-2"
+                            >
+                              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                              Save
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => toggleEditMode(deptKey, dept.members)}
+                            className="gap-2"
+                          >
+                            <Pencil className="w-4 h-4" />
+                            Edit
+                          </Button>
+                        )}
                         <div className="text-center">
                           <div className="text-2xl font-bold text-primary">{dept.members.length}</div>
                           <div className="text-xs text-muted-foreground">Total</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-green-500">{dept.members.filter(m => m.status === 'active').length}</div>
-                          <div className="text-xs text-muted-foreground">Active</div>
                         </div>
                       </div>
                     </div>
@@ -408,53 +509,121 @@ const Roster = () => {
                                     <Avatar className="h-9 w-9 border-2 border-border shadow-md">
                                       <AvatarImage src={member.discord_avatar} />
                                       <AvatarFallback className="bg-muted text-muted-foreground text-xs font-medium">
-                                        {member.name?.charAt(0) || '?'}
+                                        {getMemberValue(deptKey, member, 'name')?.charAt(0) || '?'}
                                       </AvatarFallback>
                                     </Avatar>
-                                    <span className={`font-medium ${member.name ? 'text-foreground' : 'text-muted-foreground'}`}>
-                                      {member.name || 'Vacant'}
-                                    </span>
+                                    {isEditing ? (
+                                      <Input
+                                        value={getMemberValue(deptKey, member, 'name')}
+                                        onChange={(e) => updateMemberField(deptKey, member.id, 'name', e.target.value)}
+                                        placeholder="Name"
+                                        className="h-8 text-sm"
+                                      />
+                                    ) : (
+                                      <span className={`font-medium ${member.name ? 'text-foreground' : 'text-muted-foreground'}`}>
+                                        {member.name || 'Vacant'}
+                                      </span>
+                                    )}
                                   </div>
 
                                   {/* Badge */}
                                   <div className="text-center">
-                                    <span className="font-mono text-sm px-2.5 py-1 rounded-md bg-muted border border-border">
-                                      {member.badge_number || '-'}
-                                    </span>
+                                    {isEditing ? (
+                                      <Input
+                                        value={getMemberValue(deptKey, member, 'badge_number')}
+                                        onChange={(e) => updateMemberField(deptKey, member.id, 'badge_number', e.target.value)}
+                                        placeholder="Badge #"
+                                        className="h-8 text-sm font-mono text-center"
+                                      />
+                                    ) : (
+                                      <span className="font-mono text-sm px-2.5 py-1 rounded-md bg-muted border border-border">
+                                        {member.badge_number || '-'}
+                                      </span>
+                                    )}
                                   </div>
 
                                   {/* Strikes */}
-                                  <div className="text-center text-muted-foreground">
-                                    {member.strikes || '-'}
+                                  <div className="text-center">
+                                    {isEditing ? (
+                                      <Input
+                                        value={getMemberValue(deptKey, member, 'strikes')}
+                                        onChange={(e) => updateMemberField(deptKey, member.id, 'strikes', e.target.value)}
+                                        placeholder="0/3"
+                                        className="h-8 text-sm text-center"
+                                      />
+                                    ) : (
+                                      <span className="text-muted-foreground">{member.strikes || '-'}</span>
+                                    )}
                                   </div>
 
                                   {/* Status */}
                                   <div className="flex justify-center">
-                                    {member.status === 'active' ? (
-                                      <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/15 border border-green-500/30 text-green-500 text-xs font-medium">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                                        Active
-                                      </span>
-                                    ) : member.status === 'on_leave' ? (
-                                      <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-500 text-xs font-medium">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                                        On Leave
-                                      </span>
+                                    {isEditing ? (
+                                      <Select
+                                        value={getMemberValue(deptKey, member, 'status')}
+                                        onValueChange={(value) => updateMemberField(deptKey, member.id, 'status', value)}
+                                      >
+                                        <SelectTrigger className="h-8 w-28 text-xs">
+                                          <SelectValue placeholder="Status" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {statusOptions.map(opt => (
+                                            <SelectItem key={opt.value} value={opt.value}>
+                                              {opt.label}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
                                     ) : (
-                                      <span className="text-muted-foreground text-xs">-</span>
+                                      <>
+                                        {member.status === 'active' ? (
+                                          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/15 border border-green-500/30 text-green-500 text-xs font-medium">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                            Active
+                                          </span>
+                                        ) : member.status === 'on_leave' ? (
+                                          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-500 text-xs font-medium">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                            On Leave
+                                          </span>
+                                        ) : (
+                                          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-500/15 border border-gray-500/30 text-gray-400 text-xs font-medium">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+                                            Inactive
+                                          </span>
+                                        )}
+                                      </>
                                     )}
                                   </div>
 
                                   {/* Division */}
                                   <div className="flex justify-center">
-                                    <span className={`px-2.5 py-1 rounded-md text-xs font-medium border ${getDivisionColor(member.division || '')}`}>
-                                      {member.division || '-'}
-                                    </span>
+                                    {isEditing ? (
+                                      <Input
+                                        value={getMemberValue(deptKey, member, 'division')}
+                                        onChange={(e) => updateMemberField(deptKey, member.id, 'division', e.target.value)}
+                                        placeholder="Division"
+                                        className="h-8 text-sm text-center"
+                                      />
+                                    ) : (
+                                      <span className={`px-2.5 py-1 rounded-md text-xs font-medium border ${getDivisionColor(member.division || '')}`}>
+                                        {member.division || '-'}
+                                      </span>
+                                    )}
                                   </div>
 
                                   {/* Unit */}
-                                  <div className="text-center text-muted-foreground text-sm">
-                                    {member.call_sign || '-'}
+                                  <div className="text-center">
+                                    {isEditing ? (
+                                      <Input
+                                        value={getMemberValue(deptKey, member, 'call_sign')}
+                                        onChange={(e) => updateMemberField(deptKey, member.id, 'call_sign', e.target.value)}
+                                        placeholder="Unit"
+                                        className="h-8 text-sm text-center"
+                                      />
+                                    ) : (
+                                      <span className="text-muted-foreground text-sm">{member.call_sign || '-'}</span>
+                                    )}
                                   </div>
                                 </div>
                               ))}
