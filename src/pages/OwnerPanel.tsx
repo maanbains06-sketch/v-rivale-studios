@@ -22,6 +22,7 @@ import { MaintenanceCountdownControl } from "@/components/MaintenanceCountdownCo
 import { FeaturedStreamersManager } from "@/components/FeaturedStreamersManager";
 import { PromoCodeManager } from "@/components/PromoCodeManager";
 import { UnifiedApplicationsTable, ApplicationType } from "@/components/UnifiedApplicationsTable";
+import { combineAllApplications, filterApplicationsByType } from "@/lib/applicationTransformer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Loader2, 
@@ -1384,7 +1385,7 @@ const OwnerPanel = () => {
 
           {/* All Applications Tab */}
           <TabsContent value="applications">
-            <Card className="glass-effect border-border/20">
+            <Card className="glass-effect border-border/20 overflow-hidden">
               <CardHeader>
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <div>
@@ -1392,7 +1393,7 @@ const OwnerPanel = () => {
                       <FileText className="w-5 h-5 text-primary" />
                       <CardTitle className="text-gradient">All Applications</CardTitle>
                     </div>
-                    <CardDescription>Review and manage all application types</CardDescription>
+                    <CardDescription>Review and manage all application types in one place</CardDescription>
                   </div>
                   <Select value={selectedAppType} onValueChange={setSelectedAppType}>
                     <SelectTrigger className="w-[200px]">
@@ -1451,507 +1452,111 @@ const OwnerPanel = () => {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Whitelist Applications */}
-                {(selectedAppType === "all" || selectedAppType === "whitelist") && whitelistApplications.length > 0 && (
-                  <div className="space-y-3">
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
-                      <Shield className="w-5 h-5 text-blue-400" />
-                      Whitelist Applications
-                      <Badge variant="secondary">{whitelistApplications.length}</Badge>
-                    </h3>
-                    {whitelistApplications.slice(0, selectedAppType === "whitelist" ? undefined : 5).map(app => (
-                      <Card key={app.id} className="border-border/20">
-                        <CardHeader className="pb-2">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <CardTitle className="text-base">{app.discord}</CardTitle>
-                              <CardDescription>Age: {app.age} | {new Date(app.created_at).toLocaleDateString()}</CardDescription>
-                            </div>
-                            {getStatusBadge(app.status)}
-                          </div>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Experience</Label>
-                            <p className="text-sm">{app.experience}</p>
-                          </div>
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Backstory</Label>
-                            <p className="text-sm line-clamp-3">{app.backstory}</p>
-                          </div>
-                          {(app.status === "pending" || app.status === "on_hold") && (
-                            <>
-                              <Textarea
-                                placeholder="Admin notes (required for On Hold)..."
-                                value={adminNotes[app.id] || ""}
-                                onChange={(e) => setAdminNotes(prev => ({ ...prev, [app.id]: e.target.value }))}
-                                className="h-20"
-                              />
-                              {app.status === "on_hold" && app.admin_notes && (
-                                <div className="p-2 rounded bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400">
-                                  <strong>Hold Reason:</strong> {app.admin_notes}
-                                </div>
-                              )}
-                              <div className="flex gap-2 flex-wrap">
-                                <Button size="sm" onClick={() => updateApplicationStatus("whitelist_applications", app.id, "approved", `Whitelist for ${app.discord}`, loadWhitelistApplications, app.discord, app.discord_id)}>
-                                  <Check className="w-4 h-4 mr-1" /> Approve
-                                </Button>
-                                <Button size="sm" variant="outline" className="border-amber-500/50 text-amber-500 hover:bg-amber-500/10" onClick={() => updateApplicationStatus("whitelist_applications", app.id, "on_hold", `Whitelist for ${app.discord}`, loadWhitelistApplications, app.discord, app.discord_id)}>
-                                  <Clock className="w-4 h-4 mr-1" /> {app.status === "on_hold" ? "Update Hold" : "On Hold"}
-                                </Button>
-                                <Button size="sm" variant="destructive" onClick={() => updateApplicationStatus("whitelist_applications", app.id, "rejected", `Whitelist for ${app.discord}`, loadWhitelistApplications, app.discord, app.discord_id)}>
-                                  <X className="w-4 h-4 mr-1" /> Reject
-                                </Button>
-                              </div>
-                            </>
-                          )}
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-
-                {/* Job Applications */}
-                {(selectedAppType === "all" || selectedAppType === "job") && jobApplications.length > 0 && (
-                  <div className="space-y-3">
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
-                      <Briefcase className="w-5 h-5 text-green-400" />
-                      Job Applications
-                      <Badge variant="secondary">{jobApplications.length}</Badge>
-                    </h3>
-                    {jobApplications.slice(0, selectedAppType === "job" ? undefined : 5).map(app => (
-                      <Card key={app.id} className="border-border/20">
-                        <CardHeader className="pb-2">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <CardTitle className="text-base">{app.character_name}</CardTitle>
-                              <CardDescription>
-                                <Badge variant="outline" className="mr-2">{app.job_type}</Badge>
-                                Age: {app.age} | {new Date(app.created_at).toLocaleDateString()}
-                              </CardDescription>
-                            </div>
-                            {getStatusBadge(app.status)}
-                          </div>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <Label className="text-xs text-muted-foreground">Previous Experience</Label>
-                              <p className="text-sm">{app.previous_experience}</p>
-                            </div>
-                            <div>
-                              <Label className="text-xs text-muted-foreground">Availability</Label>
-                              <p className="text-sm">{app.availability}</p>
-                            </div>
-                          </div>
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Why Join</Label>
-                            <p className="text-sm line-clamp-2">{app.why_join}</p>
-                          </div>
-                          {(app.status === "pending" || app.status === "on_hold") && (
-                            <>
-                              <Textarea
-                                placeholder="Admin notes (required for On Hold)..."
-                                value={adminNotes[app.id] || ""}
-                                onChange={(e) => setAdminNotes(prev => ({ ...prev, [app.id]: e.target.value }))}
-                                className="h-20"
-                              />
-                              {app.status === "on_hold" && app.admin_notes && (
-                                <div className="p-2 rounded bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400">
-                                  <strong>Hold Reason:</strong> {app.admin_notes}
-                                </div>
-                              )}
-                              <div className="flex gap-2 flex-wrap">
-                                <Button size="sm" onClick={() => updateApplicationStatus("job_applications", app.id, "approved", `Job application for ${app.character_name}`, loadJobApplications)}>
-                                  <Check className="w-4 h-4 mr-1" /> Approve
-                                </Button>
-                                <Button size="sm" variant="outline" className="border-amber-500/50 text-amber-500 hover:bg-amber-500/10" onClick={() => updateApplicationStatus("job_applications", app.id, "on_hold", `Job application for ${app.character_name}`, loadJobApplications)}>
-                                  <Clock className="w-4 h-4 mr-1" /> {app.status === "on_hold" ? "Update Hold" : "On Hold"}
-                                </Button>
-                                <Button size="sm" variant="destructive" onClick={() => updateApplicationStatus("job_applications", app.id, "rejected", `Job application for ${app.character_name}`, loadJobApplications)}>
-                                  <X className="w-4 h-4 mr-1" /> Reject
-                                </Button>
-                              </div>
-                            </>
-                          )}
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-
-                {/* Staff Applications */}
-                {(selectedAppType === "all" || selectedAppType === "staff") && staffApplications.length > 0 && (
-                  <div className="space-y-3">
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
-                      <Users className="w-5 h-5 text-purple-400" />
-                      Staff Applications
-                      <Badge variant="secondary">{staffApplications.length}</Badge>
-                    </h3>
-                    {staffApplications.slice(0, selectedAppType === "staff" ? undefined : 5).map(app => (
-                      <Card key={app.id} className="border-border/20">
-                        <CardHeader className="pb-2">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <CardTitle className="text-base">{app.full_name}</CardTitle>
-                              <CardDescription>
-                                <Badge variant="outline" className="mr-2">{app.position}</Badge>
-                                @{app.discord_username} | Age: {app.age}
-                              </CardDescription>
-                            </div>
-                            {getStatusBadge(app.status)}
-                          </div>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Experience</Label>
-                            <p className="text-sm">{app.experience}</p>
-                          </div>
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Why Join</Label>
-                            <p className="text-sm line-clamp-2">{app.why_join}</p>
-                          </div>
-                          {(app.status === "pending" || app.status === "on_hold") && (
-                            <>
-                              <Textarea
-                                placeholder="Admin notes (required for On Hold)..."
-                                value={adminNotes[app.id] || ""}
-                                onChange={(e) => setAdminNotes(prev => ({ ...prev, [app.id]: e.target.value }))}
-                                className="h-20"
-                              />
-                              {app.status === "on_hold" && app.admin_notes && (
-                                <div className="p-2 rounded bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400">
-                                  <strong>Hold Reason:</strong> {app.admin_notes}
-                                </div>
-                              )}
-                              <div className="flex gap-2 flex-wrap">
-                                <Button size="sm" onClick={() => updateApplicationStatus("staff_applications", app.id, "approved", `Staff application for ${app.full_name}`, loadStaffApplications)}>
-                                  <Check className="w-4 h-4 mr-1" /> Approve
-                                </Button>
-                                <Button size="sm" variant="outline" className="border-amber-500/50 text-amber-500 hover:bg-amber-500/10" onClick={() => updateApplicationStatus("staff_applications", app.id, "on_hold", `Staff application for ${app.full_name}`, loadStaffApplications)}>
-                                  <Clock className="w-4 h-4 mr-1" /> {app.status === "on_hold" ? "Update Hold" : "On Hold"}
-                                </Button>
-                                <Button size="sm" variant="destructive" onClick={() => updateApplicationStatus("staff_applications", app.id, "rejected", `Staff application for ${app.full_name}`, loadStaffApplications)}>
-                                  <X className="w-4 h-4 mr-1" /> Reject
-                                </Button>
-                              </div>
-                            </>
-                          )}
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-
-                {/* Ban Appeals */}
-                {(selectedAppType === "all" || selectedAppType === "ban") && banAppeals.length > 0 && (
-                  <div className="space-y-3">
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
-                      <AlertTriangle className="w-5 h-5 text-red-400" />
-                      Ban Appeals
-                      <Badge variant="secondary">{banAppeals.length}</Badge>
-                    </h3>
-                    {banAppeals.slice(0, selectedAppType === "ban" ? undefined : 5).map(app => (
-                      <Card key={app.id} className="border-border/20 border-red-500/20">
-                        <CardHeader className="pb-2">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <CardTitle className="text-base">{app.discord_username}</CardTitle>
-                              <CardDescription>Steam: {app.steam_id} | {new Date(app.created_at).toLocaleDateString()}</CardDescription>
-                            </div>
-                            {getStatusBadge(app.status)}
-                          </div>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Ban Reason</Label>
-                            <p className="text-sm text-red-400">{app.ban_reason}</p>
-                          </div>
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Appeal Reason</Label>
-                            <p className="text-sm">{app.appeal_reason}</p>
-                          </div>
-                          {(app.status === "pending" || app.status === "on_hold") && (
-                            <>
-                              <Textarea
-                                placeholder="Admin notes (required for On Hold)..."
-                                value={adminNotes[app.id] || ""}
-                                onChange={(e) => setAdminNotes(prev => ({ ...prev, [app.id]: e.target.value }))}
-                                className="h-20"
-                              />
-                              {app.status === "on_hold" && app.admin_notes && (
-                                <div className="p-2 rounded bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400">
-                                  <strong>Hold Reason:</strong> {app.admin_notes}
-                                </div>
-                              )}
-                              <div className="flex gap-2 flex-wrap">
-                                <Button size="sm" onClick={() => updateApplicationStatus("ban_appeals", app.id, "approved", `Ban appeal for ${app.discord_username}`, loadBanAppeals)}>
-                                  <Check className="w-4 h-4 mr-1" /> Approve
-                                </Button>
-                                <Button size="sm" variant="outline" className="border-amber-500/50 text-amber-500 hover:bg-amber-500/10" onClick={() => updateApplicationStatus("ban_appeals", app.id, "on_hold", `Ban appeal for ${app.discord_username}`, loadBanAppeals)}>
-                                  <Clock className="w-4 h-4 mr-1" /> {app.status === "on_hold" ? "Update Hold" : "On Hold"}
-                                </Button>
-                                <Button size="sm" variant="destructive" onClick={() => updateApplicationStatus("ban_appeals", app.id, "rejected", `Ban appeal for ${app.discord_username}`, loadBanAppeals)}>
-                                  <X className="w-4 h-4 mr-1" /> Reject
-                                </Button>
-                              </div>
-                            </>
-                          )}
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-
-                {/* Creator Applications */}
-                {(selectedAppType === "all" || selectedAppType === "creator") && creatorApplications.length > 0 && (
-                  <div className="space-y-3">
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
-                      <Youtube className="w-5 h-5 text-orange-400" />
-                      Creator Applications
-                      <Badge variant="secondary">{creatorApplications.length}</Badge>
-                    </h3>
-                    {creatorApplications.slice(0, selectedAppType === "creator" ? undefined : 5).map(app => (
-                      <Card key={app.id} className="border-border/20">
-                        <CardHeader className="pb-2">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <CardTitle className="text-base">{app.full_name}</CardTitle>
-                              <CardDescription>
-                                <Badge variant="outline" className="mr-2">{app.platform}</Badge>
-                                @{app.discord_username} | {app.average_viewers} avg viewers
-                              </CardDescription>
-                            </div>
-                            {getStatusBadge(app.status)}
-                          </div>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Channel</Label>
-                            <a href={app.channel_url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
-                              {app.channel_url}
-                            </a>
-                          </div>
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Content Style</Label>
-                            <p className="text-sm">{app.content_style}</p>
-                          </div>
-                          {(app.status === "pending" || app.status === "on_hold") && (
-                            <>
-                              <Textarea
-                                placeholder="Admin notes (required for On Hold)..."
-                                value={adminNotes[app.id] || ""}
-                                onChange={(e) => setAdminNotes(prev => ({ ...prev, [app.id]: e.target.value }))}
-                                className="h-20"
-                              />
-                              {app.status === "on_hold" && app.admin_notes && (
-                                <div className="p-2 rounded bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400">
-                                  <strong>Hold Reason:</strong> {app.admin_notes}
-                                </div>
-                              )}
-                              <div className="flex gap-2 flex-wrap">
-                                <Button size="sm" onClick={() => updateApplicationStatus("creator_applications", app.id, "approved", `Creator application for ${app.full_name}`, loadCreatorApplications)}>
-                                  <Check className="w-4 h-4 mr-1" /> Approve
-                                </Button>
-                                <Button size="sm" variant="outline" className="border-amber-500/50 text-amber-500 hover:bg-amber-500/10" onClick={() => updateApplicationStatus("creator_applications", app.id, "on_hold", `Creator application for ${app.full_name}`, loadCreatorApplications)}>
-                                  <Clock className="w-4 h-4 mr-1" /> {app.status === "on_hold" ? "Update Hold" : "On Hold"}
-                                </Button>
-                                <Button size="sm" variant="destructive" onClick={() => updateApplicationStatus("creator_applications", app.id, "rejected", `Creator application for ${app.full_name}`, loadCreatorApplications)}>
-                                  <X className="w-4 h-4 mr-1" /> Reject
-                                </Button>
-                              </div>
-                            </>
-                          )}
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-
-                {/* Firefighter Applications */}
-                {(selectedAppType === "all" || selectedAppType === "firefighter") && firefighterApplications.length > 0 && (
-                  <div className="space-y-3">
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
-                      <Flame className="w-5 h-5 text-orange-500" />
-                      Firefighter Applications
-                      <Badge variant="secondary">{firefighterApplications.length}</Badge>
-                    </h3>
-                    {firefighterApplications.slice(0, selectedAppType === "firefighter" ? undefined : 5).map(app => (
-                      <Card key={app.id} className="border-border/20">
-                        <CardHeader className="pb-2">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <CardTitle className="text-base">{app.real_name}</CardTitle>
-                              <CardDescription>
-                                In-Game: {app.in_game_name} | Steam: {app.steam_id}
-                              </CardDescription>
-                            </div>
-                            {getStatusBadge(app.status)}
-                          </div>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Weekly Availability</Label>
-                            <p className="text-sm">{app.weekly_availability}</p>
-                          </div>
-                          {app.status === "pending" && (
-                            <>
-                              <Textarea
-                                placeholder="Admin notes..."
-                                value={adminNotes[app.id] || ""}
-                                onChange={(e) => setAdminNotes(prev => ({ ...prev, [app.id]: e.target.value }))}
-                                className="h-20"
-                              />
-                              <div className="flex gap-2">
-                                <Button size="sm" onClick={() => updateApplicationStatus("firefighter_applications", app.id, "approved", `Firefighter application for ${app.real_name}`, loadFirefighterApplications)}>
-                                  <Check className="w-4 h-4 mr-1" /> Approve
-                                </Button>
-                                <Button size="sm" variant="destructive" onClick={() => updateApplicationStatus("firefighter_applications", app.id, "rejected", `Firefighter application for ${app.real_name}`, loadFirefighterApplications)}>
-                                  <X className="w-4 h-4 mr-1" /> Reject
-                                </Button>
-                              </div>
-                            </>
-                          )}
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-
-                {/* Weazel News Applications */}
-                {(selectedAppType === "all" || selectedAppType === "weazel") && weazelNewsApplications.length > 0 && (
-                  <div className="space-y-3">
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
-                      <Tv className="w-5 h-5 text-cyan-400" />
-                      Weazel News Applications
-                      <Badge variant="secondary">{weazelNewsApplications.length}</Badge>
-                    </h3>
-                    {weazelNewsApplications.slice(0, selectedAppType === "weazel" ? undefined : 5).map(app => (
-                      <Card key={app.id} className="border-border/20">
-                        <CardHeader className="pb-2">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <CardTitle className="text-base">{app.character_name}</CardTitle>
-                              <CardDescription>Age: {app.age} | {new Date(app.created_at).toLocaleDateString()}</CardDescription>
-                            </div>
-                            {getStatusBadge(app.status)}
-                          </div>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Journalism Experience</Label>
-                            <p className="text-sm">{app.journalism_experience}</p>
-                          </div>
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Writing Sample</Label>
-                            <p className="text-sm line-clamp-2">{app.writing_sample}</p>
-                          </div>
-                          {app.status === "pending" && (
-                            <>
-                              <Textarea
-                                placeholder="Admin notes..."
-                                value={adminNotes[app.id] || ""}
-                                onChange={(e) => setAdminNotes(prev => ({ ...prev, [app.id]: e.target.value }))}
-                                className="h-20"
-                              />
-                              <div className="flex gap-2">
-                                <Button size="sm" onClick={() => updateApplicationStatus("weazel_news_applications", app.id, "approved", `Weazel News application for ${app.character_name}`, loadWeazelNewsApplications)}>
-                                  <Check className="w-4 h-4 mr-1" /> Approve
-                                </Button>
-                                <Button size="sm" variant="destructive" onClick={() => updateApplicationStatus("weazel_news_applications", app.id, "rejected", `Weazel News application for ${app.character_name}`, loadWeazelNewsApplications)}>
-                                  <X className="w-4 h-4 mr-1" /> Reject
-                                </Button>
-                              </div>
-                            </>
-                          )}
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-
-                {/* PDM Applications */}
-                {(selectedAppType === "all" || selectedAppType === "pdm") && pdmApplications.length > 0 && (
-                  <div className="space-y-3">
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
-                      <Car className="w-5 h-5 text-yellow-400" />
-                      PDM Applications
-                      <Badge variant="secondary">{pdmApplications.length}</Badge>
-                    </h3>
-                    {pdmApplications.slice(0, selectedAppType === "pdm" ? undefined : 5).map((app) => (
-                      <Card key={app.id} className="border-border/20">
-                        <CardHeader className="pb-2">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <CardTitle className="text-base">{app.character_name}</CardTitle>
-                              <CardDescription>Age: {app.age} | Phone: {app.phone_number}</CardDescription>
-                            </div>
-                            {getStatusBadge(app.status)}
-                          </div>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                          <div className="grid md:grid-cols-2 gap-2">
-                            <div>
-                              <Label className="text-xs text-muted-foreground">Sales Experience</Label>
-                              <p className="text-sm">{app.sales_experience}</p>
-                            </div>
-                            <div>
-                              <Label className="text-xs text-muted-foreground">Vehicle Knowledge</Label>
-                              <p className="text-sm">{app.vehicle_knowledge}</p>
-                            </div>
-                          </div>
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Customer Scenario</Label>
-                            <p className="text-sm line-clamp-2">{app.customer_scenario}</p>
-                          </div>
-                          {app.status === "pending" && (
-                            <div className="space-y-2 pt-2">
-                              <Textarea
-                                placeholder="Admin notes (optional)"
-                                value={selectedPdmApp?.id === app.id ? pdmAdminNotes : ""}
-                                onChange={(e) => {
-                                  setSelectedPdmApp(app);
-                                  setPdmAdminNotes(e.target.value);
-                                }}
-                              />
-                              <div className="flex gap-2">
-                                <Button
-                                  size="sm"
-                                  onClick={() => updatePdmApplicationStatus(app.id, "approved")}
-                                >
-                                  <Check className="w-4 h-4 mr-1" /> Approve
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => updatePdmApplicationStatus(app.id, "rejected")}
-                                >
-                                  <X className="w-4 h-4 mr-1" /> Reject
-                                </Button>
-                              </div>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-
-                {/* Empty State */}
-                {whitelistApplications.length === 0 && 
-                 jobApplications.length === 0 && 
-                 staffApplications.length === 0 && 
-                 banAppeals.length === 0 && 
-                 creatorApplications.length === 0 && 
-                 firefighterApplications.length === 0 && 
-                 weazelNewsApplications.length === 0 && 
-                 pdmApplications.length === 0 && (
-                  <div className="text-center py-12">
-                    <FileText className="w-16 h-16 mx-auto text-muted-foreground/30 mb-4" />
-                    <p className="text-muted-foreground">No applications found</p>
-                  </div>
-                )}
+              <CardContent className="p-0">
+                <UnifiedApplicationsTable
+                  applications={filterApplicationsByType(
+                    combineAllApplications(
+                      whitelistApplications,
+                      staffApplications,
+                      jobApplications,
+                      banAppeals,
+                      creatorApplications,
+                      firefighterApplications,
+                      weazelNewsApplications,
+                      pdmApplications,
+                      gangApplications
+                    ),
+                    selectedAppType
+                  )}
+                  title="Organization Applications"
+                  onApprove={async (id, notes, type) => {
+                    const tableMap: Record<string, { table: string; loader: () => Promise<void>; nameField?: string }> = {
+                      whitelist: { table: 'whitelist_applications', loader: loadWhitelistApplications },
+                      staff: { table: 'staff_applications', loader: loadStaffApplications },
+                      police: { table: 'job_applications', loader: loadJobApplications },
+                      ems: { table: 'job_applications', loader: loadJobApplications },
+                      mechanic: { table: 'job_applications', loader: loadJobApplications },
+                      judge: { table: 'job_applications', loader: loadJobApplications },
+                      attorney: { table: 'job_applications', loader: loadJobApplications },
+                      ban_appeal: { table: 'ban_appeals', loader: loadBanAppeals },
+                      creator: { table: 'creator_applications', loader: loadCreatorApplications },
+                      firefighter: { table: 'firefighter_applications', loader: loadFirefighterApplications },
+                      weazel_news: { table: 'weazel_news_applications', loader: loadWeazelNewsApplications },
+                      pdm: { table: 'pdm_applications', loader: loadPdmApplications },
+                      gang: { table: 'job_applications', loader: loadGangApplications },
+                    };
+                    
+                    const config = tableMap[type];
+                    if (config) {
+                      await updateApplicationStatus(
+                        config.table as any,
+                        id,
+                        'approved',
+                        `Application approved`,
+                        config.loader
+                      );
+                    }
+                  }}
+                  onReject={async (id, notes, type) => {
+                    const tableMap: Record<string, { table: string; loader: () => Promise<void> }> = {
+                      whitelist: { table: 'whitelist_applications', loader: loadWhitelistApplications },
+                      staff: { table: 'staff_applications', loader: loadStaffApplications },
+                      police: { table: 'job_applications', loader: loadJobApplications },
+                      ems: { table: 'job_applications', loader: loadJobApplications },
+                      mechanic: { table: 'job_applications', loader: loadJobApplications },
+                      judge: { table: 'job_applications', loader: loadJobApplications },
+                      attorney: { table: 'job_applications', loader: loadJobApplications },
+                      ban_appeal: { table: 'ban_appeals', loader: loadBanAppeals },
+                      creator: { table: 'creator_applications', loader: loadCreatorApplications },
+                      firefighter: { table: 'firefighter_applications', loader: loadFirefighterApplications },
+                      weazel_news: { table: 'weazel_news_applications', loader: loadWeazelNewsApplications },
+                      pdm: { table: 'pdm_applications', loader: loadPdmApplications },
+                      gang: { table: 'job_applications', loader: loadGangApplications },
+                    };
+                    
+                    const config = tableMap[type];
+                    if (config) {
+                      // Store notes before updating
+                      setAdminNotes(prev => ({ ...prev, [id]: notes }));
+                      await updateApplicationStatus(
+                        config.table as any,
+                        id,
+                        'rejected',
+                        `Application rejected`,
+                        config.loader
+                      );
+                    }
+                  }}
+                  onHold={async (id, notes, type) => {
+                    const tableMap: Record<string, { table: string; loader: () => Promise<void> }> = {
+                      whitelist: { table: 'whitelist_applications', loader: loadWhitelistApplications },
+                      staff: { table: 'staff_applications', loader: loadStaffApplications },
+                      police: { table: 'job_applications', loader: loadJobApplications },
+                      ems: { table: 'job_applications', loader: loadJobApplications },
+                      mechanic: { table: 'job_applications', loader: loadJobApplications },
+                      judge: { table: 'job_applications', loader: loadJobApplications },
+                      attorney: { table: 'job_applications', loader: loadJobApplications },
+                      ban_appeal: { table: 'ban_appeals', loader: loadBanAppeals },
+                      creator: { table: 'creator_applications', loader: loadCreatorApplications },
+                      firefighter: { table: 'firefighter_applications', loader: loadFirefighterApplications },
+                      weazel_news: { table: 'weazel_news_applications', loader: loadWeazelNewsApplications },
+                      pdm: { table: 'pdm_applications', loader: loadPdmApplications },
+                      gang: { table: 'job_applications', loader: loadGangApplications },
+                    };
+                    
+                    const config = tableMap[type];
+                    if (config) {
+                      setAdminNotes(prev => ({ ...prev, [id]: notes }));
+                      await updateApplicationStatus(
+                        config.table as any,
+                        id,
+                        'on_hold',
+                        `Application put on hold`,
+                        config.loader
+                      );
+                    }
+                  }}
+                />
               </CardContent>
             </Card>
           </TabsContent>
