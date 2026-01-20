@@ -15,7 +15,12 @@ import {
   Tv,
   Car,
   Loader2,
-  Users
+  Users,
+  Star,
+  Crown,
+  Medal,
+  Award,
+  ChevronRight
 } from "lucide-react";
 import headerJobsBg from "@/assets/header-guides-new.jpg";
 
@@ -27,55 +32,51 @@ interface RosterMember {
   status: 'active' | 'inactive' | 'on_leave';
   division?: string;
   discord_avatar?: string;
-  call_sign?: string;
   strikes?: string;
-  unit?: string;
+  call_sign?: string;
 }
 
 interface DepartmentRoster {
   department: string;
   shortName: string;
   icon: React.ReactNode;
-  headerColor: string;
-  borderColor: string;
+  accentColor: string;
   members: RosterMember[];
   ranks?: string[];
 }
 
 const exampleRosterData: Record<string, RosterMember[]> = {
   police: [
-    { id: 'ex1', name: 'Aero Souls', rank: 'Police Supervisor', badge_number: '1-ADAM-1', status: 'active', division: 'Administration', strikes: '-', unit: 'Command' },
-    { id: 'ex2', name: 'Jose Hernandez', rank: 'Police Supervisor', badge_number: '1-ADAM-2', status: 'active', division: 'Administration', strikes: '-', unit: 'Command' },
-    { id: 'ex3', name: 'Jose Hernandez', rank: 'Police Commissioner', badge_number: '2-BRAVO-3', status: 'active', division: 'Administration', strikes: '-', unit: 'Command' },
+    { id: 'ex1', name: 'Aero Souls', rank: 'Police Supervisor', badge_number: '1-ADAM-1', status: 'active', division: 'Administration', strikes: '-' },
+    { id: 'ex2', name: 'Jose Hernandez', rank: 'Police Supervisor', badge_number: '1-ADAM-2', status: 'active', division: 'Administration', strikes: '-' },
+    { id: 'ex3', name: 'Jose Hernandez', rank: 'Police Commissioner', badge_number: '2-BRAVO-3', status: 'active', division: 'Administration', strikes: '-' },
     { id: 'ex4', name: '', rank: 'Police Chief', badge_number: '3-CHARLIE-4', status: 'inactive', division: 'Administration', strikes: '0/2' },
     { id: 'ex5', name: '', rank: 'Police Asst. Chief', badge_number: '3-CHARLIE-5', status: 'inactive', division: 'Administration', strikes: '0/2' },
     { id: 'ex6', name: '', rank: 'Police Deputy Chief', badge_number: '3-CHARLIE-6', status: 'inactive', division: 'Administration', strikes: '0/2' },
     { id: 'ex7', name: 'Jason Flynn', rank: 'Major', badge_number: '4-DELTA-7', status: 'inactive', division: 'Administration', strikes: '0/2' },
     { id: 'ex8', name: '', rank: 'Captain', badge_number: '5-ECHO-8', status: 'inactive', division: 'Patrol', strikes: '0/2' },
     { id: 'ex9', name: '', rank: 'Captain', badge_number: '5-ECHO-9', status: 'inactive', division: 'Patrol', strikes: '0/2' },
-    { id: 'ex10', name: '', rank: 'Captain', badge_number: '5-ECHO-10', status: 'inactive', division: 'Traffic Enforcement Services', strikes: '0/2' },
+    { id: 'ex10', name: '', rank: 'Captain', badge_number: '5-ECHO-10', status: 'inactive', division: 'Traffic Enforcement', strikes: '0/2' },
     { id: 'ex11', name: '', rank: 'Lieutenant', badge_number: '6-FOXTROT-10', status: 'inactive', division: 'Patrol', strikes: '0/2' },
-    { id: 'ex12', name: '', rank: 'Lieutenant', badge_number: '6-FOXTROT-11', status: 'inactive', division: 'Patrol', strikes: '0/2' },
-    { id: 'ex13', name: '', rank: 'Lieutenant', badge_number: '6-FOXTROT-12', status: 'inactive', division: 'Traffic Enforcement Services', strikes: '0/2' },
-    { id: 'ex14', name: '', rank: 'Sergeant', badge_number: '7-GOLF-14', status: 'inactive', division: 'Patrol', strikes: '0/3' },
-    { id: 'ex15', name: '', rank: 'Sergeant', badge_number: '7-GOLF-15', status: 'inactive', division: 'Patrol', strikes: '0/3' },
-    { id: 'ex16', name: '', rank: 'Sergeant', badge_number: '7-GOLF-16', status: 'inactive', division: 'Traffic Enforcement Services', strikes: '0/3' },
-    { id: 'ex17', name: 'John Helper', rank: 'Corporal', badge_number: '8-HOTEL-20', status: 'inactive', division: 'Patrol', strikes: '0/3' },
-    { id: 'ex18', name: '', rank: 'Senior Officer', badge_number: '9-INDIA-25', status: 'inactive', division: 'Patrol', strikes: '0/3' },
-    { id: 'ex19', name: '', rank: 'Officer', badge_number: '10-JULIET-30', status: 'inactive', division: 'Patrol', strikes: '0/3' },
-    { id: 'ex20', name: '', rank: 'Cadet', badge_number: '11-KILO-35', status: 'inactive', division: 'Training', strikes: '0/3' },
-    { id: 'ex21', name: '', rank: 'Solo Cadet', badge_number: '12-LIMA-40', status: 'inactive', division: 'Training', strikes: '0/3' },
+    { id: 'ex12', name: '', rank: 'Lieutenant', badge_number: '6-FOXTROT-11', status: 'inactive', division: 'Investigations', strikes: '0/2' },
+    { id: 'ex13', name: '', rank: 'Sergeant', badge_number: '7-GOLF-14', status: 'inactive', division: 'Patrol', strikes: '0/3' },
+    { id: 'ex14', name: '', rank: 'Sergeant', badge_number: '7-GOLF-15', status: 'inactive', division: 'Traffic Enforcement', strikes: '0/3' },
+    { id: 'ex15', name: 'John Helper', rank: 'Corporal', badge_number: '8-HOTEL-20', status: 'active', division: 'Patrol', strikes: '0/3' },
+    { id: 'ex16', name: '', rank: 'Senior Officer', badge_number: '9-INDIA-25', status: 'inactive', division: 'Patrol', strikes: '0/3' },
+    { id: 'ex17', name: '', rank: 'Officer', badge_number: '10-JULIET-30', status: 'inactive', division: 'Patrol', strikes: '0/3' },
+    { id: 'ex18', name: '', rank: 'Cadet', badge_number: '11-KILO-35', status: 'inactive', division: 'Training', strikes: '0/3' },
+    { id: 'ex19', name: '', rank: 'Solo Cadet', badge_number: '12-LIMA-40', status: 'inactive', division: 'Training', strikes: '0/3' },
   ],
   ems: [
     { id: 'ems1', name: 'Sarah Hayes', rank: 'EMS Director', badge_number: 'MED-1', status: 'active', division: 'Administration', strikes: '-' },
     { id: 'ems2', name: 'Michael Foster', rank: 'Chief Physician', badge_number: 'DOC-1', status: 'active', division: 'Medical', strikes: '-' },
-    { id: 'ems3', name: 'Lisa Wong', rank: 'Senior Paramedic', badge_number: 'PARA-5', status: 'active', division: 'Field Operations', strikes: '0/3' },
-    { id: 'ems4', name: 'John Blake', rank: 'Paramedic', badge_number: 'PARA-10', status: 'active', division: 'Field Operations', strikes: '0/3' },
-    { id: 'ems5', name: 'Rachel Green', rank: 'EMT', badge_number: 'EMT-15', status: 'active', division: 'Field Operations', strikes: '0/3' },
+    { id: 'ems3', name: 'Lisa Wong', rank: 'Senior Paramedic', badge_number: 'PARA-5', status: 'active', division: 'Field Ops', strikes: '0/3' },
+    { id: 'ems4', name: 'John Blake', rank: 'Paramedic', badge_number: 'PARA-10', status: 'active', division: 'Field Ops', strikes: '0/3' },
+    { id: 'ems5', name: 'Rachel Green', rank: 'EMT', badge_number: 'EMT-15', status: 'active', division: 'Field Ops', strikes: '0/3' },
     { id: 'ems6', name: 'David Kim', rank: 'EMT Trainee', badge_number: 'EMT-20', status: 'on_leave', division: 'Training', strikes: '0/3' },
   ],
   fire: [
-    { id: 'fire1', name: 'Marcus Brown', rank: 'Fire Chief', badge_number: 'FC-1', status: 'active', division: 'Administration', strikes: '-' },
+    { id: 'fire1', name: 'Marcus Brown', rank: 'Fire Chief', badge_number: 'FC-1', status: 'active', division: 'Command', strikes: '-' },
     { id: 'fire2', name: 'James Walker', rank: 'Captain', badge_number: 'FC-5', status: 'active', division: 'Engine 1', strikes: '0/2' },
     { id: 'fire3', name: 'Anna Torres', rank: 'Lieutenant', badge_number: 'FC-10', status: 'active', division: 'Ladder 1', strikes: '0/2' },
     { id: 'fire4', name: 'Mike Stone', rank: 'Senior Firefighter', badge_number: 'FF-15', status: 'active', division: 'Engine 2', strikes: '0/3' },
@@ -112,42 +113,28 @@ const exampleRosterData: Record<string, RosterMember[]> = {
   ],
 };
 
-const getDivisionStyle = (division: string): string => {
-  const d = division.toLowerCase();
-  if (d.includes('administration') || d.includes('management') || d.includes('command')) 
-    return 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg shadow-red-500/20';
-  if (d.includes('patrol')) 
-    return 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/20';
-  if (d.includes('traffic')) 
-    return 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg shadow-green-500/20';
-  if (d.includes('criminal') || d.includes('investigation')) 
-    return 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/20';
-  if (d.includes('training')) 
-    return 'bg-gradient-to-r from-orange-600 to-orange-500 text-white shadow-lg shadow-orange-500/20';
-  if (d.includes('field')) 
-    return 'bg-gradient-to-r from-cyan-600 to-cyan-500 text-white shadow-lg shadow-cyan-500/20';
-  if (d.includes('sales')) 
-    return 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-lg shadow-emerald-500/20';
-  if (d.includes('medical')) 
-    return 'bg-gradient-to-r from-pink-600 to-pink-500 text-white shadow-lg shadow-pink-500/20';
-  if (d.includes('production') || d.includes('on-air')) 
-    return 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/20';
-  if (d.includes('judiciary') || d.includes('prosecution') || d.includes('defense')) 
-    return 'bg-gradient-to-r from-violet-600 to-violet-500 text-white shadow-lg shadow-violet-500/20';
-  if (d.includes('engine') || d.includes('ladder')) 
-    return 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-lg shadow-amber-500/20';
-  if (d.includes('repairs')) 
-    return 'bg-gradient-to-r from-yellow-600 to-yellow-500 text-black shadow-lg shadow-yellow-500/20';
-  return 'bg-gradient-to-r from-gray-600 to-gray-500 text-white shadow-lg shadow-gray-500/20';
+const getRankIcon = (index: number) => {
+  if (index === 0) return <Crown className="w-4 h-4 text-yellow-400" />;
+  if (index === 1) return <Star className="w-4 h-4 text-amber-400" />;
+  if (index === 2) return <Medal className="w-4 h-4 text-orange-400" />;
+  return <Award className="w-4 h-4 text-muted-foreground" />;
 };
 
-const getStatusStyle = (status: string): { bg: string; text: string } => {
-  switch (status) {
-    case 'active': return { bg: 'bg-gradient-to-r from-green-500 to-emerald-500 shadow-lg shadow-green-500/30', text: 'Active' };
-    case 'inactive': return { bg: 'bg-gradient-to-r from-gray-500 to-gray-400 shadow-lg shadow-gray-500/20', text: '-' };
-    case 'on_leave': return { bg: 'bg-gradient-to-r from-amber-500 to-yellow-500 shadow-lg shadow-amber-500/30', text: 'On Leave' };
-    default: return { bg: 'bg-gradient-to-r from-gray-500 to-gray-400', text: '-' };
-  }
+const getDivisionColor = (division: string): string => {
+  const d = division.toLowerCase();
+  if (d.includes('administration') || d.includes('management') || d.includes('command')) return 'text-red-400 bg-red-500/15 border-red-500/30';
+  if (d.includes('patrol')) return 'text-blue-400 bg-blue-500/15 border-blue-500/30';
+  if (d.includes('traffic')) return 'text-green-400 bg-green-500/15 border-green-500/30';
+  if (d.includes('investigation')) return 'text-purple-400 bg-purple-500/15 border-purple-500/30';
+  if (d.includes('training')) return 'text-orange-400 bg-orange-500/15 border-orange-500/30';
+  if (d.includes('field')) return 'text-cyan-400 bg-cyan-500/15 border-cyan-500/30';
+  if (d.includes('sales')) return 'text-emerald-400 bg-emerald-500/15 border-emerald-500/30';
+  if (d.includes('medical')) return 'text-pink-400 bg-pink-500/15 border-pink-500/30';
+  if (d.includes('engine') || d.includes('ladder')) return 'text-amber-400 bg-amber-500/15 border-amber-500/30';
+  if (d.includes('judiciary') || d.includes('prosecution') || d.includes('defense')) return 'text-violet-400 bg-violet-500/15 border-violet-500/30';
+  if (d.includes('on-air') || d.includes('production')) return 'text-indigo-400 bg-indigo-500/15 border-indigo-500/30';
+  if (d.includes('repairs')) return 'text-yellow-400 bg-yellow-500/15 border-yellow-500/30';
+  return 'text-gray-400 bg-gray-500/15 border-gray-500/30';
 };
 
 const Roster = () => {
@@ -189,8 +176,7 @@ const Roster = () => {
       department: "Police Department",
       shortName: "Police",
       icon: <Siren className="w-4 h-4" />,
-      headerColor: "from-blue-700 via-blue-600 to-indigo-700",
-      borderColor: "border-blue-500/50",
+      accentColor: "blue",
       members: getDepartmentMembers('police', ['police', 'pd', 'lspd']),
       ranks: ['Police Supervisor', 'Police Commissioner', 'Police Chief', 'Police Asst. Chief', 'Police Deputy Chief', 'Major', 'Captain', 'Lieutenant', 'Sergeant', 'Corporal', 'Senior Officer', 'Officer', 'Cadet', 'Solo Cadet'],
     },
@@ -198,8 +184,7 @@ const Roster = () => {
       department: "EMS Department",
       shortName: "EMS",
       icon: <Ambulance className="w-4 h-4" />,
-      headerColor: "from-red-700 via-red-600 to-rose-700",
-      borderColor: "border-red-500/50",
+      accentColor: "red",
       members: getDepartmentMembers('ems', ['ems', 'medical', 'hospital']),
       ranks: ['EMS Director', 'Chief Physician', 'Senior Paramedic', 'Paramedic', 'EMT', 'EMT Trainee'],
     },
@@ -207,8 +192,7 @@ const Roster = () => {
       department: "Fire Department",
       shortName: "Fire",
       icon: <Flame className="w-4 h-4" />,
-      headerColor: "from-orange-700 via-orange-600 to-amber-700",
-      borderColor: "border-orange-500/50",
+      accentColor: "orange",
       members: getDepartmentMembers('fire', ['fire', 'fd', 'lsfd']),
       ranks: ['Fire Chief', 'Captain', 'Lieutenant', 'Senior Firefighter', 'Firefighter', 'Probationary'],
     },
@@ -216,8 +200,7 @@ const Roster = () => {
       department: "Mechanic Shop",
       shortName: "Mechanic",
       icon: <Wrench className="w-4 h-4" />,
-      headerColor: "from-amber-700 via-yellow-600 to-orange-600",
-      borderColor: "border-amber-500/50",
+      accentColor: "amber",
       members: getDepartmentMembers('mechanic', ['mechanic', 'garage', 'repair']),
       ranks: ['Head Mechanic', 'Senior Mechanic', 'Mechanic', 'Junior Mechanic', 'Apprentice'],
     },
@@ -225,8 +208,7 @@ const Roster = () => {
       department: "Department of Justice",
       shortName: "DOJ",
       icon: <Gavel className="w-4 h-4" />,
-      headerColor: "from-purple-700 via-violet-600 to-indigo-700",
-      borderColor: "border-purple-500/50",
+      accentColor: "purple",
       members: getDepartmentMembers('doj', ['justice', 'doj', 'court', 'legal']),
       ranks: ['Chief Justice', 'Senior Judge', 'Judge', 'Attorney General', 'Asst. District Attorney', 'Public Defender'],
     },
@@ -234,8 +216,7 @@ const Roster = () => {
       department: "Weazel News",
       shortName: "Weazel",
       icon: <Tv className="w-4 h-4" />,
-      headerColor: "from-pink-700 via-fuchsia-600 to-purple-700",
-      borderColor: "border-pink-500/50",
+      accentColor: "pink",
       members: getDepartmentMembers('weazel', ['weazel', 'news', 'media']),
       ranks: ['News Director', 'Lead Anchor', 'Senior Reporter', 'Field Reporter', 'Cameraman', 'Intern Reporter'],
     },
@@ -243,8 +224,7 @@ const Roster = () => {
       department: "Premium Deluxe Motorsport",
       shortName: "PDM",
       icon: <Car className="w-4 h-4" />,
-      headerColor: "from-cyan-700 via-teal-600 to-emerald-700",
-      borderColor: "border-cyan-500/50",
+      accentColor: "cyan",
       members: getDepartmentMembers('pdm', ['pdm', 'motorsport', 'dealership', 'deluxe']),
       ranks: ['General Manager', 'Sales Manager', 'Senior Sales', 'Sales Associate', 'Sales Trainee'],
     },
@@ -252,8 +232,7 @@ const Roster = () => {
       department: "Server Staff",
       shortName: "Staff",
       icon: <Shield className="w-4 h-4" />,
-      headerColor: "from-violet-700 via-purple-600 to-fuchsia-700",
-      borderColor: "border-violet-500/50",
+      accentColor: "violet",
       members: staffMembers.filter(s => 
         s.department?.toLowerCase().includes('staff') || 
         s.department?.toLowerCase().includes('admin') ||
@@ -296,21 +275,19 @@ const Roster = () => {
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         ) : (
-          <Tabs defaultValue="police-department" className="space-y-6">
+          <Tabs defaultValue="police-department" className="space-y-8">
             <ScrollArea className="w-full">
-              <TabsList className="inline-flex w-auto gap-1 p-1.5 bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl">
+              <TabsList className="inline-flex w-auto gap-1 p-1.5 bg-card/80 backdrop-blur-sm rounded-xl border border-border shadow-xl">
                 {departments.map((dept) => (
                   <TabsTrigger 
                     key={dept.department}
                     value={dept.department.toLowerCase().replace(/\s+/g, '-')}
                     className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all
-                      data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary/80 
-                      data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-primary/25
-                      hover:bg-white/5"
+                      data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg"
                   >
                     {dept.icon}
                     <span className="hidden sm:inline">{dept.shortName}</span>
-                    <span className="text-xs opacity-70 ml-1">({dept.members.length})</span>
+                    <span className="text-xs opacity-60">({dept.members.length})</span>
                   </TabsTrigger>
                 ))}
               </TabsList>
@@ -336,188 +313,204 @@ const Roster = () => {
                 <TabsContent 
                   key={dept.department}
                   value={dept.department.toLowerCase().replace(/\s+/g, '-')}
-                  className="space-y-0"
+                  className="space-y-6"
                 >
-                  {/* 3D Department Header */}
-                  <div className={`relative overflow-hidden bg-gradient-to-r ${dept.headerColor} text-white text-center py-5 
-                    rounded-t-2xl border-2 ${dept.borderColor} shadow-2xl`}
-                    style={{
-                      boxShadow: '0 10px 40px -10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.2)'
-                    }}
-                  >
-                    {/* Shine effect */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent h-1/2" />
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.15),transparent_70%)]" />
+                  {/* Department Header */}
+                  <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-muted/50 border border-border p-6 shadow-2xl">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10" />
+                    <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
                     
-                    <div className="relative flex items-center justify-center gap-3">
-                      <span className="p-2 bg-white/20 rounded-lg backdrop-blur-sm shadow-inner">{dept.icon}</span>
-                      <h2 className="text-2xl font-bold tracking-wide drop-shadow-lg">{dept.department}</h2>
+                    <div className="relative flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 shadow-lg shadow-primary/10">
+                          <span className="text-primary">{dept.icon}</span>
+                        </div>
+                        <div>
+                          <h2 className="text-2xl font-bold">{dept.department}</h2>
+                          <p className="text-muted-foreground text-sm">Official Personnel Roster</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-6">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-primary">{dept.members.length}</div>
+                          <div className="text-xs text-muted-foreground">Total</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-green-500">{dept.members.filter(m => m.status === 'active').length}</div>
+                          <div className="text-xs text-muted-foreground">Active</div>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  {/* 3D Table Container */}
-                  <div className="relative rounded-b-2xl overflow-hidden border-2 border-t-0 border-white/10 bg-black/60 backdrop-blur-xl shadow-2xl"
-                    style={{
-                      boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)'
-                    }}
-                  >
-                    {/* Table Header */}
-                    <div className="grid grid-cols-7 bg-gradient-to-r from-gray-900/90 via-gray-800/90 to-gray-900/90 text-xs font-bold uppercase tracking-wider text-gray-300 border-b border-white/10"
-                      style={{
-                        boxShadow: 'inset 0 -1px 0 rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.1)'
-                      }}
-                    >
-                      <div className="py-3 px-4 text-center border-r border-white/5">Avatar</div>
-                      <div className="py-3 px-4 text-center border-r border-white/5">Rank</div>
-                      <div className="py-3 px-4 text-center border-r border-white/5">Name</div>
-                      <div className="py-3 px-4 text-center border-r border-white/5">Badge Number</div>
-                      <div className="py-3 px-4 text-center border-r border-white/5">Strikes</div>
-                      <div className="py-3 px-4 text-center border-r border-white/5">Status</div>
-                      <div className="py-3 px-4 text-center">Division</div>
-                    </div>
+                  {/* Rank Sections */}
+                  {sorted.length > 0 ? (
+                    <div className="space-y-6">
+                      {dept.ranks?.map((rankName, rankIdx) => {
+                        const members = byRank[rankName];
+                        if (!members?.length) return null;
 
-                    {/* Members by Rank */}
-                    {sorted.length > 0 ? (
-                      <div>
-                        {dept.ranks?.map((rankName, rankIdx) => {
-                          const members = byRank[rankName];
-                          if (!members?.length) return null;
-
-                          return (
-                            <div key={rankName}>
-                              {/* Rank Separator */}
-                              {rankIdx > 0 && (
-                                <div className="h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                              )}
+                        return (
+                          <div 
+                            key={rankName}
+                            className="relative rounded-xl overflow-hidden border border-border bg-card shadow-xl"
+                            style={{
+                              boxShadow: '0 4px 24px -4px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.05) inset'
+                            }}
+                          >
+                            {/* Rank Header */}
+                            <div className="relative px-5 py-4 bg-gradient-to-r from-muted/80 via-muted/60 to-muted/80 border-b border-border">
+                              <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent" />
+                              <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
                               
-                              {/* Members */}
-                              {members.map((member, idx) => {
-                                const statusStyle = getStatusStyle(member.status);
-                                return (
-                                  <div 
-                                    key={member.id}
-                                    className={`grid grid-cols-7 text-sm transition-all duration-200 hover:bg-white/5
-                                      ${idx % 2 === 0 ? 'bg-white/[0.02]' : 'bg-black/20'}
-                                      border-b border-white/5 last:border-b-0`}
-                                  >
-                                    {/* Avatar */}
-                                    <div className="py-3 px-4 flex justify-center items-center border-r border-white/5">
-                                      <Avatar className="h-9 w-9 ring-2 ring-white/20 shadow-lg">
-                                        <AvatarImage src={member.discord_avatar} />
-                                        <AvatarFallback className="bg-gradient-to-br from-gray-700 to-gray-800 text-white text-xs font-bold">
-                                          {member.name?.charAt(0) || '?'}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                    </div>
-                                    
-                                    {/* Rank */}
-                                    <div className="py-3 px-4 flex justify-center items-center border-r border-white/5">
-                                      <span className="font-semibold text-white/90">{member.rank}</span>
-                                    </div>
-                                    
-                                    {/* Name */}
-                                    <div className="py-3 px-4 flex justify-center items-center border-r border-white/5">
-                                      <span className={member.name ? 'text-white' : 'text-white/40'}>
-                                        {member.name || '-'}
-                                      </span>
-                                    </div>
-                                    
-                                    {/* Badge */}
-                                    <div className="py-3 px-4 flex justify-center items-center border-r border-white/5">
-                                      <span className="font-mono text-cyan-400/90 text-xs bg-cyan-500/10 px-2 py-1 rounded">
-                                        {member.badge_number || '-'}
-                                      </span>
-                                    </div>
-                                    
-                                    {/* Strikes */}
-                                    <div className="py-3 px-4 flex justify-center items-center border-r border-white/5">
-                                      <span className="text-white/70">{member.strikes || '-'}</span>
-                                    </div>
-                                    
-                                    {/* Status */}
-                                    <div className="py-3 px-4 flex justify-center items-center border-r border-white/5">
-                                      <span className={`px-3 py-1 rounded-md text-xs font-semibold text-white ${statusStyle.bg}`}>
-                                        {statusStyle.text}
-                                      </span>
-                                    </div>
-                                    
-                                    {/* Division */}
-                                    <div className="py-3 px-4 flex justify-center items-center">
-                                      <span className={`px-3 py-1 rounded-md text-xs font-semibold ${getDivisionStyle(member.division || '')}`}>
-                                        {member.division || '-'}
-                                      </span>
-                                    </div>
-                                  </div>
-                                );
-                              })}
+                              <div className="relative flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  {getRankIcon(rankIdx)}
+                                  <h3 className="font-bold text-lg tracking-wide">{rankName}</h3>
+                                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                                </div>
+                                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+                                  <Users className="w-3.5 h-3.5 text-primary" />
+                                  <span className="text-sm font-medium text-primary">{members.length}</span>
+                                </div>
+                              </div>
                             </div>
-                          );
-                        })}
 
-                        {/* Unmatched ranks */}
-                        {Object.entries(byRank)
-                          .filter(([rank]) => !dept.ranks?.includes(rank))
-                          .map(([, members]) => (
-                            members.map((member, idx) => {
-                              const statusStyle = getStatusStyle(member.status);
-                              return (
+                            {/* Table Header */}
+                            <div className="grid grid-cols-6 px-5 py-3 bg-muted/30 border-b border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                              <div className="flex items-center gap-2">
+                                <span className="w-8" />
+                                <span>Officer</span>
+                              </div>
+                              <div className="text-center">Badge Number</div>
+                              <div className="text-center">Strikes</div>
+                              <div className="text-center">Status</div>
+                              <div className="text-center">Division</div>
+                              <div className="text-center">Unit</div>
+                            </div>
+
+                            {/* Members */}
+                            <div className="divide-y divide-border/50">
+                              {members.map((member, idx) => (
                                 <div 
                                   key={member.id}
-                                  className={`grid grid-cols-7 text-sm transition-all duration-200 hover:bg-white/5
-                                    ${idx % 2 === 0 ? 'bg-white/[0.02]' : 'bg-black/20'}
-                                    border-b border-white/5`}
+                                  className={`grid grid-cols-6 px-5 py-3 items-center transition-colors hover:bg-muted/30
+                                    ${idx % 2 === 0 ? 'bg-transparent' : 'bg-muted/10'}`}
                                 >
-                                  <div className="py-3 px-4 flex justify-center items-center border-r border-white/5">
-                                    <Avatar className="h-9 w-9 ring-2 ring-white/20 shadow-lg">
+                                  {/* Officer */}
+                                  <div className="flex items-center gap-3">
+                                    <Avatar className="h-9 w-9 border-2 border-border shadow-md">
                                       <AvatarImage src={member.discord_avatar} />
-                                      <AvatarFallback className="bg-gradient-to-br from-gray-700 to-gray-800 text-white text-xs font-bold">
+                                      <AvatarFallback className="bg-muted text-muted-foreground text-xs font-medium">
                                         {member.name?.charAt(0) || '?'}
                                       </AvatarFallback>
                                     </Avatar>
+                                    <span className={`font-medium ${member.name ? 'text-foreground' : 'text-muted-foreground'}`}>
+                                      {member.name || 'Vacant'}
+                                    </span>
                                   </div>
-                                  <div className="py-3 px-4 flex justify-center items-center border-r border-white/5 font-semibold text-white/90">{member.rank}</div>
-                                  <div className="py-3 px-4 flex justify-center items-center border-r border-white/5 text-white">{member.name || '-'}</div>
-                                  <div className="py-3 px-4 flex justify-center items-center border-r border-white/5">
-                                    <span className="font-mono text-cyan-400/90 text-xs bg-cyan-500/10 px-2 py-1 rounded">{member.badge_number || '-'}</span>
+
+                                  {/* Badge */}
+                                  <div className="text-center">
+                                    <span className="font-mono text-sm px-2.5 py-1 rounded-md bg-muted border border-border">
+                                      {member.badge_number || '-'}
+                                    </span>
                                   </div>
-                                  <div className="py-3 px-4 flex justify-center items-center border-r border-white/5 text-white/70">{member.strikes || '-'}</div>
-                                  <div className="py-3 px-4 flex justify-center items-center border-r border-white/5">
-                                    <span className={`px-3 py-1 rounded-md text-xs font-semibold text-white ${statusStyle.bg}`}>{statusStyle.text}</span>
+
+                                  {/* Strikes */}
+                                  <div className="text-center text-muted-foreground">
+                                    {member.strikes || '-'}
                                   </div>
-                                  <div className="py-3 px-4 flex justify-center items-center">
-                                    <span className={`px-3 py-1 rounded-md text-xs font-semibold ${getDivisionStyle(member.division || '')}`}>{member.division || '-'}</span>
+
+                                  {/* Status */}
+                                  <div className="flex justify-center">
+                                    {member.status === 'active' ? (
+                                      <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/15 border border-green-500/30 text-green-500 text-xs font-medium">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                        Active
+                                      </span>
+                                    ) : member.status === 'on_leave' ? (
+                                      <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-500 text-xs font-medium">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                        On Leave
+                                      </span>
+                                    ) : (
+                                      <span className="text-muted-foreground text-xs">-</span>
+                                    )}
+                                  </div>
+
+                                  {/* Division */}
+                                  <div className="flex justify-center">
+                                    <span className={`px-2.5 py-1 rounded-md text-xs font-medium border ${getDivisionColor(member.division || '')}`}>
+                                      {member.division || '-'}
+                                    </span>
+                                  </div>
+
+                                  {/* Unit */}
+                                  <div className="text-center text-muted-foreground text-sm">
+                                    {member.call_sign || '-'}
                                   </div>
                                 </div>
-                              );
-                            })
-                          ))}
-                      </div>
-                    ) : (
-                      <div className="py-16 text-center">
-                        <Users className="w-12 h-12 mx-auto mb-4 text-white/30" />
-                        <p className="text-white/50">No members in this department yet</p>
-                      </div>
-                    )}
-                  </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
 
-                  {/* Stats Footer */}
-                  <div className="flex items-center justify-center gap-8 py-5 mt-4 rounded-xl bg-black/40 backdrop-blur-sm border border-white/10">
-                    <div className="flex items-center gap-2 text-sm text-white/70">
-                      <Users className="w-4 h-4" />
-                      <span className="font-medium">{dept.members.length}</span>
-                      <span>Total</span>
+                      {/* Unmatched ranks */}
+                      {Object.entries(byRank)
+                        .filter(([rank]) => !dept.ranks?.includes(rank))
+                        .map(([rank, members]) => (
+                          <div 
+                            key={rank}
+                            className="relative rounded-xl overflow-hidden border border-border bg-card shadow-xl"
+                          >
+                            <div className="px-5 py-4 bg-muted/50 border-b border-border">
+                              <div className="flex items-center gap-3">
+                                <Award className="w-4 h-4 text-muted-foreground" />
+                                <h3 className="font-bold text-lg">{rank}</h3>
+                                <span className="text-sm text-muted-foreground">({members.length})</span>
+                              </div>
+                            </div>
+                            <div className="divide-y divide-border/50">
+                              {members.map((member, idx) => (
+                                <div 
+                                  key={member.id}
+                                  className={`grid grid-cols-6 px-5 py-3 items-center ${idx % 2 === 0 ? '' : 'bg-muted/10'}`}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <Avatar className="h-9 w-9 border-2 border-border">
+                                      <AvatarImage src={member.discord_avatar} />
+                                      <AvatarFallback className="bg-muted text-xs">{member.name?.charAt(0) || '?'}</AvatarFallback>
+                                    </Avatar>
+                                    <span className="font-medium">{member.name || 'Vacant'}</span>
+                                  </div>
+                                  <div className="text-center font-mono text-sm">{member.badge_number || '-'}</div>
+                                  <div className="text-center text-muted-foreground">{member.strikes || '-'}</div>
+                                  <div className="flex justify-center">
+                                    {member.status === 'active' ? (
+                                      <span className="px-2.5 py-1 rounded-full bg-green-500/15 text-green-500 text-xs font-medium">Active</span>
+                                    ) : <span className="text-muted-foreground">-</span>}
+                                  </div>
+                                  <div className="flex justify-center">
+                                    <span className={`px-2.5 py-1 rounded-md text-xs font-medium border ${getDivisionColor(member.division || '')}`}>
+                                      {member.division || '-'}
+                                    </span>
+                                  </div>
+                                  <div className="text-center text-muted-foreground text-sm">-</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
                     </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-lg shadow-green-500/50" />
-                      <span className="font-medium text-green-400">{dept.members.filter(m => m.status === 'active').length}</span>
-                      <span className="text-white/70">Active</span>
+                  ) : (
+                    <div className="rounded-xl border border-dashed border-border p-16 text-center bg-muted/20">
+                      <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
+                      <p className="text-muted-foreground">No members in this department yet</p>
                     </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-lg shadow-amber-500/50" />
-                      <span className="font-medium text-amber-400">{dept.members.filter(m => m.status === 'on_leave').length}</span>
-                      <span className="text-white/70">On Leave</span>
-                    </div>
-                  </div>
+                  )}
                 </TabsContent>
               );
             })}
