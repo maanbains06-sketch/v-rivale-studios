@@ -1,10 +1,15 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -17,7 +22,10 @@ import {
   Ticket,
   CalendarDays,
   Crown,
-  Loader2
+  Loader2,
+  Plus,
+  Users,
+  Image
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, differenceInSeconds, differenceInDays, differenceInHours, differenceInMinutes } from "date-fns";
@@ -46,6 +54,14 @@ interface GiveawayEntry {
   discord_username: string | null;
 }
 
+interface GiveawayWinner {
+  id: string;
+  giveaway_id: string;
+  user_id: string;
+  discord_username: string | null;
+  prize_claimed: boolean;
+}
+
 interface GiveawayStats {
   totalGiveaways: number;
   activeGiveaways: number;
@@ -55,6 +71,7 @@ interface GiveawayStats {
 
 const Giveaway = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [giveaways, setGiveaways] = useState<Giveaway[]>([]);
   const [userEntries, setUserEntries] = useState<GiveawayEntry[]>([]);
   const [stats, setStats] = useState<GiveawayStats>({
@@ -65,8 +82,24 @@ const Giveaway = () => {
   });
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [isOwner, setIsOwner] = useState(false);
   const [enteringId, setEnteringId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("active");
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showEntriesDialog, setShowEntriesDialog] = useState(false);
+  const [showWinnersDialog, setShowWinnersDialog] = useState(false);
+  const [selectedGiveawayEntries, setSelectedGiveawayEntries] = useState<GiveawayEntry[]>([]);
+  const [selectedGiveawayWinners, setSelectedGiveawayWinners] = useState<GiveawayWinner[]>([]);
+  const [creating, setCreating] = useState(false);
+  const [newGiveaway, setNewGiveaway] = useState({
+    title: '',
+    description: '',
+    prize: '',
+    prize_image_url: '',
+    end_date: '',
+    winner_count: 1,
+    category: 'general'
+  });
 
   useEffect(() => {
     fetchData();
