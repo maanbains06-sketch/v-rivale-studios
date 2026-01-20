@@ -801,11 +801,12 @@ const Roster = () => {
                             </div>
 
                             {/* Table Header */}
-                            <div className="grid grid-cols-6 px-5 py-3 bg-muted/30 border-b border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            <div className="grid grid-cols-7 px-5 py-3 bg-muted/30 border-b border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                               <div className="flex items-center gap-2">
                                 <span className="w-8" />
                                 <span>Officer</span>
                               </div>
+                              <div className="text-center">Rank</div>
                               <div className="text-center">Badge Number</div>
                               <div className="text-center">Strikes</div>
                               <div className="text-center">Status</div>
@@ -818,7 +819,7 @@ const Roster = () => {
                               {members.map((member, idx) => (
                                 <div 
                                   key={member.id}
-                                  className={`grid grid-cols-6 px-5 py-3 items-center transition-colors hover:bg-muted/30
+                                  className={`grid grid-cols-7 px-5 py-3 items-center transition-colors hover:bg-muted/30
                                     ${idx % 2 === 0 ? 'bg-transparent' : 'bg-muted/10'}`}
                                 >
                                   {/* Officer */}
@@ -840,6 +841,29 @@ const Roster = () => {
                                       <span className={`font-medium ${member.name ? 'text-foreground' : 'text-muted-foreground'}`}>
                                         {member.name || 'Vacant'}
                                       </span>
+                                    )}
+                                  </div>
+
+                                  {/* Rank */}
+                                  <div className="flex justify-center">
+                                    {isEditing ? (
+                                      <Select
+                                        value={getMemberValue(deptKey, member, 'rank')}
+                                        onValueChange={(value) => updateMemberField(deptKey, member.id, 'rank', value)}
+                                      >
+                                        <SelectTrigger className="h-8 w-36 text-xs">
+                                          <SelectValue placeholder="Rank" />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-popover border border-border z-50 max-h-60">
+                                          {dept.ranks?.map(rank => (
+                                            <SelectItem key={rank} value={rank}>
+                                              {rank}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    ) : (
+                                      <span className="text-sm text-muted-foreground">{member.rank}</span>
                                     )}
                                   </div>
 
@@ -986,7 +1010,7 @@ const Roster = () => {
                               {members.map((member, idx) => (
                                 <div 
                                   key={member.id}
-                                  className={`grid grid-cols-6 px-5 py-3 items-center ${idx % 2 === 0 ? '' : 'bg-muted/10'}`}
+                                  className={`grid grid-cols-7 px-5 py-3 items-center ${idx % 2 === 0 ? '' : 'bg-muted/10'}`}
                                 >
                                   <div className="flex items-center gap-3">
                                     <Avatar className="h-9 w-9 border-2 border-border">
@@ -995,6 +1019,7 @@ const Roster = () => {
                                     </Avatar>
                                     <span className="font-medium">{member.name || 'Vacant'}</span>
                                   </div>
+                                  <div className="text-center text-sm text-muted-foreground">{member.rank || '-'}</div>
                                   <div className="text-center font-mono text-sm">{member.badge_number || '-'}</div>
                                   <div className="text-center text-muted-foreground">{member.strikes || '-'}</div>
                                   <div className="flex justify-center">
@@ -1007,7 +1032,7 @@ const Roster = () => {
                                       {member.division || '-'}
                                     </span>
                                   </div>
-                                  <div className="text-center text-muted-foreground text-sm">-</div>
+                                  <div className="text-center text-muted-foreground text-sm">{member.call_sign || '-'}</div>
                                 </div>
                               ))}
                             </div>
