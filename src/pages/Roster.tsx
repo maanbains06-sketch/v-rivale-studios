@@ -152,13 +152,37 @@ const statusOptions = [
   { value: 'on_leave', label: 'On Leave' },
 ];
 
+const divisionOptions = [
+  { value: 'Administration', label: 'Administration' },
+  { value: 'Patrol', label: 'Patrol' },
+  { value: 'Traffic Enforcement', label: 'Traffic Enforcement' },
+  { value: 'Investigations', label: 'Investigations' },
+  { value: 'Training', label: 'Training' },
+  { value: 'Field Ops', label: 'Field Ops' },
+  { value: 'Command', label: 'Command' },
+  { value: 'Engine 1', label: 'Engine 1' },
+  { value: 'Engine 2', label: 'Engine 2' },
+  { value: 'Ladder 1', label: 'Ladder 1' },
+  { value: 'Management', label: 'Management' },
+  { value: 'Repairs', label: 'Repairs' },
+  { value: 'Sales', label: 'Sales' },
+  { value: 'Medical', label: 'Medical' },
+  { value: 'Judiciary', label: 'Judiciary' },
+  { value: 'Prosecution', label: 'Prosecution' },
+  { value: 'Defense', label: 'Defense' },
+  { value: 'On-Air', label: 'On-Air' },
+  { value: 'Production', label: 'Production' },
+  { value: 'Field', label: 'Field' },
+  { value: 'Staff', label: 'Staff' },
+];
+
 const Roster = () => {
   const [loading, setLoading] = useState(true);
   const [staffMembers, setStaffMembers] = useState<any[]>([]);
   const [editMode, setEditMode] = useState<Record<string, boolean>>({});
   const [editedData, setEditedData] = useState<Record<string, Record<string, RosterMember>>>({});
   const [saving, setSaving] = useState(false);
-  const { hasAccess, loading: accessLoading, isOwner } = useRosterAccess();
+  const { hasAccess, canEdit, loading: accessLoading, isOwner } = useRosterAccess();
 
   useEffect(() => {
     const fetchStaff = async () => {
@@ -486,7 +510,7 @@ const Roster = () => {
                               Save
                             </Button>
                           </div>
-                        ) : (
+                        ) : canEdit ? (
                           <Button
                             size="sm"
                             variant="outline"
@@ -496,7 +520,7 @@ const Roster = () => {
                             <Pencil className="w-4 h-4" />
                             Edit
                           </Button>
-                        )}
+                        ) : null}
                         <div className="text-center">
                           <div className="text-2xl font-bold text-primary">{dept.members.length}</div>
                           <div className="text-xs text-muted-foreground">Total</div>
@@ -654,12 +678,21 @@ const Roster = () => {
                                   {/* Division */}
                                   <div className="flex justify-center">
                                     {isEditing ? (
-                                      <Input
+                                      <Select
                                         value={getMemberValue(deptKey, member, 'division')}
-                                        onChange={(e) => updateMemberField(deptKey, member.id, 'division', e.target.value)}
-                                        placeholder="Division"
-                                        className="h-8 text-sm text-center"
-                                      />
+                                        onValueChange={(value) => updateMemberField(deptKey, member.id, 'division', value)}
+                                      >
+                                        <SelectTrigger className="h-8 w-32 text-xs">
+                                          <SelectValue placeholder="Division" />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-popover border border-border z-50">
+                                          {divisionOptions.map(opt => (
+                                            <SelectItem key={opt.value} value={opt.value}>
+                                              {opt.label}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
                                     ) : (
                                       <span className={`px-2.5 py-1 rounded-md text-xs font-medium border ${getDivisionColor(member.division || '')}`}>
                                         {member.division || '-'}

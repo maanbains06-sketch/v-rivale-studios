@@ -5,8 +5,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Allowed Discord role IDs for roster access
-const ALLOWED_ROLE_IDS = [
+// Allowed Discord role IDs for roster VIEW access
+const VIEW_ROLE_IDS = [
   "1463143859935772672",
   "1431378586203590687",
   "1431379430797869207",
@@ -16,6 +16,21 @@ const ALLOWED_ROLE_IDS = [
   "1438258435052535920",
   "1317457907620646972",
 ];
+
+// Allowed Discord role IDs for roster EDIT access
+const EDIT_ROLE_IDS = [
+  "1463145983448973519",
+  "1451442834229039104",
+  "1463143254324285583",
+  "1451442686115581963",
+  "1451442569018998916",
+  "1451442460910817371",
+  "1451442274037923960",
+  "1451747382592012380",
+];
+
+// Owner Discord ID - always has full access
+const OWNER_DISCORD_ID = "833680146510381097";
 
 serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -31,6 +46,7 @@ serve(async (req: Request): Promise<Response> => {
       return new Response(
         JSON.stringify({ 
           hasAccess: false,
+          canEdit: false,
           error: "Discord configuration incomplete"
         }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -43,7 +59,21 @@ serve(async (req: Request): Promise<Response> => {
       return new Response(
         JSON.stringify({ 
           hasAccess: false,
+          canEdit: false,
           error: "Discord ID is required"
+        }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Check if owner - full access
+    if (discordId === OWNER_DISCORD_ID) {
+      console.log(`Owner ${discordId} has full roster access`);
+      return new Response(
+        JSON.stringify({
+          hasAccess: true,
+          canEdit: true,
+          isOwner: true,
         }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
@@ -67,6 +97,7 @@ serve(async (req: Request): Promise<Response> => {
         return new Response(
           JSON.stringify({ 
             hasAccess: false,
+            canEdit: false,
             reason: "User not in Discord server"
           }),
           { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -78,6 +109,7 @@ serve(async (req: Request): Promise<Response> => {
       return new Response(
         JSON.stringify({ 
           hasAccess: false,
+          canEdit: false,
           error: `Discord API error: ${memberResponse.status}`
         }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -87,17 +119,20 @@ serve(async (req: Request): Promise<Response> => {
     const memberData = await memberResponse.json();
     const userRoles: string[] = memberData.roles || [];
     
-    // Check if user has any of the allowed roles
-    const hasAccess = userRoles.some(roleId => ALLOWED_ROLE_IDS.includes(roleId));
+    // Check if user has any of the allowed VIEW roles
+    const hasAccess = userRoles.some(roleId => VIEW_ROLE_IDS.includes(roleId));
+    
+    // Check if user has any of the allowed EDIT roles
+    const canEdit = userRoles.some(roleId => EDIT_ROLE_IDS.includes(roleId));
 
     console.log(`User ${discordId} roles: ${userRoles.join(", ")}`);
-    console.log(`Has roster access: ${hasAccess}`);
+    console.log(`Has roster view access: ${hasAccess}, Can edit: ${canEdit}`);
 
     return new Response(
       JSON.stringify({
-        hasAccess,
+        hasAccess: hasAccess || canEdit, // Edit access implies view access
+        canEdit,
         username: memberData.user?.username || null,
-        matchedRoles: userRoles.filter(r => ALLOWED_ROLE_IDS.includes(r)),
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
@@ -106,6 +141,7 @@ serve(async (req: Request): Promise<Response> => {
     return new Response(
       JSON.stringify({
         hasAccess: false,
+        canEdit: false,
         error: error.message
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }

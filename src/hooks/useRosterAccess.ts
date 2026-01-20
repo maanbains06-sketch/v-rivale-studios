@@ -4,6 +4,7 @@ import { useStaffRole } from './useStaffRole';
 
 interface RosterAccess {
   hasAccess: boolean;
+  canEdit: boolean;
   loading: boolean;
   isOwner: boolean;
   isStaff: boolean;
@@ -15,6 +16,7 @@ const OWNER_DISCORD_ID = "833680146510381097";
 export const useRosterAccess = () => {
   const [access, setAccess] = useState<RosterAccess>({
     hasAccess: false,
+    canEdit: false,
     loading: true,
     isOwner: false,
     isStaff: false,
@@ -27,22 +29,53 @@ export const useRosterAccess = () => {
         const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) {
-          setAccess({ hasAccess: false, loading: false, isOwner: false, isStaff: false });
+          setAccess({ hasAccess: false, canEdit: false, loading: false, isOwner: false, isStaff: false });
           return;
         }
 
         const discordId = user.user_metadata?.discord_id;
         
-        // Check if owner
+        // Check if owner - full access including edit
         const isOwner = discordId === OWNER_DISCORD_ID;
         
-        // If owner or staff member, grant immediate access
-        if (isOwner || isStaff || isAdmin) {
+        if (isOwner) {
           setAccess({ 
             hasAccess: true, 
+            canEdit: true,
             loading: false, 
-            isOwner, 
-            isStaff: isStaff || isAdmin 
+            isOwner: true, 
+            isStaff: false 
+          });
+          return;
+        }
+
+        // Staff members get view access but NOT edit access
+        if (isStaff || isAdmin) {
+          // Still check Discord roles for edit permission
+          if (discordId && /^\d{17,19}$/.test(discordId)) {
+            const { data, error } = await supabase.functions.invoke('verify-roster-access', {
+              body: { discordId }
+            });
+
+            if (!error && data) {
+              setAccess({ 
+                hasAccess: true, 
+                canEdit: data?.canEdit || false, // Staff only gets edit if they have edit role
+                loading: false,
+                isOwner: false,
+                isStaff: true
+              });
+              return;
+            }
+          }
+          
+          // Staff without edit roles - view only
+          setAccess({ 
+            hasAccess: true, 
+            canEdit: false,
+            loading: false, 
+            isOwner: false, 
+            isStaff: true 
           });
           return;
         }
@@ -55,22 +88,23 @@ export const useRosterAccess = () => {
 
           if (error) {
             console.error('Error checking roster access:', error);
-            setAccess({ hasAccess: false, loading: false, isOwner: false, isStaff: false });
+            setAccess({ hasAccess: false, canEdit: false, loading: false, isOwner: false, isStaff: false });
             return;
           }
 
           setAccess({ 
             hasAccess: data?.hasAccess || false, 
+            canEdit: data?.canEdit || false,
             loading: false,
             isOwner: false,
             isStaff: false
           });
         } else {
-          setAccess({ hasAccess: false, loading: false, isOwner: false, isStaff: false });
+          setAccess({ hasAccess: false, canEdit: false, loading: false, isOwner: false, isStaff: false });
         }
       } catch (error) {
         console.error('Error checking roster access:', error);
-        setAccess({ hasAccess: false, loading: false, isOwner: false, isStaff: false });
+        setAccess({ hasAccess: false, canEdit: false, loading: false, isOwner: false, isStaff: false });
       }
     };
 
