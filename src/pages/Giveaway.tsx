@@ -6,10 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -25,7 +28,9 @@ import {
   Loader2,
   Plus,
   Users,
-  Image
+  Image,
+  Send,
+  Eye
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, differenceInSeconds, differenceInDays, differenceInHours, differenceInMinutes } from "date-fns";
@@ -52,6 +57,8 @@ interface GiveawayEntry {
   entry_count: number;
   is_winner: boolean;
   discord_username: string | null;
+  discord_id: string | null;
+  created_at: string;
 }
 
 interface GiveawayWinner {
@@ -60,6 +67,7 @@ interface GiveawayWinner {
   user_id: string;
   discord_username: string | null;
   prize_claimed: boolean;
+  created_at: string;
 }
 
 interface GiveawayStats {
@@ -85,12 +93,25 @@ const Giveaway = () => {
   const [isOwner, setIsOwner] = useState(false);
   const [enteringId, setEnteringId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("active");
+  
+  // Dialog states
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEntriesDialog, setShowEntriesDialog] = useState(false);
   const [showWinnersDialog, setShowWinnersDialog] = useState(false);
+  const [showAllEntriesDialog, setShowAllEntriesDialog] = useState(false);
+  const [showAllWinnersDialog, setShowAllWinnersDialog] = useState(false);
+  const [showSelectWinnersDialog, setShowSelectWinnersDialog] = useState(false);
+  
+  // Data states
+  const [allEntries, setAllEntries] = useState<(GiveawayEntry & { giveaway_title?: string })[]>([]);
+  const [allWinners, setAllWinners] = useState<(GiveawayWinner & { giveaway_title?: string })[]>([]);
   const [selectedGiveawayEntries, setSelectedGiveawayEntries] = useState<GiveawayEntry[]>([]);
   const [selectedGiveawayWinners, setSelectedGiveawayWinners] = useState<GiveawayWinner[]>([]);
+  const [selectedGiveaway, setSelectedGiveaway] = useState<Giveaway | null>(null);
+  
+  // Form states
   const [creating, setCreating] = useState(false);
+  const [selectingWinners, setSelectingWinners] = useState(false);
   const [newGiveaway, setNewGiveaway] = useState({
     title: '',
     description: '',
@@ -111,6 +132,15 @@ const Giveaway = () => {
     setUser(user);
     if (user) {
       fetchUserEntries(user.id);
+      
+      // Check if user is owner via staff_members table
+      const { data: staffData } = await supabase
+        .from("staff_members")
+        .select("role_type")
+        .eq("user_id", user.id)
+        .single();
+      
+      setIsOwner(staffData?.role_type === "owner");
     }
   };
 
@@ -155,8 +185,48 @@ const Giveaway = () => {
       .eq("user_id", userId);
 
     if (!error && data) {
-      setUserEntries(data);
+      setUserEntries(data as GiveawayEntry[]);
     }
+  };
+
+  const fetchAllEntries = async () => {
+    const { data, error } = await supabase
+      .from("giveaway_entries")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (!error && data) {
+      const entriesWithTitles = data.map((entry: any) => {
+        const giveaway = giveaways.find(g => g.id === entry.giveaway_id);
+        return { ...entry, giveaway_title: giveaway?.title || 'Unknown Giveaway' };
+      });
+      setAllEntries(entriesWithTitles);
+    }
+  };
+
+  const fetchAllWinners = async () => {
+    const { data, error } = await supabase
+      .from("giveaway_winners")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (!error && data) {
+      const winnersWithTitles = data.map((winner: any) => {
+        const giveaway = giveaways.find(g => g.id === winner.giveaway_id);
+        return { ...winner, giveaway_title: giveaway?.title || 'Unknown Giveaway' };
+      });
+      setAllWinners(winnersWithTitles);
+    }
+  };
+
+  const handleShowAllEntries = async () => {
+    await fetchAllEntries();
+    setShowAllEntriesDialog(true);
+  };
+
+  const handleShowAllWinners = async () => {
+    await fetchAllWinners();
+    setShowAllWinnersDialog(true);
   };
 
   const enterGiveaway = async (giveawayId: string) => {
@@ -211,6 +281,198 @@ const Giveaway = () => {
       });
     } finally {
       setEnteringId(null);
+    }
+  };
+
+  const createGiveaway = async () => {
+    if (!newGiveaway.title || !newGiveaway.prize || !newGiveaway.end_date) {
+      toast({
+        title: "Missing Fields",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setCreating(true);
+    try {
+      const { data, error } = await supabase.from("giveaways").insert({
+        title: newGiveaway.title,
+        description: newGiveaway.description || null,
+        prize: newGiveaway.prize,
+        prize_image_url: newGiveaway.prize_image_url || null,
+        end_date: newGiveaway.end_date,
+        start_date: new Date().toISOString(),
+        winner_count: newGiveaway.winner_count,
+        category: newGiveaway.category,
+        status: 'active',
+        created_by: user?.id
+      }).select().single();
+
+      if (error) throw error;
+
+      // Send Discord notification
+      await supabase.functions.invoke('send-giveaway-discord', {
+        body: {
+          type: 'new_giveaway',
+          giveaway: {
+            title: newGiveaway.title,
+            description: newGiveaway.description,
+            prize: newGiveaway.prize,
+            end_date: newGiveaway.end_date,
+            winner_count: newGiveaway.winner_count,
+            prize_image_url: newGiveaway.prize_image_url || null
+          }
+        }
+      });
+
+      toast({
+        title: "Giveaway Created! 🎉",
+        description: "The giveaway has been created and announced on Discord!",
+      });
+
+      setShowCreateDialog(false);
+      setNewGiveaway({
+        title: '',
+        description: '',
+        prize: '',
+        prize_image_url: '',
+        end_date: '',
+        winner_count: 1,
+        category: 'general'
+      });
+      fetchData();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create giveaway.",
+        variant: "destructive",
+      });
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const selectWinners = async (giveaway: Giveaway) => {
+    setSelectedGiveaway(giveaway);
+    
+    // Fetch entries for this giveaway
+    const { data: entries } = await supabase
+      .from("giveaway_entries")
+      .select("*")
+      .eq("giveaway_id", giveaway.id);
+
+    if (!entries || entries.length === 0) {
+      toast({
+        title: "No Entries",
+        description: "This giveaway has no entries yet.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSelectedGiveawayEntries(entries as GiveawayEntry[]);
+    setShowSelectWinnersDialog(true);
+  };
+
+  const confirmSelectWinners = async () => {
+    if (!selectedGiveaway || selectedGiveawayEntries.length === 0) return;
+
+    setSelectingWinners(true);
+    try {
+      // Randomly select winners
+      const shuffled = [...selectedGiveawayEntries].sort(() => Math.random() - 0.5);
+      const winners = shuffled.slice(0, Math.min(selectedGiveaway.winner_count, shuffled.length));
+
+      // Get Discord info for winners
+      const winnerData = await Promise.all(
+        winners.map(async (winner) => {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("discord_username, discord_id")
+            .eq("id", winner.user_id)
+            .single();
+          
+          return {
+            giveaway_id: selectedGiveaway.id,
+            user_id: winner.user_id,
+            discord_username: profile?.discord_username || winner.discord_username || 'Unknown',
+            announced_at: new Date().toISOString()
+          };
+        })
+      );
+
+      // Insert winners
+      const { error: winnerError } = await supabase
+        .from("giveaway_winners")
+        .insert(winnerData);
+
+      if (winnerError) throw winnerError;
+
+      // Update entry records to mark winners
+      for (const winner of winners) {
+        await supabase
+          .from("giveaway_entries")
+          .update({ is_winner: true })
+          .eq("id", winner.id);
+      }
+
+      // Update giveaway status
+      await supabase
+        .from("giveaways")
+        .update({ status: 'ended' })
+        .eq("id", selectedGiveaway.id);
+
+      // Prepare winners for Discord notification
+      const discordWinners = await Promise.all(
+        winners.map(async (winner) => {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("discord_username, discord_id")
+            .eq("id", winner.user_id)
+            .single();
+          
+          return {
+            discord_username: profile?.discord_username || winner.discord_username || 'Unknown',
+            discord_id: profile?.discord_id || winner.discord_id || null,
+            user_id: winner.user_id
+          };
+        })
+      );
+
+      // Send Discord winner notification
+      await supabase.functions.invoke('send-giveaway-discord', {
+        body: {
+          type: 'winner_selected',
+          giveaway: {
+            title: selectedGiveaway.title,
+            description: selectedGiveaway.description,
+            prize: selectedGiveaway.prize,
+            end_date: selectedGiveaway.end_date,
+            winner_count: selectedGiveaway.winner_count,
+            prize_image_url: selectedGiveaway.prize_image_url
+          },
+          winners: discordWinners
+        }
+      });
+
+      toast({
+        title: "Winners Selected! 🏆",
+        description: `${winners.length} winner(s) have been selected and announced on Discord!`,
+      });
+
+      setShowSelectWinnersDialog(false);
+      setSelectedGiveaway(null);
+      setSelectedGiveawayEntries([]);
+      fetchData();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to select winners.",
+        variant: "destructive",
+      });
+    } finally {
+      setSelectingWinners(false);
     }
   };
 
@@ -320,20 +582,33 @@ const Giveaway = () => {
             </div>
 
             {giveaway.status === "active" && (
-              <Button
-                onClick={() => enterGiveaway(giveaway.id)}
-                disabled={entered || enteringId === giveaway.id}
-                className={`w-full ${entered ? "bg-green-600 hover:bg-green-700" : ""}`}
-              >
-                {enteringId === giveaway.id ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : entered ? (
-                  <CheckCircle2 className="w-4 h-4 mr-2" />
-                ) : (
-                  <Ticket className="w-4 h-4 mr-2" />
+              <div className="space-y-2">
+                <Button
+                  onClick={() => enterGiveaway(giveaway.id)}
+                  disabled={entered || enteringId === giveaway.id}
+                  className={`w-full ${entered ? "bg-green-600 hover:bg-green-700" : ""}`}
+                >
+                  {enteringId === giveaway.id ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : entered ? (
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                  ) : (
+                    <Ticket className="w-4 h-4 mr-2" />
+                  )}
+                  {entered ? "Entered!" : "Enter Giveaway"}
+                </Button>
+                
+                {isOwner && (
+                  <Button
+                    variant="outline"
+                    onClick={() => selectWinners(giveaway)}
+                    className="w-full border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
+                  >
+                    <Crown className="w-4 h-4 mr-2" />
+                    Select Winners
+                  </Button>
                 )}
-                {entered ? "Entered!" : "Enter Giveaway"}
-              </Button>
+              </div>
             )}
 
             {giveaway.status === "ended" && (
@@ -371,31 +646,89 @@ const Giveaway = () => {
 
       <main className="pb-16">
         <div className="container mx-auto px-4">
-          {/* Stats Section */}
+          {/* Stats Section - Clickable */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 -mt-8 relative z-10"
           >
-            {[
-              { icon: Gift, label: "Total Giveaways", value: stats.totalGiveaways, color: "text-primary" },
-              { icon: Sparkles, label: "Running Now", value: stats.activeGiveaways, color: "text-green-400" },
-              { icon: Ticket, label: "Total Entries", value: stats.totalEntries, color: "text-amber-400" },
-              { icon: Crown, label: "Winners", value: stats.totalWinners, color: "text-purple-400" }
-            ].map((stat, i) => (
-              <Card key={i} className="glass-effect border-border/30 overflow-hidden">
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className={`p-3 rounded-lg bg-muted/50 ${stat.color}`}>
-                    <stat.icon className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stat.value}</p>
-                    <p className="text-xs text-muted-foreground">{stat.label}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            <Card className="glass-effect border-border/30 overflow-hidden">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="p-3 rounded-lg bg-muted/50 text-primary">
+                  <Gift className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{stats.totalGiveaways}</p>
+                  <p className="text-xs text-muted-foreground">Total Giveaways</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="glass-effect border-border/30 overflow-hidden">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="p-3 rounded-lg bg-muted/50 text-green-400">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{stats.activeGiveaways}</p>
+                  <p className="text-xs text-muted-foreground">Running Now</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Clickable Total Entries */}
+            <Card 
+              className="glass-effect border-border/30 overflow-hidden cursor-pointer hover:border-amber-400/50 transition-all"
+              onClick={handleShowAllEntries}
+            >
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="p-3 rounded-lg bg-muted/50 text-amber-400">
+                  <Ticket className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{stats.totalEntries}</p>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    Total Entries <Eye className="w-3 h-3" />
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Clickable Winners */}
+            <Card 
+              className="glass-effect border-border/30 overflow-hidden cursor-pointer hover:border-purple-400/50 transition-all"
+              onClick={handleShowAllWinners}
+            >
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="p-3 rounded-lg bg-muted/50 text-purple-400">
+                  <Crown className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{stats.totalWinners}</p>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    Winners <Eye className="w-3 h-3" />
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
+
+          {/* Owner Create Button */}
+          {isOwner && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6"
+            >
+              <Button
+                onClick={() => setShowCreateDialog(true)}
+                className="bg-gradient-to-r from-primary to-amber-500 hover:from-primary/90 hover:to-amber-500/90"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create Giveaway
+              </Button>
+            </motion.div>
+          )}
 
           {/* Filter Tabs */}
           <Tabs defaultValue="active" value={activeTab} onValueChange={setActiveTab} className="mb-8">
@@ -530,6 +863,283 @@ const Giveaway = () => {
           )}
         </div>
       </main>
+
+      {/* Create Giveaway Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Gift className="w-5 h-5 text-primary" />
+              Create New Giveaway
+            </DialogTitle>
+            <DialogDescription>
+              Create a new giveaway that will be announced on Discord
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title *</Label>
+              <Input
+                id="title"
+                placeholder="Epic VIP Giveaway"
+                value={newGiveaway.title}
+                onChange={(e) => setNewGiveaway({ ...newGiveaway, title: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                placeholder="Enter to win amazing prizes..."
+                value={newGiveaway.description}
+                onChange={(e) => setNewGiveaway({ ...newGiveaway, description: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="prize">Prize *</Label>
+              <Input
+                id="prize"
+                placeholder="VIP Package + $50 Store Credit"
+                value={newGiveaway.prize}
+                onChange={(e) => setNewGiveaway({ ...newGiveaway, prize: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="prize_image_url">Prize Image URL</Label>
+              <Input
+                id="prize_image_url"
+                placeholder="https://example.com/prize.jpg"
+                value={newGiveaway.prize_image_url}
+                onChange={(e) => setNewGiveaway({ ...newGiveaway, prize_image_url: e.target.value })}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="end_date">End Date *</Label>
+                <Input
+                  id="end_date"
+                  type="datetime-local"
+                  value={newGiveaway.end_date}
+                  onChange={(e) => setNewGiveaway({ ...newGiveaway, end_date: e.target.value })}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="winner_count">Number of Winners</Label>
+                <Input
+                  id="winner_count"
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={newGiveaway.winner_count}
+                  onChange={(e) => setNewGiveaway({ ...newGiveaway, winner_count: parseInt(e.target.value) || 1 })}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Category</Label>
+              <Select
+                value={newGiveaway.category}
+                onValueChange={(value) => setNewGiveaway({ ...newGiveaway, category: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="general">General</SelectItem>
+                  <SelectItem value="vip">VIP</SelectItem>
+                  <SelectItem value="ingame">In-Game</SelectItem>
+                  <SelectItem value="store">Store Credit</SelectItem>
+                  <SelectItem value="special">Special Event</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={createGiveaway} disabled={creating}>
+              {creating ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4 mr-2" />
+              )}
+              Create & Announce
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* All Entries Dialog */}
+      <Dialog open={showAllEntriesDialog} onOpenChange={setShowAllEntriesDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Ticket className="w-5 h-5 text-amber-400" />
+              All Giveaway Entries ({allEntries.length})
+            </DialogTitle>
+          </DialogHeader>
+          
+          <ScrollArea className="h-[60vh]">
+            <div className="space-y-2">
+              {allEntries.map((entry) => (
+                <Card key={entry.id} className="border-border/30">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="w-10 h-10">
+                          <AvatarFallback className="bg-primary/20">
+                            {(entry.discord_username || 'U')[0].toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">{entry.discord_username || 'Unknown User'}</p>
+                          <p className="text-sm text-muted-foreground">{entry.giveaway_title}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <Badge variant={entry.is_winner ? "default" : "secondary"}>
+                          {entry.is_winner ? (
+                            <>
+                              <Crown className="w-3 h-3 mr-1" />
+                              Winner
+                            </>
+                          ) : (
+                            'Entered'
+                          )}
+                        </Badge>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {format(new Date(entry.created_at), "MMM d, yyyy")}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              
+              {allEntries.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  No entries found
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* All Winners Dialog */}
+      <Dialog open={showAllWinnersDialog} onOpenChange={setShowAllWinnersDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Crown className="w-5 h-5 text-purple-400" />
+              Giveaway Winners ({allWinners.length})
+            </DialogTitle>
+          </DialogHeader>
+          
+          <ScrollArea className="h-[60vh]">
+            <div className="space-y-2">
+              {allWinners.map((winner) => (
+                <Card key={winner.id} className="border-border/30 bg-gradient-to-r from-amber-500/10 to-transparent">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-full bg-amber-500/20">
+                          <Trophy className="w-5 h-5 text-amber-400" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{winner.discord_username || 'Unknown Winner'}</p>
+                          <p className="text-sm text-muted-foreground">{winner.giveaway_title}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <Badge className={winner.prize_claimed ? "bg-green-500" : "bg-amber-500"}>
+                          {winner.prize_claimed ? 'Claimed' : 'Pending'}
+                        </Badge>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {format(new Date(winner.created_at), "MMM d, yyyy")}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              
+              {allWinners.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  No winners yet
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Select Winners Dialog */}
+      <Dialog open={showSelectWinnersDialog} onOpenChange={setShowSelectWinnersDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Crown className="w-5 h-5 text-amber-400" />
+              Select Winners
+            </DialogTitle>
+            <DialogDescription>
+              {selectedGiveaway?.title} - {selectedGiveawayEntries.length} entries
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="p-4 rounded-lg bg-muted/50 border border-border/30">
+              <p className="text-sm text-muted-foreground mb-2">Selected Giveaway</p>
+              <p className="font-semibold">{selectedGiveaway?.title}</p>
+              <p className="text-sm text-primary">{selectedGiveaway?.prize}</p>
+            </div>
+
+            <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/30">
+              <div className="flex items-center gap-2 text-amber-400 mb-2">
+                <Users className="w-4 h-4" />
+                <span className="font-medium">Entry Summary</span>
+              </div>
+              <p className="text-sm">
+                <strong>{selectedGiveawayEntries.length}</strong> total entries
+              </p>
+              <p className="text-sm">
+                <strong>{selectedGiveaway?.winner_count}</strong> winner(s) will be selected randomly
+              </p>
+            </div>
+
+            <p className="text-sm text-muted-foreground">
+              Winners will be randomly selected and announced on Discord with proper @mentions.
+            </p>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSelectWinnersDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={confirmSelectWinners} 
+              disabled={selectingWinners}
+              className="bg-gradient-to-r from-amber-500 to-amber-600"
+            >
+              {selectingWinners ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Trophy className="w-4 h-4 mr-2" />
+              )}
+              Select & Announce Winners
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
