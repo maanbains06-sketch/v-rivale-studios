@@ -2429,6 +2429,7 @@ export type Database = {
           subject: string
         }[]
       }
+      can_edit_roster: { Args: { _user_id: string }; Returns: boolean }
       check_sla_breach: { Args: never; Returns: undefined }
       generate_owner_2fa_token: { Args: never; Returns: string }
       generate_promo_code: { Args: never; Returns: string }
