@@ -480,12 +480,64 @@ const Roster = () => {
   const saveChanges = async (deptKey: string) => {
     setSaving(true);
     try {
-      // For now, just show a success message since this is demo data
-      // In production, you would save to Supabase here
-      toast.success('Roster changes saved successfully!');
+      const deptData = editedData[deptKey];
+      if (!deptData) {
+        toast.error('No changes to save');
+        return;
+      }
+
+      // Prepare updates for each member
+      const updates = Object.entries(deptData).map(([memberId, member]) => ({
+        id: memberId,
+        name: member.name,
+        role: member.rank,
+        department: member.division || '',
+        is_active: member.status === 'active',
+      }));
+
+      // Update each member in the database
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const update of updates) {
+        const { error } = await supabase
+          .from('staff_members')
+          .update({
+            name: update.name,
+            role: update.role,
+            department: update.department,
+            is_active: update.is_active,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', update.id);
+
+        if (error) {
+          console.error('Error updating member:', update.id, error);
+          errorCount++;
+        } else {
+          successCount++;
+        }
+      }
+
+      if (errorCount > 0) {
+        toast.warning(`Saved ${successCount} changes, ${errorCount} failed`);
+      } else {
+        toast.success(`Roster changes saved successfully! (${successCount} members updated)`);
+      }
+
+      // Refresh the data to show updated values
+      await fetchStaff();
+      
+      // Exit edit mode and clear edited data
       setEditMode(prev => ({ ...prev, [deptKey]: false }));
-    } catch (error) {
-      toast.error('Failed to save changes');
+      setEditedData(prev => {
+        const newData = { ...prev };
+        delete newData[deptKey];
+        return newData;
+      });
+    } catch (error: any) {
+      console.error('Error saving changes:', error);
+      toast.error(error.message || 'Failed to save changes');
     } finally {
       setSaving(false);
     }
