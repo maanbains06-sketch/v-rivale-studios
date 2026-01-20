@@ -13,6 +13,9 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { UnifiedApplicationsTable, ApplicationType } from "@/components/UnifiedApplicationsTable";
+import { combineAllApplications, filterApplicationsByType } from "@/lib/applicationTransformer";
 import { 
   Loader2, 
   Shield, 
@@ -40,7 +43,10 @@ import {
   Hash,
   MoreVertical,
   UserX,
-  BarChart3
+  BarChart3,
+  LayoutGrid,
+  AlertTriangle,
+  Youtube
 } from "lucide-react";
 import headerAdminBg from "@/assets/header-staff.jpg";
 import {
@@ -292,6 +298,7 @@ const Admin = () => {
   const [selectedWeazelApp, setSelectedWeazelApp] = useState<WeazelNewsApplication | null>(null);
   const [weazelAdminNotes, setWeazelAdminNotes] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedAppType, setSelectedAppType] = useState("all");
   
   // Player action dialog
   const [actionDialog, setActionDialog] = useState<{
@@ -1024,8 +1031,13 @@ const Admin = () => {
       />
       
       <div className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="whitelist" className="space-y-6">
+        <Tabs defaultValue="all-applications" className="space-y-6">
           <TabsList className="flex flex-wrap gap-1 h-auto p-1 bg-muted/50">
+            <TabsTrigger value="all-applications" className="flex items-center gap-1 text-xs sm:text-sm bg-primary/10">
+              <LayoutGrid className="w-4 h-4" />
+              <span className="hidden sm:inline">All Applications</span>
+              {(pendingWhitelist + pendingBanAppeals + pendingJobs) > 0 && <Badge variant="destructive" className="ml-1 text-xs">{pendingWhitelist + pendingBanAppeals + pendingJobs}</Badge>}
+            </TabsTrigger>
             <TabsTrigger value="whitelist" className="flex items-center gap-1 text-xs sm:text-sm">
               <FileText className="w-4 h-4" />
               <span className="hidden sm:inline">Whitelist</span>
@@ -1071,6 +1083,204 @@ const Admin = () => {
               <span className="hidden sm:inline">Players</span>
             </TabsTrigger>
           </TabsList>
+
+          {/* All Applications Tab - Unified View */}
+          <TabsContent value="all-applications">
+            <Card className="glass-effect border-border/20 overflow-hidden">
+              <CardHeader>
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <LayoutGrid className="w-5 h-5 text-primary" />
+                      <CardTitle className="text-gradient">All Applications</CardTitle>
+                    </div>
+                    <CardDescription>Review and manage all application types in one place</CardDescription>
+                  </div>
+                  <Select value={selectedAppType} onValueChange={setSelectedAppType}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="Filter by type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Applications</SelectItem>
+                      <SelectItem value="whitelist">Whitelist ({applications.filter(a => a.status === 'pending').length} pending)</SelectItem>
+                      <SelectItem value="job">Jobs ({jobApplications.filter(j => j.status === 'pending').length} pending)</SelectItem>
+                      <SelectItem value="ban">Ban Appeals ({banAppeals.filter(b => b.status === 'pending').length} pending)</SelectItem>
+                      <SelectItem value="creator">Creator ({creatorApplications.filter(c => c.status === 'pending').length} pending)</SelectItem>
+                      <SelectItem value="firefighter">Firefighter ({firefighterApplications.filter(f => f.status === 'pending').length} pending)</SelectItem>
+                      <SelectItem value="weazel">Weazel News ({weazelNewsApplications.filter(w => w.status === 'pending').length} pending)</SelectItem>
+                      <SelectItem value="pdm">PDM ({pdmApplications.filter(p => p.status === 'pending').length} pending)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Quick Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 mt-4">
+                  <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                    <div className="flex items-center gap-2 text-sm text-blue-400">
+                      <Shield className="w-4 h-4" />
+                      Whitelist
+                    </div>
+                    <div className="text-2xl font-bold">{applications.filter(a => a.status === 'pending').length}</div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                    <div className="flex items-center gap-2 text-sm text-green-400">
+                      <Briefcase className="w-4 h-4" />
+                      Jobs
+                    </div>
+                    <div className="text-2xl font-bold">{jobApplications.filter(j => j.status === 'pending').length}</div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                    <div className="flex items-center gap-2 text-sm text-red-400">
+                      <AlertTriangle className="w-4 h-4" />
+                      Ban Appeals
+                    </div>
+                    <div className="text-2xl font-bold">{banAppeals.filter(b => b.status === 'pending').length}</div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/20">
+                    <div className="flex items-center gap-2 text-sm text-orange-400">
+                      <Youtube className="w-4 h-4" />
+                      Creator
+                    </div>
+                    <div className="text-2xl font-bold">{creatorApplications.filter(c => c.status === 'pending').length}</div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                    <div className="flex items-center gap-2 text-sm text-purple-400">
+                      <Video className="w-4 h-4" />
+                      Other
+                    </div>
+                    <div className="text-2xl font-bold">{pdmApplications.filter(p => p.status === 'pending').length + firefighterApplications.filter(f => f.status === 'pending').length + weazelNewsApplications.filter(w => w.status === 'pending').length}</div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <UnifiedApplicationsTable
+                  applications={filterApplicationsByType(
+                    combineAllApplications(
+                      applications,
+                      [],
+                      jobApplications,
+                      banAppeals,
+                      creatorApplications,
+                      firefighterApplications,
+                      weazelNewsApplications,
+                      pdmApplications,
+                      []
+                    ),
+                    selectedAppType
+                  )}
+                  title="Organization Applications"
+                  onApprove={async (id, notes, type) => {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    const tableMap: Record<string, { table: string; loader: () => Promise<void> }> = {
+                      whitelist: { table: 'whitelist_applications', loader: loadApplications },
+                      police: { table: 'job_applications', loader: loadJobApplications },
+                      ems: { table: 'job_applications', loader: loadJobApplications },
+                      mechanic: { table: 'job_applications', loader: loadJobApplications },
+                      judge: { table: 'job_applications', loader: loadJobApplications },
+                      attorney: { table: 'job_applications', loader: loadJobApplications },
+                      ban_appeal: { table: 'ban_appeals', loader: loadBanAppeals },
+                      creator: { table: 'creator_applications', loader: loadCreatorApplications },
+                      firefighter: { table: 'firefighter_applications', loader: loadFirefighterApplications },
+                      weazel_news: { table: 'weazel_news_applications', loader: loadWeazelNewsApplications },
+                      pdm: { table: 'pdm_applications', loader: loadPdmApplications },
+                    };
+                    
+                    const config = tableMap[type];
+                    if (config) {
+                      const { error } = await supabase
+                        .from(config.table as any)
+                        .update({
+                          status: 'approved',
+                          reviewed_by: user?.id,
+                          reviewed_at: new Date().toISOString(),
+                          admin_notes: notes || null,
+                        })
+                        .eq('id', id);
+                      
+                      if (error) {
+                        toast({ title: "Error", description: "Failed to approve application.", variant: "destructive" });
+                      } else {
+                        toast({ title: "Success", description: "Application approved successfully." });
+                        config.loader();
+                      }
+                    }
+                  }}
+                  onReject={async (id, notes, type) => {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    const tableMap: Record<string, { table: string; loader: () => Promise<void> }> = {
+                      whitelist: { table: 'whitelist_applications', loader: loadApplications },
+                      police: { table: 'job_applications', loader: loadJobApplications },
+                      ems: { table: 'job_applications', loader: loadJobApplications },
+                      mechanic: { table: 'job_applications', loader: loadJobApplications },
+                      judge: { table: 'job_applications', loader: loadJobApplications },
+                      attorney: { table: 'job_applications', loader: loadJobApplications },
+                      ban_appeal: { table: 'ban_appeals', loader: loadBanAppeals },
+                      creator: { table: 'creator_applications', loader: loadCreatorApplications },
+                      firefighter: { table: 'firefighter_applications', loader: loadFirefighterApplications },
+                      weazel_news: { table: 'weazel_news_applications', loader: loadWeazelNewsApplications },
+                      pdm: { table: 'pdm_applications', loader: loadPdmApplications },
+                    };
+                    
+                    const config = tableMap[type];
+                    if (config) {
+                      const { error } = await supabase
+                        .from(config.table as any)
+                        .update({
+                          status: 'rejected',
+                          reviewed_by: user?.id,
+                          reviewed_at: new Date().toISOString(),
+                          admin_notes: notes || null,
+                        })
+                        .eq('id', id);
+                      
+                      if (error) {
+                        toast({ title: "Error", description: "Failed to reject application.", variant: "destructive" });
+                      } else {
+                        toast({ title: "Success", description: "Application rejected successfully." });
+                        config.loader();
+                      }
+                    }
+                  }}
+                  onHold={async (id, notes, type) => {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    const tableMap: Record<string, { table: string; loader: () => Promise<void> }> = {
+                      whitelist: { table: 'whitelist_applications', loader: loadApplications },
+                      police: { table: 'job_applications', loader: loadJobApplications },
+                      ems: { table: 'job_applications', loader: loadJobApplications },
+                      mechanic: { table: 'job_applications', loader: loadJobApplications },
+                      judge: { table: 'job_applications', loader: loadJobApplications },
+                      attorney: { table: 'job_applications', loader: loadJobApplications },
+                      ban_appeal: { table: 'ban_appeals', loader: loadBanAppeals },
+                      creator: { table: 'creator_applications', loader: loadCreatorApplications },
+                      firefighter: { table: 'firefighter_applications', loader: loadFirefighterApplications },
+                      weazel_news: { table: 'weazel_news_applications', loader: loadWeazelNewsApplications },
+                      pdm: { table: 'pdm_applications', loader: loadPdmApplications },
+                    };
+                    
+                    const config = tableMap[type];
+                    if (config) {
+                      const { error } = await supabase
+                        .from(config.table as any)
+                        .update({
+                          status: 'on_hold',
+                          reviewed_by: user?.id,
+                          reviewed_at: new Date().toISOString(),
+                          admin_notes: notes || null,
+                        })
+                        .eq('id', id);
+                      
+                      if (error) {
+                        toast({ title: "Error", description: "Failed to put application on hold.", variant: "destructive" });
+                      } else {
+                        toast({ title: "Success", description: "Application put on hold successfully." });
+                        config.loader();
+                      }
+                    }
+                  }}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           {/* Whitelist Applications Tab */}
           <TabsContent value="whitelist">
