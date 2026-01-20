@@ -77,3 +77,6 @@ verify_jwt = false
 
 [functions.assign-creator-roles]
 verify_jwt = false
+
+[functions.send-giveaway-discord]
+verify_jwt = false
