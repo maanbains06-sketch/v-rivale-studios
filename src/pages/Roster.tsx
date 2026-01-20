@@ -32,7 +32,8 @@ import {
   X,
   Lock,
   UserPlus,
-  Trash2
+  Trash2,
+  MoreVertical
 } from "lucide-react";
 import {
   AlertDialog,
@@ -45,6 +46,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import AddStaffDialog from "@/components/AddStaffDialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import headerJobsBg from "@/assets/header-guides-new.jpg";
 
 interface RosterMember {
@@ -261,6 +268,7 @@ const Roster = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [memberToDelete, setMemberToDelete] = useState<{ id: string; name: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [activeTab, setActiveTab] = useState("police-department");
   const [selectedDeptForAdd, setSelectedDeptForAdd] = useState<{
     departmentLabel: string;
     departmentKey: string;
@@ -268,6 +276,9 @@ const Roster = () => {
     ranks: string[];
   } | null>(null);
   const { hasAccess, canEdit, loading: accessLoading, isOwner } = useRosterAccess();
+
+  // Helper to check if a rank is Governor
+  const isGovernorRank = (rankName: string) => rankName.toLowerCase() === 'governor';
 
   const fetchStaff = async () => {
     if (!hasAccess && !accessLoading) {
@@ -439,7 +450,7 @@ const Roster = () => {
       icon: <Building className="w-4 h-4" />,
       accentColor: "emerald",
       members: getDepartmentMembers('state', ['state', 'government', 'governor', 'sahp', 'highway']),
-      ranks: ['Governor', 'Lieutenant Governor', 'Secretary of State', 'State Trooper Commander', 'Senior Trooper', 'State Trooper', 'Trooper Cadet'],
+      ranks: ['Governor', 'State Trooper Commander', 'Senior Trooper', 'State Trooper', 'Trooper Cadet'],
     },
     {
       department: "Server Staff",
@@ -647,7 +658,7 @@ const Roster = () => {
 
       <div className="container mx-auto px-4 py-8">
         {(
-          <Tabs defaultValue="police-department" className="space-y-8">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
             <ScrollArea className="w-full">
               <TabsList className="inline-flex w-auto gap-1 p-1.5 bg-card/80 backdrop-blur-sm rounded-xl border border-border shadow-xl">
                 {departments.map((dept) => (
@@ -799,207 +810,391 @@ const Roster = () => {
                               </div>
                             </div>
 
-                            {/* Table Header */}
-                            <div className={`grid ${canEdit ? 'grid-cols-8' : 'grid-cols-7'} px-5 py-3 bg-muted/30 border-b border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground`}>
-                              <div className="flex items-center gap-2">
-                                <span className="w-8" />
-                                <span>Officer</span>
+                            {/* Table Header - Dynamic based on rank */}
+                            {isGovernorRank(rankName) ? (
+                              <div className={`grid ${canEdit ? 'grid-cols-5' : 'grid-cols-4'} px-5 py-3 bg-muted/30 border-b border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground`}>
+                                <div className="flex items-center gap-2">
+                                  <span className="w-8" />
+                                  <span>Name</span>
+                                </div>
+                                <div className="text-center">Rank</div>
+                                <div className="text-center">Status</div>
+                                <div className="text-center">Division</div>
+                                {canEdit && <div className="text-center">Actions</div>}
                               </div>
-                              <div className="text-center">Rank</div>
-                              <div className="text-center">Badge Number</div>
-                              <div className="text-center">Strikes</div>
-                              <div className="text-center">Status</div>
-                              <div className="text-center">Division</div>
-                              <div className="text-center">Unit</div>
-                              {canEdit && <div className="text-center">Actions</div>}
-                            </div>
+                            ) : (
+                              <div className={`grid ${canEdit ? 'grid-cols-8' : 'grid-cols-7'} px-5 py-3 bg-muted/30 border-b border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground`}>
+                                <div className="flex items-center gap-2">
+                                  <span className="w-8" />
+                                  <span>Officer</span>
+                                </div>
+                                <div className="text-center">Rank</div>
+                                <div className="text-center">Badge Number</div>
+                                <div className="text-center">Strikes</div>
+                                <div className="text-center">Status</div>
+                                <div className="text-center">Division</div>
+                                <div className="text-center">Unit</div>
+                                {canEdit && <div className="text-center">Actions</div>}
+                              </div>
+                            )}
 
                             {/* Members */}
                             <div className="divide-y divide-border/50 min-h-[60px]">
                               {members.length > 0 ? members.map((member, idx) => (
-                                <div 
-                                  key={member.id}
-                                  className={`grid ${canEdit ? 'grid-cols-8' : 'grid-cols-7'} px-5 py-3 items-center transition-colors hover:bg-muted/30
-                                    ${idx % 2 === 0 ? 'bg-transparent' : 'bg-muted/10'}`}
-                                >
-                                  {/* Officer */}
-                                  <div className="flex items-center gap-3">
-                                    <Avatar className="h-9 w-9 border-2 border-border shadow-md">
-                                      <AvatarImage src={member.discord_avatar} />
-                                      <AvatarFallback className="bg-muted text-muted-foreground text-xs font-medium">
-                                        {getMemberValue(deptKey, member, 'name')?.charAt(0) || '?'}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    {isEditing ? (
-                                      <Input
-                                        value={getMemberValue(deptKey, member, 'name')}
-                                        onChange={(e) => updateMemberField(deptKey, member.id, 'name', e.target.value)}
-                                        placeholder="Name"
-                                        className="h-8 text-sm"
-                                      />
-                                    ) : (
-                                      <span className={`font-medium ${member.name ? 'text-foreground' : 'text-muted-foreground'}`}>
-                                        {member.name || 'Vacant'}
-                                      </span>
-                                    )}
-                                  </div>
-
-                                  {/* Rank */}
-                                  <div className="flex justify-center">
-                                    {isEditing ? (
-                                      <Select
-                                        value={getMemberValue(deptKey, member, 'rank')}
-                                        onValueChange={(value) => updateMemberField(deptKey, member.id, 'rank', value)}
-                                      >
-                                        <SelectTrigger className="h-8 w-36 text-xs">
-                                          <SelectValue placeholder="Rank" />
-                                        </SelectTrigger>
-                                        <SelectContent className="bg-popover border border-border z-50 max-h-60">
-                                          {dept.ranks?.map(rank => (
-                                            <SelectItem key={rank} value={rank}>
-                                              {rank}
-                                            </SelectItem>
-                                          ))}
-                                        </SelectContent>
-                                      </Select>
-                                    ) : (
-                                      <span className="text-sm text-muted-foreground">{member.rank}</span>
-                                    )}
-                                  </div>
-
-                                  {/* Badge */}
-                                  <div className="text-center">
-                                    {isEditing ? (
-                                      <Input
-                                        value={getMemberValue(deptKey, member, 'badge_number')}
-                                        onChange={(e) => updateMemberField(deptKey, member.id, 'badge_number', e.target.value)}
-                                        placeholder="Badge #"
-                                        className="h-8 text-sm font-mono text-center"
-                                      />
-                                    ) : (
-                                      <span className="font-mono text-sm px-2.5 py-1 rounded-md bg-muted border border-border">
-                                        {member.badge_number || '-'}
-                                      </span>
-                                    )}
-                                  </div>
-
-                                  {/* Strikes */}
-                                  <div className="text-center">
-                                    {isEditing ? (
-                                      <Input
-                                        value={getMemberValue(deptKey, member, 'strikes')}
-                                        onChange={(e) => updateMemberField(deptKey, member.id, 'strikes', e.target.value)}
-                                        placeholder="0/3"
-                                        className="h-8 text-sm text-center"
-                                      />
-                                    ) : (
-                                      <span className="text-muted-foreground">{member.strikes || '-'}</span>
-                                    )}
-                                  </div>
-
-                                  {/* Status */}
-                                  <div className="flex justify-center">
-                                    {isEditing ? (
-                                      <Select
-                                        value={getMemberValue(deptKey, member, 'status')}
-                                        onValueChange={(value) => updateMemberField(deptKey, member.id, 'status', value)}
-                                      >
-                                        <SelectTrigger className="h-8 w-28 text-xs">
-                                          <SelectValue placeholder="Status" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          {statusOptions.map(opt => (
-                                            <SelectItem key={opt.value} value={opt.value}>
-                                              {opt.label}
-                                            </SelectItem>
-                                          ))}
-                                        </SelectContent>
-                                      </Select>
-                                    ) : (
-                                      <>
-                                        {member.status === 'active' ? (
-                                          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/15 border border-green-500/30 text-green-500 text-xs font-medium">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                                            Active
-                                          </span>
-                                        ) : member.status === 'on_leave' ? (
-                                          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-500 text-xs font-medium">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                                            On Leave
-                                          </span>
-                                        ) : (
-                                          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-500/15 border border-gray-500/30 text-gray-400 text-xs font-medium">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-                                            Inactive
-                                          </span>
-                                        )}
-                                      </>
-                                    )}
-                                  </div>
-
-                                  {/* Division */}
-                                  <div className="flex justify-center">
-                                    {isEditing ? (
-                                      <Select
-                                        value={getMemberValue(deptKey, member, 'division')}
-                                        onValueChange={(value) => updateMemberField(deptKey, member.id, 'division', value)}
-                                      >
-                                        <SelectTrigger className="h-8 w-32 text-xs">
-                                          <SelectValue placeholder="Division" />
-                                        </SelectTrigger>
-                                        <SelectContent className="bg-popover border border-border z-50">
-                                          {deptDivisionOptions.map(opt => (
-                                            <SelectItem key={opt.value} value={opt.value}>
-                                              {opt.label}
-                                            </SelectItem>
-                                          ))}
-                                        </SelectContent>
-                                      </Select>
-                                    ) : (
-                                      <span className={`px-2.5 py-1 rounded-md text-xs font-medium border ${getDivisionColor(member.division || '')}`}>
-                                        {member.division || '-'}
-                                      </span>
-                                    )}
-                                  </div>
-
-                                  {/* Unit */}
-                                  <div className="flex justify-center">
-                                    {isEditing ? (
-                                      <Select
-                                        value={getMemberValue(deptKey, member, 'call_sign')}
-                                        onValueChange={(value) => updateMemberField(deptKey, member.id, 'call_sign', value)}
-                                      >
-                                        <SelectTrigger className="h-8 w-28 text-xs">
-                                          <SelectValue placeholder="Unit" />
-                                        </SelectTrigger>
-                                        <SelectContent className="bg-popover border border-border z-50">
-                                          {deptUnitOptions.map(opt => (
-                                            <SelectItem key={opt.value} value={opt.value}>
-                                              {opt.label}
-                                            </SelectItem>
-                                          ))}
-                                        </SelectContent>
-                                      </Select>
-                                    ) : (
-                                      <span className="text-muted-foreground text-sm">{member.call_sign || '-'}</span>
-                                    )}
-                                  </div>
-
-                                  {/* Actions - Delete */}
-                                  {canEdit && (
-                                    <div className="flex justify-center">
-                                      <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        onClick={() => confirmDelete(member)}
-                                        className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                        title="Delete staff member"
-                                      >
-                                        <Trash2 className="w-4 h-4" />
-                                      </Button>
+                                isGovernorRank(rankName) ? (
+                                  /* Governor-specific row layout - no badge/strikes, Name instead of Officer */
+                                  <div 
+                                    key={member.id}
+                                    className={`grid ${canEdit ? 'grid-cols-5' : 'grid-cols-4'} px-5 py-3 items-center transition-colors hover:bg-muted/30
+                                      ${idx % 2 === 0 ? 'bg-transparent' : 'bg-muted/10'}`}
+                                  >
+                                    {/* Name */}
+                                    <div className="flex items-center gap-3">
+                                      <Avatar className="h-9 w-9 border-2 border-border shadow-md">
+                                        <AvatarImage src={member.discord_avatar} />
+                                        <AvatarFallback className="bg-muted text-muted-foreground text-xs font-medium">
+                                          {getMemberValue(deptKey, member, 'name')?.charAt(0) || '?'}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      {isEditing ? (
+                                        <Input
+                                          value={getMemberValue(deptKey, member, 'name')}
+                                          onChange={(e) => updateMemberField(deptKey, member.id, 'name', e.target.value)}
+                                          placeholder="Name"
+                                          className="h-8 text-sm"
+                                        />
+                                      ) : (
+                                        <span className={`font-medium ${member.name ? 'text-foreground' : 'text-muted-foreground'}`}>
+                                          {member.name || 'Vacant'}
+                                        </span>
+                                      )}
                                     </div>
-                                  )}
-                                </div>
+
+                                    {/* Rank */}
+                                    <div className="flex justify-center">
+                                      {isEditing ? (
+                                        <Select
+                                          value={getMemberValue(deptKey, member, 'rank')}
+                                          onValueChange={(value) => updateMemberField(deptKey, member.id, 'rank', value)}
+                                        >
+                                          <SelectTrigger className="h-8 w-36 text-xs">
+                                            <SelectValue placeholder="Rank" />
+                                          </SelectTrigger>
+                                          <SelectContent className="bg-popover border border-border z-50 max-h-60">
+                                            {dept.ranks?.map(rank => (
+                                              <SelectItem key={rank} value={rank}>
+                                                {rank}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      ) : (
+                                        <span className="text-sm text-muted-foreground">{member.rank}</span>
+                                      )}
+                                    </div>
+
+                                    {/* Status */}
+                                    <div className="flex justify-center">
+                                      {isEditing ? (
+                                        <Select
+                                          value={getMemberValue(deptKey, member, 'status')}
+                                          onValueChange={(value) => updateMemberField(deptKey, member.id, 'status', value)}
+                                        >
+                                          <SelectTrigger className="h-8 w-28 text-xs">
+                                            <SelectValue placeholder="Status" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            {statusOptions.map(opt => (
+                                              <SelectItem key={opt.value} value={opt.value}>
+                                                {opt.label}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      ) : (
+                                        <>
+                                          {member.status === 'active' ? (
+                                            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/15 border border-green-500/30 text-green-500 text-xs font-medium">
+                                              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                              Active
+                                            </span>
+                                          ) : member.status === 'on_leave' ? (
+                                            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-500 text-xs font-medium">
+                                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                              On Leave
+                                            </span>
+                                          ) : (
+                                            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-500/15 border border-gray-500/30 text-gray-400 text-xs font-medium">
+                                              <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+                                              Inactive
+                                            </span>
+                                          )}
+                                        </>
+                                      )}
+                                    </div>
+
+                                    {/* Division */}
+                                    <div className="flex justify-center">
+                                      {isEditing ? (
+                                        <Select
+                                          value={getMemberValue(deptKey, member, 'division')}
+                                          onValueChange={(value) => updateMemberField(deptKey, member.id, 'division', value)}
+                                        >
+                                          <SelectTrigger className="h-8 w-32 text-xs">
+                                            <SelectValue placeholder="Division" />
+                                          </SelectTrigger>
+                                          <SelectContent className="bg-popover border border-border z-50">
+                                            {deptDivisionOptions.map(opt => (
+                                              <SelectItem key={opt.value} value={opt.value}>
+                                                {opt.label}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      ) : (
+                                        <span className={`px-2.5 py-1 rounded-md text-xs font-medium border ${getDivisionColor(member.division || '')}`}>
+                                          {member.division || '-'}
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    {/* Actions - Dropdown */}
+                                    {canEdit && (
+                                      <div className="flex justify-center">
+                                        <DropdownMenu>
+                                          <DropdownMenuTrigger asChild>
+                                            <Button
+                                              size="sm"
+                                              variant="ghost"
+                                              className="h-8 w-8 p-0"
+                                            >
+                                              <MoreVertical className="w-4 h-4" />
+                                            </Button>
+                                          </DropdownMenuTrigger>
+                                          <DropdownMenuContent align="end" className="bg-popover border border-border z-50">
+                                            <DropdownMenuItem
+                                              onClick={() => toggleEditMode(deptKey, dept.members)}
+                                              className="cursor-pointer"
+                                            >
+                                              <Pencil className="w-4 h-4 mr-2" />
+                                              Edit
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                              onClick={() => confirmDelete(member)}
+                                              className="cursor-pointer text-destructive focus:text-destructive"
+                                            >
+                                              <Trash2 className="w-4 h-4 mr-2" />
+                                              Delete
+                                            </DropdownMenuItem>
+                                          </DropdownMenuContent>
+                                        </DropdownMenu>
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  /* Standard row layout for all other ranks */
+                                  <div 
+                                    key={member.id}
+                                    className={`grid ${canEdit ? 'grid-cols-8' : 'grid-cols-7'} px-5 py-3 items-center transition-colors hover:bg-muted/30
+                                      ${idx % 2 === 0 ? 'bg-transparent' : 'bg-muted/10'}`}
+                                  >
+                                    {/* Officer */}
+                                    <div className="flex items-center gap-3">
+                                      <Avatar className="h-9 w-9 border-2 border-border shadow-md">
+                                        <AvatarImage src={member.discord_avatar} />
+                                        <AvatarFallback className="bg-muted text-muted-foreground text-xs font-medium">
+                                          {getMemberValue(deptKey, member, 'name')?.charAt(0) || '?'}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      {isEditing ? (
+                                        <Input
+                                          value={getMemberValue(deptKey, member, 'name')}
+                                          onChange={(e) => updateMemberField(deptKey, member.id, 'name', e.target.value)}
+                                          placeholder="Name"
+                                          className="h-8 text-sm"
+                                        />
+                                      ) : (
+                                        <span className={`font-medium ${member.name ? 'text-foreground' : 'text-muted-foreground'}`}>
+                                          {member.name || 'Vacant'}
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    {/* Rank */}
+                                    <div className="flex justify-center">
+                                      {isEditing ? (
+                                        <Select
+                                          value={getMemberValue(deptKey, member, 'rank')}
+                                          onValueChange={(value) => updateMemberField(deptKey, member.id, 'rank', value)}
+                                        >
+                                          <SelectTrigger className="h-8 w-36 text-xs">
+                                            <SelectValue placeholder="Rank" />
+                                          </SelectTrigger>
+                                          <SelectContent className="bg-popover border border-border z-50 max-h-60">
+                                            {dept.ranks?.map(rank => (
+                                              <SelectItem key={rank} value={rank}>
+                                                {rank}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      ) : (
+                                        <span className="text-sm text-muted-foreground">{member.rank}</span>
+                                      )}
+                                    </div>
+
+                                    {/* Badge */}
+                                    <div className="text-center">
+                                      {isEditing ? (
+                                        <Input
+                                          value={getMemberValue(deptKey, member, 'badge_number')}
+                                          onChange={(e) => updateMemberField(deptKey, member.id, 'badge_number', e.target.value)}
+                                          placeholder="Badge #"
+                                          className="h-8 text-sm font-mono text-center"
+                                        />
+                                      ) : (
+                                        <span className="font-mono text-sm px-2.5 py-1 rounded-md bg-muted border border-border">
+                                          {member.badge_number || '-'}
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    {/* Strikes */}
+                                    <div className="text-center">
+                                      {isEditing ? (
+                                        <Input
+                                          value={getMemberValue(deptKey, member, 'strikes')}
+                                          onChange={(e) => updateMemberField(deptKey, member.id, 'strikes', e.target.value)}
+                                          placeholder="0/3"
+                                          className="h-8 text-sm text-center"
+                                        />
+                                      ) : (
+                                        <span className="text-muted-foreground">{member.strikes || '-'}</span>
+                                      )}
+                                    </div>
+
+                                    {/* Status */}
+                                    <div className="flex justify-center">
+                                      {isEditing ? (
+                                        <Select
+                                          value={getMemberValue(deptKey, member, 'status')}
+                                          onValueChange={(value) => updateMemberField(deptKey, member.id, 'status', value)}
+                                        >
+                                          <SelectTrigger className="h-8 w-28 text-xs">
+                                            <SelectValue placeholder="Status" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            {statusOptions.map(opt => (
+                                              <SelectItem key={opt.value} value={opt.value}>
+                                                {opt.label}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      ) : (
+                                        <>
+                                          {member.status === 'active' ? (
+                                            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/15 border border-green-500/30 text-green-500 text-xs font-medium">
+                                              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                              Active
+                                            </span>
+                                          ) : member.status === 'on_leave' ? (
+                                            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-500 text-xs font-medium">
+                                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                              On Leave
+                                            </span>
+                                          ) : (
+                                            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-500/15 border border-gray-500/30 text-gray-400 text-xs font-medium">
+                                              <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+                                              Inactive
+                                            </span>
+                                          )}
+                                        </>
+                                      )}
+                                    </div>
+
+                                    {/* Division */}
+                                    <div className="flex justify-center">
+                                      {isEditing ? (
+                                        <Select
+                                          value={getMemberValue(deptKey, member, 'division')}
+                                          onValueChange={(value) => updateMemberField(deptKey, member.id, 'division', value)}
+                                        >
+                                          <SelectTrigger className="h-8 w-32 text-xs">
+                                            <SelectValue placeholder="Division" />
+                                          </SelectTrigger>
+                                          <SelectContent className="bg-popover border border-border z-50">
+                                            {deptDivisionOptions.map(opt => (
+                                              <SelectItem key={opt.value} value={opt.value}>
+                                                {opt.label}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      ) : (
+                                        <span className={`px-2.5 py-1 rounded-md text-xs font-medium border ${getDivisionColor(member.division || '')}`}>
+                                          {member.division || '-'}
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    {/* Unit */}
+                                    <div className="flex justify-center">
+                                      {isEditing ? (
+                                        <Select
+                                          value={getMemberValue(deptKey, member, 'call_sign')}
+                                          onValueChange={(value) => updateMemberField(deptKey, member.id, 'call_sign', value)}
+                                        >
+                                          <SelectTrigger className="h-8 w-28 text-xs">
+                                            <SelectValue placeholder="Unit" />
+                                          </SelectTrigger>
+                                          <SelectContent className="bg-popover border border-border z-50">
+                                            {deptUnitOptions.map(opt => (
+                                              <SelectItem key={opt.value} value={opt.value}>
+                                                {opt.label}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      ) : (
+                                        <span className="text-muted-foreground text-sm">{member.call_sign || '-'}</span>
+                                      )}
+                                    </div>
+
+                                    {/* Actions - Dropdown */}
+                                    {canEdit && (
+                                      <div className="flex justify-center">
+                                        <DropdownMenu>
+                                          <DropdownMenuTrigger asChild>
+                                            <Button
+                                              size="sm"
+                                              variant="ghost"
+                                              className="h-8 w-8 p-0"
+                                            >
+                                              <MoreVertical className="w-4 h-4" />
+                                            </Button>
+                                          </DropdownMenuTrigger>
+                                          <DropdownMenuContent align="end" className="bg-popover border border-border z-50">
+                                            <DropdownMenuItem
+                                              onClick={() => toggleEditMode(deptKey, dept.members)}
+                                              className="cursor-pointer"
+                                            >
+                                              <Pencil className="w-4 h-4 mr-2" />
+                                              Edit
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                              onClick={() => confirmDelete(member)}
+                                              className="cursor-pointer text-destructive focus:text-destructive"
+                                            >
+                                              <Trash2 className="w-4 h-4 mr-2" />
+                                              Delete
+                                            </DropdownMenuItem>
+                                          </DropdownMenuContent>
+                                        </DropdownMenu>
+                                      </div>
+                                    )}
+                                  </div>
+                                )
                               )) : (
                                 <div className="flex items-center justify-center py-6 text-muted-foreground text-sm italic">
                                   <span>No members assigned to this rank</span>
