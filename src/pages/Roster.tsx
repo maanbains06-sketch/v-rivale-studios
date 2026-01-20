@@ -29,8 +29,10 @@ import {
   Pencil,
   Save,
   X,
-  Lock
+  Lock,
+  UserPlus
 } from "lucide-react";
+import AddStaffDialog from "@/components/AddStaffDialog";
 import headerJobsBg from "@/assets/header-guides-new.jpg";
 
 interface RosterMember {
@@ -152,29 +154,141 @@ const statusOptions = [
   { value: 'on_leave', label: 'On Leave' },
 ];
 
-const divisionOptions = [
-  { value: 'Administration', label: 'Administration' },
-  { value: 'Patrol', label: 'Patrol' },
-  { value: 'Traffic Enforcement', label: 'Traffic Enforcement' },
-  { value: 'Investigations', label: 'Investigations' },
-  { value: 'Training', label: 'Training' },
-  { value: 'Field Ops', label: 'Field Ops' },
-  { value: 'Command', label: 'Command' },
-  { value: 'Engine 1', label: 'Engine 1' },
-  { value: 'Engine 2', label: 'Engine 2' },
-  { value: 'Ladder 1', label: 'Ladder 1' },
-  { value: 'Management', label: 'Management' },
-  { value: 'Repairs', label: 'Repairs' },
-  { value: 'Sales', label: 'Sales' },
-  { value: 'Medical', label: 'Medical' },
-  { value: 'Judiciary', label: 'Judiciary' },
-  { value: 'Prosecution', label: 'Prosecution' },
-  { value: 'Defense', label: 'Defense' },
-  { value: 'On-Air', label: 'On-Air' },
-  { value: 'Production', label: 'Production' },
-  { value: 'Field', label: 'Field' },
-  { value: 'Staff', label: 'Staff' },
-];
+// Department-specific division options
+const divisionOptionsByDept: Record<string, { value: string; label: string }[]> = {
+  police: [
+    { value: 'Administration', label: 'Administration' },
+    { value: 'Patrol', label: 'Patrol' },
+    { value: 'Traffic Enforcement', label: 'Traffic Enforcement' },
+    { value: 'Investigations', label: 'Investigations' },
+    { value: 'Training', label: 'Training' },
+    { value: 'SWAT', label: 'SWAT' },
+    { value: 'K-9 Unit', label: 'K-9 Unit' },
+  ],
+  ems: [
+    { value: 'Administration', label: 'Administration' },
+    { value: 'Medical', label: 'Medical' },
+    { value: 'Field Ops', label: 'Field Ops' },
+    { value: 'Training', label: 'Training' },
+    { value: 'Air Rescue', label: 'Air Rescue' },
+  ],
+  fire: [
+    { value: 'Command', label: 'Command' },
+    { value: 'Engine 1', label: 'Engine 1' },
+    { value: 'Engine 2', label: 'Engine 2' },
+    { value: 'Ladder 1', label: 'Ladder 1' },
+    { value: 'Training', label: 'Training' },
+    { value: 'Hazmat', label: 'Hazmat' },
+  ],
+  mechanic: [
+    { value: 'Management', label: 'Management' },
+    { value: 'Repairs', label: 'Repairs' },
+    { value: 'Custom Work', label: 'Custom Work' },
+    { value: 'Training', label: 'Training' },
+  ],
+  doj: [
+    { value: 'Judiciary', label: 'Judiciary' },
+    { value: 'Prosecution', label: 'Prosecution' },
+    { value: 'Defense', label: 'Defense' },
+    { value: 'Administration', label: 'Administration' },
+  ],
+  weazel: [
+    { value: 'Management', label: 'Management' },
+    { value: 'On-Air', label: 'On-Air' },
+    { value: 'Field', label: 'Field' },
+    { value: 'Production', label: 'Production' },
+    { value: 'Training', label: 'Training' },
+  ],
+  pdm: [
+    { value: 'Management', label: 'Management' },
+    { value: 'Sales', label: 'Sales' },
+    { value: 'Finance', label: 'Finance' },
+    { value: 'Training', label: 'Training' },
+  ],
+  staff: [
+    { value: 'Administration', label: 'Administration' },
+    { value: 'Management', label: 'Management' },
+    { value: 'Support', label: 'Support' },
+    { value: 'Development', label: 'Development' },
+  ],
+};
+
+// Department-specific unit options
+const unitOptionsByDept: Record<string, { value: string; label: string }[]> = {
+  police: [
+    { value: 'ADAM', label: 'ADAM' },
+    { value: 'BRAVO', label: 'BRAVO' },
+    { value: 'CHARLIE', label: 'CHARLIE' },
+    { value: 'DELTA', label: 'DELTA' },
+    { value: 'ECHO', label: 'ECHO' },
+    { value: 'FOXTROT', label: 'FOXTROT' },
+    { value: 'GOLF', label: 'GOLF' },
+    { value: 'HOTEL', label: 'HOTEL' },
+    { value: 'AIR-1', label: 'AIR-1' },
+    { value: 'K9-1', label: 'K9-1' },
+  ],
+  ems: [
+    { value: 'MEDIC-1', label: 'MEDIC-1' },
+    { value: 'MEDIC-2', label: 'MEDIC-2' },
+    { value: 'MEDIC-3', label: 'MEDIC-3' },
+    { value: 'RESCUE-1', label: 'RESCUE-1' },
+    { value: 'AIR-RESCUE', label: 'AIR-RESCUE' },
+    { value: 'SUPERVISOR', label: 'SUPERVISOR' },
+  ],
+  fire: [
+    { value: 'ENGINE-1', label: 'ENGINE-1' },
+    { value: 'ENGINE-2', label: 'ENGINE-2' },
+    { value: 'LADDER-1', label: 'LADDER-1' },
+    { value: 'RESCUE-1', label: 'RESCUE-1' },
+    { value: 'BATTALION-1', label: 'BATTALION-1' },
+    { value: 'HAZMAT-1', label: 'HAZMAT-1' },
+  ],
+  mechanic: [
+    { value: 'BAY-1', label: 'BAY-1' },
+    { value: 'BAY-2', label: 'BAY-2' },
+    { value: 'BAY-3', label: 'BAY-3' },
+    { value: 'CUSTOM', label: 'CUSTOM' },
+    { value: 'TOW-1', label: 'TOW-1' },
+  ],
+  doj: [
+    { value: 'COURT-1', label: 'COURT-1' },
+    { value: 'COURT-2', label: 'COURT-2' },
+    { value: 'CHAMBERS', label: 'CHAMBERS' },
+    { value: 'PROSECUTION', label: 'PROSECUTION' },
+    { value: 'DEFENSE', label: 'DEFENSE' },
+  ],
+  weazel: [
+    { value: 'NEWS-VAN-1', label: 'NEWS-VAN-1' },
+    { value: 'NEWS-VAN-2', label: 'NEWS-VAN-2' },
+    { value: 'STUDIO-A', label: 'STUDIO-A' },
+    { value: 'STUDIO-B', label: 'STUDIO-B' },
+    { value: 'FIELD-1', label: 'FIELD-1' },
+  ],
+  pdm: [
+    { value: 'SHOWROOM', label: 'SHOWROOM' },
+    { value: 'LOT-A', label: 'LOT-A' },
+    { value: 'LOT-B', label: 'LOT-B' },
+    { value: 'FINANCE', label: 'FINANCE' },
+    { value: 'OFFICE', label: 'OFFICE' },
+  ],
+  staff: [
+    { value: 'ADMIN', label: 'ADMIN' },
+    { value: 'SUPPORT', label: 'SUPPORT' },
+    { value: 'DEV', label: 'DEV' },
+    { value: 'MOD', label: 'MOD' },
+  ],
+};
+
+// Get combined division options for backwards compatibility
+const getAllDivisionOptions = () => {
+  const allOptions = new Map<string, { value: string; label: string }>();
+  Object.values(divisionOptionsByDept).forEach(options => {
+    options.forEach(opt => allOptions.set(opt.value, opt));
+  });
+  return Array.from(allOptions.values());
+};
+
+const divisionOptions = getAllDivisionOptions();
 
 const Roster = () => {
   const [loading, setLoading] = useState(true);
@@ -182,28 +296,49 @@ const Roster = () => {
   const [editMode, setEditMode] = useState<Record<string, boolean>>({});
   const [editedData, setEditedData] = useState<Record<string, Record<string, RosterMember>>>({});
   const [saving, setSaving] = useState(false);
+  const [addStaffDialogOpen, setAddStaffDialogOpen] = useState(false);
+  const [selectedDeptForAdd, setSelectedDeptForAdd] = useState<{
+    department: string;
+    shortName: string;
+    ranks: string[];
+    deptKey: string;
+  } | null>(null);
   const { hasAccess, canEdit, loading: accessLoading, isOwner } = useRosterAccess();
 
-  useEffect(() => {
-    const fetchStaff = async () => {
-      if (!hasAccess && !accessLoading) {
-        setLoading(false);
-        return;
-      }
-      setLoading(true);
-      const { data } = await supabase
-        .from('staff_members')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order', { ascending: true });
-      setStaffMembers(data || []);
+  const fetchStaff = async () => {
+    if (!hasAccess && !accessLoading) {
       setLoading(false);
-    };
-    
+      return;
+    }
+    setLoading(true);
+    const { data } = await supabase
+      .from('staff_members')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true });
+    setStaffMembers(data || []);
+    setLoading(false);
+  };
+
+  useEffect(() => {
     if (!accessLoading) {
       fetchStaff();
     }
   }, [hasAccess, accessLoading]);
+
+  const handleOpenAddStaffDialog = (dept: { department: string; shortName: string; ranks?: string[] }, deptKey: string) => {
+    setSelectedDeptForAdd({
+      department: dept.department,
+      shortName: dept.shortName,
+      ranks: dept.ranks || [],
+      deptKey,
+    });
+    setAddStaffDialogOpen(true);
+  };
+
+  const handleAddStaffSuccess = () => {
+    fetchStaff();
+  };
 
   const getDepartmentMembers = (key: string, filters: string[]): RosterMember[] => {
     const staff = staffMembers.filter(s => 
@@ -445,6 +580,11 @@ const Roster = () => {
 
             {departments.map((dept) => {
               const deptKey = dept.department.toLowerCase().replace(/\s+/g, '-');
+              // Get short key for division/unit options lookup
+              const shortKey = dept.shortName.toLowerCase().replace(/\s+/g, '-');
+              const deptDivisionOptions = divisionOptionsByDept[shortKey] || divisionOptions;
+              const deptUnitOptions = unitOptionsByDept[shortKey] || [];
+              
               const sorted = [...dept.members].sort((a, b) => 
                 getRankOrder(a.rank, dept.ranks) - getRankOrder(b.rank, dept.ranks)
               );
@@ -487,7 +627,7 @@ const Roster = () => {
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-3">
                         {isEditing ? (
                           <div className="flex items-center gap-2">
                             <Button
@@ -511,17 +651,28 @@ const Roster = () => {
                             </Button>
                           </div>
                         ) : canEdit ? (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => toggleEditMode(deptKey, dept.members)}
-                            className="gap-2"
-                          >
-                            <Pencil className="w-4 h-4" />
-                            Edit
-                          </Button>
+                          <>
+                            <Button
+                              size="sm"
+                              variant="default"
+                              onClick={() => handleOpenAddStaffDialog(dept, deptKey)}
+                              className="gap-2"
+                            >
+                              <UserPlus className="w-4 h-4" />
+                              Add Staff
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => toggleEditMode(deptKey, dept.members)}
+                              className="gap-2"
+                            >
+                              <Pencil className="w-4 h-4" />
+                              Edit
+                            </Button>
+                          </>
                         ) : null}
-                        <div className="text-center">
+                        <div className="text-center ml-2">
                           <div className="text-2xl font-bold text-primary">{dept.members.length}</div>
                           <div className="text-xs text-muted-foreground">Total</div>
                         </div>
@@ -686,7 +837,7 @@ const Roster = () => {
                                           <SelectValue placeholder="Division" />
                                         </SelectTrigger>
                                         <SelectContent className="bg-popover border border-border z-50">
-                                          {divisionOptions.map(opt => (
+                                          {deptDivisionOptions.map(opt => (
                                             <SelectItem key={opt.value} value={opt.value}>
                                               {opt.label}
                                             </SelectItem>
@@ -701,14 +852,23 @@ const Roster = () => {
                                   </div>
 
                                   {/* Unit */}
-                                  <div className="text-center">
+                                  <div className="flex justify-center">
                                     {isEditing ? (
-                                      <Input
+                                      <Select
                                         value={getMemberValue(deptKey, member, 'call_sign')}
-                                        onChange={(e) => updateMemberField(deptKey, member.id, 'call_sign', e.target.value)}
-                                        placeholder="Unit"
-                                        className="h-8 text-sm text-center"
-                                      />
+                                        onValueChange={(value) => updateMemberField(deptKey, member.id, 'call_sign', value)}
+                                      >
+                                        <SelectTrigger className="h-8 w-28 text-xs">
+                                          <SelectValue placeholder="Unit" />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-popover border border-border z-50">
+                                          {deptUnitOptions.map(opt => (
+                                            <SelectItem key={opt.value} value={opt.value}>
+                                              {opt.label}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
                                     ) : (
                                       <span className="text-muted-foreground text-sm">{member.call_sign || '-'}</span>
                                     )}
@@ -777,6 +937,19 @@ const Roster = () => {
               );
             })}
           </Tabs>
+        )}
+
+        {/* Add Staff Dialog */}
+        {selectedDeptForAdd && (
+          <AddStaffDialog
+            open={addStaffDialogOpen}
+            onOpenChange={setAddStaffDialogOpen}
+            department={selectedDeptForAdd.department}
+            ranks={selectedDeptForAdd.ranks}
+            divisionOptions={divisionOptionsByDept[selectedDeptForAdd.shortName.toLowerCase()] || divisionOptions}
+            unitOptions={unitOptionsByDept[selectedDeptForAdd.shortName.toLowerCase()] || []}
+            onSuccess={handleAddStaffSuccess}
+          />
         )}
       </div>
     </div>
