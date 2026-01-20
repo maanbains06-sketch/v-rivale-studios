@@ -10,6 +10,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui
 import { NotificationBell } from "./NotificationBell";
 import { useStaffRole } from "@/hooks/useStaffRole";
 import { useRosterAccess } from "@/hooks/useRosterAccess";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useWebsitePresence } from "@/hooks/useWebsitePresence";
 import {
@@ -56,6 +57,12 @@ const Navigation = () => {
   const { toast } = useToast();
   const { isAdmin, department, loading } = useStaffRole();
   const { hasAccess: hasRosterAccess, loading: rosterLoading } = useRosterAccess();
+  const { settings: siteSettings } = useSiteSettings();
+
+  // Determine if roster should be visible (hidden during maintenance for non-staff/owner)
+  const isMaintenanceMode = siteSettings.maintenance_mode;
+  const canSeeRosterDuringMaintenance = isOwner || hasStaffAdminAccess;
+  const showRosterLink = hasRosterAccess && (!isMaintenanceMode || canSeeRosterDuringMaintenance);
 
   // Track staff presence when logged in with Discord ID
   useWebsitePresence({ 
@@ -283,7 +290,7 @@ const Navigation = () => {
             >
               Support
             </NavLink>
-            {hasRosterAccess && (
+            {showRosterLink && (
               <NavLink 
                 to="/roster" 
                 className="text-foreground/80 hover:text-primary transition-colors"
@@ -436,7 +443,7 @@ const Navigation = () => {
                         Support Chat
                       </Link>
                     </Button>
-                    {hasRosterAccess && (
+                    {showRosterLink && (
                       <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
                         <Link to="/roster">Roster</Link>
                       </Button>
