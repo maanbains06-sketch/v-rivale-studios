@@ -21,10 +21,10 @@ const RequireAuth = ({ children, message = "You need to login to access this pag
   useEffect(() => {
     let didFinish = false;
 
-    // Safety timeout: never let auth-check hang forever on slow/broken networks
+    // PERF: Reduced timeout from 4s to 2s for faster auth resolution
     const timeout = window.setTimeout(() => {
       if (!didFinish) setLoading(false);
-    }, 4000);
+    }, 2000);
 
     // Set up auth state listener FIRST
     const {

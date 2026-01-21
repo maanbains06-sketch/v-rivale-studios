@@ -1,8 +1,8 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-const IDLE_TIMEOUT_MS = 2 * 60 * 1000; // 2 minutes of inactivity = idle
-const HEARTBEAT_INTERVAL_MS = 30000; // 30 seconds (increased from 15s)
+const IDLE_TIMEOUT_MS = 3 * 60 * 1000; // 3 minutes of inactivity = idle (increased from 2)
+const HEARTBEAT_INTERVAL_MS = 60000; // 60 seconds (increased from 30s for less network overhead)
 
 /**
  * Tracks staff presence on the website with proper idle detection.
