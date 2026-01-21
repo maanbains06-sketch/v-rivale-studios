@@ -479,7 +479,9 @@ const OwnerPanel = () => {
   };
 
   const loadAllData = async () => {
-    await Promise.all([
+    // IMPORTANT: Don't let one failed query prevent other sections from loading.
+    // This was causing "sometimes past applications are not visible" when one request errored.
+    const results = await Promise.allSettled([
       loadSettings(),
       loadUserRoles(),
       loadPdmApplications(),
@@ -494,6 +496,16 @@ const OwnerPanel = () => {
       loadTestimonials(),
       loadStaffMembers(),
     ]);
+
+    const rejected = results.filter((r) => r.status === 'rejected') as PromiseRejectedResult[];
+    if (rejected.length > 0) {
+      console.error('OwnerPanel: one or more sections failed to load', rejected.map(r => r.reason));
+      toast({
+        title: 'Partial Load',
+        description: 'Some sections failed to load. You can refresh the page to retry.',
+        variant: 'destructive',
+      });
+    }
   };
 
 
