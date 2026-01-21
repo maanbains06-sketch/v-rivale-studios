@@ -10,6 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Scale, Gavel, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
+import { ApplicationCooldownTimer } from "@/components/ApplicationCooldownTimer";
 
 const dojApplicationSchema = z.object({
   characterName: z.string().min(2, "Character name is required").max(50),
@@ -41,6 +43,13 @@ const DOJApplicationForm = ({ applicationType, jobImage }: DOJApplicationFormPro
   const isJudge = applicationType === "judge";
   const title = isJudge ? "Judge Application" : "Attorney Application";
   const Icon = isJudge ? Gavel : Scale;
+  const jobType = isJudge ? "DOJ - Judge" : "DOJ - Attorney";
+
+  const { isOnCooldown, rejectedAt, loading, handleCooldownEnd } = useApplicationCooldown(
+    'job_applications',
+    24,
+    { column: 'job_type', value: jobType }
+  );
 
   const form = useForm<DOJApplicationFormData>({
     resolver: zodResolver(dojApplicationSchema),
@@ -78,7 +87,7 @@ const DOJApplicationForm = ({ applicationType, jobImage }: DOJApplicationFormPro
         .from("job_applications")
         .insert({
           user_id: user.id,
-          job_type: isJudge ? "DOJ - Judge" : "DOJ - Attorney",
+          job_type: jobType,
           character_name: data.characterName,
           age: parseInt(data.age),
           phone_number: data.phoneNumber,
@@ -109,6 +118,45 @@ const DOJApplicationForm = ({ applicationType, jobImage }: DOJApplicationFormPro
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if (loading) {
+    return (
+      <Card className="glass-effect border-border/20">
+        <CardContent className="flex justify-center items-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isOnCooldown && rejectedAt) {
+    return (
+      <Card className="glass-effect border-border/20 overflow-hidden">
+        {jobImage && (
+          <div className="relative h-48 overflow-hidden">
+            <img src={jobImage} alt={title} className="w-full h-full object-cover opacity-50" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+            <div className="absolute bottom-4 left-6 flex items-center gap-3">
+              <div className="p-3 rounded-xl bg-primary/20 border border-primary/30">
+                <Icon className="w-8 h-8 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-foreground">{title}</h2>
+                <p className="text-sm text-muted-foreground">Department of Justice</p>
+              </div>
+            </div>
+          </div>
+        )}
+        <CardContent className="pt-6">
+          <ApplicationCooldownTimer 
+            rejectedAt={rejectedAt} 
+            cooldownHours={24}
+            onCooldownEnd={handleCooldownEnd}
+          />
+        </CardContent>
+      </Card>
+    );
   }
 
   return (

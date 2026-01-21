@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -9,8 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Loader2, Flame, AlertCircle } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Loader2, Flame } from "lucide-react";
+import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
+import { ApplicationCooldownTimer } from "@/components/ApplicationCooldownTimer";
 
 const firefighterSchema = z.object({
   real_name: z.string()
@@ -44,9 +45,13 @@ interface FirefighterApplicationFormProps {
 const FirefighterApplicationForm = ({ jobImage }: FirefighterApplicationFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [cooldownActive, setCooldownActive] = useState(false);
-  const [cooldownDays, setCooldownDays] = useState(0);
-  const [checkingCooldown, setCheckingCooldown] = useState(true);
+
+  // Use centralized cooldown hook - firefighter_applications table with 24 hour cooldown
+  const { isOnCooldown, rejectedAt, loading, handleCooldownEnd } = useApplicationCooldown(
+    'job_applications',
+    24,
+    { column: 'job_type', value: 'Firefighter' }
+  );
 
   const form = useForm<FirefighterFormData>({
     resolver: zodResolver(firefighterSchema),
@@ -58,49 +63,6 @@ const FirefighterApplicationForm = ({ jobImage }: FirefighterApplicationFormProp
       weekly_availability: "",
     },
   });
-
-  useEffect(() => {
-    checkApplicationCooldown();
-  }, []);
-
-  const checkApplicationCooldown = async () => {
-    setCheckingCooldown(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        setCheckingCooldown(false);
-        return;
-      }
-
-      // Check for existing applications in the last 10 days
-      const tenDaysAgo = new Date();
-      tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
-
-      const { data: recentApps } = await supabase
-        .from("firefighter_applications")
-        .select("created_at")
-        .eq("user_id", user.id)
-        .gte("created_at", tenDaysAgo.toISOString())
-        .order("created_at", { ascending: false })
-        .limit(1);
-
-      if (recentApps && recentApps.length > 0) {
-        const lastAppDate = new Date(recentApps[0].created_at);
-        const daysSinceLastApp = Math.floor((Date.now() - lastAppDate.getTime()) / (1000 * 60 * 60 * 24));
-        const remainingDays = 10 - daysSinceLastApp;
-        
-        if (remainingDays > 0) {
-          setCooldownActive(true);
-          setCooldownDays(remainingDays);
-        }
-      }
-    } catch (error) {
-      console.error("Error checking cooldown:", error);
-    } finally {
-      setCheckingCooldown(false);
-    }
-  };
 
   const onSubmit = async (data: FirefighterFormData) => {
     setIsSubmitting(true);
@@ -117,11 +79,19 @@ const FirefighterApplicationForm = ({ jobImage }: FirefighterApplicationFormProp
         return;
       }
 
+      // Insert into job_applications for consistency
       const { error } = await supabase
-        .from("firefighter_applications")
+        .from("job_applications")
         .insert({
-          ...data,
           user_id: user.id,
+          job_type: "Firefighter",
+          character_name: data.in_game_name,
+          phone_number: data.discord_id,
+          age: 18,
+          previous_experience: `Real Name: ${data.real_name}`,
+          why_join: "Firefighter Application",
+          character_background: `Steam ID: ${data.steam_id}`,
+          availability: data.weekly_availability,
           status: "pending",
         });
 
@@ -145,7 +115,7 @@ const FirefighterApplicationForm = ({ jobImage }: FirefighterApplicationFormProp
     }
   };
 
-  if (checkingCooldown) {
+  if (loading) {
     return (
       <Card className="glass-effect border-border/20">
         <CardContent className="flex justify-center items-center py-12">
@@ -155,7 +125,7 @@ const FirefighterApplicationForm = ({ jobImage }: FirefighterApplicationFormProp
     );
   }
 
-  if (cooldownActive) {
+  if (isOnCooldown && rejectedAt) {
     return (
       <div className="space-y-6">
         {/* Job Header with Image */}
@@ -179,18 +149,11 @@ const FirefighterApplicationForm = ({ jobImage }: FirefighterApplicationFormProp
           </div>
         </div>
         
-        <Card className="glass-effect border-border/20">
-          <CardContent className="pt-6">
-            <Alert className="border-border/20">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Application Cooldown Active</AlertTitle>
-              <AlertDescription>
-                You have recently submitted a Firefighter application. 
-                Please wait {cooldownDays} more day{cooldownDays !== 1 ? 's' : ''} before submitting another application.
-              </AlertDescription>
-            </Alert>
-          </CardContent>
-        </Card>
+        <ApplicationCooldownTimer 
+          rejectedAt={rejectedAt} 
+          cooldownHours={24}
+          onCooldownEnd={handleCooldownEnd}
+        />
       </div>
     );
   }

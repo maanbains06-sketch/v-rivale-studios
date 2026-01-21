@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -7,10 +7,11 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Loader2, Shield, Heart, Wrench, AlertCircle } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Loader2, Shield, Heart, Wrench } from "lucide-react";
+import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
+import { ApplicationCooldownTimer } from "@/components/ApplicationCooldownTimer";
 
 const jobApplicationSchema = z.object({
   character_name: z.string()
@@ -64,9 +65,12 @@ interface JobApplicationFormProps {
 const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [cooldownActive, setCooldownActive] = useState(false);
-  const [cooldownDays, setCooldownDays] = useState(0);
-  const [checkingCooldown, setCheckingCooldown] = useState(true);
+
+  const { isOnCooldown, rejectedAt, loading, handleCooldownEnd } = useApplicationCooldown(
+    'job_applications',
+    24,
+    { column: 'job_type', value: jobType }
+  );
 
   const form = useForm<JobApplicationFormData>({
     resolver: zodResolver(jobApplicationSchema),
@@ -83,50 +87,6 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
       additional_info: "",
     },
   });
-
-  useEffect(() => {
-    checkApplicationCooldown();
-  }, [jobType]);
-
-  const checkApplicationCooldown = async () => {
-    setCheckingCooldown(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        setCheckingCooldown(false);
-        return;
-      }
-
-      // Check for existing applications in the last 10 days
-      const tenDaysAgo = new Date();
-      tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
-
-      const { data: recentApps } = await supabase
-        .from("job_applications")
-        .select("created_at")
-        .eq("user_id", user.id)
-        .eq("job_type", jobType)
-        .gte("created_at", tenDaysAgo.toISOString())
-        .order("created_at", { ascending: false })
-        .limit(1);
-
-      if (recentApps && recentApps.length > 0) {
-        const lastAppDate = new Date(recentApps[0].created_at);
-        const daysSinceLastApp = Math.floor((Date.now() - lastAppDate.getTime()) / (1000 * 60 * 60 * 24));
-        const remainingDays = 10 - daysSinceLastApp;
-        
-        if (remainingDays > 0) {
-          setCooldownActive(true);
-          setCooldownDays(remainingDays);
-        }
-      }
-    } catch (error) {
-      console.error("Error checking cooldown:", error);
-    } finally {
-      setCheckingCooldown(false);
-    }
-  };
 
   const onSubmit = async (data: JobApplicationFormData) => {
     setIsSubmitting(true);
@@ -234,7 +194,7 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
     }
   };
 
-  if (checkingCooldown) {
+  if (loading) {
     return (
       <Card className="glass-effect border-border/20">
         <CardContent className="flex justify-center items-center py-12">
@@ -244,7 +204,7 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
     );
   }
 
-  if (cooldownActive) {
+  if (isOnCooldown && rejectedAt) {
     return (
       <div className="space-y-6">
         {/* Job Header with Image */}
@@ -268,18 +228,11 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
           </div>
         </div>
         
-        <Card className="glass-effect border-border/20">
-          <CardContent className="pt-6">
-            <Alert className="border-border/20">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Application Cooldown Active</AlertTitle>
-              <AlertDescription>
-                You have recently submitted an application for {jobType}. 
-                Please wait {cooldownDays} more day{cooldownDays !== 1 ? 's' : ''} before submitting another application for this position.
-              </AlertDescription>
-            </Alert>
-          </CardContent>
-        </Card>
+        <ApplicationCooldownTimer 
+          rejectedAt={rejectedAt} 
+          cooldownHours={24}
+          onCooldownEnd={handleCooldownEnd}
+        />
       </div>
     );
   }
@@ -473,16 +426,16 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
               name="availability"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Availability & Time Commitment *</FormLabel>
+                  <FormLabel>Weekly Availability & Timezone *</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Specify days of the week, time zones, typical hours available. Be as detailed as possible..."
+                      placeholder="Example: Monday-Friday 6PM-11PM IST, weekends 12PM-12AM IST. Approximately 20-30 hours per week..."
                       className="min-h-[80px]"
                       {...field} 
                     />
                   </FormControl>
                   <FormDescription>
-                    Your detailed availability for roleplay (minimum 20 characters)
+                    Be specific about your schedule (minimum 20 characters)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -494,10 +447,10 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
               name="additional_info"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Additional Information (Optional)</FormLabel>
+                  <FormLabel>Additional Information</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Any additional information you'd like to share..."
+                      placeholder="Any other information you'd like to share (optional)..."
                       className="min-h-[80px]"
                       {...field} 
                     />
@@ -509,25 +462,25 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
 
             <Button 
               type="submit" 
-              disabled={isSubmitting} 
-              className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg"
-              size="lg"
+              className="w-full"
+              disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Submitting Application...
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Submitting...
                 </>
               ) : (
                 <>
-                  Submit {jobType} Application
+                  {getJobIcon()}
+                  <span className="ml-2">Submit {jobType} Application</span>
                 </>
               )}
             </Button>
           </form>
         </Form>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
     </div>
   );
 };

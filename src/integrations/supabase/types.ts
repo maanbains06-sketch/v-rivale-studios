@@ -163,6 +163,33 @@ export type Database = {
         }
         Relationships: []
       }
+      cooldown_expiry_notifications: {
+        Row: {
+          application_id: string
+          application_type: string
+          created_at: string
+          id: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          application_id: string
+          application_type: string
+          created_at?: string
+          id?: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          application_id?: string
+          application_type?: string
+          created_at?: string
+          id?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       creator_applications: {
         Row: {
           admin_notes: string | null
