@@ -537,25 +537,55 @@ const Index = () => {
                 </HoverCard>
               )}
 
-              <Button
-                size="lg"
-                className="bg-background/75 border-2 border-sky-500/50 text-sky-400 hover:bg-background/85 hover:border-sky-400 text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 hover:scale-105"
-                asChild
-                disabled={isAuthLoading}
-              >
-                <Link to={isAuthLoading ? "#" : (isLoggedIn ? "/whitelist" : "/auth")} onClick={(e) => {
-                  if (isAuthLoading) {
-                    e.preventDefault();
-                  }
-                }}>
-                  {isAuthLoading ? (
-                    <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
-                  ) : (
-                    <Play className="w-5 h-5 mr-2" />
-                  )}
-                  {isAuthLoading ? "Loading..." : "Get Whitelisted"}
-                </Link>
-              </Button>
+              <div className="flex flex-col items-center gap-2">
+                {/* Animated INDIA text above Get Whitelisted */}
+                <span className="flex gap-1 text-sm font-bold tracking-[0.3em]">
+                  <motion.span 
+                    animate={{ color: ['#FF9933', '#FFFFFF', '#138808', '#FF9933'] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    style={{ textShadow: '0 0 6px currentColor' }}
+                  >I</motion.span>
+                  <motion.span 
+                    animate={{ color: ['#FFFFFF', '#138808', '#FF9933', '#FFFFFF'] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.15 }}
+                    style={{ textShadow: '0 0 6px currentColor' }}
+                  >N</motion.span>
+                  <motion.span 
+                    animate={{ color: ['#138808', '#FF9933', '#FFFFFF', '#138808'] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
+                    style={{ textShadow: '0 0 6px currentColor' }}
+                  >D</motion.span>
+                  <motion.span 
+                    animate={{ color: ['#FF9933', '#FFFFFF', '#138808', '#FF9933'] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.45 }}
+                    style={{ textShadow: '0 0 6px currentColor' }}
+                  >I</motion.span>
+                  <motion.span 
+                    animate={{ color: ['#FFFFFF', '#138808', '#FF9933', '#FFFFFF'] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
+                    style={{ textShadow: '0 0 6px currentColor' }}
+                  >A</motion.span>
+                </span>
+                <Button
+                  size="lg"
+                  className="bg-background/75 border-2 border-sky-500/50 text-sky-400 hover:bg-background/85 hover:border-sky-400 text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 hover:scale-105"
+                  asChild
+                  disabled={isAuthLoading}
+                >
+                  <Link to={isAuthLoading ? "#" : (isLoggedIn ? "/whitelist" : "/auth")} onClick={(e) => {
+                    if (isAuthLoading) {
+                      e.preventDefault();
+                    }
+                  }}>
+                    {isAuthLoading ? (
+                      <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
+                    ) : (
+                      <Play className="w-5 h-5 mr-2" />
+                    )}
+                    {isAuthLoading ? "Loading..." : "Get Whitelisted"}
+                  </Link>
+                </Button>
+              </div>
 
               <Button
                 size="lg"
