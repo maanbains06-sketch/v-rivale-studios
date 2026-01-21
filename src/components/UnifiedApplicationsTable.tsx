@@ -7,6 +7,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { 
   Check, 
   X, 
   Clock, 
@@ -20,7 +26,12 @@ import {
   UserCheck,
   CheckCircle,
   XCircle,
-  Loader2
+  Loader2,
+  ChevronDown,
+  FolderOpen,
+  FolderClosed,
+  Eye,
+  Sparkles
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
@@ -68,6 +79,7 @@ interface UnifiedApplicationsTableProps {
   onReject?: (id: string, notes: string, type: ApplicationType) => void;
   onHold?: (id: string, notes: string, type: ApplicationType) => void;
   onClose?: (id: string, type: ApplicationType) => void;
+  onMarkOpen?: (id: string, type: ApplicationType) => void;
   title?: string;
 }
 
@@ -111,6 +123,7 @@ export const UnifiedApplicationsTable = ({
   onReject,
   onHold,
   onClose,
+  onMarkOpen,
   title = "Organization Applications"
 }: UnifiedApplicationsTableProps) => {
   const [selectedApp, setSelectedApp] = useState<UnifiedApplication | null>(null);
@@ -181,38 +194,38 @@ export const UnifiedApplicationsTable = ({
     switch (status) {
       case "approved":
         return (
-          <span className="flex items-center gap-1 text-green-400">
+          <Badge className="bg-green-500/20 text-green-400 border-green-500/30 gap-1">
             <CheckCircle className="w-3 h-3" />
             Approved
-          </span>
+          </Badge>
         );
       case "rejected":
         return (
-          <span className="flex items-center gap-1 text-red-400">
+          <Badge className="bg-red-500/20 text-red-400 border-red-500/30 gap-1">
             <XCircle className="w-3 h-3" />
             Rejected
-          </span>
+          </Badge>
         );
       case "on_hold":
         return (
-          <span className="flex items-center gap-1 text-amber-400">
+          <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 gap-1">
             <Clock className="w-3 h-3" />
             On Hold
-          </span>
+          </Badge>
         );
       case "closed":
         return (
-          <span className="flex items-center gap-1 text-gray-400">
-            <Check className="w-3 h-3" />
+          <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30 gap-1">
+            <FolderClosed className="w-3 h-3" />
             Closed
-          </span>
+          </Badge>
         );
       default:
         return (
-          <span className="flex items-center gap-1 text-blue-400">
-            <Clock className="w-3 h-3" />
+          <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 gap-1">
+            <FolderOpen className="w-3 h-3" />
             Open
-          </span>
+          </Badge>
         );
     }
   };
@@ -234,11 +247,16 @@ export const UnifiedApplicationsTable = ({
 
   return (
     <div className="space-y-4">
-      {/* Header Bar */}
-      <div className="bg-gradient-to-r from-amber-600 to-amber-500 text-white px-6 py-4 rounded-t-lg flex items-center justify-between">
-        <h2 className="text-xl font-bold uppercase tracking-wider">{title}</h2>
-        <div className="flex items-center gap-2">
-          <Badge className="bg-white/20 text-white">
+      {/* Header Bar with Gradient */}
+      <div className="relative overflow-hidden rounded-t-xl">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/80 to-primary/60" />
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtNi42MjcgMC0xMiA1LjM3My0xMiAxMnM1LjM3MyAxMiAxMiAxMiAxMi01LjM3MyAxMi0xMi01LjM3My0xMi0xMi0xMnoiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIiBzdHJva2Utd2lkdGg9IjIiLz48L2c+PC9zdmc+')] opacity-30" />
+        <div className="relative px-6 py-5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Sparkles className="w-6 h-6 text-primary-foreground" />
+            <h2 className="text-xl font-bold text-primary-foreground tracking-wide">{title}</h2>
+          </div>
+          <Badge className="bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30 px-4 py-1.5">
             {filteredApps.length} Applications
           </Badge>
         </div>
@@ -253,12 +271,12 @@ export const UnifiedApplicationsTable = ({
             placeholder="Search by name, Discord ID, or type..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-background/50"
+            className="pl-10 bg-background/50 border-border/50 focus:border-primary/50"
           />
         </div>
 
         {/* Status Filter Buttons */}
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap gap-1.5">
           {(['all', 'pending', 'approved', 'rejected', 'on_hold', 'closed'] as const).map((status) => (
             <Button
               key={status}
@@ -268,206 +286,287 @@ export const UnifiedApplicationsTable = ({
                 setStatusFilter(status);
                 setCurrentPage(1);
               }}
-              className={`text-xs ${
+              className={`text-xs font-medium transition-all ${
                 statusFilter === status 
-                  ? status === 'pending' ? 'bg-blue-600 hover:bg-blue-700' :
-                    status === 'approved' ? 'bg-green-600 hover:bg-green-700' :
-                    status === 'rejected' ? 'bg-red-600 hover:bg-red-700' :
-                    status === 'on_hold' ? 'bg-amber-600 hover:bg-amber-700' :
-                    status === 'closed' ? 'bg-gray-600 hover:bg-gray-700' : ''
-                  : ''
+                  ? status === 'pending' ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/20 shadow-lg' :
+                    status === 'approved' ? 'bg-green-600 hover:bg-green-700 shadow-green-500/20 shadow-lg' :
+                    status === 'rejected' ? 'bg-red-600 hover:bg-red-700 shadow-red-500/20 shadow-lg' :
+                    status === 'on_hold' ? 'bg-amber-600 hover:bg-amber-700 shadow-amber-500/20 shadow-lg' :
+                    status === 'closed' ? 'bg-gray-600 hover:bg-gray-700 shadow-gray-500/20 shadow-lg' : 
+                    'shadow-primary/20 shadow-lg'
+                  : 'hover:bg-muted/50'
               }`}
             >
               {status === 'all' ? 'All' : 
                status === 'pending' ? 'Open' :
                status === 'on_hold' ? 'On Hold' :
                status.charAt(0).toUpperCase() + status.slice(1)}
-              <Badge variant="secondary" className="ml-1 text-xs px-1">
+              <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-background/20 text-[10px]">
                 {statusCounts[status]}
-              </Badge>
+              </span>
             </Button>
           ))}
         </div>
       </div>
 
-      {/* Table Header */}
-      <div className="px-4">
-        <div className="grid grid-cols-[auto_1fr_1fr_auto_auto_auto] gap-4 px-4 py-3 text-sm font-semibold text-amber-400 bg-background/50 rounded-lg border border-border/30">
-          <div className="flex items-center gap-2">
+      {/* Table Container */}
+      <div className="mx-4 rounded-xl border border-border/40 overflow-hidden bg-gradient-to-b from-muted/20 to-background">
+        {/* Table Header */}
+        <div className="grid grid-cols-[2fr_1.5fr_1.5fr_120px_150px_120px] gap-2 px-4 py-3 bg-muted/40 border-b border-border/40">
+          <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider">
             <User className="w-4 h-4" />
-            APPLICANT
+            Applicant
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider">
             <Building className="w-4 h-4" />
-            ORGANIZATION
+            Organization
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider">
             <Hash className="w-4 h-4" />
-            DISCORD ID
+            Discord ID
           </div>
-          <div className="flex items-center gap-2">
-            ⟳ STATUS
+          <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider">
+            ⟳ Status
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider">
             <UserCheck className="w-4 h-4" />
-            HANDLED BY
+            Handled By
           </div>
-          <div>📋 HANDLE</div>
+          <div className="flex items-center justify-center text-xs font-bold text-primary uppercase tracking-wider">
+            Handle
+          </div>
         </div>
-      </div>
 
-      {/* Applications List */}
-      <div className="px-4 space-y-2">
-        {loadingStaff ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-6 h-6 animate-spin text-primary" />
-          </div>
-        ) : paginatedApps.length > 0 ? (
-          paginatedApps.map((app) => (
-            <motion.div
-              key={app.id}
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="grid grid-cols-[auto_1fr_1fr_auto_auto_auto] gap-4 items-center p-4 bg-background/50 rounded-lg border border-border/30 hover:border-primary/30 hover:bg-muted/20 transition-all"
-            >
-              {/* Applicant */}
-              <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10 border-2 border-green-500/50">
-                  <AvatarImage src={app.applicantAvatar} />
-                  <AvatarFallback className="bg-green-500/20 text-green-400">
-                    {app.applicantName.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="font-medium text-foreground truncate max-w-[150px]">
-                  {app.applicantName}
-                </span>
-              </div>
-
-              {/* Organization */}
-              <div className="truncate text-muted-foreground">
-                {app.organization || '-'}
-              </div>
-
-              {/* Discord ID */}
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground font-mono text-sm">
-                  {app.discordId || '-'}
-                </span>
-                {app.discordId && (
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-6 w-6"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      copyToClipboard(app.discordId!);
-                    }}
-                  >
-                    <Copy className="h-3 w-3" />
-                  </Button>
-                )}
-              </div>
-
-              {/* Status */}
-              <div className="text-sm font-medium">
-                {getStatusBadge(app.status)}
-              </div>
-
-              {/* Handled By */}
-              <div className="text-muted-foreground text-sm truncate max-w-[120px]">
-                {app.handledByName || getStaffName(app.handledBy) || '-'}
-              </div>
-
-              {/* Handle Button - Application Type Badge */}
-              <Button
-                variant="outline"
-                size="sm"
+        {/* Applications List */}
+        <div className="divide-y divide-border/30">
+          {loadingStaff ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : paginatedApps.length > 0 ? (
+            paginatedApps.map((app, index) => (
+              <motion.div
+                key={app.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.03 }}
+                className="grid grid-cols-[2fr_1.5fr_1.5fr_120px_150px_120px] gap-2 items-center px-4 py-3 hover:bg-muted/30 transition-colors cursor-pointer group"
                 onClick={() => {
                   setSelectedApp(app);
                   setNotes(app.adminNotes || '');
                 }}
-                className={`${typeColors[app.applicationType]} border font-medium uppercase text-xs`}
               >
-                {typeLabels[app.applicationType]}
-              </Button>
-            </motion.div>
-          ))
-        ) : (
-          <div className="text-center py-12 text-muted-foreground">
-            No applications found.
-          </div>
-        )}
+                {/* Applicant */}
+                <div className="flex items-center gap-3 min-w-0">
+                  <Avatar className="h-9 w-9 border-2 border-primary/30 ring-2 ring-primary/10">
+                    <AvatarImage src={app.applicantAvatar} />
+                    <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
+                      {app.applicantName.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <p className="font-medium text-foreground truncate text-sm group-hover:text-primary transition-colors">
+                      {app.applicantName}
+                    </p>
+                    <Badge className={`${typeColors[app.applicationType]} text-[10px] px-1.5 py-0 mt-0.5`}>
+                      {typeLabels[app.applicationType]}
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Organization */}
+                <div className="truncate text-sm text-muted-foreground">
+                  {app.organization || '-'}
+                </div>
+
+                {/* Discord ID */}
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="text-muted-foreground font-mono text-xs truncate">
+                    {app.discordId || '-'}
+                  </span>
+                  {app.discordId && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        copyToClipboard(app.discordId!);
+                      }}
+                    >
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
+
+                {/* Status */}
+                <div>
+                  {getStatusBadge(app.status)}
+                </div>
+
+                {/* Handled By */}
+                <div className="text-muted-foreground text-sm truncate">
+                  {app.handledByName || getStaffName(app.handledBy) || '-'}
+                </div>
+
+                {/* Handle Dropdown */}
+                <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={`gap-1.5 text-xs font-medium ${
+                          app.status === 'closed' 
+                            ? 'bg-gray-500/10 border-gray-500/30 text-gray-400' 
+                            : 'bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20'
+                        }`}
+                      >
+                        {app.status === 'closed' ? (
+                          <>
+                            <FolderClosed className="w-3 h-3" />
+                            Closed
+                          </>
+                        ) : (
+                          <>
+                            <FolderOpen className="w-3 h-3" />
+                            Open
+                          </>
+                        )}
+                        <ChevronDown className="w-3 h-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-36 bg-popover border-border shadow-xl">
+                      <DropdownMenuItem 
+                        onClick={() => onMarkOpen?.(app.id, app.applicationType)}
+                        className="gap-2 text-blue-400 focus:text-blue-400 focus:bg-blue-500/10"
+                      >
+                        <FolderOpen className="w-4 h-4" />
+                        Mark Open
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => onClose?.(app.id, app.applicationType)}
+                        className="gap-2 text-gray-400 focus:text-gray-400 focus:bg-gray-500/10"
+                      >
+                        <FolderClosed className="w-4 h-4" />
+                        Mark Closed
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </motion.div>
+            ))
+          ) : (
+            <div className="text-center py-16 text-muted-foreground">
+              <FolderOpen className="w-12 h-12 mx-auto mb-3 opacity-30" />
+              <p className="font-medium">No applications found</p>
+              <p className="text-sm opacity-60">Try adjusting your search or filters</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-4 py-4">
           <Button
-            variant="ghost"
-            size="icon"
+            variant="outline"
+            size="sm"
             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
             disabled={currentPage === 1}
+            className="gap-1"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-4 h-4" />
+            Prev
           </Button>
-          <span className="text-amber-400 font-medium">
-            Page {currentPage}/{totalPages}
-          </span>
+          <div className="flex items-center gap-2">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNum;
+              if (totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNum = totalPages - 4 + i;
+              } else {
+                pageNum = currentPage - 2 + i;
+              }
+              return (
+                <Button
+                  key={pageNum}
+                  variant={currentPage === pageNum ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setCurrentPage(pageNum)}
+                  className="w-8 h-8 p-0"
+                >
+                  {pageNum}
+                </Button>
+              );
+            })}
+          </div>
           <Button
-            variant="ghost"
-            size="icon"
+            variant="outline"
+            size="sm"
             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
+            className="gap-1"
           >
-            <ChevronRight className="w-5 h-5" />
+            Next
+            <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
       )}
 
       {/* Application Detail Dialog */}
       <Dialog open={!!selectedApp} onOpenChange={() => setSelectedApp(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden bg-background/95 backdrop-blur-xl border-primary/20">
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden bg-background border-primary/20">
           {selectedApp && (
             <>
               {/* Header */}
-              <div className="px-6 py-4 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-border/30">
-                <DialogHeader>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <Badge className={`${typeColors[selectedApp.applicationType]} px-4 py-1.5 text-sm font-semibold uppercase`}>
-                        {typeLabels[selectedApp.applicationType]}
-                      </Badge>
-                      <DialogTitle className="text-xl font-bold">{selectedApp.applicantName}</DialogTitle>
+              <div className="relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent" />
+                <div className="relative px-6 py-5 border-b border-border/30">
+                  <DialogHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <Avatar className="h-12 w-12 border-2 border-primary/50">
+                          <AvatarImage src={selectedApp.applicantAvatar} />
+                          <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                            {selectedApp.applicantName.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <DialogTitle className="text-xl font-bold">{selectedApp.applicantName}</DialogTitle>
+                          <Badge className={`${typeColors[selectedApp.applicationType]} mt-1`}>
+                            {typeLabels[selectedApp.applicationType]}
+                          </Badge>
+                        </div>
+                      </div>
+                      {getStatusBadge(selectedApp.status)}
                     </div>
-                    <Badge 
-                      variant={selectedApp.status === 'approved' ? 'default' : selectedApp.status === 'rejected' ? 'destructive' : 'secondary'}
-                      className="text-sm"
-                    >
-                      {selectedApp.status === 'pending' ? 'Open' : selectedApp.status.charAt(0).toUpperCase() + selectedApp.status.slice(1).replace('_', ' ')}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Submitted on {new Date(selectedApp.createdAt).toLocaleDateString('en-US', { 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </p>
-                </DialogHeader>
+                    <p className="text-sm text-muted-foreground mt-3">
+                      Submitted on {new Date(selectedApp.createdAt).toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  </DialogHeader>
+                </div>
               </div>
 
-              <ScrollArea className="max-h-[60vh] px-6 py-4">
-                <div className="space-y-6">
-                  {/* Application Fields - organized in rows */}
+              <ScrollArea className="max-h-[55vh] px-6 py-5">
+                <div className="space-y-5">
+                  {/* Application Fields - organized in grid */}
                   <div className="grid md:grid-cols-2 gap-4">
-                    {selectedApp.fields.slice(0, 6).map((field, index) => (
-                      <div key={index} className="space-y-2">
-                        <label className="text-sm font-bold text-primary uppercase tracking-wide">
+                    {selectedApp.fields.slice(0, 8).map((field, index) => (
+                      <div key={index} className="space-y-1.5 p-4 rounded-lg bg-muted/30 border border-border/30">
+                        <label className="text-xs font-bold text-primary uppercase tracking-wider">
                           {field.label}
                         </label>
-                        <div className="p-3 rounded-lg bg-muted/30 border border-border/30 text-foreground">
+                        <div className="text-sm text-foreground break-words">
                           {String(field.value ?? 'N/A')}
                         </div>
                       </div>
@@ -475,12 +574,12 @@ export const UnifiedApplicationsTable = ({
                   </div>
 
                   {/* Remaining fields in full width */}
-                  {selectedApp.fields.slice(6).map((field, index) => (
-                    <div key={index + 6} className="space-y-2">
-                      <label className="text-sm font-bold text-primary uppercase tracking-wide">
+                  {selectedApp.fields.slice(8).map((field, index) => (
+                    <div key={index + 8} className="space-y-1.5 p-4 rounded-lg bg-muted/30 border border-border/30">
+                      <label className="text-xs font-bold text-primary uppercase tracking-wider">
                         {field.label}
                       </label>
-                      <div className="p-4 rounded-lg bg-muted/30 border border-border/30 text-foreground whitespace-pre-wrap break-words">
+                      <div className="text-sm text-foreground whitespace-pre-wrap break-words">
                         {String(field.value ?? 'N/A')}
                       </div>
                     </div>
@@ -488,11 +587,11 @@ export const UnifiedApplicationsTable = ({
 
                   {/* Admin Notes Display */}
                   {selectedApp.adminNotes && (
-                    <div className="space-y-2 pt-4 border-t border-border/30">
-                      <label className="text-sm font-bold text-amber-400 uppercase tracking-wide">
+                    <div className="space-y-1.5 p-4 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                      <label className="text-xs font-bold text-amber-400 uppercase tracking-wider">
                         Admin Notes
                       </label>
-                      <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/30 text-foreground">
+                      <div className="text-sm text-foreground">
                         {selectedApp.adminNotes}
                       </div>
                     </div>
@@ -500,11 +599,11 @@ export const UnifiedApplicationsTable = ({
 
                   {/* Handled By Info */}
                   {selectedApp.handledBy && (
-                    <div className="space-y-2">
-                      <label className="text-sm font-bold text-blue-400 uppercase tracking-wide">
+                    <div className="space-y-1.5 p-4 rounded-lg bg-blue-500/10 border border-blue-500/30">
+                      <label className="text-xs font-bold text-blue-400 uppercase tracking-wider">
                         Handled By
                       </label>
-                      <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/30 text-foreground">
+                      <div className="text-sm text-foreground">
                         {selectedApp.handledByName || getStaffName(selectedApp.handledBy)}
                       </div>
                     </div>
@@ -587,7 +686,7 @@ export const UnifiedApplicationsTable = ({
                       }}
                       className="border-gray-500/30 text-gray-400 hover:bg-gray-500/10"
                     >
-                      <Check className="w-4 h-4 mr-2" />
+                      <FolderClosed className="w-4 h-4 mr-2" />
                       Mark as Closed
                     </Button>
                   </div>
@@ -595,7 +694,8 @@ export const UnifiedApplicationsTable = ({
 
                 {/* Already closed message */}
                 {selectedApp.status === 'closed' && (
-                  <div className="text-center text-muted-foreground text-sm py-2">
+                  <div className="text-center text-muted-foreground text-sm py-2 flex items-center justify-center gap-2">
+                    <Check className="w-4 h-4" />
                     This application has been closed and handled.
                   </div>
                 )}
