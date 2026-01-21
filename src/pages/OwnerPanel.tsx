@@ -1017,9 +1017,9 @@ const OwnerPanel = () => {
 
   // Generic application status update function
   const updateApplicationStatus = async (
-    table: "whitelist_applications" | "job_applications" | "staff_applications" | "ban_appeals" | "creator_applications" | "firefighter_applications" | "weazel_news_applications",
+    table: "whitelist_applications" | "job_applications" | "staff_applications" | "ban_appeals" | "creator_applications" | "firefighter_applications" | "weazel_news_applications" | "pdm_applications",
     appId: string,
-    status: "approved" | "rejected" | "on_hold",
+    status: "approved" | "rejected" | "on_hold" | "closed" | "pending",
     appName: string,
     loadFunction: () => Promise<void>,
     applicantDiscord?: string,
@@ -1567,6 +1567,62 @@ const OwnerPanel = () => {
                         id,
                         'on_hold',
                         `Application put on hold`,
+                        config.loader
+                      );
+                    }
+                  }}
+                  onClose={async (id, type) => {
+                    const tableMap: Record<string, { table: string; loader: () => Promise<void> }> = {
+                      whitelist: { table: 'whitelist_applications', loader: loadWhitelistApplications },
+                      staff: { table: 'staff_applications', loader: loadStaffApplications },
+                      police: { table: 'job_applications', loader: loadJobApplications },
+                      ems: { table: 'job_applications', loader: loadJobApplications },
+                      mechanic: { table: 'job_applications', loader: loadJobApplications },
+                      judge: { table: 'job_applications', loader: loadJobApplications },
+                      attorney: { table: 'job_applications', loader: loadJobApplications },
+                      ban_appeal: { table: 'ban_appeals', loader: loadBanAppeals },
+                      creator: { table: 'creator_applications', loader: loadCreatorApplications },
+                      firefighter: { table: 'firefighter_applications', loader: loadFirefighterApplications },
+                      weazel_news: { table: 'weazel_news_applications', loader: loadWeazelNewsApplications },
+                      pdm: { table: 'pdm_applications', loader: loadPdmApplications },
+                      gang: { table: 'job_applications', loader: loadGangApplications },
+                    };
+                    
+                    const config = tableMap[type];
+                    if (config) {
+                      await updateApplicationStatus(
+                        config.table as any,
+                        id,
+                        'closed',
+                        `Application closed`,
+                        config.loader
+                      );
+                    }
+                  }}
+                  onMarkOpen={async (id, type) => {
+                    const tableMap: Record<string, { table: string; loader: () => Promise<void> }> = {
+                      whitelist: { table: 'whitelist_applications', loader: loadWhitelistApplications },
+                      staff: { table: 'staff_applications', loader: loadStaffApplications },
+                      police: { table: 'job_applications', loader: loadJobApplications },
+                      ems: { table: 'job_applications', loader: loadJobApplications },
+                      mechanic: { table: 'job_applications', loader: loadJobApplications },
+                      judge: { table: 'job_applications', loader: loadJobApplications },
+                      attorney: { table: 'job_applications', loader: loadJobApplications },
+                      ban_appeal: { table: 'ban_appeals', loader: loadBanAppeals },
+                      creator: { table: 'creator_applications', loader: loadCreatorApplications },
+                      firefighter: { table: 'firefighter_applications', loader: loadFirefighterApplications },
+                      weazel_news: { table: 'weazel_news_applications', loader: loadWeazelNewsApplications },
+                      pdm: { table: 'pdm_applications', loader: loadPdmApplications },
+                      gang: { table: 'job_applications', loader: loadGangApplications },
+                    };
+                    
+                    const config = tableMap[type];
+                    if (config) {
+                      await updateApplicationStatus(
+                        config.table as any,
+                        id,
+                        'pending',
+                        `Application reopened`,
                         config.loader
                       );
                     }
