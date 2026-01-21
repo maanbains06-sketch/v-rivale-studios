@@ -527,7 +527,7 @@ const Staff = () => {
               
               {/* Role */}
               <span className="text-sm font-semibold text-primary/90 mb-2 group-hover:text-primary transition-colors duration-300">
-                {member.role}{member.department === "leadership" && " / Founder"}
+                {member.role}{member.department === "leadership" && !member.role.toLowerCase().includes("founder") && " / Founder"}
               </span>
 
               {/* Discord Username */}
