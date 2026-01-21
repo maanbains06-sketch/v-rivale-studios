@@ -56,7 +56,7 @@ type WhitelistFormValues = z.infer<typeof whitelistSchema>;
 
 interface Application {
   id: string;
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "approved" | "rejected" | "on_hold" | "closed";
   created_at: string;
   reviewed_at: string | null;
   admin_notes: string | null;
