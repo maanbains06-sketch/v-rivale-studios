@@ -20,6 +20,7 @@ import { OwnerAuditLog } from "@/components/OwnerAuditLog";
 import { LiveMemberJoins } from "@/components/LiveMemberJoins";
 import { EnhancedSiteSettings } from "@/components/EnhancedSiteSettings";
 import { MaintenanceCountdownControl } from "@/components/MaintenanceCountdownControl";
+import { PageMaintenanceControls } from "@/components/PageMaintenanceControls";
 import { FeaturedStreamersManager } from "@/components/FeaturedStreamersManager";
 import { PromoCodeManager } from "@/components/PromoCodeManager";
 import { UnifiedApplicationsTable, ApplicationType } from "@/components/UnifiedApplicationsTable";
@@ -1398,7 +1399,10 @@ const OwnerPanel = () => {
 
           {/* Maintenance Control Tab */}
           <TabsContent value="maintenance">
-            <MaintenanceCountdownControl />
+            <div className="space-y-6">
+              <MaintenanceCountdownControl />
+              <PageMaintenanceControls />
+            </div>
           </TabsContent>
 
           {/* Promo Codes Tab */}

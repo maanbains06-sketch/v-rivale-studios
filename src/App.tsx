@@ -21,6 +21,7 @@ const StaffPresenceTracker = lazy(() => import("@/components/StaffPresenceTracke
 const NetworkOfflineScreen = lazy(() => import("@/components/NetworkOfflineScreen"));
 const MaintenancePage = lazy(() => import("@/components/MaintenancePage"));
 const GlobalAnnouncementBanner = lazy(() => import("@/components/GlobalAnnouncementBanner"));
+import { PageMaintenanceBlock } from "@/components/PageMaintenanceBlock";
 // Safer lazy loader (prevents blank screens when a chunk load fails on slow networks)
 const lazyWithRetry = <T extends { default: React.ComponentType<any> }>(
   factory: () => Promise<T>,
@@ -123,19 +124,19 @@ const AppRoutes = memo(() => {
       <Suspense fallback={<PageLoader />}>
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<PageTransition><Index /></PageTransition>} />
-          <Route path="/about" element={<PageTransition><About /></PageTransition>} />
-          <Route path="/features" element={<PageTransition><Features /></PageTransition>} />
-          <Route path="/rules" element={<PageTransition><Rules /></PageTransition>} />
-          <Route path="/community" element={<PageTransition><Community /></PageTransition>} />
-          <Route path="/whitelist" element={<PageTransition><RequireAuth message="Login with Discord to apply for whitelist."><Whitelist /></RequireAuth></PageTransition>} />
-          <Route path="/staff" element={<PageTransition><Staff /></PageTransition>} />
+          <Route path="/about" element={<PageTransition><PageMaintenanceBlock pageKey="about"><About /></PageMaintenanceBlock></PageTransition>} />
+          <Route path="/features" element={<PageTransition><PageMaintenanceBlock pageKey="features"><Features /></PageMaintenanceBlock></PageTransition>} />
+          <Route path="/rules" element={<PageTransition><PageMaintenanceBlock pageKey="rules"><Rules /></PageMaintenanceBlock></PageTransition>} />
+          <Route path="/community" element={<PageTransition><PageMaintenanceBlock pageKey="community"><Community /></PageMaintenanceBlock></PageTransition>} />
+          <Route path="/whitelist" element={<PageTransition><RequireAuth message="Login with Discord to apply for whitelist."><PageMaintenanceBlock pageKey="whitelist"><Whitelist /></PageMaintenanceBlock></RequireAuth></PageTransition>} />
+          <Route path="/staff" element={<PageTransition><PageMaintenanceBlock pageKey="staff"><Staff /></PageMaintenanceBlock></PageTransition>} />
           <Route path="/staff/:name" element={<PageTransition><StaffProfile /></PageTransition>} />
           <Route path="/staff-setup" element={<PageTransition><StaffSetup /></PageTransition>} />
-          <Route path="/ban-appeal" element={<PageTransition><RequireAuth message="Login with Discord to submit a ban appeal."><BanAppeal /></RequireAuth></PageTransition>} />
-          <Route path="/guides" element={<PageTransition><Guides /></PageTransition>} />
-          <Route path="/gallery" element={<PageTransition><Gallery /></PageTransition>} />
+          <Route path="/ban-appeal" element={<PageTransition><RequireAuth message="Login with Discord to submit a ban appeal."><PageMaintenanceBlock pageKey="ban-appeal"><BanAppeal /></PageMaintenanceBlock></RequireAuth></PageTransition>} />
+          <Route path="/guides" element={<PageTransition><PageMaintenanceBlock pageKey="guides"><Guides /></PageMaintenanceBlock></PageTransition>} />
+          <Route path="/gallery" element={<PageTransition><PageMaintenanceBlock pageKey="gallery"><Gallery /></PageMaintenanceBlock></PageTransition>} />
           
-          <Route path="/support" element={<PageTransition><Support /></PageTransition>} />
+          <Route path="/support" element={<PageTransition><PageMaintenanceBlock pageKey="support"><Support /></PageMaintenanceBlock></PageTransition>} />
           <Route path="/confirmation" element={<PageTransition><Confirmation /></PageTransition>} />
           <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
           <Route path="/login" element={<PageTransition><Auth /></PageTransition>} />
@@ -154,20 +155,20 @@ const AppRoutes = memo(() => {
           <Route path="/admin/youtubers" element={<PageTransition><AdminYoutubers /></PageTransition>} />
           <Route path="/admin/staff-teams" element={<PageTransition><AdminStaffTeams /></PageTransition>} />
           <Route path="/admin/discord-rules" element={<PageTransition><AdminDiscordRules /></PageTransition>} />
-          <Route path="/support-chat" element={<PageTransition><RequireAuth message="Login with Discord to access support chat."><SupportChat /></RequireAuth></PageTransition>} />
-          <Route path="/job-application" element={<PageTransition><JobApplication /></PageTransition>} />
-          <Route path="/dashboard" element={<PageTransition><RequireAuth message="Login with Discord to access your dashboard."><AutoRetryPage pageName="Dashboard"><Dashboard /></AutoRetryPage></RequireAuth></PageTransition>} />
+          <Route path="/support-chat" element={<PageTransition><RequireAuth message="Login with Discord to access support chat."><PageMaintenanceBlock pageKey="support-chat"><SupportChat /></PageMaintenanceBlock></RequireAuth></PageTransition>} />
+          <Route path="/job-application" element={<PageTransition><PageMaintenanceBlock pageKey="job-application"><JobApplication /></PageMaintenanceBlock></PageTransition>} />
+          <Route path="/dashboard" element={<PageTransition><RequireAuth message="Login with Discord to access your dashboard."><PageMaintenanceBlock pageKey="dashboard"><AutoRetryPage pageName="Dashboard"><Dashboard /></AutoRetryPage></PageMaintenanceBlock></RequireAuth></PageTransition>} />
           <Route path="/staff-onboarding" element={<PageTransition><StaffOnboarding /></PageTransition>} />
           <Route path="/application-status" element={<PageTransition><RequireAuth message="Login with Discord to check your application status."><AutoRetryPage pageName="Application Status"><ApplicationStatus /></AutoRetryPage></RequireAuth></PageTransition>} />
           <Route path="/contact-owner" element={<PageTransition><RequireAuth message="Login with Discord to contact the owner."><AutoRetryPage pageName="Contact Owner"><ContactOwner /></AutoRetryPage></RequireAuth></PageTransition>} />
-          <Route path="/privacy-policy" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
-          <Route path="/terms-of-service" element={<PageTransition><TermsOfService /></PageTransition>} />
-          <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
+          <Route path="/privacy-policy" element={<PageTransition><PageMaintenanceBlock pageKey="privacy-policy"><PrivacyPolicy /></PageMaintenanceBlock></PageTransition>} />
+          <Route path="/terms-of-service" element={<PageTransition><PageMaintenanceBlock pageKey="terms-of-service"><TermsOfService /></PageMaintenanceBlock></PageTransition>} />
+          <Route path="/refund-policy" element={<PageTransition><PageMaintenanceBlock pageKey="refund-policy"><RefundPolicy /></PageMaintenanceBlock></PageTransition>} />
           <Route path="/owner-panel" element={<PageTransition><OwnerPanel /></PageTransition>} />
-          <Route path="/gang-rp" element={<PageTransition><GangRP /></PageTransition>} />
-          <Route path="/feedback" element={<PageTransition><Feedback /></PageTransition>} />
-          <Route path="/giveaway" element={<PageTransition><Giveaway /></PageTransition>} />
-          <Route path="/roster" element={<PageTransition><Roster /></PageTransition>} />
+          <Route path="/gang-rp" element={<PageTransition><PageMaintenanceBlock pageKey="gang-rp"><GangRP /></PageMaintenanceBlock></PageTransition>} />
+          <Route path="/feedback" element={<PageTransition><PageMaintenanceBlock pageKey="feedback"><Feedback /></PageMaintenanceBlock></PageTransition>} />
+          <Route path="/giveaway" element={<PageTransition><PageMaintenanceBlock pageKey="giveaway"><Giveaway /></PageMaintenanceBlock></PageTransition>} />
+          <Route path="/roster" element={<PageTransition><PageMaintenanceBlock pageKey="roster"><Roster /></PageMaintenanceBlock></PageTransition>} />
           
           <Route path="/direct-message" element={<PageTransition><RequireAuth message="Login with Discord to send direct messages."><DirectMessage /></RequireAuth></PageTransition>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
