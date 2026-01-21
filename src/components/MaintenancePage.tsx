@@ -12,19 +12,10 @@ interface MaintenancePageProps {
   onAccessGranted?: () => void;
 }
 
-interface MaintenanceSchedule {
-  id: string;
-  title: string;
-  description: string | null;
-  scheduled_start: string;
-  scheduled_end: string;
-  status: string;
-}
-
 const OWNER_DISCORD_ID = '833680146510381097';
 
 const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
-  const [activeMaintenance, setActiveMaintenance] = useState<MaintenanceSchedule | null>(null);
+  const [scheduledEnd, setScheduledEnd] = useState<string | null>(null);
   const [loadingMaintenance, setLoadingMaintenance] = useState(true);
   const { toast } = useToast();
   const [showLoginForm, setShowLoginForm] = useState(false);
@@ -35,15 +26,18 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
 
   const fetchMaintenance = useCallback(async () => {
     try {
+      // Fetch from site_settings for scheduled end time
       const { data } = await supabase
-        .from('maintenance_schedules')
-        .select('*')
-        .in('status', ['scheduled', 'active'])
-        .order('scheduled_start', { ascending: true })
-        .limit(1)
-        .maybeSingle();
+        .from('site_settings')
+        .select('key, value')
+        .in('key', ['maintenance_scheduled_end']);
       
-      setActiveMaintenance(data);
+      const settingsMap: Record<string, string> = {};
+      (data || []).forEach((s) => {
+        settingsMap[s.key] = s.value;
+      });
+
+      setScheduledEnd(settingsMap.maintenance_scheduled_end || null);
     } catch (error) {
       console.error('Error fetching maintenance:', error);
     } finally {
@@ -57,13 +51,17 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
     // Subscribe to changes in real-time
     const channel = supabase
       .channel('maintenance_page_realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'maintenance_schedules' }, () => {
-        fetchMaintenance();
-      })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'site_settings' }, async (payload: any) => {
+        const record = payload.new as { key?: string; value?: string } | undefined;
+        
         // If maintenance_mode was turned off, reload the page
-        if (payload.new?.key === 'maintenance_mode' && payload.new?.value === 'false') {
+        if (record?.key === 'maintenance_mode' && record?.value === 'false') {
           window.location.reload();
+        }
+        
+        // If scheduled_end changed, update it
+        if (record?.key === 'maintenance_scheduled_end') {
+          setScheduledEnd(record.value || null);
         }
       })
       .subscribe();
@@ -189,12 +187,13 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
   };
 
   const getDurationText = () => {
-    if (!activeMaintenance) return 'Brief Downtime';
-    const start = new Date(activeMaintenance.scheduled_start);
-    const end = new Date(activeMaintenance.scheduled_end);
-    const hours = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60));
-    if (hours < 1) return '< 1h';
-    return `~${hours}h`;
+    if (!scheduledEnd) return 'Brief Downtime';
+    const end = new Date(scheduledEnd);
+    const now = new Date();
+    const hoursRemaining = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60));
+    if (hoursRemaining <= 0) return 'Almost done';
+    if (hoursRemaining < 1) return '< 1h';
+    return `~${hoursRemaining}h`;
   };
 
   return (
@@ -239,7 +238,7 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
             transition={{ delay: 0.4 }}
             className="text-muted-foreground text-lg"
           >
-            {activeMaintenance?.description || "We're performing scheduled maintenance to improve your experience. The site will be back online shortly."}
+            We're performing scheduled maintenance to improve your experience. The site will be back online shortly.
           </motion.p>
 
           {/* Countdown Display */}
@@ -251,7 +250,7 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
             >
               <RefreshCw className="w-6 h-6 animate-spin text-muted-foreground" />
             </motion.div>
-          ) : activeMaintenance ? (
+          ) : scheduledEnd ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -259,8 +258,8 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
               className="mb-4"
             >
               <MaintenanceCountdown 
-                endTime={new Date(activeMaintenance.scheduled_end)} 
-                title={activeMaintenance.title}
+                scheduledEnd={scheduledEnd}
+                title="Site Maintenance"
               />
             </motion.div>
           ) : (
