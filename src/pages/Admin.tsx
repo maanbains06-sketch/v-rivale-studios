@@ -1186,7 +1186,7 @@ const Admin = () => {
                         .from(config.table as any)
                         .update({
                           status: 'approved',
-                          reviewed_by: user?.id,
+                          reviewed_by: user?.id || null,
                           reviewed_at: new Date().toISOString(),
                           admin_notes: notes || null,
                         })
@@ -1222,7 +1222,7 @@ const Admin = () => {
                         .from(config.table as any)
                         .update({
                           status: 'rejected',
-                          reviewed_by: user?.id,
+                          reviewed_by: user?.id || null,
                           reviewed_at: new Date().toISOString(),
                           admin_notes: notes || null,
                         })
@@ -1258,7 +1258,7 @@ const Admin = () => {
                         .from(config.table as any)
                         .update({
                           status: 'on_hold',
-                          reviewed_by: user?.id,
+                          reviewed_by: user?.id || null,
                           reviewed_at: new Date().toISOString(),
                           admin_notes: notes || null,
                         })
@@ -1294,7 +1294,7 @@ const Admin = () => {
                         .from(config.table as any)
                         .update({
                           status: 'closed',
-                          reviewed_by: user?.id,
+                          reviewed_by: user?.id || null,
                           reviewed_at: new Date().toISOString(),
                         })
                         .eq('id', id);
@@ -1329,7 +1329,7 @@ const Admin = () => {
                         .from(config.table as any)
                         .update({
                           status: 'pending',
-                          reviewed_by: user?.id,
+                          reviewed_by: user?.id || null,
                           reviewed_at: new Date().toISOString(),
                         })
                         .eq('id', id);
