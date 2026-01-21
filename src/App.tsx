@@ -182,7 +182,7 @@ AppRoutes.displayName = "AppRoutes";
 const AppContent = memo(() => {
   const { isOnline } = useNetworkStatus();
   const { settings, loading: settingsLoading } = useSiteSettings();
-  const { hasAccess, loading: accessLoading, checkAccess } = useMaintenanceAccess();
+  const { hasAccess, isStaffOrOwner, loading: accessLoading, checkAccess } = useMaintenanceAccess();
   
   // Auto-verify whitelist role on signup
   useWhitelistAutoVerification();
@@ -191,16 +191,22 @@ const AppContent = memo(() => {
   const isFullyLoaded = !settingsLoading && !accessLoading;
   
   // Show maintenance page if:
-  // 1. Both checks are complete
+  // 1. Both checks are complete (or settings loaded but access still checking - show loading)
   // 2. Maintenance mode is enabled
   // 3. User does NOT have access (not staff/owner)
-  const showMaintenance = isFullyLoaded && settings.maintenance_mode && !hasAccess;
+  const maintenanceEnabled = settings.maintenance_mode === true;
+  const userHasAccess = hasAccess === true && isStaffOrOwner === true;
+  const showMaintenance = isFullyLoaded && maintenanceEnabled && !userHasAccess;
 
-  // While loading, show nothing (prevents flash of content)
-  if (!isFullyLoaded && settings.maintenance_mode) {
+  // While loading AND maintenance might be on, show loading spinner
+  // This prevents unauthorized users from seeing content flash
+  if (!isFullyLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        </div>
       </div>
     );
   }
