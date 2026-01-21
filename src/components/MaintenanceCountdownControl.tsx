@@ -77,12 +77,19 @@ export const MaintenanceCountdownControl = () => {
       
       const { data: { user } } = await supabase.auth.getUser();
       
-      // First, check if there's an existing active maintenance
-      const { data: existingMaintenance } = await supabase
+      // First, check if there's an existing active/scheduled maintenance
+      // NOTE: maybeSingle() throws if multiple rows match; limit(1) keeps it safe.
+      const { data: existingMaintenance, error: existingError } = await supabase
         .from('maintenance_schedules')
         .select('id')
         .in('status', ['scheduled', 'active'])
+        .limit(1)
         .maybeSingle();
+
+      if (existingError) {
+        console.error('Error checking existing maintenance:', existingError);
+        throw existingError;
+      }
 
       if (existingMaintenance) {
         toast({
@@ -111,35 +118,38 @@ export const MaintenanceCountdownControl = () => {
         throw scheduleError;
       }
 
-      // Enable maintenance mode in site_settings
-      const { data: existingSetting } = await supabase
-        .from('site_settings')
-        .select('id')
-        .eq('key', 'maintenance_mode')
-        .maybeSingle();
+      // Only enable maintenance mode immediately if we're starting now.
+      // If the owner schedules it in the future, do NOT block the site yet.
+      if (!scheduleInFuture) {
+        const { data: existingSetting } = await supabase
+          .from('site_settings')
+          .select('id')
+          .eq('key', 'maintenance_mode')
+          .maybeSingle();
 
-      if (existingSetting) {
-        const { error: updateError } = await supabase
-          .from('site_settings')
-          .update({ value: 'true', updated_at: new Date().toISOString() })
-          .eq('key', 'maintenance_mode');
-          
-        if (updateError) {
-          console.error('Update setting error:', updateError);
-          throw updateError;
-        }
-      } else {
-        const { error: insertError } = await supabase
-          .from('site_settings')
-          .insert({
-            key: 'maintenance_mode',
-            value: 'true',
-            description: 'Enable maintenance mode to block non-staff access'
-          });
-          
-        if (insertError) {
-          console.error('Insert setting error:', insertError);
-          throw insertError;
+        if (existingSetting) {
+          const { error: updateError } = await supabase
+            .from('site_settings')
+            .update({ value: 'true', updated_at: new Date().toISOString() })
+            .eq('key', 'maintenance_mode');
+
+          if (updateError) {
+            console.error('Update setting error:', updateError);
+            throw updateError;
+          }
+        } else {
+          const { error: insertError } = await supabase
+            .from('site_settings')
+            .insert({
+              key: 'maintenance_mode',
+              value: 'true',
+              description: 'Enable maintenance mode to block non-staff access'
+            });
+
+          if (insertError) {
+            console.error('Insert setting error:', insertError);
+            throw insertError;
+          }
         }
       }
 

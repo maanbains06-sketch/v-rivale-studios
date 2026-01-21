@@ -1041,7 +1041,7 @@ const OwnerPanel = () => {
       return;
     }
     
-    const { error } = await supabase
+    const { data: updatedRows, error } = await supabase
       .from(table)
       .update({
         status,
@@ -1049,12 +1049,25 @@ const OwnerPanel = () => {
         reviewed_at: new Date().toISOString(),
         admin_notes: notes,
       } as any)
-      .eq("id", appId);
+      .eq("id", appId)
+      .select('id');
 
     if (error) {
+      console.error('Application update error:', { table, appId, status, error });
       toast({
         title: "Error",
-        description: `Failed to update application.`,
+        description: `Failed to update application: ${error.message}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // PostgREST can return success with 0 rows if RLS blocks the update.
+    if (!updatedRows || updatedRows.length === 0) {
+      console.error('Application update blocked (0 rows updated):', { table, appId, status });
+      toast({
+        title: "Not Updated",
+        description: "Update was blocked by permissions (0 rows updated).",
         variant: "destructive",
       });
       return;
