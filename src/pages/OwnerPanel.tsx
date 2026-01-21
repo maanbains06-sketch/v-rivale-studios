@@ -1061,14 +1061,21 @@ const OwnerPanel = () => {
       return;
     }
     
+    // Build update payload - only include admin_notes for actions that need them
+    const updatePayload: Record<string, any> = {
+      status,
+      reviewed_by: user?.id || null,
+      reviewed_at: new Date().toISOString(),
+    };
+    
+    // Only update admin_notes for approved/rejected/on_hold - preserve existing notes for close/open
+    if (status !== 'closed' && status !== 'pending') {
+      updatePayload.admin_notes = notes;
+    }
+    
     const { data: updatedRows, error } = await supabase
-      .from(table)
-      .update({
-        status,
-        reviewed_by: user?.id || null,
-        reviewed_at: new Date().toISOString(),
-        admin_notes: notes,
-      } as any)
+      .from(table as any)
+      .update(updatePayload)
       .eq("id", appId)
       .select('id');
 
