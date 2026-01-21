@@ -9,17 +9,38 @@ interface UseWebsitePresenceOptions {
 export const useWebsitePresence = ({ visitorId, enabled = true }: UseWebsitePresenceOptions = {}) => {
   const isTrackingRef = useRef(false);
   const heartbeatRef = useRef<number | null>(null);
+  const sessionTokenRef = useRef<string | null>(null);
+
+  // Get current session token
+  const getSessionToken = useCallback(async (): Promise<string | null> => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      return session?.access_token || null;
+    } catch {
+      return null;
+    }
+  }, []);
 
   const updatePresence = useCallback(async (isOnline: boolean, status: string = 'online') => {
     if (!visitorId) return;
 
     try {
-      // Call edge function to update presence (has service role access)
+      // Get fresh session token for authenticated requests
+      const token = await getSessionToken();
+      
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      
+      // Add auth header if we have a token (required for online updates)
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      // Call edge function to update presence
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-discord-presence`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({
             discord_id: visitorId,
             is_online: isOnline,
@@ -29,12 +50,16 @@ export const useWebsitePresence = ({ visitorId, enabled = true }: UseWebsitePres
       );
       
       if (!response.ok) {
-        console.error('Presence update failed:', await response.text());
+        // Silently ignore auth errors for non-staff users
+        const text = await response.text();
+        if (response.status !== 401) {
+          console.error('Presence update failed:', text);
+        }
       }
     } catch (err) {
       console.error('Error updating presence:', err);
     }
-  }, [visitorId]);
+  }, [visitorId, getSessionToken]);
 
   const startTracking = useCallback(async () => {
     if (!visitorId || !enabled || isTrackingRef.current) return;
