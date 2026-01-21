@@ -5,6 +5,7 @@ import PageHeader from "@/components/PageHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useOwnerAuditLog } from "@/hooks/useOwnerAuditLog";
+import { useRealtimeApplications } from "@/hooks/useRealtimeApplications";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -469,6 +470,7 @@ const OwnerPanel = () => {
     ]);
   };
 
+
   const loadSettings = async () => {
     const { data, error } = await supabase
       .from("site_settings")
@@ -751,6 +753,19 @@ const OwnerPanel = () => {
 
     setWeazelNewsApplications(data || []);
   };
+
+  // Real-time subscriptions for applications - only active when verified
+  useRealtimeApplications({
+    onWhitelistChange: isVerified ? loadWhitelistApplications : undefined,
+    onJobChange: isVerified ? loadJobApplications : undefined,
+    onBanAppealChange: isVerified ? loadBanAppeals : undefined,
+    onStaffChange: isVerified ? loadStaffApplications : undefined,
+    onCreatorChange: isVerified ? loadCreatorApplications : undefined,
+    onFirefighterChange: isVerified ? loadFirefighterApplications : undefined,
+    onWeazelChange: isVerified ? loadWeazelNewsApplications : undefined,
+    onPdmChange: isVerified ? loadPdmApplications : undefined,
+    showNotifications: isVerified,
+  });
 
   const loadTestimonials = async () => {
     const { data, error } = await supabase
