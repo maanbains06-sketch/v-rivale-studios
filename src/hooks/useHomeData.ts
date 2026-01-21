@@ -48,9 +48,9 @@ export const useServerStatus = () => {
         maxPlayers: maxCount,
       };
     },
-    staleTime: 1000 * 60 * 2, // 2 minutes
-    gcTime: 1000 * 60 * 5, // 5 minutes
-    refetchInterval: 1000 * 60, // Refetch every minute
+    staleTime: 1000 * 60 * 5, // 5 minutes - increased for performance
+    gcTime: 1000 * 60 * 15, // 15 minutes
+    refetchInterval: false, // PERF: Disabled background polling - user can refresh manually
   });
 };
 
