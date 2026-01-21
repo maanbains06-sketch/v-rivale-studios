@@ -1272,6 +1272,76 @@ const Admin = () => {
                       }
                     }
                   }}
+                  onClose={async (id, type) => {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    const tableMap: Record<string, { table: string; loader: () => Promise<void> }> = {
+                      whitelist: { table: 'whitelist_applications', loader: loadApplications },
+                      police: { table: 'job_applications', loader: loadJobApplications },
+                      ems: { table: 'job_applications', loader: loadJobApplications },
+                      mechanic: { table: 'job_applications', loader: loadJobApplications },
+                      judge: { table: 'job_applications', loader: loadJobApplications },
+                      attorney: { table: 'job_applications', loader: loadJobApplications },
+                      ban_appeal: { table: 'ban_appeals', loader: loadBanAppeals },
+                      creator: { table: 'creator_applications', loader: loadCreatorApplications },
+                      firefighter: { table: 'firefighter_applications', loader: loadFirefighterApplications },
+                      weazel_news: { table: 'weazel_news_applications', loader: loadWeazelNewsApplications },
+                      pdm: { table: 'pdm_applications', loader: loadPdmApplications },
+                    };
+                    
+                    const config = tableMap[type];
+                    if (config) {
+                      const { error } = await supabase
+                        .from(config.table as any)
+                        .update({
+                          status: 'closed',
+                          reviewed_by: user?.id,
+                          reviewed_at: new Date().toISOString(),
+                        })
+                        .eq('id', id);
+                      
+                      if (error) {
+                        toast({ title: "Error", description: "Failed to close application.", variant: "destructive" });
+                      } else {
+                        toast({ title: "Success", description: "Application marked as closed." });
+                        config.loader();
+                      }
+                    }
+                  }}
+                  onMarkOpen={async (id, type) => {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    const tableMap: Record<string, { table: string; loader: () => Promise<void> }> = {
+                      whitelist: { table: 'whitelist_applications', loader: loadApplications },
+                      police: { table: 'job_applications', loader: loadJobApplications },
+                      ems: { table: 'job_applications', loader: loadJobApplications },
+                      mechanic: { table: 'job_applications', loader: loadJobApplications },
+                      judge: { table: 'job_applications', loader: loadJobApplications },
+                      attorney: { table: 'job_applications', loader: loadJobApplications },
+                      ban_appeal: { table: 'ban_appeals', loader: loadBanAppeals },
+                      creator: { table: 'creator_applications', loader: loadCreatorApplications },
+                      firefighter: { table: 'firefighter_applications', loader: loadFirefighterApplications },
+                      weazel_news: { table: 'weazel_news_applications', loader: loadWeazelNewsApplications },
+                      pdm: { table: 'pdm_applications', loader: loadPdmApplications },
+                    };
+                    
+                    const config = tableMap[type];
+                    if (config) {
+                      const { error } = await supabase
+                        .from(config.table as any)
+                        .update({
+                          status: 'pending',
+                          reviewed_by: user?.id,
+                          reviewed_at: new Date().toISOString(),
+                        })
+                        .eq('id', id);
+                      
+                      if (error) {
+                        toast({ title: "Error", description: "Failed to reopen application.", variant: "destructive" });
+                      } else {
+                        toast({ title: "Success", description: "Application marked as open." });
+                        config.loader();
+                      }
+                    }
+                  }}
                 />
               </CardContent>
             </Card>
