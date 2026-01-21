@@ -1205,6 +1205,48 @@ export type Database = {
         }
         Relationships: []
       }
+      page_maintenance_settings: {
+        Row: {
+          cooldown_minutes: number | null
+          created_at: string
+          enabled_at: string | null
+          id: string
+          is_enabled: boolean
+          maintenance_message: string | null
+          page_key: string
+          page_name: string
+          scheduled_end_at: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          cooldown_minutes?: number | null
+          created_at?: string
+          enabled_at?: string | null
+          id?: string
+          is_enabled?: boolean
+          maintenance_message?: string | null
+          page_key: string
+          page_name: string
+          scheduled_end_at?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          cooldown_minutes?: number | null
+          created_at?: string
+          enabled_at?: string | null
+          id?: string
+          is_enabled?: boolean
+          maintenance_message?: string | null
+          page_key?: string
+          page_name?: string
+          scheduled_end_at?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       pdm_applications: {
         Row: {
           additional_info: string | null
