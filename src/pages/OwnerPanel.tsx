@@ -98,6 +98,7 @@ interface PDMApplication {
   vehicle_knowledge: string;
   customer_scenario: string;
   additional_info?: string;
+  discord_id?: string;
   status: string;
   created_at: string;
   admin_notes?: string;
@@ -127,6 +128,7 @@ interface JobApplication {
   why_join: string;
   character_background: string;
   availability: string;
+  discord_id?: string;
   status: string;
   created_at: string;
   admin_notes?: string;
@@ -137,6 +139,7 @@ interface StaffApplication {
   user_id: string;
   full_name: string;
   discord_username: string;
+  discord_id?: string;
   age: number;
   position: string;
   experience: string;
@@ -151,6 +154,7 @@ interface BanAppeal {
   id: string;
   user_id: string;
   discord_username: string;
+  discord_id?: string;
   steam_id: string;
   ban_reason: string;
   appeal_reason: string;
@@ -165,6 +169,7 @@ interface CreatorApplication {
   user_id: string;
   full_name: string;
   discord_username: string;
+  discord_id?: string;
   platform: string;
   channel_url: string;
   average_viewers: string;
@@ -208,6 +213,7 @@ interface WeazelNewsApplication {
   id: string;
   user_id: string;
   character_name: string;
+  discord_id?: string;
   age: number;
   phone_number: string;
   journalism_experience: string;
@@ -1100,14 +1106,13 @@ const OwnerPanel = () => {
       return;
     }
 
-    // Send Discord notification for whitelist applications
-    if (table === "whitelist_applications" && applicantDiscord) {
+    // Send Discord notification for all application types (approved/rejected only)
+    if ((status === 'approved' || status === 'rejected') && applicantDiscord) {
       try {
-        // Get moderator info - try multiple ways to find Discord ID
+        // Get moderator info
         const userDiscordId = user?.user_metadata?.provider_id || user?.user_metadata?.discord_id;
         console.log("Looking up moderator Discord info. User Discord ID:", userDiscordId);
         
-        // First try to find by Discord ID in user metadata
         let staffData = null;
         if (userDiscordId) {
           const { data } = await supabase
@@ -1118,7 +1123,6 @@ const OwnerPanel = () => {
           staffData = data;
         }
         
-        // If not found, try to find by user_id
         if (!staffData && user?.id) {
           const { data } = await supabase
             .from("staff_members")
@@ -1130,29 +1134,73 @@ const OwnerPanel = () => {
         
         console.log("Staff data found:", staffData);
 
-        const notificationPayload = {
-          applicantDiscord,
-          applicantDiscordId,
-          status,
-          moderatorName: staffData?.name || user?.email || "Staff",
-          moderatorDiscordId: staffData?.discord_id || userDiscordId,
-          adminNotes: notes
+        // Map table to application type for notifications
+        const tableToAppType: Record<string, string> = {
+          'whitelist_applications': 'whitelist',
+          'job_applications': 'job', // Will be refined below
+          'staff_applications': 'staff',
+          'ban_appeals': 'ban_appeal',
+          'creator_applications': 'creator',
+          'firefighter_applications': 'firefighter',
+          'weazel_news_applications': 'weazel_news',
+          'pdm_applications': 'pdm',
         };
         
-        console.log("Sending Discord notification with payload:", notificationPayload);
-
-        const { data: notifyResult, error: notifyError } = await supabase.functions.invoke("send-whitelist-notification", {
-          body: notificationPayload
-        });
+        let applicationType = tableToAppType[table] || 'whitelist';
         
-        if (notifyError) {
-          console.error("Failed to send Discord notification:", notifyError);
+        // For job applications, determine specific type based on appName
+        if (table === 'job_applications') {
+          const appNameLower = appName.toLowerCase();
+          if (appNameLower.includes('police') || appNameLower.includes('pd')) applicationType = 'police';
+          else if (appNameLower.includes('ems')) applicationType = 'ems';
+          else if (appNameLower.includes('mechanic')) applicationType = 'mechanic';
+          else if (appNameLower.includes('judge')) applicationType = 'judge';
+          else if (appNameLower.includes('attorney')) applicationType = 'attorney';
+          else if (appNameLower.includes('state')) applicationType = 'state';
+          else if (appNameLower.includes('gang')) applicationType = 'gang';
+          else applicationType = 'police'; // Default to police for job apps
+        }
+
+        // Use whitelist notification for whitelist, send-application-notification for others
+        if (table === "whitelist_applications") {
+          const notificationPayload = {
+            applicantDiscord,
+            applicantDiscordId,
+            status,
+            moderatorName: staffData?.name || user?.email || "Staff",
+            moderatorDiscordId: staffData?.discord_id || userDiscordId,
+            adminNotes: notes
+          };
+          
+          console.log("Sending whitelist Discord notification:", notificationPayload);
+          const { data: notifyResult, error: notifyError } = await supabase.functions.invoke("send-whitelist-notification", {
+            body: notificationPayload
+          });
+          
+          if (notifyError) console.error("Failed to send Discord notification:", notifyError);
+          else console.log("Discord notification sent:", notifyResult);
         } else {
-          console.log("Discord notification sent successfully:", notifyResult);
+          // Use generic application notification for all other types
+          const notificationPayload = {
+            applicantName: applicantDiscord, // Edge function expects applicantName
+            applicantDiscordId,
+            status,
+            applicationType,
+            moderatorName: staffData?.name || user?.email || "Staff",
+            moderatorDiscordId: staffData?.discord_id || userDiscordId,
+            adminNotes: notes
+          };
+          
+          console.log("Sending application Discord notification:", notificationPayload);
+          const { data: notifyResult, error: notifyError } = await supabase.functions.invoke("send-application-notification", {
+            body: notificationPayload
+          });
+          
+          if (notifyError) console.error("Failed to send Discord notification:", notifyError);
+          else console.log("Discord notification sent:", notifyResult);
         }
       } catch (notifyError) {
         console.error("Failed to send Discord notification:", notifyError);
-        // Don't fail the whole operation if notification fails
       }
     }
 
@@ -1547,12 +1595,57 @@ const OwnerPanel = () => {
                     
                     const config = tableMap[type];
                     if (config) {
+                      // Look up application to get discord info
+                      let applicantDiscord: string | undefined;
+                      let applicantDiscordId: string | undefined;
+                      
+                      if (type === 'whitelist') {
+                        const app = whitelistApplications.find(a => a.id === id);
+                        applicantDiscord = app?.discord;
+                        applicantDiscordId = app?.discord_id;
+                      } else if (['police', 'ems', 'mechanic', 'judge', 'attorney', 'state'].includes(type)) {
+                        const app = jobApplications.find(a => a.id === id);
+                        applicantDiscord = app?.character_name;
+                        applicantDiscordId = app?.discord_id;
+                      } else if (type === 'gang') {
+                        const app = gangApplications.find(a => a.id === id);
+                        applicantDiscord = app?.gang_name || app?.leader_name;
+                      } else if (type === 'staff') {
+                        const app = staffApplications.find(a => a.id === id);
+                        applicantDiscord = app?.discord_username;
+                        applicantDiscordId = app?.discord_id;
+                      } else if (type === 'creator') {
+                        const app = creatorApplications.find(a => a.id === id);
+                        applicantDiscord = app?.discord_username;
+                        applicantDiscordId = app?.discord_id;
+                      } else if (type === 'firefighter') {
+                        const app = firefighterApplications.find(a => a.id === id);
+                        applicantDiscord = app?.real_name || app?.in_game_name;
+                        applicantDiscordId = app?.discord_id;
+                      } else if (type === 'weazel_news') {
+                        const app = weazelNewsApplications.find(a => a.id === id);
+                        applicantDiscord = app?.character_name;
+                        applicantDiscordId = app?.discord_id;
+                      } else if (type === 'pdm') {
+                        const app = pdmApplications.find(a => a.id === id);
+                        applicantDiscord = app?.character_name;
+                        applicantDiscordId = app?.discord_id;
+                      } else if (type === 'ban_appeal') {
+                        const app = banAppeals.find(a => a.id === id);
+                        applicantDiscord = app?.discord_username;
+                        applicantDiscordId = app?.discord_id;
+                      }
+                      
+                      // Store notes before updating
+                      setAdminNotes(prev => ({ ...prev, [id]: notes }));
                       await updateApplicationStatus(
                         config.table as any,
                         id,
                         'approved',
-                        `Application approved`,
-                        config.loader
+                        `${type} application approved`,
+                        config.loader,
+                        applicantDiscord,
+                        applicantDiscordId
                       );
                     }
                   }}
@@ -1576,14 +1669,57 @@ const OwnerPanel = () => {
                     
                     const config = tableMap[type];
                     if (config) {
+                      // Look up application to get discord info
+                      let applicantDiscord: string | undefined;
+                      let applicantDiscordId: string | undefined;
+                      
+                      if (type === 'whitelist') {
+                        const app = whitelistApplications.find(a => a.id === id);
+                        applicantDiscord = app?.discord;
+                        applicantDiscordId = app?.discord_id;
+                      } else if (['police', 'ems', 'mechanic', 'judge', 'attorney', 'state'].includes(type)) {
+                        const app = jobApplications.find(a => a.id === id);
+                        applicantDiscord = app?.character_name;
+                        applicantDiscordId = app?.discord_id;
+                      } else if (type === 'gang') {
+                        const app = gangApplications.find(a => a.id === id);
+                        applicantDiscord = app?.gang_name || app?.leader_name;
+                      } else if (type === 'staff') {
+                        const app = staffApplications.find(a => a.id === id);
+                        applicantDiscord = app?.discord_username;
+                        applicantDiscordId = app?.discord_id;
+                      } else if (type === 'creator') {
+                        const app = creatorApplications.find(a => a.id === id);
+                        applicantDiscord = app?.discord_username;
+                        applicantDiscordId = app?.discord_id;
+                      } else if (type === 'firefighter') {
+                        const app = firefighterApplications.find(a => a.id === id);
+                        applicantDiscord = app?.real_name || app?.in_game_name;
+                        applicantDiscordId = app?.discord_id;
+                      } else if (type === 'weazel_news') {
+                        const app = weazelNewsApplications.find(a => a.id === id);
+                        applicantDiscord = app?.character_name;
+                        applicantDiscordId = app?.discord_id;
+                      } else if (type === 'pdm') {
+                        const app = pdmApplications.find(a => a.id === id);
+                        applicantDiscord = app?.character_name;
+                        applicantDiscordId = app?.discord_id;
+                      } else if (type === 'ban_appeal') {
+                        const app = banAppeals.find(a => a.id === id);
+                        applicantDiscord = app?.discord_username;
+                        applicantDiscordId = app?.discord_id;
+                      }
+                      
                       // Store notes before updating
                       setAdminNotes(prev => ({ ...prev, [id]: notes }));
                       await updateApplicationStatus(
                         config.table as any,
                         id,
                         'rejected',
-                        `Application rejected`,
-                        config.loader
+                        `${type} application rejected`,
+                        config.loader,
+                        applicantDiscord,
+                        applicantDiscordId
                       );
                     }
                   }}
