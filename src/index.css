@@ -1223,6 +1223,13 @@ All colors MUST be HSL.
   contain: layout style paint;
 }
 
+/* GPU compositing hints - use sparingly */
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
 /* Reduced motion support - disable animations for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -1268,8 +1275,120 @@ All colors MUST be HSL.
   }
 }
 
-/* GPU acceleration for smoother animations on capable devices */
-@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+/* ==========================================
+   DEVICE-SPECIFIC OPTIMIZATIONS
+   ========================================== */
+
+/* ULTRA-SMALL DEVICES (phones < 375px) */
+@media (max-width: 374px) {
+  html {
+    font-size: 14px;
+  }
+  
+  .container {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  
+  /* Aggressive perf: disable ALL visual effects */
+  .glass-effect {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: hsl(var(--card)) !important;
+    border: 1px solid hsl(var(--border)) !important;
+    box-shadow: none !important;
+  }
+  
+  * {
+    text-shadow: none !important;
+  }
+  
+  /* Keep INDIA animation running but simplified */
+  .rain-effect,
+  .clouds-animation,
+  .lightning-bolt-1,
+  .lightning-bolt-2,
+  .lightning-bolt-3,
+  .animate-float-particle,
+  .breathing-glow,
+  .animated-border {
+    display: none !important;
+  }
+}
+
+/* SMALL MOBILE (375px - 640px) */
+@media (min-width: 375px) and (max-width: 640px) {
+  html {
+    font-size: 15px;
+  }
+  
+  /* Disable backdrop filters - very GPU intensive */
+  .glass-effect {
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+  }
+  
+  /* Reduce glow effects */
+  .glow-cyan,
+  .glow-purple,
+  .glow-pink {
+    box-shadow: 0 0 10px hsl(var(--primary) / 0.2) !important;
+  }
+  
+  /* Disable heavy background animations */
+  .rain-effect,
+  .clouds-animation,
+  .animate-float-particle {
+    display: none !important;
+  }
+  
+  /* Simplify shadows on headings only */
+  h1, h2, h3, h4, h5, h6 {
+    text-shadow: 0 1px 3px hsl(0 0% 0% / 0.3) !important;
+  }
+  
+  /* Disable card hover transforms */
+  .card-hover:hover {
+    transform: none !important;
+  }
+}
+
+/* LARGE MOBILE / SMALL TABLET (640px - 768px) */
+@media (min-width: 640px) and (max-width: 768px) {
+  .glass-effect {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  
+  .animate-float,
+  .animate-pulse-glow {
+    animation-duration: 6s !important; /* Slow down for perf */
+  }
+}
+
+/* TABLET (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .glass-effect {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  
+  /* Re-enable some effects with reduced intensity */
+  .glow-cyan,
+  .glow-purple,
+  .glow-pink {
+    box-shadow: 0 0 15px hsl(var(--primary) / 0.25);
+  }
+  
+  /* GPU hints for tablets */
+  .card-hover,
+  .btn-glow {
+    will-change: transform;
+  }
+}
+
+/* DESKTOP (1024px+) - Full effects enabled */
+@media (min-width: 1024px) {
   .gpu-accelerated,
   .card-hover,
   .btn-glow,
@@ -1280,105 +1399,20 @@ All colors MUST be HSL.
   }
 }
 
-/* AGGRESSIVE optimizations for low-end mobile devices */
-@media (max-width: 640px) {
-  /* Disable all backdrop filters - very GPU intensive */
-  .glass-effect {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    background: hsl(var(--card)) !important;
-  }
-  
-  /* Remove all glow effects */
-  .glow-cyan,
-  .glow-purple,
-  .glow-pink,
-  .animate-glow,
-  .animate-pulse-glow {
-    box-shadow: none !important;
-    animation: none !important;
-  }
-  
-  /* Disable ALL heavy animations on small screens */
-  .clouds-animation,
-  .rain-effect,
-  .lightning-bolt-1,
-  .lightning-bolt-2,
-  .lightning-bolt-3,
-  .animate-float-particle,
-  .animate-shimmer,
-  .animate-gradient,
-  .animate-gradient-shift,
-  .animate-spin-slow,
-  .animate-scan-line,
-  .breathing-glow,
-  .animated-border,
-  .btn-glow::before,
-  .nav-glow::before,
-  .nav-glow::after {
-    animation: none !important;
-    display: none !important;
-  }
-  
-  /* Simplify nav glow on mobile */
-  .nav-glow::before,
-  .nav-glow::after {
-    display: none !important;
-  }
-  
-  /* Simplify all shadows */
-  * {
-    text-shadow: none !important;
-  }
-  
-  h1, h2, h3, h4, h5, h6 {
-    text-shadow: 0 1px 2px hsl(0 0% 0% / 0.2) !important;
-  }
-  
-  /* Disable card hover transforms */
-  .card-hover:hover {
-    transform: none !important;
-    box-shadow: none !important;
-  }
-  
-  /* Reduce border complexity */
-  .glass-effect {
-    border: 1px solid hsl(var(--border)) !important;
-    box-shadow: none !important;
-  }
-  
-  /* Disable gradient animations */
-  .text-gradient {
-    filter: none !important;
-  }
-  
-  /* Optimize images */
-  img {
-    content-visibility: auto;
+/* LARGE DESKTOP (1440px+) */
+@media (min-width: 1440px) {
+  .container {
+    max-width: 1400px;
   }
 }
 
-/* Medium devices - still reduce some effects */
-@media (max-width: 768px) {
-  .glass-effect {
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-  }
-  
-  .animate-float,
-  .animate-pulse-glow {
-    animation: none !important;
-  }
-  
-  .glow-cyan,
-  .glow-purple,
-  .glow-pink {
-    box-shadow: none;
-  }
-}
+/* ==========================================
+   TOUCH & POINTER DEVICE OPTIMIZATIONS
+   ========================================== */
 
 /* Touch device optimizations */
 @media (hover: none) and (pointer: coarse) {
+  /* Disable hover-only effects */
   .card-hover:hover {
     transform: none;
   }
@@ -1387,23 +1421,67 @@ All colors MUST be HSL.
     opacity: 0;
   }
   
-  /* Increase touch targets */
+  /* Increase touch targets - minimum 44x44px */
   button,
   a,
-  [role="button"] {
+  [role="button"],
+  .clickable {
     min-height: 44px;
     min-width: 44px;
   }
   
-  /* Disable all hover-dependent animations */
+  /* Disable hover transitions on touch */
   .card-hover,
   .btn-glow,
   .hover-scale {
     transition: none !important;
   }
+  
+  /* Faster tap feedback */
+  * {
+    -webkit-tap-highlight-color: hsl(var(--primary) / 0.2);
+    touch-action: manipulation;
+  }
+  
+  /* Disable complex shadows on touch */
+  .glass-effect {
+    box-shadow: 0 4px 12px hsl(0 0% 0% / 0.15) !important;
+  }
 }
 
-/* Print styles - remove decorative elements */
+/* Fine pointer (mouse) - re-enable hover effects */
+@media (hover: hover) and (pointer: fine) {
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px -5px hsl(var(--primary) / 0.2);
+  }
+  
+  .hover-scale:hover {
+    transform: scale(1.02);
+  }
+}
+
+/* ==========================================
+   ORIENTATION OPTIMIZATIONS
+   ========================================== */
+
+/* Landscape mobile - reduce hero height */
+@media (max-height: 500px) and (orientation: landscape) {
+  .hero-section {
+    min-height: 100vh;
+    padding-top: 60px;
+    padding-bottom: 20px;
+  }
+  
+  .hero-section h1 {
+    font-size: 2.5rem !important;
+  }
+}
+
+/* ==========================================
+   PRINT STYLES
+   ========================================== */
+
 @media print {
   .glass-effect,
   .nav-glow,
@@ -1419,9 +1497,17 @@ All colors MUST be HSL.
     animation: none !important;
     transition: none !important;
   }
+  
+  nav,
+  .fixed {
+    display: none !important;
+  }
 }
 
-/* Low data mode / Save-Data header support */
+/* ==========================================
+   DATA SAVER MODE
+   ========================================== */
+
 @media (prefers-reduced-data: reduce) {
   img,
   video,
@@ -1434,5 +1520,38 @@ All colors MUST be HSL.
   .animate-bounce,
   .animate-float {
     animation: none !important;
+  }
+  
+  /* Hide decorative background elements */
+  .rain-effect,
+  .clouds-animation,
+  .morphing-blob {
+    display: none !important;
+  }
+}
+
+/* ==========================================
+   HIGH CONTRAST MODE SUPPORT
+   ========================================== */
+
+@media (prefers-contrast: high) {
+  .glass-effect {
+    background: hsl(var(--background)) !important;
+    border: 2px solid hsl(var(--foreground)) !important;
+  }
+  
+  .text-muted-foreground {
+    color: hsl(var(--foreground)) !important;
+  }
+  
+  button,
+  a {
+    outline: 2px solid transparent;
+  }
+  
+  button:focus,
+  a:focus {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
   }
 }
