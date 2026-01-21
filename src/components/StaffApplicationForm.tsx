@@ -9,10 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, AlertCircle, Users, Shield } from "lucide-react";
+import { Loader2, AlertCircle, Users, Shield, CheckCircle, Pause, PartyPopper, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useWhitelistAccess } from "@/hooks/useWhitelistAccess";
+import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
 import headerStaff from "@/assets/header-staff.jpg";
 
 const staffApplicationSchema = z.object({
@@ -94,6 +95,19 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
     discordId,
     error: whitelistError
   } = useWhitelistAccess();
+
+  // Use centralized cooldown hook for staff applications
+  const { 
+    loading: cooldownLoading, 
+    hasPendingApplication, 
+    pendingMessage,
+    hasApprovedApplication,
+    approvedMessage,
+    isOnHold,
+    onHoldMessage,
+    isOnCooldown,
+    rejectedAt
+  } = useApplicationCooldown('staff_applications', 24);
 
   // Map team_value to staff_members department
   const teamToDepartmentMap: Record<string, string> = {
@@ -340,10 +354,56 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
             </ul>
           </div>
 
-        {isCheckingEligibility ? (
+        {cooldownLoading || isCheckingEligibility ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <span className="ml-3 text-muted-foreground">Checking eligibility...</span>
+          </div>
+        ) : hasApprovedApplication && approvedMessage ? (
+          <div className="text-center py-8 space-y-4">
+            <div className="p-4 rounded-full bg-green-500/20 w-20 h-20 mx-auto flex items-center justify-center">
+              <PartyPopper className="w-10 h-10 text-green-400" />
+            </div>
+            <h3 className="text-2xl font-bold text-green-400">🎉 Congratulations! 🎉</h3>
+            <p className="text-muted-foreground max-w-md mx-auto">{approvedMessage}</p>
+            <div className="flex items-center justify-center gap-2 text-sm text-green-400 bg-green-500/10 px-4 py-2 rounded-full border border-green-500/20 w-fit mx-auto">
+              <CheckCircle className="w-4 h-4" />
+              <span>You're officially part of the team!</span>
+            </div>
+          </div>
+        ) : isOnHold && onHoldMessage ? (
+          <div className="text-center py-8 space-y-4">
+            <div className="p-4 rounded-full bg-blue-500/20 w-20 h-20 mx-auto flex items-center justify-center">
+              <Pause className="w-10 h-10 text-blue-400" />
+            </div>
+            <h3 className="text-2xl font-bold text-blue-400">Application On Hold</h3>
+            <p className="text-muted-foreground max-w-md mx-auto">{onHoldMessage}</p>
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground bg-muted/30 px-4 py-2 rounded-full w-fit mx-auto">
+              <Clock className="w-4 h-4" />
+              <span>You will be notified once a decision is made</span>
+            </div>
+          </div>
+        ) : hasPendingApplication && pendingMessage ? (
+          <div className="text-center py-8 space-y-4">
+            <div className="p-4 rounded-full bg-amber-500/20 w-20 h-20 mx-auto flex items-center justify-center">
+              <Clock className="w-10 h-10 text-amber-400" />
+            </div>
+            <h3 className="text-2xl font-bold text-amber-400">Application Pending</h3>
+            <p className="text-muted-foreground max-w-md mx-auto">{pendingMessage}</p>
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground bg-muted/30 px-4 py-2 rounded-full w-fit mx-auto">
+              <Clock className="w-4 h-4" />
+              <span>You will be notified once your application is reviewed</span>
+            </div>
+          </div>
+        ) : isOnCooldown && rejectedAt ? (
+          <div className="text-center py-8 space-y-4">
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Cooldown Active</AlertTitle>
+              <AlertDescription>
+                Your previous application was rejected. You can reapply after 24 hours from the rejection time.
+              </AlertDescription>
+            </Alert>
           </div>
         ) : !isEligible ? (
           <Alert variant="destructive">

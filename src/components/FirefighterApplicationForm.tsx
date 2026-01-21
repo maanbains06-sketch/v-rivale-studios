@@ -13,7 +13,8 @@ import { Loader2, Flame } from "lucide-react";
 import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
 import { ApplicationCooldownTimer } from "@/components/ApplicationCooldownTimer";
 import { PendingApplicationAlert } from "@/components/PendingApplicationAlert";
-
+import { ApprovedApplicationAlert } from "@/components/ApprovedApplicationAlert";
+import { OnHoldApplicationAlert } from "@/components/OnHoldApplicationAlert";
 const firefighterSchema = z.object({
   real_name: z.string()
     .trim()
@@ -48,7 +49,18 @@ const FirefighterApplicationForm = ({ jobImage }: FirefighterApplicationFormProp
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Use centralized cooldown hook - job_applications table with 24 hour cooldown
-  const { isOnCooldown, rejectedAt, loading, handleCooldownEnd, hasPendingApplication, pendingMessage } = useApplicationCooldown(
+  const { 
+    isOnCooldown, 
+    rejectedAt, 
+    loading, 
+    handleCooldownEnd, 
+    hasPendingApplication, 
+    pendingMessage,
+    hasApprovedApplication,
+    approvedMessage,
+    isOnHold,
+    onHoldMessage
+  } = useApplicationCooldown(
     'job_applications',
     24,
     { column: 'job_type', value: 'Firefighter' }
@@ -123,6 +135,28 @@ const FirefighterApplicationForm = ({ jobImage }: FirefighterApplicationFormProp
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </CardContent>
       </Card>
+    );
+  }
+
+  if (hasApprovedApplication && approvedMessage) {
+    return (
+      <ApprovedApplicationAlert 
+        message={approvedMessage}
+        jobImage={jobImage}
+        title="Firefighter Application"
+        icon={<Flame className="w-6 h-6 text-green-500" />}
+      />
+    );
+  }
+
+  if (isOnHold && onHoldMessage) {
+    return (
+      <OnHoldApplicationAlert 
+        message={onHoldMessage}
+        jobImage={jobImage}
+        title="Firefighter Application"
+        icon={<Flame className="w-6 h-6 text-blue-500" />}
+      />
     );
   }
 

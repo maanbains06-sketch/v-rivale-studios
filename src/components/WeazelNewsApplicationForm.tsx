@@ -13,7 +13,8 @@ import { Loader2, Newspaper } from "lucide-react";
 import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
 import { ApplicationCooldownTimer } from "@/components/ApplicationCooldownTimer";
 import { PendingApplicationAlert } from "@/components/PendingApplicationAlert";
-
+import { ApprovedApplicationAlert } from "@/components/ApprovedApplicationAlert";
+import { OnHoldApplicationAlert } from "@/components/OnHoldApplicationAlert";
 const weazelNewsSchema = z.object({
   character_name: z.string()
     .trim()
@@ -74,7 +75,18 @@ const WeazelNewsApplicationForm = ({ jobImage }: WeazelNewsApplicationFormProps)
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { isOnCooldown, rejectedAt, loading, handleCooldownEnd, hasPendingApplication, pendingMessage } = useApplicationCooldown(
+  const { 
+    isOnCooldown, 
+    rejectedAt, 
+    loading, 
+    handleCooldownEnd, 
+    hasPendingApplication, 
+    pendingMessage,
+    hasApprovedApplication,
+    approvedMessage,
+    isOnHold,
+    onHoldMessage
+  } = useApplicationCooldown(
     'job_applications',
     24,
     { column: 'job_type', value: 'Weazel News' }
@@ -157,6 +169,28 @@ const WeazelNewsApplicationForm = ({ jobImage }: WeazelNewsApplicationFormProps)
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </CardContent>
       </Card>
+    );
+  }
+
+  if (hasApprovedApplication && approvedMessage) {
+    return (
+      <ApprovedApplicationAlert 
+        message={approvedMessage}
+        jobImage={jobImage}
+        title="Weazel News Application"
+        icon={<Newspaper className="w-6 h-6 text-green-500" />}
+      />
+    );
+  }
+
+  if (isOnHold && onHoldMessage) {
+    return (
+      <OnHoldApplicationAlert 
+        message={onHoldMessage}
+        jobImage={jobImage}
+        title="Weazel News Application"
+        icon={<Newspaper className="w-6 h-6 text-blue-500" />}
+      />
     );
   }
 
