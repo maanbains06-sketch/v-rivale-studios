@@ -136,46 +136,28 @@ export const UnifiedApplicationsTable = ({
   const { toast } = useToast();
   const itemsPerPage = 10;
 
-  // Fetch staff names for handled_by display
+  // Fetch staff names for handled_by display - resolve by user_id directly from staff_members
   useEffect(() => {
     const fetchStaffNames = async () => {
       setLoadingStaff(true);
       try {
-        // Fetch staff members
+        // Fetch all staff members - this includes user_id which is the reviewed_by value
         const { data: staffMembers } = await supabase
           .from('staff_members')
           .select('user_id, discord_id, name, discord_username');
-
-        // Also fetch profiles to map user IDs to Discord IDs
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('id, discord_id, discord_username');
 
         const nameMap: Record<string, string> = {};
         
         if (staffMembers) {
           staffMembers.forEach(staff => {
             const displayName = staff.name || staff.discord_username || 'Staff';
+            // Map by user_id (this is what reviewed_by stores)
             if (staff.user_id) {
               nameMap[staff.user_id] = displayName;
             }
+            // Also map by discord_id for legacy lookups
             if (staff.discord_id) {
               nameMap[staff.discord_id] = displayName;
-            }
-          });
-        }
-
-        // Map profile user IDs to staff names via Discord ID
-        if (profiles && staffMembers) {
-          profiles.forEach(profile => {
-            if (profile.discord_id && !nameMap[profile.id]) {
-              // Find matching staff member by Discord ID
-              const matchingStaff = staffMembers.find(s => s.discord_id === profile.discord_id);
-              if (matchingStaff) {
-                nameMap[profile.id] = matchingStaff.name || matchingStaff.discord_username || 'Staff';
-              } else if (profile.discord_username) {
-                nameMap[profile.id] = profile.discord_username;
-              }
             }
           });
         }
