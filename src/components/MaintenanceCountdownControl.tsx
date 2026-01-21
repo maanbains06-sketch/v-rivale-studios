@@ -1,14 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useOwnerAuditLog } from '@/hooks/useOwnerAuditLog';
-import { Clock, Calendar, Save, Wrench, AlertTriangle } from 'lucide-react';
-import { format, addHours, addMinutes } from 'date-fns';
+import { Clock, Calendar, Save, Wrench, AlertTriangle, Plus, Power, RefreshCw, Timer } from 'lucide-react';
+import { format, addHours, addMinutes, differenceInMinutes } from 'date-fns';
 
 interface MaintenanceSchedule {
   id: string;
@@ -33,12 +34,7 @@ export const MaintenanceCountdownControl = () => {
   const [scheduleInFuture, setScheduleInFuture] = useState(false);
   const [scheduledStart, setScheduledStart] = useState('');
 
-  useEffect(() => {
-    fetchActiveMaintenance();
-  }, []);
-
-  const fetchActiveMaintenance = async () => {
-    setLoading(true);
+  const fetchActiveMaintenance = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('maintenance_schedules')
@@ -55,7 +51,23 @@ export const MaintenanceCountdownControl = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchActiveMaintenance();
+    
+    // Subscribe to realtime changes
+    const channel = supabase
+      .channel('maintenance_control_realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'maintenance_schedules' }, () => {
+        fetchActiveMaintenance();
+      })
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchActiveMaintenance]);
 
   const startMaintenance = async () => {
     setSaving(true);
@@ -91,7 +103,7 @@ export const MaintenanceCountdownControl = () => {
           scheduled_start: start.toISOString(),
           scheduled_end: end.toISOString(),
           status: scheduleInFuture ? 'scheduled' : 'active',
-          created_by: user?.id
+          created_by: user?.id || null
         });
 
       if (scheduleError) {
@@ -100,7 +112,6 @@ export const MaintenanceCountdownControl = () => {
       }
 
       // Enable maintenance mode in site_settings
-      // First check if the setting exists
       const { data: existingSetting } = await supabase
         .from('site_settings')
         .select('id')
@@ -108,7 +119,6 @@ export const MaintenanceCountdownControl = () => {
         .maybeSingle();
 
       if (existingSetting) {
-        // Update existing setting
         const { error: updateError } = await supabase
           .from('site_settings')
           .update({ value: 'true', updated_at: new Date().toISOString() })
@@ -119,7 +129,6 @@ export const MaintenanceCountdownControl = () => {
           throw updateError;
         }
       } else {
-        // Insert new setting
         const { error: insertError } = await supabase
           .from('site_settings')
           .insert({
@@ -176,7 +185,7 @@ export const MaintenanceCountdownControl = () => {
       // Disable maintenance mode
       await supabase
         .from('site_settings')
-        .update({ value: 'false' })
+        .update({ value: 'false', updated_at: new Date().toISOString() })
         .eq('key', 'maintenance_mode');
 
       await logAction({
@@ -201,29 +210,84 @@ export const MaintenanceCountdownControl = () => {
     }
   };
 
-  const getTimeRemaining = () => {
+  const extendMaintenance = async (extraMinutes: number) => {
+    if (!activeMaintenance) return;
+    
+    setSaving(true);
+    try {
+      const currentEnd = new Date(activeMaintenance.scheduled_end);
+      const newEnd = addMinutes(currentEnd, extraMinutes);
+      
+      const { error } = await supabase
+        .from('maintenance_schedules')
+        .update({ 
+          scheduled_end: newEnd.toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', activeMaintenance.id);
+
+      if (error) throw error;
+
+      await logAction({
+        actionType: 'maintenance_extend',
+        actionDescription: `Extended maintenance by ${extraMinutes} minutes`,
+        newValue: { newEndTime: newEnd.toISOString() }
+      });
+
+      toast({
+        title: "Maintenance Extended",
+        description: `New end time: ${format(newEnd, 'PPp')}`,
+      });
+
+      fetchActiveMaintenance();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to extend maintenance",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const getTimeRemaining = useCallback(() => {
     if (!activeMaintenance) return null;
     const end = new Date(activeMaintenance.scheduled_end);
     const now = new Date();
     const diff = end.getTime() - now.getTime();
     
-    if (diff <= 0) return { hours: 0, minutes: 0, seconds: 0 };
+    if (diff <= 0) return { hours: 0, minutes: 0, seconds: 0, expired: true };
     
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
     
-    return { hours, minutes, seconds };
-  };
+    return { hours, minutes, seconds, expired: false };
+  }, [activeMaintenance]);
 
   const [timeRemaining, setTimeRemaining] = useState(getTimeRemaining());
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setTimeRemaining(getTimeRemaining());
+      const remaining = getTimeRemaining();
+      setTimeRemaining(remaining);
+      
+      // Auto-end maintenance if countdown expired
+      if (remaining?.expired && activeMaintenance) {
+        endMaintenance();
+      }
     }, 1000);
     return () => clearInterval(interval);
-  }, [activeMaintenance]);
+  }, [activeMaintenance, getTimeRemaining]);
+
+  // Quick duration presets
+  const quickDurations = [
+    { label: '30m', hours: 0, minutes: 30 },
+    { label: '1h', hours: 1, minutes: 0 },
+    { label: '2h', hours: 2, minutes: 0 },
+    { label: '4h', hours: 4, minutes: 0 },
+  ];
 
   if (loading) {
     return (
@@ -238,11 +302,19 @@ export const MaintenanceCountdownControl = () => {
   return (
     <Card className="glass-effect border-border/20">
       <CardHeader>
-        <div className="flex items-center gap-2">
-          <Wrench className="w-5 h-5 text-primary" />
-          <CardTitle className="text-lg">Maintenance Mode Control</CardTitle>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Wrench className="w-5 h-5 text-primary" />
+            <CardTitle className="text-lg">Maintenance Mode Control</CardTitle>
+          </div>
+          {activeMaintenance && (
+            <Badge variant="destructive" className="animate-pulse">
+              <Power className="w-3 h-3 mr-1" />
+              ACTIVE
+            </Badge>
+          )}
         </div>
-        <CardDescription>Schedule and control site maintenance with countdown</CardDescription>
+        <CardDescription>Schedule and control site maintenance with live countdown</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {activeMaintenance ? (
@@ -259,7 +331,7 @@ export const MaintenanceCountdownControl = () => {
               )}
               
               {/* Countdown Display */}
-              {timeRemaining && (
+              {timeRemaining && !timeRemaining.expired && (
                 <div className="grid grid-cols-3 gap-2 mb-4">
                   <div className="p-3 rounded-lg bg-background/50 text-center">
                     <div className="text-2xl font-mono font-bold text-primary">
@@ -281,14 +353,63 @@ export const MaintenanceCountdownControl = () => {
                   </div>
                 </div>
               )}
+
+              {timeRemaining?.expired && (
+                <div className="p-3 rounded-lg bg-green-500/20 border border-green-500/30 text-center mb-4">
+                  <p className="text-green-400 font-medium">Countdown completed - ending maintenance...</p>
+                </div>
+              )}
               
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center justify-between text-sm mb-4">
                 <span className="text-muted-foreground">
                   Started: {format(new Date(activeMaintenance.scheduled_start), 'PPp')}
                 </span>
                 <span className="text-muted-foreground">
                   Ends: {format(new Date(activeMaintenance.scheduled_end), 'PPp')}
                 </span>
+              </div>
+
+              {/* Extend Time Buttons */}
+              <div className="space-y-2 mb-4">
+                <Label className="text-xs text-muted-foreground">Extend Maintenance</Label>
+                <div className="flex gap-2 flex-wrap">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => extendMaintenance(15)}
+                    disabled={saving}
+                    className="text-xs"
+                  >
+                    <Plus className="w-3 h-3 mr-1" /> 15m
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => extendMaintenance(30)}
+                    disabled={saving}
+                    className="text-xs"
+                  >
+                    <Plus className="w-3 h-3 mr-1" /> 30m
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => extendMaintenance(60)}
+                    disabled={saving}
+                    className="text-xs"
+                  >
+                    <Plus className="w-3 h-3 mr-1" /> 1h
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => extendMaintenance(120)}
+                    disabled={saving}
+                    className="text-xs"
+                  >
+                    <Plus className="w-3 h-3 mr-1" /> 2h
+                  </Button>
+                </div>
               </div>
             </div>
             
@@ -297,7 +418,17 @@ export const MaintenanceCountdownControl = () => {
               disabled={saving}
               className="w-full bg-green-600 hover:bg-green-700"
             >
-              {saving ? 'Ending...' : 'End Maintenance Now'}
+              {saving ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <Power className="w-4 h-4 mr-2" />
+                  End Maintenance Now
+                </>
+              )}
             </Button>
           </div>
         ) : (
@@ -321,6 +452,26 @@ export const MaintenanceCountdownControl = () => {
               />
             </div>
             
+            {/* Quick Duration Presets */}
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Quick Duration</Label>
+              <div className="flex gap-2 flex-wrap">
+                {quickDurations.map((preset) => (
+                  <Button
+                    key={preset.label}
+                    type="button"
+                    size="sm"
+                    variant={duration.hours === preset.hours && duration.minutes === preset.minutes ? "default" : "outline"}
+                    onClick={() => setDuration({ hours: preset.hours, minutes: preset.minutes })}
+                    className="text-xs"
+                  >
+                    <Timer className="w-3 h-3 mr-1" />
+                    {preset.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Duration (Hours)</Label>
@@ -369,11 +520,20 @@ export const MaintenanceCountdownControl = () => {
             
             <Button 
               onClick={startMaintenance} 
-              disabled={saving || (scheduleInFuture && !scheduledStart)}
+              disabled={saving || (scheduleInFuture && !scheduledStart) || (duration.hours === 0 && duration.minutes === 0)}
               className="w-full"
             >
-              <Clock className="w-4 h-4 mr-2" />
-              {saving ? 'Starting...' : scheduleInFuture ? 'Schedule Maintenance' : 'Start Maintenance Now'}
+              {saving ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Starting...
+                </>
+              ) : (
+                <>
+                  <Clock className="w-4 h-4 mr-2" />
+                  {scheduleInFuture ? 'Schedule Maintenance' : 'Start Maintenance Now'}
+                </>
+              )}
             </Button>
           </div>
         )}
