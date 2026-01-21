@@ -1243,7 +1243,7 @@ const Admin = () => {
                     
                     const config = tableMap[type];
                     if (config) {
-                      const { error } = await supabase
+                      const { data: updatedRows, error } = await supabase
                         .from(config.table as any)
                         .update({
                           status: 'approved',
@@ -1251,10 +1251,15 @@ const Admin = () => {
                           reviewed_at: new Date().toISOString(),
                           admin_notes: notes || null,
                         })
-                        .eq('id', id);
+                        .eq('id', id)
+                        .select('id');
                       
                       if (error) {
-                        toast({ title: "Error", description: "Failed to approve application.", variant: "destructive" });
+                        console.error('Error approving application:', { type, table: config.table, id, error });
+                        toast({ title: "Error", description: `Failed to approve application: ${error.message}`, variant: "destructive" });
+                      } else if (!updatedRows || updatedRows.length === 0) {
+                        console.error('Approve blocked (0 rows updated):', { type, table: config.table, id });
+                        toast({ title: "Not Updated", description: "Approve was blocked by permissions (0 rows updated).", variant: "destructive" });
                       } else {
                         // Send Discord notification
                         sendDiscordNotification({
@@ -1268,6 +1273,9 @@ const Admin = () => {
                         toast({ title: "Success", description: "Application approved successfully." });
                         config.loader();
                       }
+                    } else {
+                      console.error('Unknown application type:', type);
+                      toast({ title: "Error", description: `Unknown application type: ${type}`, variant: "destructive" });
                     }
                   }}
                   onReject={async (id, notes, type, applicantName, discordId) => {
@@ -1291,7 +1299,7 @@ const Admin = () => {
                     
                     const config = tableMap[type];
                     if (config) {
-                      const { error } = await supabase
+                      const { data: updatedRows, error } = await supabase
                         .from(config.table as any)
                         .update({
                           status: 'rejected',
@@ -1299,10 +1307,15 @@ const Admin = () => {
                           reviewed_at: new Date().toISOString(),
                           admin_notes: notes || null,
                         })
-                        .eq('id', id);
+                        .eq('id', id)
+                        .select('id');
                       
                       if (error) {
-                        toast({ title: "Error", description: "Failed to reject application.", variant: "destructive" });
+                        console.error('Error rejecting application:', { type, table: config.table, id, error });
+                        toast({ title: "Error", description: `Failed to reject application: ${error.message}`, variant: "destructive" });
+                      } else if (!updatedRows || updatedRows.length === 0) {
+                        console.error('Reject blocked (0 rows updated):', { type, table: config.table, id });
+                        toast({ title: "Not Updated", description: "Reject was blocked by permissions (0 rows updated).", variant: "destructive" });
                       } else {
                         // Send Discord notification
                         sendDiscordNotification({
@@ -1316,6 +1329,9 @@ const Admin = () => {
                         toast({ title: "Success", description: "Application rejected successfully." });
                         config.loader();
                       }
+                    } else {
+                      console.error('Unknown application type:', type);
+                      toast({ title: "Error", description: `Unknown application type: ${type}`, variant: "destructive" });
                     }
                   }}
                   onHold={async (id, notes, type) => {
@@ -1339,7 +1355,7 @@ const Admin = () => {
                     
                     const config = tableMap[type];
                     if (config) {
-                      const { error } = await supabase
+                      const { data: updatedRows, error } = await supabase
                         .from(config.table as any)
                         .update({
                           status: 'on_hold',
@@ -1347,14 +1363,22 @@ const Admin = () => {
                           reviewed_at: new Date().toISOString(),
                           admin_notes: notes || null,
                         })
-                        .eq('id', id);
+                        .eq('id', id)
+                        .select('id');
                       
                       if (error) {
-                        toast({ title: "Error", description: "Failed to put application on hold.", variant: "destructive" });
+                        console.error('Error putting application on hold:', { type, table: config.table, id, error });
+                        toast({ title: "Error", description: `Failed to put application on hold: ${error.message}`, variant: "destructive" });
+                      } else if (!updatedRows || updatedRows.length === 0) {
+                        console.error('On hold blocked (0 rows updated):', { type, table: config.table, id });
+                        toast({ title: "Not Updated", description: "On hold was blocked by permissions (0 rows updated).", variant: "destructive" });
                       } else {
                         toast({ title: "Success", description: "Application put on hold successfully." });
                         config.loader();
                       }
+                    } else {
+                      console.error('Unknown application type:', type);
+                      toast({ title: "Error", description: `Unknown application type: ${type}`, variant: "destructive" });
                     }
                   }}
                   onClose={async (id, type) => {
