@@ -35,6 +35,10 @@ const whitelistSchema = z.object({
     .trim()
     .min(2, "Discord username is required")
     .max(37, "Discord username must not exceed 37 characters"),
+  discordId: z.string()
+    .trim()
+    .max(20, "Discord ID must not exceed 20 characters")
+    .optional(),
   age: z.string()
     .refine((val) => !isNaN(Number(val)) && Number(val) >= 16, "Must be at least 16 years old")
     .refine((val) => !isNaN(Number(val)) && Number(val) <= 100, "Please enter a valid age"),
@@ -91,6 +95,7 @@ const Whitelist = () => {
     resolver: zodResolver(whitelistSchema),
     defaultValues: {
       discord: "",
+      discordId: "",
       age: "",
       experience: "",
       backstory: "",
@@ -296,6 +301,7 @@ const Whitelist = () => {
         .insert({
           user_id: user.id,
           discord: data.discord,
+          discord_id: data.discordId || null,
           age: parseInt(data.age),
           experience: data.experience,
           backstory: data.backstory,
@@ -624,26 +630,49 @@ const Whitelist = () => {
 
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                     <FormField
-                      control={form.control}
-                      name="discord"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Discord Username *</FormLabel>
-                          <FormControl>
-                            <Input 
-                              placeholder="username or username#1234" 
-                              {...field}
-                              className="bg-background/50"
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Your Discord username - we'll contact you here
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="discord"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Discord Username *</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="username or username#1234" 
+                                {...field}
+                                className="bg-background/50"
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Your Discord username - we'll contact you here
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="discordId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Discord ID</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="e.g., 123456789012345678" 
+                                {...field}
+                                className="bg-background/50"
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Your 18-digit Discord ID (optional)
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
                     <FormField
                       control={form.control}

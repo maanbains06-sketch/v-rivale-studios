@@ -31,6 +31,7 @@ export const transformWhitelistApplications = (apps: any[]): UnifiedApplication[
     applicationType: 'whitelist' as ApplicationType,
     fields: [
       { label: 'Discord Username', value: app.discord },
+      { label: 'Discord ID', value: app.discord_id },
       { label: 'Steam ID', value: app.steam_id },
       { label: 'Age', value: app.age },
       { label: 'RP Experience', value: app.experience },
@@ -54,6 +55,7 @@ export const transformStaffApplications = (apps: any[]): UnifiedApplication[] =>
     fields: [
       { label: 'Full Name', value: app.full_name },
       { label: 'Discord Username', value: app.discord_username },
+      { label: 'Discord ID', value: app.discord_id },
       { label: 'In-Game Name', value: app.in_game_name },
       { label: 'Age', value: app.age },
       { label: 'Position Applied', value: app.position },
@@ -98,6 +100,7 @@ export const transformJobApplications = (apps: any[]): UnifiedApplication[] => {
       applicationType,
       fields: [
         { label: 'Character Name', value: app.character_name },
+        { label: 'Discord ID', value: app.discord_id },
         { label: 'Age', value: app.age },
         { label: 'Phone Number', value: app.phone_number },
         { label: 'Job Type', value: app.job_type },
@@ -126,6 +129,7 @@ export const transformBanAppeals = (apps: any[]): UnifiedApplication[] => {
     applicationType: 'ban_appeal' as ApplicationType,
     fields: [
       { label: 'Discord Username', value: app.discord_username },
+      { label: 'Discord ID', value: app.discord_id },
       { label: 'Steam ID', value: app.steam_id },
       { label: 'Ban Reason', value: app.ban_reason },
       { label: 'Appeal Reason', value: app.appeal_reason },

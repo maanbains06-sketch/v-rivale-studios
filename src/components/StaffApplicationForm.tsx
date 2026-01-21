@@ -31,6 +31,10 @@ const staffApplicationSchema = z.object({
     .regex(/^.{2,32}#\d{4}$|^[a-z0-9._]{2,32}$/, { 
       message: "Please enter a valid Discord username (e.g., username#1234 or username)" 
     }),
+  discordId: z.string()
+    .trim()
+    .max(20, { message: "Discord ID must be less than 20 characters" })
+    .optional(),
   inGameName: z.string()
     .trim()
     .min(2, { message: "In-game name must be at least 2 characters" })
@@ -223,6 +227,7 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
       fullName: "",
       age: "",
       discordUsername: "",
+      discordId: discordId || "",
       inGameName: "",
       position: "",
       playtime: "",
@@ -260,6 +265,7 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
           full_name: data.fullName,
           age: parseInt(data.age),
           discord_username: data.discordUsername,
+          discord_id: data.discordId || null,
           in_game_name: data.inGameName,
           position: data.position,
           playtime: data.playtime,
@@ -397,6 +403,23 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
                 )}
               />
 
+              <FormField
+                control={form.control}
+                name="discordId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Discord ID</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., 123456789012345678" {...field} />
+                    </FormControl>
+                    <FormDescription>Your 18-digit Discord ID (optional)</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="inGameName"
