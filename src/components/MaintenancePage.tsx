@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Wrench, Clock, Shield, Loader2, Eye, EyeOff } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Wrench, Clock, Shield, Loader2, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +25,7 @@ const OWNER_DISCORD_ID = '833680146510381097';
 
 const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
   const [activeMaintenance, setActiveMaintenance] = useState<MaintenanceSchedule | null>(null);
+  const [loadingMaintenance, setLoadingMaintenance] = useState(true);
   const { toast } = useToast();
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [email, setEmail] = useState("");
@@ -32,8 +33,8 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchMaintenance = async () => {
+  const fetchMaintenance = useCallback(async () => {
+    try {
       const { data } = await supabase
         .from('maintenance_schedules')
         .select('*')
@@ -42,22 +43,52 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
         .limit(1)
         .maybeSingle();
       
-      if (data) setActiveMaintenance(data);
-    };
-    
+      setActiveMaintenance(data);
+    } catch (error) {
+      console.error('Error fetching maintenance:', error);
+    } finally {
+      setLoadingMaintenance(false);
+    }
+  }, []);
+
+  useEffect(() => {
     fetchMaintenance();
     
-    // Subscribe to changes
+    // Subscribe to changes in real-time
     const channel = supabase
-      .channel('maintenance_realtime')
+      .channel('maintenance_page_realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'maintenance_schedules' }, () => {
         fetchMaintenance();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'site_settings' }, async (payload: any) => {
+        // If maintenance_mode was turned off, reload the page
+        if (payload.new?.key === 'maintenance_mode' && payload.new?.value === 'false') {
+          window.location.reload();
+        }
       })
       .subscribe();
     
     return () => {
       supabase.removeChannel(channel);
     };
+  }, [fetchMaintenance]);
+
+  // Auto-check if maintenance ended every 30 seconds
+  useEffect(() => {
+    const checkMaintenanceStatus = async () => {
+      const { data } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'maintenance_mode')
+        .maybeSingle();
+      
+      if (data?.value === 'false') {
+        window.location.reload();
+      }
+    };
+
+    const interval = setInterval(checkMaintenanceStatus, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleStaffLogin = async (e: React.FormEvent) => {
@@ -65,7 +96,6 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
     setLoading(true);
 
     try {
-      // First, attempt to login
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -92,10 +122,8 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
         return;
       }
 
-      // Get Discord ID from user metadata
       const discordId = user.user_metadata?.discord_id || user.user_metadata?.provider_id || user.user_metadata?.sub;
 
-      // Check if owner
       if (discordId === OWNER_DISCORD_ID) {
         toast({
           title: "Welcome, Owner!",
@@ -106,7 +134,6 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
         return;
       }
 
-      // Check if user has admin or moderator role
       const { data: roleData } = await supabase
         .from('user_roles')
         .select('role')
@@ -124,7 +151,6 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
         return;
       }
 
-      // Check if user is a staff member via discord_id
       if (discordId) {
         const { data: staffData } = await supabase
           .from('staff_members')
@@ -144,7 +170,6 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
         }
       }
 
-      // Not a staff member - sign them out
       await supabase.auth.signOut();
       toast({
         title: "Access Denied",
@@ -161,6 +186,15 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getDurationText = () => {
+    if (!activeMaintenance) return 'Brief Downtime';
+    const start = new Date(activeMaintenance.scheduled_start);
+    const end = new Date(activeMaintenance.scheduled_end);
+    const hours = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60));
+    if (hours < 1) return '< 1h';
+    return `~${hours}h`;
   };
 
   return (
@@ -205,12 +239,19 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
             transition={{ delay: 0.4 }}
             className="text-muted-foreground text-lg"
           >
-            We're performing scheduled maintenance to improve your experience. 
-            The site will be back online shortly.
+            {activeMaintenance?.description || "We're performing scheduled maintenance to improve your experience. The site will be back online shortly."}
           </motion.p>
 
           {/* Countdown Display */}
-          {activeMaintenance && (
+          {loadingMaintenance ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex items-center justify-center py-4"
+            >
+              <RefreshCw className="w-6 h-6 animate-spin text-muted-foreground" />
+            </motion.div>
+          ) : activeMaintenance ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -221,6 +262,14 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
                 endTime={new Date(activeMaintenance.scheduled_end)} 
                 title={activeMaintenance.title}
               />
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="p-4 rounded-lg bg-muted/30 border border-border/20"
+            >
+              <p className="text-sm text-muted-foreground">Maintenance in progress. Please check back soon.</p>
             </motion.div>
           )}
 
@@ -234,11 +283,7 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
             <div className="p-4 rounded-lg bg-muted/30 border border-border/20 text-center">
               <Clock className="w-6 h-6 text-primary mx-auto mb-2" />
               <p className="text-sm text-muted-foreground">Expected Duration</p>
-              <p className="font-semibold text-foreground">
-                {activeMaintenance ? 
-                  `${Math.ceil((new Date(activeMaintenance.scheduled_end).getTime() - new Date(activeMaintenance.scheduled_start).getTime()) / (1000 * 60 * 60))}h` 
-                  : 'Brief Downtime'}
-              </p>
+              <p className="font-semibold text-foreground">{getDurationText()}</p>
             </div>
             <div className="p-4 rounded-lg bg-muted/30 border border-border/20 text-center">
               <Shield className="w-6 h-6 text-green-400 mx-auto mb-2" />
