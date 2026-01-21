@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -9,8 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Loader2, Newspaper, AlertCircle } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Loader2, Newspaper } from "lucide-react";
+import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
+import { ApplicationCooldownTimer } from "@/components/ApplicationCooldownTimer";
 
 const weazelNewsSchema = z.object({
   character_name: z.string()
@@ -71,9 +72,12 @@ interface WeazelNewsApplicationFormProps {
 const WeazelNewsApplicationForm = ({ jobImage }: WeazelNewsApplicationFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [cooldownActive, setCooldownActive] = useState(false);
-  const [cooldownDays, setCooldownDays] = useState(0);
-  const [checkingCooldown, setCheckingCooldown] = useState(true);
+
+  const { isOnCooldown, rejectedAt, loading, handleCooldownEnd } = useApplicationCooldown(
+    'job_applications',
+    24,
+    { column: 'job_type', value: 'Weazel News' }
+  );
 
   const form = useForm<WeazelNewsFormData>({
     resolver: zodResolver(weazelNewsSchema),
@@ -93,49 +97,6 @@ const WeazelNewsApplicationForm = ({ jobImage }: WeazelNewsApplicationFormProps)
     },
   });
 
-  useEffect(() => {
-    checkApplicationCooldown();
-  }, []);
-
-  const checkApplicationCooldown = async () => {
-    setCheckingCooldown(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        setCheckingCooldown(false);
-        return;
-      }
-
-      // Check for existing applications in the last 10 days
-      const tenDaysAgo = new Date();
-      tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
-
-      const { data: recentApps } = await supabase
-        .from("weazel_news_applications")
-        .select("created_at")
-        .eq("user_id", user.id)
-        .gte("created_at", tenDaysAgo.toISOString())
-        .order("created_at", { ascending: false })
-        .limit(1);
-
-      if (recentApps && recentApps.length > 0) {
-        const lastAppDate = new Date(recentApps[0].created_at);
-        const daysSinceLastApp = Math.floor((Date.now() - lastAppDate.getTime()) / (1000 * 60 * 60 * 24));
-        const remainingDays = 10 - daysSinceLastApp;
-        
-        if (remainingDays > 0) {
-          setCooldownActive(true);
-          setCooldownDays(remainingDays);
-        }
-      }
-    } catch (error) {
-      console.error("Error checking cooldown:", error);
-    } finally {
-      setCheckingCooldown(false);
-    }
-  };
-
   const onSubmit = async (data: WeazelNewsFormData) => {
     setIsSubmitting(true);
     
@@ -152,10 +113,19 @@ const WeazelNewsApplicationForm = ({ jobImage }: WeazelNewsApplicationFormProps)
       }
 
       const { error } = await supabase
-        .from("weazel_news_applications")
+        .from("job_applications")
         .insert({
-          ...data,
           user_id: user.id,
+          job_type: "Weazel News",
+          character_name: data.character_name,
+          age: data.age,
+          phone_number: data.phone_number,
+          previous_experience: data.previous_experience,
+          why_join: data.why_join,
+          character_background: data.character_background,
+          availability: data.availability,
+          job_specific_answer: `Journalism Experience: ${data.journalism_experience}\n\nWriting Sample: ${data.writing_sample}\n\nInterview Scenario: ${data.interview_scenario}\n\nCamera Skills: ${data.camera_skills}`,
+          additional_info: data.additional_info || null,
           status: "pending",
         });
 
@@ -179,7 +149,7 @@ const WeazelNewsApplicationForm = ({ jobImage }: WeazelNewsApplicationFormProps)
     }
   };
 
-  if (checkingCooldown) {
+  if (loading) {
     return (
       <Card className="glass-effect border-border/20">
         <CardContent className="flex justify-center items-center py-12">
@@ -189,7 +159,7 @@ const WeazelNewsApplicationForm = ({ jobImage }: WeazelNewsApplicationFormProps)
     );
   }
 
-  if (cooldownActive) {
+  if (isOnCooldown && rejectedAt) {
     return (
       <div className="space-y-6">
         {/* Job Header with Image */}
@@ -213,18 +183,11 @@ const WeazelNewsApplicationForm = ({ jobImage }: WeazelNewsApplicationFormProps)
           </div>
         </div>
         
-        <Card className="glass-effect border-border/20">
-          <CardContent className="pt-6">
-            <Alert className="border-border/20">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Application Cooldown Active</AlertTitle>
-              <AlertDescription>
-                You have recently submitted an application for Weazel News. 
-                Please wait {cooldownDays} more day{cooldownDays !== 1 ? 's' : ''} before submitting another application.
-              </AlertDescription>
-            </Alert>
-          </CardContent>
-        </Card>
+        <ApplicationCooldownTimer 
+          rejectedAt={rejectedAt} 
+          cooldownHours={24}
+          onCooldownEnd={handleCooldownEnd}
+        />
       </div>
     );
   }
@@ -460,10 +423,10 @@ const WeazelNewsApplicationForm = ({ jobImage }: WeazelNewsApplicationFormProps)
                 name="availability"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Availability *</FormLabel>
+                    <FormLabel>Weekly Availability & Timezone *</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="What days and times are you available to cover stories and events? Include your timezone. Are you available for breaking news coverage?"
+                        placeholder="Example: Monday-Friday 6PM-11PM IST, weekends 12PM-12AM IST. Approximately 20-30 hours per week..."
                         className="min-h-[80px]"
                         {...field} 
                       />
@@ -484,31 +447,31 @@ const WeazelNewsApplicationForm = ({ jobImage }: WeazelNewsApplicationFormProps)
                     <FormLabel>Additional Information</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Any additional information you'd like to share - portfolio links, previous work samples, special skills, story ideas you'd like to pursue (optional)..."
+                        placeholder="Any other information you'd like to share (optional)..."
                         className="min-h-[80px]"
                         {...field} 
                       />
                     </FormControl>
-                    <FormDescription>
-                      Optional: share anything else relevant
-                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <Button
-                type="submit"
+              <Button 
+                type="submit" 
                 className="w-full"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Submitting Application...
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Submitting...
                   </>
                 ) : (
-                  "Submit Application"
+                  <>
+                    <Newspaper className="mr-2 h-4 w-4" />
+                    Submit Weazel News Application
+                  </>
                 )}
               </Button>
             </form>

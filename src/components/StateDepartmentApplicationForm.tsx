@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Loader2, Building2 } from "lucide-react";
+import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
+import { ApplicationCooldownTimer } from "@/components/ApplicationCooldownTimer";
 
 const formSchema = z.object({
   characterName: z.string().min(2, "Character name must be at least 2 characters"),
@@ -38,6 +40,12 @@ const StateDepartmentApplicationForm = ({ jobImage }: StateDepartmentApplication
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const { isOnCooldown, rejectedAt, loading: cooldownLoading, handleCooldownEnd } = useApplicationCooldown(
+    'job_applications',
+    24,
+    { column: 'job_type', value: 'State Department' }
+  );
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -125,6 +133,46 @@ const StateDepartmentApplicationForm = ({ jobImage }: StateDepartmentApplication
       setLoading(false);
     }
   };
+
+  if (cooldownLoading) {
+    return (
+      <Card className="glass-effect border-border/20">
+        <CardContent className="flex justify-center items-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isOnCooldown && rejectedAt) {
+    return (
+      <Card className="glass-effect border-border/20">
+        <CardHeader>
+          {jobImage && (
+            <div className="relative h-48 -mx-6 -mt-6 mb-6 overflow-hidden rounded-t-lg">
+              <img src={jobImage} alt="State Department" className="w-full h-full object-cover opacity-50" />
+              <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
+              <div className="absolute bottom-4 left-6 flex items-center gap-3">
+                <Building2 className="w-8 h-8 text-amber-400" />
+                <span className="text-2xl font-bold text-white">State Department</span>
+              </div>
+            </div>
+          )}
+          <CardTitle className="text-gradient flex items-center gap-2">
+            <Building2 className="w-6 h-6" />
+            State Department Application
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ApplicationCooldownTimer 
+            rejectedAt={rejectedAt} 
+            cooldownHours={24}
+            onCooldownEnd={handleCooldownEnd}
+          />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="glass-effect border-border/20">

@@ -7,11 +7,13 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Users, AlertTriangle } from "lucide-react";
 import headerGang from "@/assets/header-gang.jpg";
+import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
+import { ApplicationCooldownTimer } from "@/components/ApplicationCooldownTimer";
 
 const gangFormSchema = z.object({
   discord_username: z.string().min(2, "Discord username is required"),
@@ -45,6 +47,12 @@ interface GangApplicationFormProps {
 const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { isOnCooldown, rejectedAt, loading, handleCooldownEnd } = useApplicationCooldown(
+    'job_applications',
+    24,
+    { column: 'job_type', value: 'Gang Roleplay' }
+  );
 
   const form = useForm<GangFormData>({
     resolver: zodResolver(gangFormSchema),
@@ -137,6 +145,51 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
     }
   };
 
+  if (loading) {
+    return (
+      <Card className="glass-effect border-border/20">
+        <CardContent className="flex justify-center items-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isOnCooldown && rejectedAt) {
+    return (
+      <Card className="glass-effect border-border/20 overflow-hidden">
+        {/* Header with background */}
+        <div className="relative h-48 overflow-hidden">
+          <img 
+            src={jobImage || headerGang} 
+            alt="Gang Roleplay" 
+            className="w-full h-full object-cover opacity-50"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
+          <div className="absolute bottom-4 left-6 right-6">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-xl bg-red-500/20 backdrop-blur-sm border border-red-500/30">
+                <Users className="w-6 h-6 text-red-400" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-foreground">Gang Roleplay Application</h2>
+                <p className="text-sm text-muted-foreground">Join the criminal underworld of San Andreas</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <CardContent className="pt-6">
+          <ApplicationCooldownTimer 
+            rejectedAt={rejectedAt} 
+            cooldownHours={24}
+            onCooldownEnd={handleCooldownEnd}
+          />
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="glass-effect border-border/20 overflow-hidden">
       {/* Header with background */}
@@ -214,7 +267,12 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
                     <FormItem>
                       <FormLabel>Your Age *</FormLabel>
                       <FormControl>
-                        <Input type="number" min={16} {...field} />
+                        <Input 
+                          type="number" 
+                          min={16} 
+                          {...field}
+                          onChange={(e) => field.onChange(parseInt(e.target.value) || 16)}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -433,10 +491,10 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
                 name="turf_war_scenario"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>8. Your gang is planning to take over a rival's territory. How would you contribute? *</FormLabel>
+                    <FormLabel>8. Your gang leader orders you to participate in a turf war. How do you approach it? *</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Describe your role and approach to gang warfare while maintaining quality roleplay..."
+                        placeholder="Describe your approach to gang warfare while respecting RP guidelines..."
                         className="min-h-[120px]"
                         {...field} 
                       />
@@ -451,11 +509,11 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
                 name="roleplay_scenario"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>9. Write a short RP scenario showing your character interacting with gang members *</FormLabel>
+                    <FormLabel>9. Write a short roleplay scenario involving your character in gang activities *</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Write in RP format (e.g., *walks up to the group* 'Yo, what's the word on the street?'). Show us your roleplay style..."
-                        className="min-h-[180px]"
+                        placeholder="Create a detailed RP scenario showing your character in action..."
+                        className="min-h-[150px]"
                         {...field} 
                       />
                     </FormControl>
@@ -474,11 +532,11 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
                 name="loyalty_definition"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>10. What does loyalty mean in gang roleplay to you? *</FormLabel>
+                    <FormLabel>10. What does loyalty mean to you in gang RP? *</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Explain your understanding of gang loyalty and brotherhood..."
-                        className="min-h-[100px]"
+                        placeholder="Define loyalty in the context of gang roleplay..."
+                        className="min-h-[80px]"
                         {...field} 
                       />
                     </FormControl>
@@ -492,29 +550,11 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
                 name="ranking_system_understanding"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>11. Explain your understanding of gang hierarchy and ranking systems *</FormLabel>
+                    <FormLabel>11. How do you understand gang hierarchy and ranking systems? *</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Describe how gang ranks work and the importance of respecting the chain of command..."
-                        className="min-h-[100px]"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="gang_rules_understanding"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>12. What do you understand about gang RP rules and limitations? *</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Explain the rules that govern gang roleplay and why they're important..."
-                        className="min-h-[100px]"
+                        placeholder="Explain your understanding of gang structure and your willingness to follow it..."
+                        className="min-h-[80px]"
                         {...field} 
                       />
                     </FormControl>
@@ -528,7 +568,7 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
                 name="initiation_willingness"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>13. Are you willing to undergo gang initiation roleplay? *</FormLabel>
+                    <FormLabel>12. Are you willing to go through initiation RP? *</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -536,11 +576,29 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="yes_fully">Yes, fully committed</SelectItem>
-                        <SelectItem value="yes_reasonable">Yes, within reasonable RP boundaries</SelectItem>
-                        <SelectItem value="need_info">Need more information first</SelectItem>
+                        <SelectItem value="yes">Yes, fully committed</SelectItem>
+                        <SelectItem value="yes_with_limits">Yes, with some limits</SelectItem>
+                        <SelectItem value="need_more_info">Need more information</SelectItem>
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="gang_rules_understanding"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>13. How will you ensure you follow server and gang rules? *</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Explain your commitment to following rules and maintaining quality RP..."
+                        className="min-h-[80px]"
+                        {...field} 
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -551,10 +609,10 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
                 name="daily_availability"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>14. What is your daily/weekly availability for gang activities? *</FormLabel>
+                    <FormLabel>14. What is your daily/weekly availability? *</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Describe your typical playtime schedule and when you're most active..."
+                        placeholder="Describe your typical availability and timezone..."
                         className="min-h-[80px]"
                         {...field} 
                       />
@@ -565,27 +623,23 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
               />
             </div>
 
-            {/* Submit */}
-            <div className="pt-4 border-t border-border/30">
-              <Button 
-                type="submit" 
-                disabled={isSubmitting}
-                className="w-full bg-red-600 hover:bg-red-700 text-white"
-                size="lg"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Submitting Application...
-                  </>
-                ) : (
-                  <>
-                    <Users className="w-4 h-4 mr-2" />
-                    Submit Gang Application
-                  </>
-                )}
-              </Button>
-            </div>
+            <Button 
+              type="submit" 
+              className="w-full bg-red-600 hover:bg-red-700"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <Users className="mr-2 h-4 w-4" />
+                  Submit Gang Application
+                </>
+              )}
+            </Button>
           </form>
         </Form>
       </CardContent>
