@@ -25,7 +25,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { useNavigate, Link } from "react-router-dom";
 import { useEffect, useState, useMemo, lazy, Suspense, useRef, useCallback, memo } from "react";
-import { motion, useScroll, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import Navigation from "@/components/Navigation";
 import AnimatedLogo from "@/components/AnimatedLogo";
 import LaunchingSoonButton from "@/components/LaunchingSoonButton";
@@ -93,6 +93,7 @@ const Index = () => {
   const [mobileRequirementsOpen, setMobileRequirementsOpen] = useState(false);
   const isMobile = useIsMobile();
   const prefersReducedMotion = useReducedMotion();
+  const enableMotion = !prefersReducedMotion && !isMobile;
   
   // Use cached data hooks instead of direct API calls
   const { data: serverStatusData, isLoading: isRefreshing, refetch: handleRefreshStatus } = useServerStatus();
@@ -104,8 +105,7 @@ const Index = () => {
   const maxPlayers = serverStatusData?.maxPlayers ?? 64;
 
 
-  // Simplified scroll - removed heavy transforms
-  const { scrollYProgress } = useScroll();
+  // NOTE: Avoid scroll-based hooks on the homepage for perf (kept design identical)
 
   useEffect(() => {
     const checkUserStatus = async () => {
@@ -321,7 +321,7 @@ const Index = () => {
                   ROLEPLAY
                 </span>
                 
-                {/* INDIA - Animated tricolor text - CSS-based for better perf on mobile */}
+                {/* INDIA - Use CSS-only animation for smoother performance */}
                 <span 
                   className="flex gap-1 justify-center text-sm md:text-base lg:text-lg font-bold tracking-[0.3em] mt-3 india-tricolor-text"
                   style={{ 
@@ -329,44 +329,11 @@ const Index = () => {
                     transform: 'skewX(-5deg)',
                   }}
                 >
-                  {/* Use CSS animation on mobile, framer-motion on desktop for best perf */}
-                  {prefersReducedMotion ? (
-                    <>
-                      <span style={{ color: '#FF9933' }}>I</span>
-                      <span style={{ color: '#FFFFFF' }}>N</span>
-                      <span style={{ color: '#138808' }}>D</span>
-                      <span style={{ color: '#FF9933' }}>I</span>
-                      <span style={{ color: '#FFFFFF' }}>A</span>
-                    </>
-                  ) : (
-                    <>
-                      <motion.span 
-                        animate={{ color: ['#FF9933', '#FFFFFF', '#138808', '#FF9933'] }}
-                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                        style={{ textShadow: '0 0 8px currentColor' }}
-                      >I</motion.span>
-                      <motion.span 
-                        animate={{ color: ['#FFFFFF', '#138808', '#FF9933', '#FFFFFF'] }}
-                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.15 }}
-                        style={{ textShadow: '0 0 8px currentColor' }}
-                      >N</motion.span>
-                      <motion.span 
-                        animate={{ color: ['#138808', '#FF9933', '#FFFFFF', '#138808'] }}
-                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
-                        style={{ textShadow: '0 0 8px currentColor' }}
-                      >D</motion.span>
-                      <motion.span 
-                        animate={{ color: ['#FF9933', '#FFFFFF', '#138808', '#FF9933'] }}
-                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.45 }}
-                        style={{ textShadow: '0 0 8px currentColor' }}
-                      >I</motion.span>
-                      <motion.span 
-                        animate={{ color: ['#FFFFFF', '#138808', '#FF9933', '#FFFFFF'] }}
-                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
-                        style={{ textShadow: '0 0 8px currentColor' }}
-                      >A</motion.span>
-                    </>
-                  )}
+                  <span className="india-letter-1 motion-reduce:animate-none">I</span>
+                  <span className="india-letter-2 motion-reduce:animate-none">N</span>
+                  <span className="india-letter-3 motion-reduce:animate-none">D</span>
+                  <span className="india-letter-4 motion-reduce:animate-none">I</span>
+                  <span className="india-letter-5 motion-reduce:animate-none">A</span>
                 </span>
               </h1>
             </motion.div>
@@ -603,12 +570,12 @@ const Index = () => {
             </motion.div>
 
             {/* Live Server Status - Enhanced */}
-            <motion.div variants={itemVariants} className="flex justify-center mt-6">
-              <motion.div 
-                className="relative group cursor-default"
-                whileHover={{ scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 400, damping: 20 }}
-              >
+             <motion.div variants={itemVariants} className="flex justify-center mt-6">
+               <motion.div 
+                 className="relative group cursor-default"
+                 whileHover={enableMotion ? { scale: 1.02 } : undefined}
+                 transition={enableMotion ? { type: "spring", stiffness: 400, damping: 20 } : undefined}
+               >
                 {/* Animated border gradient - changes color based on status */}
                 <div className={`absolute -inset-[1px] rounded-2xl opacity-60 blur-[1px] group-hover:opacity-80 transition-opacity ${
                   serverStatus === 'online' 
@@ -636,26 +603,26 @@ const Index = () => {
                         ? 'bg-gradient-to-r from-amber-500/5 via-yellow-500/10 to-orange-500/5'
                         : 'bg-gradient-to-r from-red-500/5 via-rose-500/10 to-red-500/5'
                     }`}></div>
-                    {serverStatus === 'online' && (
-                      <motion.div 
-                        className="absolute inset-y-0 w-24 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12"
-                        animate={{ x: ["-100%", "400%"] }}
-                        transition={{ duration: 3, repeat: Infinity, ease: "linear", repeatDelay: 2 }}
-                      />
-                    )}
+                     {enableMotion && serverStatus === 'online' && (
+                       <motion.div 
+                         className="absolute inset-y-0 w-24 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12"
+                         animate={{ x: ["-100%", "400%"] }}
+                         transition={{ duration: 3, repeat: Infinity, ease: "linear", repeatDelay: 2 }}
+                       />
+                     )}
                   </div>
 
                   {/* Status indicator with rings */}
                   <div className="relative z-10">
                     <div className="relative flex items-center justify-center w-8 h-8">
                       {/* Outer pulse ring - only for online */}
-                      {serverStatus === 'online' && (
-                        <motion.div 
-                          className="absolute inset-0 rounded-full border border-emerald-500/40"
-                          animate={{ scale: [1, 1.5], opacity: [0.6, 0] }}
-                          transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
-                        />
-                      )}
+                       {enableMotion && serverStatus === 'online' && (
+                         <motion.div 
+                           className="absolute inset-0 rounded-full border border-emerald-500/40"
+                           animate={{ scale: [1, 1.5], opacity: [0.6, 0] }}
+                           transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
+                         />
+                       )}
                       {/* Inner ring */}
                       <div className={`absolute inset-1 rounded-full border ${
                         serverStatus === 'online' 
@@ -689,14 +656,9 @@ const Index = () => {
                     <div className="flex items-baseline gap-2">
                       {serverStatus === 'online' ? (
                         <>
-                          <motion.span 
-                            key={serverPlayers}
-                            initial={{ opacity: 0, y: 5 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="text-xl font-black bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent"
-                          >
-                            {serverPlayers !== null ? serverPlayers : "0"}
-                          </motion.span>
+                           <span className="text-xl font-black bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+                             {serverPlayers !== null ? serverPlayers : "0"}
+                           </span>
                           <span className="text-muted-foreground/40 text-sm">/</span>
                           <span className="text-muted-foreground/50 text-sm">{maxPlayers}</span>
                           <span className="text-[10px] text-sky-400/70 uppercase tracking-wide ml-1">online</span>
@@ -712,14 +674,12 @@ const Index = () => {
                   {/* Mini capacity bar - only show when online */}
                   {serverStatus === 'online' && (
                     <div className="relative z-10 hidden sm:flex flex-col items-center gap-1">
-                      <div className="w-16 h-1.5 rounded-full bg-white/10 overflow-hidden">
-                        <motion.div 
-                          className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-cyan-400 to-sky-500"
-                          initial={{ width: 0 }}
-                          animate={{ width: `${Math.min(((serverPlayers || 0) / maxPlayers) * 100, 100)}%` }}
-                          transition={{ duration: 0.6, ease: "easeOut" }}
-                        />
-                      </div>
+                       <div className="w-16 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                         <div
+                           className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-cyan-400 to-sky-500"
+                           style={{ width: `${Math.min(((serverPlayers || 0) / maxPlayers) * 100, 100)}%` }}
+                         />
+                       </div>
                       <span className="text-[9px] text-muted-foreground/50 uppercase tracking-wide">
                         {Math.round(((serverPlayers || 0) / maxPlayers) * 100)}%
                       </span>
@@ -727,7 +687,7 @@ const Index = () => {
                   )}
                   
                   {/* Refresh button */}
-                  <motion.button
+                   <motion.button
                     onClick={onRefreshStatus}
                     disabled={isRefreshing}
                     className={`relative z-10 p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all disabled:opacity-50 ${
@@ -737,8 +697,8 @@ const Index = () => {
                         ? 'hover:border-yellow-500/30'
                         : 'hover:border-red-500/30'
                     }`}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                     whileHover={enableMotion ? { scale: 1.05 } : undefined}
+                     whileTap={enableMotion ? { scale: 0.95 } : undefined}
                     title="Refresh status"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''} ${
