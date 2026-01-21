@@ -254,16 +254,14 @@ const OwnerPanel = () => {
   const [loading, setLoading] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
   const [isVerified, setIsVerified] = useState(() => {
-    // Check localStorage for existing verified session
-    const stored = localStorage.getItem('owner_2fa_verified');
+    // Check sessionStorage for existing verified session (persists until browser/tab close or logout)
+    const stored = sessionStorage.getItem('owner_2fa_verified');
     if (stored) {
-      const { verified, userId, timestamp } = JSON.parse(stored);
-      // Session valid for 24 hours
-      if (verified && timestamp && Date.now() - timestamp < 24 * 60 * 60 * 1000) {
+      const { verified, userId } = JSON.parse(stored);
+      if (verified && userId) {
         return true;
       }
-      // Clear expired session
-      localStorage.removeItem('owner_2fa_verified');
+      sessionStorage.removeItem('owner_2fa_verified');
     }
     return false;
   });
@@ -338,7 +336,7 @@ const OwnerPanel = () => {
     });
     
     // Clear the stored 2FA session
-    localStorage.removeItem('owner_2fa_verified');
+    sessionStorage.removeItem('owner_2fa_verified');
     setIsVerified(false);
     setShowInactivityWarning(false);
     
@@ -351,7 +349,7 @@ const OwnerPanel = () => {
 
   // Handle manual logout - clear 2FA session
   const handleOwnerLogout = useCallback(() => {
-    localStorage.removeItem('owner_2fa_verified');
+    sessionStorage.removeItem('owner_2fa_verified');
     setIsVerified(false);
   }, []);
 
