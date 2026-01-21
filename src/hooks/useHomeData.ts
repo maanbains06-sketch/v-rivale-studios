@@ -17,7 +17,7 @@ interface FeaturedYoutuber {
   live_stream_url: string | null;
 }
 
-// Fetch server status with caching
+// Fetch server status with caching - ultra optimized to prevent lag
 export const useServerStatus = () => {
   return useQuery<ServerStatus>({
     queryKey: ['server-status'],
@@ -33,24 +33,33 @@ export const useServerStatus = () => {
         return { status: 'maintenance' as const, players: 0, maxPlayers: 64 };
       }
 
-      const { data, error } = await supabase.functions.invoke('fivem-server-status');
-      
-      if (error || !data) {
+      try {
+        const { data, error } = await supabase.functions.invoke('fivem-server-status');
+        
+        if (error || !data) {
+          return { status: 'offline' as const, players: 0, maxPlayers: 64 };
+        }
+
+        const playerCount = typeof data.players === 'object' ? data.players.current : (data.players || 0);
+        const maxCount = typeof data.players === 'object' ? data.players.max : (data.maxPlayers || 64);
+
+        return {
+          status: data.status === 'online' ? 'online' as const : 'offline' as const,
+          players: playerCount,
+          maxPlayers: maxCount,
+        };
+      } catch {
+        // Silently fail - don't retry on network errors
         return { status: 'offline' as const, players: 0, maxPlayers: 64 };
       }
-
-      const playerCount = typeof data.players === 'object' ? data.players.current : (data.players || 0);
-      const maxCount = typeof data.players === 'object' ? data.players.max : (data.maxPlayers || 64);
-
-      return {
-        status: data.status === 'online' ? 'online' as const : 'offline' as const,
-        players: playerCount,
-        maxPlayers: maxCount,
-      };
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes - increased for performance
-    gcTime: 1000 * 60 * 15, // 15 minutes
-    refetchInterval: false, // PERF: Disabled background polling - user can refresh manually
+    staleTime: 1000 * 60 * 30, // 30 minutes - very long cache for performance
+    gcTime: 1000 * 60 * 60, // 60 minutes cache
+    refetchInterval: false, // PERF: Disabled background polling
+    retry: false, // PERF: Don't retry failed requests - prevents repeated network errors
+    refetchOnMount: false, // PERF: Use cached data
+    refetchOnWindowFocus: false, // PERF: Don't refetch on focus
+    refetchOnReconnect: false, // PERF: Don't refetch on reconnect
   });
 };
 
