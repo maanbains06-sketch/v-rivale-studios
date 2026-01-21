@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Shield, Loader2 } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import ApplicationsPausedAlert from "@/components/ApplicationsPausedAlert";
+import { ApplicationCooldownTimer } from "@/components/ApplicationCooldownTimer";
+import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
+import { useWhitelistAccess } from "@/hooks/useWhitelistAccess";
 import headerBg from "@/assets/header-support.jpg";
 
 const BanAppeal = () => {
@@ -20,12 +23,22 @@ const BanAppeal = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     discordUsername: "",
+    discordId: "",
     banReason: "",
     appealReason: "",
     additionalInfo: "",
   });
   
   const { settings: siteSettings, loading: settingsLoading } = useSiteSettings();
+  const { discordId: userDiscordId } = useWhitelistAccess();
+  const { isOnCooldown, rejectedAt, loading: cooldownLoading, handleCooldownEnd } = useApplicationCooldown('ban_appeals', 24);
+
+  // Auto-fill Discord ID if available
+  useEffect(() => {
+    if (userDiscordId && !formData.discordId) {
+      setFormData(prev => ({ ...prev, discordId: userDiscordId }));
+    }
+  }, [userDiscordId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +60,7 @@ const BanAppeal = () => {
       const { error } = await supabase.from("ban_appeals").insert({
         user_id: user.id,
         discord_username: formData.discordUsername,
+        discord_id: formData.discordId || null,
         steam_id: "N/A", // Steam ID removed from authentication
         ban_reason: formData.banReason,
         appeal_reason: formData.appealReason,
@@ -82,12 +96,35 @@ const BanAppeal = () => {
     });
   };
 
-  if (settingsLoading) {
+  if (settingsLoading || cooldownLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
         <div className="container mx-auto px-4 pt-24 pb-12 flex items-center justify-center min-h-screen">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
+
+  // Show cooldown timer if on cooldown
+  if (isOnCooldown && rejectedAt) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <PageHeader
+          title="Ban Appeal"
+          description="Submit an appeal if you believe your ban was unjustified"
+          backgroundImage={headerBg}
+        />
+        <div className="container mx-auto px-4 py-16">
+          <div className="max-w-3xl mx-auto">
+            <ApplicationCooldownTimer 
+              rejectedAt={rejectedAt} 
+              cooldownHours={24}
+              onCooldownEnd={handleCooldownEnd}
+            />
+          </div>
         </div>
       </div>
     );
@@ -134,16 +171,30 @@ const BanAppeal = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="discordUsername">Discord Username *</Label>
-                  <Input
-                    id="discordUsername"
-                    name="discordUsername"
-                    placeholder="username#0000"
-                    value={formData.discordUsername}
-                    onChange={handleChange}
-                    required
-                  />
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="discordUsername">Discord Username *</Label>
+                    <Input
+                      id="discordUsername"
+                      name="discordUsername"
+                      placeholder="username#0000"
+                      value={formData.discordUsername}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="discordId">Discord ID</Label>
+                    <Input
+                      id="discordId"
+                      name="discordId"
+                      placeholder="e.g., 123456789012345678"
+                      value={formData.discordId}
+                      onChange={handleChange}
+                    />
+                    <p className="text-xs text-muted-foreground">Your unique Discord ID (18-digit number)</p>
+                  </div>
                 </div>
 
                 <div className="space-y-2">

@@ -526,12 +526,45 @@ export const EnhancedSiteSettings = ({ settings, onSettingsChange }: EnhancedSit
 
             <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
               <div className="space-y-0.5">
-                <Label className="text-base">Pause Applications</Label>
+                <Label className="text-base">Pause All Applications</Label>
                 <p className="text-sm text-muted-foreground">Pause all application types</p>
               </div>
               <Switch 
                 checked={getValue("applications_paused") === "true"}
                 onCheckedChange={() => toggleSetting("applications_paused")}
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
+              <div className="space-y-0.5">
+                <Label className="text-base">Whitelist Applications</Label>
+                <p className="text-sm text-muted-foreground">Accept whitelist applications</p>
+              </div>
+              <Switch 
+                checked={getValue("whitelist_applications_enabled", "true") === "true"}
+                onCheckedChange={() => toggleSetting("whitelist_applications_enabled")}
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
+              <div className="space-y-0.5">
+                <Label className="text-base">Ban Appeals</Label>
+                <p className="text-sm text-muted-foreground">Accept ban appeal submissions</p>
+              </div>
+              <Switch 
+                checked={getValue("ban_appeals_enabled", "true") === "true"}
+                onCheckedChange={() => toggleSetting("ban_appeals_enabled")}
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
+              <div className="space-y-0.5">
+                <Label className="text-base">Gang Applications</Label>
+                <p className="text-sm text-muted-foreground">Accept gang RP applications</p>
+              </div>
+              <Switch 
+                checked={getValue("gang_applications_enabled", "true") === "true"}
+                onCheckedChange={() => toggleSetting("gang_applications_enabled")}
               />
             </div>
 

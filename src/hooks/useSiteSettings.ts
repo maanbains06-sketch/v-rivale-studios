@@ -10,6 +10,13 @@ interface SiteSettings {
   auto_approve_veterans: boolean;
   announcement_banner: string;
   announcement_type: string;
+  // Individual application type toggles
+  whitelist_applications_enabled: boolean;
+  staff_applications_enabled: boolean;
+  job_applications_enabled: boolean;
+  ban_appeals_enabled: boolean;
+  gang_applications_enabled: boolean;
+  creator_applications_enabled: boolean;
 }
 
 interface UseSiteSettingsReturn {
@@ -27,6 +34,13 @@ const defaultSettings: SiteSettings = {
   auto_approve_veterans: false,
   announcement_banner: '',
   announcement_type: 'info',
+  // Individual application type toggles - default to true
+  whitelist_applications_enabled: true,
+  staff_applications_enabled: true,
+  job_applications_enabled: true,
+  ban_appeals_enabled: true,
+  gang_applications_enabled: true,
+  creator_applications_enabled: true,
 };
 
 export const useSiteSettings = (): UseSiteSettingsReturn => {
@@ -47,6 +61,12 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
           'auto_approve_veterans',
           'announcement_banner',
           'announcement_type',
+          'whitelist_applications_enabled',
+          'staff_applications_enabled',
+          'job_applications_enabled',
+          'ban_appeals_enabled',
+          'gang_applications_enabled',
+          'creator_applications_enabled',
         ]);
 
       if (error) {
@@ -69,6 +89,13 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
           auto_approve_veterans: settingsMap.auto_approve_veterans === 'true',
           announcement_banner: settingsMap.announcement_banner || '',
           announcement_type: settingsMap.announcement_type || 'info',
+          // Individual application type toggles - default to true if not set
+          whitelist_applications_enabled: settingsMap.whitelist_applications_enabled !== 'false',
+          staff_applications_enabled: settingsMap.staff_applications_enabled !== 'false',
+          job_applications_enabled: settingsMap.job_applications_enabled !== 'false',
+          ban_appeals_enabled: settingsMap.ban_appeals_enabled !== 'false',
+          gang_applications_enabled: settingsMap.gang_applications_enabled !== 'false',
+          creator_applications_enabled: settingsMap.creator_applications_enabled !== 'false',
         });
       }
     } catch (err) {

@@ -89,6 +89,7 @@ export type Database = {
           appeal_reason: string
           ban_reason: string
           created_at: string
+          discord_id: string | null
           discord_username: string
           id: string
           reviewed_at: string | null
@@ -104,6 +105,7 @@ export type Database = {
           appeal_reason: string
           ban_reason: string
           created_at?: string
+          discord_id?: string | null
           discord_username: string
           id?: string
           reviewed_at?: string | null
@@ -119,6 +121,7 @@ export type Database = {
           appeal_reason?: string
           ban_reason?: string
           created_at?: string
+          discord_id?: string | null
           discord_username?: string
           id?: string
           reviewed_at?: string | null
@@ -863,6 +866,7 @@ export type Database = {
           character_background: string
           character_name: string
           created_at: string
+          discord_id: string | null
           id: string
           job_specific_answer: string | null
           job_type: string
@@ -884,6 +888,7 @@ export type Database = {
           character_background: string
           character_name: string
           created_at?: string
+          discord_id?: string | null
           id?: string
           job_specific_answer?: string | null
           job_type: string
@@ -905,6 +910,7 @@ export type Database = {
           character_background?: string
           character_name?: string
           created_at?: string
+          discord_id?: string | null
           id?: string
           job_specific_answer?: string | null
           job_type?: string
@@ -1547,6 +1553,7 @@ export type Database = {
           age: number
           availability: string
           created_at: string
+          discord_id: string | null
           discord_username: string
           experience: string
           full_name: string
@@ -1567,6 +1574,7 @@ export type Database = {
           age: number
           availability: string
           created_at?: string
+          discord_id?: string | null
           discord_username: string
           experience: string
           full_name: string
@@ -1587,6 +1595,7 @@ export type Database = {
           age?: number
           availability?: string
           created_at?: string
+          discord_id?: string | null
           discord_username?: string
           experience?: string
           full_name?: string
@@ -2247,6 +2256,7 @@ export type Database = {
           backstory: string
           created_at: string
           discord: string
+          discord_id: string | null
           experience: string
           id: string
           reviewed_at: string | null
@@ -2262,6 +2272,7 @@ export type Database = {
           backstory: string
           created_at?: string
           discord: string
+          discord_id?: string | null
           experience: string
           id?: string
           reviewed_at?: string | null
@@ -2277,6 +2288,7 @@ export type Database = {
           backstory?: string
           created_at?: string
           discord?: string
+          discord_id?: string | null
           experience?: string
           id?: string
           reviewed_at?: string | null
