@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { NavLink } from "./NavLink";
 import { Users, Shield, LogOut, Menu, UserCircle, Mail, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, ExternalLink, Crown, LayoutDashboard, Gift } from "lucide-react";
 import { Button } from "./ui/button";
-import { motion } from "framer-motion";
+// Removed framer-motion import for INDIA text - now using CSS for performance
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -196,34 +196,9 @@ const Navigation = () => {
               >
                 SKYLIFE ROLEPLAY
               </span>
-              <span
-                className="text-[10px] md:text-xs font-bold tracking-[0.3em] flex gap-0.5 justify-center brand-subtitle"
-              >
-                <motion.span 
-                  animate={{ color: ['#FF9933', '#FFFFFF', '#138808', '#FF9933'] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                  style={{ textShadow: '0 0 6px currentColor' }}
-                >I</motion.span>
-                <motion.span 
-                  animate={{ color: ['#FFFFFF', '#138808', '#FF9933', '#FFFFFF'] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.15 }}
-                  style={{ textShadow: '0 0 6px currentColor' }}
-                >N</motion.span>
-                <motion.span 
-                  animate={{ color: ['#138808', '#FF9933', '#FFFFFF', '#138808'] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
-                  style={{ textShadow: '0 0 6px currentColor' }}
-                >D</motion.span>
-                <motion.span 
-                  animate={{ color: ['#FF9933', '#FFFFFF', '#138808', '#FF9933'] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.45 }}
-                  style={{ textShadow: '0 0 6px currentColor' }}
-                >I</motion.span>
-                <motion.span 
-                  animate={{ color: ['#FFFFFF', '#138808', '#FF9933', '#FFFFFF'] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
-                  style={{ textShadow: '0 0 6px currentColor' }}
-                >A</motion.span>
+              {/* PERFORMANCE: Static tricolor gradient instead of infinite motion.span color animations */}
+              <span className="text-[10px] md:text-xs font-bold tracking-[0.3em] india-tricolor-text">
+                INDIA
               </span>
             </Link>
           </div>
