@@ -10,14 +10,11 @@ import { useToast } from '@/hooks/use-toast';
 import { useOwnerAuditLog } from '@/hooks/useOwnerAuditLog';
 import { 
   Globe, 
-  Clock, 
   AlertTriangle,
   CheckCircle,
-  Settings,
   Timer,
   RefreshCw,
-  Play,
-  Pause
+  Plus
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -34,14 +31,20 @@ interface PageMaintenanceSetting {
   updated_at: string;
 }
 
+interface DurationInput {
+  days: number;
+  hours: number;
+  minutes: number;
+}
+
 export const PageMaintenanceControls = () => {
   const { toast } = useToast();
   const { logAction } = useOwnerAuditLog();
   const [settings, setSettings] = useState<PageMaintenanceSetting[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
-  const [cooldownInputs, setCooldownInputs] = useState<Record<string, number>>({});
-  const [timeRemaining, setTimeRemaining] = useState<Record<string, { hours: number; minutes: number; seconds: number }>>({});
+  const [durationInputs, setDurationInputs] = useState<Record<string, DurationInput>>({});
+  const [timeRemaining, setTimeRemaining] = useState<Record<string, { days: number; hours: number; minutes: number; seconds: number }>>({});
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -62,12 +65,16 @@ export const PageMaintenanceControls = () => {
 
       setSettings(data as PageMaintenanceSetting[] || []);
       
-      // Initialize cooldown inputs
-      const cooldowns: Record<string, number> = {};
+      // Initialize duration inputs
+      const durations: Record<string, DurationInput> = {};
       (data || []).forEach((s: PageMaintenanceSetting) => {
-        cooldowns[s.page_key] = s.cooldown_minutes || 30;
+        const totalMinutes = s.cooldown_minutes || 30;
+        const days = Math.floor(totalMinutes / (24 * 60));
+        const hours = Math.floor((totalMinutes % (24 * 60)) / 60);
+        const minutes = totalMinutes % 60;
+        durations[s.page_key] = { days, hours, minutes };
       });
-      setCooldownInputs(cooldowns);
+      setDurationInputs(durations);
     } catch (err) {
       console.error('Error in fetchSettings:', err);
     } finally {
@@ -78,7 +85,6 @@ export const PageMaintenanceControls = () => {
   useEffect(() => {
     fetchSettings();
 
-    // Subscribe to realtime changes
     const channel = supabase
       .channel('page_maintenance_admin')
       .on(
@@ -102,7 +108,7 @@ export const PageMaintenanceControls = () => {
   // Update countdown timers
   useEffect(() => {
     const interval = setInterval(() => {
-      const newTimeRemaining: Record<string, { hours: number; minutes: number; seconds: number }> = {};
+      const newTimeRemaining: Record<string, { days: number; hours: number; minutes: number; seconds: number }> = {};
       const expiredPages: string[] = [];
       
       settings.forEach(setting => {
@@ -112,10 +118,11 @@ export const PageMaintenanceControls = () => {
           const diff = endTime.getTime() - now.getTime();
 
           if (diff > 0) {
-            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-            newTimeRemaining[setting.page_key] = { hours, minutes, seconds };
+            newTimeRemaining[setting.page_key] = { days, hours, minutes, seconds };
           } else {
             expiredPages.push(setting.page_key);
           }
@@ -124,7 +131,7 @@ export const PageMaintenanceControls = () => {
       
       setTimeRemaining(newTimeRemaining);
       
-      // Auto-disable expired maintenance pages (outside of render cycle)
+      // Auto-disable expired maintenance pages
       expiredPages.forEach(async (pageKey) => {
         const { data: { user } } = await supabase.auth.getUser();
         await supabase
@@ -161,7 +168,18 @@ export const PageMaintenanceControls = () => {
         return;
       }
       
-      const cooldownMinutes = cooldownInputs[pageKey] || 30;
+      const duration = durationInputs[pageKey] || { days: 0, hours: 0, minutes: 30 };
+      const totalMinutes = (duration.days * 24 * 60) + (duration.hours * 60) + duration.minutes;
+      
+      if (enable && totalMinutes <= 0) {
+        toast({
+          title: "Error",
+          description: "Please set a duration greater than 0.",
+          variant: "destructive",
+        });
+        setSaving(null);
+        return;
+      }
       
       const updateData: Record<string, any> = {
         is_enabled: enable,
@@ -171,8 +189,8 @@ export const PageMaintenanceControls = () => {
 
       if (enable) {
         updateData.enabled_at = new Date().toISOString();
-        updateData.cooldown_minutes = cooldownMinutes;
-        updateData.scheduled_end_at = new Date(Date.now() + cooldownMinutes * 60 * 1000).toISOString();
+        updateData.cooldown_minutes = totalMinutes;
+        updateData.scheduled_end_at = new Date(Date.now() + totalMinutes * 60 * 1000).toISOString();
       } else {
         updateData.enabled_at = null;
         updateData.scheduled_end_at = null;
@@ -200,18 +218,19 @@ export const PageMaintenanceControls = () => {
       }
 
       const pageName = settings.find(s => s.page_key === pageKey)?.page_name || pageKey;
+      const durationText = `${duration.days}d ${duration.hours}h ${duration.minutes}m`;
       
       await logAction({
         actionType: enable ? 'page_maintenance_enabled' : 'page_maintenance_disabled',
-        actionDescription: `${enable ? 'Enabled' : 'Disabled'} maintenance mode for "${pageName}" page${enable ? ` for ${cooldownMinutes} minutes` : ''}`,
+        actionDescription: `${enable ? 'Enabled' : 'Disabled'} maintenance mode for "${pageName}" page${enable ? ` for ${durationText}` : ''}`,
         targetTable: 'page_maintenance_settings',
         oldValue: { page_key: pageKey, is_enabled: !enable },
-        newValue: { page_key: pageKey, is_enabled: enable, cooldown_minutes: cooldownMinutes }
+        newValue: { page_key: pageKey, is_enabled: enable, cooldown_minutes: totalMinutes }
       });
 
       toast({
         title: enable ? "Page Maintenance Enabled" : "Page Maintenance Disabled",
-        description: `${pageName} page is now ${enable ? 'under maintenance' : 'accessible to all users'}${enable ? ` for ${cooldownMinutes} minutes` : ''}.`,
+        description: `${pageName} page is now ${enable ? 'under maintenance' : 'accessible to all users'}${enable ? ` for ${durationText}` : ''}.`,
       });
 
       // Immediately update local state for faster UI feedback
@@ -232,8 +251,14 @@ export const PageMaintenanceControls = () => {
     }
   };
 
-  const handleCooldownChange = (pageKey: string, value: number) => {
-    setCooldownInputs(prev => ({ ...prev, [pageKey]: value }));
+  const handleDurationChange = (pageKey: string, field: keyof DurationInput, value: number) => {
+    setDurationInputs(prev => ({
+      ...prev,
+      [pageKey]: {
+        ...prev[pageKey] || { days: 0, hours: 0, minutes: 30 },
+        [field]: value
+      }
+    }));
   };
 
   const extendMaintenance = async (pageKey: string, extraMinutes: number) => {
@@ -270,26 +295,33 @@ export const PageMaintenanceControls = () => {
       return;
     }
 
+    const extendText = extraMinutes >= 1440 
+      ? `${Math.floor(extraMinutes / 1440)}d` 
+      : extraMinutes >= 60 
+        ? `${Math.floor(extraMinutes / 60)}h` 
+        : `${extraMinutes}m`;
+
     await logAction({
       actionType: 'page_maintenance_extended',
-      actionDescription: `Extended maintenance for "${setting.page_name}" by ${extraMinutes} minutes`,
+      actionDescription: `Extended maintenance for "${setting.page_name}" by ${extendText}`,
       targetTable: 'page_maintenance_settings',
       newValue: { page_key: pageKey, extended_by_minutes: extraMinutes }
     });
 
     toast({
       title: "Maintenance Extended",
-      description: `Maintenance for ${setting.page_name} extended by ${extraMinutes} minutes.`,
+      description: `Maintenance for ${setting.page_name} extended by ${extendText}.`,
     });
 
     setSaving(null);
     fetchSettings();
   };
 
-  const formatTime = (remaining: { hours: number; minutes: number; seconds: number }) => {
+  const formatTime = (remaining: { days: number; hours: number; minutes: number; seconds: number }) => {
     const parts = [];
-    if (remaining.hours > 0) parts.push(`${remaining.hours}h`);
-    if (remaining.minutes > 0 || remaining.hours > 0) parts.push(`${remaining.minutes}m`);
+    if (remaining.days > 0) parts.push(`${remaining.days}d`);
+    if (remaining.hours > 0 || remaining.days > 0) parts.push(`${remaining.hours}h`);
+    if (remaining.minutes > 0 || remaining.hours > 0 || remaining.days > 0) parts.push(`${remaining.minutes}m`);
     parts.push(`${remaining.seconds}s`);
     return parts.join(' ');
   };
@@ -326,6 +358,7 @@ export const PageMaintenanceControls = () => {
             {settings.map((setting) => {
               const remaining = timeRemaining[setting.page_key];
               const isActive = setting.is_enabled && remaining;
+              const duration = durationInputs[setting.page_key] || { days: 0, hours: 0, minutes: 30 };
 
               return (
                 <div
@@ -351,58 +384,95 @@ export const PageMaintenanceControls = () => {
                       </div>
                       
                       {isActive && remaining && (
-                        <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
-                          <Timer className="w-3 h-3" />
-                          <span>Ends in: {formatTime(remaining)}</span>
+                        <div className="mt-3">
+                          <div className="flex items-center gap-2 text-sm text-destructive mb-2">
+                            <Timer className="w-3 h-3" />
+                            <span>Ends in: {formatTime(remaining)}</span>
+                          </div>
+                          
+                          {/* Countdown Display */}
+                          <div className="grid grid-cols-4 gap-1 mb-3">
+                            <div className="p-1.5 rounded bg-background/50 text-center">
+                              <div className="text-lg font-mono font-bold text-primary">
+                                {String(remaining.days).padStart(2, '0')}
+                              </div>
+                              <div className="text-[9px] text-muted-foreground">Days</div>
+                            </div>
+                            <div className="p-1.5 rounded bg-background/50 text-center">
+                              <div className="text-lg font-mono font-bold text-primary">
+                                {String(remaining.hours).padStart(2, '0')}
+                              </div>
+                              <div className="text-[9px] text-muted-foreground">Hours</div>
+                            </div>
+                            <div className="p-1.5 rounded bg-background/50 text-center">
+                              <div className="text-lg font-mono font-bold text-primary">
+                                {String(remaining.minutes).padStart(2, '0')}
+                              </div>
+                              <div className="text-[9px] text-muted-foreground">Min</div>
+                            </div>
+                            <div className="p-1.5 rounded bg-background/50 text-center">
+                              <div className="text-lg font-mono font-bold text-primary">
+                                {String(remaining.seconds).padStart(2, '0')}
+                              </div>
+                              <div className="text-[9px] text-muted-foreground">Sec</div>
+                            </div>
+                          </div>
+
+                          {/* Extend Buttons */}
+                          <div className="flex items-center gap-1 flex-wrap">
+                            <Button variant="outline" size="sm" onClick={() => extendMaintenance(setting.page_key, 30)} disabled={saving === setting.page_key} className="h-6 px-2 text-xs">
+                              <Plus className="w-2 h-2 mr-1" />30m
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => extendMaintenance(setting.page_key, 60)} disabled={saving === setting.page_key} className="h-6 px-2 text-xs">
+                              <Plus className="w-2 h-2 mr-1" />1h
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => extendMaintenance(setting.page_key, 180)} disabled={saving === setting.page_key} className="h-6 px-2 text-xs">
+                              <Plus className="w-2 h-2 mr-1" />3h
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => extendMaintenance(setting.page_key, 1440)} disabled={saving === setting.page_key} className="h-6 px-2 text-xs">
+                              <Plus className="w-2 h-2 mr-1" />1d
+                            </Button>
+                          </div>
                         </div>
                       )}
                     </div>
 
                     <div className="flex items-center gap-3">
                       {!setting.is_enabled && (
-                        <div className="flex items-center gap-2">
-                          <Label className="text-xs text-muted-foreground whitespace-nowrap">Duration:</Label>
-                          <Input
-                            type="number"
-                            min={1}
-                            max={1440}
-                            value={cooldownInputs[setting.page_key] || 30}
-                            onChange={(e) => handleCooldownChange(setting.page_key, parseInt(e.target.value) || 30)}
-                            className="w-20 h-8 text-sm"
-                          />
-                          <span className="text-xs text-muted-foreground">min</span>
-                        </div>
-                      )}
-
-                      {setting.is_enabled && (
                         <div className="flex items-center gap-1">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => extendMaintenance(setting.page_key, 15)}
-                            disabled={saving === setting.page_key}
-                            className="h-8 px-2 text-xs"
-                          >
-                            +15m
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => extendMaintenance(setting.page_key, 30)}
-                            disabled={saving === setting.page_key}
-                            className="h-8 px-2 text-xs"
-                          >
-                            +30m
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => extendMaintenance(setting.page_key, 60)}
-                            disabled={saving === setting.page_key}
-                            className="h-8 px-2 text-xs"
-                          >
-                            +1h
-                          </Button>
+                          <div className="flex items-center gap-0.5">
+                            <Input
+                              type="number"
+                              min={0}
+                              max={30}
+                              value={duration.days}
+                              onChange={(e) => handleDurationChange(setting.page_key, 'days', parseInt(e.target.value) || 0)}
+                              className="w-12 h-7 text-xs text-center px-1"
+                            />
+                            <span className="text-[10px] text-muted-foreground">d</span>
+                          </div>
+                          <div className="flex items-center gap-0.5">
+                            <Input
+                              type="number"
+                              min={0}
+                              max={23}
+                              value={duration.hours}
+                              onChange={(e) => handleDurationChange(setting.page_key, 'hours', parseInt(e.target.value) || 0)}
+                              className="w-12 h-7 text-xs text-center px-1"
+                            />
+                            <span className="text-[10px] text-muted-foreground">h</span>
+                          </div>
+                          <div className="flex items-center gap-0.5">
+                            <Input
+                              type="number"
+                              min={0}
+                              max={59}
+                              value={duration.minutes}
+                              onChange={(e) => handleDurationChange(setting.page_key, 'minutes', parseInt(e.target.value) || 0)}
+                              className="w-12 h-7 text-xs text-center px-1"
+                            />
+                            <span className="text-[10px] text-muted-foreground">m</span>
+                          </div>
                         </div>
                       )}
 

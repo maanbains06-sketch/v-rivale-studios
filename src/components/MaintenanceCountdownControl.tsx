@@ -8,8 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useOwnerAuditLog } from '@/hooks/useOwnerAuditLog';
-import { Clock, Calendar, Save, Wrench, AlertTriangle, Plus, Power, RefreshCw, Timer } from 'lucide-react';
-import { format, addHours, addMinutes, differenceInMinutes } from 'date-fns';
+import { Clock, Wrench, AlertTriangle, Plus, Power, RefreshCw, Timer } from 'lucide-react';
 
 interface MaintenanceSchedule {
   id: string;
@@ -27,12 +26,9 @@ export const MaintenanceCountdownControl = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   
-  // Form state
-  const [title, setTitle] = useState('Scheduled Maintenance');
-  const [description, setDescription] = useState('');
-  const [duration, setDuration] = useState({ hours: 2, minutes: 0 });
-  const [scheduleInFuture, setScheduleInFuture] = useState(false);
-  const [scheduledStart, setScheduledStart] = useState('');
+  // Duration state with days, hours, minutes
+  const [duration, setDuration] = useState({ days: 0, hours: 2, minutes: 0 });
+  const [timeRemaining, setTimeRemaining] = useState<{ days: number; hours: number; minutes: number; seconds: number; expired: boolean } | null>(null);
 
   const fetchActiveMaintenance = useCallback(async () => {
     try {
@@ -56,7 +52,6 @@ export const MaintenanceCountdownControl = () => {
   useEffect(() => {
     fetchActiveMaintenance();
     
-    // Subscribe to realtime changes
     const channel = supabase
       .channel('maintenance_control_realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'maintenance_schedules' }, () => {
@@ -69,58 +64,87 @@ export const MaintenanceCountdownControl = () => {
     };
   }, [fetchActiveMaintenance]);
 
-  const startMaintenance = async () => {
+  const calculateTimeRemaining = useCallback(() => {
+    if (!activeMaintenance) return null;
+    const end = new Date(activeMaintenance.scheduled_end);
+    const now = new Date();
+    const diff = end.getTime() - now.getTime();
+    
+    if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, expired: true };
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    
+    return { days, hours, minutes, seconds, expired: false };
+  }, [activeMaintenance]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const remaining = calculateTimeRemaining();
+      setTimeRemaining(remaining);
+      
+      if (remaining?.expired && activeMaintenance) {
+        handleToggle(false);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [activeMaintenance, calculateTimeRemaining]);
+
+  const handleToggle = async (enable: boolean) => {
     setSaving(true);
     try {
-      const start = scheduleInFuture ? new Date(scheduledStart) : new Date();
-      const end = addMinutes(addHours(start, duration.hours), duration.minutes);
-      
       const { data: { user } } = await supabase.auth.getUser();
-      
-      // First, check if there's an existing active/scheduled maintenance
-      // NOTE: maybeSingle() throws if multiple rows match; limit(1) keeps it safe.
-      const { data: existingMaintenance, error: existingError } = await supabase
-        .from('maintenance_schedules')
-        .select('id')
-        .in('status', ['scheduled', 'active'])
-        .limit(1)
-        .maybeSingle();
 
-      if (existingError) {
-        console.error('Error checking existing maintenance:', existingError);
-        throw existingError;
-      }
+      if (enable) {
+        // Check for existing maintenance
+        const { data: existingMaintenance } = await supabase
+          .from('maintenance_schedules')
+          .select('id')
+          .in('status', ['scheduled', 'active'])
+          .limit(1)
+          .maybeSingle();
 
-      if (existingMaintenance) {
-        toast({
-          title: "Error",
-          description: "There's already an active or scheduled maintenance. End it first.",
-          variant: "destructive",
-        });
-        setSaving(false);
-        return;
-      }
+        if (existingMaintenance) {
+          toast({
+            title: "Error",
+            description: "There's already an active maintenance. End it first.",
+            variant: "destructive",
+          });
+          setSaving(false);
+          return;
+        }
 
-      // Insert the maintenance schedule
-      const { error: scheduleError } = await supabase
-        .from('maintenance_schedules')
-        .insert({
-          title,
-          description: description || null,
-          scheduled_start: start.toISOString(),
-          scheduled_end: end.toISOString(),
-          status: scheduleInFuture ? 'scheduled' : 'active',
-          created_by: user?.id || null
-        });
+        const totalMinutes = (duration.days * 24 * 60) + (duration.hours * 60) + duration.minutes;
+        
+        if (totalMinutes <= 0) {
+          toast({
+            title: "Error",
+            description: "Please set a duration greater than 0.",
+            variant: "destructive",
+          });
+          setSaving(false);
+          return;
+        }
 
-      if (scheduleError) {
-        console.error('Schedule error:', scheduleError);
-        throw scheduleError;
-      }
+        const start = new Date();
+        const end = new Date(start.getTime() + totalMinutes * 60 * 1000);
 
-      // Only enable maintenance mode immediately if we're starting now.
-      // If the owner schedules it in the future, do NOT block the site yet.
-      if (!scheduleInFuture) {
+        const { error: scheduleError } = await supabase
+          .from('maintenance_schedules')
+          .insert({
+            title: 'Site Maintenance',
+            description: null,
+            scheduled_start: start.toISOString(),
+            scheduled_end: end.toISOString(),
+            status: 'active',
+            created_by: user?.id || null
+          });
+
+        if (scheduleError) throw scheduleError;
+
+        // Enable maintenance mode in site settings
         const { data: existingSetting } = await supabase
           .from('site_settings')
           .select('id')
@@ -128,91 +152,64 @@ export const MaintenanceCountdownControl = () => {
           .maybeSingle();
 
         if (existingSetting) {
-          const { error: updateError } = await supabase
+          await supabase
             .from('site_settings')
             .update({ value: 'true', updated_at: new Date().toISOString() })
             .eq('key', 'maintenance_mode');
-
-          if (updateError) {
-            console.error('Update setting error:', updateError);
-            throw updateError;
-          }
         } else {
-          const { error: insertError } = await supabase
+          await supabase
             .from('site_settings')
             .insert({
               key: 'maintenance_mode',
               value: 'true',
               description: 'Enable maintenance mode to block non-staff access'
             });
-
-          if (insertError) {
-            console.error('Insert setting error:', insertError);
-            throw insertError;
-          }
         }
+
+        await logAction({
+          actionType: 'maintenance_start',
+          actionDescription: `Started site maintenance for ${duration.days}d ${duration.hours}h ${duration.minutes}m`,
+          newValue: { duration, scheduledEnd: end.toISOString() }
+        });
+
+        toast({
+          title: "Maintenance Enabled",
+          description: `Site is now under maintenance for ${duration.days}d ${duration.hours}h ${duration.minutes}m`,
+        });
+      } else {
+        // End maintenance
+        if (activeMaintenance) {
+          await supabase
+            .from('maintenance_schedules')
+            .update({ 
+              status: 'completed',
+              scheduled_end: new Date().toISOString()
+            })
+            .eq('id', activeMaintenance.id);
+        }
+
+        await supabase
+          .from('site_settings')
+          .update({ value: 'false', updated_at: new Date().toISOString() })
+          .eq('key', 'maintenance_mode');
+
+        await logAction({
+          actionType: 'maintenance_end',
+          actionDescription: 'Ended site maintenance',
+        });
+
+        toast({
+          title: "Maintenance Disabled",
+          description: "Site is now back online",
+        });
       }
-
-      await logAction({
-        actionType: 'maintenance_start',
-        actionDescription: `Started maintenance: ${title}`,
-        newValue: { title, duration, scheduledStart: start.toISOString(), scheduledEnd: end.toISOString() }
-      });
-
-      toast({
-        title: "Maintenance Started",
-        description: `Maintenance will ${scheduleInFuture ? 'start at ' + format(start, 'PPp') : 'start now'} and end at ${format(end, 'PPp')}`,
-      });
 
       fetchActiveMaintenance();
     } catch (error: any) {
-      console.error('Maintenance start error:', error);
+      console.error('Maintenance toggle error:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to start maintenance",
-        variant: "destructive",
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const endMaintenance = async () => {
-    if (!activeMaintenance) return;
-    
-    setSaving(true);
-    try {
-      const { error } = await supabase
-        .from('maintenance_schedules')
-        .update({ 
-          status: 'completed',
-          scheduled_end: new Date().toISOString()
-        })
-        .eq('id', activeMaintenance.id);
-
-      if (error) throw error;
-
-      // Disable maintenance mode
-      await supabase
-        .from('site_settings')
-        .update({ value: 'false', updated_at: new Date().toISOString() })
-        .eq('key', 'maintenance_mode');
-
-      await logAction({
-        actionType: 'maintenance_end',
-        actionDescription: `Ended maintenance: ${activeMaintenance.title}`,
-      });
-
-      toast({
-        title: "Maintenance Ended",
-        description: "Site is now back online",
-      });
-
-      setActiveMaintenance(null);
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to end maintenance",
+        description: error.message || "Failed to toggle maintenance",
         variant: "destructive",
       });
     } finally {
@@ -226,7 +223,7 @@ export const MaintenanceCountdownControl = () => {
     setSaving(true);
     try {
       const currentEnd = new Date(activeMaintenance.scheduled_end);
-      const newEnd = addMinutes(currentEnd, extraMinutes);
+      const newEnd = new Date(currentEnd.getTime() + extraMinutes * 60 * 1000);
       
       const { error } = await supabase
         .from('maintenance_schedules')
@@ -246,7 +243,7 @@ export const MaintenanceCountdownControl = () => {
 
       toast({
         title: "Maintenance Extended",
-        description: `New end time: ${format(newEnd, 'PPp')}`,
+        description: `Extended by ${extraMinutes >= 60 ? `${Math.floor(extraMinutes / 60)}h` : `${extraMinutes}m`}`,
       });
 
       fetchActiveMaintenance();
@@ -261,53 +258,27 @@ export const MaintenanceCountdownControl = () => {
     }
   };
 
-  const getTimeRemaining = useCallback(() => {
-    if (!activeMaintenance) return null;
-    const end = new Date(activeMaintenance.scheduled_end);
-    const now = new Date();
-    const diff = end.getTime() - now.getTime();
-    
-    if (diff <= 0) return { hours: 0, minutes: 0, seconds: 0, expired: true };
-    
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-    
-    return { hours, minutes, seconds, expired: false };
-  }, [activeMaintenance]);
-
-  const [timeRemaining, setTimeRemaining] = useState(getTimeRemaining());
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const remaining = getTimeRemaining();
-      setTimeRemaining(remaining);
-      
-      // Auto-end maintenance if countdown expired
-      if (remaining?.expired && activeMaintenance) {
-        endMaintenance();
-      }
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [activeMaintenance, getTimeRemaining]);
-
-  // Quick duration presets
-  const quickDurations = [
-    { label: '30m', hours: 0, minutes: 30 },
-    { label: '1h', hours: 1, minutes: 0 },
-    { label: '2h', hours: 2, minutes: 0 },
-    { label: '4h', hours: 4, minutes: 0 },
-  ];
+  const formatTimeRemaining = () => {
+    if (!timeRemaining || timeRemaining.expired) return null;
+    const parts = [];
+    if (timeRemaining.days > 0) parts.push(`${timeRemaining.days}d`);
+    if (timeRemaining.hours > 0 || timeRemaining.days > 0) parts.push(`${timeRemaining.hours}h`);
+    if (timeRemaining.minutes > 0 || timeRemaining.hours > 0 || timeRemaining.days > 0) parts.push(`${timeRemaining.minutes}m`);
+    parts.push(`${timeRemaining.seconds}s`);
+    return parts.join(' ');
+  };
 
   if (loading) {
     return (
       <Card className="glass-effect border-border/20">
         <CardContent className="flex items-center justify-center py-8">
-          <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <RefreshCw className="w-6 h-6 animate-spin text-primary" />
         </CardContent>
       </Card>
     );
   }
+
+  const isActive = !!activeMaintenance;
 
   return (
     <Card className="glass-effect border-border/20">
@@ -317,237 +288,137 @@ export const MaintenanceCountdownControl = () => {
             <Wrench className="w-5 h-5 text-primary" />
             <CardTitle className="text-lg">Maintenance Mode Control</CardTitle>
           </div>
-          {activeMaintenance && (
+          {isActive && (
             <Badge variant="destructive" className="animate-pulse">
               <Power className="w-3 h-3 mr-1" />
               ACTIVE
             </Badge>
           )}
         </div>
-        <CardDescription>Schedule and control site maintenance with live countdown</CardDescription>
+        <CardDescription>Toggle site-wide maintenance mode with countdown timer</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {activeMaintenance ? (
-          // Active Maintenance Display
-          <div className="space-y-4">
-            <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/30">
-              <div className="flex items-center gap-2 text-amber-400 mb-2">
-                <AlertTriangle className="w-5 h-5" />
-                <span className="font-semibold">Maintenance Active</span>
+      <CardContent>
+        <div className={`p-4 rounded-lg border transition-all ${
+          isActive 
+            ? 'bg-destructive/10 border-destructive/30' 
+            : 'bg-muted/30 border-border/50'
+        }`}>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                {isActive ? (
+                  <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0" />
+                ) : (
+                  <Clock className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                )}
+                <span className="font-medium">Site-Wide Maintenance</span>
               </div>
-              <h3 className="text-lg font-semibold mb-1">{activeMaintenance.title}</h3>
-              {activeMaintenance.description && (
-                <p className="text-sm text-muted-foreground mb-3">{activeMaintenance.description}</p>
-              )}
               
-              {/* Countdown Display */}
-              {timeRemaining && !timeRemaining.expired && (
-                <div className="grid grid-cols-3 gap-2 mb-4">
-                  <div className="p-3 rounded-lg bg-background/50 text-center">
-                    <div className="text-2xl font-mono font-bold text-primary">
-                      {String(timeRemaining.hours).padStart(2, '0')}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Hours</div>
+              {isActive && timeRemaining && !timeRemaining.expired && (
+                <div className="mt-3">
+                  <div className="flex items-center gap-2 text-sm text-destructive mb-3">
+                    <Timer className="w-3 h-3" />
+                    <span>Ends in: {formatTimeRemaining()}</span>
                   </div>
-                  <div className="p-3 rounded-lg bg-background/50 text-center">
-                    <div className="text-2xl font-mono font-bold text-primary">
-                      {String(timeRemaining.minutes).padStart(2, '0')}
+                  
+                  {/* Countdown Display */}
+                  <div className="grid grid-cols-4 gap-2 mb-3">
+                    <div className="p-2 rounded-lg bg-background/50 text-center">
+                      <div className="text-xl font-mono font-bold text-primary">
+                        {String(timeRemaining.days).padStart(2, '0')}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground">Days</div>
                     </div>
-                    <div className="text-xs text-muted-foreground">Minutes</div>
+                    <div className="p-2 rounded-lg bg-background/50 text-center">
+                      <div className="text-xl font-mono font-bold text-primary">
+                        {String(timeRemaining.hours).padStart(2, '0')}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground">Hours</div>
+                    </div>
+                    <div className="p-2 rounded-lg bg-background/50 text-center">
+                      <div className="text-xl font-mono font-bold text-primary">
+                        {String(timeRemaining.minutes).padStart(2, '0')}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground">Minutes</div>
+                    </div>
+                    <div className="p-2 rounded-lg bg-background/50 text-center">
+                      <div className="text-xl font-mono font-bold text-primary">
+                        {String(timeRemaining.seconds).padStart(2, '0')}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground">Seconds</div>
+                    </div>
                   </div>
-                  <div className="p-3 rounded-lg bg-background/50 text-center">
-                    <div className="text-2xl font-mono font-bold text-primary">
-                      {String(timeRemaining.seconds).padStart(2, '0')}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Seconds</div>
+
+                  {/* Extend Buttons */}
+                  <div className="flex items-center gap-1 flex-wrap">
+                    <span className="text-xs text-muted-foreground mr-2">Extend:</span>
+                    <Button variant="outline" size="sm" onClick={() => extendMaintenance(30)} disabled={saving} className="h-7 px-2 text-xs">
+                      <Plus className="w-3 h-3 mr-1" />30m
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => extendMaintenance(60)} disabled={saving} className="h-7 px-2 text-xs">
+                      <Plus className="w-3 h-3 mr-1" />1h
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => extendMaintenance(180)} disabled={saving} className="h-7 px-2 text-xs">
+                      <Plus className="w-3 h-3 mr-1" />3h
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => extendMaintenance(1440)} disabled={saving} className="h-7 px-2 text-xs">
+                      <Plus className="w-3 h-3 mr-1" />1d
+                    </Button>
                   </div>
                 </div>
               )}
-
-              {timeRemaining?.expired && (
-                <div className="p-3 rounded-lg bg-green-500/20 border border-green-500/30 text-center mb-4">
-                  <p className="text-green-400 font-medium">Countdown completed - ending maintenance...</p>
-                </div>
-              )}
-              
-              <div className="flex items-center justify-between text-sm mb-4">
-                <span className="text-muted-foreground">
-                  Started: {format(new Date(activeMaintenance.scheduled_start), 'PPp')}
-                </span>
-                <span className="text-muted-foreground">
-                  Ends: {format(new Date(activeMaintenance.scheduled_end), 'PPp')}
-                </span>
-              </div>
-
-              {/* Extend Time Buttons */}
-              <div className="space-y-2 mb-4">
-                <Label className="text-xs text-muted-foreground">Extend Maintenance</Label>
-                <div className="flex gap-2 flex-wrap">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => extendMaintenance(15)}
-                    disabled={saving}
-                    className="text-xs"
-                  >
-                    <Plus className="w-3 h-3 mr-1" /> 15m
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => extendMaintenance(30)}
-                    disabled={saving}
-                    className="text-xs"
-                  >
-                    <Plus className="w-3 h-3 mr-1" /> 30m
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => extendMaintenance(60)}
-                    disabled={saving}
-                    className="text-xs"
-                  >
-                    <Plus className="w-3 h-3 mr-1" /> 1h
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => extendMaintenance(120)}
-                    disabled={saving}
-                    className="text-xs"
-                  >
-                    <Plus className="w-3 h-3 mr-1" /> 2h
-                  </Button>
-                </div>
-              </div>
             </div>
-            
-            <Button 
-              onClick={endMaintenance} 
-              disabled={saving}
-              className="w-full bg-green-600 hover:bg-green-700"
-            >
-              {saving ? (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <Power className="w-4 h-4 mr-2" />
-                  End Maintenance Now
-                </>
+
+            <div className="flex items-center gap-3">
+              {!isActive && (
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
+                    <Input
+                      type="number"
+                      min={0}
+                      max={30}
+                      value={duration.days}
+                      onChange={(e) => setDuration(prev => ({ ...prev, days: parseInt(e.target.value) || 0 }))}
+                      className="w-14 h-8 text-sm text-center"
+                    />
+                    <span className="text-xs text-muted-foreground">d</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Input
+                      type="number"
+                      min={0}
+                      max={23}
+                      value={duration.hours}
+                      onChange={(e) => setDuration(prev => ({ ...prev, hours: parseInt(e.target.value) || 0 }))}
+                      className="w-14 h-8 text-sm text-center"
+                    />
+                    <span className="text-xs text-muted-foreground">h</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Input
+                      type="number"
+                      min={0}
+                      max={59}
+                      value={duration.minutes}
+                      onChange={(e) => setDuration(prev => ({ ...prev, minutes: parseInt(e.target.value) || 0 }))}
+                      className="w-14 h-8 text-sm text-center"
+                    />
+                    <span className="text-xs text-muted-foreground">m</span>
+                  </div>
+                </div>
               )}
-            </Button>
+
+              <Switch
+                checked={isActive}
+                onCheckedChange={handleToggle}
+                disabled={saving}
+              />
+            </div>
           </div>
-        ) : (
-          // Schedule New Maintenance Form
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Maintenance Title</Label>
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g., Server Update, Database Migration"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label>Description (Optional)</Label>
-              <Input
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Brief description of the maintenance"
-              />
-            </div>
-            
-            {/* Quick Duration Presets */}
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Quick Duration</Label>
-              <div className="flex gap-2 flex-wrap">
-                {quickDurations.map((preset) => (
-                  <Button
-                    key={preset.label}
-                    type="button"
-                    size="sm"
-                    variant={duration.hours === preset.hours && duration.minutes === preset.minutes ? "default" : "outline"}
-                    onClick={() => setDuration({ hours: preset.hours, minutes: preset.minutes })}
-                    className="text-xs"
-                  >
-                    <Timer className="w-3 h-3 mr-1" />
-                    {preset.label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Duration (Hours)</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  max={48}
-                  value={duration.hours}
-                  onChange={(e) => setDuration(prev => ({ ...prev, hours: parseInt(e.target.value) || 0 }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Duration (Minutes)</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  max={59}
-                  value={duration.minutes}
-                  onChange={(e) => setDuration(prev => ({ ...prev, minutes: parseInt(e.target.value) || 0 }))}
-                />
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
-              <div className="space-y-0.5">
-                <Label className="text-base">Schedule for Later</Label>
-                <p className="text-sm text-muted-foreground">Set a future start time</p>
-              </div>
-              <Switch 
-                checked={scheduleInFuture}
-                onCheckedChange={setScheduleInFuture}
-              />
-            </div>
-            
-            {scheduleInFuture && (
-              <div className="space-y-2">
-                <Label>Start Time</Label>
-                <Input
-                  type="datetime-local"
-                  value={scheduledStart}
-                  onChange={(e) => setScheduledStart(e.target.value)}
-                  min={format(new Date(), "yyyy-MM-dd'T'HH:mm")}
-                />
-              </div>
-            )}
-            
-            <Button 
-              onClick={startMaintenance} 
-              disabled={saving || (scheduleInFuture && !scheduledStart) || (duration.hours === 0 && duration.minutes === 0)}
-              className="w-full"
-            >
-              {saving ? (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  Starting...
-                </>
-              ) : (
-                <>
-                  <Clock className="w-4 h-4 mr-2" />
-                  {scheduleInFuture ? 'Schedule Maintenance' : 'Start Maintenance Now'}
-                </>
-              )}
-            </Button>
-          </div>
-        )}
+        </div>
       </CardContent>
     </Card>
   );
 };
+
+export default MaintenanceCountdownControl;
