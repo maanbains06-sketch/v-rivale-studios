@@ -31,6 +31,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 const creatorSchema = z.object({
   fullName: z.string().min(2, "Name must be at least 2 characters").max(100),
   discordUsername: z.string().min(2, "Discord username is required").max(50),
+  discordId: z.string().regex(/^\d{17,19}$/, "Discord ID must be 17-19 digits").optional().or(z.literal("")),
   steamId: z.string().min(5, "Steam ID is required").max(50),
   contactEmail: z.string().email("Please enter a valid email address").max(255),
   channelUrl: z.string().url("Please enter a valid URL"),
@@ -158,6 +159,7 @@ const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
       const { error } = await supabase.from("creator_applications").insert({
         full_name: validatedData.fullName,
         discord_username: validatedData.discordUsername,
+        discord_id: validatedData.discordId || null,
         steam_id: validatedData.steamId,
         contact_email: validatedData.contactEmail,
         channel_url: validatedData.channelUrl,
@@ -257,6 +259,14 @@ const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
                 value={formData.discordUsername || ""}
                 onChange={(e) => handleInputChange("discordUsername", e.target.value)}
               />
+            </FormField>
+            <FormField label="Discord ID" icon={<Hash className="w-4 h-4" />} error={errors.discordId}>
+              <Input
+                placeholder="Your 17-19 digit Discord ID"
+                value={formData.discordId || ""}
+                onChange={(e) => handleInputChange("discordId", e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Right-click your profile &gt; Copy User ID</p>
             </FormField>
             <FormField label="Steam ID" icon={<Gamepad2 className="w-4 h-4" />} required error={errors.steamId}>
               <Input
