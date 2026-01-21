@@ -103,6 +103,7 @@ export const PageMaintenanceControls = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       const newTimeRemaining: Record<string, { hours: number; minutes: number; seconds: number }> = {};
+      const expiredPages: string[] = [];
       
       settings.forEach(setting => {
         if (setting.is_enabled && setting.scheduled_end_at) {
@@ -116,71 +117,119 @@ export const PageMaintenanceControls = () => {
             const seconds = Math.floor((diff % (1000 * 60)) / 1000);
             newTimeRemaining[setting.page_key] = { hours, minutes, seconds };
           } else {
-            // Auto-disable maintenance when time is up
-            handleToggle(setting.page_key, false);
+            expiredPages.push(setting.page_key);
           }
         }
       });
       
       setTimeRemaining(newTimeRemaining);
+      
+      // Auto-disable expired maintenance pages (outside of render cycle)
+      expiredPages.forEach(async (pageKey) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        await supabase
+          .from('page_maintenance_settings')
+          .update({
+            is_enabled: false,
+            enabled_at: null,
+            scheduled_end_at: null,
+            updated_by: user?.id,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('page_key', pageKey);
+      });
     }, 1000);
 
     return () => clearInterval(interval);
   }, [settings]);
 
   const handleToggle = async (pageKey: string, enable: boolean) => {
+    console.log('Toggle maintenance:', pageKey, enable);
     setSaving(pageKey);
-    const { data: { user } } = await supabase.auth.getUser();
-    const cooldownMinutes = cooldownInputs[pageKey] || 30;
     
-    const updateData: Record<string, any> = {
-      is_enabled: enable,
-      updated_by: user?.id,
-      updated_at: new Date().toISOString(),
-    };
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) {
+        console.error('Error getting user:', userError);
+        toast({
+          title: "Authentication Error",
+          description: "Please make sure you are logged in.",
+          variant: "destructive",
+        });
+        setSaving(null);
+        return;
+      }
+      
+      const cooldownMinutes = cooldownInputs[pageKey] || 30;
+      
+      const updateData: Record<string, any> = {
+        is_enabled: enable,
+        updated_by: user?.id || null,
+        updated_at: new Date().toISOString(),
+      };
 
-    if (enable) {
-      updateData.enabled_at = new Date().toISOString();
-      updateData.cooldown_minutes = cooldownMinutes;
-      updateData.scheduled_end_at = new Date(Date.now() + cooldownMinutes * 60 * 1000).toISOString();
-    } else {
-      updateData.enabled_at = null;
-      updateData.scheduled_end_at = null;
-    }
+      if (enable) {
+        updateData.enabled_at = new Date().toISOString();
+        updateData.cooldown_minutes = cooldownMinutes;
+        updateData.scheduled_end_at = new Date(Date.now() + cooldownMinutes * 60 * 1000).toISOString();
+      } else {
+        updateData.enabled_at = null;
+        updateData.scheduled_end_at = null;
+      }
 
-    const { error } = await supabase
-      .from('page_maintenance_settings')
-      .update(updateData)
-      .eq('page_key', pageKey);
+      console.log('Update data:', updateData);
 
-    if (error) {
-      console.error('Error updating page maintenance:', error);
+      const { data, error } = await supabase
+        .from('page_maintenance_settings')
+        .update(updateData)
+        .eq('page_key', pageKey)
+        .select();
+
+      console.log('Update result:', { data, error });
+
+      if (error) {
+        console.error('Error updating page maintenance:', error);
+        toast({
+          title: "Error",
+          description: `Failed to update page maintenance: ${error.message}`,
+          variant: "destructive",
+        });
+        setSaving(null);
+        return;
+      }
+
+      const pageName = settings.find(s => s.page_key === pageKey)?.page_name || pageKey;
+      
+      await logAction({
+        actionType: enable ? 'page_maintenance_enabled' : 'page_maintenance_disabled',
+        actionDescription: `${enable ? 'Enabled' : 'Disabled'} maintenance mode for "${pageName}" page${enable ? ` for ${cooldownMinutes} minutes` : ''}`,
+        targetTable: 'page_maintenance_settings',
+        oldValue: { page_key: pageKey, is_enabled: !enable },
+        newValue: { page_key: pageKey, is_enabled: enable, cooldown_minutes: cooldownMinutes }
+      });
+
+      toast({
+        title: enable ? "Page Maintenance Enabled" : "Page Maintenance Disabled",
+        description: `${pageName} page is now ${enable ? 'under maintenance' : 'accessible to all users'}${enable ? ` for ${cooldownMinutes} minutes` : ''}.`,
+      });
+
+      // Immediately update local state for faster UI feedback
+      setSettings(prev => prev.map(s => 
+        s.page_key === pageKey 
+          ? { ...s, is_enabled: enable, scheduled_end_at: enable ? updateData.scheduled_end_at : null, enabled_at: enable ? updateData.enabled_at : null }
+          : s
+      ));
+    } catch (err) {
+      console.error('Unexpected error in handleToggle:', err);
       toast({
         title: "Error",
-        description: "Failed to update page maintenance setting.",
+        description: "An unexpected error occurred.",
         variant: "destructive",
       });
+    } finally {
       setSaving(null);
-      return;
     }
-
-    const pageName = settings.find(s => s.page_key === pageKey)?.page_name || pageKey;
-    
-    await logAction({
-      actionType: enable ? 'page_maintenance_enabled' : 'page_maintenance_disabled',
-      actionDescription: `${enable ? 'Enabled' : 'Disabled'} maintenance mode for "${pageName}" page${enable ? ` for ${cooldownMinutes} minutes` : ''}`,
-      targetTable: 'page_maintenance_settings',
-      oldValue: { page_key: pageKey, is_enabled: !enable },
-      newValue: { page_key: pageKey, is_enabled: enable, cooldown_minutes: cooldownMinutes }
-    });
-
-    toast({
-      title: enable ? "Page Maintenance Enabled" : "Page Maintenance Disabled",
-      description: `${pageName} page is now ${enable ? 'under maintenance' : 'accessible to all users'}${enable ? ` for ${cooldownMinutes} minutes` : ''}.`,
-    });
-
-    setSaving(null);
-    fetchSettings();
   };
 
   const handleCooldownChange = (pageKey: string, value: number) => {
