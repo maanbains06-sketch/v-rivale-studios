@@ -91,19 +91,19 @@ const Roster = lazy(() => import("./pages/Roster"));
 const DirectMessage = lazy(() => import("./pages/DirectMessage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-// PERFORMANCE: Optimized query client - increased cache times, reduced background refetches
+// PERFORMANCE: Ultra-optimized query client for butter-smooth experience
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 10, // 10 minutes - data considered fresh (increased from 5)
-      gcTime: 1000 * 60 * 60, // 60 minutes - garbage collection (increased from 30)
-      retry: 1, // Reduce retries for faster failure detection
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
-      refetchOnWindowFocus: false, // Don't refetch on window focus
-      refetchOnMount: false, // PERF: Only refetch if actually stale
-      refetchOnReconnect: false, // Don't refetch on reconnect - user can refresh
-      networkMode: 'online',
-      refetchInterval: false, // No background polling by default
+      staleTime: 1000 * 60 * 15, // 15 minutes - data stays fresh longer
+      gcTime: 1000 * 60 * 60, // 60 minutes cache
+      retry: 1,
+      retryDelay: 500, // Quick retry
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      networkMode: 'offlineFirst', // Use cache first, fetch later
+      refetchInterval: false,
     },
   },
 });
@@ -260,11 +260,11 @@ const App = () => {
       }
     };
 
-    // PERF: Reduced hard unblock timeout for faster perceived load
+    // PERF: Ultra-fast unblock for instant perceived load
     const hardUnblock = window.setTimeout(() => {
       setShowContent(true);
       setIsLoading(false);
-    }, 800); // Reduced from 1500ms to 800ms
+    }, 500); // Reduced to 500ms for snappier feel
 
     // Check if this is the first visit in this session
     const hasVisited = safeGet("slrp_visited");
@@ -275,11 +275,12 @@ const App = () => {
       return;
     }
 
-    // For low-end devices, reduce loading time
+    // For low-end devices OR mobile, skip loading screen entirely
     const isLowEndDevice =
       navigator.hardwareConcurrency <= 4 ||
       (navigator as any).deviceMemory <= 4 ||
-      window.innerWidth < 640;
+      window.innerWidth < 768 || // Include tablets as low-end for faster load
+      /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
     if (isLowEndDevice) {
       safeSet("slrp_visited", "true");

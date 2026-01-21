@@ -300,22 +300,22 @@ All colors MUST be HSL.
     text-shadow: 0 0 6px hsl(var(--primary) / 0.35);
   }
 
-  /* PERFORMANCE: Static tricolor text - no JS animation, GPU-accelerated */
+  /* PERFORMANCE: CSS-animated tricolor text - replaces framer-motion for smooth 60fps */
   .india-tricolor-text {
-    background: linear-gradient(
-      90deg,
-      #FF9933 0%,
-      #FF9933 30%,
-      #FFFFFF 30%,
-      #FFFFFF 70%,
-      #138808 70%,
-      #138808 100%
-    );
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    text-shadow: 0 0 8px hsl(var(--primary) / 0.5);
-    transform: skewX(-12deg);
+    text-shadow: 0 0 8px currentColor;
+  }
+  
+  /* Individual letter animations with staggered delays */
+  .india-letter-1 { animation: india-color-cycle 3s ease-in-out infinite; }
+  .india-letter-2 { animation: india-color-cycle 3s ease-in-out infinite 0.15s; }
+  .india-letter-3 { animation: india-color-cycle 3s ease-in-out infinite 0.3s; }
+  .india-letter-4 { animation: india-color-cycle 3s ease-in-out infinite 0.45s; }
+  .india-letter-5 { animation: india-color-cycle 3s ease-in-out infinite 0.6s; }
+  
+  @keyframes india-color-cycle {
+    0%, 100% { color: #FF9933; text-shadow: 0 0 8px #FF9933; }
+    33% { color: #FFFFFF; text-shadow: 0 0 8px #FFFFFF; }
+    66% { color: #138808; text-shadow: 0 0 8px #138808; }
   }
 
   :root.light .text-gradient {
