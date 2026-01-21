@@ -2456,6 +2456,7 @@ export type Database = {
           department: string | null
           discord_avatar: string | null
           discord_banner: string | null
+          discord_id: string | null
           discord_username: string | null
           display_order: number | null
           id: string | null
@@ -2472,6 +2473,7 @@ export type Database = {
           department?: string | null
           discord_avatar?: string | null
           discord_banner?: string | null
+          discord_id?: string | null
           discord_username?: string | null
           display_order?: number | null
           id?: string | null
@@ -2488,6 +2490,7 @@ export type Database = {
           department?: string | null
           discord_avatar?: string | null
           discord_banner?: string | null
+          discord_id?: string | null
           discord_username?: string | null
           display_order?: number | null
           id?: string | null
