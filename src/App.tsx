@@ -259,11 +259,11 @@ const App = () => {
       }
     };
 
-    // If loading screen ever fails to complete, force-unblock the app.
+    // If loading screen ever fails to complete, force-unblock the app faster
     const hardUnblock = window.setTimeout(() => {
       setShowContent(true);
       setIsLoading(false);
-    }, 2500);
+    }, 1500); // Reduced from 2500ms to 1500ms for faster load
 
     // Check if this is the first visit in this session
     const hasVisited = safeGet("slrp_visited");
@@ -308,7 +308,7 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           {isLoading && (
-            <LoadingScreen onComplete={handleLoadingComplete} minDuration={500} />
+            <LoadingScreen onComplete={handleLoadingComplete} minDuration={300} />
           )}
           {showContent && <AppContent />}
         </BrowserRouter>
