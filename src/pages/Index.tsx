@@ -999,23 +999,28 @@ const Index = () => {
               <span className="flex gap-1 text-sm md:text-base font-semibold tracking-[0.3em] mt-2">
                 <motion.span 
                   animate={{ color: ['#FF9933', '#FFFFFF', '#138808', '#FF9933'] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  style={{ textShadow: '0 0 6px currentColor' }}
                 >I</motion.span>
                 <motion.span 
                   animate={{ color: ['#FFFFFF', '#138808', '#FF9933', '#FFFFFF'] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.1 }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.15 }}
+                  style={{ textShadow: '0 0 6px currentColor' }}
                 >N</motion.span>
                 <motion.span 
                   animate={{ color: ['#138808', '#FF9933', '#FFFFFF', '#138808'] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
+                  style={{ textShadow: '0 0 6px currentColor' }}
                 >D</motion.span>
                 <motion.span 
                   animate={{ color: ['#FF9933', '#FFFFFF', '#138808', '#FF9933'] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.45 }}
+                  style={{ textShadow: '0 0 6px currentColor' }}
                 >I</motion.span>
                 <motion.span 
                   animate={{ color: ['#FFFFFF', '#138808', '#FF9933', '#FFFFFF'] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
+                  style={{ textShadow: '0 0 6px currentColor' }}
                 >A</motion.span>
               </span>
             </div>
