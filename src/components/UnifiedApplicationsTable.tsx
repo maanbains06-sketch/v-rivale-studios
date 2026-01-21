@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -16,11 +16,15 @@ import {
   Search,
   User,
   Building,
-  Phone,
-  UserCheck
+  Hash,
+  UserCheck,
+  CheckCircle,
+  XCircle,
+  Loader2
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export type ApplicationType = 
   | 'whitelist' 
@@ -48,9 +52,10 @@ interface UnifiedApplication {
   applicantName: string;
   applicantAvatar?: string;
   organization?: string;
-  contactNumber?: string;
+  discordId?: string;
   status: string;
   handledBy?: string;
+  handledByName?: string;
   applicationType: ApplicationType;
   fields: ApplicationField[];
   adminNotes?: string | null;
@@ -62,6 +67,7 @@ interface UnifiedApplicationsTableProps {
   onApprove?: (id: string, notes: string, type: ApplicationType) => void;
   onReject?: (id: string, notes: string, type: ApplicationType) => void;
   onHold?: (id: string, notes: string, type: ApplicationType) => void;
+  onClose?: (id: string, type: ApplicationType) => void;
   title?: string;
 }
 
@@ -104,21 +110,67 @@ export const UnifiedApplicationsTable = ({
   onApprove,
   onReject,
   onHold,
+  onClose,
   title = "Organization Applications"
 }: UnifiedApplicationsTableProps) => {
   const [selectedApp, setSelectedApp] = useState<UnifiedApplication | null>(null);
   const [notes, setNotes] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'on_hold' | 'closed'>('all');
+  const [staffNames, setStaffNames] = useState<Record<string, string>>({});
+  const [loadingStaff, setLoadingStaff] = useState(true);
   const { toast } = useToast();
   const itemsPerPage = 10;
 
-  // Filter applications based on search
-  const filteredApps = applications.filter(app => 
-    app.applicantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    app.organization?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    typeLabels[app.applicationType].toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Fetch staff names for handled_by display
+  useEffect(() => {
+    const fetchStaffNames = async () => {
+      setLoadingStaff(true);
+      try {
+        const { data: staffMembers } = await supabase
+          .from('staff_members')
+          .select('user_id, discord_id, name, discord_username');
+
+        if (staffMembers) {
+          const nameMap: Record<string, string> = {};
+          staffMembers.forEach(staff => {
+            if (staff.user_id) {
+              nameMap[staff.user_id] = staff.name || staff.discord_username || 'Staff';
+            }
+            if (staff.discord_id) {
+              nameMap[staff.discord_id] = staff.name || staff.discord_username || 'Staff';
+            }
+          });
+          setStaffNames(nameMap);
+        }
+      } catch (error) {
+        console.error('Error fetching staff names:', error);
+      } finally {
+        setLoadingStaff(false);
+      }
+    };
+
+    fetchStaffNames();
+  }, []);
+
+  // Get staff name by user ID or Discord ID
+  const getStaffName = (handledBy?: string) => {
+    if (!handledBy) return '-';
+    return staffNames[handledBy] || 'Staff';
+  };
+
+  // Filter applications based on search and status
+  const filteredApps = applications.filter(app => {
+    const matchesSearch = app.applicantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      app.organization?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      app.discordId?.includes(searchQuery) ||
+      typeLabels[app.applicationType].toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'all' || app.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
 
   // Pagination
   const totalPages = Math.ceil(filteredApps.length / itemsPerPage);
@@ -128,13 +180,40 @@ export const UnifiedApplicationsTable = ({
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "approved":
-        return <span className="text-green-400">Approved</span>;
+        return (
+          <span className="flex items-center gap-1 text-green-400">
+            <CheckCircle className="w-3 h-3" />
+            Approved
+          </span>
+        );
       case "rejected":
-        return <span className="text-red-400">Rejected</span>;
+        return (
+          <span className="flex items-center gap-1 text-red-400">
+            <XCircle className="w-3 h-3" />
+            Rejected
+          </span>
+        );
       case "on_hold":
-        return <span className="text-amber-400">On Hold</span>;
+        return (
+          <span className="flex items-center gap-1 text-amber-400">
+            <Clock className="w-3 h-3" />
+            On Hold
+          </span>
+        );
+      case "closed":
+        return (
+          <span className="flex items-center gap-1 text-gray-400">
+            <Check className="w-3 h-3" />
+            Closed
+          </span>
+        );
       default:
-        return <span className="text-muted-foreground">Pending</span>;
+        return (
+          <span className="flex items-center gap-1 text-blue-400">
+            <Clock className="w-3 h-3" />
+            Open
+          </span>
+        );
     }
   };
 
@@ -143,31 +222,71 @@ export const UnifiedApplicationsTable = ({
     toast({ title: "Copied to clipboard" });
   };
 
+  // Status filter counts
+  const statusCounts = {
+    all: applications.length,
+    pending: applications.filter(a => a.status === 'pending').length,
+    approved: applications.filter(a => a.status === 'approved').length,
+    rejected: applications.filter(a => a.status === 'rejected').length,
+    on_hold: applications.filter(a => a.status === 'on_hold').length,
+    closed: applications.filter(a => a.status === 'closed').length,
+  };
+
   return (
     <div className="space-y-4">
       {/* Header Bar */}
       <div className="bg-gradient-to-r from-amber-600 to-amber-500 text-white px-6 py-4 rounded-t-lg flex items-center justify-between">
         <h2 className="text-xl font-bold uppercase tracking-wider">{title}</h2>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-white hover:bg-white/20"
-          onClick={() => setSelectedApp(null)}
-        >
-          <X className="w-5 h-5" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Badge className="bg-white/20 text-white">
+            {filteredApps.length} Applications
+          </Badge>
+        </div>
       </div>
 
-      {/* Search Bar */}
-      <div className="px-4">
-        <div className="relative">
+      {/* Filter Bar */}
+      <div className="px-4 flex flex-wrap gap-3 items-center">
+        {/* Search */}
+        <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Search applications..."
+            placeholder="Search by name, Discord ID, or type..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 bg-background/50"
           />
+        </div>
+
+        {/* Status Filter Buttons */}
+        <div className="flex flex-wrap gap-1">
+          {(['all', 'pending', 'approved', 'rejected', 'on_hold', 'closed'] as const).map((status) => (
+            <Button
+              key={status}
+              variant={statusFilter === status ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                setStatusFilter(status);
+                setCurrentPage(1);
+              }}
+              className={`text-xs ${
+                statusFilter === status 
+                  ? status === 'pending' ? 'bg-blue-600 hover:bg-blue-700' :
+                    status === 'approved' ? 'bg-green-600 hover:bg-green-700' :
+                    status === 'rejected' ? 'bg-red-600 hover:bg-red-700' :
+                    status === 'on_hold' ? 'bg-amber-600 hover:bg-amber-700' :
+                    status === 'closed' ? 'bg-gray-600 hover:bg-gray-700' : ''
+                  : ''
+              }`}
+            >
+              {status === 'all' ? 'All' : 
+               status === 'pending' ? 'Open' :
+               status === 'on_hold' ? 'On Hold' :
+               status.charAt(0).toUpperCase() + status.slice(1)}
+              <Badge variant="secondary" className="ml-1 text-xs px-1">
+                {statusCounts[status]}
+              </Badge>
+            </Button>
+          ))}
         </div>
       </div>
 
@@ -183,8 +302,8 @@ export const UnifiedApplicationsTable = ({
             ORGANIZATION
           </div>
           <div className="flex items-center gap-2">
-            <Phone className="w-4 h-4" />
-            # CONTACT NUMBER
+            <Hash className="w-4 h-4" />
+            DISCORD ID
           </div>
           <div className="flex items-center gap-2">
             ⟳ STATUS
@@ -199,7 +318,11 @@ export const UnifiedApplicationsTable = ({
 
       {/* Applications List */}
       <div className="px-4 space-y-2">
-        {paginatedApps.length > 0 ? (
+        {loadingStaff ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+          </div>
+        ) : paginatedApps.length > 0 ? (
           paginatedApps.map((app) => (
             <motion.div
               key={app.id}
@@ -225,19 +348,19 @@ export const UnifiedApplicationsTable = ({
                 {app.organization || '-'}
               </div>
 
-              {/* Contact Number */}
+              {/* Discord ID */}
               <div className="flex items-center gap-2">
-                <span className="text-muted-foreground font-mono">
-                  {app.contactNumber || '-'}
+                <span className="text-muted-foreground font-mono text-sm">
+                  {app.discordId || '-'}
                 </span>
-                {app.contactNumber && (
+                {app.discordId && (
                   <Button 
                     variant="ghost" 
                     size="icon" 
                     className="h-6 w-6"
                     onClick={(e) => {
                       e.stopPropagation();
-                      copyToClipboard(app.contactNumber!);
+                      copyToClipboard(app.discordId!);
                     }}
                   >
                     <Copy className="h-3 w-3" />
@@ -251,8 +374,8 @@ export const UnifiedApplicationsTable = ({
               </div>
 
               {/* Handled By */}
-              <div className="text-muted-foreground text-sm truncate max-w-[100px]">
-                {app.handledBy || '-'}
+              <div className="text-muted-foreground text-sm truncate max-w-[120px]">
+                {app.handledByName || getStaffName(app.handledBy) || '-'}
               </div>
 
               {/* Handle Button - Application Type Badge */}
@@ -320,7 +443,7 @@ export const UnifiedApplicationsTable = ({
                       variant={selectedApp.status === 'approved' ? 'default' : selectedApp.status === 'rejected' ? 'destructive' : 'secondary'}
                       className="text-sm"
                     >
-                      {selectedApp.status.charAt(0).toUpperCase() + selectedApp.status.slice(1).replace('_', ' ')}
+                      {selectedApp.status === 'pending' ? 'Open' : selectedApp.status.charAt(0).toUpperCase() + selectedApp.status.slice(1).replace('_', ' ')}
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground mt-2">
@@ -337,9 +460,23 @@ export const UnifiedApplicationsTable = ({
 
               <ScrollArea className="max-h-[60vh] px-6 py-4">
                 <div className="space-y-6">
-                  {/* Application Fields */}
-                  {selectedApp.fields.map((field, index) => (
-                    <div key={index} className="space-y-2">
+                  {/* Application Fields - organized in rows */}
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {selectedApp.fields.slice(0, 6).map((field, index) => (
+                      <div key={index} className="space-y-2">
+                        <label className="text-sm font-bold text-primary uppercase tracking-wide">
+                          {field.label}
+                        </label>
+                        <div className="p-3 rounded-lg bg-muted/30 border border-border/30 text-foreground">
+                          {String(field.value ?? 'N/A')}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Remaining fields in full width */}
+                  {selectedApp.fields.slice(6).map((field, index) => (
+                    <div key={index + 6} className="space-y-2">
                       <label className="text-sm font-bold text-primary uppercase tracking-wide">
                         {field.label}
                       </label>
@@ -360,70 +497,109 @@ export const UnifiedApplicationsTable = ({
                       </div>
                     </div>
                   )}
+
+                  {/* Handled By Info */}
+                  {selectedApp.handledBy && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-blue-400 uppercase tracking-wide">
+                        Handled By
+                      </label>
+                      <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/30 text-foreground">
+                        {selectedApp.handledByName || getStaffName(selectedApp.handledBy)}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </ScrollArea>
 
               {/* Actions */}
-              {(onApprove || onReject || onHold) && selectedApp.status === 'pending' && (
-                <div className="px-6 py-4 bg-muted/30 border-t border-border/30 space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-muted-foreground">Admin Notes</label>
-                    <Textarea
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Add notes about this application..."
-                      className="min-h-[80px] bg-background/50"
-                    />
+              <div className="px-6 py-4 bg-muted/30 border-t border-border/30 space-y-4">
+                {/* Show actions for pending applications */}
+                {(onApprove || onReject || onHold) && selectedApp.status === 'pending' && (
+                  <>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-muted-foreground">Admin Notes</label>
+                      <Textarea
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        placeholder="Add notes about this application..."
+                        className="min-h-[80px] bg-background/50"
+                      />
+                    </div>
+                    <div className="flex gap-3 justify-end flex-wrap">
+                      {onHold && (
+                        <Button 
+                          variant="outline"
+                          onClick={() => {
+                            onHold(selectedApp.id, notes, selectedApp.applicationType);
+                            setSelectedApp(null);
+                          }}
+                          className="border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
+                        >
+                          <Clock className="w-4 h-4 mr-2" />
+                          Put On Hold
+                        </Button>
+                      )}
+                      {onReject && (
+                        <Button 
+                          variant="destructive"
+                          onClick={() => {
+                            if (!notes.trim()) {
+                              toast({ 
+                                title: "Notes required", 
+                                description: "Please provide a reason for rejection",
+                                variant: "destructive" 
+                              });
+                              return;
+                            }
+                            onReject(selectedApp.id, notes, selectedApp.applicationType);
+                            setSelectedApp(null);
+                          }}
+                        >
+                          <X className="w-4 h-4 mr-2" />
+                          Reject
+                        </Button>
+                      )}
+                      {onApprove && (
+                        <Button 
+                          onClick={() => {
+                            onApprove(selectedApp.id, notes, selectedApp.applicationType);
+                            setSelectedApp(null);
+                          }}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          <Check className="w-4 h-4 mr-2" />
+                          Approve
+                        </Button>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                {/* Show close button for approved/rejected/on_hold applications */}
+                {onClose && ['approved', 'rejected', 'on_hold'].includes(selectedApp.status) && (
+                  <div className="flex justify-end">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        onClose(selectedApp.id, selectedApp.applicationType);
+                        setSelectedApp(null);
+                      }}
+                      className="border-gray-500/30 text-gray-400 hover:bg-gray-500/10"
+                    >
+                      <Check className="w-4 h-4 mr-2" />
+                      Mark as Closed
+                    </Button>
                   </div>
-                  <div className="flex gap-3 justify-end">
-                    {onHold && (
-                      <Button 
-                        variant="outline"
-                        onClick={() => {
-                          onHold(selectedApp.id, notes, selectedApp.applicationType);
-                          setSelectedApp(null);
-                        }}
-                        className="border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
-                      >
-                        <Clock className="w-4 h-4 mr-2" />
-                        Put On Hold
-                      </Button>
-                    )}
-                    {onReject && (
-                      <Button 
-                        variant="destructive"
-                        onClick={() => {
-                          if (!notes.trim()) {
-                            toast({ 
-                              title: "Notes required", 
-                              description: "Please provide a reason for rejection",
-                              variant: "destructive" 
-                            });
-                            return;
-                          }
-                          onReject(selectedApp.id, notes, selectedApp.applicationType);
-                          setSelectedApp(null);
-                        }}
-                      >
-                        <X className="w-4 h-4 mr-2" />
-                        Reject
-                      </Button>
-                    )}
-                    {onApprove && (
-                      <Button 
-                        onClick={() => {
-                          onApprove(selectedApp.id, notes, selectedApp.applicationType);
-                          setSelectedApp(null);
-                        }}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        <Check className="w-4 h-4 mr-2" />
-                        Approve
-                      </Button>
-                    )}
+                )}
+
+                {/* Already closed message */}
+                {selectedApp.status === 'closed' && (
+                  <div className="text-center text-muted-foreground text-sm py-2">
+                    This application has been closed and handled.
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </>
           )}
         </DialogContent>

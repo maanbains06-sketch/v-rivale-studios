@@ -201,6 +201,7 @@ export type Database = {
           content_frequency: string
           content_style: string
           created_at: string
+          discord_id: string | null
           discord_username: string
           expected_benefits: string | null
           full_name: string
@@ -229,6 +230,7 @@ export type Database = {
           content_frequency: string
           content_style: string
           created_at?: string
+          discord_id?: string | null
           discord_username: string
           expected_benefits?: string | null
           full_name: string
@@ -257,6 +259,7 @@ export type Database = {
           content_frequency?: string
           content_style?: string
           created_at?: string
+          discord_id?: string | null
           discord_username?: string
           expected_benefits?: string | null
           full_name?: string
@@ -1212,6 +1215,7 @@ export type Database = {
           character_name: string
           created_at: string
           customer_scenario: string
+          discord_id: string | null
           id: string
           phone_number: string
           previous_experience: string
@@ -1233,6 +1237,7 @@ export type Database = {
           character_name: string
           created_at?: string
           customer_scenario: string
+          discord_id?: string | null
           id?: string
           phone_number: string
           previous_experience: string
@@ -1254,6 +1259,7 @@ export type Database = {
           character_name?: string
           created_at?: string
           customer_scenario?: string
+          discord_id?: string | null
           id?: string
           phone_number?: string
           previous_experience?: string
@@ -2181,6 +2187,7 @@ export type Database = {
           character_background: string
           character_name: string
           created_at: string
+          discord_id: string | null
           id: string
           interview_scenario: string
           journalism_experience: string
@@ -2203,6 +2210,7 @@ export type Database = {
           character_background: string
           character_name: string
           created_at?: string
+          discord_id?: string | null
           id?: string
           interview_scenario: string
           journalism_experience: string
@@ -2225,6 +2233,7 @@ export type Database = {
           character_background?: string
           character_name?: string
           created_at?: string
+          discord_id?: string | null
           id?: string
           interview_scenario?: string
           journalism_experience?: string
