@@ -12,6 +12,7 @@ import { Loader2, Scale, Gavel, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
 import { ApplicationCooldownTimer } from "@/components/ApplicationCooldownTimer";
+import { PendingApplicationAlert } from "@/components/PendingApplicationAlert";
 
 const dojApplicationSchema = z.object({
   characterName: z.string().min(2, "Character name is required").max(50),
@@ -45,7 +46,7 @@ const DOJApplicationForm = ({ applicationType, jobImage }: DOJApplicationFormPro
   const Icon = isJudge ? Gavel : Scale;
   const jobType = isJudge ? "DOJ - Judge" : "DOJ - Attorney";
 
-  const { isOnCooldown, rejectedAt, loading, handleCooldownEnd } = useApplicationCooldown(
+  const { isOnCooldown, rejectedAt, loading, handleCooldownEnd, hasPendingApplication, pendingMessage } = useApplicationCooldown(
     'job_applications',
     24,
     { column: 'job_type', value: jobType }
@@ -127,6 +128,17 @@ const DOJApplicationForm = ({ applicationType, jobImage }: DOJApplicationFormPro
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </CardContent>
       </Card>
+    );
+  }
+
+  if (hasPendingApplication && pendingMessage) {
+    return (
+      <PendingApplicationAlert 
+        message={pendingMessage}
+        jobImage={jobImage}
+        title={title}
+        icon={<Icon className="w-6 h-6 text-primary" />}
+      />
     );
   }
 

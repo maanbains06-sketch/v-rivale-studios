@@ -14,6 +14,7 @@ import { Loader2, Users, AlertTriangle } from "lucide-react";
 import headerGang from "@/assets/header-gang.jpg";
 import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
 import { ApplicationCooldownTimer } from "@/components/ApplicationCooldownTimer";
+import { PendingApplicationAlert } from "@/components/PendingApplicationAlert";
 
 const gangFormSchema = z.object({
   discord_username: z.string().min(2, "Discord username is required"),
@@ -48,7 +49,7 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { isOnCooldown, rejectedAt, loading, handleCooldownEnd } = useApplicationCooldown(
+  const { isOnCooldown, rejectedAt, loading, handleCooldownEnd, hasPendingApplication, pendingMessage } = useApplicationCooldown(
     'job_applications',
     24,
     { column: 'job_type', value: 'Gang Roleplay' }
@@ -152,6 +153,17 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </CardContent>
       </Card>
+    );
+  }
+
+  if (hasPendingApplication && pendingMessage) {
+    return (
+      <PendingApplicationAlert 
+        message={pendingMessage}
+        jobImage={jobImage || headerGang}
+        title="Gang Roleplay Application"
+        icon={<Users className="w-6 h-6 text-red-400" />}
+      />
     );
   }
 

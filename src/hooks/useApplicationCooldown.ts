@@ -7,6 +7,8 @@ interface CooldownState {
   loading: boolean;
   cooldownHours: number;
   canReapply: boolean;
+  hasPendingApplication: boolean;
+  pendingMessage: string | null;
 }
 
 type ApplicationTable = 
@@ -27,6 +29,8 @@ export const useApplicationCooldown = (
     loading: true,
     cooldownHours,
     canReapply: true,
+    hasPendingApplication: false,
+    pendingMessage: null,
   });
 
   const checkCooldown = useCallback(async () => {
@@ -37,8 +41,41 @@ export const useApplicationCooldown = (
         return;
       }
 
-      // Build query based on table - use any to avoid deep type issues
-      const baseQuery = supabase
+      // First check for pending applications
+      let pendingQuery = supabase
+        .from(table)
+        .select('id, status, created_at')
+        .eq('user_id', user.id)
+        .in('status', ['pending', 'on_hold'])
+        .limit(1) as any;
+
+      if (additionalFilter) {
+        pendingQuery = pendingQuery.eq(additionalFilter.column, additionalFilter.value);
+      }
+
+      const { data: pendingData, error: pendingError } = await pendingQuery.maybeSingle();
+
+      if (pendingError) {
+        console.error('Error checking pending applications:', pendingError);
+      }
+
+      if (pendingData) {
+        // User has a pending application
+        const jobType = additionalFilter?.value || table.replace('_applications', '').replace('_', ' ');
+        setState({
+          isOnCooldown: false,
+          rejectedAt: null,
+          loading: false,
+          cooldownHours,
+          canReapply: false,
+          hasPendingApplication: true,
+          pendingMessage: `You already have a pending ${jobType} application submitted on ${new Date(pendingData.created_at).toLocaleDateString()}. Please wait for a response before submitting another.`,
+        });
+        return;
+      }
+
+      // Check for rejected applications with cooldown
+      let rejectedQuery = supabase
         .from(table)
         .select('status, reviewed_at, updated_at, created_at')
         .eq('user_id', user.id)
@@ -46,12 +83,11 @@ export const useApplicationCooldown = (
         .order('updated_at', { ascending: false })
         .limit(1) as any;
 
-      // Add additional filter if provided (e.g., job_type for job_applications)
-      const query = additionalFilter 
-        ? baseQuery.eq(additionalFilter.column, additionalFilter.value)
-        : baseQuery;
+      if (additionalFilter) {
+        rejectedQuery = rejectedQuery.eq(additionalFilter.column, additionalFilter.value);
+      }
 
-      const { data, error } = await query.maybeSingle();
+      const { data, error } = await rejectedQuery.maybeSingle();
 
       if (error) {
         console.error('Error checking cooldown:', error);
@@ -60,7 +96,14 @@ export const useApplicationCooldown = (
       }
 
       if (!data) {
-        setState(prev => ({ ...prev, loading: false, isOnCooldown: false, canReapply: true }));
+        setState(prev => ({ 
+          ...prev, 
+          loading: false, 
+          isOnCooldown: false, 
+          canReapply: true,
+          hasPendingApplication: false,
+          pendingMessage: null,
+        }));
         return;
       }
 
@@ -76,6 +119,8 @@ export const useApplicationCooldown = (
           loading: false,
           cooldownHours,
           canReapply: false,
+          hasPendingApplication: false,
+          pendingMessage: null,
         });
       } else {
         setState({
@@ -84,6 +129,8 @@ export const useApplicationCooldown = (
           loading: false,
           cooldownHours,
           canReapply: true,
+          hasPendingApplication: false,
+          pendingMessage: null,
         });
       }
     } catch (error) {

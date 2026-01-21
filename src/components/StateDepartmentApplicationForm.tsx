@@ -14,6 +14,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Loader2, Building2 } from "lucide-react";
 import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
 import { ApplicationCooldownTimer } from "@/components/ApplicationCooldownTimer";
+import { PendingApplicationAlert } from "@/components/PendingApplicationAlert";
 
 const formSchema = z.object({
   characterName: z.string().min(2, "Character name must be at least 2 characters"),
@@ -41,7 +42,7 @@ const StateDepartmentApplicationForm = ({ jobImage }: StateDepartmentApplication
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const { isOnCooldown, rejectedAt, loading: cooldownLoading, handleCooldownEnd } = useApplicationCooldown(
+  const { isOnCooldown, rejectedAt, loading: cooldownLoading, handleCooldownEnd, hasPendingApplication, pendingMessage } = useApplicationCooldown(
     'job_applications',
     24,
     { column: 'job_type', value: 'State Department' }
@@ -141,6 +142,17 @@ const StateDepartmentApplicationForm = ({ jobImage }: StateDepartmentApplication
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </CardContent>
       </Card>
+    );
+  }
+
+  if (hasPendingApplication && pendingMessage) {
+    return (
+      <PendingApplicationAlert 
+        message={pendingMessage}
+        jobImage={jobImage}
+        title="State Department Application"
+        icon={<Building2 className="w-6 h-6 text-amber-400" />}
+      />
     );
   }
 
