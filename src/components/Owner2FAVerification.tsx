@@ -52,6 +52,14 @@ export const Owner2FAVerification = ({ userEmail, onVerified }: Owner2FAVerifica
       if (error) throw error;
       
       if (data) {
+        // Store verified session in localStorage
+        const { data: { user } } = await supabase.auth.getUser();
+        localStorage.setItem('owner_2fa_verified', JSON.stringify({
+          verified: true,
+          userId: user?.id,
+          timestamp: Date.now()
+        }));
+        
         toast.success('Verification successful! Access granted.');
         onVerified();
       } else {

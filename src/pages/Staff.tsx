@@ -267,10 +267,15 @@ const Staff = () => {
   const adminStaff = getStaffByDepartment("management");
   const developerStaff = getStaffByDepartment("development");
   const administrationStaff = getStaffByDepartment("administration");
+  
+  // Moderation team - staff with department "moderation" or role_type "moderator" in staff department
+  const moderationStaff = staffMembers.filter(
+    (m) => m.department === "moderation" || (m.department === "staff" && m.role_type === "moderator")
+  );
 
-  // General staff team (display_order 36-38)
+  // General staff team (display_order 36-38) - exclude moderators shown in moderation section
   const generalStaff = staffMembers.filter(
-    (m) => m.display_order >= 36 && m.display_order <= 38 && m.role_type === "staff",
+    (m) => m.display_order >= 36 && m.display_order <= 38 && m.role_type === "staff" && !moderationStaff.some(mod => mod.id === m.id)
   );
 
   // Support team (display_order 40-42)
@@ -778,6 +783,7 @@ const Staff = () => {
             { key: "management", title: "Management Team", subtitle: "Ensuring smooth server operations", icon: Users, staff: adminStaff.slice(0, 3), centerSingle: false, noLimit: false },
             { key: "administration", title: "Administration Team", subtitle: "Keeping the community safe and fair", icon: Shield, staff: administrationStaff, centerSingle: true, noLimit: true },
             { key: "development", title: "Development Team", subtitle: "Building innovative features", icon: Code, staff: developerStaff, centerSingle: true, noLimit: true },
+            { key: "moderation", title: "Moderation Team", subtitle: "Ensuring fair play and community standards", icon: HeadphonesIcon, staff: moderationStaff, centerSingle: true, noLimit: true },
             { key: "staff", title: "Staff Team", subtitle: "Core team members providing essential services", icon: UserCheck, staff: generalStaff.slice(0, 3), centerSingle: false, noLimit: false },
             { key: "support", title: "Support Team", subtitle: "Always here to help you succeed", icon: HeadphonesIcon, staff: supportStaff.slice(0, 3), centerSingle: false, noLimit: false },
             { key: "events", title: "Events Team", subtitle: "Creating unforgettable experiences", icon: Calendar, staff: eventStaff.slice(0, 3), centerSingle: false, noLimit: false },

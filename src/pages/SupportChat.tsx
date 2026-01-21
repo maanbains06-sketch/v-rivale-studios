@@ -662,21 +662,29 @@ const SupportChat = () => {
       <Navigation />
       <PageHeader
         title={category === 'refund' ? "Refund Support" : "Live Support Chat"}
-        description={category === 'refund' ? "Get assistance with refund requests and billing issues" : "Get real-time assistance from our support team"}
+        description={category === 'refund' ? "Get assistance with refund requests and billing issues" : "Get real-time assistance from our AI and support team"}
         backgroundImage={headerSupport}
       />
 
       <div className="container mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-3 gap-6 h-[calc(100vh-300px)]">
           {/* Chats List */}
-          <Card className="glass-effect border-border/20">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-              <CardTitle className="text-lg">Support Chats</CardTitle>
+          <Card className="relative overflow-hidden bg-gradient-to-b from-card to-card/80 backdrop-blur-xl border-border/30 shadow-xl">
+            {/* Decorative gradient */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,hsl(var(--primary)/0.08),transparent_50%)] pointer-events-none" />
+            
+            <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-4 border-b border-border/20">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
+                  <MessageCircle className="h-5 w-5 text-primary" />
+                </div>
+                <CardTitle className="text-lg font-semibold">Support Chats</CardTitle>
+              </div>
               <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button size="sm" variant="outline">
+                  <Button size="sm" className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20">
                     <Plus className="h-4 w-4 mr-2" />
-                    Skylife Support
+                    New Chat
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
@@ -688,7 +696,10 @@ const SupportChat = () => {
                           Create Refund Request
                         </div>
                       ) : (
-                        'Create New Support Chat'
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="w-5 h-5 text-primary" />
+                          Start New Support Chat
+                        </div>
                       )}
                     </DialogTitle>
                   </DialogHeader>
@@ -708,6 +719,7 @@ const SupportChat = () => {
                         placeholder={category === 'refund' ? "Refund Request - Order #" : "Brief title for your request"}
                         value={newChatSubject}
                         onChange={(e) => setNewChatSubject(e.target.value)}
+                        className="bg-background/50"
                       />
                     </div>
                     <div className="space-y-2">
@@ -721,7 +733,7 @@ const SupportChat = () => {
                         value={newChatInitialMessage}
                         onChange={(e) => setNewChatInitialMessage(e.target.value)}
                         rows={4}
-                        className="resize-none"
+                        className="resize-none bg-background/50"
                       />
                       <p className="text-xs text-muted-foreground">
                         The more details you provide, the faster we can help you.
@@ -730,7 +742,7 @@ const SupportChat = () => {
                     <Button 
                       onClick={createNewChat} 
                       disabled={loading || !newChatSubject.trim() || !newChatInitialMessage.trim()} 
-                      className="w-full"
+                      className="w-full bg-gradient-to-r from-primary to-primary/80"
                     >
                       {loading ? "Creating..." : "Start Support Chat"}
                     </Button>
@@ -738,19 +750,22 @@ const SupportChat = () => {
                 </DialogContent>
               </Dialog>
             </CardHeader>
-            <CardContent className="p-0">
+            <CardContent className="relative p-0">
               <ScrollArea className="h-[calc(100vh-400px)]">
                 {chats.length === 0 ? (
-                  <div className="p-8 text-center text-muted-foreground">
-                    <MessageCircle className="h-12 w-12 mx-auto mb-2 opacity-20" />
-                    <p className="text-sm">No support chats yet</p>
-                    <p className="text-xs mt-1">Create one to get started</p>
+                  <div className="p-8 text-center">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-muted/50 to-muted/20 flex items-center justify-center">
+                      <MessageCircle className="h-8 w-8 text-muted-foreground/40" />
+                    </div>
+                    <p className="text-sm font-medium text-muted-foreground">No support chats yet</p>
+                    <p className="text-xs text-muted-foreground/70 mt-1">Click "New Chat" to get started</p>
                   </div>
                 ) : (
-                  <div className="divide-y divide-border">
+                  <div className="divide-y divide-border/30">
                     {chats.map((chat) => {
                       const isEscalated = chat.tags?.includes('auto_escalated');
                       const isRefund = chat.tags?.includes('refund');
+                      const isSelected = selectedChat?.id === chat.id;
                       const languageEmoji = {
                         'en': '🇬🇧',
                         'es': '🇪🇸',
@@ -769,36 +784,44 @@ const SupportChat = () => {
                         <button
                           key={chat.id}
                           onClick={() => setSelectedChat(chat)}
-                          className={`w-full p-4 text-left hover:bg-accent transition-colors ${
-                            selectedChat?.id === chat.id ? "bg-accent" : ""
+                          className={`w-full p-4 text-left transition-all duration-200 hover:bg-accent/50 ${
+                            isSelected 
+                              ? "bg-gradient-to-r from-primary/10 to-transparent border-l-2 border-primary" 
+                              : "border-l-2 border-transparent"
                           }`}
                         >
-                          <div className="flex items-start justify-between mb-1">
+                          <div className="flex items-start justify-between mb-2">
                             <div className="flex items-center gap-2 flex-1">
                               <span className="text-sm">{languageEmoji}</span>
-                              <p className="font-medium text-sm truncate">{chat.subject}</p>
-                              {isRefund && (
-                                <span className="text-xs px-2 py-0.5 rounded-full bg-secondary/20 text-secondary flex items-center gap-1">
-                                  <CreditCard className="h-3 w-3" />
-                                  Refund
-                                </span>
-                              )}
-                              {isEscalated && (
-                                <span className="text-xs px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-500 flex items-center gap-1">
-                                  <UserPlus className="h-3 w-3" />
-                                  Escalated
-                                </span>
-                              )}
+                              <p className={`font-medium text-sm truncate ${isSelected ? 'text-primary' : ''}`}>
+                                {chat.subject}
+                              </p>
                             </div>
-                            <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ml-2 ${
-                              chat.status === "open" ? "bg-green-500/20 text-green-500" :
-                              chat.status === "closed" ? "bg-gray-500/20 text-gray-500" :
-                              "bg-yellow-500/20 text-yellow-500"
+                            <span className={`text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0 ml-2 ${
+                              chat.status === "open" 
+                                ? "bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-500 border border-green-500/30" 
+                                : chat.status === "closed" 
+                                  ? "bg-gray-500/20 text-gray-400 border border-gray-500/20" 
+                                  : "bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-500 border border-amber-500/30"
                             }`}>
                               {chat.status}
                             </span>
                           </div>
-                          <p className="text-xs text-muted-foreground">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {isRefund && (
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-secondary/20 text-secondary flex items-center gap-1 border border-secondary/30">
+                                <CreditCard className="h-3 w-3" />
+                                Refund
+                              </span>
+                            )}
+                            {isEscalated && (
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-500 flex items-center gap-1 border border-orange-500/30">
+                                <UserPlus className="h-3 w-3" />
+                                Escalated
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-2">
                             {format(new Date(chat.last_message_at), "PPp")}
                           </p>
                         </button>
@@ -811,7 +834,9 @@ const SupportChat = () => {
           </Card>
 
           {/* Messages Area */}
-          <Card className="lg:col-span-2 glass-effect border-border/20 flex flex-col">
+          <Card className="lg:col-span-2 relative overflow-hidden bg-gradient-to-b from-card to-card/80 backdrop-blur-xl border-border/30 shadow-xl flex flex-col">
+            {/* Decorative gradient */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,hsl(var(--primary)/0.05),transparent_40%)] pointer-events-none" />
             {selectedChat ? (
               <>
                 <CardHeader className="border-b border-border/20">
@@ -893,7 +918,7 @@ const SupportChat = () => {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="flex-1 flex flex-col p-4">
+                <CardContent className="relative flex-1 flex flex-col p-4">
                   <ScrollArea className="flex-1 pr-4">
                     <div className="space-y-4">
                       {messages.map((message) => {
@@ -905,33 +930,35 @@ const SupportChat = () => {
                             key={message.id}
                             className={`flex ${message.is_staff ? "justify-start" : "justify-end"}`}
                           >
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-2 max-w-[80%]">
                               <div
-                                className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                                className={`relative rounded-2xl px-4 py-3 shadow-lg ${
                                   message.is_staff
-                                    ? "bg-accent text-foreground"
-                                    : "bg-primary text-primary-foreground"
+                                    ? "bg-gradient-to-br from-muted/80 to-muted/50 text-foreground border border-border/30"
+                                    : "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground"
                                 }`}
                               >
                                 {isAiMessage && (
-                                  <div className="flex items-center gap-2 mb-2 text-xs opacity-70">
-                                    <Sparkles className="h-3 w-3" />
-                                    <span>AI Assistant</span>
+                                  <div className="flex items-center gap-2 mb-2 text-xs opacity-80">
+                                    <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center">
+                                      <Sparkles className="h-3 w-3 text-blue-400" />
+                                    </div>
+                                    <span className="font-medium">AI Assistant</span>
                                   </div>
                                 )}
-                                <p className="text-sm">{message.message}</p>
+                                <p className="text-sm leading-relaxed">{message.message}</p>
                                 {message.attachment_url && (
                                   <a
                                     href={message.attachment_url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex items-center gap-2 mt-2 text-xs underline hover:opacity-80"
+                                    className="flex items-center gap-2 mt-2 text-xs underline hover:opacity-80 bg-background/20 px-3 py-2 rounded-lg"
                                   >
                                     <Download className="h-3 w-3" />
                                     {message.attachment_name} ({(message.attachment_size! / 1024).toFixed(1)}KB)
                                   </a>
                                 )}
-                                <p className="text-xs opacity-70 mt-1">
+                                <p className="text-[10px] opacity-60 mt-2">
                                   {format(new Date(message.created_at), "p")}
                                 </p>
                               </div>
@@ -965,14 +992,15 @@ const SupportChat = () => {
                       <div ref={messagesEndRef} />
                     </div>
                   </ScrollArea>
-                  <div className="space-y-2 mt-4 pt-4 border-t border-border/20">
+                  <div className="space-y-3 mt-4 pt-4 border-t border-border/20">
                     {attachment && (
-                      <div className="flex items-center gap-2 text-sm bg-accent px-3 py-2 rounded-md">
-                        <Paperclip className="h-4 w-4" />
-                        <span className="flex-1 truncate">{attachment.name}</span>
+                      <div className="flex items-center gap-2 text-sm bg-gradient-to-r from-primary/10 to-transparent px-4 py-2.5 rounded-xl border border-primary/20">
+                        <Paperclip className="h-4 w-4 text-primary" />
+                        <span className="flex-1 truncate font-medium">{attachment.name}</span>
                         <Button
                           size="sm"
                           variant="ghost"
+                          className="h-6 w-6 p-0 rounded-full hover:bg-destructive/20 hover:text-destructive"
                           onClick={() => {
                             setAttachment(null);
                             if (fileInputRef.current) {
@@ -997,6 +1025,7 @@ const SupportChat = () => {
                         variant="outline"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploading}
+                        className="bg-background/50 hover:bg-background/80 border-border/50"
                       >
                         <Paperclip className="h-4 w-4" />
                       </Button>
@@ -1006,8 +1035,14 @@ const SupportChat = () => {
                         onChange={(e) => setNewMessage(e.target.value)}
                         onKeyPress={(e) => e.key === "Enter" && !uploading && sendMessage()}
                         disabled={uploading}
+                        className="bg-background/50 border-border/50 focus-visible:ring-primary/30"
                       />
-                      <Button onClick={sendMessage} size="icon" disabled={uploading}>
+                      <Button 
+                        onClick={sendMessage} 
+                        size="icon" 
+                        disabled={uploading}
+                        className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20"
+                      >
                         <Send className="h-4 w-4" />
                       </Button>
                     </div>
@@ -1015,10 +1050,13 @@ const SupportChat = () => {
                 </CardContent>
               </>
             ) : (
-              <CardContent className="flex-1 flex items-center justify-center text-muted-foreground">
+              <CardContent className="relative flex-1 flex items-center justify-center">
                 <div className="text-center">
-                  <MessageCircle className="h-16 w-16 mx-auto mb-4 opacity-20" />
-                  <p>Select a chat to view messages</p>
+                  <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-muted/50 to-muted/20 flex items-center justify-center border border-border/30">
+                    <MessageCircle className="h-10 w-10 text-muted-foreground/30" />
+                  </div>
+                  <p className="text-lg font-medium text-muted-foreground">Select a chat</p>
+                  <p className="text-sm text-muted-foreground/70 mt-1">Choose a conversation to view messages</p>
                 </div>
               </CardContent>
             )}
