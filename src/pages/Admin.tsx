@@ -1302,18 +1302,22 @@ const Admin = () => {
                     
                     const config = tableMap[type];
                     if (config) {
-                      const { error } = await supabase
+                      const { data: updatedRows, error } = await supabase
                         .from(config.table as any)
                         .update({
                           status: 'closed',
                           reviewed_by: user?.id || null,
                           reviewed_at: new Date().toISOString(),
                         })
-                        .eq('id', id);
+                        .eq('id', id)
+                        .select('id');
                       
                       if (error) {
-                        console.error('Error closing application:', error);
+                        console.error('Error closing application:', { type, table: config.table, id, error });
                         toast({ title: "Error", description: `Failed to close application: ${error.message}`, variant: "destructive" });
+                      } else if (!updatedRows || updatedRows.length === 0) {
+                        console.error('Close blocked (0 rows updated):', { type, table: config.table, id });
+                        toast({ title: "Not Updated", description: "Close was blocked by permissions (0 rows updated).", variant: "destructive" });
                       } else {
                         toast({ title: "Success", description: "Application marked as closed." });
                         config.loader();
