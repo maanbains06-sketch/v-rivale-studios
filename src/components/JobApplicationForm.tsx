@@ -13,7 +13,8 @@ import { Loader2, Shield, Heart, Wrench } from "lucide-react";
 import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
 import { ApplicationCooldownTimer } from "@/components/ApplicationCooldownTimer";
 import { PendingApplicationAlert } from "@/components/PendingApplicationAlert";
-
+import { ApprovedApplicationAlert } from "@/components/ApprovedApplicationAlert";
+import { OnHoldApplicationAlert } from "@/components/OnHoldApplicationAlert";
 const jobApplicationSchema = z.object({
   character_name: z.string()
     .trim()
@@ -67,7 +68,18 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { isOnCooldown, rejectedAt, loading, handleCooldownEnd, hasPendingApplication, pendingMessage } = useApplicationCooldown(
+  const { 
+    isOnCooldown, 
+    rejectedAt, 
+    loading, 
+    handleCooldownEnd, 
+    hasPendingApplication, 
+    pendingMessage,
+    hasApprovedApplication,
+    approvedMessage,
+    isOnHold,
+    onHoldMessage
+  } = useApplicationCooldown(
     'job_applications',
     24,
     { column: 'job_type', value: jobType }
@@ -202,6 +214,28 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </CardContent>
       </Card>
+    );
+  }
+
+  if (hasApprovedApplication && approvedMessage) {
+    return (
+      <ApprovedApplicationAlert 
+        message={approvedMessage}
+        jobImage={jobImage}
+        title={`${jobType} Application`}
+        icon={getJobIcon()}
+      />
+    );
+  }
+
+  if (isOnHold && onHoldMessage) {
+    return (
+      <OnHoldApplicationAlert 
+        message={onHoldMessage}
+        jobImage={jobImage}
+        title={`${jobType} Application`}
+        icon={getJobIcon()}
+      />
     );
   }
 

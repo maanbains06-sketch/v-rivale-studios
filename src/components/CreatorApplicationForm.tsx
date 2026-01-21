@@ -15,7 +15,10 @@ import {
   X,
   Loader2,
   Shield,
-  Mail
+  Mail,
+  CheckCircle,
+  Pause,
+  PartyPopper
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +30,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
 
 const creatorSchema = z.object({
   fullName: z.string().min(2, "Name must be at least 2 characters").max(100),
@@ -81,6 +85,19 @@ const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
   const { toast } = useToast();
   const [formData, setFormData] = useState<Partial<CreatorFormData>>({});
   const [errors, setErrors] = useState<Partial<Record<keyof CreatorFormData, string>>>({});
+
+  // Use centralized cooldown hook for creator applications
+  const { 
+    loading: cooldownLoading, 
+    hasPendingApplication, 
+    pendingMessage,
+    hasApprovedApplication,
+    approvedMessage,
+    isOnHold,
+    onHoldMessage,
+    isOnCooldown,
+    rejectedAt
+  } = useApplicationCooldown('creator_applications', 24);
 
   const handleInputChange = (field: keyof CreatorFormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -213,6 +230,100 @@ const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
       setIsSubmitting(false);
     }
   };
+
+  // Show loading state
+  if (cooldownLoading) {
+    return (
+      <div className="relative max-h-[85vh] overflow-y-auto">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-3 text-muted-foreground">Checking eligibility...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Show approved message
+  if (hasApprovedApplication && approvedMessage) {
+    return (
+      <div className="relative max-h-[85vh] overflow-y-auto p-8">
+        <div className="text-center space-y-6">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="p-6 rounded-full bg-green-500/20 w-24 h-24 mx-auto flex items-center justify-center"
+          >
+            <PartyPopper className="w-12 h-12 text-green-400" />
+          </motion.div>
+          <h3 className="text-3xl font-bold text-green-400">🎉 Congratulations! 🎉</h3>
+          <p className="text-muted-foreground max-w-md mx-auto">{approvedMessage}</p>
+          <div className="flex items-center justify-center gap-2 text-sm text-green-400 bg-green-500/10 px-4 py-2 rounded-full border border-green-500/20 w-fit mx-auto">
+            <CheckCircle className="w-4 h-4" />
+            <span>You're officially part of the Creator Program!</span>
+          </div>
+          <Button onClick={onClose} variant="outline" className="mt-4">Close</Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show on hold message
+  if (isOnHold && onHoldMessage) {
+    return (
+      <div className="relative max-h-[85vh] overflow-y-auto p-8">
+        <div className="text-center space-y-6">
+          <div className="p-6 rounded-full bg-blue-500/20 w-24 h-24 mx-auto flex items-center justify-center">
+            <Pause className="w-12 h-12 text-blue-400" />
+          </div>
+          <h3 className="text-2xl font-bold text-blue-400">Application On Hold</h3>
+          <p className="text-muted-foreground max-w-md mx-auto">{onHoldMessage}</p>
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground bg-muted/30 px-4 py-2 rounded-full w-fit mx-auto">
+            <Clock className="w-4 h-4" />
+            <span>You will be notified once a decision is made</span>
+          </div>
+          <Button onClick={onClose} variant="outline" className="mt-4">Close</Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show pending message
+  if (hasPendingApplication && pendingMessage) {
+    return (
+      <div className="relative max-h-[85vh] overflow-y-auto p-8">
+        <div className="text-center space-y-6">
+          <div className="p-6 rounded-full bg-amber-500/20 w-24 h-24 mx-auto flex items-center justify-center">
+            <Clock className="w-12 h-12 text-amber-400" />
+          </div>
+          <h3 className="text-2xl font-bold text-amber-400">Application Pending</h3>
+          <p className="text-muted-foreground max-w-md mx-auto">{pendingMessage}</p>
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground bg-muted/30 px-4 py-2 rounded-full w-fit mx-auto">
+            <Clock className="w-4 h-4" />
+            <span>You will be notified once your application is reviewed</span>
+          </div>
+          <Button onClick={onClose} variant="outline" className="mt-4">Close</Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show cooldown message
+  if (isOnCooldown && rejectedAt) {
+    return (
+      <div className="relative max-h-[85vh] overflow-y-auto p-8">
+        <div className="text-center space-y-6">
+          <div className="p-6 rounded-full bg-red-500/20 w-24 h-24 mx-auto flex items-center justify-center">
+            <Clock className="w-12 h-12 text-red-400" />
+          </div>
+          <h3 className="text-2xl font-bold text-red-400">Cooldown Active</h3>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            Your previous application was rejected. You can reapply after 24 hours from the rejection time.
+          </p>
+          <Button onClick={onClose} variant="outline" className="mt-4">Close</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative max-h-[85vh] overflow-y-auto">

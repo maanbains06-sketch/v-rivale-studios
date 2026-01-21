@@ -9,6 +9,10 @@ interface CooldownState {
   canReapply: boolean;
   hasPendingApplication: boolean;
   pendingMessage: string | null;
+  hasApprovedApplication: boolean;
+  approvedMessage: string | null;
+  isOnHold: boolean;
+  onHoldMessage: string | null;
 }
 
 type ApplicationTable = 
@@ -31,6 +35,10 @@ export const useApplicationCooldown = (
     canReapply: true,
     hasPendingApplication: false,
     pendingMessage: null,
+    hasApprovedApplication: false,
+    approvedMessage: null,
+    isOnHold: false,
+    onHoldMessage: null,
   });
 
   const checkCooldown = useCallback(async () => {
@@ -41,12 +49,86 @@ export const useApplicationCooldown = (
         return;
       }
 
-      // First check for pending applications
+      const jobType = additionalFilter?.value || table.replace('_applications', '').replace('_', ' ');
+
+      // First check for approved applications
+      let approvedQuery = supabase
+        .from(table)
+        .select('id, status, created_at, reviewed_at')
+        .eq('user_id', user.id)
+        .eq('status', 'approved')
+        .order('reviewed_at', { ascending: false })
+        .limit(1) as any;
+
+      if (additionalFilter) {
+        approvedQuery = approvedQuery.eq(additionalFilter.column, additionalFilter.value);
+      }
+
+      const { data: approvedData, error: approvedError } = await approvedQuery.maybeSingle();
+
+      if (approvedError) {
+        console.error('Error checking approved applications:', approvedError);
+      }
+
+      if (approvedData) {
+        // User has an approved application - don't allow new submissions
+        setState({
+          isOnCooldown: false,
+          rejectedAt: null,
+          loading: false,
+          cooldownHours,
+          canReapply: false,
+          hasPendingApplication: false,
+          pendingMessage: null,
+          hasApprovedApplication: true,
+          approvedMessage: `Congratulations! Your ${jobType} application was approved on ${new Date(approvedData.reviewed_at || approvedData.created_at).toLocaleDateString()}. Welcome to the team!`,
+          isOnHold: false,
+          onHoldMessage: null,
+        });
+        return;
+      }
+
+      // Check for on_hold applications
+      let onHoldQuery = supabase
+        .from(table)
+        .select('id, status, created_at')
+        .eq('user_id', user.id)
+        .eq('status', 'on_hold')
+        .limit(1) as any;
+
+      if (additionalFilter) {
+        onHoldQuery = onHoldQuery.eq(additionalFilter.column, additionalFilter.value);
+      }
+
+      const { data: onHoldData, error: onHoldError } = await onHoldQuery.maybeSingle();
+
+      if (onHoldError) {
+        console.error('Error checking on_hold applications:', onHoldError);
+      }
+
+      if (onHoldData) {
+        setState({
+          isOnCooldown: false,
+          rejectedAt: null,
+          loading: false,
+          cooldownHours,
+          canReapply: false,
+          hasPendingApplication: false,
+          pendingMessage: null,
+          hasApprovedApplication: false,
+          approvedMessage: null,
+          isOnHold: true,
+          onHoldMessage: `Your ${jobType} application submitted on ${new Date(onHoldData.created_at).toLocaleDateString()} is currently on hold. Our team is reviewing additional details. Please wait for further updates.`,
+        });
+        return;
+      }
+
+      // Check for pending applications
       let pendingQuery = supabase
         .from(table)
         .select('id, status, created_at')
         .eq('user_id', user.id)
-        .in('status', ['pending', 'on_hold'])
+        .eq('status', 'pending')
         .limit(1) as any;
 
       if (additionalFilter) {
@@ -61,7 +143,6 @@ export const useApplicationCooldown = (
 
       if (pendingData) {
         // User has a pending application
-        const jobType = additionalFilter?.value || table.replace('_applications', '').replace('_', ' ');
         setState({
           isOnCooldown: false,
           rejectedAt: null,
@@ -70,6 +151,10 @@ export const useApplicationCooldown = (
           canReapply: false,
           hasPendingApplication: true,
           pendingMessage: `You already have a pending ${jobType} application submitted on ${new Date(pendingData.created_at).toLocaleDateString()}. Please wait for a response before submitting another.`,
+          hasApprovedApplication: false,
+          approvedMessage: null,
+          isOnHold: false,
+          onHoldMessage: null,
         });
         return;
       }
@@ -103,6 +188,10 @@ export const useApplicationCooldown = (
           canReapply: true,
           hasPendingApplication: false,
           pendingMessage: null,
+          hasApprovedApplication: false,
+          approvedMessage: null,
+          isOnHold: false,
+          onHoldMessage: null,
         }));
         return;
       }
@@ -121,6 +210,10 @@ export const useApplicationCooldown = (
           canReapply: false,
           hasPendingApplication: false,
           pendingMessage: null,
+          hasApprovedApplication: false,
+          approvedMessage: null,
+          isOnHold: false,
+          onHoldMessage: null,
         });
       } else {
         setState({
@@ -131,6 +224,10 @@ export const useApplicationCooldown = (
           canReapply: true,
           hasPendingApplication: false,
           pendingMessage: null,
+          hasApprovedApplication: false,
+          approvedMessage: null,
+          isOnHold: false,
+          onHoldMessage: null,
         });
       }
     } catch (error) {

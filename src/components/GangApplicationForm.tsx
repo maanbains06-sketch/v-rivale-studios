@@ -15,7 +15,8 @@ import headerGang from "@/assets/header-gang.jpg";
 import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
 import { ApplicationCooldownTimer } from "@/components/ApplicationCooldownTimer";
 import { PendingApplicationAlert } from "@/components/PendingApplicationAlert";
-
+import { ApprovedApplicationAlert } from "@/components/ApprovedApplicationAlert";
+import { OnHoldApplicationAlert } from "@/components/OnHoldApplicationAlert";
 const gangFormSchema = z.object({
   discord_username: z.string().min(2, "Discord username is required"),
   steam_id: z.string().min(5, "Steam ID is required"),
@@ -49,7 +50,18 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { isOnCooldown, rejectedAt, loading, handleCooldownEnd, hasPendingApplication, pendingMessage } = useApplicationCooldown(
+  const { 
+    isOnCooldown, 
+    rejectedAt, 
+    loading, 
+    handleCooldownEnd, 
+    hasPendingApplication, 
+    pendingMessage,
+    hasApprovedApplication,
+    approvedMessage,
+    isOnHold,
+    onHoldMessage
+  } = useApplicationCooldown(
     'job_applications',
     24,
     { column: 'job_type', value: 'Gang Roleplay' }
@@ -153,6 +165,28 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </CardContent>
       </Card>
+    );
+  }
+
+  if (hasApprovedApplication && approvedMessage) {
+    return (
+      <ApprovedApplicationAlert 
+        message={approvedMessage}
+        jobImage={jobImage || headerGang}
+        title="Gang Roleplay Application"
+        icon={<Users className="w-6 h-6 text-green-500" />}
+      />
+    );
+  }
+
+  if (isOnHold && onHoldMessage) {
+    return (
+      <OnHoldApplicationAlert 
+        message={onHoldMessage}
+        jobImage={jobImage || headerGang}
+        title="Gang Roleplay Application"
+        icon={<Users className="w-6 h-6 text-blue-500" />}
+      />
     );
   }
 

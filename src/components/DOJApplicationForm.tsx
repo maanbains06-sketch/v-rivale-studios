@@ -13,7 +13,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
 import { ApplicationCooldownTimer } from "@/components/ApplicationCooldownTimer";
 import { PendingApplicationAlert } from "@/components/PendingApplicationAlert";
-
+import { ApprovedApplicationAlert } from "@/components/ApprovedApplicationAlert";
+import { OnHoldApplicationAlert } from "@/components/OnHoldApplicationAlert";
 const dojApplicationSchema = z.object({
   characterName: z.string().min(2, "Character name is required").max(50),
   age: z.string().refine((val) => !isNaN(Number(val)) && Number(val) >= 21, {
@@ -46,7 +47,18 @@ const DOJApplicationForm = ({ applicationType, jobImage }: DOJApplicationFormPro
   const Icon = isJudge ? Gavel : Scale;
   const jobType = isJudge ? "DOJ - Judge" : "DOJ - Attorney";
 
-  const { isOnCooldown, rejectedAt, loading, handleCooldownEnd, hasPendingApplication, pendingMessage } = useApplicationCooldown(
+  const { 
+    isOnCooldown, 
+    rejectedAt, 
+    loading, 
+    handleCooldownEnd, 
+    hasPendingApplication, 
+    pendingMessage,
+    hasApprovedApplication,
+    approvedMessage,
+    isOnHold,
+    onHoldMessage
+  } = useApplicationCooldown(
     'job_applications',
     24,
     { column: 'job_type', value: jobType }
@@ -128,6 +140,28 @@ const DOJApplicationForm = ({ applicationType, jobImage }: DOJApplicationFormPro
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </CardContent>
       </Card>
+    );
+  }
+
+  if (hasApprovedApplication && approvedMessage) {
+    return (
+      <ApprovedApplicationAlert 
+        message={approvedMessage}
+        jobImage={jobImage}
+        title={title}
+        icon={<Icon className="w-6 h-6 text-green-500" />}
+      />
+    );
+  }
+
+  if (isOnHold && onHoldMessage) {
+    return (
+      <OnHoldApplicationAlert 
+        message={onHoldMessage}
+        jobImage={jobImage}
+        title={title}
+        icon={<Icon className="w-6 h-6 text-blue-500" />}
+      />
     );
   }
 
