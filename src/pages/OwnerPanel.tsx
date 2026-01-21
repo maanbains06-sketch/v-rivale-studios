@@ -1493,12 +1493,13 @@ const OwnerPanel = () => {
                       mechanic: { table: 'job_applications', loader: loadJobApplications },
                       judge: { table: 'job_applications', loader: loadJobApplications },
                       attorney: { table: 'job_applications', loader: loadJobApplications },
+                      state: { table: 'job_applications', loader: loadJobApplications },
+                      gang: { table: 'job_applications', loader: loadGangApplications },
                       ban_appeal: { table: 'ban_appeals', loader: loadBanAppeals },
                       creator: { table: 'creator_applications', loader: loadCreatorApplications },
                       firefighter: { table: 'firefighter_applications', loader: loadFirefighterApplications },
                       weazel_news: { table: 'weazel_news_applications', loader: loadWeazelNewsApplications },
                       pdm: { table: 'pdm_applications', loader: loadPdmApplications },
-                      gang: { table: 'job_applications', loader: loadGangApplications },
                     };
                     
                     const config = tableMap[type];
@@ -1521,12 +1522,13 @@ const OwnerPanel = () => {
                       mechanic: { table: 'job_applications', loader: loadJobApplications },
                       judge: { table: 'job_applications', loader: loadJobApplications },
                       attorney: { table: 'job_applications', loader: loadJobApplications },
+                      state: { table: 'job_applications', loader: loadJobApplications },
+                      gang: { table: 'job_applications', loader: loadGangApplications },
                       ban_appeal: { table: 'ban_appeals', loader: loadBanAppeals },
                       creator: { table: 'creator_applications', loader: loadCreatorApplications },
                       firefighter: { table: 'firefighter_applications', loader: loadFirefighterApplications },
                       weazel_news: { table: 'weazel_news_applications', loader: loadWeazelNewsApplications },
                       pdm: { table: 'pdm_applications', loader: loadPdmApplications },
-                      gang: { table: 'job_applications', loader: loadGangApplications },
                     };
                     
                     const config = tableMap[type];
@@ -1551,12 +1553,13 @@ const OwnerPanel = () => {
                       mechanic: { table: 'job_applications', loader: loadJobApplications },
                       judge: { table: 'job_applications', loader: loadJobApplications },
                       attorney: { table: 'job_applications', loader: loadJobApplications },
+                      state: { table: 'job_applications', loader: loadJobApplications },
+                      gang: { table: 'job_applications', loader: loadGangApplications },
                       ban_appeal: { table: 'ban_appeals', loader: loadBanAppeals },
                       creator: { table: 'creator_applications', loader: loadCreatorApplications },
                       firefighter: { table: 'firefighter_applications', loader: loadFirefighterApplications },
                       weazel_news: { table: 'weazel_news_applications', loader: loadWeazelNewsApplications },
                       pdm: { table: 'pdm_applications', loader: loadPdmApplications },
-                      gang: { table: 'job_applications', loader: loadGangApplications },
                     };
                     
                     const config = tableMap[type];
@@ -1580,12 +1583,13 @@ const OwnerPanel = () => {
                       mechanic: { table: 'job_applications', loader: loadJobApplications },
                       judge: { table: 'job_applications', loader: loadJobApplications },
                       attorney: { table: 'job_applications', loader: loadJobApplications },
+                      state: { table: 'job_applications', loader: loadJobApplications },
+                      gang: { table: 'job_applications', loader: loadGangApplications },
                       ban_appeal: { table: 'ban_appeals', loader: loadBanAppeals },
                       creator: { table: 'creator_applications', loader: loadCreatorApplications },
                       firefighter: { table: 'firefighter_applications', loader: loadFirefighterApplications },
                       weazel_news: { table: 'weazel_news_applications', loader: loadWeazelNewsApplications },
                       pdm: { table: 'pdm_applications', loader: loadPdmApplications },
-                      gang: { table: 'job_applications', loader: loadGangApplications },
                     };
                     
                     const config = tableMap[type];
@@ -1608,12 +1612,13 @@ const OwnerPanel = () => {
                       mechanic: { table: 'job_applications', loader: loadJobApplications },
                       judge: { table: 'job_applications', loader: loadJobApplications },
                       attorney: { table: 'job_applications', loader: loadJobApplications },
+                      state: { table: 'job_applications', loader: loadJobApplications },
+                      gang: { table: 'job_applications', loader: loadGangApplications },
                       ban_appeal: { table: 'ban_appeals', loader: loadBanAppeals },
                       creator: { table: 'creator_applications', loader: loadCreatorApplications },
                       firefighter: { table: 'firefighter_applications', loader: loadFirefighterApplications },
                       weazel_news: { table: 'weazel_news_applications', loader: loadWeazelNewsApplications },
                       pdm: { table: 'pdm_applications', loader: loadPdmApplications },
-                      gang: { table: 'job_applications', loader: loadGangApplications },
                     };
                     
                     const config = tableMap[type];

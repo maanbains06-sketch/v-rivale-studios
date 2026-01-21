@@ -1173,6 +1173,9 @@ const Admin = () => {
                       mechanic: { table: 'job_applications', loader: loadJobApplications },
                       judge: { table: 'job_applications', loader: loadJobApplications },
                       attorney: { table: 'job_applications', loader: loadJobApplications },
+                      state: { table: 'job_applications', loader: loadJobApplications },
+                      staff: { table: 'staff_applications', loader: loadAllData },
+                      gang: { table: 'job_applications', loader: loadJobApplications },
                       ban_appeal: { table: 'ban_appeals', loader: loadBanAppeals },
                       creator: { table: 'creator_applications', loader: loadCreatorApplications },
                       firefighter: { table: 'firefighter_applications', loader: loadFirefighterApplications },
@@ -1209,6 +1212,9 @@ const Admin = () => {
                       mechanic: { table: 'job_applications', loader: loadJobApplications },
                       judge: { table: 'job_applications', loader: loadJobApplications },
                       attorney: { table: 'job_applications', loader: loadJobApplications },
+                      state: { table: 'job_applications', loader: loadJobApplications },
+                      staff: { table: 'staff_applications', loader: loadAllData },
+                      gang: { table: 'job_applications', loader: loadJobApplications },
                       ban_appeal: { table: 'ban_appeals', loader: loadBanAppeals },
                       creator: { table: 'creator_applications', loader: loadCreatorApplications },
                       firefighter: { table: 'firefighter_applications', loader: loadFirefighterApplications },
@@ -1245,6 +1251,9 @@ const Admin = () => {
                       mechanic: { table: 'job_applications', loader: loadJobApplications },
                       judge: { table: 'job_applications', loader: loadJobApplications },
                       attorney: { table: 'job_applications', loader: loadJobApplications },
+                      state: { table: 'job_applications', loader: loadJobApplications },
+                      staff: { table: 'staff_applications', loader: loadAllData },
+                      gang: { table: 'job_applications', loader: loadJobApplications },
                       ban_appeal: { table: 'ban_appeals', loader: loadBanAppeals },
                       creator: { table: 'creator_applications', loader: loadCreatorApplications },
                       firefighter: { table: 'firefighter_applications', loader: loadFirefighterApplications },
@@ -1281,6 +1290,9 @@ const Admin = () => {
                       mechanic: { table: 'job_applications', loader: loadJobApplications },
                       judge: { table: 'job_applications', loader: loadJobApplications },
                       attorney: { table: 'job_applications', loader: loadJobApplications },
+                      state: { table: 'job_applications', loader: loadJobApplications },
+                      staff: { table: 'staff_applications', loader: loadAllData },
+                      gang: { table: 'job_applications', loader: loadJobApplications },
                       ban_appeal: { table: 'ban_appeals', loader: loadBanAppeals },
                       creator: { table: 'creator_applications', loader: loadCreatorApplications },
                       firefighter: { table: 'firefighter_applications', loader: loadFirefighterApplications },
@@ -1300,11 +1312,15 @@ const Admin = () => {
                         .eq('id', id);
                       
                       if (error) {
-                        toast({ title: "Error", description: "Failed to close application.", variant: "destructive" });
+                        console.error('Error closing application:', error);
+                        toast({ title: "Error", description: `Failed to close application: ${error.message}`, variant: "destructive" });
                       } else {
                         toast({ title: "Success", description: "Application marked as closed." });
                         config.loader();
                       }
+                    } else {
+                      console.error('Unknown application type:', type);
+                      toast({ title: "Error", description: `Unknown application type: ${type}`, variant: "destructive" });
                     }
                   }}
                   onMarkOpen={async (id, type) => {
@@ -1316,6 +1332,9 @@ const Admin = () => {
                       mechanic: { table: 'job_applications', loader: loadJobApplications },
                       judge: { table: 'job_applications', loader: loadJobApplications },
                       attorney: { table: 'job_applications', loader: loadJobApplications },
+                      state: { table: 'job_applications', loader: loadJobApplications },
+                      staff: { table: 'staff_applications', loader: loadAllData },
+                      gang: { table: 'job_applications', loader: loadJobApplications },
                       ban_appeal: { table: 'ban_appeals', loader: loadBanAppeals },
                       creator: { table: 'creator_applications', loader: loadCreatorApplications },
                       firefighter: { table: 'firefighter_applications', loader: loadFirefighterApplications },
