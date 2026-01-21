@@ -623,11 +623,11 @@ export const UnifiedApplicationsTable = ({
 
       {/* Application Detail Dialog */}
       <Dialog open={!!selectedApp} onOpenChange={() => setSelectedApp(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden bg-background border-primary/20">
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0 flex flex-col bg-background border-primary/20">
           {selectedApp && (
             <>
               {/* Header */}
-              <div className="relative overflow-hidden">
+              <div className="relative overflow-hidden flex-shrink-0">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent" />
                 <div className="relative px-6 py-5 border-b border-border/30">
                   <DialogHeader>
@@ -661,8 +661,8 @@ export const UnifiedApplicationsTable = ({
                 </div>
               </div>
 
-              <ScrollArea className="max-h-[55vh] px-6 py-5">
-                <div className="space-y-5">
+              <ScrollArea className="flex-1 min-h-0 px-6 py-5">
+                <div className="space-y-5 pb-4">
                   {/* Application Fields - organized in grid */}
                   <div className="grid md:grid-cols-2 gap-4">
                     {selectedApp.fields.slice(0, 8).map((field, index) => (

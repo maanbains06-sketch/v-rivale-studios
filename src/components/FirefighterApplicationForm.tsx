@@ -12,6 +12,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Loader2, Flame } from "lucide-react";
 import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
 import { ApplicationCooldownTimer } from "@/components/ApplicationCooldownTimer";
+import { PendingApplicationAlert } from "@/components/PendingApplicationAlert";
 
 const firefighterSchema = z.object({
   real_name: z.string()
@@ -46,8 +47,8 @@ const FirefighterApplicationForm = ({ jobImage }: FirefighterApplicationFormProp
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Use centralized cooldown hook - firefighter_applications table with 24 hour cooldown
-  const { isOnCooldown, rejectedAt, loading, handleCooldownEnd } = useApplicationCooldown(
+  // Use centralized cooldown hook - job_applications table with 24 hour cooldown
+  const { isOnCooldown, rejectedAt, loading, handleCooldownEnd, hasPendingApplication, pendingMessage } = useApplicationCooldown(
     'job_applications',
     24,
     { column: 'job_type', value: 'Firefighter' }
@@ -122,6 +123,17 @@ const FirefighterApplicationForm = ({ jobImage }: FirefighterApplicationFormProp
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </CardContent>
       </Card>
+    );
+  }
+
+  if (hasPendingApplication && pendingMessage) {
+    return (
+      <PendingApplicationAlert 
+        message={pendingMessage}
+        jobImage={jobImage}
+        title="Firefighter Application"
+        icon={<Flame className="w-6 h-6 text-orange-500" />}
+      />
     );
   }
 

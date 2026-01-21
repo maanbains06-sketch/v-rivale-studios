@@ -12,6 +12,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Loader2, Shield, Heart, Wrench } from "lucide-react";
 import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
 import { ApplicationCooldownTimer } from "@/components/ApplicationCooldownTimer";
+import { PendingApplicationAlert } from "@/components/PendingApplicationAlert";
 
 const jobApplicationSchema = z.object({
   character_name: z.string()
@@ -66,7 +67,7 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { isOnCooldown, rejectedAt, loading, handleCooldownEnd } = useApplicationCooldown(
+  const { isOnCooldown, rejectedAt, loading, handleCooldownEnd, hasPendingApplication, pendingMessage } = useApplicationCooldown(
     'job_applications',
     24,
     { column: 'job_type', value: jobType }
@@ -201,6 +202,17 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </CardContent>
       </Card>
+    );
+  }
+
+  if (hasPendingApplication && pendingMessage) {
+    return (
+      <PendingApplicationAlert 
+        message={pendingMessage}
+        jobImage={jobImage}
+        title={`${jobType} Application`}
+        icon={getJobIcon()}
+      />
     );
   }
 

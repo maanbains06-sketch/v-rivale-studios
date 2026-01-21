@@ -12,6 +12,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Loader2, Car } from "lucide-react";
 import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
 import { ApplicationCooldownTimer } from "@/components/ApplicationCooldownTimer";
+import { PendingApplicationAlert } from "@/components/PendingApplicationAlert";
 
 const pdmApplicationSchema = z.object({
   character_name: z.string()
@@ -69,7 +70,7 @@ const PDMApplicationForm = ({ jobImage }: PDMApplicationFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { isOnCooldown, rejectedAt, loading, handleCooldownEnd } = useApplicationCooldown(
+  const { isOnCooldown, rejectedAt, loading, handleCooldownEnd, hasPendingApplication, pendingMessage } = useApplicationCooldown(
     'job_applications',
     24,
     { column: 'job_type', value: 'PDM' }
@@ -151,6 +152,17 @@ const PDMApplicationForm = ({ jobImage }: PDMApplicationFormProps) => {
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </CardContent>
       </Card>
+    );
+  }
+
+  if (hasPendingApplication && pendingMessage) {
+    return (
+      <PendingApplicationAlert 
+        message={pendingMessage}
+        jobImage={jobImage}
+        title="PDM Car Dealership Application"
+        icon={<Car className="w-6 h-6 text-primary" />}
+      />
     );
   }
 
