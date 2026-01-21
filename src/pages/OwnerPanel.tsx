@@ -253,7 +253,20 @@ const OwnerPanel = () => {
   const { logAction } = useOwnerAuditLog();
   const [loading, setLoading] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
-  const [isVerified, setIsVerified] = useState(false);
+  const [isVerified, setIsVerified] = useState(() => {
+    // Check localStorage for existing verified session
+    const stored = localStorage.getItem('owner_2fa_verified');
+    if (stored) {
+      const { verified, userId, timestamp } = JSON.parse(stored);
+      // Session valid for 24 hours
+      if (verified && timestamp && Date.now() - timestamp < 24 * 60 * 60 * 1000) {
+        return true;
+      }
+      // Clear expired session
+      localStorage.removeItem('owner_2fa_verified');
+    }
+    return false;
+  });
   const [userEmail, setUserEmail] = useState("");
   const [settings, setSettings] = useState<SiteSetting[]>([]);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
@@ -324,6 +337,8 @@ const OwnerPanel = () => {
       actionDescription: 'Session ended due to 30 minutes of inactivity'
     });
     
+    // Clear the stored 2FA session
+    localStorage.removeItem('owner_2fa_verified');
     setIsVerified(false);
     setShowInactivityWarning(false);
     
@@ -333,6 +348,12 @@ const OwnerPanel = () => {
       variant: "destructive",
     });
   }, [logAction, toast]);
+
+  // Handle manual logout - clear 2FA session
+  const handleOwnerLogout = useCallback(() => {
+    localStorage.removeItem('owner_2fa_verified');
+    setIsVerified(false);
+  }, []);
 
   // Set up activity listeners
   useEffect(() => {
