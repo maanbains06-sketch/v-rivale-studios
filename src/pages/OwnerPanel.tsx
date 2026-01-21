@@ -980,7 +980,7 @@ const OwnerPanel = () => {
       .from("pdm_applications")
       .update({
         status,
-        reviewed_by: user?.id,
+        reviewed_by: user?.id || null,
         reviewed_at: new Date().toISOString(),
         admin_notes: pdmAdminNotes || null,
       })
@@ -1045,7 +1045,7 @@ const OwnerPanel = () => {
       .from(table)
       .update({
         status,
-        reviewed_by: user?.id,
+        reviewed_by: user?.id || null,
         reviewed_at: new Date().toISOString(),
         admin_notes: notes,
       } as any)

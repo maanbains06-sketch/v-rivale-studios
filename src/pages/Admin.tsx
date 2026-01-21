@@ -708,7 +708,7 @@ const Admin = () => {
       .from("whitelist_applications")
       .update({
         status,
-        reviewed_by: user?.id,
+        reviewed_by: user?.id || null,
         reviewed_at: new Date().toISOString(),
         admin_notes: adminNotes || null,
       })
@@ -843,7 +843,7 @@ const Admin = () => {
       .from("ban_appeals")
       .update({
         status,
-        reviewed_by: user?.id,
+        reviewed_by: user?.id || null,
         reviewed_at: new Date().toISOString(),
         admin_notes: appealAdminNotes || null,
       })
@@ -867,7 +867,7 @@ const Admin = () => {
       .from("job_applications")
       .update({
         status,
-        reviewed_by: user?.id,
+        reviewed_by: user?.id || null,
         reviewed_at: new Date().toISOString(),
         admin_notes: jobAdminNotes || null,
       })
@@ -891,7 +891,7 @@ const Admin = () => {
       .from("pdm_applications")
       .update({
         status,
-        reviewed_by: user?.id,
+        reviewed_by: user?.id || null,
         reviewed_at: new Date().toISOString(),
         admin_notes: pdmAdminNotes || null,
       })
@@ -915,7 +915,7 @@ const Admin = () => {
       .from("creator_applications")
       .update({
         status,
-        reviewed_by: user?.id,
+        reviewed_by: user?.id || null,
         reviewed_at: new Date().toISOString(),
         admin_notes: creatorAdminNotes || null,
       })
@@ -939,7 +939,7 @@ const Admin = () => {
       .from("firefighter_applications")
       .update({
         status,
-        reviewed_by: user?.id,
+        reviewed_by: user?.id || null,
         reviewed_at: new Date().toISOString(),
         admin_notes: firefighterAdminNotes || null,
       })
@@ -963,7 +963,7 @@ const Admin = () => {
       .from("weazel_news_applications")
       .update({
         status,
-        reviewed_by: user?.id,
+        reviewed_by: user?.id || null,
         reviewed_at: new Date().toISOString(),
         admin_notes: weazelAdminNotes || null,
       })
