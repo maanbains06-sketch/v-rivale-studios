@@ -136,19 +136,19 @@ export const UnifiedApplicationsTable = ({
   const { toast } = useToast();
   const itemsPerPage = 10;
 
-  // Fetch staff names for handled_by display - resolve by user_id directly from staff_members
+  // Fetch staff names for handled_by display - resolve by user_id from staff_members
   useEffect(() => {
     const fetchStaffNames = async () => {
       setLoadingStaff(true);
       try {
-        // Fetch all staff members - this includes user_id which is the reviewed_by value
-        const { data: staffMembers } = await supabase
+        // Fetch from staff_members (private table) first - admins can access this
+        const { data: staffMembers, error: staffError } = await supabase
           .from('staff_members')
           .select('user_id, discord_id, name, discord_username');
 
         const nameMap: Record<string, string> = {};
         
-        if (staffMembers) {
+        if (staffMembers && !staffError) {
           staffMembers.forEach(staff => {
             const displayName = staff.name || staff.discord_username || 'Staff';
             // Map by user_id (this is what reviewed_by stores)
@@ -160,6 +160,24 @@ export const UnifiedApplicationsTable = ({
               nameMap[staff.discord_id] = displayName;
             }
           });
+        } else {
+          // Fallback to public view if staff_members is blocked by RLS
+          console.log('Falling back to staff_members_public view');
+          const { data: publicStaff } = await supabase
+            .from('staff_members_public')
+            .select('user_id, discord_id, name, discord_username');
+          
+          if (publicStaff) {
+            publicStaff.forEach(staff => {
+              const displayName = staff.name || staff.discord_username || 'Staff';
+              if (staff.user_id) {
+                nameMap[staff.user_id] = displayName;
+              }
+              if (staff.discord_id) {
+                nameMap[staff.discord_id] = displayName;
+              }
+            });
+          }
         }
 
         setStaffNames(nameMap);
