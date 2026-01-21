@@ -92,23 +92,20 @@ export const MaintenanceCountdown = ({ scheduledEnd, endTime, customMessage, tit
       {/* Countdown Timer */}
       <div className="flex items-center justify-center gap-3 flex-wrap">
         {/* Days */}
-        {timeRemaining.days > 0 && (
-          <>
-            <motion.div 
-              className="flex flex-col items-center"
-              animate={{ scale: [1, 1.02, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <div className="relative w-16 h-16 rounded-xl bg-gradient-to-br from-orange-600/30 to-orange-800/30 border border-orange-500/40 flex items-center justify-center shadow-lg shadow-orange-500/10">
-                <span className="text-2xl font-mono font-bold text-orange-300">
-                  {String(timeRemaining.days).padStart(2, '0')}
-                </span>
-              </div>
-              <span className="text-[10px] text-muted-foreground mt-1.5 uppercase tracking-wider">Days</span>
-            </motion.div>
-            <span className="text-xl font-bold text-orange-400/50 self-start mt-4">:</span>
-          </>
-        )}
+        <motion.div 
+          className="flex flex-col items-center"
+          animate={{ scale: [1, 1.02, 1] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <div className="relative w-16 h-16 rounded-xl bg-gradient-to-br from-orange-600/30 to-orange-800/30 border border-orange-500/40 flex items-center justify-center shadow-lg shadow-orange-500/10">
+            <span className="text-2xl font-mono font-bold text-orange-300">
+              {String(timeRemaining.days).padStart(2, '0')}
+            </span>
+          </div>
+          <span className="text-[10px] text-muted-foreground mt-1.5 uppercase tracking-wider">Days</span>
+        </motion.div>
+
+        <span className="text-xl font-bold text-orange-400/50 self-start mt-4">:</span>
 
         {/* Hours */}
         <motion.div 
