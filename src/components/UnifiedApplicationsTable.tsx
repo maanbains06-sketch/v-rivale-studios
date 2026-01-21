@@ -141,22 +141,46 @@ export const UnifiedApplicationsTable = ({
     const fetchStaffNames = async () => {
       setLoadingStaff(true);
       try {
+        // Fetch staff members
         const { data: staffMembers } = await supabase
           .from('staff_members')
           .select('user_id, discord_id, name, discord_username');
 
+        // Also fetch profiles to map user IDs to Discord IDs
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, discord_id, discord_username');
+
+        const nameMap: Record<string, string> = {};
+        
         if (staffMembers) {
-          const nameMap: Record<string, string> = {};
           staffMembers.forEach(staff => {
+            const displayName = staff.name || staff.discord_username || 'Staff';
             if (staff.user_id) {
-              nameMap[staff.user_id] = staff.name || staff.discord_username || 'Staff';
+              nameMap[staff.user_id] = displayName;
             }
             if (staff.discord_id) {
-              nameMap[staff.discord_id] = staff.name || staff.discord_username || 'Staff';
+              nameMap[staff.discord_id] = displayName;
             }
           });
-          setStaffNames(nameMap);
         }
+
+        // Map profile user IDs to staff names via Discord ID
+        if (profiles && staffMembers) {
+          profiles.forEach(profile => {
+            if (profile.discord_id && !nameMap[profile.id]) {
+              // Find matching staff member by Discord ID
+              const matchingStaff = staffMembers.find(s => s.discord_id === profile.discord_id);
+              if (matchingStaff) {
+                nameMap[profile.id] = matchingStaff.name || matchingStaff.discord_username || 'Staff';
+              } else if (profile.discord_username) {
+                nameMap[profile.id] = profile.discord_username;
+              }
+            }
+          });
+        }
+
+        setStaffNames(nameMap);
       } catch (error) {
         console.error('Error fetching staff names:', error);
       } finally {
