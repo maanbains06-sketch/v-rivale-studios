@@ -1,79 +1,68 @@
-import { useEffect, useState, memo } from "react";
+import { useEffect, useState, memo, useRef } from "react";
 
 interface LoadingScreenProps {
   onComplete?: () => void;
   minDuration?: number;
 }
 
-// Ultra-simplified loading screen - no animations, maximum performance
-export const LoadingScreen = memo(({ onComplete, minDuration = 150 }: LoadingScreenProps) => {
+// Ultra-fast loading screen - uses requestAnimationFrame for smooth 60fps
+export const LoadingScreen = memo(({ onComplete, minDuration = 100 }: LoadingScreenProps) => {
   const [progress, setProgress] = useState(0);
-  const [isComplete, setIsComplete] = useState(false);
+  const startTimeRef = useRef(Date.now());
+  const completedRef = useRef(false);
 
   useEffect(() => {
-    const startTime = Date.now();
+    let rafId: number;
     
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - startTime;
+    const animate = () => {
+      if (completedRef.current) return;
+      
+      const elapsed = Date.now() - startTimeRef.current;
       const newProgress = Math.min((elapsed / minDuration) * 100, 100);
       setProgress(newProgress);
-
-      if (newProgress >= 100) {
-        clearInterval(interval);
-        setIsComplete(true);
+      
+      if (newProgress >= 100 && !completedRef.current) {
+        completedRef.current = true;
+        onComplete?.();
+        return;
+      }
+      
+      rafId = requestAnimationFrame(animate);
+    };
+    
+    rafId = requestAnimationFrame(animate);
+    
+    // Safety timeout - force complete
+    const safetyTimeout = setTimeout(() => {
+      if (!completedRef.current) {
+        completedRef.current = true;
         onComplete?.();
       }
-    }, 50);
-
-    // Safety timeout - force complete after duration + 500ms
-    const safetyTimeout = setTimeout(() => {
-      clearInterval(interval);
-      setIsComplete(true);
-      onComplete?.();
-    }, minDuration + 500);
+    }, minDuration + 200);
 
     return () => {
-      clearInterval(interval);
+      cancelAnimationFrame(rafId);
       clearTimeout(safetyTimeout);
     };
   }, [minDuration, onComplete]);
 
-  if (isComplete) return null;
-
   return (
-    <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-background"
-    >
-      <div className="flex flex-col items-center gap-6">
-        {/* Simple logo */}
-        <div className="w-20 h-20 flex items-center justify-center rounded-full border-2 border-primary/30 bg-card">
-          <span className="text-2xl font-bold text-primary">SL</span>
-        </div>
-
-        {/* Brand text */}
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background">
+      <div className="flex flex-col items-center gap-4">
+        {/* Simple spinner */}
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        
+        {/* Compact branding */}
         <div className="text-center">
-          <h1 className="text-xl font-bold tracking-widest mb-1">
-            SKYLIFE ROLEPLAY
-          </h1>
-          <p className="text-xs text-muted-foreground tracking-widest">
-            INDIA
-          </p>
+          <span className="text-sm font-bold tracking-widest text-foreground">SKYLIFE</span>
         </div>
 
-        {/* Simple progress bar */}
-        <div className="w-48">
-          <div className="h-1 bg-muted rounded-full overflow-hidden">
-            <div
-              className="h-full bg-primary rounded-full"
-              style={{ 
-                width: `${progress}%`,
-                transition: 'width 0.05s linear'
-              }}
-            />
-          </div>
-          <div className="text-center mt-2 text-xs text-muted-foreground font-mono">
-            {Math.round(progress)}%
-          </div>
+        {/* Progress bar */}
+        <div className="w-40 h-1 bg-muted rounded-full overflow-hidden">
+          <div
+            className="h-full bg-primary rounded-full gpu-accelerated"
+            style={{ width: `${progress}%` }}
+          />
         </div>
       </div>
     </div>
