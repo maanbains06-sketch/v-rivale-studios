@@ -11,6 +11,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { 
   Check, 
@@ -31,11 +32,15 @@ import {
   FolderOpen,
   FolderClosed,
   Eye,
-  Sparkles
+  Sparkles,
+  Download,
+  FileText,
+  FileSpreadsheet
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { exportApplicationsToCSV, exportApplicationsToPDF, exportSingleApplicationToPDF } from "@/lib/applicationExporter";
 
 export type ApplicationType = 
   | 'whitelist' 
@@ -331,6 +336,52 @@ export const UnifiedApplicationsTable = ({
             </Button>
           ))}
         </div>
+
+        {/* Export Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-xs font-medium bg-primary/10 border-primary/30 text-primary hover:bg-primary/20"
+              disabled={filteredApps.length === 0}
+            >
+              <Download className="w-3.5 h-3.5" />
+              Export
+              <ChevronDown className="w-3 h-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48 bg-popover/95 backdrop-blur-sm border-border shadow-2xl">
+            <DropdownMenuItem 
+              onClick={() => {
+                try {
+                  exportApplicationsToCSV(filteredApps, 'applications');
+                  toast({ title: "CSV exported successfully", description: `${filteredApps.length} applications exported` });
+                } catch (error) {
+                  toast({ title: "Export failed", description: String(error), variant: "destructive" });
+                }
+              }}
+              className="gap-2"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-green-500" />
+              Export as CSV
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => {
+                try {
+                  exportApplicationsToPDF(filteredApps, 'applications', title);
+                  toast({ title: "PDF exported successfully", description: `${filteredApps.length} applications exported` });
+                } catch (error) {
+                  toast({ title: "Export failed", description: String(error), variant: "destructive" });
+                }
+              }}
+              className="gap-2"
+            >
+              <FileText className="w-4 h-4 text-red-500" />
+              Export as PDF
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Click hint */}
@@ -666,6 +717,29 @@ export const UnifiedApplicationsTable = ({
 
               {/* Actions */}
               <div className="px-6 py-4 bg-muted/30 border-t border-border/30 space-y-4">
+                {/* Export single application button */}
+                <div className="flex justify-between items-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      try {
+                        exportSingleApplicationToPDF({
+                          ...selectedApp,
+                          handledByName: selectedApp.handledByName || getStaffName(selectedApp.handledBy)
+                        });
+                        toast({ title: "PDF exported", description: "Application details downloaded" });
+                      } catch (error) {
+                        toast({ title: "Export failed", description: String(error), variant: "destructive" });
+                      }
+                    }}
+                    className="gap-1.5 text-xs"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Download PDF
+                  </Button>
+                  <div></div>
+                </div>
                 {/* Show actions for pending applications */}
                 {(onApprove || onReject || onHold) && selectedApp.status === 'pending' && (
                   <>
