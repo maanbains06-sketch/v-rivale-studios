@@ -6,7 +6,7 @@ interface LoadingScreenProps {
 }
 
 // Ultra-simplified loading screen - no animations, maximum performance
-export const LoadingScreen = memo(({ onComplete, minDuration = 500 }: LoadingScreenProps) => {
+export const LoadingScreen = memo(({ onComplete, minDuration = 300 }: LoadingScreenProps) => {
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
 

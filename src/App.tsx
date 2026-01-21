@@ -91,18 +91,19 @@ const Roster = lazy(() => import("./pages/Roster"));
 const DirectMessage = lazy(() => import("./pages/DirectMessage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-// Optimized query client - balanced caching with proper data loading on navigation
+// PERFORMANCE: Optimized query client - increased cache times, reduced background refetches
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes - data considered fresh
-      gcTime: 1000 * 60 * 30, // 30 minutes - garbage collection
-      retry: 2,
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
+      staleTime: 1000 * 60 * 10, // 10 minutes - data considered fresh (increased from 5)
+      gcTime: 1000 * 60 * 60, // 60 minutes - garbage collection (increased from 30)
+      retry: 1, // Reduce retries for faster failure detection
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
       refetchOnWindowFocus: false, // Don't refetch on window focus
-      refetchOnMount: 'always', // Always check data freshness on mount - CRITICAL for navigation
-      refetchOnReconnect: true, // Refetch when reconnecting
-      networkMode: 'online', // Normal network mode for reliable data fetching
+      refetchOnMount: false, // PERF: Only refetch if actually stale
+      refetchOnReconnect: false, // Don't refetch on reconnect - user can refresh
+      networkMode: 'online',
+      refetchInterval: false, // No background polling by default
     },
   },
 });
