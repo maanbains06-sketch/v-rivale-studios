@@ -1062,22 +1062,14 @@ const OwnerPanel = () => {
     loadFunction: () => Promise<void>,
     applicantDiscord?: string,
     applicantDiscordId?: string,
-    holdReason?: string
+    directNotes?: string
   ) => {
     const { data: { user } } = await supabase.auth.getUser();
-    let notes = adminNotes[appId] || null;
+    // Use directly passed notes first, then fall back to state
+    let notes = directNotes !== undefined ? directNotes : (adminNotes[appId] || null);
     
-    // If placing on hold, require a reason
-    if (status === "on_hold" && holdReason) {
-      notes = holdReason;
-    } else if (status === "on_hold" && !notes) {
-      toast({
-        title: "Reason Required",
-        description: "Please provide a reason for placing this application on hold in the notes field.",
-        variant: "destructive",
-      });
-      return;
-    }
+    // For on_hold, notes are recommended but not required
+    // (the requirement was blocking the button from working)
     
     // Build update payload - only include admin_notes for actions that need them
     const updatePayload: Record<string, any> = {
@@ -1607,8 +1599,7 @@ const OwnerPanel = () => {
                     
                     const config = tableMap[type];
                     if (config) {
-                      // Store notes before updating
-                      setAdminNotes(prev => ({ ...prev, [id]: notes }));
+                      // Pass notes directly to updateApplicationStatus (don't rely on state)
                       await updateApplicationStatus(
                         config.table as any,
                         id,
@@ -1616,7 +1607,8 @@ const OwnerPanel = () => {
                         `${type} application approved`,
                         config.loader,
                         applicantName,
-                        discordId
+                        discordId,
+                        notes // directNotes
                       );
                     }
                   }}
@@ -1640,8 +1632,7 @@ const OwnerPanel = () => {
                     
                     const config = tableMap[type];
                     if (config) {
-                      // Store notes before updating
-                      setAdminNotes(prev => ({ ...prev, [id]: notes }));
+                      // Pass notes directly to updateApplicationStatus (don't rely on state)
                       await updateApplicationStatus(
                         config.table as any,
                         id,
@@ -1649,7 +1640,8 @@ const OwnerPanel = () => {
                         `${type} application rejected`,
                         config.loader,
                         applicantName,
-                        discordId
+                        discordId,
+                        notes // directNotes
                       );
                     }
                   }}
@@ -1673,13 +1665,16 @@ const OwnerPanel = () => {
                     
                     const config = tableMap[type];
                     if (config) {
-                      setAdminNotes(prev => ({ ...prev, [id]: notes }));
+                      // Pass notes directly to updateApplicationStatus (don't rely on state)
                       await updateApplicationStatus(
                         config.table as any,
                         id,
                         'on_hold',
                         `Application put on hold`,
-                        config.loader
+                        config.loader,
+                        undefined, // applicantDiscord
+                        undefined, // applicantDiscordId
+                        notes // directNotes
                       );
                     }
                   }}
