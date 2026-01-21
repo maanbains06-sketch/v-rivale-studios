@@ -309,10 +309,18 @@ export const UnifiedApplicationsTable = ({
         </div>
       </div>
 
+      {/* Click hint */}
+      <div className="px-4 pb-2">
+        <p className="text-xs text-muted-foreground/70 flex items-center gap-1.5">
+          <Eye className="w-3.5 h-3.5" />
+          Click on any application row to view full details and take action
+        </p>
+      </div>
+
       {/* Table Container */}
-      <div className="mx-4 rounded-xl border border-border/40 overflow-hidden bg-gradient-to-b from-muted/20 to-background">
+      <div className="mx-4 rounded-xl border border-border/40 overflow-hidden bg-gradient-to-b from-muted/20 to-background shadow-lg shadow-primary/5">
         {/* Table Header */}
-        <div className="grid grid-cols-[2fr_1.5fr_1.5fr_120px_150px_120px] gap-2 px-4 py-3 bg-muted/40 border-b border-border/40">
+        <div className="grid grid-cols-[2fr_1.5fr_1.5fr_120px_150px_120px] gap-2 px-4 py-3.5 bg-gradient-to-r from-muted/50 via-muted/40 to-muted/50 border-b border-border/40">
           <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider">
             <User className="w-4 h-4" />
             Applicant
@@ -347,27 +355,48 @@ export const UnifiedApplicationsTable = ({
             paginatedApps.map((app, index) => (
               <motion.div
                 key={app.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.03 }}
-                className="grid grid-cols-[2fr_1.5fr_1.5fr_120px_150px_120px] gap-2 items-center px-4 py-3 hover:bg-muted/30 transition-colors cursor-pointer group"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.04, type: "spring", stiffness: 300, damping: 30 }}
+                whileHover={{ scale: 1.005, backgroundColor: "rgba(var(--primary), 0.08)" }}
+                whileTap={{ scale: 0.995 }}
+                className="grid grid-cols-[2fr_1.5fr_1.5fr_120px_150px_120px] gap-2 items-center px-4 py-3.5 
+                           hover:bg-primary/5 transition-all duration-200 cursor-pointer group
+                           border-l-4 border-l-transparent hover:border-l-primary/60
+                           relative overflow-hidden"
                 onClick={() => {
                   setSelectedApp(app);
                   setNotes(app.adminNotes || '');
                 }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    setSelectedApp(app);
+                    setNotes(app.adminNotes || '');
+                  }
+                }}
               >
+                {/* Hover glow effect */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-transparent" />
+                </div>
+
                 {/* Applicant */}
-                <div className="flex items-center gap-3 min-w-0">
-                  <Avatar className="h-9 w-9 border-2 border-primary/30 ring-2 ring-primary/10">
+                <div className="flex items-center gap-3 min-w-0 relative z-10">
+                  <Avatar className="h-10 w-10 border-2 border-primary/30 ring-2 ring-primary/10 group-hover:ring-primary/30 transition-all">
                     <AvatarImage src={app.applicantAvatar} />
                     <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
                       {app.applicantName.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="min-w-0">
-                    <p className="font-medium text-foreground truncate text-sm group-hover:text-primary transition-colors">
-                      {app.applicantName}
-                    </p>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-foreground truncate text-sm group-hover:text-primary transition-colors">
+                        {app.applicantName}
+                      </p>
+                      <Eye className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
                     <Badge className={`${typeColors[app.applicationType]} text-[10px] px-1.5 py-0 mt-0.5`}>
                       {typeLabels[app.applicationType]}
                     </Badge>
@@ -375,20 +404,20 @@ export const UnifiedApplicationsTable = ({
                 </div>
 
                 {/* Organization */}
-                <div className="truncate text-sm text-muted-foreground">
+                <div className="truncate text-sm text-muted-foreground group-hover:text-foreground/80 transition-colors relative z-10">
                   {app.organization || '-'}
                 </div>
 
                 {/* Discord ID */}
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="text-muted-foreground font-mono text-xs truncate">
+                <div className="flex items-center gap-1.5 min-w-0 relative z-10">
+                  <span className="text-muted-foreground font-mono text-xs truncate group-hover:text-foreground/80 transition-colors">
                     {app.discordId || '-'}
                   </span>
                   {app.discordId && (
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary/20"
                       onClick={(e) => {
                         e.stopPropagation();
                         copyToClipboard(app.discordId!);
@@ -400,26 +429,26 @@ export const UnifiedApplicationsTable = ({
                 </div>
 
                 {/* Status */}
-                <div>
+                <div className="relative z-10">
                   {getStatusBadge(app.status)}
                 </div>
 
                 {/* Handled By */}
-                <div className="text-muted-foreground text-sm truncate">
+                <div className="text-muted-foreground text-sm truncate relative z-10 group-hover:text-foreground/80 transition-colors">
                   {app.handledByName || getStaffName(app.handledBy) || '-'}
                 </div>
 
                 {/* Handle Dropdown */}
-                <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
+                <div className="flex justify-center relative z-10" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="outline"
                         size="sm"
-                        className={`gap-1.5 text-xs font-medium ${
+                        className={`gap-1.5 text-xs font-medium transition-all ${
                           app.status === 'closed' 
-                            ? 'bg-gray-500/10 border-gray-500/30 text-gray-400' 
-                            : 'bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20'
+                            ? 'bg-gray-500/10 border-gray-500/30 text-gray-400 hover:bg-gray-500/20' 
+                            : 'bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20 hover:border-blue-500/50'
                         }`}
                       >
                         {app.status === 'closed' ? (
@@ -436,7 +465,7 @@ export const UnifiedApplicationsTable = ({
                         <ChevronDown className="w-3 h-3" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-36 bg-popover border-border shadow-xl">
+                    <DropdownMenuContent align="end" className="w-40 bg-popover/95 backdrop-blur-sm border-border shadow-2xl">
                       <DropdownMenuItem 
                         onClick={() => onMarkOpen?.(app.id, app.applicationType)}
                         className="gap-2 text-blue-400 focus:text-blue-400 focus:bg-blue-500/10"
