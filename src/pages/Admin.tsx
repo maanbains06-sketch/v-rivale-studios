@@ -1348,21 +1348,29 @@ const Admin = () => {
                     
                     const config = tableMap[type];
                     if (config) {
-                      const { error } = await supabase
+                      const { data: updatedRows, error } = await supabase
                         .from(config.table as any)
                         .update({
                           status: 'pending',
                           reviewed_by: user?.id || null,
                           reviewed_at: new Date().toISOString(),
                         })
-                        .eq('id', id);
+                        .eq('id', id)
+                        .select('id');
                       
                       if (error) {
-                        toast({ title: "Error", description: "Failed to reopen application.", variant: "destructive" });
+                        console.error('Error reopening application:', { type, table: config.table, id, error });
+                        toast({ title: "Error", description: `Failed to reopen application: ${error.message}`, variant: "destructive" });
+                      } else if (!updatedRows || updatedRows.length === 0) {
+                        console.error('Reopen blocked (0 rows updated):', { type, table: config.table, id });
+                        toast({ title: "Not Updated", description: "Reopen was blocked by permissions (0 rows updated).", variant: "destructive" });
                       } else {
                         toast({ title: "Success", description: "Application marked as open." });
                         config.loader();
                       }
+                    } else {
+                      console.error('Unknown application type:', type);
+                      toast({ title: "Error", description: `Unknown application type: ${type}`, variant: "destructive" });
                     }
                   }}
                 />
