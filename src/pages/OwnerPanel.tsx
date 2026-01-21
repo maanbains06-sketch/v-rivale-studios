@@ -1587,7 +1587,7 @@ const OwnerPanel = () => {
                     selectedAppType
                   )}
                   title="Organization Applications"
-                  onApprove={async (id, notes, type) => {
+                  onApprove={async (id, notes, type, applicantName, discordId) => {
                     const tableMap: Record<string, { table: string; loader: () => Promise<void>; nameField?: string }> = {
                       whitelist: { table: 'whitelist_applications', loader: loadWhitelistApplications },
                       staff: { table: 'staff_applications', loader: loadStaffApplications },
@@ -1607,47 +1607,6 @@ const OwnerPanel = () => {
                     
                     const config = tableMap[type];
                     if (config) {
-                      // Look up application to get discord info
-                      let applicantDiscord: string | undefined;
-                      let applicantDiscordId: string | undefined;
-                      
-                      if (type === 'whitelist') {
-                        const app = whitelistApplications.find(a => a.id === id);
-                        applicantDiscord = app?.discord;
-                        applicantDiscordId = app?.discord_id;
-                      } else if (['police', 'ems', 'mechanic', 'judge', 'attorney', 'state'].includes(type)) {
-                        const app = jobApplications.find(a => a.id === id);
-                        applicantDiscord = app?.character_name;
-                        applicantDiscordId = app?.discord_id;
-                      } else if (type === 'gang') {
-                        const app = gangApplications.find(a => a.id === id);
-                        applicantDiscord = app?.gang_name || app?.leader_name;
-                      } else if (type === 'staff') {
-                        const app = staffApplications.find(a => a.id === id);
-                        applicantDiscord = app?.discord_username;
-                        applicantDiscordId = app?.discord_id;
-                      } else if (type === 'creator') {
-                        const app = creatorApplications.find(a => a.id === id);
-                        applicantDiscord = app?.discord_username;
-                        applicantDiscordId = app?.discord_id;
-                      } else if (type === 'firefighter') {
-                        const app = firefighterApplications.find(a => a.id === id);
-                        applicantDiscord = app?.real_name || app?.in_game_name;
-                        applicantDiscordId = app?.discord_id;
-                      } else if (type === 'weazel_news') {
-                        const app = weazelNewsApplications.find(a => a.id === id);
-                        applicantDiscord = app?.character_name;
-                        applicantDiscordId = app?.discord_id;
-                      } else if (type === 'pdm') {
-                        const app = pdmApplications.find(a => a.id === id);
-                        applicantDiscord = app?.character_name;
-                        applicantDiscordId = app?.discord_id;
-                      } else if (type === 'ban_appeal') {
-                        const app = banAppeals.find(a => a.id === id);
-                        applicantDiscord = app?.discord_username;
-                        applicantDiscordId = app?.discord_id;
-                      }
-                      
                       // Store notes before updating
                       setAdminNotes(prev => ({ ...prev, [id]: notes }));
                       await updateApplicationStatus(
@@ -1656,12 +1615,12 @@ const OwnerPanel = () => {
                         'approved',
                         `${type} application approved`,
                         config.loader,
-                        applicantDiscord,
-                        applicantDiscordId
+                        applicantName,
+                        discordId
                       );
                     }
                   }}
-                  onReject={async (id, notes, type) => {
+                  onReject={async (id, notes, type, applicantName, discordId) => {
                     const tableMap: Record<string, { table: string; loader: () => Promise<void> }> = {
                       whitelist: { table: 'whitelist_applications', loader: loadWhitelistApplications },
                       staff: { table: 'staff_applications', loader: loadStaffApplications },
@@ -1681,47 +1640,6 @@ const OwnerPanel = () => {
                     
                     const config = tableMap[type];
                     if (config) {
-                      // Look up application to get discord info
-                      let applicantDiscord: string | undefined;
-                      let applicantDiscordId: string | undefined;
-                      
-                      if (type === 'whitelist') {
-                        const app = whitelistApplications.find(a => a.id === id);
-                        applicantDiscord = app?.discord;
-                        applicantDiscordId = app?.discord_id;
-                      } else if (['police', 'ems', 'mechanic', 'judge', 'attorney', 'state'].includes(type)) {
-                        const app = jobApplications.find(a => a.id === id);
-                        applicantDiscord = app?.character_name;
-                        applicantDiscordId = app?.discord_id;
-                      } else if (type === 'gang') {
-                        const app = gangApplications.find(a => a.id === id);
-                        applicantDiscord = app?.gang_name || app?.leader_name;
-                      } else if (type === 'staff') {
-                        const app = staffApplications.find(a => a.id === id);
-                        applicantDiscord = app?.discord_username;
-                        applicantDiscordId = app?.discord_id;
-                      } else if (type === 'creator') {
-                        const app = creatorApplications.find(a => a.id === id);
-                        applicantDiscord = app?.discord_username;
-                        applicantDiscordId = app?.discord_id;
-                      } else if (type === 'firefighter') {
-                        const app = firefighterApplications.find(a => a.id === id);
-                        applicantDiscord = app?.real_name || app?.in_game_name;
-                        applicantDiscordId = app?.discord_id;
-                      } else if (type === 'weazel_news') {
-                        const app = weazelNewsApplications.find(a => a.id === id);
-                        applicantDiscord = app?.character_name;
-                        applicantDiscordId = app?.discord_id;
-                      } else if (type === 'pdm') {
-                        const app = pdmApplications.find(a => a.id === id);
-                        applicantDiscord = app?.character_name;
-                        applicantDiscordId = app?.discord_id;
-                      } else if (type === 'ban_appeal') {
-                        const app = banAppeals.find(a => a.id === id);
-                        applicantDiscord = app?.discord_username;
-                        applicantDiscordId = app?.discord_id;
-                      }
-                      
                       // Store notes before updating
                       setAdminNotes(prev => ({ ...prev, [id]: notes }));
                       await updateApplicationStatus(
@@ -1730,8 +1648,8 @@ const OwnerPanel = () => {
                         'rejected',
                         `${type} application rejected`,
                         config.loader,
-                        applicantDiscord,
-                        applicantDiscordId
+                        applicantName,
+                        discordId
                       );
                     }
                   }}

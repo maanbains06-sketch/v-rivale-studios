@@ -17,6 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UnifiedApplicationsTable, ApplicationType } from "@/components/UnifiedApplicationsTable";
 import { combineAllApplications, filterApplicationsByType } from "@/lib/applicationTransformer";
+import { sendDiscordNotification } from "@/lib/discordNotificationSender";
 import { 
   Loader2, 
   Shield, 
@@ -1221,7 +1222,7 @@ const Admin = () => {
                     selectedAppType
                   )}
                   title="Organization Applications"
-                  onApprove={async (id, notes, type) => {
+                  onApprove={async (id, notes, type, applicantName, discordId) => {
                     const { data: { user } } = await supabase.auth.getUser();
                     const tableMap: Record<string, { table: string; loader: () => Promise<void> }> = {
                       whitelist: { table: 'whitelist_applications', loader: loadApplications },
@@ -1255,12 +1256,21 @@ const Admin = () => {
                       if (error) {
                         toast({ title: "Error", description: "Failed to approve application.", variant: "destructive" });
                       } else {
+                        // Send Discord notification
+                        sendDiscordNotification({
+                          applicationType: type,
+                          applicantName,
+                          applicantDiscordId: discordId,
+                          status: 'approved',
+                          adminNotes: notes,
+                        }).catch(err => console.error('Discord notification error:', err));
+                        
                         toast({ title: "Success", description: "Application approved successfully." });
                         config.loader();
                       }
                     }
                   }}
-                  onReject={async (id, notes, type) => {
+                  onReject={async (id, notes, type, applicantName, discordId) => {
                     const { data: { user } } = await supabase.auth.getUser();
                     const tableMap: Record<string, { table: string; loader: () => Promise<void> }> = {
                       whitelist: { table: 'whitelist_applications', loader: loadApplications },
@@ -1294,6 +1304,15 @@ const Admin = () => {
                       if (error) {
                         toast({ title: "Error", description: "Failed to reject application.", variant: "destructive" });
                       } else {
+                        // Send Discord notification
+                        sendDiscordNotification({
+                          applicationType: type,
+                          applicantName,
+                          applicantDiscordId: discordId,
+                          status: 'rejected',
+                          adminNotes: notes,
+                        }).catch(err => console.error('Discord notification error:', err));
+                        
                         toast({ title: "Success", description: "Application rejected successfully." });
                         config.loader();
                       }

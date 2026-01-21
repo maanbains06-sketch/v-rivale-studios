@@ -80,8 +80,8 @@ interface UnifiedApplication {
 
 interface UnifiedApplicationsTableProps {
   applications: UnifiedApplication[];
-  onApprove?: (id: string, notes: string, type: ApplicationType) => void;
-  onReject?: (id: string, notes: string, type: ApplicationType) => void;
+  onApprove?: (id: string, notes: string, type: ApplicationType, applicantName: string, discordId?: string) => void;
+  onReject?: (id: string, notes: string, type: ApplicationType, applicantName: string, discordId?: string) => void;
   onHold?: (id: string, notes: string, type: ApplicationType) => void;
   onClose?: (id: string, type: ApplicationType) => void;
   onMarkOpen?: (id: string, type: ApplicationType) => void;
@@ -778,7 +778,7 @@ export const UnifiedApplicationsTable = ({
                               });
                               return;
                             }
-                            onReject(selectedApp.id, notes, selectedApp.applicationType);
+                            onReject(selectedApp.id, notes, selectedApp.applicationType, selectedApp.applicantName, selectedApp.discordId);
                             setSelectedApp(null);
                           }}
                         >
@@ -789,7 +789,7 @@ export const UnifiedApplicationsTable = ({
                       {onApprove && (
                         <Button 
                           onClick={() => {
-                            onApprove(selectedApp.id, notes, selectedApp.applicationType);
+                            onApprove(selectedApp.id, notes, selectedApp.applicationType, selectedApp.applicantName, selectedApp.discordId);
                             setSelectedApp(null);
                           }}
                           className="bg-green-600 hover:bg-green-700"
