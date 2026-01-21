@@ -117,6 +117,7 @@ interface JobApplication {
   additional_info?: string;
   job_specific_answer?: string;
   strengths?: string;
+  discord_id?: string;
   status: string;
   created_at: string;
   admin_notes?: string;
@@ -862,6 +863,7 @@ const Admin = () => {
 
   const updateJobApplicationStatus = async (jobAppId: string, status: "approved" | "rejected") => {
     const { data: { user } } = await supabase.auth.getUser();
+    const jobApp = jobApplications.find(a => a.id === jobAppId);
     
     const { error } = await supabase
       .from("job_applications")
@@ -876,6 +878,61 @@ const Admin = () => {
     if (error) {
       toast({ title: "Error", description: "Failed to update job application.", variant: "destructive" });
       return;
+    }
+
+    // Send Discord notification for job applications
+    if (jobApp) {
+      try {
+        const userDiscordId = user?.user_metadata?.provider_id || user?.user_metadata?.discord_id;
+        let staffData = null;
+        
+        if (userDiscordId) {
+          const { data } = await supabase
+            .from("staff_members")
+            .select("name, discord_id")
+            .eq("discord_id", userDiscordId)
+            .single();
+          staffData = data;
+        }
+        
+        if (!staffData && user?.id) {
+          const { data } = await supabase
+            .from("staff_members")
+            .select("name, discord_id")
+            .eq("user_id", user.id)
+            .single();
+          staffData = data;
+        }
+
+        // Determine application type based on job_type
+        const jobTypeLower = (jobApp.job_type || '').toLowerCase();
+        let applicationType = 'police';
+        if (jobTypeLower.includes('ems')) applicationType = 'ems';
+        else if (jobTypeLower.includes('mechanic')) applicationType = 'mechanic';
+        else if (jobTypeLower.includes('judge')) applicationType = 'judge';
+        else if (jobTypeLower.includes('attorney')) applicationType = 'attorney';
+        else if (jobTypeLower.includes('state')) applicationType = 'state';
+        else if (jobTypeLower.includes('gang')) applicationType = 'gang';
+
+        const notificationPayload = {
+          applicantName: jobApp.character_name, // Edge function expects applicantName
+          applicantDiscordId: jobApp.discord_id,
+          status,
+          applicationType,
+          moderatorName: staffData?.name || user?.email || "Staff",
+          moderatorDiscordId: staffData?.discord_id || userDiscordId,
+          adminNotes: jobAdminNotes || null
+        };
+        
+        console.log("Sending job application Discord notification:", notificationPayload);
+        const { error: notifyError } = await supabase.functions.invoke("send-application-notification", {
+          body: notificationPayload
+        });
+        
+        if (notifyError) console.error("Failed to send Discord notification:", notifyError);
+      } catch (notifyError) {
+        console.error("Failed to send Discord notification:", notifyError);
+      }
     }
 
     toast({ title: "Success", description: `Job application ${status} successfully.` });
