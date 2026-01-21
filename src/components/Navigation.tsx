@@ -168,6 +168,8 @@ const Navigation = () => {
   };
 
   const handleLogout = async () => {
+    // Clear owner 2FA session on logout
+    sessionStorage.removeItem('owner_2fa_verified');
     await supabase.auth.signOut();
     setUser(null);
     navigate("/");
