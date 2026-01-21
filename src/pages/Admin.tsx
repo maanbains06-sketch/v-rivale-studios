@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useRealtimeApplications } from "@/hooks/useRealtimeApplications";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -378,25 +379,7 @@ const Admin = () => {
     }
   };
 
-  const loadAllData = async () => {
-    await Promise.all([
-      loadApplications(),
-      loadSubmissions(),
-      loadBanAppeals(),
-      loadJobApplications(),
-      loadPdmApplications(),
-      loadCreatorApplications(),
-      loadFirefighterApplications(),
-      loadWeazelNewsApplications(),
-      loadReferralData(),
-      loadPromoData(),
-      loadStaffStats(),
-      loadSupportAnalytics(),
-      fetchPlayers(),
-    ]);
-  };
-
-  const loadApplications = async () => {
+  const loadApplications = useCallback(async () => {
     const { data, error } = await supabase
       .from("whitelist_applications")
       .select("*")
@@ -423,70 +406,101 @@ const Admin = () => {
     } else {
       setApplications([]);
     }
-  };
+  }, []);
 
-  const loadSubmissions = async () => {
+  const loadSubmissions = useCallback(async () => {
     const { data, error } = await supabase
       .from("gallery_submissions")
       .select("*")
       .order("created_at", { ascending: false });
 
     if (!error) setSubmissions(data || []);
-  };
+  }, []);
 
-  const loadBanAppeals = async () => {
+  const loadBanAppeals = useCallback(async () => {
     const { data, error } = await supabase
       .from("ban_appeals")
       .select("*")
       .order("created_at", { ascending: false });
 
     if (!error) setBanAppeals(data || []);
-  };
+  }, []);
 
-  const loadJobApplications = async () => {
+  const loadJobApplications = useCallback(async () => {
     const { data, error } = await supabase
       .from("job_applications")
       .select("*")
       .order("created_at", { ascending: false });
 
     if (!error) setJobApplications(data || []);
-  };
+  }, []);
 
-  const loadPdmApplications = async () => {
+  const loadPdmApplications = useCallback(async () => {
     const { data, error } = await supabase
       .from("pdm_applications")
       .select("*")
       .order("created_at", { ascending: false });
 
     if (!error) setPdmApplications(data || []);
-  };
+  }, []);
 
-  const loadCreatorApplications = async () => {
+  const loadCreatorApplications = useCallback(async () => {
     const { data, error } = await supabase
       .from("creator_applications")
       .select("*")
       .order("created_at", { ascending: false });
 
     if (!error) setCreatorApplications(data || []);
-  };
+  }, []);
 
-  const loadFirefighterApplications = async () => {
+  const loadFirefighterApplications = useCallback(async () => {
     const { data, error } = await supabase
       .from("firefighter_applications")
       .select("*")
       .order("created_at", { ascending: false });
 
     if (!error) setFirefighterApplications(data || []);
-  };
+  }, []);
 
-  const loadWeazelNewsApplications = async () => {
+  const loadWeazelNewsApplications = useCallback(async () => {
     const { data, error } = await supabase
       .from("weazel_news_applications")
       .select("*")
       .order("created_at", { ascending: false });
 
     if (!error) setWeazelNewsApplications(data || []);
-  };
+  }, []);
+
+  const loadAllData = useCallback(async () => {
+    await Promise.all([
+      loadApplications(),
+      loadSubmissions(),
+      loadBanAppeals(),
+      loadJobApplications(),
+      loadPdmApplications(),
+      loadCreatorApplications(),
+      loadFirefighterApplications(),
+      loadWeazelNewsApplications(),
+      loadReferralData(),
+      loadPromoData(),
+      loadStaffStats(),
+      loadSupportAnalytics(),
+      fetchPlayers(),
+    ]);
+  }, [loadApplications, loadSubmissions, loadBanAppeals, loadJobApplications, loadPdmApplications, loadCreatorApplications, loadFirefighterApplications, loadWeazelNewsApplications]);
+
+  // Real-time subscriptions for applications
+  useRealtimeApplications({
+    onWhitelistChange: loadApplications,
+    onJobChange: loadJobApplications,
+    onBanAppealChange: loadBanAppeals,
+    onStaffChange: loadAllData,
+    onCreatorChange: loadCreatorApplications,
+    onFirefighterChange: loadFirefighterApplications,
+    onWeazelChange: loadWeazelNewsApplications,
+    onPdmChange: loadPdmApplications,
+    showNotifications: true,
+  });
 
   const loadReferralData = async () => {
     try {
