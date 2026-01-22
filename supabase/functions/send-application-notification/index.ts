@@ -90,7 +90,23 @@ const applicationConfigs: Record<string, AppConfig> = {
     departmentName: 'Department of Justice',
     color: { approved: 0x8B5CF6, rejected: 0xED4245 }
   },
+  'judge': {
+    channelEnvKey: 'DISCORD_DOJ_JUDGE_CHANNEL_ID',
+    approvedImage: `${BASE_URL}/doj-judge-approved.jpg`,
+    rejectedImage: `${BASE_URL}/doj-judge-rejected.jpg`,
+    title: 'DOJ Judge Application',
+    departmentName: 'Department of Justice',
+    color: { approved: 0x8B5CF6, rejected: 0xED4245 }
+  },
   'DOJ - Attorney': {
+    channelEnvKey: 'DISCORD_DOJ_ATTORNEY_CHANNEL_ID',
+    approvedImage: `${BASE_URL}/doj-attorney-approved.jpg`,
+    rejectedImage: `${BASE_URL}/doj-attorney-rejected.jpg`,
+    title: 'DOJ Attorney Application',
+    departmentName: 'Department of Justice',
+    color: { approved: 0x8B5CF6, rejected: 0xED4245 }
+  },
+  'attorney': {
     channelEnvKey: 'DISCORD_DOJ_ATTORNEY_CHANNEL_ID',
     approvedImage: `${BASE_URL}/doj-attorney-approved.jpg`,
     rejectedImage: `${BASE_URL}/doj-attorney-rejected.jpg`,
@@ -122,7 +138,23 @@ const applicationConfigs: Record<string, AppConfig> = {
     departmentName: 'Gang RP',
     color: { approved: 0x991B1B, rejected: 0xED4245 }
   },
+  'gang': {
+    channelEnvKey: 'DISCORD_GANG_CHANNEL_ID',
+    approvedImage: `${BASE_URL}/gang-approved.jpg`,
+    rejectedImage: `${BASE_URL}/gang-rejected.jpg`,
+    title: 'Gang RP Application',
+    departmentName: 'Gang RP',
+    color: { approved: 0x991B1B, rejected: 0xED4245 }
+  },
   'PDM': {
+    channelEnvKey: 'DISCORD_PDM_CHANNEL_ID',
+    approvedImage: `${BASE_URL}/pdm-approved.jpg`,
+    rejectedImage: `${BASE_URL}/pdm-rejected.jpg`,
+    title: 'PDM Dealership Application',
+    departmentName: 'Premium Deluxe Motorsport',
+    color: { approved: 0xEAB308, rejected: 0xED4245 }
+  },
+  'pdm': {
     channelEnvKey: 'DISCORD_PDM_CHANNEL_ID',
     approvedImage: `${BASE_URL}/pdm-approved.jpg`,
     rejectedImage: `${BASE_URL}/pdm-rejected.jpg`,
@@ -138,7 +170,23 @@ const applicationConfigs: Record<string, AppConfig> = {
     departmentName: 'Fire Department',
     color: { approved: 0xDC2626, rejected: 0xED4245 }
   },
+  'firefighter': {
+    channelEnvKey: 'DISCORD_FIREFIGHTER_CHANNEL_ID',
+    approvedImage: `${BASE_URL}/firefighter-approved.jpg`,
+    rejectedImage: `${BASE_URL}/firefighter-rejected.jpg`,
+    title: 'Firefighter Application',
+    departmentName: 'Fire Department',
+    color: { approved: 0xDC2626, rejected: 0xED4245 }
+  },
   'Weazel News': {
+    channelEnvKey: 'DISCORD_WEAZEL_CHANNEL_ID',
+    approvedImage: `${BASE_URL}/weazel-approved.jpg`,
+    rejectedImage: `${BASE_URL}/weazel-rejected.jpg`,
+    title: 'Weazel News Application',
+    departmentName: 'Weazel News',
+    color: { approved: 0x06B6D4, rejected: 0xED4245 }
+  },
+  'weazel': {
     channelEnvKey: 'DISCORD_WEAZEL_CHANNEL_ID',
     approvedImage: `${BASE_URL}/weazel-approved.jpg`,
     rejectedImage: `${BASE_URL}/weazel-rejected.jpg`,
@@ -154,7 +202,23 @@ const applicationConfigs: Record<string, AppConfig> = {
     departmentName: 'Creator Program',
     color: { approved: 0xA855F7, rejected: 0xED4245 }
   },
+  'creator': {
+    channelEnvKey: 'DISCORD_CREATOR_CHANNEL_ID',
+    approvedImage: `${BASE_URL}/creator-approved.jpg`,
+    rejectedImage: `${BASE_URL}/creator-rejected.jpg`,
+    title: 'Creator Program Application',
+    departmentName: 'Creator Program',
+    color: { approved: 0xA855F7, rejected: 0xED4245 }
+  },
   'Staff': {
+    channelEnvKey: 'DISCORD_STAFF_CHANNEL_ID',
+    approvedImage: `${BASE_URL}/staff-approved.jpg`,
+    rejectedImage: `${BASE_URL}/staff-rejected.jpg`,
+    title: 'Staff Application',
+    departmentName: 'Staff Team',
+    color: { approved: 0x22C55E, rejected: 0xED4245 }
+  },
+  'staff': {
     channelEnvKey: 'DISCORD_STAFF_CHANNEL_ID',
     approvedImage: `${BASE_URL}/staff-approved.jpg`,
     rejectedImage: `${BASE_URL}/staff-rejected.jpg`,

@@ -1138,16 +1138,16 @@ const OwnerPanel = () => {
         
         console.log("Staff data found:", staffData);
 
-        // Map table to application type for notifications
+        // Map table to application type for notifications (must match edge function config)
         const tableToAppType: Record<string, string> = {
           'whitelist_applications': 'whitelist',
           'job_applications': 'job', // Will be refined below
-          'staff_applications': 'staff',
+          'staff_applications': 'Staff',
           'ban_appeals': 'ban_appeal',
-          'creator_applications': 'creator',
-          'firefighter_applications': 'firefighter',
-          'weazel_news_applications': 'weazel_news',
-          'pdm_applications': 'pdm',
+          'creator_applications': 'Creator',
+          'firefighter_applications': 'Firefighter',
+          'weazel_news_applications': 'Weazel News',
+          'pdm_applications': 'PDM',
         };
         
         let applicationType = tableToAppType[table] || 'whitelist';
@@ -1155,14 +1155,14 @@ const OwnerPanel = () => {
         // For job applications, determine specific type based on appName
         if (table === 'job_applications') {
           const appNameLower = appName.toLowerCase();
-          if (appNameLower.includes('police') || appNameLower.includes('pd')) applicationType = 'police';
-          else if (appNameLower.includes('ems')) applicationType = 'ems';
-          else if (appNameLower.includes('mechanic')) applicationType = 'mechanic';
-          else if (appNameLower.includes('judge')) applicationType = 'judge';
-          else if (appNameLower.includes('attorney')) applicationType = 'attorney';
-          else if (appNameLower.includes('state')) applicationType = 'state';
-          else if (appNameLower.includes('gang')) applicationType = 'gang';
-          else applicationType = 'police'; // Default to police for job apps
+          if (appNameLower.includes('police') || appNameLower.includes('pd')) applicationType = 'Police Department';
+          else if (appNameLower.includes('ems')) applicationType = 'EMS';
+          else if (appNameLower.includes('mechanic')) applicationType = 'Mechanic';
+          else if (appNameLower.includes('judge')) applicationType = 'DOJ - Judge';
+          else if (appNameLower.includes('attorney')) applicationType = 'DOJ - Attorney';
+          else if (appNameLower.includes('state')) applicationType = 'State Department';
+          else if (appNameLower.includes('gang')) applicationType = 'Gang RP';
+          else applicationType = 'Police Department'; // Default to police for job apps
         }
 
         // Use whitelist notification for whitelist, send-application-notification for others
