@@ -89,25 +89,48 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
     
     console.log(`Final URL for ${channelName}: ${finalUrl}`);
 
-    // Extract video ID from URL or page
-    let videoId: string | null = null;
-    
-    // Check if redirected to a watch page (strong indicator of live)
+    // FIRST: Check for definitive NOT LIVE indicators
+    const notLiveIndicators = [
+      '"isLive":false',
+      '"isLiveNow":false',
+      'This live stream recording is not available',
+      'This video is unavailable',
+      'This video is private',
+      '"isReplay":true',
+      'live_chat_replay',
+      '"isPremiere":true',
+      '"isUpcoming":true',
+      'Premieres',
+      'Scheduled for',
+      'Stream ended',
+      'Streamed live',
+      '"playabilityStatus":{"status":"LIVE_STREAM_OFFLINE"',
+      'LIVE_STREAM_OFFLINE',
+    ];
+
+    for (const indicator of notLiveIndicators) {
+      if (html.includes(indicator)) {
+        console.log(`${channelName} is NOT LIVE - Found indicator: ${indicator}`);
+        return { isLive: false, liveStreamUrl: null, detectedBy: `not_live:${indicator.substring(0, 30)}` };
+      }
+    }
+
+    // Check if we're NOT on a watch page (no video = not live)
     const watchMatch = finalUrl.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+    if (!watchMatch && !finalUrl.includes('/watch')) {
+      console.log(`${channelName} is NOT LIVE - No video redirect (stayed on channel page)`);
+      return { isLive: false, liveStreamUrl: null, detectedBy: 'no_video_redirect' };
+    }
+
+    // Extract video ID
+    let videoId: string | null = null;
     if (watchMatch) {
       videoId = watchMatch[1];
-      console.log(`Redirected to watch page with video ID: ${videoId}`);
-    }
-    
-    // Also try to extract from page source
-    if (!videoId) {
+    } else {
       const videoIdPatterns = [
         /"videoId":"([a-zA-Z0-9_-]{11})"/,
         /video-id="([a-zA-Z0-9_-]{11})"/,
-        /\/watch\?v=([a-zA-Z0-9_-]{11})/,
-        /"currentVideoEndpoint":\{"watchEndpoint":\{"videoId":"([a-zA-Z0-9_-]{11})"/,
       ];
-      
       for (const pattern of videoIdPatterns) {
         const match = html.match(pattern);
         if (match) {
@@ -118,33 +141,26 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
     }
 
     if (!videoId) {
-      console.log(`No video ID found for ${channelName} - likely not live`);
+      console.log(`${channelName} is NOT LIVE - No video ID found`);
       return { isLive: false, liveStreamUrl: null, detectedBy: 'no_video_id' };
     }
 
     console.log(`Found video ID: ${videoId} for ${channelName}`);
 
-    // Now check if the video is actually LIVE
+    // Now check for DEFINITIVE live indicators
     let isLive = false;
     let detectedBy = '';
 
-    // Method 1: Strong JSON indicators
+    // Method 1: Strongest JSON indicators that MUST be true
     const strongLiveIndicators = [
-      { pattern: '"isLive":true', name: 'isLive_true', negative: '"isLive":false' },
-      { pattern: '"isLiveNow":true', name: 'isLiveNow_true', negative: '"isLiveNow":false' },
-      { pattern: '"isLiveBroadcast":true', name: 'isLiveBroadcast', negative: null },
-      { pattern: '"isLiveContent":true', name: 'isLiveContent', negative: null },
-      { pattern: '"BADGE_STYLE_TYPE_LIVE_NOW"', name: 'badge_live_now', negative: null },
-      { pattern: '"liveBadge":', name: 'liveBadge', negative: null },
+      { pattern: '"isLive":true', name: 'isLive_true' },
+      { pattern: '"isLiveNow":true', name: 'isLiveNow_true' },
+      { pattern: '"BADGE_STYLE_TYPE_LIVE_NOW"', name: 'badge_live_now' },
+      { pattern: '"style":"LIVE"', name: 'style_live' },
     ];
 
-    for (const { pattern, name, negative } of strongLiveIndicators) {
+    for (const { pattern, name } of strongLiveIndicators) {
       if (html.includes(pattern)) {
-        // Check for negative pattern if exists
-        if (negative && html.includes(negative)) {
-          console.log(`Found ${pattern} but also ${negative} - skipping`);
-          continue;
-        }
         isLive = true;
         detectedBy = `json:${name}`;
         console.log(`${channelName} is LIVE! Detected via: ${name}`);
@@ -152,72 +168,54 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
       }
     }
 
-    // Method 2: HTML attribute indicators
+    // Method 2: Check for live badge in player
     if (!isLive) {
-      const htmlIndicators = [
-        'ytp-live',
-        'ytp-live-badge',
-        'live-chat-present-and-expanded',
-        'live-chat-present',
-        'is-live-video',
-      ];
-      
-      for (const indicator of htmlIndicators) {
-        if (html.includes(indicator)) {
-          isLive = true;
-          detectedBy = `html:${indicator}`;
-          console.log(`${channelName} is LIVE! Detected via HTML: ${indicator}`);
-          break;
-        }
+      // Look for the live badge specifically in player context
+      if (html.includes('"liveBadge":{"liveBadgeRenderer"')) {
+        isLive = true;
+        detectedBy = 'liveBadgeRenderer';
+        console.log(`${channelName} is LIVE! Detected via liveBadgeRenderer`);
       }
     }
 
-    // Method 3: Live chat URL presence
+    // Method 3: Check for live streaming metadata
     if (!isLive) {
-      if (html.includes('/live_chat?') || html.includes('live_chat_replay') === false && html.includes('live_chat')) {
-        // Make sure it's not a replay
-        if (!html.includes('"isReplay":true') && !html.includes('live_chat_replay')) {
+      if (html.includes('"liveStreamabilityRenderer"') && html.includes('"isLiveNow":true')) {
+        isLive = true;
+        detectedBy = 'liveStreamabilityRenderer';
+        console.log(`${channelName} is LIVE! Detected via liveStreamabilityRenderer`);
+      }
+    }
+
+    // Method 4: Check for active live chat (NOT replay)
+    if (!isLive) {
+      // Only consider it live if there's live chat AND we haven't seen replay indicators
+      const hasLiveChat = html.includes('/live_chat?') || html.includes('"liveChatRenderer"');
+      const hasActiveChatIndicator = html.includes('"isReplay":false') || 
+                                      (hasLiveChat && !html.includes('live_chat_replay'));
+      
+      // Additional check: look for continuation token which indicates active chat
+      const hasChatContinuation = html.includes('"liveChatContinuation"') && !html.includes('"isReplay":true');
+      
+      if (hasActiveChatIndicator && hasChatContinuation) {
+        // Double check it's not a replay by looking for more indicators
+        if (html.includes('"viewCount":{"videoViewCountRenderer":{"viewCount":{"runs"')) {
+          // This pattern appears in live streams showing live viewer count
           isLive = true;
-          detectedBy = 'live_chat_present';
-          console.log(`${channelName} is LIVE! Detected via live chat URL`);
+          detectedBy = 'live_chat_active';
+          console.log(`${channelName} is LIVE! Detected via active live chat`);
         }
       }
     }
 
-    // Method 4: Check if /live redirected to a watch page (usually means live)
-    if (!isLive && watchMatch && finalUrl.includes('/watch')) {
-      // Only consider it live if we don't see offline indicators
-      const offlineIndicators = [
-        'This video is unavailable',
-        'This video is private',
-        'This live stream recording is not available',
-        'Premiere',
-        '"isUpcoming":true',
-        '"isPremiere":true',
-      ];
-      
-      let isOffline = false;
-      for (const indicator of offlineIndicators) {
-        if (html.includes(indicator)) {
-          isOffline = true;
-          console.log(`${channelName} video appears to be offline/upcoming: ${indicator}`);
-          break;
-        }
-      }
-      
-      if (!isOffline) {
-        // Additional check: look for live-specific metadata
-        if (html.includes('"style":"LIVE"') || html.includes('"liveStreamabilityRenderer"')) {
-          isLive = true;
-          detectedBy = 'redirect_with_live_meta';
-          console.log(`${channelName} is LIVE! Detected via redirect + live metadata`);
-        }
-      }
+    // If still no definitive answer, assume NOT live (safer default)
+    if (!isLive) {
+      console.log(`${channelName} - No definitive live indicators found, assuming NOT LIVE`);
+      return { isLive: false, liveStreamUrl: null, detectedBy: 'no_definitive_indicators' };
     }
 
-    const liveStreamUrl = isLive && videoId ? `https://www.youtube.com/watch?v=${videoId}` : null;
-
-    return { isLive, liveStreamUrl, detectedBy: detectedBy || 'not_detected' };
+    const liveStreamUrl = `https://www.youtube.com/watch?v=${videoId}`;
+    return { isLive, liveStreamUrl, detectedBy };
 
   } catch (error: any) {
     console.error(`Error checking ${channelName}:`, error.message);
@@ -270,15 +268,15 @@ serve(async (req) => {
       const statusChanged = youtuber.is_live !== isLive;
       
       if (statusChanged) {
-        console.log(`Status CHANGED for ${youtuber.name}: ${youtuber.is_live} -> ${isLive}`);
+        console.log(`STATUS CHANGED for ${youtuber.name}: ${youtuber.is_live} -> ${isLive}`);
       }
 
-      // Update the database - always update to ensure fresh data
+      // Update the database
       const { error: updateError } = await supabase
         .from('featured_youtubers')
         .update({ 
           is_live: isLive,
-          live_stream_url: liveStreamUrl,
+          live_stream_url: isLive ? liveStreamUrl : null,
           updated_at: new Date().toISOString()
         })
         .eq('id', youtuber.id);
@@ -286,7 +284,7 @@ serve(async (req) => {
       if (updateError) {
         console.error(`Error updating ${youtuber.name}:`, updateError);
       } else {
-        console.log(`Updated ${youtuber.name}: is_live=${isLive}, url=${liveStreamUrl || 'null'}`);
+        console.log(`Updated ${youtuber.name}: is_live=${isLive}, url=${liveStreamUrl || 'null'}, detected_by=${detectedBy}`);
       }
 
       results.push({ 
@@ -299,7 +297,7 @@ serve(async (req) => {
         statusChanged
       });
 
-      // Small delay between requests to be respectful to YouTube
+      // Small delay between requests
       await new Promise(resolve => setTimeout(resolve, 500));
     }
 
