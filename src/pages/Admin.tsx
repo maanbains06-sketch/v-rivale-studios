@@ -138,6 +138,7 @@ interface PDMApplication {
   vehicle_knowledge: string;
   customer_scenario: string;
   additional_info?: string;
+  discord_id?: string;
   status: string;
   created_at: string;
   admin_notes?: string;
@@ -148,6 +149,7 @@ interface CreatorApplication {
   user_id: string | null;
   full_name: string;
   discord_username: string;
+  discord_id?: string;
   steam_id: string;
   channel_url: string;
   platform: string;
@@ -191,6 +193,7 @@ interface WeazelNewsApplication {
   camera_skills: string;
   interview_scenario: string;
   additional_info: string | null;
+  discord_id?: string;
   status: string;
   created_at: string;
   admin_notes: string | null;
@@ -944,6 +947,7 @@ const Admin = () => {
 
   const updatePdmApplicationStatus = async (pdmAppId: string, status: "approved" | "rejected") => {
     const { data: { user } } = await supabase.auth.getUser();
+    const pdmApp = pdmApplications.find(a => a.id === pdmAppId);
     
     const { error } = await supabase
       .from("pdm_applications")
@@ -960,6 +964,51 @@ const Admin = () => {
       return;
     }
 
+    // Send Discord notification for PDM applications
+    if (pdmApp) {
+      try {
+        const userDiscordId = user?.user_metadata?.provider_id || user?.user_metadata?.discord_id;
+        let staffData = null;
+        
+        if (userDiscordId) {
+          const { data } = await supabase
+            .from("staff_members")
+            .select("name, discord_id")
+            .eq("discord_id", userDiscordId)
+            .single();
+          staffData = data;
+        }
+        
+        if (!staffData && user?.id) {
+          const { data } = await supabase
+            .from("staff_members")
+            .select("name, discord_id")
+            .eq("user_id", user.id)
+            .single();
+          staffData = data;
+        }
+
+        const notificationPayload = {
+          applicantName: pdmApp.character_name,
+          applicantDiscordId: pdmApp.discord_id,
+          status,
+          applicationType: 'PDM',
+          moderatorName: staffData?.name || user?.email || "Staff",
+          moderatorDiscordId: staffData?.discord_id || userDiscordId,
+          adminNotes: pdmAdminNotes || null
+        };
+        
+        console.log("Sending PDM application Discord notification:", notificationPayload);
+        const { error: notifyError } = await supabase.functions.invoke("send-application-notification", {
+          body: notificationPayload
+        });
+        
+        if (notifyError) console.error("Failed to send Discord notification:", notifyError);
+      } catch (notifyError) {
+        console.error("Failed to send Discord notification:", notifyError);
+      }
+    }
+
     toast({ title: "Success", description: `PDM application ${status} successfully.` });
     setSelectedPdmApp(null);
     setPdmAdminNotes("");
@@ -968,6 +1017,7 @@ const Admin = () => {
 
   const updateCreatorApplicationStatus = async (creatorAppId: string, status: "approved" | "rejected") => {
     const { data: { user } } = await supabase.auth.getUser();
+    const creatorApp = creatorApplications.find(a => a.id === creatorAppId);
     
     const { error } = await supabase
       .from("creator_applications")
@@ -984,6 +1034,51 @@ const Admin = () => {
       return;
     }
 
+    // Send Discord notification for Creator applications
+    if (creatorApp) {
+      try {
+        const userDiscordId = user?.user_metadata?.provider_id || user?.user_metadata?.discord_id;
+        let staffData = null;
+        
+        if (userDiscordId) {
+          const { data } = await supabase
+            .from("staff_members")
+            .select("name, discord_id")
+            .eq("discord_id", userDiscordId)
+            .single();
+          staffData = data;
+        }
+        
+        if (!staffData && user?.id) {
+          const { data } = await supabase
+            .from("staff_members")
+            .select("name, discord_id")
+            .eq("user_id", user.id)
+            .single();
+          staffData = data;
+        }
+
+        const notificationPayload = {
+          applicantName: creatorApp.full_name,
+          applicantDiscordId: creatorApp.discord_id,
+          status,
+          applicationType: 'Creator',
+          moderatorName: staffData?.name || user?.email || "Staff",
+          moderatorDiscordId: staffData?.discord_id || userDiscordId,
+          adminNotes: creatorAdminNotes || null
+        };
+        
+        console.log("Sending Creator application Discord notification:", notificationPayload);
+        const { error: notifyError } = await supabase.functions.invoke("send-application-notification", {
+          body: notificationPayload
+        });
+        
+        if (notifyError) console.error("Failed to send Discord notification:", notifyError);
+      } catch (notifyError) {
+        console.error("Failed to send Discord notification:", notifyError);
+      }
+    }
+
     toast({ title: "Success", description: `Creator application ${status} successfully.` });
     setSelectedCreatorApp(null);
     setCreatorAdminNotes("");
@@ -992,6 +1087,7 @@ const Admin = () => {
 
   const updateFirefighterApplicationStatus = async (appId: string, status: "approved" | "rejected") => {
     const { data: { user } } = await supabase.auth.getUser();
+    const firefighterApp = firefighterApplications.find(a => a.id === appId);
     
     const { error } = await supabase
       .from("firefighter_applications")
@@ -1008,6 +1104,51 @@ const Admin = () => {
       return;
     }
 
+    // Send Discord notification for Firefighter applications
+    if (firefighterApp) {
+      try {
+        const userDiscordId = user?.user_metadata?.provider_id || user?.user_metadata?.discord_id;
+        let staffData = null;
+        
+        if (userDiscordId) {
+          const { data } = await supabase
+            .from("staff_members")
+            .select("name, discord_id")
+            .eq("discord_id", userDiscordId)
+            .single();
+          staffData = data;
+        }
+        
+        if (!staffData && user?.id) {
+          const { data } = await supabase
+            .from("staff_members")
+            .select("name, discord_id")
+            .eq("user_id", user.id)
+            .single();
+          staffData = data;
+        }
+
+        const notificationPayload = {
+          applicantName: firefighterApp.in_game_name,
+          applicantDiscordId: firefighterApp.discord_id,
+          status,
+          applicationType: 'Firefighter',
+          moderatorName: staffData?.name || user?.email || "Staff",
+          moderatorDiscordId: staffData?.discord_id || userDiscordId,
+          adminNotes: firefighterAdminNotes || null
+        };
+        
+        console.log("Sending Firefighter application Discord notification:", notificationPayload);
+        const { error: notifyError } = await supabase.functions.invoke("send-application-notification", {
+          body: notificationPayload
+        });
+        
+        if (notifyError) console.error("Failed to send Discord notification:", notifyError);
+      } catch (notifyError) {
+        console.error("Failed to send Discord notification:", notifyError);
+      }
+    }
+
     toast({ title: "Success", description: `Firefighter application ${status} successfully.` });
     setSelectedFirefighterApp(null);
     setFirefighterAdminNotes("");
@@ -1016,6 +1157,7 @@ const Admin = () => {
 
   const updateWeazelApplicationStatus = async (appId: string, status: "approved" | "rejected") => {
     const { data: { user } } = await supabase.auth.getUser();
+    const weazelApp = weazelNewsApplications.find(a => a.id === appId);
     
     const { error } = await supabase
       .from("weazel_news_applications")
@@ -1030,6 +1172,51 @@ const Admin = () => {
     if (error) {
       toast({ title: "Error", description: "Failed to update Weazel News application.", variant: "destructive" });
       return;
+    }
+
+    // Send Discord notification for Weazel News applications
+    if (weazelApp) {
+      try {
+        const userDiscordId = user?.user_metadata?.provider_id || user?.user_metadata?.discord_id;
+        let staffData = null;
+        
+        if (userDiscordId) {
+          const { data } = await supabase
+            .from("staff_members")
+            .select("name, discord_id")
+            .eq("discord_id", userDiscordId)
+            .single();
+          staffData = data;
+        }
+        
+        if (!staffData && user?.id) {
+          const { data } = await supabase
+            .from("staff_members")
+            .select("name, discord_id")
+            .eq("user_id", user.id)
+            .single();
+          staffData = data;
+        }
+
+        const notificationPayload = {
+          applicantName: weazelApp.character_name,
+          applicantDiscordId: weazelApp.discord_id,
+          status,
+          applicationType: 'Weazel News',
+          moderatorName: staffData?.name || user?.email || "Staff",
+          moderatorDiscordId: staffData?.discord_id || userDiscordId,
+          adminNotes: weazelAdminNotes || null
+        };
+        
+        console.log("Sending Weazel News application Discord notification:", notificationPayload);
+        const { error: notifyError } = await supabase.functions.invoke("send-application-notification", {
+          body: notificationPayload
+        });
+        
+        if (notifyError) console.error("Failed to send Discord notification:", notifyError);
+      } catch (notifyError) {
+        console.error("Failed to send Discord notification:", notifyError);
+      }
     }
 
     toast({ title: "Success", description: `Weazel News application ${status} successfully.` });

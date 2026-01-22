@@ -84,11 +84,11 @@ const roleIcons = {
   event_manager: Calendar,
 };
 
+// Simplified scroll reveal for performance - minimal animations
 const scrollRevealVariants = {
-  hidden: { opacity: 0 },
+  hidden: {},
   visible: { 
-    opacity: 1, 
-    transition: { duration: 0.3 }
+    transition: { duration: 0.1 }
   }
 };
 

@@ -476,7 +476,7 @@ const Roster = () => {
           discord_avatar: s.discord_avatar,
           strikes: s.strikes || '-',
         })),
-      ranks: ['Owner', 'Co-Owner', 'Head Admin', 'Admin', 'Senior Moderator', 'Moderator', 'Trial Mod'],
+      ranks: ['Owner', 'Head Admin', 'Admin', 'Moderator', 'Support Staff', 'Event Member', 'Trial Mod'],
     }
   ];
 

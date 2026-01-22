@@ -539,7 +539,7 @@ const Index = () => {
 
               <Button
                 size="lg"
-                className="bg-background/75 border-2 border-sky-500/50 text-sky-400 hover:bg-background/85 hover:border-sky-400 text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 hover:scale-105"
+                className="bg-background/75 border-2 border-sky-500/50 text-sky-400 hover:bg-background/85 hover:border-sky-400 text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-colors duration-200"
                 asChild
                 disabled={isAuthLoading}
               >
@@ -559,7 +559,7 @@ const Index = () => {
 
               <Button
                 size="lg"
-                className="bg-background/75 border-2 border-cyan-500/50 text-cyan-400 hover:bg-background/85 hover:border-cyan-400 text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-all duration-300 hover:scale-105"
+                className="bg-background/75 border-2 border-cyan-500/50 text-cyan-400 hover:bg-background/85 hover:border-cyan-400 text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-colors duration-200"
                 asChild
               >
                 <a href="https://www.youtube.com/@Skyliferpindia20" target="_blank" rel="noopener noreferrer">

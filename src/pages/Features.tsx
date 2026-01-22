@@ -66,14 +66,16 @@ const Features = () => {
             {features.map((feature, index) => (
               <div
                 key={feature.title}
-                className="group glass-effect rounded-xl overflow-hidden hover:scale-105 transition-all duration-300 animate-fade-in"
-                style={{ animationDelay: `${index * 100}ms` }}
+                className="group glass-effect rounded-xl overflow-hidden hover:scale-[1.02] transition-transform duration-200 animate-fade-in will-change-transform"
+                style={{ animationDelay: `${index * 50}ms` }}
               >
                 <div className="relative h-48 overflow-hidden">
                   <img
                     src={feature.image}
                     alt={feature.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                    decoding="async"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent"></div>
                   <div className="absolute bottom-4 left-4 p-3 rounded-lg bg-primary/20 backdrop-blur-sm">
