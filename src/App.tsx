@@ -95,15 +95,15 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 15, // 15 minutes - data stays fresh longer
-      gcTime: 1000 * 60 * 60, // 60 minutes cache
-      retry: 1,
-      retryDelay: 500, // Quick retry
+      staleTime: 1000 * 60 * 30, // 30 minutes - data stays fresh much longer
+      gcTime: 1000 * 60 * 120, // 2 hours cache - keep data in memory longer
+      retry: 0, // No retries for faster perceived speed
       refetchOnWindowFocus: false,
       refetchOnMount: false,
       refetchOnReconnect: false,
       networkMode: 'offlineFirst', // Use cache first, fetch later
       refetchInterval: false,
+      structuralSharing: true, // Optimize re-renders
     },
   },
 });
@@ -246,7 +246,8 @@ const App = () => {
   useEffect(() => {
     const safeGet = (key: string) => {
       try {
-        return sessionStorage.getItem(key);
+        // Check both sessionStorage and localStorage for persistence
+        return sessionStorage.getItem(key) || localStorage.getItem(key);
       } catch {
         return null;
       }
@@ -255,25 +256,28 @@ const App = () => {
     const safeSet = (key: string, value: string) => {
       try {
         sessionStorage.setItem(key, value);
+        // Also store in localStorage for cross-tab/browser persistence
+        localStorage.setItem(key, value);
       } catch {
         // ignore (some browsers/private modes can block storage)
       }
     };
 
-    // PERF: Ultra-fast unblock for instant perceived load
-    const hardUnblock = window.setTimeout(() => {
-      setShowContent(true);
-      setIsLoading(false);
-    }, 500); // Reduced to 500ms for snappier feel
-
-    // Check if this is the first visit in this session
+    // PERF: Check if returning user IMMEDIATELY before any timeouts
     const hasVisited = safeGet("slrp_visited");
     if (hasVisited) {
-      window.clearTimeout(hardUnblock);
+      // Returning user - show content INSTANTLY, no loading screen
       setIsLoading(false);
       setShowContent(true);
       return;
     }
+
+    // PERF: Ultra-fast unblock for new users
+    const hardUnblock = window.setTimeout(() => {
+      setShowContent(true);
+      setIsLoading(false);
+      safeSet("slrp_visited", "true");
+    }, 400); // Reduced to 400ms for snappier feel
 
     // For low-end devices OR mobile, skip loading screen entirely
     const isLowEndDevice =
@@ -296,11 +300,12 @@ const App = () => {
   const handleLoadingComplete = () => {
     try {
       sessionStorage.setItem("slrp_visited", "true");
+      localStorage.setItem("slrp_visited", "true");
     } catch {
       // ignore
     }
     setShowContent(true);
-    setTimeout(() => setIsLoading(false), 50); // Reduced from 200ms
+    setIsLoading(false); // Instant, no delay
   };
 
   return (

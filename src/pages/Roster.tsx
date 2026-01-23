@@ -463,6 +463,7 @@ const Roster = () => {
             s.department?.toLowerCase().includes('staff') ||
             s.department?.toLowerCase().includes('admin') ||
             s.department?.toLowerCase().includes('management') ||
+            s.department?.toLowerCase().includes('moderation') ||
             !s.department
         )
         .map((s) => ({
@@ -476,7 +477,7 @@ const Roster = () => {
           discord_avatar: s.discord_avatar,
           strikes: s.strikes || '-',
         })),
-      ranks: ['Owner', 'Head Admin', 'Admin', 'Moderator', 'Support Staff', 'Event Member', 'Trial Mod'],
+      ranks: ['Owner', 'Head Admin', 'Admin', 'Moderator', 'Staff Member', 'Support Staff', 'Event Member', 'Trial Mod'],
     }
   ];
 
