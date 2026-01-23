@@ -143,7 +143,7 @@ const Giveaway = () => {
     start_date: '',
     end_date: '',
     winner_count: 1,
-    category: 'general',
+    category: 'all',
     startNow: true
   });
 
@@ -1162,11 +1162,8 @@ const Giveaway = () => {
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="general">🎯 General</SelectItem>
-                  <SelectItem value="vip">⭐ VIP</SelectItem>
-                  <SelectItem value="ingame">🎮 In-Game</SelectItem>
-                  <SelectItem value="store">💰 Store Credit</SelectItem>
-                  <SelectItem value="special">🎊 Special Event</SelectItem>
+                  <SelectItem value="all">🎯 All Members</SelectItem>
+                  <SelectItem value="whitelisted">⭐ Whitelisted Only</SelectItem>
                 </SelectContent>
               </Select>
             </div>
