@@ -158,14 +158,26 @@ const Giveaway = () => {
     if (user) {
       fetchUserEntries(user.id);
       
-      // Check if user is owner via staff_members table
-      const { data: staffData } = await supabase
-        .from("staff_members")
-        .select("role_type")
-        .eq("user_id", user.id)
-        .single();
+      // Check if user can manage giveaways (owner, admin in staff_members OR admin/moderator in user_roles)
+      const [staffResult, rolesResult] = await Promise.all([
+        supabase
+          .from("staff_members")
+          .select("role_type")
+          .eq("user_id", user.id)
+          .eq("is_active", true)
+          .maybeSingle(),
+        supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .in("role", ["admin", "moderator"])
+      ]);
       
-      setIsOwner(staffData?.role_type === "owner");
+      const isOwnerOrAdmin = staffResult.data?.role_type === "owner" || 
+                              staffResult.data?.role_type === "admin";
+      const hasAdminRole = rolesResult.data && rolesResult.data.length > 0;
+      
+      setIsOwner(isOwnerOrAdmin || hasAdminRole);
     }
   };
 
