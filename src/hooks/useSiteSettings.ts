@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface SiteSettings {
@@ -43,9 +43,33 @@ const defaultSettings: SiteSettings = {
   creator_applications_enabled: true,
 };
 
+// Cache settings in localStorage for instant loading
+const CACHE_KEY = 'slrp_site_settings';
+const CACHE_DURATION = 1000 * 60 * 5; // 5 minutes cache
+
+interface CachedSettings {
+  settings: SiteSettings;
+  timestamp: number;
+}
+
 export const useSiteSettings = (): UseSiteSettingsReturn => {
-  const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
+  const [settings, setSettings] = useState<SiteSettings>(() => {
+    // Try to load from cache immediately for instant UI
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const parsed: CachedSettings = JSON.parse(cached);
+        if (Date.now() - parsed.timestamp < CACHE_DURATION) {
+          return parsed.settings;
+        }
+      }
+    } catch {
+      // Ignore
+    }
+    return defaultSettings;
+  });
   const [loading, setLoading] = useState(true);
+  const fetchedRef = useRef(false);
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -80,7 +104,7 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
           settingsMap[s.key] = s.value;
         });
 
-        setSettings({
+        const newSettings: SiteSettings = {
           maintenance_mode: settingsMap.maintenance_mode === 'true',
           applications_paused: settingsMap.applications_paused === 'true',
           registration_enabled: settingsMap.registration_enabled !== 'false',
@@ -96,19 +120,47 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
           ban_appeals_enabled: settingsMap.ban_appeals_enabled !== 'false',
           gang_applications_enabled: settingsMap.gang_applications_enabled !== 'false',
           creator_applications_enabled: settingsMap.creator_applications_enabled !== 'false',
-        });
+        };
+
+        setSettings(newSettings);
+        
+        // Cache for next visit
+        try {
+          const cacheData: CachedSettings = { settings: newSettings, timestamp: Date.now() };
+          localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+        } catch {
+          // Ignore storage errors
+        }
       }
     } catch (err) {
       console.error('Error in fetchSettings:', err);
     } finally {
       setLoading(false);
+      fetchedRef.current = true;
     }
   }, []);
 
   useEffect(() => {
+    // Check if we have valid cached settings
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const parsed: CachedSettings = JSON.parse(cached);
+        if (Date.now() - parsed.timestamp < CACHE_DURATION) {
+          setSettings(parsed.settings);
+          setLoading(false);
+          // Fetch in background to update cache
+          fetchSettings();
+          return;
+        }
+      }
+    } catch {
+      // Ignore
+    }
+
     fetchSettings();
 
-    // Subscribe to realtime changes
+    // Subscribe to realtime changes - but don't refetch on every change, just update state
     const channel = supabase
       .channel('site_settings_changes')
       .on(
@@ -118,8 +170,11 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
           schema: 'public',
           table: 'site_settings',
         },
-        () => {
-          fetchSettings();
+        (payload) => {
+          // Only refetch if maintenance_mode changed (important for security)
+          if (payload.new && (payload.new as any).key === 'maintenance_mode') {
+            fetchSettings();
+          }
         }
       )
       .subscribe();

@@ -17,7 +17,7 @@ interface FeaturedYoutuber {
   live_stream_url: string | null;
 }
 
-// Fetch server status with caching - ultra optimized to prevent lag
+// Fetch server status with aggressive caching - ultra optimized to prevent lag
 export const useServerStatus = () => {
   return useQuery<ServerStatus>({
     queryKey: ['server-status'],
@@ -34,7 +34,14 @@ export const useServerStatus = () => {
       }
 
       try {
-        const { data, error } = await supabase.functions.invoke('fivem-server-status');
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+        
+        const { data, error } = await supabase.functions.invoke('fivem-server-status', {
+          body: {},
+        });
+        
+        clearTimeout(timeoutId);
         
         if (error || !data) {
           return { status: 'offline' as const, players: 0, maxPlayers: 64 };
@@ -53,17 +60,18 @@ export const useServerStatus = () => {
         return { status: 'offline' as const, players: 0, maxPlayers: 64 };
       }
     },
-    staleTime: 1000 * 60 * 30, // 30 minutes - very long cache for performance
-    gcTime: 1000 * 60 * 60, // 60 minutes cache
+    staleTime: 1000 * 60 * 60, // 1 hour - very long cache for performance
+    gcTime: 1000 * 60 * 120, // 2 hours cache retention
     refetchInterval: false, // PERF: Disabled background polling
-    retry: false, // PERF: Don't retry failed requests - prevents repeated network errors
+    retry: false, // PERF: Don't retry failed requests
     refetchOnMount: false, // PERF: Use cached data
     refetchOnWindowFocus: false, // PERF: Don't refetch on focus
     refetchOnReconnect: false, // PERF: Don't refetch on reconnect
+    networkMode: 'offlineFirst', // Use cache first
   });
 };
 
-// Fetch featured YouTubers with caching
+// Fetch featured YouTubers with aggressive caching
 export const useFeaturedYoutubers = () => {
   return useQuery<FeaturedYoutuber[]>({
     queryKey: ['featured-youtubers'],
@@ -81,12 +89,17 @@ export const useFeaturedYoutubers = () => {
       
       return data || [];
     },
-    staleTime: 1000 * 60 * 10, // 10 minutes
-    gcTime: 1000 * 60 * 30, // 30 minutes
+    staleTime: 1000 * 60 * 30, // 30 minutes
+    gcTime: 1000 * 60 * 60, // 1 hour
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    retry: false,
+    networkMode: 'offlineFirst',
   });
 };
 
-// Fetch testimonials with caching
+// Fetch testimonials with aggressive caching
 export const useTestimonials = () => {
   return useQuery({
     queryKey: ['testimonials'],
@@ -105,7 +118,12 @@ export const useTestimonials = () => {
       
       return data || [];
     },
-    staleTime: 1000 * 60 * 10, // 10 minutes
-    gcTime: 1000 * 60 * 30, // 30 minutes
+    staleTime: 1000 * 60 * 60, // 1 hour
+    gcTime: 1000 * 60 * 120, // 2 hours
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    retry: false,
+    networkMode: 'offlineFirst',
   });
 };
