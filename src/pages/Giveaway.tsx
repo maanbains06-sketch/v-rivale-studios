@@ -30,7 +30,8 @@ import {
   Users,
   Image,
   Send,
-  Eye
+  Eye,
+  Pencil
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, differenceInSeconds, differenceInDays, differenceInHours, differenceInMinutes } from "date-fns";
@@ -119,6 +120,7 @@ const Giveaway = () => {
   
   // Dialog states
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [showEntriesDialog, setShowEntriesDialog] = useState(false);
   const [showWinnersDialog, setShowWinnersDialog] = useState(false);
   const [showAllEntriesDialog, setShowAllEntriesDialog] = useState(false);
@@ -134,6 +136,7 @@ const Giveaway = () => {
   
   // Form states
   const [creating, setCreating] = useState(false);
+  const [updating, setUpdating] = useState(false);
   const [selectingWinners, setSelectingWinners] = useState(false);
   const [newGiveaway, setNewGiveaway] = useState({
     title: '',
@@ -146,6 +149,18 @@ const Giveaway = () => {
     category: 'all',
     startNow: true
   });
+  const [editGiveaway, setEditGiveaway] = useState<{
+    id: string;
+    title: string;
+    description: string;
+    prize: string;
+    prize_image_url: string;
+    start_date: string;
+    end_date: string;
+    winner_count: number;
+    category: string;
+    status: string;
+  } | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -421,6 +436,78 @@ const Giveaway = () => {
       });
     } finally {
       setCreating(false);
+    }
+  };
+
+  const openEditDialog = (giveaway: Giveaway) => {
+    // Format dates for datetime-local input
+    const formatDateForInput = (dateStr: string) => {
+      const date = new Date(dateStr);
+      return date.toISOString().slice(0, 16);
+    };
+
+    setEditGiveaway({
+      id: giveaway.id,
+      title: giveaway.title,
+      description: giveaway.description || '',
+      prize: giveaway.prize,
+      prize_image_url: giveaway.prize_image_url || '',
+      start_date: formatDateForInput(giveaway.start_date),
+      end_date: formatDateForInput(giveaway.end_date),
+      winner_count: giveaway.winner_count,
+      category: giveaway.category,
+      status: giveaway.status
+    });
+    setShowEditDialog(true);
+  };
+
+  const updateGiveaway = async () => {
+    if (!editGiveaway) return;
+
+    if (!editGiveaway.title || !editGiveaway.prize || !editGiveaway.end_date) {
+      toast({
+        title: "Missing Fields",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUpdating(true);
+    try {
+      const { error } = await supabase
+        .from("giveaways")
+        .update({
+          title: editGiveaway.title,
+          description: editGiveaway.description || null,
+          prize: editGiveaway.prize,
+          prize_image_url: editGiveaway.prize_image_url || null,
+          start_date: new Date(editGiveaway.start_date).toISOString(),
+          end_date: new Date(editGiveaway.end_date).toISOString(),
+          winner_count: editGiveaway.winner_count,
+          category: editGiveaway.category
+        })
+        .eq("id", editGiveaway.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Giveaway Updated! ✅",
+        description: "The giveaway has been successfully updated.",
+      });
+
+      setShowEditDialog(false);
+      setEditGiveaway(null);
+      fetchData();
+    } catch (error: any) {
+      console.error("Giveaway update error:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update giveaway.",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -727,25 +814,47 @@ const Giveaway = () => {
                 </Button>
                 
                 {isOwner && (
-                  <Button
-                    variant="outline"
-                    onClick={() => selectWinners(giveaway)}
-                    className="w-full border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
-                  >
-                    <Crown className="w-4 h-4 mr-2" />
-                    Select Winners
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => openEditDialog(giveaway)}
+                      className="flex-1 border-blue-500/50 text-blue-400 hover:bg-blue-500/10"
+                    >
+                      <Pencil className="w-4 h-4 mr-2" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => selectWinners(giveaway)}
+                      className="flex-1 border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
+                    >
+                      <Crown className="w-4 h-4 mr-2" />
+                      Select Winners
+                    </Button>
+                  </div>
                 )}
               </div>
             )}
 
             {/* Upcoming giveaway info */}
             {currentStatus === "upcoming" && (
-              <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-center">
-                <p className="text-sm text-amber-400">
-                  <Clock className="w-4 h-4 inline mr-1" />
-                  Giveaway starts on {format(new Date(giveaway.start_date), "MMM d, yyyy 'at' h:mm a")}
-                </p>
+              <div className="space-y-2">
+                <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-center">
+                  <p className="text-sm text-amber-400">
+                    <Clock className="w-4 h-4 inline mr-1" />
+                    Giveaway starts on {format(new Date(giveaway.start_date), "MMM d, yyyy 'at' h:mm a")}
+                  </p>
+                </div>
+                {isOwner && (
+                  <Button
+                    variant="outline"
+                    onClick={() => openEditDialog(giveaway)}
+                    className="w-full border-blue-500/50 text-blue-400 hover:bg-blue-500/10"
+                  >
+                    <Pencil className="w-4 h-4 mr-2" />
+                    Edit Giveaway
+                  </Button>
+                )}
               </div>
             )}
 
@@ -1189,6 +1298,164 @@ const Giveaway = () => {
                 <CalendarDays className="w-4 h-4 mr-2" />
               )}
               {newGiveaway.startNow ? "Create & Start Now" : "Schedule Giveaway"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Giveaway Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={(open) => {
+        setShowEditDialog(open);
+        if (!open) setEditGiveaway(null);
+      }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Pencil className="w-5 h-5 text-blue-400" />
+              Edit Giveaway
+            </DialogTitle>
+            <DialogDescription>
+              Update the giveaway details below
+            </DialogDescription>
+          </DialogHeader>
+          
+          {editGiveaway && (
+            <div className="space-y-4">
+              {/* Title */}
+              <div className="space-y-2">
+                <Label htmlFor="edit_title" className="flex items-center gap-1">
+                  🎁 Giveaway Title <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="edit_title"
+                  value={editGiveaway.title}
+                  onChange={(e) => setEditGiveaway({ ...editGiveaway, title: e.target.value })}
+                  placeholder="Enter giveaway title"
+                  className="h-11"
+                />
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <Label htmlFor="edit_description">📝 Description</Label>
+                <Textarea
+                  id="edit_description"
+                  value={editGiveaway.description}
+                  onChange={(e) => setEditGiveaway({ ...editGiveaway, description: e.target.value })}
+                  placeholder="Describe your giveaway..."
+                  rows={3}
+                />
+              </div>
+
+              {/* Prize */}
+              <div className="space-y-2">
+                <Label htmlFor="edit_prize" className="flex items-center gap-1">
+                  🏆 Prize <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="edit_prize"
+                  value={editGiveaway.prize}
+                  onChange={(e) => setEditGiveaway({ ...editGiveaway, prize: e.target.value })}
+                  placeholder="What's the prize?"
+                  className="h-11"
+                />
+              </div>
+
+              {/* Prize Image URL */}
+              <div className="space-y-2">
+                <Label htmlFor="edit_prize_image" className="flex items-center gap-1">
+                  <Image className="w-4 h-4" /> Prize Image URL
+                </Label>
+                <Input
+                  id="edit_prize_image"
+                  value={editGiveaway.prize_image_url}
+                  onChange={(e) => setEditGiveaway({ ...editGiveaway, prize_image_url: e.target.value })}
+                  placeholder="https://example.com/image.png"
+                  className="h-11"
+                />
+              </div>
+
+              {/* Start & End Dates */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit_start_date" className="flex items-center gap-1">
+                    📅 Start Date <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="edit_start_date"
+                    type="datetime-local"
+                    value={editGiveaway.start_date}
+                    onChange={(e) => setEditGiveaway({ ...editGiveaway, start_date: e.target.value })}
+                    className="h-11"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="edit_end_date" className="flex items-center gap-1">
+                    ⏰ End Date <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="edit_end_date"
+                    type="datetime-local"
+                    value={editGiveaway.end_date}
+                    onChange={(e) => setEditGiveaway({ ...editGiveaway, end_date: e.target.value })}
+                    className="h-11"
+                  />
+                </div>
+              </div>
+
+              {/* Winner Count & Category */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit_winner_count">🏆 Number of Winners</Label>
+                  <Input
+                    id="edit_winner_count"
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={editGiveaway.winner_count}
+                    onChange={(e) => setEditGiveaway({ ...editGiveaway, winner_count: parseInt(e.target.value) || 1 })}
+                    className="h-11"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Category</Label>
+                  <Select
+                    value={editGiveaway.category}
+                    onValueChange={(value) => setEditGiveaway({ ...editGiveaway, category: value })}
+                  >
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">🎯 All Members</SelectItem>
+                      <SelectItem value="whitelisted">⭐ Whitelisted Only</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => {
+              setShowEditDialog(false);
+              setEditGiveaway(null);
+            }}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={updateGiveaway} 
+              disabled={updating}
+              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+            >
+              {updating ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <CheckCircle2 className="w-4 h-4 mr-2" />
+              )}
+              Save Changes
             </Button>
           </DialogFooter>
         </DialogContent>
