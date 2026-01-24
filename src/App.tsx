@@ -81,6 +81,7 @@ const DiscordSignupForm = lazy(() => import("./pages/DiscordSignupForm"));
 const DiscordProfile = lazy(() => import("./pages/DiscordProfile"));
 const OwnerPanel = lazy(() => import("./pages/OwnerPanel"));
 const GangRP = lazy(() => import("./pages/GangRP"));
+const Business = lazy(() => import("./pages/Business"));
 const Feedback = lazy(() => import("./pages/Feedback"));
 const AdminYoutubers = lazy(() => import("./pages/AdminYoutubers"));
 const AdminStaffTeams = lazy(() => import("./pages/AdminStaffTeams"));
@@ -167,6 +168,7 @@ const AppRoutes = memo(() => {
           <Route path="/refund-policy" element={<PageTransition><PageMaintenanceBlock pageKey="refund-policy"><RefundPolicy /></PageMaintenanceBlock></PageTransition>} />
           <Route path="/owner-panel" element={<PageTransition><OwnerPanel /></PageTransition>} />
           <Route path="/gang-rp" element={<PageTransition><PageMaintenanceBlock pageKey="gang-rp"><GangRP /></PageMaintenanceBlock></PageTransition>} />
+          <Route path="/business" element={<PageTransition><PageMaintenanceBlock pageKey="business"><Business /></PageMaintenanceBlock></PageTransition>} />
           <Route path="/feedback" element={<PageTransition><PageMaintenanceBlock pageKey="feedback"><Feedback /></PageMaintenanceBlock></PageTransition>} />
           <Route path="/giveaway" element={<PageTransition><PageMaintenanceBlock pageKey="giveaway"><Giveaway /></PageMaintenanceBlock></PageTransition>} />
           <Route path="/roster" element={<PageTransition><PageMaintenanceBlock pageKey="roster"><Roster /></PageMaintenanceBlock></PageTransition>} />

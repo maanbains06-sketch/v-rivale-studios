@@ -256,6 +256,13 @@ const Navigation = () => {
               Jobs
             </NavLink>
             <NavLink 
+              to="/business" 
+              className="text-foreground/80 hover:text-primary transition-colors"
+              activeClassName="text-primary"
+            >
+              Business
+            </NavLink>
+            <NavLink 
               to="/gang-rp" 
               className="text-foreground/80 hover:text-primary transition-colors"
               activeClassName="text-primary"

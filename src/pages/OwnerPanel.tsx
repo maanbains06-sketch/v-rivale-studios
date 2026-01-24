@@ -1418,63 +1418,68 @@ const OwnerPanel = () => {
       
       <div className="container mx-auto px-4 py-12">
         <Tabs defaultValue="settings" className="space-y-6">
-          <ScrollArea className="w-full">
-            <TabsList className="inline-flex w-auto gap-1 p-1">
-              <TabsTrigger value="settings" className="flex items-center gap-2">
-                <Settings className="w-4 h-4" />
-                <span className="hidden sm:inline">Settings</span>
-              </TabsTrigger>
-              <TabsTrigger value="applications" className="flex items-center gap-2">
-                <FileText className="w-4 h-4" />
-                <span className="hidden sm:inline">Applications</span>
-                {totalPending > 0 && (
-                  <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
-                    {totalPending}
-                  </Badge>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="roles" className="flex items-center gap-2">
-                <Shield className="w-4 h-4" />
-                <span className="hidden sm:inline">User Roles</span>
-              </TabsTrigger>
-              <TabsTrigger value="members" className="flex items-center gap-2">
-                <UserPlus className="w-4 h-4" />
-                <span className="hidden sm:inline">Member Joins</span>
-              </TabsTrigger>
-              <TabsTrigger value="staff" className="flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                <span className="hidden sm:inline">Staff</span>
-              </TabsTrigger>
-              <TabsTrigger value="feedback" className="flex items-center gap-2">
-                <MessageSquare className="w-4 h-4" />
-                <span className="hidden sm:inline">Feedback</span>
-              </TabsTrigger>
-              <TabsTrigger value="audit" className="flex items-center gap-2">
-                <History className="w-4 h-4" />
-                <span className="hidden sm:inline">Audit Log</span>
-              </TabsTrigger>
-              <TabsTrigger value="permissions" className="flex items-center gap-2">
-                <Crown className="w-4 h-4" />
-                <span className="hidden sm:inline">Permissions</span>
-              </TabsTrigger>
-              <TabsTrigger value="maintenance" className="flex items-center gap-2">
-                <Wrench className="w-4 h-4" />
-                <span className="hidden sm:inline">Maintenance</span>
-              </TabsTrigger>
-              <TabsTrigger value="promo" className="flex items-center gap-2">
-                <Ticket className="w-4 h-4" />
-                <span className="hidden sm:inline">Promo Codes</span>
-              </TabsTrigger>
-              <TabsTrigger value="streamers" className="flex items-center gap-2">
-                <Radio className="w-4 h-4" />
-                <span className="hidden sm:inline">Streamers</span>
-              </TabsTrigger>
-              <TabsTrigger value="giveaways" className="flex items-center gap-2">
-                <Gift className="w-4 h-4" />
-                <span className="hidden sm:inline">Giveaways</span>
-              </TabsTrigger>
-            </TabsList>
-          </ScrollArea>
+          <div className="relative">
+            <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent pb-2">
+              <TabsList className="inline-flex w-max gap-1 p-1 min-w-full">
+                <TabsTrigger value="settings" className="flex items-center gap-2 whitespace-nowrap">
+                  <Settings className="w-4 h-4" />
+                  <span className="hidden sm:inline">Settings</span>
+                </TabsTrigger>
+                <TabsTrigger value="applications" className="flex items-center gap-2 whitespace-nowrap">
+                  <FileText className="w-4 h-4" />
+                  <span className="hidden sm:inline">Applications</span>
+                  {totalPending > 0 && (
+                    <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                      {totalPending}
+                    </Badge>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="roles" className="flex items-center gap-2 whitespace-nowrap">
+                  <Shield className="w-4 h-4" />
+                  <span className="hidden sm:inline">User Roles</span>
+                </TabsTrigger>
+                <TabsTrigger value="members" className="flex items-center gap-2 whitespace-nowrap">
+                  <UserPlus className="w-4 h-4" />
+                  <span className="hidden sm:inline">Member Joins</span>
+                </TabsTrigger>
+                <TabsTrigger value="staff" className="flex items-center gap-2 whitespace-nowrap">
+                  <Users className="w-4 h-4" />
+                  <span className="hidden sm:inline">Staff</span>
+                </TabsTrigger>
+                <TabsTrigger value="feedback" className="flex items-center gap-2 whitespace-nowrap">
+                  <MessageSquare className="w-4 h-4" />
+                  <span className="hidden sm:inline">Feedback</span>
+                </TabsTrigger>
+                <TabsTrigger value="audit" className="flex items-center gap-2 whitespace-nowrap">
+                  <History className="w-4 h-4" />
+                  <span className="hidden sm:inline">Audit Log</span>
+                </TabsTrigger>
+                <TabsTrigger value="permissions" className="flex items-center gap-2 whitespace-nowrap">
+                  <Crown className="w-4 h-4" />
+                  <span className="hidden sm:inline">Permissions</span>
+                </TabsTrigger>
+                <TabsTrigger value="maintenance" className="flex items-center gap-2 whitespace-nowrap">
+                  <Wrench className="w-4 h-4" />
+                  <span className="hidden sm:inline">Maintenance</span>
+                </TabsTrigger>
+                <TabsTrigger value="promo" className="flex items-center gap-2 whitespace-nowrap">
+                  <Ticket className="w-4 h-4" />
+                  <span className="hidden sm:inline">Promo Codes</span>
+                </TabsTrigger>
+                <TabsTrigger value="streamers" className="flex items-center gap-2 whitespace-nowrap">
+                  <Radio className="w-4 h-4" />
+                  <span className="hidden sm:inline">Streamers</span>
+                </TabsTrigger>
+                <TabsTrigger value="giveaways" className="flex items-center gap-2 whitespace-nowrap">
+                  <Gift className="w-4 h-4" />
+                  <span className="hidden sm:inline">Giveaways</span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
+            {/* Fade indicators for scroll hint */}
+            <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none" />
+            <div className="absolute left-0 top-0 bottom-2 w-8 bg-gradient-to-r from-background to-transparent pointer-events-none" />
+          </div>
 
           {/* Site Settings Tab */}
           <TabsContent value="settings">
