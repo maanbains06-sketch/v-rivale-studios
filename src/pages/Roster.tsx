@@ -954,8 +954,8 @@ const Roster = () => {
                                               Active
                                             </span>
                                           ) : member.status === 'on_leave' ? (
-                                            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-500 text-xs font-medium">
-                                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-500/15 border border-yellow-500/30 text-yellow-500 text-xs font-medium">
+                                              <span className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
                                               On Leave
                                             </span>
                                           ) : member.status === 'on_training' ? (
@@ -964,8 +964,8 @@ const Roster = () => {
                                               On Training
                                             </span>
                                           ) : (
-                                            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-500/15 border border-gray-500/30 text-gray-400 text-xs font-medium">
-                                              <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+                                            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/15 border border-red-500/30 text-red-500 text-xs font-medium">
+                                              <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
                                               Inactive
                                             </span>
                                           )}
