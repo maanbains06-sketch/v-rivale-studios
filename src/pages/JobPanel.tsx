@@ -177,6 +177,79 @@ const JobPanel = () => {
     }
   }, [hasAccess, loadApplications]);
 
+  // Real-time subscriptions for all job application tables
+  useEffect(() => {
+    if (!hasAccess) return;
+
+    const channel = supabase
+      .channel('job-panel-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'job_applications' },
+        (payload) => {
+          console.log('Job applications changed:', payload);
+          loadApplications();
+          if (payload.eventType === 'INSERT') {
+            toast({
+              title: 'New Job Application',
+              description: 'A new job application has been submitted.',
+              duration: 4000,
+            });
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'firefighter_applications' },
+        (payload) => {
+          console.log('Firefighter applications changed:', payload);
+          loadApplications();
+          if (payload.eventType === 'INSERT') {
+            toast({
+              title: 'New Firefighter Application',
+              description: 'A new firefighter application has been submitted.',
+              duration: 4000,
+            });
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'pdm_applications' },
+        (payload) => {
+          console.log('PDM applications changed:', payload);
+          loadApplications();
+          if (payload.eventType === 'INSERT') {
+            toast({
+              title: 'New PDM Application',
+              description: 'A new PDM application has been submitted.',
+              duration: 4000,
+            });
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'weazel_news_applications' },
+        (payload) => {
+          console.log('Weazel News applications changed:', payload);
+          loadApplications();
+          if (payload.eventType === 'INSERT') {
+            toast({
+              title: 'New Weazel News Application',
+              description: 'A new Weazel News application has been submitted.',
+              duration: 4000,
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [hasAccess, loadApplications, toast]);
+
   const handleReview = async (appId: string, status: 'approved' | 'rejected', dept: DepartmentKey) => {
     if (!selectedApp) return;
     
