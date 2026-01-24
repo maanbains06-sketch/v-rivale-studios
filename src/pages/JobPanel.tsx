@@ -68,6 +68,10 @@ const JobPanel = () => {
   const [isReviewing, setIsReviewing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState<Record<DepartmentKey, number>>({
+    pd: 1, ems: 1, firefighter: 1, doj: 1, state: 1, mechanic: 1, pdm: 1, weazel: 1
+  });
+  const ITEMS_PER_PAGE = 10;
 
   // Filter applications based on search and status
   const getFilteredApplications = useCallback((dept: DepartmentKey) => {
@@ -93,6 +97,34 @@ const JobPanel = () => {
     
     return filtered;
   }, [applications, searchQuery, statusFilter]);
+
+  // Get paginated applications for a department
+  const getPaginatedApplications = useCallback((dept: DepartmentKey) => {
+    const filtered = getFilteredApplications(dept);
+    const page = currentPage[dept] || 1;
+    const startIndex = (page - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filtered.slice(startIndex, endIndex);
+  }, [getFilteredApplications, currentPage, ITEMS_PER_PAGE]);
+
+  // Get total pages for a department
+  const getTotalPages = useCallback((dept: DepartmentKey) => {
+    const filtered = getFilteredApplications(dept);
+    return Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  }, [getFilteredApplications, ITEMS_PER_PAGE]);
+
+  // Handle page change
+  const handlePageChange = (dept: DepartmentKey, page: number) => {
+    setCurrentPage(prev => ({ ...prev, [dept]: page }));
+  };
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage({
+      pd: 1, ems: 1, firefighter: 1, doj: 1, state: 1, mechanic: 1, pdm: 1, weazel: 1
+    });
+  }, [searchQuery, statusFilter]);
+
   useEffect(() => {
     if (!accessLoading && accessibleDepartments.length > 0 && !activeTab) {
       setActiveTab(accessibleDepartments[0]);
@@ -478,6 +510,10 @@ const JobPanel = () => {
 
                 {accessibleDepartments.map((dept) => {
                   const filteredApps = getFilteredApplications(dept);
+                  const paginatedApps = getPaginatedApplications(dept);
+                  const totalPages = getTotalPages(dept);
+                  const page = currentPage[dept] || 1;
+                  
                   return (
                   <TabsContent key={dept} value={dept}>
                     {loading ? (
@@ -507,57 +543,127 @@ const JobPanel = () => {
                         )}
                       </div>
                     ) : (
-                      <div className="rounded-md border border-border/50 overflow-hidden">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Applicant</TableHead>
-                              <TableHead>Character</TableHead>
-                              <TableHead>Position</TableHead>
-                              <TableHead>Status</TableHead>
-                              <TableHead>Submitted</TableHead>
-                              <TableHead>Reviewed</TableHead>
-                              <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {filteredApps.map((app) => (
-                              <TableRow key={app.id}>
-                                <TableCell className="font-medium">{app.discord_username || app.discord_id || 'Unknown'}</TableCell>
-                                <TableCell>{app.character_name || app.in_game_name || '-'}</TableCell>
-                                <TableCell>{app.position || app.department || '-'}</TableCell>
-                                <TableCell>{getStatusBadge(app.status)}</TableCell>
-                                <TableCell>{new Date(app.created_at).toLocaleDateString()}</TableCell>
-                                <TableCell>
-                                  {app.reviewed_at ? (
-                                    <span className="text-xs text-muted-foreground">
-                                      {new Date(app.reviewed_at).toLocaleDateString('en-US', {
-                                        month: 'short',
-                                        day: 'numeric',
-                                        year: 'numeric'
-                                      })}
-                                    </span>
-                                  ) : (
-                                    <span className="text-xs text-muted-foreground">-</span>
-                                  )}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => {
-                                      setSelectedApp(app);
-                                      setReviewNotes(app.notes || app.admin_notes || '');
-                                    }}
-                                  >
-                                    <Eye className="w-4 h-4 mr-1" />
-                                    View
-                                  </Button>
-                                </TableCell>
+                      <div className="space-y-4">
+                        <div className="rounded-md border border-border/50 overflow-hidden">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Applicant</TableHead>
+                                <TableHead>Character</TableHead>
+                                <TableHead>Position</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Submitted</TableHead>
+                                <TableHead>Reviewed</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
                               </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
+                            </TableHeader>
+                            <TableBody>
+                              {paginatedApps.map((app) => (
+                                <TableRow key={app.id}>
+                                  <TableCell className="font-medium">{app.discord_username || app.discord_id || 'Unknown'}</TableCell>
+                                  <TableCell>{app.character_name || app.in_game_name || '-'}</TableCell>
+                                  <TableCell>{app.position || app.department || '-'}</TableCell>
+                                  <TableCell>{getStatusBadge(app.status)}</TableCell>
+                                  <TableCell>{new Date(app.created_at).toLocaleDateString()}</TableCell>
+                                  <TableCell>
+                                    {app.reviewed_at ? (
+                                      <span className="text-xs text-muted-foreground">
+                                        {new Date(app.reviewed_at).toLocaleDateString('en-US', {
+                                          month: 'short',
+                                          day: 'numeric',
+                                          year: 'numeric'
+                                        })}
+                                      </span>
+                                    ) : (
+                                      <span className="text-xs text-muted-foreground">-</span>
+                                    )}
+                                  </TableCell>
+                                  <TableCell className="text-right">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => {
+                                        setSelectedApp(app);
+                                        setReviewNotes(app.notes || app.admin_notes || '');
+                                      }}
+                                    >
+                                      <Eye className="w-4 h-4 mr-1" />
+                                      View
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+
+                        {/* Pagination Controls */}
+                        {totalPages > 1 && (
+                          <div className="flex items-center justify-between px-2">
+                            <div className="text-sm text-muted-foreground">
+                              Showing {((page - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(page * ITEMS_PER_PAGE, filteredApps.length)} of {filteredApps.length} applications
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePageChange(dept, 1)}
+                                disabled={page === 1}
+                              >
+                                First
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePageChange(dept, page - 1)}
+                                disabled={page === 1}
+                              >
+                                Previous
+                              </Button>
+                              <div className="flex items-center gap-1">
+                                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                  let pageNum: number;
+                                  if (totalPages <= 5) {
+                                    pageNum = i + 1;
+                                  } else if (page <= 3) {
+                                    pageNum = i + 1;
+                                  } else if (page >= totalPages - 2) {
+                                    pageNum = totalPages - 4 + i;
+                                  } else {
+                                    pageNum = page - 2 + i;
+                                  }
+                                  return (
+                                    <Button
+                                      key={pageNum}
+                                      variant={page === pageNum ? "default" : "outline"}
+                                      size="sm"
+                                      className="w-8 h-8 p-0"
+                                      onClick={() => handlePageChange(dept, pageNum)}
+                                    >
+                                      {pageNum}
+                                    </Button>
+                                  );
+                                })}
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePageChange(dept, page + 1)}
+                                disabled={page === totalPages}
+                              >
+                                Next
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePageChange(dept, totalPages)}
+                                disabled={page === totalPages}
+                              >
+                                Last
+                              </Button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </TabsContent>
