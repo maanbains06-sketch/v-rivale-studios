@@ -889,9 +889,88 @@ const OwnerPanel = () => {
         'business_applications'
       ] as const;
 
+      // Map tables to their Discord role types (for approved applications)
+      const tableRoleMap: Record<string, string> = {
+        'whitelist_applications': 'whitelist',
+        // Job applications have multiple role types based on job_type
+      };
+
       let totalDeleted = 0;
+      let rolesRemoved = 0;
       const errors: string[] = [];
 
+      // First, remove Discord roles for all approved whitelist applications
+      try {
+        const { data: approvedWhitelist } = await supabase
+          .from('whitelist_applications')
+          .select('discord_id')
+          .eq('status', 'approved');
+        
+        if (approvedWhitelist && approvedWhitelist.length > 0) {
+          console.log(`Removing Discord whitelist roles for ${approvedWhitelist.length} approved applications`);
+          
+          for (const app of approvedWhitelist) {
+            if (app.discord_id && /^\d{17,19}$/.test(app.discord_id)) {
+              try {
+                const { data: roleResult, error: roleError } = await supabase.functions.invoke('remove-discord-role', {
+                  body: { discordId: app.discord_id, roleType: 'whitelist' }
+                });
+                
+                if (!roleError && !roleResult?.skipped) {
+                  rolesRemoved++;
+                }
+              } catch (roleErr) {
+                console.error('Error removing role for', app.discord_id, roleErr);
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching approved whitelist applications for role removal:', err);
+      }
+
+      // Also remove roles for approved job applications
+      try {
+        const { data: approvedJobs } = await supabase
+          .from('job_applications')
+          .select('discord_id, job_type')
+          .eq('status', 'approved');
+        
+        if (approvedJobs && approvedJobs.length > 0) {
+          const jobTypeRoleMap: Record<string, string> = {
+            'police': 'pd',
+            'pd': 'pd',
+            'ems': 'ems',
+            'mechanic': 'mechanic',
+            'state': 'state',
+            'judge': 'doj-judge',
+            'attorney': 'doj-attorney',
+          };
+          
+          for (const app of approvedJobs) {
+            if (app.discord_id && /^\d{17,19}$/.test(app.discord_id)) {
+              const roleType = jobTypeRoleMap[app.job_type?.toLowerCase()] || null;
+              if (roleType) {
+                try {
+                  const { data: roleResult, error: roleError } = await supabase.functions.invoke('remove-discord-role', {
+                    body: { discordId: app.discord_id, roleType }
+                  });
+                  
+                  if (!roleError && !roleResult?.skipped) {
+                    rolesRemoved++;
+                  }
+                } catch (roleErr) {
+                  console.error('Error removing role for', app.discord_id, roleErr);
+                }
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching approved job applications for role removal:', err);
+      }
+
+      // Now delete all applications from all tables
       for (const table of tables) {
         try {
           const { data: deletedRows, error } = await supabase
@@ -915,21 +994,21 @@ const OwnerPanel = () => {
       // Log the action
       await logAction({
         actionType: 'application_delete',
-        actionDescription: `Deleted all applications (${totalDeleted} total)`,
+        actionDescription: `Deleted all applications (${totalDeleted} total, ${rolesRemoved} Discord roles removed)`,
         targetTable: 'multiple_tables',
-        oldValue: { tables: tables, count: totalDeleted }
+        oldValue: { tables: tables, count: totalDeleted, rolesRemoved }
       });
 
       if (errors.length > 0) {
         toast({
           title: "Partial Success",
-          description: `Deleted ${totalDeleted} applications. Some tables had errors.`,
+          description: `Deleted ${totalDeleted} applications, removed ${rolesRemoved} Discord roles. Some tables had errors.`,
           variant: "destructive",
         });
       } else {
         toast({
           title: "All Applications Deleted",
-          description: `Successfully deleted ${totalDeleted} applications from all tables.`,
+          description: `Successfully deleted ${totalDeleted} applications and removed ${rolesRemoved} Discord roles.`,
         });
       }
 
@@ -1950,6 +2029,17 @@ const OwnerPanel = () => {
                     
                     type TableName = 'whitelist_applications' | 'staff_applications' | 'job_applications' | 'ban_appeals' | 'creator_applications' | 'firefighter_applications' | 'weazel_news_applications' | 'pdm_applications';
                     
+                    // Map application types to Discord role types
+                    const roleTypeMap: Record<string, string> = {
+                      whitelist: 'whitelist',
+                      police: 'pd',
+                      ems: 'ems',
+                      mechanic: 'mechanic',
+                      state: 'state',
+                      judge: 'doj-judge',
+                      attorney: 'doj-attorney',
+                    };
+                    
                     const tableMap: Record<string, { table: TableName; loader: () => Promise<void> }> = {
                       whitelist: { table: 'whitelist_applications', loader: loadWhitelistApplications },
                       staff: { table: 'staff_applications', loader: loadStaffApplications },
@@ -1977,6 +2067,51 @@ const OwnerPanel = () => {
                     }
                     
                     try {
+                      // First, get the application to find the Discord ID and status
+                      const { data: appData, error: fetchError } = await supabase
+                        .from(config.table)
+                        .select('*')
+                        .eq('id', id)
+                        .single();
+                      
+                      if (fetchError) {
+                        console.error('[OwnerPanel] Error fetching application:', fetchError);
+                      }
+                      
+                      // If the application was approved and has a Discord ID, remove the Discord role
+                      const discordId = appData?.discord_id;
+                      const appStatus = appData?.status;
+                      const roleType = roleTypeMap[type];
+                      
+                      if (appStatus === 'approved' && discordId && roleType) {
+                        console.log('[OwnerPanel] Removing Discord role for deleted approved application:', { discordId, roleType });
+                        
+                        try {
+                          const { data: roleResult, error: roleError } = await supabase.functions.invoke('remove-discord-role', {
+                            body: { discordId, roleType }
+                          });
+                          
+                          if (roleError) {
+                            console.error('[OwnerPanel] Failed to remove Discord role:', roleError);
+                            toast({ 
+                              title: "Warning", 
+                              description: `Application will be deleted but Discord role removal failed: ${roleError.message}`, 
+                              variant: "destructive" 
+                            });
+                          } else {
+                            console.log('[OwnerPanel] Discord role removal result:', roleResult);
+                            if (roleResult?.skipped) {
+                              console.log('[OwnerPanel] Role removal skipped:', roleResult.message);
+                            } else {
+                              toast({ title: "Role Removed", description: `Discord ${roleType} role has been removed from the user.` });
+                            }
+                          }
+                        } catch (roleErr) {
+                          console.error('[OwnerPanel] Error calling remove-discord-role:', roleErr);
+                        }
+                      }
+                      
+                      // Now delete the application
                       const { error } = await supabase
                         .from(config.table)
                         .delete()
@@ -1991,10 +2126,10 @@ const OwnerPanel = () => {
                         // Log the deletion to audit log
                         await logAction({
                           actionType: 'application_delete',
-                          actionDescription: `Deleted ${type} application from ${applicantName}`,
+                          actionDescription: `Deleted ${type} application from ${applicantName}${appStatus === 'approved' && roleType ? ' (role removed from Discord)' : ''}`,
                           targetTable: config.table,
                           targetId: id,
-                          oldValue: { applicantName, type }
+                          oldValue: { applicantName, type, status: appStatus, discordId }
                         });
                         
                         toast({ title: "Deleted", description: `Application from ${applicantName} has been permanently deleted.` });
