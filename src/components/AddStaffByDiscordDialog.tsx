@@ -34,6 +34,13 @@ const statusOptions = [
   { value: 'on_leave', label: 'On Leave' },
 ];
 
+const trainingStatusOptions = [
+  { value: 'not_started', label: 'Not Started' },
+  { value: 'in_progress', label: 'In Progress' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'certified', label: 'Certified' },
+];
+
 // Determine role_type based on department and rank
 const getRoleType = (deptKey: string, rank: string): string => {
   const rankLower = rank.toLowerCase();
@@ -68,6 +75,7 @@ const AddStaffByDiscordDialog = ({
     rank: '',
     badge_number: '',
     status: 'active',
+    training_status: 'not_started',
     division: '',
     call_sign: '',
     strikes: '0/3',
@@ -161,6 +169,7 @@ const AddStaffByDiscordDialog = ({
             department: departmentKey,
             badge_number: formData.badge_number || null,
             status: formData.status,
+            training_status: formData.training_status || 'not_started',
             division: formData.division || null,
             call_sign: formData.call_sign || null,
             strikes: formData.strikes || '0/3',
@@ -186,6 +195,7 @@ const AddStaffByDiscordDialog = ({
             department: departmentKey,
             badge_number: formData.badge_number || null,
             status: formData.status,
+            training_status: formData.training_status || 'not_started',
             division: formData.division || null,
             call_sign: formData.call_sign || null,
             strikes: formData.strikes || '0/3',
@@ -203,6 +213,7 @@ const AddStaffByDiscordDialog = ({
         rank: '',
         badge_number: '',
         status: 'active',
+        training_status: 'not_started',
         division: '',
         call_sign: '',
         strikes: '0/3',
@@ -225,6 +236,7 @@ const AddStaffByDiscordDialog = ({
       rank: '',
       badge_number: '',
       status: 'active',
+      training_status: 'not_started',
       division: '',
       call_sign: '',
       strikes: '0/3',
@@ -365,7 +377,26 @@ const AddStaffByDiscordDialog = ({
                 </Select>
               </div>
 
-              {/* Division Dropdown */}
+              {/* Training Status Dropdown */}
+              <div className="space-y-2">
+                <Label htmlFor="training_status" className="text-sm font-medium">Training Status</Label>
+                <Select
+                  value={formData.training_status}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, training_status: value }))}
+                >
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Select training status" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border border-border z-50">
+                    {trainingStatusOptions.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="division" className="text-sm font-medium">Division</Label>
                 <Select
