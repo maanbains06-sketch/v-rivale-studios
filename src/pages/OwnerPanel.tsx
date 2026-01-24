@@ -299,6 +299,8 @@ const OwnerPanel = () => {
   const [showInactivityWarning, setShowInactivityWarning] = useState(false);
   const [remainingTime, setRemainingTime] = useState(0);
   const [isRefreshingApps, setIsRefreshingApps] = useState(false);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
+  const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
   
   const lastActivityRef = useRef<number>(Date.now());
   const warningTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -389,6 +391,7 @@ const OwnerPanel = () => {
       if (countdownRef.current) clearInterval(countdownRef.current);
     };
   }, [isVerified, resetActivityTimer]);
+
 
   useEffect(() => {
     checkOwnerAccess();
@@ -868,6 +871,81 @@ const OwnerPanel = () => {
 
     setStaffToDelete(null);
     loadStaffMembers();
+  };
+
+  // Delete all applications function
+  const handleDeleteAllApplications = async () => {
+    setIsDeletingAll(true);
+    try {
+      const tables = [
+        'whitelist_applications',
+        'job_applications', 
+        'staff_applications',
+        'ban_appeals',
+        'creator_applications',
+        'firefighter_applications',
+        'weazel_news_applications',
+        'pdm_applications',
+        'business_applications'
+      ] as const;
+
+      let totalDeleted = 0;
+      const errors: string[] = [];
+
+      for (const table of tables) {
+        try {
+          const { data: deletedRows, error } = await supabase
+            .from(table)
+            .delete()
+            .neq('id', '00000000-0000-0000-0000-000000000000') // Delete all rows
+            .select('id');
+          
+          if (error) {
+            console.error(`Error deleting from ${table}:`, error);
+            errors.push(`${table}: ${error.message}`);
+          } else {
+            totalDeleted += deletedRows?.length || 0;
+          }
+        } catch (err) {
+          console.error(`Unexpected error deleting from ${table}:`, err);
+          errors.push(`${table}: Unexpected error`);
+        }
+      }
+
+      // Log the action
+      await logAction({
+        actionType: 'application_delete',
+        actionDescription: `Deleted all applications (${totalDeleted} total)`,
+        targetTable: 'multiple_tables',
+        oldValue: { tables: tables, count: totalDeleted }
+      });
+
+      if (errors.length > 0) {
+        toast({
+          title: "Partial Success",
+          description: `Deleted ${totalDeleted} applications. Some tables had errors.`,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "All Applications Deleted",
+          description: `Successfully deleted ${totalDeleted} applications from all tables.`,
+        });
+      }
+
+      // Reload all data
+      await loadAllData();
+      setShowDeleteAllConfirm(false);
+    } catch (error) {
+      console.error('Error deleting all applications:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete all applications.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeletingAll(false);
+    }
   };
 
   const updateTestimonialStatus = async (id: string, isFeatured: boolean) => {
@@ -1556,6 +1634,16 @@ const OwnerPanel = () => {
                     >
                       <RefreshCw className={`w-4 h-4 ${isRefreshingApps ? 'animate-spin' : ''}`} />
                       {isRefreshingApps ? 'Loading...' : 'Refresh'}
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      disabled={isDeletingAll}
+                      onClick={() => setShowDeleteAllConfirm(true)}
+                      className="gap-2"
+                    >
+                      <Trash2 className={`w-4 h-4 ${isDeletingAll ? 'animate-pulse' : ''}`} />
+                      {isDeletingAll ? 'Deleting...' : 'Delete All'}
                     </Button>
                     <Select value={selectedAppType} onValueChange={setSelectedAppType}>
                       <SelectTrigger className="w-[200px]">
@@ -2357,6 +2445,59 @@ const OwnerPanel = () => {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={() => staffToDelete && deleteStaffMember(staffToDelete)}>
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete All Applications Confirmation Dialog */}
+      <AlertDialog open={showDeleteAllConfirm} onOpenChange={setShowDeleteAllConfirm}>
+        <AlertDialogContent className="border-destructive/50">
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-12 h-12 bg-destructive/10 rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-destructive" />
+              </div>
+              <AlertDialogTitle className="text-xl">Delete All Applications?</AlertDialogTitle>
+            </div>
+            <AlertDialogDescription className="space-y-3">
+              <p className="text-destructive font-medium">
+                ⚠️ This action is IRREVERSIBLE and will permanently delete:
+              </p>
+              <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground">
+                <li>All whitelist applications</li>
+                <li>All job applications (Police, EMS, Mechanic, etc.)</li>
+                <li>All staff applications</li>
+                <li>All ban appeals</li>
+                <li>All creator applications</li>
+                <li>All firefighter applications</li>
+                <li>All Weazel News applications</li>
+                <li>All PDM applications</li>
+                <li>All business applications</li>
+              </ul>
+              <p className="text-sm font-medium text-foreground">
+                Are you absolutely sure you want to proceed?
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletingAll}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAllApplications}
+              disabled={isDeletingAll}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {isDeletingAll ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete All Applications
+                </>
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
