@@ -1,5 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 
 interface ServerStatus {
   status: 'online' | 'offline' | 'maintenance';
@@ -71,8 +72,40 @@ export const useServerStatus = () => {
   });
 };
 
-// Fetch featured YouTubers with aggressive caching - realtime disabled for perf
+// Fetch featured YouTubers with realtime subscription for live status updates
 export const useFeaturedYoutubers = () => {
+  const queryClient = useQueryClient();
+
+  // Subscribe to realtime changes for live status updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('featured-youtubers-live')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'featured_youtubers',
+        },
+        (payload) => {
+          // Update the cache with new data when is_live or live_stream_url changes
+          queryClient.setQueryData<FeaturedYoutuber[]>(['featured-youtubers'], (old) => {
+            if (!old) return old;
+            return old.map((youtuber) =>
+              youtuber.id === payload.new.id
+                ? { ...youtuber, is_live: payload.new.is_live, live_stream_url: payload.new.live_stream_url }
+                : youtuber
+            );
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   return useQuery<FeaturedYoutuber[]>({
     queryKey: ['featured-youtubers'],
     queryFn: async () => {
@@ -89,13 +122,12 @@ export const useFeaturedYoutubers = () => {
       
       return data || [];
     },
-    staleTime: 1000 * 60 * 30, // 30 minutes - longer cache
-    gcTime: 1000 * 60 * 60, // 1 hour
-    refetchOnMount: false, // Use cache
+    staleTime: 1000 * 60 * 5, // 5 minutes - shorter for live updates
+    gcTime: 1000 * 60 * 30, // 30 minutes
+    refetchOnMount: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     retry: false,
-    networkMode: 'offlineFirst',
   });
 };
 
