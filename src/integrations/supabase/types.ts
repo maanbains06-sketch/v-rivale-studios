@@ -133,6 +133,81 @@ export type Database = {
         }
         Relationships: []
       }
+      business_applications: {
+        Row: {
+          additional_info: string | null
+          admin_notes: string | null
+          business_name: string
+          business_plan: string
+          business_type: string
+          created_at: string
+          discord_id: string | null
+          employee_count: string
+          id: string
+          investment_amount: string
+          location_preference: string
+          operating_hours: string
+          owner_name: string
+          phone_number: string
+          previous_experience: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          unique_selling_point: string
+          updated_at: string
+          user_id: string
+          why_this_business: string
+        }
+        Insert: {
+          additional_info?: string | null
+          admin_notes?: string | null
+          business_name: string
+          business_plan: string
+          business_type: string
+          created_at?: string
+          discord_id?: string | null
+          employee_count: string
+          id?: string
+          investment_amount: string
+          location_preference: string
+          operating_hours: string
+          owner_name: string
+          phone_number: string
+          previous_experience: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          unique_selling_point: string
+          updated_at?: string
+          user_id: string
+          why_this_business: string
+        }
+        Update: {
+          additional_info?: string | null
+          admin_notes?: string | null
+          business_name?: string
+          business_plan?: string
+          business_type?: string
+          created_at?: string
+          discord_id?: string | null
+          employee_count?: string
+          id?: string
+          investment_amount?: string
+          location_preference?: string
+          operating_hours?: string
+          owner_name?: string
+          phone_number?: string
+          previous_experience?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          unique_selling_point?: string
+          updated_at?: string
+          user_id?: string
+          why_this_business?: string
+        }
+        Relationships: []
+      }
       canned_responses: {
         Row: {
           category: string

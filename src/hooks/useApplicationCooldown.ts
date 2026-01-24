@@ -20,7 +20,8 @@ type ApplicationTable =
   | 'staff_applications' 
   | 'job_applications' 
   | 'ban_appeals'
-  | 'creator_applications';
+  | 'creator_applications'
+  | 'business_applications';
 
 export const useApplicationCooldown = (
   table: ApplicationTable,
