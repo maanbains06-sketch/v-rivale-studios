@@ -8,7 +8,7 @@ import DOJApplicationForm from "@/components/DOJApplicationForm";
 import WeazelNewsApplicationForm from "@/components/WeazelNewsApplicationForm";
 import StateDepartmentApplicationForm from "@/components/StateDepartmentApplicationForm";
 import { JobCardsSkeletonGrid } from "@/components/JobCardSkeleton";
-import { Shield, Heart, Wrench, Flame, AlertCircle, CheckCircle2, Car, Scale, Gavel, Newspaper, RefreshCw, Building2 } from "lucide-react";
+import { Shield, Heart, Wrench, Flame, AlertCircle, CheckCircle2, Car, Scale, Gavel, Newspaper, RefreshCw, Building2, UtensilsCrossed, PartyPopper, Briefcase } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -135,6 +135,49 @@ const JobApplication = () => {
       image: headerStaffImg,
       description: "Serve in the State Government. Shape policies and manage public affairs.",
       benefits: ["Political Power", "Public Service", "Leadership Opportunities"],
+    },
+  ];
+
+  const businessJobCategories = [
+    {
+      id: "business-real-estate",
+      name: "Real Estate Agency",
+      icon: Building2,
+      color: "blue-500",
+      description: "Work in property sales and help clients find their perfect homes or commercial spaces.",
+      benefits: ["Commission-Based", "Flexible Schedule", "Networking Opportunities"],
+    },
+    {
+      id: "business-food-joint",
+      name: "Food Joint / Restaurant",
+      icon: UtensilsCrossed,
+      color: "orange-500",
+      description: "Join the hospitality industry. Work as a chef, server, or manager in local restaurants.",
+      benefits: ["Tips & Bonuses", "Customer Service Skills", "Team Environment"],
+    },
+    {
+      id: "business-mechanic",
+      name: "Mechanic Shop",
+      icon: Wrench,
+      color: "green-500",
+      description: "Work at an established mechanic shop. Repair vehicles and provide quality service.",
+      benefits: ["Technical Training", "Steady Income", "Career Growth"],
+    },
+    {
+      id: "business-tuner",
+      name: "Tuner Shop",
+      icon: Car,
+      color: "purple-500",
+      description: "Specialize in vehicle modifications and performance tuning for car enthusiasts.",
+      benefits: ["Creative Work", "Premium Clientele", "Specialized Skills"],
+    },
+    {
+      id: "business-entertainment",
+      name: "Entertainment Venue",
+      icon: PartyPopper,
+      color: "pink-500",
+      description: "Work at nightclubs, bars, or event venues. Be part of the city's nightlife scene.",
+      benefits: ["Night Shifts", "Social Environment", "Event Access"],
     },
   ];
 
@@ -293,59 +336,127 @@ const JobApplication = () => {
                 </p>
               </div>
 
-              {/* Job Category Cards */}
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {jobCategories.map((job) => {
-                  const Icon = job.icon;
-                  return (
-                    <Card 
-                      key={job.id}
-                      className="glass-effect border-border/20 hover:border-primary/50 transition-all duration-300 cursor-pointer overflow-hidden group hover:scale-[1.02] hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-1"
-                      onClick={() => setSelectedForm(job.id)}
-                    >
-                      <div className="relative h-36 overflow-hidden">
-                        <img 
-                          src={job.image} 
-                          alt={job.name} 
-                          className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent group-hover:via-background/40 transition-all duration-300" />
-                        <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/10 transition-colors duration-300" />
-                        <div className="absolute bottom-3 left-4 right-4">
-                          <div className="flex items-center gap-2">
-                            <div className="p-1.5 rounded-md bg-background/80 backdrop-blur-sm group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
-                              <Icon className={`w-4 h-4 text-${job.color} group-hover:text-primary transition-colors duration-300`} />
+              {/* Government & Department Jobs */}
+              <div className="mb-12">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Shield className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold">Government & Department Jobs</h3>
+                    <p className="text-sm text-muted-foreground">Official positions in city departments</p>
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {jobCategories.map((job) => {
+                    const Icon = job.icon;
+                    return (
+                      <Card 
+                        key={job.id}
+                        className="glass-effect border-border/20 hover:border-primary/50 transition-all duration-300 cursor-pointer overflow-hidden group hover:scale-[1.02] hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-1"
+                        onClick={() => setSelectedForm(job.id)}
+                      >
+                        <div className="relative h-36 overflow-hidden">
+                          <img 
+                            src={job.image} 
+                            alt={job.name} 
+                            className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent group-hover:via-background/40 transition-all duration-300" />
+                          <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/10 transition-colors duration-300" />
+                          <div className="absolute bottom-3 left-4 right-4">
+                            <div className="flex items-center gap-2">
+                              <div className="p-1.5 rounded-md bg-background/80 backdrop-blur-sm group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
+                                <Icon className={`w-4 h-4 text-${job.color} group-hover:text-primary transition-colors duration-300`} />
+                              </div>
+                              <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors duration-300">{job.name}</h3>
                             </div>
-                            <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors duration-300">{job.name}</h3>
                           </div>
                         </div>
-                      </div>
-                      <CardContent className="pt-3 pb-4 space-y-2">
-                        <p className="text-xs text-muted-foreground line-clamp-2 group-hover:text-foreground/80 transition-colors duration-300">
-                          {job.description}
-                        </p>
-                        <div className="space-y-1">
-                          {job.benefits.map((benefit, idx) => (
-                            <div 
-                              key={idx} 
-                              className="flex items-center gap-1.5 text-xs text-muted-foreground group-hover:text-foreground/70 transition-all duration-300"
-                              style={{ transitionDelay: `${idx * 50}ms` }}
-                            >
-                              <CheckCircle2 className="w-3 h-3 text-green-500 flex-shrink-0 group-hover:scale-110 transition-transform duration-300" />
-                              <span className="group-hover:translate-x-0.5 transition-transform duration-300">{benefit}</span>
+                        <CardContent className="pt-3 pb-4 space-y-2">
+                          <p className="text-xs text-muted-foreground line-clamp-2 group-hover:text-foreground/80 transition-colors duration-300">
+                            {job.description}
+                          </p>
+                          <div className="space-y-1">
+                            {job.benefits.map((benefit, idx) => (
+                              <div 
+                                key={idx} 
+                                className="flex items-center gap-1.5 text-xs text-muted-foreground group-hover:text-foreground/70 transition-all duration-300"
+                                style={{ transitionDelay: `${idx * 50}ms` }}
+                              >
+                                <CheckCircle2 className="w-3 h-3 text-green-500 flex-shrink-0 group-hover:scale-110 transition-transform duration-300" />
+                                <span className="group-hover:translate-x-0.5 transition-transform duration-300">{benefit}</span>
+                              </div>
+                            ))}
+                          </div>
+                          <Button 
+                            size="sm" 
+                            className="w-full mt-3 bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground border border-primary/20 group-hover:bg-primary/20 group-hover:border-primary/40 transition-all duration-300"
+                          >
+                            <span className="group-hover:scale-105 transition-transform duration-300">Apply Now</span>
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Business Jobs Section */}
+              <div>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 rounded-lg bg-amber-500/10">
+                    <Briefcase className="w-5 h-5 text-amber-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold">Business Jobs</h3>
+                    <p className="text-sm text-muted-foreground">Work at local businesses and establishments</p>
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                  {businessJobCategories.map((job) => {
+                    const Icon = job.icon;
+                    return (
+                      <Card 
+                        key={job.id}
+                        className="glass-effect border-border/20 hover:border-amber-500/50 transition-all duration-300 cursor-pointer overflow-hidden group hover:scale-[1.02] hover:shadow-xl hover:shadow-amber-500/20 hover:-translate-y-1"
+                        onClick={() => navigate("/business")}
+                      >
+                        <div className="relative h-24 overflow-hidden bg-gradient-to-br from-amber-500/20 to-amber-600/10">
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="p-4 rounded-full bg-background/50 backdrop-blur-sm group-hover:bg-amber-500/20 group-hover:scale-110 transition-all duration-300">
+                              <Icon className={`w-8 h-8 text-${job.color} group-hover:text-amber-400 transition-colors duration-300`} />
                             </div>
-                          ))}
+                          </div>
                         </div>
-                        <Button 
-                          size="sm" 
-                          className="w-full mt-3 bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground border border-primary/20 group-hover:bg-primary/20 group-hover:border-primary/40 transition-all duration-300"
-                        >
-                          <span className="group-hover:scale-105 transition-transform duration-300">Apply Now</span>
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+                        <CardContent className="pt-3 pb-4 space-y-2">
+                          <h3 className="text-sm font-bold text-foreground group-hover:text-amber-400 transition-colors duration-300 text-center">{job.name}</h3>
+                          <p className="text-xs text-muted-foreground line-clamp-2 group-hover:text-foreground/80 transition-colors duration-300 text-center">
+                            {job.description}
+                          </p>
+                          <div className="space-y-1">
+                            {job.benefits.slice(0, 2).map((benefit, idx) => (
+                              <div 
+                                key={idx} 
+                                className="flex items-center gap-1.5 text-xs text-muted-foreground group-hover:text-foreground/70 transition-all duration-300 justify-center"
+                                style={{ transitionDelay: `${idx * 50}ms` }}
+                              >
+                                <CheckCircle2 className="w-3 h-3 text-green-500 flex-shrink-0 group-hover:scale-110 transition-transform duration-300" />
+                                <span className="group-hover:translate-x-0.5 transition-transform duration-300">{benefit}</span>
+                              </div>
+                            ))}
+                          </div>
+                          <Button 
+                            size="sm" 
+                            className="w-full mt-3 bg-amber-500/10 hover:bg-amber-500 text-amber-500 hover:text-white border border-amber-500/20 group-hover:bg-amber-500/20 group-hover:border-amber-500/40 transition-all duration-300"
+                          >
+                            <span className="group-hover:scale-105 transition-transform duration-300">View Business</span>
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
               </div>
             </>
           )}
