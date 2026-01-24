@@ -145,7 +145,6 @@ export type Database = {
           employee_count: string
           id: string
           investment_amount: string
-          location_preference: string
           operating_hours: string
           owner_name: string
           phone_number: string
@@ -153,6 +152,7 @@ export type Database = {
           reviewed_at: string | null
           reviewed_by: string | null
           status: string
+          target_customers: string
           unique_selling_point: string
           updated_at: string
           user_id: string
@@ -169,7 +169,6 @@ export type Database = {
           employee_count: string
           id?: string
           investment_amount: string
-          location_preference: string
           operating_hours: string
           owner_name: string
           phone_number: string
@@ -177,6 +176,7 @@ export type Database = {
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
+          target_customers: string
           unique_selling_point: string
           updated_at?: string
           user_id: string
@@ -193,7 +193,6 @@ export type Database = {
           employee_count?: string
           id?: string
           investment_amount?: string
-          location_preference?: string
           operating_hours?: string
           owner_name?: string
           phone_number?: string
@@ -201,6 +200,7 @@ export type Database = {
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
+          target_customers?: string
           unique_selling_point?: string
           updated_at?: string
           user_id?: string

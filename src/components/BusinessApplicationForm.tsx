@@ -34,10 +34,10 @@ const businessApplicationSchema = z.object({
     .trim()
     .min(1, "Investment amount is required")
     .max(50, "Investment amount must be less than 50 characters"),
-  location_preference: z.string()
+  target_customers: z.string()
     .trim()
-    .min(10, "Please provide more detail about preferred location")
-    .max(500, "Location preference must be less than 500 characters"),
+    .min(30, "Please describe your target customer base")
+    .max(500, "Target customers must be less than 500 characters"),
   business_plan: z.string()
     .trim()
     .min(150, "Please provide at least 150 characters for your business plan")
@@ -85,6 +85,7 @@ const businessConfig: Record<BusinessType, {
   bgGradient: string;
   planPrompt: string;
   uspPrompt: string;
+  targetPrompt: string;
 }> = {
   real_estate: {
     title: "Real Estate Agency",
@@ -94,6 +95,7 @@ const businessConfig: Record<BusinessType, {
     bgGradient: "from-blue-500/20 via-blue-600/10 to-transparent",
     planPrompt: "Describe your vision for the real estate agency. What properties will you focus on? How will you attract clients? What services will you offer (rentals, sales, property management)?",
     uspPrompt: "What makes your real estate agency unique? Do you have a niche market focus or innovative approach to property deals?",
+    targetPrompt: "Who are your ideal clients? Luxury buyers, first-time homeowners, commercial investors, or rental seekers?",
   },
   food_joint: {
     title: "Food Joint / Restaurant",
@@ -103,6 +105,7 @@ const businessConfig: Record<BusinessType, {
     bgGradient: "from-orange-500/20 via-orange-600/10 to-transparent",
     planPrompt: "Describe your restaurant concept. What cuisine will you serve? What's the dining experience like? How will you source ingredients and manage the kitchen?",
     uspPrompt: "What makes your food joint special? Signature dishes, unique ambiance, or innovative service style?",
+    targetPrompt: "Who will be your main customers? Late-night crowds, families, business professionals, or tourists?",
   },
   mechanic_shop: {
     title: "Mechanic Shop",
@@ -112,6 +115,7 @@ const businessConfig: Record<BusinessType, {
     bgGradient: "from-green-500/20 via-green-600/10 to-transparent",
     planPrompt: "Describe your mechanic shop operations. What services will you offer? How will you handle emergency repairs? What's your pricing strategy?",
     uspPrompt: "What sets your mechanic shop apart? Specialized expertise, quick turnaround, or premium customer service?",
+    targetPrompt: "Who are your target customers? Daily drivers, commercial fleets, luxury car owners, or emergency repairs?",
   },
   tuner_shop: {
     title: "Tuner Shop",
@@ -121,6 +125,7 @@ const businessConfig: Record<BusinessType, {
     bgGradient: "from-purple-500/20 via-purple-600/10 to-transparent",
     planPrompt: "Describe your tuner shop vision. What modifications will you specialize in? Performance tuning, visual mods, or both? How will you build your reputation in the racing scene?",
     uspPrompt: "What makes your tuner shop the go-to destination? Exclusive parts, racing expertise, or custom fabrication skills?",
+    targetPrompt: "Who are your ideal customers? Street racers, car enthusiasts, show car builders, or drift scene members?",
   },
 };
 
@@ -153,7 +158,7 @@ const BusinessApplicationForm = ({ businessType, onBack }: BusinessApplicationFo
       owner_name: "",
       phone_number: "",
       investment_amount: "",
-      location_preference: "",
+      target_customers: "",
       business_plan: "",
       previous_experience: "",
       why_this_business: "",
@@ -188,12 +193,23 @@ const BusinessApplicationForm = ({ businessType, onBack }: BusinessApplicationFo
       const { error } = await supabase
         .from("business_applications")
         .insert({
-          ...data,
+          business_name: data.business_name,
+          owner_name: data.owner_name,
+          phone_number: data.phone_number,
+          investment_amount: data.investment_amount,
+          target_customers: data.target_customers,
+          business_plan: data.business_plan,
+          previous_experience: data.previous_experience,
+          why_this_business: data.why_this_business,
+          employee_count: data.employee_count,
+          operating_hours: data.operating_hours,
+          unique_selling_point: data.unique_selling_point,
+          additional_info: data.additional_info || null,
           business_type: businessType,
           user_id: user.id,
           discord_id: profile?.discord_id || null,
           status: "pending",
-        });
+        } as any);
 
       if (error) throw error;
 
@@ -387,17 +403,20 @@ const BusinessApplicationForm = ({ businessType, onBack }: BusinessApplicationFo
 
               <FormField
                 control={form.control}
-                name="location_preference"
+                name="target_customers"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Preferred Location *</FormLabel>
+                    <FormLabel>Target Customer Base *</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Describe your preferred location in the city. Consider foot traffic, accessibility, and target market..."
+                        placeholder={config.targetPrompt}
                         className="min-h-[80px]"
                         {...field} 
                       />
                     </FormControl>
+                    <FormDescription>
+                      Describe who your ideal customers are
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
