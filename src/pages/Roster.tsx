@@ -562,6 +562,7 @@ const Roster = () => {
           role: member.rank,
           badge_number: member.badge_number,
           status: member.status,
+          is_active: member.status === 'active' || member.status === 'on_training',
           division: member.division,
           call_sign: member.call_sign,
           strikes: member.strikes,
