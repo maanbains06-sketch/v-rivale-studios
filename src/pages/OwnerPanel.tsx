@@ -24,6 +24,7 @@ import { PageMaintenanceControls } from "@/components/PageMaintenanceControls";
 import { FeaturedStreamersManager } from "@/components/FeaturedStreamersManager";
 import { PromoCodeManager } from "@/components/PromoCodeManager";
 import { UnifiedApplicationsTable, ApplicationType } from "@/components/UnifiedApplicationsTable";
+import GiveawayManagement from "@/components/GiveawayManagement";
 import { combineAllApplications, filterApplicationsByType } from "@/lib/applicationTransformer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
@@ -58,7 +59,8 @@ import {
   Ticket,
   Radio,
   Wrench,
-  Youtube
+  Youtube,
+  Gift
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StaffManagementDialog } from "@/components/StaffManagementDialog";
@@ -1467,6 +1469,10 @@ const OwnerPanel = () => {
                 <Radio className="w-4 h-4" />
                 <span className="hidden sm:inline">Streamers</span>
               </TabsTrigger>
+              <TabsTrigger value="giveaways" className="flex items-center gap-2">
+                <Gift className="w-4 h-4" />
+                <span className="hidden sm:inline">Giveaways</span>
+              </TabsTrigger>
             </TabsList>
           </ScrollArea>
 
@@ -1491,6 +1497,11 @@ const OwnerPanel = () => {
           {/* Featured Streamers Tab */}
           <TabsContent value="streamers">
             <FeaturedStreamersManager />
+          </TabsContent>
+
+          {/* Giveaway Management Tab */}
+          <TabsContent value="giveaways">
+            <GiveawayManagement />
           </TabsContent>
 
           {/* All Applications Tab */}
