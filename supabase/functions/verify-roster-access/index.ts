@@ -5,23 +5,60 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Allowed Discord role IDs for roster VIEW access
-const VIEW_ROLE_IDS = [
-  "1463143859935772672",
-  "1431378586203590687",
-  "1431379430797869207",
-  "1431378794077487304",
-  "1281554246281461792",
-  "1281554458563575859",
-  "1438258435052535920",
-  "1317457907620646972",
+// Department type definition
+type DepartmentKey = 'police' | 'ems' | 'fire' | 'mechanic' | 'doj' | 'state' | 'weazel' | 'pdm' | 'staff';
+
+// Mapping of Discord role IDs to department access
+const DEPARTMENT_ROLE_MAPPING: Record<DepartmentKey, string[]> = {
+  police: [
+    "1463143859935772672", // PD Management role
+    "1431378586203590687", // PD role
+  ],
+  ems: [
+    "1431379430797869207", // EMS Management role
+    "1431378794077487304", // EMS role
+  ],
+  fire: [
+    "1281554246281461792", // Fire Management role
+    "1281554458563575859", // Fire role
+  ],
+  mechanic: [
+    "1438258435052535920", // Mechanic Management role
+    "1317457907620646972", // Mechanic role
+  ],
+  doj: [
+    "1463145983448973519", // DOJ Management role
+    "1451442834229039104", // DOJ role
+  ],
+  state: [
+    "1463143254324285583", // State Management role
+    "1451442686115581963", // State role
+  ],
+  weazel: [
+    "1451442569018998916", // Weazel Management role
+    "1451442460910817371", // Weazel role
+  ],
+  pdm: [
+    "1451442274037923960", // PDM Management role
+    "1451747382592012380", // PDM role
+  ],
+  staff: [
+    "1463145983448973519", // Staff Management
+    "1451442834229039104", // Admin role
+  ],
+};
+
+// Roles that grant VIEW access to ALL departments
+const ALL_DEPARTMENTS_VIEW_ROLES = [
+  "1463143859935772672", // Leadership
+  "1463145983448973519", // Head Admin
 ];
 
-// Allowed Discord role IDs for roster EDIT access
+// Roles that grant EDIT access (per department or all)
 const EDIT_ROLE_IDS = [
-  "1463145983448973519",
-  "1451442834229039104",
-  "1463143254324285583",
+  "1463145983448973519", // Head Admin - can edit all
+  "1451442834229039104", // Admin - can edit all
+  "1463143254324285583", // Management roles...
   "1451442686115581963",
   "1451442569018998916",
   "1451442460910817371",
@@ -47,6 +84,7 @@ serve(async (req: Request): Promise<Response> => {
         JSON.stringify({ 
           hasAccess: false,
           canEdit: false,
+          accessibleDepartments: [],
           error: "Discord configuration incomplete"
         }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -60,20 +98,22 @@ serve(async (req: Request): Promise<Response> => {
         JSON.stringify({ 
           hasAccess: false,
           canEdit: false,
+          accessibleDepartments: [],
           error: "Discord ID is required"
         }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
-    // Check if owner - full access
+    // Check if owner - full access to all departments
     if (discordId === OWNER_DISCORD_ID) {
-      console.log(`Owner ${discordId} has full roster access`);
+      console.log(`Owner ${discordId} has full roster access to all departments`);
       return new Response(
         JSON.stringify({
           hasAccess: true,
           canEdit: true,
           isOwner: true,
+          accessibleDepartments: ['police', 'ems', 'fire', 'mechanic', 'doj', 'state', 'weazel', 'pdm', 'staff'] as DepartmentKey[],
         }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
@@ -98,6 +138,7 @@ serve(async (req: Request): Promise<Response> => {
           JSON.stringify({ 
             hasAccess: false,
             canEdit: false,
+            accessibleDepartments: [],
             reason: "User not in Discord server"
           }),
           { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -110,6 +151,7 @@ serve(async (req: Request): Promise<Response> => {
         JSON.stringify({ 
           hasAccess: false,
           canEdit: false,
+          accessibleDepartments: [],
           error: `Discord API error: ${memberResponse.status}`
         }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -119,19 +161,38 @@ serve(async (req: Request): Promise<Response> => {
     const memberData = await memberResponse.json();
     const userRoles: string[] = memberData.roles || [];
     
-    // Check if user has any of the allowed VIEW roles
-    const hasViewAccess = userRoles.some(roleId => VIEW_ROLE_IDS.includes(roleId));
+    console.log(`User ${discordId} roles: ${userRoles.join(", ")}`);
+
+    // Check if user has roles that grant access to all departments
+    const hasAllDepartmentsAccess = userRoles.some(roleId => ALL_DEPARTMENTS_VIEW_ROLES.includes(roleId));
     
+    // Check which specific departments the user can access
+    const accessibleDepartments: DepartmentKey[] = [];
+    
+    if (hasAllDepartmentsAccess) {
+      // User has access to all departments
+      accessibleDepartments.push('police', 'ems', 'fire', 'mechanic', 'doj', 'state', 'weazel', 'pdm', 'staff');
+    } else {
+      // Check each department for role-based access
+      for (const [dept, roleIds] of Object.entries(DEPARTMENT_ROLE_MAPPING)) {
+        if (userRoles.some(userRole => roleIds.includes(userRole))) {
+          accessibleDepartments.push(dept as DepartmentKey);
+        }
+      }
+    }
+
     // Check if user has any of the allowed EDIT roles
     const hasEditAccess = userRoles.some(roleId => EDIT_ROLE_IDS.includes(roleId));
 
-    console.log(`User ${discordId} roles: ${userRoles.join(", ")}`);
-    console.log(`Has roster view access: ${hasViewAccess}, Can edit: ${hasEditAccess}`);
+    const hasAccess = accessibleDepartments.length > 0;
+
+    console.log(`User ${discordId} - Has access: ${hasAccess}, Can edit: ${hasEditAccess}, Departments: ${accessibleDepartments.join(", ")}`);
 
     return new Response(
       JSON.stringify({
-        hasAccess: hasViewAccess || hasEditAccess, // Edit access implies view access
+        hasAccess,
         canEdit: hasEditAccess,
+        accessibleDepartments,
         username: memberData.user?.username || null,
         userRoles: userRoles,
       }),
@@ -143,6 +204,7 @@ serve(async (req: Request): Promise<Response> => {
       JSON.stringify({
         hasAccess: false,
         canEdit: false,
+        accessibleDepartments: [],
         error: error.message
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }

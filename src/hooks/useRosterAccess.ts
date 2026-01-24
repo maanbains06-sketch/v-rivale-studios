@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useStaffRole } from './useStaffRole';
 
+export type RosterDepartmentKey = 'police' | 'ems' | 'fire' | 'mechanic' | 'doj' | 'state' | 'weazel' | 'pdm' | 'staff';
+
 interface RosterAccess {
   hasAccess: boolean;
   canEdit: boolean;
   loading: boolean;
   isOwner: boolean;
   isStaff: boolean;
+  accessibleDepartments: RosterDepartmentKey[];
 }
 
 export const useRosterAccess = () => {
@@ -17,6 +20,7 @@ export const useRosterAccess = () => {
     loading: true,
     isOwner: false,
     isStaff: false,
+    accessibleDepartments: [],
   });
   const { isStaff, isAdmin, loading: staffLoading } = useStaffRole();
 
@@ -26,7 +30,7 @@ export const useRosterAccess = () => {
         const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) {
-          setAccess({ hasAccess: false, canEdit: false, loading: false, isOwner: false, isStaff: false });
+          setAccess({ hasAccess: false, canEdit: false, loading: false, isOwner: false, isStaff: false, accessibleDepartments: [] });
           return;
         }
 
@@ -48,6 +52,7 @@ export const useRosterAccess = () => {
             loading: false,
             isOwner: true,
             isStaff: false,
+            accessibleDepartments: ['police', 'ems', 'fire', 'mechanic', 'doj', 'state', 'weazel', 'pdm', 'staff'],
           });
           return;
         }
@@ -60,51 +65,55 @@ export const useRosterAccess = () => {
 
           if (error) {
             console.error('Error checking roster access:', error);
-            // Fall back to staff check
+            // Fall back to staff check - staff can view all but no edit
             if (isStaff || isAdmin) {
               setAccess({ 
                 hasAccess: true, 
                 canEdit: false,
                 loading: false, 
                 isOwner: false, 
-                isStaff: true 
+                isStaff: true,
+                accessibleDepartments: ['police', 'ems', 'fire', 'mechanic', 'doj', 'state', 'weazel', 'pdm', 'staff'],
               });
               return;
             }
-            setAccess({ hasAccess: false, canEdit: false, loading: false, isOwner: false, isStaff: false });
+            setAccess({ hasAccess: false, canEdit: false, loading: false, isOwner: false, isStaff: false, accessibleDepartments: [] });
             return;
           }
 
           if (data) {
             // User has specific Discord roles for roster access
+            const departments = (data.accessibleDepartments || []) as RosterDepartmentKey[];
             setAccess({
               hasAccess: data.hasAccess || false,
-              canEdit: data.canEdit || false, // Respect the canEdit from Discord roles
+              canEdit: data.canEdit || false,
               loading: false,
               isOwner: data.isOwner || false,
               isStaff: isStaff || isAdmin || false,
+              accessibleDepartments: departments,
             });
             return;
           }
         }
 
-        // Staff members get view access but need Discord role for edit
+        // Staff members get view access to all departments but need Discord role for edit
         if (isStaff || isAdmin) {
           setAccess({ 
             hasAccess: true, 
             canEdit: false,
             loading: false, 
             isOwner: false, 
-            isStaff: true 
+            isStaff: true,
+            accessibleDepartments: ['police', 'ems', 'fire', 'mechanic', 'doj', 'state', 'weazel', 'pdm', 'staff'],
           });
           return;
         }
 
         // No access
-        setAccess({ hasAccess: false, canEdit: false, loading: false, isOwner: false, isStaff: false });
+        setAccess({ hasAccess: false, canEdit: false, loading: false, isOwner: false, isStaff: false, accessibleDepartments: [] });
       } catch (error) {
         console.error('Error checking roster access:', error);
-        setAccess({ hasAccess: false, canEdit: false, loading: false, isOwner: false, isStaff: false });
+        setAccess({ hasAccess: false, canEdit: false, loading: false, isOwner: false, isStaff: false, accessibleDepartments: [] });
       }
     };
 
@@ -114,5 +123,11 @@ export const useRosterAccess = () => {
     }
   }, [isStaff, isAdmin, staffLoading]);
 
-  return access;
+  // Helper to check if user can access a specific department
+  const canAccessDepartment = (deptKey: string): boolean => {
+    if (access.isOwner) return true;
+    return access.accessibleDepartments.includes(deptKey as RosterDepartmentKey);
+  };
+
+  return { ...access, canAccessDepartment };
 };
