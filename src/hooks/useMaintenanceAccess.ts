@@ -21,25 +21,42 @@ interface CachedAccess {
 }
 
 export const useMaintenanceAccess = (): MaintenanceAccessReturn => {
-  const [hasAccess, setHasAccess] = useState(false);
-  const [isStaffOrOwner, setIsStaffOrOwner] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const accessCheckedRef = useRef(false);
+  // Initialize from cache IMMEDIATELY for instant access after login
+  const getInitialAccess = (): { hasAccess: boolean; isStaffOrOwner: boolean } => {
+    try {
+      const cached = localStorage.getItem(STORAGE_KEY);
+      if (cached) {
+        const parsed: CachedAccess = JSON.parse(cached);
+        // If cache is valid, trust it immediately
+        if (Date.now() - parsed.timestamp < CACHE_DURATION && parsed.hasAccess) {
+          return { hasAccess: true, isStaffOrOwner: true };
+        }
+      }
+    } catch {
+      // Ignore
+    }
+    return { hasAccess: false, isStaffOrOwner: false };
+  };
+
+  const initialAccess = getInitialAccess();
+  const [hasAccess, setHasAccess] = useState(initialAccess.hasAccess);
+  const [isStaffOrOwner, setIsStaffOrOwner] = useState(initialAccess.isStaffOrOwner);
+  const [loading, setLoading] = useState(!initialAccess.hasAccess); // If cached access, don't show loading
+  const accessCheckedRef = useRef(initialAccess.hasAccess);
   const checkInProgressRef = useRef(false);
 
-  // Check cached access first for instant loading
+  // Check cached access
   const getCachedAccess = useCallback((): CachedAccess | null => {
     try {
       const cached = localStorage.getItem(STORAGE_KEY);
       if (cached) {
         const parsed: CachedAccess = JSON.parse(cached);
-        // Check if cache is still valid
         if (Date.now() - parsed.timestamp < CACHE_DURATION) {
           return parsed;
         }
       }
     } catch {
-      // Ignore storage errors
+      // Ignore
     }
     return null;
   }, []);
@@ -50,7 +67,7 @@ export const useMaintenanceAccess = (): MaintenanceAccessReturn => {
       localStorage.removeItem(STORAGE_KEY);
       sessionStorage.removeItem(STORAGE_KEY);
     } catch {
-      // Ignore storage errors
+      // Ignore
     }
     setHasAccess(false);
     setIsStaffOrOwner(false);
@@ -61,7 +78,7 @@ export const useMaintenanceAccess = (): MaintenanceAccessReturn => {
       const cacheData: CachedAccess = { hasAccess: access, userId, timestamp: Date.now() };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(cacheData));
     } catch {
-      // Ignore storage errors
+      // Ignore
     }
   }, []);
 
@@ -71,6 +88,18 @@ export const useMaintenanceAccess = (): MaintenanceAccessReturn => {
     checkInProgressRef.current = true;
     
     try {
+      // FIRST: Check localStorage cache - this is set by MaintenancePage login
+      // Trust it immediately without waiting for database
+      const cached = getCachedAccess();
+      if (cached && cached.hasAccess) {
+        setHasAccess(true);
+        setIsStaffOrOwner(true);
+        setLoading(false);
+        accessCheckedRef.current = true;
+        checkInProgressRef.current = false;
+        return;
+      }
+
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError || !user) {
@@ -81,10 +110,9 @@ export const useMaintenanceAccess = (): MaintenanceAccessReturn => {
       }
 
       // Check if we have valid cached access for this user
-      const cached = getCachedAccess();
-      if (cached && cached.userId === user.id) {
-        setHasAccess(cached.hasAccess);
-        setIsStaffOrOwner(cached.hasAccess);
+      if (cached && cached.userId === user.id && cached.hasAccess) {
+        setHasAccess(true);
+        setIsStaffOrOwner(true);
         setLoading(false);
         accessCheckedRef.current = true;
         checkInProgressRef.current = false;
@@ -153,32 +181,62 @@ export const useMaintenanceAccess = (): MaintenanceAccessReturn => {
   }, [clearCachedAccess, getCachedAccess, setCachedAccess]);
 
   useEffect(() => {
+    // If we already have access from initial state, don't recheck
+    if (hasAccess && isStaffOrOwner) {
+      setLoading(false);
+      return;
+    }
+
     // Check cached access first for instant UI
     const cached = getCachedAccess();
-    if (cached) {
-      setHasAccess(cached.hasAccess);
-      setIsStaffOrOwner(cached.hasAccess);
+    if (cached && cached.hasAccess) {
+      setHasAccess(true);
+      setIsStaffOrOwner(true);
       setLoading(false);
       accessCheckedRef.current = true;
-      // Verify in background without blocking UI
-      checkAccess();
     } else {
       checkAccess();
     }
 
-    // Listen for auth changes only
+    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_OUT') {
         clearCachedAccess();
       } else if (event === 'SIGNED_IN') {
-        checkAccess();
+        // Re-check cache first - MaintenancePage sets it before triggering this
+        const freshCache = getCachedAccess();
+        if (freshCache && freshCache.hasAccess) {
+          setHasAccess(true);
+          setIsStaffOrOwner(true);
+          setLoading(false);
+        } else {
+          checkAccess();
+        }
       }
     });
 
+    // Listen for localStorage changes (for immediate sync after login)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY) {
+        const cached = getCachedAccess();
+        if (cached && cached.hasAccess) {
+          setHasAccess(true);
+          setIsStaffOrOwner(true);
+          setLoading(false);
+        } else {
+          setHasAccess(false);
+          setIsStaffOrOwner(false);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
     return () => {
       subscription.unsubscribe();
+      window.removeEventListener('storage', handleStorageChange);
     };
-  }, [checkAccess, clearCachedAccess, getCachedAccess]);
+  }, [checkAccess, clearCachedAccess, getCachedAccess, hasAccess, isStaffOrOwner]);
 
   return { hasAccess, isStaffOrOwner, loading, checkAccess };
 };
