@@ -168,47 +168,24 @@ export const EnhancedSiteSettings = ({ settings, onSettingsChange }: EnhancedSit
     const { data: { user } } = await supabase.auth.getUser();
     const oldValue = settings.find(s => s.key === key)?.value;
     
-    // Check if setting exists
-    const existingSetting = settings.find(s => s.key === key);
-    
-    if (existingSetting) {
-      const { error } = await supabase
-        .from("site_settings")
-        .update({
-          value: editedSettings[key],
-          updated_by: user?.id,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("key", key);
+    // Use upsert to handle both insert and update cases
+    const { error } = await supabase
+      .from("site_settings")
+      .upsert({
+        key,
+        value: editedSettings[key],
+        updated_by: user?.id,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'key' });
 
-      if (error) {
-        toast({
-          title: "Error",
-          description: "Failed to save setting.",
-          variant: "destructive",
-        });
-        setSaving(null);
-        return;
-      }
-    } else {
-      // Insert new setting
-      const { error } = await supabase
-        .from("site_settings")
-        .insert({
-          key,
-          value: editedSettings[key],
-          updated_by: user?.id,
-        });
-
-      if (error) {
-        toast({
-          title: "Error",
-          description: "Failed to save setting.",
-          variant: "destructive",
-        });
-        setSaving(null);
-        return;
-      }
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save setting.",
+        variant: "destructive",
+      });
+      setSaving(null);
+      return;
     }
 
     await logAction({
@@ -232,32 +209,17 @@ export const EnhancedSiteSettings = ({ settings, onSettingsChange }: EnhancedSit
     const newValue = currentValue === 'true' ? 'false' : 'true';
     setEditedSettings(prev => ({ ...prev, [key]: newValue }));
     
-    // Auto-save toggle settings
+    // Auto-save toggle settings using upsert to avoid duplicate key errors
     const { data: { user } } = await supabase.auth.getUser();
     
-    const existingSetting = settings.find(s => s.key === key);
-    let saveError = null;
-    
-    if (existingSetting) {
-      const { error } = await supabase
-        .from("site_settings")
-        .update({
-          value: newValue,
-          updated_by: user?.id,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("key", key);
-      saveError = error;
-    } else {
-      const { error } = await supabase
-        .from("site_settings")
-        .insert({
-          key,
-          value: newValue,
-          updated_by: user?.id,
-        });
-      saveError = error;
-    }
+    const { error: saveError } = await supabase
+      .from("site_settings")
+      .upsert({
+        key,
+        value: newValue,
+        updated_by: user?.id,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'key' });
 
     if (saveError) {
       toast({
