@@ -375,6 +375,23 @@ const Roster = () => {
     setDeleteDialogOpen(true);
   };
 
+  // Map department shortName to department key for filtering
+  const getDeptKeyFromShortName = (shortName: string): string => {
+    const mapping: Record<string, string> = {
+      'SLPD': 'police',
+      'Police': 'police',
+      'EMS': 'ems',
+      'Fire': 'fire',
+      'Mechanic': 'mechanic',
+      'DOJ': 'doj',
+      'State': 'state',
+      'Weazel': 'weazel',
+      'PDM': 'pdm',
+      'Staff': 'staff',
+    };
+    return mapping[shortName] || shortName.toLowerCase();
+  };
+
   const getDepartmentMembers = (key: string, filters: string[]): RosterMember[] => {
     return staffMembers
       .filter((s) => filters.some((f) => s.department?.toLowerCase().includes(f)))
@@ -520,79 +537,56 @@ const Roster = () => {
         [memberId]: {
           ...prev[deptKey]?.[memberId],
           [field]: value,
-        }
-      }
+        },
+      },
     }));
   };
 
   const saveChanges = async (deptKey: string) => {
+    if (!editedData[deptKey] || !canEdit) return;
+    
     setSaving(true);
-    try {
-      const deptData = editedData[deptKey];
-      if (!deptData) {
-        toast.error('No changes to save');
-        return;
-      }
+    const updates = Object.values(editedData[deptKey]);
+    
+    let successCount = 0;
+    let errorCount = 0;
 
-      const updates = Object.entries(deptData).map(([memberId, member]) => ({
-        id: memberId,
-        name: member.name,
-        role: member.rank,
-        badge_number: member.badge_number || null,
-        status: member.status,
-        division: member.division || null,
-        call_sign: member.call_sign || null,
-        strikes: member.strikes || null,
-        is_active: member.status === 'active',
-      }));
+    for (const member of updates) {
+      const { error } = await supabase
+        .from('staff_members')
+        .update({
+          role: member.rank,
+          badge_number: member.badge_number,
+          status: member.status,
+          division: member.division,
+          call_sign: member.call_sign,
+          strikes: member.strikes,
+        })
+        .eq('id', member.id);
 
-      let successCount = 0;
-      let errorCount = 0;
-
-      for (const update of updates) {
-        const { error } = await supabase
-          .from('staff_members')
-          .update({
-            name: update.name,
-            role: update.role,
-            badge_number: update.badge_number,
-            status: update.status,
-            division: update.division,
-            call_sign: update.call_sign,
-            strikes: update.strikes,
-            is_active: update.is_active,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', update.id);
-
-        if (error) {
-          console.error('Error updating member:', update.id, error);
-          errorCount++;
-        } else {
-          successCount++;
-        }
-      }
-
-      if (errorCount > 0) {
-        toast.warning(`Saved ${successCount} changes, ${errorCount} failed`);
+      if (error) {
+        console.error('Error updating member:', error);
+        errorCount++;
       } else {
-        toast.success(`Roster changes saved successfully! (${successCount} members updated)`);
+        successCount++;
       }
-
-      await fetchStaff();
-
-      setEditMode((prev) => ({ ...prev, [deptKey]: false }));
-      setEditedData((prev) => {
-        const newData = { ...prev };
-        delete newData[deptKey];
-        return newData;
-      });
-    } catch (error: any) {
-      console.error('Error saving changes:', error);
-      toast.error(error.message || 'Failed to save changes');
-    } finally {
-      setSaving(false);
     }
+
+    if (errorCount > 0) {
+      toast.warning(`Saved ${successCount} changes, ${errorCount} failed`);
+    } else {
+      toast.success(`Roster changes saved successfully! (${successCount} members updated)`);
+    }
+
+    // Refresh data and exit edit mode
+    await fetchStaff();
+    setEditMode(prev => ({ ...prev, [deptKey]: false }));
+    setEditedData(prev => {
+      const newData = { ...prev };
+      delete newData[deptKey];
+      return newData;
+    });
+    setSaving(false);
   };
 
   const getMemberValue = (deptKey: string, member: RosterMember, field: keyof RosterMember): string => {
@@ -601,6 +595,24 @@ const Roster = () => {
     }
     return (member[field] as string) || '';
   };
+
+  // Filter departments based on user's accessible departments
+  const filteredDepartments = departments.filter(dept => {
+    const deptKey = getDeptKeyFromShortName(dept.shortName);
+    return canAccessDepartment(deptKey);
+  });
+
+  // Set default active tab to first accessible department - MUST be before conditional returns
+  useEffect(() => {
+    if (filteredDepartments.length > 0 && !accessLoading) {
+      const currentTabExists = filteredDepartments.some(
+        dept => dept.department.toLowerCase().replace(/\s+/g, '-') === activeTab
+      );
+      if (!currentTabExists) {
+        setActiveTab(filteredDepartments[0].department.toLowerCase().replace(/\s+/g, '-'));
+      }
+    }
+  }, [filteredDepartments.length, accessLoading, activeTab]);
 
   // Show loading while checking access
   if (accessLoading || loading) {
@@ -650,40 +662,6 @@ const Roster = () => {
       </div>
     );
   }
-
-  // Map department shortName to department key for filtering
-  const getDeptKeyFromShortName = (shortName: string): string => {
-    const mapping: Record<string, string> = {
-      'SLPD': 'police',
-      'EMS': 'ems',
-      'Fire': 'fire',
-      'Mechanic': 'mechanic',
-      'DOJ': 'doj',
-      'State': 'state',
-      'Weazel': 'weazel',
-      'PDM': 'pdm',
-      'Staff': 'staff',
-    };
-    return mapping[shortName] || shortName.toLowerCase();
-  };
-
-  // Filter departments based on user's accessible departments
-  const filteredDepartments = departments.filter(dept => {
-    const deptKey = getDeptKeyFromShortName(dept.shortName);
-    return canAccessDepartment(deptKey);
-  });
-
-  // Set default active tab to first accessible department
-  useEffect(() => {
-    if (filteredDepartments.length > 0 && !accessLoading) {
-      const currentTabExists = filteredDepartments.some(
-        dept => dept.department.toLowerCase().replace(/\s+/g, '-') === activeTab
-      );
-      if (!currentTabExists) {
-        setActiveTab(filteredDepartments[0].department.toLowerCase().replace(/\s+/g, '-'));
-      }
-    }
-  }, [filteredDepartments, accessLoading]);
 
   return (
     <div className="min-h-screen bg-background">
