@@ -568,10 +568,19 @@ export const EnhancedSiteSettings = ({ settings, onSettingsChange }: EnhancedSit
                 <Label className="text-base">Hide Business Header</Label>
                 <p className="text-sm text-muted-foreground">Hide Business page from all users (owner only)</p>
               </div>
-              <Switch 
-                checked={getValue("business_header_hidden") === "true"}
-                onCheckedChange={() => toggleSetting("business_header_hidden")}
-              />
+              <div className="flex items-center gap-2">
+                <Switch 
+                  checked={getValue("business_header_hidden") === "true"}
+                  onCheckedChange={(checked) => setEditedSettings(prev => ({ ...prev, business_header_hidden: checked ? 'true' : 'false' }))}
+                />
+                <Button 
+                  size="sm" 
+                  onClick={() => saveSetting("business_header_hidden")} 
+                  disabled={saving === "business_header_hidden"}
+                >
+                  <Save className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
 
             <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
