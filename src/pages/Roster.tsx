@@ -60,7 +60,7 @@ interface RosterMember {
   name: string;
   rank: string;
   badge_number?: string;
-  status: 'active' | 'inactive' | 'on_leave';
+  status: 'active' | 'inactive' | 'on_leave' | 'on_training';
   division?: string;
   discord_avatar?: string;
   strikes?: string;
@@ -954,6 +954,11 @@ const Roster = () => {
                                             <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-500 text-xs font-medium">
                                               <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                                               On Leave
+                                            </span>
+                                          ) : member.status === 'on_training' ? (
+                                            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-500 text-xs font-medium">
+                                              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                                              On Training
                                             </span>
                                           ) : (
                                             <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-500/15 border border-gray-500/30 text-gray-400 text-xs font-medium">

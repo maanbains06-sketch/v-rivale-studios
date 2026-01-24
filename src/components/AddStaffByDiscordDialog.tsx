@@ -165,7 +165,7 @@ const AddStaffByDiscordDialog = ({
             division: formData.division || null,
             call_sign: formData.call_sign || null,
             strikes: formData.strikes || '0/3',
-            is_active: formData.status === 'active',
+            is_active: formData.status === 'active' || formData.status === 'on_training',
           })
           .eq('id', existing.id);
 
@@ -190,7 +190,7 @@ const AddStaffByDiscordDialog = ({
             division: formData.division || null,
             call_sign: formData.call_sign || null,
             strikes: formData.strikes || '0/3',
-            is_active: formData.status === 'active',
+            is_active: formData.status === 'active' || formData.status === 'on_training',
           });
 
         if (error) throw error;
