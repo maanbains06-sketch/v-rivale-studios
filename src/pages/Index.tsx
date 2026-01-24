@@ -540,21 +540,26 @@ const Index = () => {
               <Button
                 size="lg"
                 className="bg-background/75 border-2 border-sky-500/50 text-sky-400 hover:bg-background/85 hover:border-sky-400 text-base md:text-lg px-8 py-6 rounded-xl font-bold transition-colors duration-200"
-                asChild
+                onClick={() => {
+                  if (isAuthLoading) return;
+                  if (!isLoggedIn) {
+                    toast({
+                      title: "Login Required",
+                      description: "Please login with Discord to apply for whitelist.",
+                    });
+                    navigate("/auth");
+                  } else {
+                    navigate("/whitelist");
+                  }
+                }}
                 disabled={isAuthLoading}
               >
-                <Link to={isAuthLoading ? "#" : (isLoggedIn ? "/whitelist" : "/auth")} onClick={(e) => {
-                  if (isAuthLoading) {
-                    e.preventDefault();
-                  }
-                }}>
-                  {isAuthLoading ? (
-                    <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
-                  ) : (
-                    <Play className="w-5 h-5 mr-2" />
-                  )}
-                  {isAuthLoading ? "Loading..." : "Get Whitelisted"}
-                </Link>
+                {isAuthLoading ? (
+                  <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
+                ) : (
+                  <Play className="w-5 h-5 mr-2" />
+                )}
+                {isAuthLoading ? "Loading..." : "Get Whitelisted"}
               </Button>
 
               <Button

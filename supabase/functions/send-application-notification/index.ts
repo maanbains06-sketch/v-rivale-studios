@@ -24,207 +24,194 @@ interface DiscordUser {
 
 interface AppConfig {
   channelEnvKey: string;
-  approvedImage: string;
-  rejectedImage: string;
   title: string;
   departmentName: string;
   color: { approved: number; rejected: number };
+  emoji: string;
 }
-
-const BASE_URL = 'https://obirpzwvnqveddyuulsb.supabase.co/storage/v1/object/public/discord-assets/applications';
 
 const applicationConfigs: Record<string, AppConfig> = {
   'Police Department': {
     channelEnvKey: 'DISCORD_PD_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/pd-approved.jpg`,
-    rejectedImage: `${BASE_URL}/pd-rejected.jpg`,
     title: 'Police Department Application',
     departmentName: 'Police Department',
-    color: { approved: 0x3B82F6, rejected: 0xED4245 }
+    color: { approved: 0x3B82F6, rejected: 0xED4245 },
+    emoji: '👮'
   },
   'police': {
     channelEnvKey: 'DISCORD_PD_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/pd-approved.jpg`,
-    rejectedImage: `${BASE_URL}/pd-rejected.jpg`,
     title: 'Police Department Application',
     departmentName: 'Police Department',
-    color: { approved: 0x3B82F6, rejected: 0xED4245 }
+    color: { approved: 0x3B82F6, rejected: 0xED4245 },
+    emoji: '👮'
   },
   'EMS': {
     channelEnvKey: 'DISCORD_EMS_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/ems-approved.jpg`,
-    rejectedImage: `${BASE_URL}/ems-rejected.jpg`,
     title: 'EMS Application',
     departmentName: 'EMS',
-    color: { approved: 0xEF4444, rejected: 0xED4245 }
+    color: { approved: 0xEF4444, rejected: 0xED4245 },
+    emoji: '🚑'
   },
   'ems': {
     channelEnvKey: 'DISCORD_EMS_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/ems-approved.jpg`,
-    rejectedImage: `${BASE_URL}/ems-rejected.jpg`,
     title: 'EMS Application',
     departmentName: 'EMS',
-    color: { approved: 0xEF4444, rejected: 0xED4245 }
+    color: { approved: 0xEF4444, rejected: 0xED4245 },
+    emoji: '🚑'
   },
   'Mechanic': {
     channelEnvKey: 'DISCORD_MECHANIC_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/mechanic-approved.jpg`,
-    rejectedImage: `${BASE_URL}/mechanic-rejected.jpg`,
     title: 'Mechanic Application',
     departmentName: 'Mechanic Shop',
-    color: { approved: 0xF97316, rejected: 0xED4245 }
+    color: { approved: 0xF97316, rejected: 0xED4245 },
+    emoji: '🔧'
   },
   'mechanic': {
     channelEnvKey: 'DISCORD_MECHANIC_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/mechanic-approved.jpg`,
-    rejectedImage: `${BASE_URL}/mechanic-rejected.jpg`,
     title: 'Mechanic Application',
     departmentName: 'Mechanic Shop',
-    color: { approved: 0xF97316, rejected: 0xED4245 }
+    color: { approved: 0xF97316, rejected: 0xED4245 },
+    emoji: '🔧'
   },
   'DOJ - Judge': {
     channelEnvKey: 'DISCORD_DOJ_JUDGE_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/doj-judge-approved.jpg`,
-    rejectedImage: `${BASE_URL}/doj-judge-rejected.jpg`,
     title: 'DOJ Judge Application',
     departmentName: 'Department of Justice',
-    color: { approved: 0x8B5CF6, rejected: 0xED4245 }
+    color: { approved: 0x8B5CF6, rejected: 0xED4245 },
+    emoji: '⚖️'
   },
   'judge': {
     channelEnvKey: 'DISCORD_DOJ_JUDGE_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/doj-judge-approved.jpg`,
-    rejectedImage: `${BASE_URL}/doj-judge-rejected.jpg`,
     title: 'DOJ Judge Application',
     departmentName: 'Department of Justice',
-    color: { approved: 0x8B5CF6, rejected: 0xED4245 }
+    color: { approved: 0x8B5CF6, rejected: 0xED4245 },
+    emoji: '⚖️'
   },
   'DOJ - Attorney': {
     channelEnvKey: 'DISCORD_DOJ_ATTORNEY_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/doj-attorney-approved.jpg`,
-    rejectedImage: `${BASE_URL}/doj-attorney-rejected.jpg`,
     title: 'DOJ Attorney Application',
     departmentName: 'Department of Justice',
-    color: { approved: 0x8B5CF6, rejected: 0xED4245 }
+    color: { approved: 0x8B5CF6, rejected: 0xED4245 },
+    emoji: '⚖️'
   },
   'attorney': {
     channelEnvKey: 'DISCORD_DOJ_ATTORNEY_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/doj-attorney-approved.jpg`,
-    rejectedImage: `${BASE_URL}/doj-attorney-rejected.jpg`,
     title: 'DOJ Attorney Application',
     departmentName: 'Department of Justice',
-    color: { approved: 0x8B5CF6, rejected: 0xED4245 }
+    color: { approved: 0x8B5CF6, rejected: 0xED4245 },
+    emoji: '⚖️'
   },
   'State Department': {
     channelEnvKey: 'DISCORD_STATE_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/state-approved.jpg`,
-    rejectedImage: `${BASE_URL}/state-rejected.jpg`,
     title: 'State Department Application',
     departmentName: 'State Department',
-    color: { approved: 0x10B981, rejected: 0xED4245 }
+    color: { approved: 0x10B981, rejected: 0xED4245 },
+    emoji: '🏛️'
   },
   'state': {
     channelEnvKey: 'DISCORD_STATE_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/state-approved.jpg`,
-    rejectedImage: `${BASE_URL}/state-rejected.jpg`,
     title: 'State Department Application',
     departmentName: 'State Department',
-    color: { approved: 0x10B981, rejected: 0xED4245 }
+    color: { approved: 0x10B981, rejected: 0xED4245 },
+    emoji: '🏛️'
   },
   'Gang RP': {
     channelEnvKey: 'DISCORD_GANG_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/gang-approved.jpg`,
-    rejectedImage: `${BASE_URL}/gang-rejected.jpg`,
     title: 'Gang RP Application',
     departmentName: 'Gang RP',
-    color: { approved: 0x991B1B, rejected: 0xED4245 }
+    color: { approved: 0x991B1B, rejected: 0xED4245 },
+    emoji: '🔫'
   },
   'gang': {
     channelEnvKey: 'DISCORD_GANG_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/gang-approved.jpg`,
-    rejectedImage: `${BASE_URL}/gang-rejected.jpg`,
     title: 'Gang RP Application',
     departmentName: 'Gang RP',
-    color: { approved: 0x991B1B, rejected: 0xED4245 }
+    color: { approved: 0x991B1B, rejected: 0xED4245 },
+    emoji: '🔫'
+  },
+  'Gang Roleplay': {
+    channelEnvKey: 'DISCORD_GANG_CHANNEL_ID',
+    title: 'Gang RP Application',
+    departmentName: 'Gang RP',
+    color: { approved: 0x991B1B, rejected: 0xED4245 },
+    emoji: '🔫'
   },
   'PDM': {
     channelEnvKey: 'DISCORD_PDM_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/pdm-approved.jpg`,
-    rejectedImage: `${BASE_URL}/pdm-rejected.jpg`,
     title: 'PDM Dealership Application',
     departmentName: 'Premium Deluxe Motorsport',
-    color: { approved: 0xEAB308, rejected: 0xED4245 }
+    color: { approved: 0xEAB308, rejected: 0xED4245 },
+    emoji: '🚗'
   },
   'pdm': {
     channelEnvKey: 'DISCORD_PDM_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/pdm-approved.jpg`,
-    rejectedImage: `${BASE_URL}/pdm-rejected.jpg`,
     title: 'PDM Dealership Application',
     departmentName: 'Premium Deluxe Motorsport',
-    color: { approved: 0xEAB308, rejected: 0xED4245 }
+    color: { approved: 0xEAB308, rejected: 0xED4245 },
+    emoji: '🚗'
   },
   'Firefighter': {
     channelEnvKey: 'DISCORD_FIREFIGHTER_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/firefighter-approved.jpg`,
-    rejectedImage: `${BASE_URL}/firefighter-rejected.jpg`,
     title: 'Firefighter Application',
     departmentName: 'Fire Department',
-    color: { approved: 0xDC2626, rejected: 0xED4245 }
+    color: { approved: 0xDC2626, rejected: 0xED4245 },
+    emoji: '🚒'
   },
   'firefighter': {
     channelEnvKey: 'DISCORD_FIREFIGHTER_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/firefighter-approved.jpg`,
-    rejectedImage: `${BASE_URL}/firefighter-rejected.jpg`,
     title: 'Firefighter Application',
     departmentName: 'Fire Department',
-    color: { approved: 0xDC2626, rejected: 0xED4245 }
+    color: { approved: 0xDC2626, rejected: 0xED4245 },
+    emoji: '🚒'
   },
   'Weazel News': {
     channelEnvKey: 'DISCORD_WEAZEL_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/weazel-approved.jpg`,
-    rejectedImage: `${BASE_URL}/weazel-rejected.jpg`,
     title: 'Weazel News Application',
     departmentName: 'Weazel News',
-    color: { approved: 0x06B6D4, rejected: 0xED4245 }
+    color: { approved: 0x06B6D4, rejected: 0xED4245 },
+    emoji: '📺'
   },
   'weazel': {
     channelEnvKey: 'DISCORD_WEAZEL_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/weazel-approved.jpg`,
-    rejectedImage: `${BASE_URL}/weazel-rejected.jpg`,
     title: 'Weazel News Application',
     departmentName: 'Weazel News',
-    color: { approved: 0x06B6D4, rejected: 0xED4245 }
+    color: { approved: 0x06B6D4, rejected: 0xED4245 },
+    emoji: '📺'
+  },
+  'weazel_news': {
+    channelEnvKey: 'DISCORD_WEAZEL_CHANNEL_ID',
+    title: 'Weazel News Application',
+    departmentName: 'Weazel News',
+    color: { approved: 0x06B6D4, rejected: 0xED4245 },
+    emoji: '📺'
   },
   'Creator': {
     channelEnvKey: 'DISCORD_CREATOR_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/creator-approved.jpg`,
-    rejectedImage: `${BASE_URL}/creator-rejected.jpg`,
     title: 'Creator Program Application',
     departmentName: 'Creator Program',
-    color: { approved: 0xA855F7, rejected: 0xED4245 }
+    color: { approved: 0xA855F7, rejected: 0xED4245 },
+    emoji: '🎬'
   },
   'creator': {
     channelEnvKey: 'DISCORD_CREATOR_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/creator-approved.jpg`,
-    rejectedImage: `${BASE_URL}/creator-rejected.jpg`,
     title: 'Creator Program Application',
     departmentName: 'Creator Program',
-    color: { approved: 0xA855F7, rejected: 0xED4245 }
+    color: { approved: 0xA855F7, rejected: 0xED4245 },
+    emoji: '🎬'
   },
   'Staff': {
     channelEnvKey: 'DISCORD_STAFF_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/staff-approved.jpg`,
-    rejectedImage: `${BASE_URL}/staff-rejected.jpg`,
     title: 'Staff Application',
     departmentName: 'Staff Team',
-    color: { approved: 0x22C55E, rejected: 0xED4245 }
+    color: { approved: 0x22C55E, rejected: 0xED4245 },
+    emoji: '⭐'
   },
   'staff': {
     channelEnvKey: 'DISCORD_STAFF_CHANNEL_ID',
-    approvedImage: `${BASE_URL}/staff-approved.jpg`,
-    rejectedImage: `${BASE_URL}/staff-rejected.jpg`,
     title: 'Staff Application',
     departmentName: 'Staff Team',
-    color: { approved: 0x22C55E, rejected: 0xED4245 }
+    color: { approved: 0x22C55E, rejected: 0xED4245 },
+    emoji: '⭐'
   }
 };
 
@@ -289,7 +276,7 @@ serve(async (req) => {
       );
     }
 
-    // Fetch moderator's real Discord name if Discord ID is provided
+    // Fetch moderator's Discord info
     let moderatorDisplayName = moderatorName;
     let moderatorAvatarUrl: string | null = null;
     
@@ -305,100 +292,46 @@ serve(async (req) => {
     }
 
     const now = new Date();
-    const formattedDate = now.toLocaleDateString('en-US', {
-      month: '2-digit',
-      day: '2-digit',
-      year: 'numeric'
-    }) + ' ' + now.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    });
-
     const isApproved = status === 'approved';
-    const imageUrl = isApproved ? config.approvedImage : config.rejectedImage;
 
     // Build applicant mention
     const applicantMention = applicantDiscordId 
       ? `<@${applicantDiscordId}>` 
-      : `@${applicantName}`;
+      : `**${applicantName}**`;
 
     // Build moderator display
     const moderatorMention = moderatorDiscordId 
       ? `<@${moderatorDiscordId}>` 
-      : moderatorDisplayName;
+      : `**${moderatorDisplayName}**`;
 
-    // Build fields
-    const fields = [
-      {
-        name: '👤 Applicant',
-        value: applicantMention,
-        inline: true
-      },
-      {
-        name: '📊 Status',
-        value: isApproved ? '```diff\n+ APPROVED\n```' : '```diff\n- REJECTED\n```',
-        inline: true
-      },
-      {
-        name: '\u200B',
-        value: '\u200B',
-        inline: true
-      },
-      {
-        name: '🛡️ Reviewed By',
-        value: moderatorMention,
-        inline: true
-      },
-      {
-        name: '⏰ Review Time',
-        value: `\`${formattedDate}\``,
-        inline: true
-      },
-      {
-        name: '\u200B',
-        value: '\u200B',
-        inline: true
-      }
-    ];
-
-    // Add admin notes if provided
-    if (adminNotes && adminNotes.trim()) {
-      fields.push({
-        name: isApproved ? '📝 Notes from Staff' : '📝 Reason / Feedback',
-        value: `>>> ${adminNotes}`,
-        inline: false
-      });
-    }
-
-    // Add next steps
-    if (isApproved) {
-      fields.push({
-        name: '📌 Next Steps',
-        value: `1. Welcome to the **${config.departmentName}**!\n2. Check your Discord for role updates\n3. Report for duty and enjoy your new role!`,
-        inline: false
-      });
-    } else {
-      fields.push({
-        name: '💡 What\'s Next?',
-        value: adminNotes?.trim() 
-          ? 'Please review the feedback above. You may reapply after addressing the concerns mentioned.'
-          : 'You may reapply after reviewing your application. Take your time to improve and try again!',
-        inline: false
-      });
-    }
-
-    // Build embed with REQUIRED image
+    // Clean embed design WITHOUT black backgrounds
     const embed: Record<string, unknown> = {
-      title: isApproved ? `🎉 ${config.title} Approved!` : `📋 ${config.title} Status Update`,
+      title: isApproved 
+        ? `${config.emoji} ${config.title} - APPROVED ✅` 
+        : `${config.emoji} ${config.title} - REJECTED ❌`,
       description: isApproved 
-        ? `Congratulations! Your ${config.departmentName} application has been **approved**!\n\n✨ Welcome to the team! We're excited to have you.`
-        : `Your ${config.departmentName} application has been **reviewed** and unfortunately was not approved at this time.`,
+        ? `Congratulations! Your application for **${config.departmentName}** has been approved!\n\n🎉 Welcome to the team!`
+        : `Your application for **${config.departmentName}** has been reviewed and unfortunately was not approved at this time.`,
       color: isApproved ? config.color.approved : config.color.rejected,
-      fields,
-      image: {
-        url: imageUrl
+      fields: [
+        {
+          name: '👤 Applicant',
+          value: applicantMention,
+          inline: true
+        },
+        {
+          name: '🛡️ Reviewed By',
+          value: moderatorMention,
+          inline: true
+        },
+        {
+          name: '📊 Status',
+          value: isApproved ? '✅ **APPROVED**' : '❌ **REJECTED**',
+          inline: true
+        }
+      ],
+      thumbnail: {
+        url: 'https://roleplay-horizon.lovable.app/images/slrp-logo.png'
       },
       footer: {
         text: `SkyLife RP • ${config.departmentName}`,
@@ -406,6 +339,30 @@ serve(async (req) => {
       },
       timestamp: now.toISOString()
     };
+
+    // Add admin notes if provided
+    if (adminNotes && adminNotes.trim()) {
+      (embed.fields as any[]).push({
+        name: isApproved ? '📝 Staff Notes' : '📝 Feedback',
+        value: adminNotes,
+        inline: false
+      });
+    }
+
+    // Add next steps
+    if (isApproved) {
+      (embed.fields as any[]).push({
+        name: '📌 Next Steps',
+        value: `Welcome to **${config.departmentName}**!\n• Check Discord for role updates\n• Report for duty and enjoy!`,
+        inline: false
+      });
+    } else {
+      (embed.fields as any[]).push({
+        name: '💡 What\'s Next?',
+        value: 'You may reapply after reviewing your application. Take your time to improve and try again!',
+        inline: false
+      });
+    }
 
     // Add moderator as author if we have their avatar
     if (moderatorAvatarUrl) {
@@ -415,7 +372,7 @@ serve(async (req) => {
       };
     }
 
-    console.log(`Sending notification to channel ${channelId} with image: ${imageUrl}`);
+    console.log(`Sending notification to channel ${channelId}`);
 
     // Send message to Discord
     const discordResponse = await fetch(
@@ -428,7 +385,10 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           content: applicantMention,
-          embeds: [embed]
+          embeds: [embed],
+          allowed_mentions: {
+            users: applicantDiscordId ? [applicantDiscordId] : []
+          }
         }),
       }
     );
@@ -446,7 +406,7 @@ serve(async (req) => {
     console.log('Discord notification sent successfully:', discordResult.id);
 
     return new Response(
-      JSON.stringify({ success: true, messageId: discordResult.id, imageUrl }),
+      JSON.stringify({ success: true, messageId: discordResult.id }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
