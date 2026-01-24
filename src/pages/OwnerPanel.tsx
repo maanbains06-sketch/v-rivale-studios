@@ -297,6 +297,7 @@ const OwnerPanel = () => {
   const [staffToDelete, setStaffToDelete] = useState<string | null>(null);
   const [showInactivityWarning, setShowInactivityWarning] = useState(false);
   const [remainingTime, setRemainingTime] = useState(0);
+  const [isRefreshingApps, setIsRefreshingApps] = useState(false);
   
   const lastActivityRef = useRef<number>(Date.now());
   const warningTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -1525,22 +1526,44 @@ const OwnerPanel = () => {
                     </div>
                     <CardDescription>Review and manage all application types in one place</CardDescription>
                   </div>
-                  <Select value={selectedAppType} onValueChange={setSelectedAppType}>
-                    <SelectTrigger className="w-[200px]">
-                      <SelectValue placeholder="Filter by type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Applications</SelectItem>
-                      <SelectItem value="whitelist">Whitelist ({counts.whitelist} pending)</SelectItem>
-                      <SelectItem value="job">Job ({counts.job} pending)</SelectItem>
-                      <SelectItem value="staff">Staff ({counts.staff} pending)</SelectItem>
-                      <SelectItem value="ban">Ban Appeals ({counts.ban} pending)</SelectItem>
-                      <SelectItem value="creator">Creator ({counts.creator} pending)</SelectItem>
-                      <SelectItem value="firefighter">Firefighter ({counts.firefighter} pending)</SelectItem>
-                      <SelectItem value="weazel">Weazel News ({counts.weazel} pending)</SelectItem>
-                      <SelectItem value="pdm">PDM ({counts.pdm} pending)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={isRefreshingApps}
+                      onClick={async () => {
+                        setIsRefreshingApps(true);
+                        try {
+                          await loadAllData();
+                          toast({ title: "Refreshed", description: "All applications have been reloaded successfully." });
+                        } catch (error) {
+                          toast({ title: "Error", description: "Failed to refresh applications.", variant: "destructive" });
+                        } finally {
+                          setIsRefreshingApps(false);
+                        }
+                      }}
+                      className="gap-2"
+                    >
+                      <RefreshCw className={`w-4 h-4 ${isRefreshingApps ? 'animate-spin' : ''}`} />
+                      {isRefreshingApps ? 'Loading...' : 'Refresh'}
+                    </Button>
+                    <Select value={selectedAppType} onValueChange={setSelectedAppType}>
+                      <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Filter by type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Applications</SelectItem>
+                        <SelectItem value="whitelist">Whitelist ({counts.whitelist} pending)</SelectItem>
+                        <SelectItem value="job">Job ({counts.job} pending)</SelectItem>
+                        <SelectItem value="staff">Staff ({counts.staff} pending)</SelectItem>
+                        <SelectItem value="ban">Ban Appeals ({counts.ban} pending)</SelectItem>
+                        <SelectItem value="creator">Creator ({counts.creator} pending)</SelectItem>
+                        <SelectItem value="firefighter">Firefighter ({counts.firefighter} pending)</SelectItem>
+                        <SelectItem value="weazel">Weazel News ({counts.weazel} pending)</SelectItem>
+                        <SelectItem value="pdm">PDM ({counts.pdm} pending)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 {/* Quick Stats */}

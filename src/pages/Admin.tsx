@@ -301,6 +301,7 @@ const Admin = () => {
   const [weazelAdminNotes, setWeazelAdminNotes] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAppType, setSelectedAppType] = useState("all");
+  const [isRefreshingApps, setIsRefreshingApps] = useState(false);
   
   // Player action dialog
   const [actionDialog, setActionDialog] = useState<{
@@ -1340,21 +1341,43 @@ const Admin = () => {
                     </div>
                     <CardDescription>Review and manage all application types in one place</CardDescription>
                   </div>
-                  <Select value={selectedAppType} onValueChange={setSelectedAppType}>
-                    <SelectTrigger className="w-[200px]">
-                      <SelectValue placeholder="Filter by type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Applications</SelectItem>
-                      <SelectItem value="whitelist">Whitelist ({applications.filter(a => a.status === 'pending').length} pending)</SelectItem>
-                      <SelectItem value="job">Jobs ({jobApplications.filter(j => j.status === 'pending').length} pending)</SelectItem>
-                      <SelectItem value="ban">Ban Appeals ({banAppeals.filter(b => b.status === 'pending').length} pending)</SelectItem>
-                      <SelectItem value="creator">Creator ({creatorApplications.filter(c => c.status === 'pending').length} pending)</SelectItem>
-                      <SelectItem value="firefighter">Firefighter ({firefighterApplications.filter(f => f.status === 'pending').length} pending)</SelectItem>
-                      <SelectItem value="weazel">Weazel News ({weazelNewsApplications.filter(w => w.status === 'pending').length} pending)</SelectItem>
-                      <SelectItem value="pdm">PDM ({pdmApplications.filter(p => p.status === 'pending').length} pending)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={isRefreshingApps}
+                      onClick={async () => {
+                        setIsRefreshingApps(true);
+                        try {
+                          await loadAllData();
+                          toast({ title: "Refreshed", description: "All applications have been reloaded successfully." });
+                        } catch (error) {
+                          toast({ title: "Error", description: "Failed to refresh applications.", variant: "destructive" });
+                        } finally {
+                          setIsRefreshingApps(false);
+                        }
+                      }}
+                      className="gap-2"
+                    >
+                      <RefreshCw className={`w-4 h-4 ${isRefreshingApps ? 'animate-spin' : ''}`} />
+                      {isRefreshingApps ? 'Loading...' : 'Refresh'}
+                    </Button>
+                    <Select value={selectedAppType} onValueChange={setSelectedAppType}>
+                      <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Filter by type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Applications</SelectItem>
+                        <SelectItem value="whitelist">Whitelist ({applications.filter(a => a.status === 'pending').length} pending)</SelectItem>
+                        <SelectItem value="job">Jobs ({jobApplications.filter(j => j.status === 'pending').length} pending)</SelectItem>
+                        <SelectItem value="ban">Ban Appeals ({banAppeals.filter(b => b.status === 'pending').length} pending)</SelectItem>
+                        <SelectItem value="creator">Creator ({creatorApplications.filter(c => c.status === 'pending').length} pending)</SelectItem>
+                        <SelectItem value="firefighter">Firefighter ({firefighterApplications.filter(f => f.status === 'pending').length} pending)</SelectItem>
+                        <SelectItem value="weazel">Weazel News ({weazelNewsApplications.filter(w => w.status === 'pending').length} pending)</SelectItem>
+                        <SelectItem value="pdm">PDM ({pdmApplications.filter(p => p.status === 'pending').length} pending)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 {/* Quick Stats */}
