@@ -178,7 +178,7 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
 
     fetchSettings();
 
-    // Subscribe to realtime changes - but don't refetch on every change, just update state
+    // Subscribe to realtime changes - refetch on any site_settings change
     const channel = supabase
       .channel('site_settings_changes')
       .on(
@@ -189,10 +189,9 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
           table: 'site_settings',
         },
         (payload) => {
-          // Only refetch if maintenance_mode changed (important for security)
-          if (payload.new && (payload.new as any).key === 'maintenance_mode') {
-            fetchSettings();
-          }
+          // Refetch settings on any change to ensure UI stays in sync
+          console.log('[useSiteSettings] Setting changed, refetching:', payload);
+          fetchSettings();
         }
       )
       .subscribe();
