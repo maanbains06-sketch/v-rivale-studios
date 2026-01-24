@@ -18,7 +18,8 @@ import {
   Scale,
   Building,
   Users2,
-  RefreshCw
+  RefreshCw,
+  Store
 } from "lucide-react";
 
 interface ApplicationStats {
@@ -36,6 +37,7 @@ interface ApplicationStats {
   firefighter: number;
   weazel: number;
   pdm: number;
+  business: number;
 }
 
 interface StatButtonProps {
@@ -76,13 +78,14 @@ export const LiveApplicationStats = () => {
     firefighter: 0,
     weazel: 0,
     pdm: 0,
+    business: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   const fetchStats = useCallback(async () => {
     try {
-      // Fetch all approved/closed counts in parallel (approved OR closed both count as completed approvals)
+      // Fetch all approved/rejected counts in parallel
       const [
         whitelistRes,
         jobsRes,
@@ -92,21 +95,23 @@ export const LiveApplicationStats = () => {
         firefighterRes,
         weazelRes,
         pdmRes,
+        businessRes,
       ] = await Promise.all([
-        supabase.from("whitelist_applications").select("id", { count: "exact", head: true }).in("status", ["approved", "closed"]),
-        supabase.from("job_applications").select("id, job_type").in("status", ["approved", "closed"]),
-        supabase.from("staff_applications").select("id", { count: "exact", head: true }).in("status", ["approved", "closed"]),
-        supabase.from("ban_appeals").select("id", { count: "exact", head: true }).in("status", ["approved", "closed"]),
-        supabase.from("creator_applications").select("id", { count: "exact", head: true }).in("status", ["approved", "closed"]),
-        supabase.from("firefighter_applications").select("id", { count: "exact", head: true }).in("status", ["approved", "closed"]),
-        supabase.from("weazel_news_applications").select("id", { count: "exact", head: true }).in("status", ["approved", "closed"]),
-        supabase.from("pdm_applications").select("id", { count: "exact", head: true }).in("status", ["approved", "closed"]),
+        supabase.from("whitelist_applications").select("id", { count: "exact", head: true }).in("status", ["approved", "rejected"]),
+        supabase.from("job_applications").select("id, job_type").in("status", ["approved", "rejected"]),
+        supabase.from("staff_applications").select("id", { count: "exact", head: true }).in("status", ["approved", "rejected"]),
+        supabase.from("ban_appeals").select("id", { count: "exact", head: true }).in("status", ["approved", "rejected"]),
+        supabase.from("creator_applications").select("id", { count: "exact", head: true }).in("status", ["approved", "rejected"]),
+        supabase.from("firefighter_applications").select("id", { count: "exact", head: true }).in("status", ["approved", "rejected"]),
+        supabase.from("weazel_news_applications").select("id", { count: "exact", head: true }).in("status", ["approved", "rejected"]),
+        supabase.from("pdm_applications").select("id", { count: "exact", head: true }).in("status", ["approved", "rejected"]),
+        supabase.from("business_applications").select("id", { count: "exact", head: true }).in("status", ["approved", "rejected"]),
       ]);
 
       // Fetch gang applications separately (may not exist in all projects)
       let gangCount = 0;
       try {
-        const { count } = await supabase.from("gang_applications" as any).select("id", { count: "exact", head: true }).in("status", ["approved", "closed"]);
+        const { count } = await supabase.from("gang_applications" as any).select("id", { count: "exact", head: true }).in("status", ["approved", "rejected"]);
         gangCount = count || 0;
       } catch {
         gangCount = 0;
@@ -138,6 +143,7 @@ export const LiveApplicationStats = () => {
         firefighter: firefighterRes.count || 0,
         weazel: weazelRes.count || 0,
         pdm: pdmRes.count || 0,
+        business: businessRes.count || 0,
       });
       setLastUpdated(new Date());
     } catch (error) {
@@ -161,6 +167,7 @@ export const LiveApplicationStats = () => {
       .on("postgres_changes", { event: "*", schema: "public", table: "firefighter_applications" }, fetchStats)
       .on("postgres_changes", { event: "*", schema: "public", table: "weazel_news_applications" }, fetchStats)
       .on("postgres_changes", { event: "*", schema: "public", table: "pdm_applications" }, fetchStats)
+      .on("postgres_changes", { event: "*", schema: "public", table: "business_applications" }, fetchStats)
       .subscribe();
 
     return () => {
@@ -182,7 +189,7 @@ export const LiveApplicationStats = () => {
               Number of Applications
             </CardTitle>
             <CardDescription className="mt-1">
-              Live count of all approved & closed applications on the website
+              Live count of all approved & rejected applications on the website
             </CardDescription>
           </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -284,6 +291,12 @@ export const LiveApplicationStats = () => {
             count={stats.pdm}
             icon={<Briefcase className="h-5 w-5 text-green-500" />}
             colorClass="border-green-500/30 hover:bg-green-500/10"
+          />
+          <StatButton
+            label="Business"
+            count={stats.business}
+            icon={<Store className="h-5 w-5 text-emerald-500" />}
+            colorClass="border-emerald-500/30 hover:bg-emerald-500/10"
           />
         </div>
       </CardContent>
