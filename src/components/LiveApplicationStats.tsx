@@ -82,7 +82,7 @@ export const LiveApplicationStats = () => {
 
   const fetchStats = useCallback(async () => {
     try {
-      // Fetch all approved counts in parallel
+      // Fetch all approved/closed counts in parallel (approved OR closed both count as completed approvals)
       const [
         whitelistRes,
         jobsRes,
@@ -93,20 +93,20 @@ export const LiveApplicationStats = () => {
         weazelRes,
         pdmRes,
       ] = await Promise.all([
-        supabase.from("whitelist_applications").select("id", { count: "exact", head: true }).eq("status", "approved"),
-        supabase.from("job_applications").select("id, job_type").eq("status", "approved"),
-        supabase.from("staff_applications").select("id", { count: "exact", head: true }).eq("status", "approved"),
-        supabase.from("ban_appeals").select("id", { count: "exact", head: true }).eq("status", "approved"),
-        supabase.from("creator_applications").select("id", { count: "exact", head: true }).eq("status", "approved"),
-        supabase.from("firefighter_applications").select("id", { count: "exact", head: true }).eq("status", "approved"),
-        supabase.from("weazel_news_applications").select("id", { count: "exact", head: true }).eq("status", "approved"),
-        supabase.from("pdm_applications").select("id", { count: "exact", head: true }).eq("status", "approved"),
+        supabase.from("whitelist_applications").select("id", { count: "exact", head: true }).in("status", ["approved", "closed"]),
+        supabase.from("job_applications").select("id, job_type").in("status", ["approved", "closed"]),
+        supabase.from("staff_applications").select("id", { count: "exact", head: true }).in("status", ["approved", "closed"]),
+        supabase.from("ban_appeals").select("id", { count: "exact", head: true }).in("status", ["approved", "closed"]),
+        supabase.from("creator_applications").select("id", { count: "exact", head: true }).in("status", ["approved", "closed"]),
+        supabase.from("firefighter_applications").select("id", { count: "exact", head: true }).in("status", ["approved", "closed"]),
+        supabase.from("weazel_news_applications").select("id", { count: "exact", head: true }).in("status", ["approved", "closed"]),
+        supabase.from("pdm_applications").select("id", { count: "exact", head: true }).in("status", ["approved", "closed"]),
       ]);
 
       // Fetch gang applications separately (may not exist in all projects)
       let gangCount = 0;
       try {
-        const { count } = await supabase.from("gang_applications" as any).select("id", { count: "exact", head: true }).eq("status", "approved");
+        const { count } = await supabase.from("gang_applications" as any).select("id", { count: "exact", head: true }).in("status", ["approved", "closed"]);
         gangCount = count || 0;
       } catch {
         gangCount = 0;
@@ -179,10 +179,10 @@ export const LiveApplicationStats = () => {
               <Badge variant="secondary" className="text-lg px-3 py-1">
                 {totalApproved}
               </Badge>
-              Number of Approved Applications
+              Number of Applications
             </CardTitle>
             <CardDescription className="mt-1">
-              Live count of all approved applications on the website
+              Live count of all approved & closed applications on the website
             </CardDescription>
           </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
