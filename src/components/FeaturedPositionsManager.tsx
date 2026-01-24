@@ -86,6 +86,8 @@ export function FeaturedPositionsManager() {
   const [editingPosition, setEditingPosition] = useState<FeaturedPosition | null>(null);
   const [businessJobsHidden, setBusinessJobsHidden] = useState(false);
   const [savingBusinessToggle, setSavingBusinessToggle] = useState(false);
+  const [featuredPositionsHidden, setFeaturedPositionsHidden] = useState(false);
+  const [savingFeaturedToggle, setSavingFeaturedToggle] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -101,6 +103,7 @@ export function FeaturedPositionsManager() {
   useEffect(() => {
     loadPositions();
     loadBusinessJobsSetting();
+    loadFeaturedPositionsSetting();
   }, []);
 
   const loadPositions = async () => {
@@ -141,6 +144,22 @@ export function FeaturedPositionsManager() {
     }
   };
 
+  const loadFeaturedPositionsSetting = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("site_settings")
+        .select("value")
+        .eq("key", "featured_positions_hidden")
+        .single();
+
+      if (!error && data) {
+        setFeaturedPositionsHidden(data.value === "true");
+      }
+    } catch (error) {
+      console.error("Error loading featured positions setting:", error);
+    }
+  };
+
   const handleBusinessJobsToggle = async (hidden: boolean) => {
     setSavingBusinessToggle(true);
     try {
@@ -168,6 +187,36 @@ export function FeaturedPositionsManager() {
       });
     } finally {
       setSavingBusinessToggle(false);
+    }
+  };
+
+  const handleFeaturedPositionsToggle = async (hidden: boolean) => {
+    setSavingFeaturedToggle(true);
+    try {
+      const { error } = await supabase
+        .from("site_settings")
+        .upsert({
+          key: "featured_positions_hidden",
+          value: hidden.toString(),
+          description: "Hide featured positions carousel from non-owner users",
+        }, { onConflict: "key" });
+
+      if (error) throw error;
+      
+      setFeaturedPositionsHidden(hidden);
+      toast({
+        title: "Success",
+        description: `Featured positions carousel is now ${hidden ? "hidden" : "visible"} to users`,
+      });
+    } catch (error) {
+      console.error("Error updating featured positions setting:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update setting",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingFeaturedToggle(false);
     }
   };
 
@@ -423,6 +472,39 @@ export function FeaturedPositionsManager() {
           <p className="text-sm text-muted-foreground">
             When enabled, the Business Jobs section will be hidden from all users except the owner. 
             Use this to control visibility during maintenance or preparation phases.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Featured Positions Visibility Toggle */}
+      <Card className="glass-effect border-border/20">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-red-500/10">
+                <Flame className="w-5 h-5 text-red-500" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">Featured Positions Visibility</CardTitle>
+                <CardDescription>Control who can see the Featured Positions carousel</CardDescription>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-muted-foreground">
+                {featuredPositionsHidden ? "Hidden from users" : "Visible to all"}
+              </span>
+              <Switch
+                checked={featuredPositionsHidden}
+                onCheckedChange={handleFeaturedPositionsToggle}
+                disabled={savingFeaturedToggle}
+              />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            When enabled, the Featured Positions carousel will be hidden from all users except the owner. 
+            Use this to control visibility during maintenance or when updating job listings.
           </p>
         </CardContent>
       </Card>
