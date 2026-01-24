@@ -17,6 +17,10 @@ import { ApprovedApplicationAlert } from "@/components/ApprovedApplicationAlert"
 import { OnHoldApplicationAlert } from "@/components/OnHoldApplicationAlert";
 
 const businessJobSchema = z.object({
+  business_name: z.string()
+    .trim()
+    .min(2, "Business name must be at least 2 characters")
+    .max(100, "Business name must be less than 100 characters"),
   character_name: z.string()
     .trim()
     .min(2, "Character name must be at least 2 characters")
@@ -172,6 +176,7 @@ const BusinessJobApplicationForm = ({ jobType, jobImage }: BusinessJobApplicatio
   const form = useForm<BusinessJobFormData>({
     resolver: zodResolver(businessJobSchema),
     defaultValues: {
+      business_name: "",
       character_name: "",
       age: 18,
       phone_number: "",
@@ -203,7 +208,17 @@ const BusinessJobApplicationForm = ({ jobType, jobImage }: BusinessJobApplicatio
       const { error } = await supabase
         .from("job_applications")
         .insert({
-          ...data,
+          character_name: data.character_name,
+          age: data.age,
+          phone_number: data.phone_number,
+          previous_experience: data.previous_experience,
+          why_join: data.why_join,
+          character_background: data.character_background,
+          job_specific_answer: data.job_specific_answer,
+          strengths: data.strengths,
+          availability: data.availability,
+          additional_info: data.additional_info,
+          business_name: data.business_name,
           job_type: jobType,
           user_id: user.id,
           status: "pending",
@@ -331,6 +346,31 @@ const BusinessJobApplicationForm = ({ jobType, jobImage }: BusinessJobApplicatio
         <CardContent className="pt-8">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Business Name Field - Important for identifying which specific business */}
+              <FormField
+                control={form.control}
+                name="business_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-base flex items-center gap-2">
+                      <Building2 className="w-4 h-4 text-amber-500" />
+                      Which Business Are You Applying To? *
+                    </FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder={`Enter the name of the ${jobType.toLowerCase()} business you're applying to...`} 
+                        className="border-amber-500/30 focus:border-amber-500/50"
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Provide the exact name of the business or establishment you want to work at
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
