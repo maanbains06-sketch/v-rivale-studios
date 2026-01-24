@@ -1597,8 +1597,10 @@ const Admin = () => {
                   }}
                   onClose={async (id, type) => {
                     console.log('[Admin] onClose called:', { id, type });
-                    const { data: { user } } = await supabase.auth.getUser();
-                    const tableMap: Record<string, { table: string; loader: () => Promise<void> }> = {
+                    
+                    type TableName = 'whitelist_applications' | 'staff_applications' | 'job_applications' | 'ban_appeals' | 'creator_applications' | 'firefighter_applications' | 'weazel_news_applications' | 'pdm_applications';
+                    
+                    const tableMap: Record<string, { table: TableName; loader: () => Promise<void> }> = {
                       whitelist: { table: 'whitelist_applications', loader: loadApplications },
                       police: { table: 'job_applications', loader: loadJobApplications },
                       ems: { table: 'job_applications', loader: loadJobApplications },
@@ -1617,9 +1619,19 @@ const Admin = () => {
                     
                     const config = tableMap[type];
                     console.log('[Admin] onClose config:', config, 'for type:', type);
-                    if (config) {
+                    
+                    if (!config) {
+                      console.error('[Admin] Unknown application type:', type);
+                      toast({ title: "Error", description: `Unknown application type: ${type}`, variant: "destructive" });
+                      return;
+                    }
+                    
+                    try {
+                      const { data: { user } } = await supabase.auth.getUser();
+                      console.log('[Admin] Updating', config.table, 'id:', id, 'to closed, user:', user?.id);
+                      
                       const { data: updatedRows, error } = await supabase
-                        .from(config.table as any)
+                        .from(config.table)
                         .update({
                           status: 'closed',
                           reviewed_by: user?.id || null,
@@ -1628,9 +1640,11 @@ const Admin = () => {
                         .eq('id', id)
                         .select('id');
                       
+                      console.log('[Admin] Update result:', { updatedRows, error });
+                      
                       if (error) {
                         console.error('[Admin] Error closing application:', { type, table: config.table, id, error });
-                        toast({ title: "Error", description: `Failed to close application: ${error.message}`, variant: "destructive" });
+                        toast({ title: "Error", description: `Failed to close: ${error.message}`, variant: "destructive" });
                       } else if (!updatedRows || updatedRows.length === 0) {
                         console.error('[Admin] Close blocked (0 rows updated):', { type, table: config.table, id });
                         toast({ title: "Not Updated", description: "Close was blocked by permissions (0 rows updated).", variant: "destructive" });
@@ -1639,15 +1653,17 @@ const Admin = () => {
                         toast({ title: "Success", description: "Application marked as closed." });
                         config.loader();
                       }
-                    } else {
-                      console.error('[Admin] Unknown application type:', type);
-                      toast({ title: "Error", description: `Unknown application type: ${type}`, variant: "destructive" });
+                    } catch (err) {
+                      console.error('[Admin] Unexpected error closing application:', err);
+                      toast({ title: "Error", description: `Unexpected error: ${String(err)}`, variant: "destructive" });
                     }
                   }}
                   onMarkOpen={async (id, type) => {
                     console.log('[Admin] onMarkOpen called:', { id, type });
-                    const { data: { user } } = await supabase.auth.getUser();
-                    const tableMap: Record<string, { table: string; loader: () => Promise<void> }> = {
+                    
+                    type TableName = 'whitelist_applications' | 'staff_applications' | 'job_applications' | 'ban_appeals' | 'creator_applications' | 'firefighter_applications' | 'weazel_news_applications' | 'pdm_applications';
+                    
+                    const tableMap: Record<string, { table: TableName; loader: () => Promise<void> }> = {
                       whitelist: { table: 'whitelist_applications', loader: loadApplications },
                       police: { table: 'job_applications', loader: loadJobApplications },
                       ems: { table: 'job_applications', loader: loadJobApplications },
@@ -1666,9 +1682,19 @@ const Admin = () => {
                     
                     const config = tableMap[type];
                     console.log('[Admin] onMarkOpen config:', config, 'for type:', type);
-                    if (config) {
+                    
+                    if (!config) {
+                      console.error('[Admin] Unknown application type:', type);
+                      toast({ title: "Error", description: `Unknown application type: ${type}`, variant: "destructive" });
+                      return;
+                    }
+                    
+                    try {
+                      const { data: { user } } = await supabase.auth.getUser();
+                      console.log('[Admin] Updating', config.table, 'id:', id, 'to pending, user:', user?.id);
+                      
                       const { data: updatedRows, error } = await supabase
-                        .from(config.table as any)
+                        .from(config.table)
                         .update({
                           status: 'pending',
                           reviewed_by: user?.id || null,
@@ -1677,9 +1703,11 @@ const Admin = () => {
                         .eq('id', id)
                         .select('id');
                       
+                      console.log('[Admin] Update result:', { updatedRows, error });
+                      
                       if (error) {
                         console.error('[Admin] Error reopening application:', { type, table: config.table, id, error });
-                        toast({ title: "Error", description: `Failed to reopen application: ${error.message}`, variant: "destructive" });
+                        toast({ title: "Error", description: `Failed to reopen: ${error.message}`, variant: "destructive" });
                       } else if (!updatedRows || updatedRows.length === 0) {
                         console.error('[Admin] Reopen blocked (0 rows updated):', { type, table: config.table, id });
                         toast({ title: "Not Updated", description: "Reopen was blocked by permissions (0 rows updated).", variant: "destructive" });
@@ -1688,9 +1716,9 @@ const Admin = () => {
                         toast({ title: "Success", description: "Application marked as open." });
                         config.loader();
                       }
-                    } else {
-                      console.error('[Admin] Unknown application type:', type);
-                      toast({ title: "Error", description: `Unknown application type: ${type}`, variant: "destructive" });
+                    } catch (err) {
+                      console.error('[Admin] Unexpected error reopening application:', err);
+                      toast({ title: "Error", description: `Unexpected error: ${String(err)}`, variant: "destructive" });
                     }
                   }}
                 />
