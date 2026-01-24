@@ -1322,6 +1322,10 @@ const Admin = () => {
               <Users className="w-4 h-4" />
               <span className="hidden sm:inline">Players</span>
             </TabsTrigger>
+            <TabsTrigger value="business" className="flex items-center gap-1 text-xs sm:text-sm" onClick={() => navigate('/admin/business-proposals')}>
+              <Briefcase className="w-4 h-4" />
+              <span className="hidden sm:inline">Business</span>
+            </TabsTrigger>
           </TabsList>
 
           {/* Organization Applications Tab - Unified View */}

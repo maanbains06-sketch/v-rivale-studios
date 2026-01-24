@@ -1474,6 +1474,10 @@ const OwnerPanel = () => {
                   <Gift className="w-4 h-4" />
                   <span className="hidden sm:inline">Giveaways</span>
                 </TabsTrigger>
+                <TabsTrigger value="business" className="flex items-center gap-2 whitespace-nowrap" onClick={() => navigate('/admin/business-proposals')}>
+                  <Briefcase className="w-4 h-4" />
+                  <span className="hidden sm:inline">Business</span>
+                </TabsTrigger>
               </TabsList>
             </div>
             {/* Fade indicators for scroll hint */}
