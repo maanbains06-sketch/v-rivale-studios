@@ -232,9 +232,23 @@ export const EnhancedSiteSettings = ({ settings, onSettingsChange }: EnhancedSit
       return;
     }
 
-    // Clear the site settings cache AFTER successful save to ensure fresh data on refresh
+    // Keep refresh behavior consistent: update cached settings instead of clearing.
+    // Clearing cache caused keys with default=false (like business_header_hidden) to appear "disabled" after refresh
+    // until the fetch finishes.
     try {
-      localStorage.removeItem('slrp_site_settings');
+      const cacheKey = 'slrp_site_settings';
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached) as { settings?: Record<string, unknown>; timestamp?: number };
+        if (parsed?.settings && typeof parsed.settings === 'object') {
+          // Only update if the key exists in cached settings shape
+          if (Object.prototype.hasOwnProperty.call(parsed.settings, key)) {
+            (parsed.settings as Record<string, unknown>)[key] = newValue === 'true';
+            parsed.timestamp = Date.now();
+            localStorage.setItem(cacheKey, JSON.stringify(parsed));
+          }
+        }
+      }
     } catch {
       // Ignore storage errors
     }
