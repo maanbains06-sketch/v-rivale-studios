@@ -64,8 +64,10 @@ const Navigation = () => {
   const showRosterLink = hasRosterAccess && (!isMaintenanceMode || canSeeRosterDuringMaintenance);
 
   // Business header visibility
-  // Avoid showing the Business link during initial refresh before settings finish loading.
-  // Owners still always see it.
+  // Only show Business link if:
+  // 1. User is confirmed owner (always sees it), OR
+  // 2. Settings have loaded AND business_header_hidden is false
+  // During loading, hide the link to prevent flicker (it will show once loaded if appropriate)
   const showBusinessLink = isOwner || (!siteSettingsLoading && !siteSettings.business_header_hidden);
 
   // Track staff presence when logged in with Discord ID
