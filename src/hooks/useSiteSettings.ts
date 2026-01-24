@@ -17,6 +17,8 @@ interface SiteSettings {
   ban_appeals_enabled: boolean;
   gang_applications_enabled: boolean;
   creator_applications_enabled: boolean;
+  // Business header visibility
+  business_header_hidden: boolean;
 }
 
 interface UseSiteSettingsReturn {
@@ -41,6 +43,8 @@ const defaultSettings: SiteSettings = {
   ban_appeals_enabled: true,
   gang_applications_enabled: true,
   creator_applications_enabled: true,
+  // Business header - default to visible (false = not hidden)
+  business_header_hidden: false,
 };
 
 // Cache settings in localStorage for instant loading
@@ -91,6 +95,7 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
           'ban_appeals_enabled',
           'gang_applications_enabled',
           'creator_applications_enabled',
+          'business_header_hidden',
         ]);
 
       if (error) {
@@ -120,6 +125,7 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
           ban_appeals_enabled: settingsMap.ban_appeals_enabled !== 'false',
           gang_applications_enabled: settingsMap.gang_applications_enabled !== 'false',
           creator_applications_enabled: settingsMap.creator_applications_enabled !== 'false',
+          business_header_hidden: settingsMap.business_header_hidden === 'true',
         };
 
         setSettings(newSettings);
