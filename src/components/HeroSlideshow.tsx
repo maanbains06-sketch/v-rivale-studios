@@ -111,22 +111,56 @@ const HeroSlideshow = memo(() => {
 
   return (
     <div ref={containerRef} className="fixed inset-0 z-0 overflow-hidden">
-      {/* Layer 1 - GPU accelerated */}
+      {/*
+        Full-image mode (no cropping):
+        - Back layer uses "cover" + blur to avoid empty bars.
+        - Front layer uses "contain" so the entire image is always visible.
+      */}
+
+      {/* Back blur layer 1 */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat gpu-accelerated"
         style={{
           backgroundImage: `url(${showFirst ? currentImage : prevImage})`,
           opacity: showFirst ? 1 : 0,
           transition: "opacity 1.5s ease-in-out",
+          filter: "blur(18px)",
+          transform: "scale(1.08)",
         }}
         aria-hidden="true"
       />
-      
-      {/* Layer 2 */}
+
+      {/* Back blur layer 2 */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat gpu-accelerated"
         style={{
           backgroundImage: `url(${showFirst ? prevImage : currentImage})`,
+          opacity: showFirst ? 0 : 1,
+          transition: "opacity 1.5s ease-in-out",
+          filter: "blur(18px)",
+          transform: "scale(1.08)",
+        }}
+        aria-hidden="true"
+      />
+
+      {/* Front (actual) layer 1 */}
+      <div
+        className="absolute inset-0 bg-center bg-no-repeat gpu-accelerated"
+        style={{
+          backgroundImage: `url(${showFirst ? currentImage : prevImage})`,
+          backgroundSize: "contain",
+          opacity: showFirst ? 1 : 0,
+          transition: "opacity 1.5s ease-in-out",
+        }}
+        aria-hidden="true"
+      />
+
+      {/* Front (actual) layer 2 */}
+      <div
+        className="absolute inset-0 bg-center bg-no-repeat gpu-accelerated"
+        style={{
+          backgroundImage: `url(${showFirst ? prevImage : currentImage})`,
+          backgroundSize: "contain",
           opacity: showFirst ? 0 : 1,
           transition: "opacity 1.5s ease-in-out",
         }}
