@@ -424,62 +424,100 @@ const JobApplication = () => {
               </div>
 
               {/* Business Jobs Section */}
-              <div>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 rounded-lg bg-amber-500/10">
-                    <Briefcase className="w-5 h-5 text-amber-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold">Business Jobs</h3>
-                    <p className="text-sm text-muted-foreground">Work at local businesses and establishments</p>
+              <div className="relative">
+                {/* Section Header with enhanced styling */}
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-yellow-500/10 border border-amber-500/20 p-6 mb-8">
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent" />
+                  <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
+                  
+                  <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30 shadow-lg shadow-amber-500/10">
+                        <Briefcase className="w-6 h-6 text-amber-500" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
+                          Business & Commercial Jobs
+                        </h3>
+                        <p className="text-muted-foreground mt-1">
+                          Work at local businesses and establishments across San Andreas
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20">
+                      <span className="text-sm font-medium text-amber-400">{businessJobCategories.length} Positions</span>
+                    </div>
                   </div>
                 </div>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                  {businessJobCategories.map((job) => {
+
+                {/* Business Job Cards Grid - Enhanced sizing */}
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {businessJobCategories.map((job, index) => {
                     const Icon = job.icon;
                     return (
                       <Card 
                         key={job.id}
-                        className="glass-effect border-border/20 hover:border-amber-500/50 transition-all duration-300 cursor-pointer overflow-hidden group hover:scale-[1.02] hover:shadow-xl hover:shadow-amber-500/20 hover:-translate-y-1"
+                        className="glass-effect border-border/20 hover:border-amber-500/50 transition-all duration-300 cursor-pointer overflow-hidden group hover:scale-[1.02] hover:shadow-xl hover:shadow-amber-500/20 hover:-translate-y-1 animate-fade-in"
+                        style={{ animationDelay: `${index * 50}ms` }}
                         onClick={() => setSelectedForm(job.id)}
                       >
-                        <div className="relative h-32 overflow-hidden">
+                        {/* Enhanced Image Container */}
+                        <div className="relative h-40 overflow-hidden">
                           <img 
                             src={job.image} 
                             alt={job.name} 
                             className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent group-hover:via-background/40 transition-all duration-300" />
-                          <div className="absolute bottom-2 left-3 right-3">
-                            <div className="flex items-center gap-2">
-                              <div className="p-1.5 rounded-md bg-background/80 backdrop-blur-sm group-hover:bg-amber-500/20 group-hover:scale-110 transition-all duration-300">
-                                <Icon className={`w-4 h-4 text-${job.color} group-hover:text-amber-400 transition-colors duration-300`} />
+                          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent group-hover:via-background/30 transition-all duration-300" />
+                          <div className="absolute inset-0 bg-amber-500/0 group-hover:bg-amber-500/10 transition-colors duration-300" />
+                          
+                          {/* Floating Badge */}
+                          <div className="absolute top-3 right-3">
+                            <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-500/90 text-white shadow-lg">
+                              Business
+                            </span>
+                          </div>
+                          
+                          {/* Job Title Overlay */}
+                          <div className="absolute bottom-3 left-4 right-4">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 rounded-lg bg-background/90 backdrop-blur-sm shadow-lg group-hover:bg-amber-500/30 group-hover:scale-110 transition-all duration-300">
+                                <Icon className={`w-5 h-5 text-${job.color} group-hover:text-amber-400 transition-colors duration-300`} />
                               </div>
-                              <h3 className="text-sm font-bold text-foreground group-hover:text-amber-400 transition-colors duration-300 truncate">{job.name}</h3>
+                              <h3 className="text-base font-bold text-foreground group-hover:text-amber-400 transition-colors duration-300">{job.name}</h3>
                             </div>
                           </div>
                         </div>
-                        <CardContent className="pt-3 pb-4 space-y-2">
-                          <p className="text-xs text-muted-foreground line-clamp-2 group-hover:text-foreground/80 transition-colors duration-300">
+                        
+                        {/* Enhanced Card Content */}
+                        <CardContent className="pt-4 pb-5 space-y-3">
+                          <p className="text-sm text-muted-foreground line-clamp-2 group-hover:text-foreground/80 transition-colors duration-300">
                             {job.description}
                           </p>
-                          <div className="space-y-1">
+                          
+                          {/* Benefits List */}
+                          <div className="space-y-1.5">
                             {job.benefits.map((benefit, idx) => (
                               <div 
                                 key={idx} 
-                                className="flex items-center gap-1.5 text-xs text-muted-foreground group-hover:text-foreground/70 transition-all duration-300"
+                                className="flex items-center gap-2 text-xs text-muted-foreground group-hover:text-foreground/70 transition-all duration-300"
                                 style={{ transitionDelay: `${idx * 50}ms` }}
                               >
-                                <CheckCircle2 className="w-3 h-3 text-green-500 flex-shrink-0 group-hover:scale-110 transition-transform duration-300" />
+                                <CheckCircle2 className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 group-hover:scale-110 transition-transform duration-300" />
                                 <span className="group-hover:translate-x-0.5 transition-transform duration-300">{benefit}</span>
                               </div>
                             ))}
                           </div>
+                          
+                          {/* Enhanced Apply Button */}
                           <Button 
                             size="sm" 
-                            className="w-full mt-3 bg-amber-500/10 hover:bg-amber-500 text-amber-500 hover:text-white border border-amber-500/20 group-hover:bg-amber-500/20 group-hover:border-amber-500/40 transition-all duration-300"
+                            className="w-full mt-3 bg-gradient-to-r from-amber-500/10 to-orange-500/10 hover:from-amber-500 hover:to-orange-500 text-amber-500 hover:text-white border border-amber-500/30 group-hover:border-amber-500/50 transition-all duration-300 shadow-lg shadow-transparent group-hover:shadow-amber-500/20"
                           >
-                            <span className="group-hover:scale-105 transition-transform duration-300">Apply Now</span>
+                            <span className="group-hover:scale-105 transition-transform duration-300 flex items-center gap-2">
+                              <Briefcase className="w-4 h-4" />
+                              Apply Now
+                            </span>
                           </Button>
                         </CardContent>
                       </Card>
