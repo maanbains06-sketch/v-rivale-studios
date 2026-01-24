@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, UtensilsCrossed, Wrench, Car, ArrowRight, Sparkles, TrendingUp, Users, Clock, BadgeDollarSign, Crown, Star, FileText } from "lucide-react";
+import { Building2, UtensilsCrossed, Wrench, Car, ArrowRight, Sparkles, TrendingUp, Users, Clock, BadgeDollarSign, Crown, Star, FileText, PartyPopper } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import headerBg from "@/assets/header-business.jpg";
@@ -61,6 +61,17 @@ const businessTypes: {
     borderColor: "border-purple-500/30 hover:border-purple-400",
     iconBg: "bg-gradient-to-br from-purple-500/30 to-purple-600/20 text-purple-400",
     hoverGlow: "hover:shadow-purple-500/20",
+  },
+  {
+    type: "entertainment",
+    title: "Entertainment Venue",
+    description: "Create unforgettable experiences with clubs, bars, and event spaces",
+    icon: <PartyPopper className="w-8 h-8" />,
+    features: ["Nightclubs & Bars", "Event Hosting", "Live Performances", "VIP Services"],
+    gradient: "from-pink-500/20 via-pink-600/10 to-transparent",
+    borderColor: "border-pink-500/30 hover:border-pink-400",
+    iconBg: "bg-gradient-to-br from-pink-500/30 to-pink-600/20 text-pink-400",
+    hoverGlow: "hover:shadow-pink-500/20",
   },
 ];
 
@@ -199,7 +210,7 @@ const Business = () => {
             <motion.div variants={itemVariants}>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                  { icon: <Building2 className="w-6 h-6" />, value: "4", label: "Business Types", color: "text-blue-500" },
+                  { icon: <Building2 className="w-6 h-6" />, value: "5", label: "Business Types", color: "text-blue-500" },
                   { icon: <Clock className="w-6 h-6" />, value: "48h", label: "Review Time", color: "text-orange-500" },
                   { icon: <Star className="w-6 h-6" />, value: "100%", label: "Ownership", color: "text-yellow-500" },
                   { icon: <Users className="w-6 h-6" />, value: "24/7", label: "Support", color: "text-green-500" },
