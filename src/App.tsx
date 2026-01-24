@@ -86,6 +86,7 @@ const Feedback = lazy(() => import("./pages/Feedback"));
 const AdminYoutubers = lazy(() => import("./pages/AdminYoutubers"));
 const AdminStaffTeams = lazy(() => import("./pages/AdminStaffTeams"));
 const AdminDiscordRules = lazy(() => import("./pages/AdminDiscordRules"));
+const AdminBusinessProposals = lazy(() => import("./pages/AdminBusinessProposals"));
 const Giveaway = lazy(() => import("./pages/Giveaway"));
 const Roster = lazy(() => import("./pages/Roster"));
 
@@ -157,6 +158,7 @@ const AppRoutes = memo(() => {
           <Route path="/admin/youtubers" element={<PageTransition><AdminYoutubers /></PageTransition>} />
           <Route path="/admin/staff-teams" element={<PageTransition><AdminStaffTeams /></PageTransition>} />
           <Route path="/admin/discord-rules" element={<PageTransition><AdminDiscordRules /></PageTransition>} />
+          <Route path="/admin/business-proposals" element={<PageTransition><AdminBusinessProposals /></PageTransition>} />
           <Route path="/support-chat" element={<PageTransition><RequireAuth message="Login with Discord to access support chat."><PageMaintenanceBlock pageKey="support-chat"><SupportChat /></PageMaintenanceBlock></RequireAuth></PageTransition>} />
           <Route path="/job-application" element={<PageTransition><PageMaintenanceBlock pageKey="job-application"><JobApplication /></PageMaintenanceBlock></PageTransition>} />
           <Route path="/dashboard" element={<PageTransition><RequireAuth message="Login with Discord to access your dashboard."><PageMaintenanceBlock pageKey="dashboard"><AutoRetryPage pageName="Dashboard"><Dashboard /></AutoRetryPage></PageMaintenanceBlock></RequireAuth></PageTransition>} />
