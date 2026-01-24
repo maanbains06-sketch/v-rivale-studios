@@ -98,8 +98,8 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 30, // 30 minutes - data stays fresh much longer
-      gcTime: 1000 * 60 * 120, // 2 hours cache - keep data in memory longer
+      staleTime: 1000 * 60 * 60, // 1 hour - data stays fresh much longer
+      gcTime: 1000 * 60 * 180, // 3 hours cache - keep data in memory longer
       retry: 0, // No retries for faster perceived speed
       refetchOnWindowFocus: false,
       refetchOnMount: false,
@@ -107,6 +107,9 @@ const queryClient = new QueryClient({
       networkMode: 'offlineFirst', // Use cache first, fetch later
       refetchInterval: false,
       structuralSharing: true, // Optimize re-renders
+    },
+    mutations: {
+      retry: 0,
     },
   },
 });
@@ -250,57 +253,33 @@ const App = () => {
   const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
-    const safeGet = (key: string) => {
-      try {
-        // Check both sessionStorage and localStorage for persistence
-        return sessionStorage.getItem(key) || localStorage.getItem(key);
-      } catch {
-        return null;
+    // PERF: Immediate show for all users - no loading screen delay
+    // Skip loading screen entirely for maximum performance
+    try {
+      const hasVisited = sessionStorage.getItem("slrp_visited") || localStorage.getItem("slrp_visited");
+      if (hasVisited) {
+        setIsLoading(false);
+        setShowContent(true);
+        return;
       }
-    };
-
-    const safeSet = (key: string, value: string) => {
-      try {
-        sessionStorage.setItem(key, value);
-        // Also store in localStorage for cross-tab/browser persistence
-        localStorage.setItem(key, value);
-      } catch {
-        // ignore (some browsers/private modes can block storage)
-      }
-    };
-
-    // PERF: Check if returning user IMMEDIATELY before any timeouts
-    const hasVisited = safeGet("slrp_visited");
-    if (hasVisited) {
-      // Returning user - show content INSTANTLY, no loading screen
+    } catch {
+      // Storage blocked - skip loading screen
       setIsLoading(false);
       setShowContent(true);
       return;
     }
 
-    // PERF: Ultra-fast unblock for new users
-    const hardUnblock = window.setTimeout(() => {
-      setShowContent(true);
-      setIsLoading(false);
-      safeSet("slrp_visited", "true");
-    }, 400); // Reduced to 400ms for snappier feel
-
-    // For low-end devices OR mobile, skip loading screen entirely
-    const isLowEndDevice =
-      navigator.hardwareConcurrency <= 4 ||
-      (navigator as any).deviceMemory <= 4 ||
-      window.innerWidth < 768 || // Include tablets as low-end for faster load
-      /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-    if (isLowEndDevice) {
-      safeSet("slrp_visited", "true");
-      window.clearTimeout(hardUnblock);
+    // First-time visitor: ultra-fast 200ms loading
+    const timer = setTimeout(() => {
+      try {
+        sessionStorage.setItem("slrp_visited", "true");
+        localStorage.setItem("slrp_visited", "true");
+      } catch {}
       setIsLoading(false);
       setShowContent(true);
-      return;
-    }
+    }, 200);
 
-    return () => window.clearTimeout(hardUnblock);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleLoadingComplete = () => {

@@ -1,6 +1,5 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
 
 interface ServerStatus {
   status: 'online' | 'offline' | 'maintenance';
@@ -72,41 +71,8 @@ export const useServerStatus = () => {
   });
 };
 
-// Fetch featured YouTubers with real-time updates for live status
+// Fetch featured YouTubers with aggressive caching - realtime disabled for perf
 export const useFeaturedYoutubers = () => {
-  const queryClient = useQueryClient();
-
-  // Set up real-time subscription for live status updates
-  useEffect(() => {
-    const channel = supabase
-      .channel('featured-youtubers-live')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'featured_youtubers',
-        },
-        (payload) => {
-          console.log('Youtuber live status changed:', payload);
-          // Update the cache with the new data
-          queryClient.setQueryData<FeaturedYoutuber[]>(['featured-youtubers'], (oldData) => {
-            if (!oldData) return oldData;
-            return oldData.map((youtuber) =>
-              youtuber.id === payload.new.id
-                ? { ...youtuber, ...payload.new }
-                : youtuber
-            );
-          });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
-
   return useQuery<FeaturedYoutuber[]>({
     queryKey: ['featured-youtubers'],
     queryFn: async () => {
@@ -123,12 +89,13 @@ export const useFeaturedYoutubers = () => {
       
       return data || [];
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes - shorter for live status updates
-    gcTime: 1000 * 60 * 30, // 30 minutes
-    refetchOnMount: true, // Refetch on mount to get fresh live status
+    staleTime: 1000 * 60 * 30, // 30 minutes - longer cache
+    gcTime: 1000 * 60 * 60, // 1 hour
+    refetchOnMount: false, // Use cache
     refetchOnWindowFocus: false,
-    refetchOnReconnect: true, // Refetch when coming back online
-    retry: 1,
+    refetchOnReconnect: false,
+    retry: false,
+    networkMode: 'offlineFirst',
   });
 };
 

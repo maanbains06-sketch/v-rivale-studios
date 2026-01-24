@@ -64,11 +64,11 @@ interface FeaturedYoutuber {
   live_stream_url: string | null;
 }
 
-// Scroll animation variants - completely disabled for performance
-// Using empty objects prevents any animation overhead
-const scrollRevealVariants = { hidden: {}, visible: {} };
-const staggerContainerVariants = { hidden: {}, visible: {} };
-const itemVariants = { hidden: {}, visible: {} };
+// PERFORMANCE: All scroll animations completely disabled
+// Using empty variants prevents any framer-motion overhead
+const scrollRevealVariants = {};
+const staggerContainerVariants = {};
+const itemVariants = {};
 
 const Index = () => {
   const navigate = useNavigate();
