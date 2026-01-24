@@ -482,11 +482,14 @@ const Roster = () => {
       members: staffMembers
         .filter(
           (s) =>
-            s.department?.toLowerCase().includes('staff') ||
+            (s.department?.toLowerCase().includes('staff') ||
             s.department?.toLowerCase().includes('admin') ||
             s.department?.toLowerCase().includes('management') ||
             s.department?.toLowerCase().includes('moderation') ||
-            !s.department
+            !s.department) &&
+            // Exclude owner/leadership members
+            s.role_type !== 'owner' &&
+            !s.role?.toLowerCase().includes('owner')
         )
         .map((s) => ({
           id: s.id,
@@ -499,7 +502,7 @@ const Roster = () => {
           discord_avatar: s.discord_avatar,
           strikes: s.strikes || '-',
         })),
-      ranks: ['Owner', 'Head Admin', 'Admin', 'Moderator', 'Staff Member', 'Support Staff', 'Event Member', 'Trial Mod'],
+      ranks: ['Head Admin', 'Admin', 'Moderator', 'Staff Member', 'Support Staff', 'Event Member', 'Trial Mod'],
     }
   ];
 
