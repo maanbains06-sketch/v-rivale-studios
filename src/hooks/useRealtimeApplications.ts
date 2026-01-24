@@ -72,6 +72,12 @@ export const useRealtimeApplications = ({
             duration: 3000,
           });
         }
+      } else if (payload.eventType === 'DELETE' && showNotifications) {
+        toast({
+          title: `${displayName} Application Deleted`,
+          description: 'An application has been permanently removed.',
+          duration: 3000,
+        });
       }
 
       callback?.();
