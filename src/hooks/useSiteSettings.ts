@@ -57,7 +57,7 @@ const defaultSettings: SiteSettings = {
 
 // Cache settings in localStorage for instant loading
 const CACHE_KEY = 'slrp_site_settings';
-const CACHE_DURATION = 1000 * 60 * 1; // 1 minute cache - shorter to ensure settings sync faster
+const CACHE_DURATION = 1000 * 60 * 5; // 5 minute cache - longer to reduce network requests
 
 interface CachedSettings {
   settings: SiteSettings;
@@ -159,24 +159,23 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
   }, []);
 
   useEffect(() => {
-    // Always fetch fresh data on mount to ensure settings are current
-    // Cache is only used for initial render to prevent flicker
+    // Fetch fresh data on mount
     fetchSettings();
 
-    // Subscribe to realtime changes - refetch on any site_settings change
+    // PERF: Subscribe to realtime only for critical settings (maintenance_mode)
+    // Other settings use cache and periodic refresh
     const channel = supabase
-      .channel('site_settings_changes')
+      .channel('site_settings_critical')
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'UPDATE',
           schema: 'public',
           table: 'site_settings',
+          filter: 'key=eq.maintenance_mode',
         },
-        (payload) => {
-          // Refetch settings on any change - don't clear cache here
-          // The cache will be updated with fresh data from fetchSettings
-          console.log('[useSiteSettings] Setting changed, refetching:', payload);
+        () => {
+          // Only refetch on maintenance mode changes
           fetchSettings();
         }
       )

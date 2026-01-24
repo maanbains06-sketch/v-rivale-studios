@@ -155,8 +155,7 @@ All colors MUST be HSL.
     overflow-y: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    transition: background-color 0.3s ease, color 0.3s ease;
-    /* Performance optimizations */
+    /* Performance: instant color changes, no transition delay */
     text-rendering: optimizeSpeed;
   }
   
@@ -251,12 +250,19 @@ All colors MUST be HSL.
     }
   }
 
-  /* Simplified rain effect - less GPU intensive */
+  /* Simplified rain effect - disabled on mobile for performance */
   .rain-effect {
-    background-image: 
-      linear-gradient(180deg, transparent 0%, transparent 60%, hsl(0 0% 100% / 0.06) 60%, transparent 61%);
-    background-size: 3px 100px;
-    animation: rain-css 1.2s linear infinite;
+    display: none;
+  }
+  
+  @media (min-width: 1024px) {
+    .rain-effect {
+      display: block;
+      background-image: 
+        linear-gradient(180deg, transparent 0%, transparent 60%, hsl(0 0% 100% / 0.04) 60%, transparent 61%);
+      background-size: 3px 100px;
+      animation: rain-css 2s linear infinite;
+    }
   }
 
   @keyframes rain-css {
