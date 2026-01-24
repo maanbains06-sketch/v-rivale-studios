@@ -14,6 +14,7 @@ interface UnifiedApplication {
   status: string;
   handledBy?: string;
   handledByName?: string;
+  reviewedAt?: string;
   applicationType: ApplicationType;
   fields: ApplicationField[];
   adminNotes?: string | null;
@@ -29,6 +30,7 @@ export const transformWhitelistApplications = (apps: any[]): UnifiedApplication[
     discordId: app.discord_id || undefined,
     status: app.status,
     handledBy: app.reviewed_by || undefined,
+    reviewedAt: app.reviewed_at || undefined,
     applicationType: 'whitelist' as ApplicationType,
     fields: [
       { label: 'Discord Username', value: app.discord },
@@ -52,6 +54,7 @@ export const transformStaffApplications = (apps: any[]): UnifiedApplication[] =>
     discordId: app.discord_id || undefined,
     status: app.status,
     handledBy: app.reviewed_by || undefined,
+    reviewedAt: app.reviewed_at || undefined,
     applicationType: 'staff' as ApplicationType,
     fields: [
       { label: 'Full Name', value: app.full_name },
@@ -100,6 +103,7 @@ export const transformJobApplications = (apps: any[]): UnifiedApplication[] => {
       discordId: app.discord_id || undefined,
       status: app.status,
       handledBy: app.reviewed_by || undefined,
+      reviewedAt: app.reviewed_at || undefined,
       applicationType,
       fields: [
         { label: 'Character Name', value: app.character_name },
@@ -129,6 +133,7 @@ export const transformBanAppeals = (apps: any[]): UnifiedApplication[] => {
     discordId: app.discord_id || undefined,
     status: app.status,
     handledBy: app.reviewed_by || undefined,
+    reviewedAt: app.reviewed_at || undefined,
     applicationType: 'ban_appeal' as ApplicationType,
     fields: [
       { label: 'Discord Username', value: app.discord_username },
@@ -152,6 +157,7 @@ export const transformCreatorApplications = (apps: any[]): UnifiedApplication[] 
     discordId: app.discord_id || undefined,
     status: app.status,
     handledBy: app.reviewed_by || undefined,
+    reviewedAt: app.reviewed_at || undefined,
     applicationType: 'creator' as ApplicationType,
     fields: [
       { label: 'Full Name', value: app.full_name },
@@ -180,6 +186,7 @@ export const transformFirefighterApplications = (apps: any[]): UnifiedApplicatio
     discordId: app.discord_id || undefined,
     status: app.status,
     handledBy: app.reviewed_by || undefined,
+    reviewedAt: app.reviewed_at || undefined,
     applicationType: 'firefighter' as ApplicationType,
     fields: [
       { label: 'Real Name', value: app.real_name },
@@ -202,6 +209,7 @@ export const transformWeazelNewsApplications = (apps: any[]): UnifiedApplication
     discordId: app.discord_id || undefined,
     status: app.status,
     handledBy: app.reviewed_by || undefined,
+    reviewedAt: app.reviewed_at || undefined,
     applicationType: 'weazel_news' as ApplicationType,
     fields: [
       { label: 'Character Name', value: app.character_name },
@@ -232,6 +240,7 @@ export const transformPDMApplications = (apps: any[]): UnifiedApplication[] => {
     discordId: app.discord_id || undefined,
     status: app.status,
     handledBy: app.reviewed_by || undefined,
+    reviewedAt: app.reviewed_at || undefined,
     applicationType: 'pdm' as ApplicationType,
     fields: [
       { label: 'Character Name', value: app.character_name },
@@ -261,6 +270,7 @@ export const transformGangApplications = (apps: any[]): UnifiedApplication[] => 
     discordId: app.discord_id || undefined,
     status: app.status,
     handledBy: app.reviewed_by || undefined,
+    reviewedAt: app.reviewed_at || undefined,
     applicationType: 'gang' as ApplicationType,
     fields: [
       { label: 'Gang Name', value: app.gang_name },

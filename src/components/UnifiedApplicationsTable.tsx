@@ -72,6 +72,7 @@ interface UnifiedApplication {
   status: string;
   handledBy?: string;
   handledByName?: string;
+  reviewedAt?: string;
   applicationType: ApplicationType;
   fields: ApplicationField[];
   adminNotes?: string | null;
@@ -453,7 +454,8 @@ export const UnifiedApplicationsTable = ({
             Handled By
           </div>
           <div className="flex items-center justify-center text-xs font-bold text-primary uppercase tracking-wider">
-            Handle
+            <Clock className="w-4 h-4 mr-1" />
+            Reviewed
           </div>
         </div>
 
@@ -550,50 +552,15 @@ export const UnifiedApplicationsTable = ({
                   {app.handledByName || getStaffName(app.handledBy) || '-'}
                 </div>
 
-                {/* Handle Dropdown */}
-                <div className="flex justify-center relative z-10" onClick={(e) => e.stopPropagation()}>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className={`gap-1.5 text-xs font-medium transition-all ${
-                          app.status === 'closed' 
-                            ? 'bg-gray-500/10 border-gray-500/30 text-gray-400 hover:bg-gray-500/20' 
-                            : 'bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20 hover:border-blue-500/50'
-                        }`}
-                      >
-                        {app.status === 'closed' ? (
-                          <>
-                            <FolderClosed className="w-3 h-3" />
-                            Closed
-                          </>
-                        ) : (
-                          <>
-                            <FolderOpen className="w-3 h-3" />
-                            Open
-                          </>
-                        )}
-                        <ChevronDown className="w-3 h-3" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-40 bg-popover/95 backdrop-blur-sm border-border shadow-2xl">
-                      <DropdownMenuItem 
-                        onClick={() => onMarkOpen?.(app.id, app.applicationType)}
-                        className="gap-2 text-blue-400 focus:text-blue-400 focus:bg-blue-500/10"
-                      >
-                        <FolderOpen className="w-4 h-4" />
-                        Mark Open
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => onClose?.(app.id, app.applicationType)}
-                        className="gap-2 text-gray-400 focus:text-gray-400 focus:bg-gray-500/10"
-                      >
-                        <FolderClosed className="w-4 h-4" />
-                        Mark Closed
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                {/* Review Date/Time */}
+                <div className="flex justify-center">
+                  <span className="text-xs text-muted-foreground">
+                    {app.reviewedAt ? new Date(app.reviewedAt).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric'
+                    }) : '-'}
+                  </span>
                 </div>
               </motion.div>
             ))
@@ -744,8 +711,19 @@ export const UnifiedApplicationsTable = ({
                       <label className="text-xs font-bold text-blue-400 uppercase tracking-wider">
                         Handled By
                       </label>
-                      <div className="text-sm text-foreground">
-                        {selectedApp.handledByName || getStaffName(selectedApp.handledBy)}
+                      <div className="text-sm text-foreground flex items-center justify-between">
+                        <span>{selectedApp.handledByName || getStaffName(selectedApp.handledBy)}</span>
+                        {selectedApp.reviewedAt && (
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(selectedApp.reviewedAt).toLocaleDateString('en-US', {
+                              month: 'long',
+                              day: 'numeric',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </span>
+                        )}
                       </div>
                     </div>
                   )}
