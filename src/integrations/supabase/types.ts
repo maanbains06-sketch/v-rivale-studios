@@ -968,6 +968,7 @@ export type Database = {
           admin_notes: string | null
           age: number
           availability: string
+          business_name: string | null
           character_background: string
           character_name: string
           created_at: string
@@ -990,6 +991,7 @@ export type Database = {
           admin_notes?: string | null
           age: number
           availability: string
+          business_name?: string | null
           character_background: string
           character_name: string
           created_at?: string
@@ -1012,6 +1014,7 @@ export type Database = {
           admin_notes?: string | null
           age?: number
           availability?: string
+          business_name?: string | null
           character_background?: string
           character_name?: string
           created_at?: string
