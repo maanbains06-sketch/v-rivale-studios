@@ -17,10 +17,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { 
   Building2, Search, Filter, Download, Eye, CheckCircle, XCircle, 
-  Clock, AlertCircle, Briefcase, Store, Wrench, Car, Music
+  Clock, AlertCircle, Briefcase, Store, Wrench, Car, Music, Coffee, ShoppingBag
 } from "lucide-react";
 import { format } from "date-fns";
 import headerImage from "@/assets/header-business.jpg";
+
+// Icon mapping for dynamic business types
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  Building2,
+  Store,
+  Wrench,
+  Car,
+  Music,
+  Briefcase,
+  Coffee,
+  ShoppingBag,
+};
 
 interface BusinessApplication {
   id: string;
@@ -46,13 +58,14 @@ interface BusinessApplication {
   created_at: string;
 }
 
-const BUSINESS_TYPES = [
-  { id: "real-estate", label: "Real Estate", icon: Building2, color: "bg-blue-500" },
-  { id: "food-joint", label: "Food Joint", icon: Store, color: "bg-orange-500" },
-  { id: "mechanic-shop", label: "Mechanic Shop", icon: Wrench, color: "bg-gray-500" },
-  { id: "tuner-shop", label: "Tuner Shop", icon: Car, color: "bg-purple-500" },
-  { id: "entertainment", label: "Entertainment", icon: Music, color: "bg-pink-500" },
-];
+interface BusinessType {
+  id: string;
+  name: string;
+  slug: string;
+  icon: string;
+  color: string;
+  is_active: boolean;
+}
 
 const BusinessPanel = () => {
   const navigate = useNavigate();
@@ -60,6 +73,7 @@ const BusinessPanel = () => {
   const [loading, setLoading] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
   const [applications, setApplications] = useState<BusinessApplication[]>([]);
+  const [businessTypes, setBusinessTypes] = useState<BusinessType[]>([]);
   const [selectedApplication, setSelectedApplication] = useState<BusinessApplication | null>(null);
   const [reviewNotes, setReviewNotes] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -74,6 +88,7 @@ const BusinessPanel = () => {
 
   useEffect(() => {
     checkAccess();
+    loadBusinessTypes();
   }, []);
 
   const checkAccess = async () => {
@@ -104,6 +119,21 @@ const BusinessPanel = () => {
     } catch (error) {
       console.error("Error:", error);
       setLoading(false);
+    }
+  };
+
+  const loadBusinessTypes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("business_types")
+        .select("*")
+        .eq("is_active", true)
+        .order("display_order", { ascending: true });
+
+      if (error) throw error;
+      setBusinessTypes(data || []);
+    } catch (error) {
+      console.error("Error loading business types:", error);
     }
   };
 
@@ -186,10 +216,20 @@ const BusinessPanel = () => {
   };
 
   const getBusinessIcon = (type: string) => {
-    const business = BUSINESS_TYPES.find(b => b.id === type);
+    const business = businessTypes.find(b => b.slug === type);
     if (!business) return <Briefcase className="h-4 w-4" />;
-    const Icon = business.icon;
-    return <Icon className="h-4 w-4" />;
+    const IconComponent = ICON_MAP[business.icon] || Briefcase;
+    return <IconComponent className="h-4 w-4" />;
+  };
+
+  const getBusinessLabel = (type: string) => {
+    const business = businessTypes.find(b => b.slug === type);
+    return business?.name || type?.replace("-", " ") || "Unknown";
+  };
+
+  const getBusinessColor = (type: string) => {
+    const business = businessTypes.find(b => b.slug === type);
+    return business?.color || "bg-gray-500";
   };
 
   const getDisplayName = (discordId: string) => {
@@ -355,12 +395,15 @@ const BusinessPanel = () => {
               <Briefcase className="h-4 w-4" />
               All
             </TabsTrigger>
-            {BUSINESS_TYPES.map(type => (
-              <TabsTrigger key={type.id} value={type.id} className="flex items-center gap-2">
-                <type.icon className="h-4 w-4" />
-                {type.label}
-              </TabsTrigger>
-            ))}
+            {businessTypes.map(type => {
+              const IconComponent = ICON_MAP[type.icon] || Briefcase;
+              return (
+                <TabsTrigger key={type.slug} value={type.slug} className="flex items-center gap-2">
+                  <IconComponent className="h-4 w-4" />
+                  {type.name}
+                </TabsTrigger>
+              );
+            })}
           </TabsList>
 
           <TabsContent value={activeTab}>

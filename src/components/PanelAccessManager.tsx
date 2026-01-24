@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useDiscordNames } from "@/hooks/useDiscordNames";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Shield, UserPlus, Trash2, Search, RefreshCw, 
   Building2, Briefcase, Users, Settings, CheckCircle, XCircle
@@ -48,6 +51,7 @@ const PanelAccessManager = () => {
   const [entries, setEntries] = useState<PanelAccessEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [panelFilter, setPanelFilter] = useState("all");
+  const [activeTab, setActiveTab] = useState("all");
   const [showAddDialog, setShowAddDialog] = useState(false);
   
   // Add form state
@@ -57,6 +61,10 @@ const PanelAccessManager = () => {
   const [fetchingUser, setFetchingUser] = useState(false);
   const [fetchedUser, setFetchedUser] = useState<DiscordUserInfo | null>(null);
   const [fetchError, setFetchError] = useState("");
+
+  // Fetch Discord names for all entries
+  const discordIds = entries.map(e => e.discord_id).filter(Boolean);
+  const { getDisplayName, getAvatar, isLoading: discordLoading } = useDiscordNames(discordIds);
 
   useEffect(() => {
     loadEntries();
@@ -262,6 +270,22 @@ const PanelAccessManager = () => {
     return acc;
   }, {} as Record<string, { discord_id: string; discord_username: string | null; panels: PanelAccessEntry[] }>);
 
+  // Group entries by panel type
+  const entriesByPanel = PANEL_TYPES.reduce((acc, panel) => {
+    acc[panel.id] = entries.filter(e => e.panel_type === panel.id && e.is_active);
+    return acc;
+  }, {} as Record<string, PanelAccessEntry[]>);
+
+  // Get display name from Discord API or fallback to stored username
+  const getEntryDisplayName = (entry: PanelAccessEntry) => {
+    const fetchedName = getDisplayName(entry.discord_id);
+    return fetchedName || entry.discord_username || "Unknown User";
+  };
+
+  const getEntryAvatar = (discordId: string) => {
+    return getAvatar(discordId);
+  };
+
   return (
     <Card className="bg-card/50 border-border/50">
       <CardHeader>
@@ -282,123 +306,221 @@ const PanelAccessManager = () => {
         </div>
       </CardHeader>
       <CardContent>
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by Discord ID or username..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Select value={panelFilter} onValueChange={setPanelFilter}>
-            <SelectTrigger className="w-full sm:w-48">
-              <SelectValue placeholder="Filter by panel" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Panels</SelectItem>
-              {PANEL_TYPES.map(panel => (
-                <SelectItem key={panel.id} value={panel.id}>
-                  {panel.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button variant="outline" size="icon" onClick={loadEntries}>
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-        </div>
+        {/* Panel Overview Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+          <TabsList className="flex flex-wrap h-auto gap-1 mb-4">
+            <TabsTrigger value="all" className="flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              All ({entries.filter(e => e.is_active).length})
+            </TabsTrigger>
+            {PANEL_TYPES.map(panel => {
+              const count = entriesByPanel[panel.id]?.length || 0;
+              return (
+                <TabsTrigger key={panel.id} value={panel.id} className="flex items-center gap-2">
+                  <panel.icon className="h-4 w-4" />
+                  {panel.label} ({count})
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
 
-        {/* Table */}
-        {loading ? (
-          <div className="text-center py-12 text-muted-foreground">Loading...</div>
-        ) : filteredEntries.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">
-            <Shield className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>No panel access entries found</p>
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Panel</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Granted</TableHead>
-                <TableHead>Notes</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredEntries.map((entry) => (
-                <TableRow key={entry.id}>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{entry.discord_username || "Unknown"}</p>
-                      <p className="text-xs text-muted-foreground font-mono">{entry.discord_id}</p>
+          {/* All Users Tab */}
+          <TabsContent value="all">
+            <div className="flex flex-col sm:flex-row gap-4 mb-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by Discord ID or username..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Button variant="outline" size="icon" onClick={loadEntries}>
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {loading ? (
+              <div className="text-center py-12 text-muted-foreground">Loading...</div>
+            ) : filteredEntries.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <Shield className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No panel access entries found</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>User</TableHead>
+                    <TableHead>Panel</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Granted</TableHead>
+                    <TableHead>Notes</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredEntries.map((entry) => (
+                    <TableRow key={entry.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={getEntryAvatar(entry.discord_id) || undefined} />
+                            <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                              {getEntryDisplayName(entry).charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">{getEntryDisplayName(entry)}</p>
+                            <p className="text-xs text-muted-foreground font-mono">{entry.discord_id}</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {getPanelIcon(entry.panel_type)}
+                          <span>{getPanelLabel(entry.panel_type)}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {entry.is_active ? (
+                          <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Active
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
+                            <XCircle className="h-3 w-3 mr-1" />
+                            Disabled
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm">
+                        {format(new Date(entry.granted_at), "MMM d, yyyy")}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
+                        {entry.notes || "-"}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={entry.is_active}
+                            onCheckedChange={() => handleToggleActive(entry)}
+                          />
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Remove Access?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This will permanently remove {getEntryDisplayName(entry)}'s access to the {getPanelLabel(entry.panel_type)}.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDeleteAccess(entry.id)}>
+                                  Remove
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </TabsContent>
+
+          {/* Individual Panel Tabs */}
+          {PANEL_TYPES.map(panel => (
+            <TabsContent key={panel.id} value={panel.id}>
+              <Card className="border-border/30">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <panel.icon className="h-5 w-5 text-primary" />
+                    {panel.label} Users
+                  </CardTitle>
+                  <CardDescription>{panel.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {entriesByPanel[panel.id]?.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Users className="h-10 w-10 mx-auto mb-3 opacity-50" />
+                      <p className="text-sm">No users have access to this panel</p>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="mt-3"
+                        onClick={() => {
+                          setNewPanelType(panel.id);
+                          setShowAddDialog(true);
+                        }}
+                      >
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Add User
+                      </Button>
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      {getPanelIcon(entry.panel_type)}
-                      <span>{getPanelLabel(entry.panel_type)}</span>
+                  ) : (
+                    <div className="grid gap-3">
+                      {entriesByPanel[panel.id]?.map(entry => (
+                        <div key={entry.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage src={getEntryAvatar(entry.discord_id) || undefined} />
+                              <AvatarFallback className="bg-primary/20 text-primary">
+                                {getEntryDisplayName(entry).charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium">{getEntryDisplayName(entry)}</p>
+                              <p className="text-xs text-muted-foreground">
+                                Added {format(new Date(entry.granted_at), "MMM d, yyyy")}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              checked={entry.is_active}
+                              onCheckedChange={() => handleToggleActive(entry)}
+                            />
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Remove Access?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This will permanently remove {getEntryDisplayName(entry)}'s access to the {panel.label}.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDeleteAccess(entry.id)}>
+                                    Remove
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    {entry.is_active ? (
-                      <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        Active
-                      </Badge>
-                    ) : (
-                      <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
-                        <XCircle className="h-3 w-3 mr-1" />
-                        Disabled
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
-                    {format(new Date(entry.granted_at), "MMM d, yyyy")}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
-                    {entry.notes || "-"}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={entry.is_active}
-                        onCheckedChange={() => handleToggleActive(entry)}
-                      />
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Remove Access?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This will permanently remove {entry.discord_username || entry.discord_id}'s access to the {getPanelLabel(entry.panel_type)}.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDeleteAccess(entry.id)}>
-                              Remove
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          ))}
+        </Tabs>
       </CardContent>
 
       {/* Add Access Dialog */}
