@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
@@ -105,6 +106,7 @@ const AdminBusinessProposals = () => {
   const [processing, setProcessing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'on_hold'>('all');
+  const [businessTypeFilter, setBusinessTypeFilter] = useState<'all' | 'real_estate' | 'food_joint' | 'mechanic_shop' | 'tuner_shop' | 'entertainment'>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -260,8 +262,9 @@ const AdminBusinessProposals = () => {
       businessTypeConfig[app.business_type]?.label.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || app.status === statusFilter;
+    const matchesBusinessType = businessTypeFilter === 'all' || app.business_type === businessTypeFilter;
     
-    return matchesSearch && matchesStatus;
+    return matchesSearch && matchesStatus && matchesBusinessType;
   });
 
   // Pagination
@@ -362,15 +365,68 @@ const AdminBusinessProposals = () => {
         {/* Filters */}
         <Card className="mb-6">
           <CardContent className="p-4">
-            <div className="flex flex-wrap gap-4 items-center">
-              <div className="relative flex-1 min-w-[200px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by business name, owner, or Discord ID..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-wrap gap-4 items-center">
+                <div className="relative flex-1 min-w-[200px]">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by business name, owner, or Discord ID..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+
+                {/* Business Type Filter */}
+                <Select
+                  value={businessTypeFilter}
+                  onValueChange={(value: typeof businessTypeFilter) => {
+                    setBusinessTypeFilter(value);
+                    setCurrentPage(1);
+                  }}
+                >
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Business Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    <SelectItem value="real_estate">
+                      <span className="flex items-center gap-2">
+                        <Building2 className="w-4 h-4 text-blue-400" />
+                        Real Estate
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="food_joint">
+                      <span className="flex items-center gap-2">
+                        <UtensilsCrossed className="w-4 h-4 text-orange-400" />
+                        Food Joint
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="mechanic_shop">
+                      <span className="flex items-center gap-2">
+                        <Wrench className="w-4 h-4 text-green-400" />
+                        Mechanic Shop
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="tuner_shop">
+                      <span className="flex items-center gap-2">
+                        <Car className="w-4 h-4 text-purple-400" />
+                        Tuner Shop
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="entertainment">
+                      <span className="flex items-center gap-2">
+                        <PartyPopper className="w-4 h-4 text-pink-400" />
+                        Entertainment
+                      </span>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Button variant="outline" size="sm" onClick={loadApplications} className="gap-2">
+                  <RefreshCw className="w-4 h-4" />
+                  Refresh
+                </Button>
               </div>
               
               <div className="flex flex-wrap gap-2">
@@ -393,11 +449,6 @@ const AdminBusinessProposals = () => {
                   </Button>
                 ))}
               </div>
-
-              <Button variant="outline" size="sm" onClick={loadApplications} className="gap-2">
-                <RefreshCw className="w-4 h-4" />
-                Refresh
-              </Button>
             </div>
           </CardContent>
         </Card>
