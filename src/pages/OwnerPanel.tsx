@@ -26,6 +26,7 @@ import { FeaturedPositionsManager } from "@/components/FeaturedPositionsManager"
 import { PromoCodeManager } from "@/components/PromoCodeManager";
 import { UnifiedApplicationsTable, ApplicationType } from "@/components/UnifiedApplicationsTable";
 import GiveawayManagement from "@/components/GiveawayManagement";
+import { LiveApplicationStats } from "@/components/LiveApplicationStats";
 import { combineAllApplications, filterApplicationsByType } from "@/lib/applicationTransformer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
@@ -61,7 +62,8 @@ import {
   Radio,
   Wrench,
   Youtube,
-  Gift
+  Gift,
+  BarChart3
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StaffManagementDialog } from "@/components/StaffManagementDialog";
@@ -1593,6 +1595,10 @@ const OwnerPanel = () => {
                     </Badge>
                   )}
                 </TabsTrigger>
+                <TabsTrigger value="app-stats" className="flex items-center gap-2 whitespace-nowrap">
+                  <BarChart3 className="w-4 h-4" />
+                  <span className="hidden sm:inline">App Stats</span>
+                </TabsTrigger>
                 <TabsTrigger value="roles" className="flex items-center gap-2 whitespace-nowrap">
                   <Shield className="w-4 h-4" />
                   <span className="hidden sm:inline">User Roles</span>
@@ -1679,6 +1685,11 @@ const OwnerPanel = () => {
           {/* Featured Positions Tab */}
           <TabsContent value="featured-positions">
             <FeaturedPositionsManager />
+          </TabsContent>
+
+          {/* Application Stats Tab */}
+          <TabsContent value="app-stats">
+            <LiveApplicationStats />
           </TabsContent>
 
           {/* All Applications Tab */}
