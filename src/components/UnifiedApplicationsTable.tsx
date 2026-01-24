@@ -153,12 +153,14 @@ export const UnifiedApplicationsTable = ({
 
         const nameMap: Record<string, string> = {};
         
-        if (staffMembers && !staffError) {
+        if (staffMembers && !staffError && staffMembers.length > 0) {
+          console.log('[UnifiedApplicationsTable] Loaded staff members:', staffMembers.length);
           staffMembers.forEach(staff => {
-            const displayName = staff.name || staff.discord_username || 'Staff';
+            const displayName = staff.name || staff.discord_username || 'Staff Member';
             // Map by user_id (this is what reviewed_by stores)
             if (staff.user_id) {
               nameMap[staff.user_id] = displayName;
+              console.log(`[StaffMap] user_id: ${staff.user_id} -> ${displayName}`);
             }
             // Also map by discord_id for legacy lookups
             if (staff.discord_id) {
@@ -167,14 +169,15 @@ export const UnifiedApplicationsTable = ({
           });
         } else {
           // Fallback to public view if staff_members is blocked by RLS
-          console.log('Falling back to staff_members_public view');
-          const { data: publicStaff } = await supabase
+          console.log('[UnifiedApplicationsTable] Falling back to staff_members_public view');
+          const { data: publicStaff, error: publicError } = await supabase
             .from('staff_members_public')
             .select('user_id, discord_id, name, discord_username');
           
-          if (publicStaff) {
+          if (publicStaff && publicStaff.length > 0) {
+            console.log('[UnifiedApplicationsTable] Loaded public staff:', publicStaff.length);
             publicStaff.forEach(staff => {
-              const displayName = staff.name || staff.discord_username || 'Staff';
+              const displayName = staff.name || staff.discord_username || 'Staff Member';
               if (staff.user_id) {
                 nameMap[staff.user_id] = displayName;
               }
@@ -182,12 +185,15 @@ export const UnifiedApplicationsTable = ({
                 nameMap[staff.discord_id] = displayName;
               }
             });
+          } else {
+            console.error('[UnifiedApplicationsTable] No staff data found:', publicError);
           }
         }
 
+        console.log('[UnifiedApplicationsTable] Staff name map:', Object.keys(nameMap).length, 'entries');
         setStaffNames(nameMap);
       } catch (error) {
-        console.error('Error fetching staff names:', error);
+        console.error('[UnifiedApplicationsTable] Error fetching staff names:', error);
       } finally {
         setLoadingStaff(false);
       }
@@ -196,10 +202,14 @@ export const UnifiedApplicationsTable = ({
     fetchStaffNames();
   }, []);
 
-  // Get staff name by user ID or Discord ID
+  // Get staff name by user ID or Discord ID with debug logging
   const getStaffName = (handledBy?: string) => {
     if (!handledBy) return '-';
-    return staffNames[handledBy] || 'Staff';
+    const name = staffNames[handledBy];
+    if (!name) {
+      console.log(`[getStaffName] No match for handledBy: ${handledBy}. Available keys:`, Object.keys(staffNames).slice(0, 5));
+    }
+    return name || 'Staff Member';
   };
 
   // Filter applications based on search and status
