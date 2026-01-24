@@ -122,7 +122,14 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
 
       const discordId = user.user_metadata?.discord_id || user.user_metadata?.provider_id || user.user_metadata?.sub;
 
+      // Check owner by Discord ID
       if (discordId === OWNER_DISCORD_ID) {
+        // Store access in localStorage for persistence
+        localStorage.setItem('slrp_maintenance_access', JSON.stringify({ 
+          hasAccess: true, 
+          userId: user.id, 
+          timestamp: Date.now() 
+        }));
         toast({
           title: "Welcome, Owner!",
           description: "Access granted during maintenance.",
@@ -132,6 +139,7 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
         return;
       }
 
+      // Check user_roles for admin/moderator
       const { data: roleData } = await supabase
         .from('user_roles')
         .select('role')
@@ -140,6 +148,11 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
         .maybeSingle();
 
       if (roleData) {
+        localStorage.setItem('slrp_maintenance_access', JSON.stringify({ 
+          hasAccess: true, 
+          userId: user.id, 
+          timestamp: Date.now() 
+        }));
         toast({
           title: "Welcome, Staff!",
           description: "Access granted during maintenance.",
@@ -149,23 +162,52 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
         return;
       }
 
+      // Check staff_members by Discord ID
       if (discordId) {
-        const { data: staffData } = await supabase
+        const { data: staffByDiscord } = await supabase
           .from('staff_members')
           .select('id, name, is_active')
           .eq('discord_id', discordId)
           .eq('is_active', true)
           .maybeSingle();
 
-        if (staffData) {
+        if (staffByDiscord) {
+          localStorage.setItem('slrp_maintenance_access', JSON.stringify({ 
+            hasAccess: true, 
+            userId: user.id, 
+            timestamp: Date.now() 
+          }));
           toast({
-            title: `Welcome, ${staffData.name}!`,
+            title: `Welcome, ${staffByDiscord.name}!`,
             description: "Staff access granted during maintenance.",
           });
           onAccessGranted?.();
           setLoading(false);
           return;
         }
+      }
+
+      // Also check staff_members by user_id (fallback)
+      const { data: staffByUserId } = await supabase
+        .from('staff_members')
+        .select('id, name, is_active')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (staffByUserId) {
+        localStorage.setItem('slrp_maintenance_access', JSON.stringify({ 
+          hasAccess: true, 
+          userId: user.id, 
+          timestamp: Date.now() 
+        }));
+        toast({
+          title: `Welcome, ${staffByUserId.name}!`,
+          description: "Staff access granted during maintenance.",
+        });
+        onAccessGranted?.();
+        setLoading(false);
+        return;
       }
 
       await supabase.auth.signOut();

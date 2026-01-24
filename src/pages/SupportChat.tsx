@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Send, MessageCircle, Plus, Paperclip, X, Download, Star, Sparkles, UserPlus, ThumbsUp, ThumbsDown, CreditCard } from "lucide-react";
+import { Send, MessageCircle, Plus, Paperclip, X, Download, Star, Sparkles, UserPlus, ThumbsUp, ThumbsDown, CreditCard, Ribbon, Globe, AlertOctagon, Bug } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import headerSupport from "@/assets/header-support.jpg";
@@ -60,6 +60,7 @@ const SupportChat = () => {
   const [newMessage, setNewMessage] = useState("");
   const [newChatSubject, setNewChatSubject] = useState("");
   const [newChatInitialMessage, setNewChatInitialMessage] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("general");
   const [loading, setLoading] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [ratingDialogOpen, setRatingDialogOpen] = useState(false);
@@ -275,9 +276,19 @@ const SupportChat = () => {
     let assignedTo: string | null = null;
     let priority = 'normal';
     
-    if (category === 'refund') {
-      tags = ['refund', 'billing'];
+    // Add category tags
+    if (selectedCategory === 'purchase' || category === 'refund') {
+      tags = ['billing', 'purchase'];
       priority = 'high';
+    } else if (selectedCategory === 'report') {
+      tags = ['player-report', 'misconduct'];
+      priority = 'high';
+    } else if (selectedCategory === 'ingame') {
+      tags = ['in-game', 'whitelisted'];
+    } else if (selectedCategory === 'bug') {
+      tags = ['bug', 'technical'];
+    } else {
+      tags = ['general'];
     }
     
     // If tagging a specific staff member or DM
@@ -703,7 +714,7 @@ const SupportChat = () => {
                       )}
                     </DialogTitle>
                   </DialogHeader>
-                  <div className="space-y-4 pt-4">
+                  <div className="space-y-4 pt-4 max-h-[70vh] overflow-y-auto">
                     {category === 'refund' && (
                       <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
                         <p className="text-sm text-muted-foreground">
@@ -712,6 +723,81 @@ const SupportChat = () => {
                         </p>
                       </div>
                     )}
+                    
+                    {/* Category Selection */}
+                    {category !== 'refund' && (
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium">Select Category</Label>
+                        <div className="grid gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedCategory('general')}
+                            className={`flex items-center gap-4 p-3 rounded-lg border transition-all duration-200
+                              bg-gradient-to-r from-yellow-500/20 to-yellow-600/10 border-yellow-500/30 hover:border-yellow-500/60
+                              ${selectedCategory === 'general' ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}`}
+                          >
+                            <Ribbon className="w-5 h-5 text-yellow-500" />
+                            <div className="text-left">
+                              <p className="font-semibold text-foreground text-sm">General Support</p>
+                              <p className="text-xs text-muted-foreground">Questions, guidance, or general assistance</p>
+                            </div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedCategory('ingame')}
+                            className={`flex items-center gap-4 p-3 rounded-lg border transition-all duration-200
+                              bg-gradient-to-r from-blue-500/20 to-blue-600/10 border-blue-500/30 hover:border-blue-500/60
+                              ${selectedCategory === 'ingame' ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}`}
+                          >
+                            <Globe className="w-5 h-5 text-blue-500" />
+                            <div className="text-left">
+                              <p className="font-semibold text-foreground text-sm">In-Game Support</p>
+                              <p className="text-xs text-muted-foreground">In-game issues for whitelisted members</p>
+                            </div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedCategory('report')}
+                            className={`flex items-center gap-4 p-3 rounded-lg border transition-all duration-200
+                              bg-gradient-to-r from-red-500/20 to-red-600/10 border-red-500/30 hover:border-red-500/60
+                              ${selectedCategory === 'report' ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}`}
+                          >
+                            <AlertOctagon className="w-5 h-5 text-red-500" />
+                            <div className="text-left">
+                              <p className="font-semibold text-foreground text-sm">Player Report</p>
+                              <p className="text-xs text-muted-foreground">Report rule violations or player misconduct</p>
+                            </div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedCategory('purchase')}
+                            className={`flex items-center gap-4 p-3 rounded-lg border transition-all duration-200
+                              bg-gradient-to-r from-emerald-500/20 to-emerald-600/10 border-emerald-500/30 hover:border-emerald-500/60
+                              ${selectedCategory === 'purchase' ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}`}
+                          >
+                            <CreditCard className="w-5 h-5 text-emerald-500" />
+                            <div className="text-left">
+                              <p className="font-semibold text-foreground text-sm">Purchase Support</p>
+                              <p className="text-xs text-muted-foreground">Store purchases, billing, or payment issues</p>
+                            </div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedCategory('bug')}
+                            className={`flex items-center gap-4 p-3 rounded-lg border transition-all duration-200
+                              bg-gradient-to-r from-orange-500/20 to-orange-600/10 border-orange-500/30 hover:border-orange-500/60
+                              ${selectedCategory === 'bug' ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}`}
+                          >
+                            <Bug className="w-5 h-5 text-orange-500" />
+                            <div className="text-left">
+                              <p className="font-semibold text-foreground text-sm">Bug Report</p>
+                              <p className="text-xs text-muted-foreground">Report bugs, glitches, or technical problems</p>
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    
                     <div className="space-y-2">
                       <Label htmlFor="subject">Subject</Label>
                       <Input

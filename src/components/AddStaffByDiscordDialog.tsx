@@ -34,6 +34,21 @@ const statusOptions = [
   { value: 'on_leave', label: 'On Leave' },
 ];
 
+// Determine role_type based on department and rank
+const getRoleType = (deptKey: string, rank: string): string => {
+  const rankLower = rank.toLowerCase();
+  // Owner ranks
+  if (rankLower === 'owner' || rankLower === 'server owner') return 'owner';
+  // Admin ranks
+  if (rankLower.includes('head admin') || rankLower.includes('admin') || rankLower === 'governor') return 'admin';
+  // Moderator ranks
+  if (rankLower.includes('moderator') || rankLower.includes('mod')) return 'moderator';
+  // Staff department gets staff role
+  if (deptKey === 'staff') return 'staff';
+  // Everything else is member
+  return 'member';
+};
+
 const AddStaffByDiscordDialog = ({
   open,
   onOpenChange,
@@ -121,35 +136,66 @@ const AddStaffByDiscordDialog = ({
 
     setLoading(true);
     try {
-      // Determine role_type based on department
-      const getRoleType = (deptKey: string): string => {
-        if (deptKey === 'staff') return 'staff';
-        return 'member';
-      };
-
-      const { error } = await supabase
+      // Check if this Discord ID already exists
+      const { data: existing, error: checkError } = await supabase
         .from('staff_members')
-        .insert({
-          name: discordInfo.display_name || discordInfo.username,
-          discord_id: discordInfo.id,
-          discord_username: discordInfo.username,
-          discord_avatar: discordInfo.avatar_url || null,
-          discord_banner: discordInfo.banner_url || null,
-          role: formData.rank,
-          role_type: getRoleType(departmentKey),
-          department: departmentKey,
-          badge_number: formData.badge_number || null,
-          status: formData.status,
-          division: formData.division || null,
-          call_sign: formData.call_sign || null,
-          strikes: formData.strikes || '0/3',
-          is_active: formData.status === 'active',
-        });
+        .select('id, name, department')
+        .eq('discord_id', discordInfo.id)
+        .maybeSingle();
 
-      if (error) throw error;
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw checkError;
+      }
 
-      toast.success(`${discordInfo.display_name || discordInfo.username} added successfully!`);
-      
+      // If exists, update instead of insert
+      if (existing) {
+        const { error: updateError } = await supabase
+          .from('staff_members')
+          .update({
+            name: discordInfo.display_name || discordInfo.username,
+            discord_username: discordInfo.username,
+            discord_avatar: discordInfo.avatar_url || null,
+            discord_banner: discordInfo.banner_url || null,
+            role: formData.rank,
+            role_type: getRoleType(departmentKey, formData.rank),
+            department: departmentKey,
+            badge_number: formData.badge_number || null,
+            status: formData.status,
+            division: formData.division || null,
+            call_sign: formData.call_sign || null,
+            strikes: formData.strikes || '0/3',
+            is_active: formData.status === 'active',
+          })
+          .eq('id', existing.id);
+
+        if (updateError) throw updateError;
+
+        toast.success(`${discordInfo.display_name || discordInfo.username} updated in roster!`);
+      } else {
+        // Insert new
+        const { error } = await supabase
+          .from('staff_members')
+          .insert({
+            name: discordInfo.display_name || discordInfo.username,
+            discord_id: discordInfo.id,
+            discord_username: discordInfo.username,
+            discord_avatar: discordInfo.avatar_url || null,
+            discord_banner: discordInfo.banner_url || null,
+            role: formData.rank,
+            role_type: getRoleType(departmentKey, formData.rank),
+            department: departmentKey,
+            badge_number: formData.badge_number || null,
+            status: formData.status,
+            division: formData.division || null,
+            call_sign: formData.call_sign || null,
+            strikes: formData.strikes || '0/3',
+            is_active: formData.status === 'active',
+          });
+
+        if (error) throw error;
+        toast.success(`${discordInfo.display_name || discordInfo.username} added successfully!`);
+      }
+
       // Reset form
       setDiscordId('');
       setDiscordInfo(null);
