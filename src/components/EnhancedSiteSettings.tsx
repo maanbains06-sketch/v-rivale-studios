@@ -607,7 +607,7 @@ export const EnhancedSiteSettings = ({ settings, onSettingsChange }: EnhancedSit
               />
             </div>
 
-            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-amber-500/50">
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
               <div className="space-y-0.5">
                 <Label className="text-base">Hide Business Header</Label>
                 <p className="text-sm text-muted-foreground">Hide Business page from all users (owner only)</p>
