@@ -57,7 +57,7 @@ const defaultSettings: SiteSettings = {
 
 // Cache settings in localStorage for instant loading
 const CACHE_KEY = 'slrp_site_settings';
-const CACHE_DURATION = 1000 * 60 * 5; // 5 minutes cache
+const CACHE_DURATION = 1000 * 60 * 1; // 1 minute cache - shorter to ensure settings sync faster
 
 interface CachedSettings {
   settings: SiteSettings;
@@ -67,6 +67,7 @@ interface CachedSettings {
 export const useSiteSettings = (): UseSiteSettingsReturn => {
   const [settings, setSettings] = useState<SiteSettings>(() => {
     // Try to load from cache immediately for instant UI
+    // But only use cache for non-critical settings
     try {
       const cached = localStorage.getItem(CACHE_KEY);
       if (cached) {
@@ -159,23 +160,8 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
   }, []);
 
   useEffect(() => {
-    // Check if we have valid cached settings
-    try {
-      const cached = localStorage.getItem(CACHE_KEY);
-      if (cached) {
-        const parsed: CachedSettings = JSON.parse(cached);
-        if (Date.now() - parsed.timestamp < CACHE_DURATION) {
-          setSettings(parsed.settings);
-          setLoading(false);
-          // Fetch in background to update cache
-          fetchSettings();
-          return;
-        }
-      }
-    } catch {
-      // Ignore
-    }
-
+    // Always fetch fresh data on mount to ensure settings are current
+    // Cache is only used for initial render to prevent flicker
     fetchSettings();
 
     // Subscribe to realtime changes - refetch on any site_settings change
@@ -189,8 +175,13 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
           table: 'site_settings',
         },
         (payload) => {
-          // Refetch settings on any change to ensure UI stays in sync
-          console.log('[useSiteSettings] Setting changed, refetching:', payload);
+          // Clear cache and refetch on any change to ensure UI stays in sync
+          console.log('[useSiteSettings] Setting changed, clearing cache and refetching:', payload);
+          try {
+            localStorage.removeItem(CACHE_KEY);
+          } catch {
+            // Ignore
+          }
           fetchSettings();
         }
       )
