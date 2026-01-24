@@ -16,7 +16,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useJobPanelAccess, DEPARTMENT_INFO, type DepartmentKey } from "@/hooks/useJobPanelAccess";
 import { sendDiscordNotification } from "@/lib/discordNotificationSender";
 import { ApplicationType } from "@/components/UnifiedApplicationsTable";
-import { Shield, RefreshCw, CheckCircle, XCircle, Clock, Eye, AlertTriangle, Briefcase, Search, Filter } from "lucide-react";
+import { Shield, RefreshCw, CheckCircle, XCircle, Clock, Eye, AlertTriangle, Briefcase, Search, Filter, Download } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import headerJobsImg from "@/assets/header-guides-new.jpg";
@@ -124,6 +125,114 @@ const JobPanel = () => {
       pd: 1, ems: 1, firefighter: 1, doj: 1, state: 1, mechanic: 1, pdm: 1, weazel: 1
     });
   }, [searchQuery, statusFilter]);
+
+  // Export functions
+  const handleExportCSV = useCallback((dept: DepartmentKey) => {
+    const apps = getFilteredApplications(dept);
+    if (apps.length === 0) {
+      toast({
+        title: "No applications to export",
+        description: "There are no applications matching your current filters.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const deptName = DEPARTMENT_INFO[dept].name;
+    const csvContent = generateCSV(apps, deptName);
+    downloadCSV(csvContent, `${dept}-applications`);
+    
+    toast({
+      title: "Export successful",
+      description: `Exported ${apps.length} ${deptName} applications to CSV.`
+    });
+  }, [getFilteredApplications, toast]);
+
+  const handleExportAllCSV = useCallback(() => {
+    const allApps: Application[] = [];
+    accessibleDepartments.forEach(dept => {
+      const apps = getFilteredApplications(dept);
+      apps.forEach(app => allApps.push({ ...app, department: DEPARTMENT_INFO[dept].name }));
+    });
+    
+    if (allApps.length === 0) {
+      toast({
+        title: "No applications to export",
+        description: "There are no applications matching your current filters.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const csvContent = generateCSV(allApps, 'All Departments');
+    downloadCSV(csvContent, 'all-departments-applications');
+    
+    toast({
+      title: "Export successful",
+      description: `Exported ${allApps.length} applications from all departments to CSV.`
+    });
+  }, [accessibleDepartments, getFilteredApplications, toast]);
+
+  const generateCSV = (apps: Application[], deptName: string): string => {
+    const headers = [
+      'ID',
+      'Applicant',
+      'Discord ID',
+      'Character Name',
+      'Department',
+      'Position',
+      'Status',
+      'Experience',
+      'Why Join',
+      'Availability',
+      'Submitted Date',
+      'Reviewed Date',
+      'Admin Notes'
+    ];
+    
+    const sanitize = (value: string | number | undefined | null): string => {
+      if (value === null || value === undefined) return '';
+      const str = String(value);
+      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+    
+    const rows = apps.map(app => [
+      sanitize(app.id),
+      sanitize(app.discord_username || app.real_name || 'Unknown'),
+      sanitize(app.discord_id),
+      sanitize(app.character_name || app.in_game_name),
+      sanitize(app.department || deptName),
+      sanitize(app.position),
+      sanitize(app.status),
+      sanitize(app.experience),
+      sanitize(app.why_join),
+      sanitize(app.availability),
+      sanitize(app.created_at ? new Date(app.created_at).toLocaleDateString() : ''),
+      sanitize(app.reviewed_at ? new Date(app.reviewed_at).toLocaleDateString() : ''),
+      sanitize(app.admin_notes || app.notes)
+    ].join(','));
+    
+    return [headers.join(','), ...rows].join('\n');
+  };
+
+  const downloadCSV = (content: string, filename: string) => {
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${filename}-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    URL.revokeObjectURL(url);
+  };
 
   useEffect(() => {
     if (!accessLoading && accessibleDepartments.length > 0 && !activeTab) {
@@ -482,7 +591,7 @@ const JobPanel = () => {
                   })}
                 </TabsList>
 
-                {/* Search and Filter Controls */}
+                {/* Search, Filter, and Export Controls */}
                 <div className="flex flex-col sm:flex-row gap-3 mb-4">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -506,6 +615,22 @@ const JobPanel = () => {
                       <SelectItem value="rejected">Rejected</SelectItem>
                     </SelectContent>
                   </Select>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="w-full sm:w-auto">
+                        <Download className="w-4 h-4 mr-2" />
+                        Export
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => activeTab && handleExportCSV(activeTab as DepartmentKey)}>
+                        Export Current Tab (CSV)
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleExportAllCSV()}>
+                        Export All Departments (CSV)
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
 
                 {accessibleDepartments.map((dept) => {
