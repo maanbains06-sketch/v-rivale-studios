@@ -8,6 +8,7 @@ import DOJApplicationForm from "@/components/DOJApplicationForm";
 import WeazelNewsApplicationForm from "@/components/WeazelNewsApplicationForm";
 import StateDepartmentApplicationForm from "@/components/StateDepartmentApplicationForm";
 import BusinessJobApplicationForm from "@/components/BusinessJobApplicationForm";
+import FeaturedJobsCarousel from "@/components/FeaturedJobsCarousel";
 import { JobCardsSkeletonGrid } from "@/components/JobCardSkeleton";
 import { Shield, Heart, Wrench, Flame, AlertCircle, CheckCircle2, Car, Scale, Gavel, Newspaper, RefreshCw, Building2, UtensilsCrossed, PartyPopper, Briefcase } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -192,6 +193,76 @@ const JobApplication = () => {
     },
   ];
 
+  // Featured urgent hiring positions for the carousel
+  const featuredJobs = [
+    {
+      id: "police",
+      name: "Police Officer",
+      icon: <Shield className="w-5 h-5 text-primary" />,
+      image: jobPoliceImg,
+      urgency: "critical" as const,
+      spots: 3,
+      description: "Join LSPD and uphold justice. Critical need for dedicated officers to maintain law and order.",
+      department: "Government",
+      color: "primary",
+    },
+    {
+      id: "ems",
+      name: "EMS Paramedic",
+      icon: <Heart className="w-5 h-5 text-red-400" />,
+      image: jobEmsImg,
+      urgency: "critical" as const,
+      spots: 5,
+      description: "Save lives in San Andreas. Emergency medical services desperately need skilled paramedics.",
+      department: "Government",
+      color: "red-500",
+    },
+    {
+      id: "firefighter",
+      name: "Firefighter",
+      icon: <Flame className="w-5 h-5 text-orange-400" />,
+      image: jobFirefighterImg,
+      urgency: "high" as const,
+      spots: 4,
+      description: "Battle blazes and rescue citizens. The fire department needs brave individuals.",
+      department: "Government",
+      color: "orange-500",
+    },
+    {
+      id: "business-mechanic",
+      name: "Shop Mechanic",
+      icon: <Wrench className="w-5 h-5 text-green-400" />,
+      image: jobMechanicShopImg,
+      urgency: "high" as const,
+      spots: 6,
+      description: "Multiple mechanic shops are hiring. Technical skills required for vehicle repairs.",
+      department: "Business",
+      color: "green-500",
+    },
+    {
+      id: "business-food-joint",
+      name: "Restaurant Staff",
+      icon: <UtensilsCrossed className="w-5 h-5 text-orange-400" />,
+      image: jobFoodJointImg,
+      urgency: "medium" as const,
+      spots: 8,
+      description: "Join the hospitality industry. Restaurants across the city are looking for staff.",
+      department: "Business",
+      color: "orange-500",
+    },
+    {
+      id: "weazel-news",
+      name: "News Reporter",
+      icon: <Newspaper className="w-5 h-5 text-red-400" />,
+      image: jobWeazelNewsImg,
+      urgency: "medium" as const,
+      spots: 2,
+      description: "Report breaking news and cover the biggest stories in Los Santos.",
+      department: "Media",
+      color: "red-500",
+    },
+  ];
+
   const isPageLoading = loading || accessLoading || settingsLoading;
 
   if (isPageLoading) {
@@ -351,6 +422,12 @@ const JobApplication = () => {
             </div>
           ) : (
             <>
+              {/* Featured Jobs Carousel */}
+              <FeaturedJobsCarousel 
+                jobs={featuredJobs} 
+                onSelectJob={(jobId) => setSelectedForm(jobId)} 
+              />
+
               <div className="text-center mb-10">
                 <h2 className="text-3xl font-bold text-gradient mb-3">Choose Your Career Path</h2>
                 <p className="text-muted-foreground max-w-2xl mx-auto">
