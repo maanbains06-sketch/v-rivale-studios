@@ -33,8 +33,7 @@ import {
   Lock,
   UserPlus,
   Trash2,
-  MoreVertical,
-  GraduationCap
+  MoreVertical
 } from "lucide-react";
 import {
   AlertDialog,
@@ -66,7 +65,6 @@ interface RosterMember {
   discord_avatar?: string;
   strikes?: string;
   call_sign?: string;
-  training_status?: string;
 }
 
 interface DepartmentRoster {
@@ -109,42 +107,6 @@ const statusOptions = [
   { value: 'inactive', label: 'Inactive' },
   { value: 'on_leave', label: 'On Leave' },
 ];
-
-const trainingStatusOptions = [
-  { value: 'not_started', label: 'Not Started' },
-  { value: 'in_progress', label: 'In Progress' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'certified', label: 'Certified' },
-];
-
-const getTrainingStatusStyle = (status: string): { className: string; label: string; icon: 'pending' | 'progress' | 'done' | 'certified' } => {
-  switch (status?.toLowerCase()) {
-    case 'completed':
-      return { 
-        className: 'text-green-500 bg-green-500/15 border-green-500/30', 
-        label: 'Completed',
-        icon: 'done'
-      };
-    case 'in_progress':
-      return { 
-        className: 'text-blue-500 bg-blue-500/15 border-blue-500/30', 
-        label: 'In Progress',
-        icon: 'progress'
-      };
-    case 'certified':
-      return { 
-        className: 'text-purple-500 bg-purple-500/15 border-purple-500/30', 
-        label: 'Certified',
-        icon: 'certified'
-      };
-    default:
-      return { 
-        className: 'text-gray-400 bg-gray-500/15 border-gray-500/30', 
-        label: 'Not Started',
-        icon: 'pending'
-      };
-  }
-};
 
 // Department-specific division options
 const divisionOptionsByDept: Record<string, { value: string; label: string }[]> = {
@@ -443,7 +405,6 @@ const Roster = () => {
         call_sign: s.call_sign || '-',
         discord_avatar: s.discord_avatar,
         strikes: s.strikes || '0/3',
-        training_status: s.training_status || 'not_started',
       }));
   };
 
@@ -536,9 +497,8 @@ const Roster = () => {
           call_sign: s.call_sign || '-',
           discord_avatar: s.discord_avatar,
           strikes: s.strikes || '-',
-          training_status: s.training_status || 'not_started',
         })),
-      ranks: ['Head Admin', 'Admin', 'Moderator', 'Staff Member', 'Support Staff', 'Event Member', 'Trial Mod'],
+      ranks: ['Owner', 'Head Admin', 'Admin', 'Moderator', 'Staff Member', 'Support Staff', 'Event Member', 'Trial Mod'],
     }
   ];
 
@@ -601,7 +561,6 @@ const Roster = () => {
           division: member.division,
           call_sign: member.call_sign,
           strikes: member.strikes,
-          training_status: member.training_status,
         })
         .eq('id', member.id);
 
@@ -884,7 +843,7 @@ const Roster = () => {
 
                             {/* Table Header - Dynamic based on rank */}
                             {isGovernorRank(rankName) ? (
-                              <div className={`grid ${canEditThisDept ? 'grid-cols-6' : 'grid-cols-5'} px-5 py-3 bg-muted/30 border-b border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground`}>
+                              <div className={`grid ${canEditThisDept ? 'grid-cols-5' : 'grid-cols-4'} px-5 py-3 bg-muted/30 border-b border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground`}>
                                 <div className="flex items-center gap-2">
                                   <span className="w-8" />
                                   <span>Name</span>
@@ -892,14 +851,10 @@ const Roster = () => {
                                 <div className="text-center">Rank</div>
                                 <div className="text-center">Status</div>
                                 <div className="text-center">Division</div>
-                                <div className="text-center flex items-center justify-center gap-1">
-                                  <GraduationCap className="w-3 h-3" />
-                                  Training
-                                </div>
                                 {canEditThisDept && <div className="text-center">Actions</div>}
                               </div>
                             ) : (
-                              <div className={`grid ${canEditThisDept ? 'grid-cols-9' : 'grid-cols-8'} px-5 py-3 bg-muted/30 border-b border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground`}>
+                              <div className={`grid ${canEditThisDept ? 'grid-cols-8' : 'grid-cols-7'} px-5 py-3 bg-muted/30 border-b border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground`}>
                                 <div className="flex items-center gap-2">
                                   <span className="w-8" />
                                   <span>Officer</span>
@@ -910,10 +865,6 @@ const Roster = () => {
                                 <div className="text-center">Status</div>
                                 <div className="text-center">Division</div>
                                 <div className="text-center">Unit</div>
-                                <div className="text-center flex items-center justify-center gap-1">
-                                  <GraduationCap className="w-3 h-3" />
-                                  Training
-                                </div>
                                 {canEditThisDept && <div className="text-center">Actions</div>}
                               </div>
                             )}
@@ -925,7 +876,7 @@ const Roster = () => {
                                   /* Governor-specific row layout - no badge/strikes, Name instead of Officer */
                                   <div 
                                     key={member.id}
-                                    className={`grid ${canEditThisDept ? 'grid-cols-6' : 'grid-cols-5'} px-5 py-3 items-center transition-colors hover:bg-muted/30
+                                    className={`grid ${canEditThisDept ? 'grid-cols-5' : 'grid-cols-4'} px-5 py-3 items-center transition-colors hover:bg-muted/30
                                       ${idx % 2 === 0 ? 'bg-transparent' : 'bg-muted/10'}`}
                                   >
                                     {/* Name */}
@@ -1038,37 +989,7 @@ const Roster = () => {
                                       )}
                                     </div>
 
-                                    {/* Training Status */}
-                                    <div className="flex justify-center">
-                                      {isEditing ? (
-                                        <Select
-                                          value={getMemberValue(deptKey, member, 'training_status') || 'not_started'}
-                                          onValueChange={(value) => updateMemberField(deptKey, member.id, 'training_status', value)}
-                                        >
-                                          <SelectTrigger className="h-8 w-28 text-xs">
-                                            <SelectValue placeholder="Training" />
-                                          </SelectTrigger>
-                                          <SelectContent className="bg-popover border border-border z-50">
-                                            {trainingStatusOptions.map(opt => (
-                                              <SelectItem key={opt.value} value={opt.value}>
-                                                {opt.label}
-                                              </SelectItem>
-                                            ))}
-                                          </SelectContent>
-                                        </Select>
-                                      ) : (
-                                        (() => {
-                                          const trainingStyle = getTrainingStatusStyle(member.training_status || '');
-                                          return (
-                                            <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium ${trainingStyle.className}`}>
-                                              <GraduationCap className="w-3 h-3" />
-                                              {trainingStyle.label}
-                                            </span>
-                                          );
-                                        })()
-                                      )}
-                                    </div>
-
+                                    {/* Actions - Dropdown */}
                                     {canEditThisDept && (
                                       <div className="flex justify-center">
                                         <DropdownMenu>
@@ -1105,7 +1026,7 @@ const Roster = () => {
                                   /* Standard row layout for all other ranks */
                                   <div 
                                     key={member.id}
-                                    className={`grid ${canEditThisDept ? 'grid-cols-9' : 'grid-cols-8'} px-5 py-3 items-center transition-colors hover:bg-muted/30
+                                    className={`grid ${canEditThisDept ? 'grid-cols-8' : 'grid-cols-7'} px-5 py-3 items-center transition-colors hover:bg-muted/30
                                       ${idx % 2 === 0 ? 'bg-transparent' : 'bg-muted/10'}`}
                                   >
                                     {/* Officer */}
@@ -1268,37 +1189,6 @@ const Roster = () => {
                                         </Select>
                                       ) : (
                                         <span className="text-muted-foreground text-sm">{member.call_sign || '-'}</span>
-                                      )}
-                                    </div>
-
-                                    {/* Training Status */}
-                                    <div className="flex justify-center">
-                                      {isEditing ? (
-                                        <Select
-                                          value={getMemberValue(deptKey, member, 'training_status') || 'not_started'}
-                                          onValueChange={(value) => updateMemberField(deptKey, member.id, 'training_status', value)}
-                                        >
-                                          <SelectTrigger className="h-8 w-28 text-xs">
-                                            <SelectValue placeholder="Training" />
-                                          </SelectTrigger>
-                                          <SelectContent className="bg-popover border border-border z-50">
-                                            {trainingStatusOptions.map(opt => (
-                                              <SelectItem key={opt.value} value={opt.value}>
-                                                {opt.label}
-                                              </SelectItem>
-                                            ))}
-                                          </SelectContent>
-                                        </Select>
-                                      ) : (
-                                        (() => {
-                                          const trainingStyle = getTrainingStatusStyle(member.training_status || '');
-                                          return (
-                                            <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium ${trainingStyle.className}`}>
-                                              <GraduationCap className="w-3 h-3" />
-                                              {trainingStyle.label}
-                                            </span>
-                                          );
-                                        })()
                                       )}
                                     </div>
 

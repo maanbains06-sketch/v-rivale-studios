@@ -2,19 +2,18 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { useReferralTracking } from "@/hooks/useReferralTracking";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useMaintenanceAccess } from "@/hooks/useMaintenanceAccess";
 import { useWhitelistAutoVerification } from "@/hooks/useWhitelistAutoVerification";
-import { lazy, Suspense, useState, useEffect, memo, startTransition } from "react";
+import { lazy, Suspense, useState, useEffect, memo } from "react";
 import { PageTransition } from "@/components/PageTransition";
 import RequireAuth from "@/components/RequireAuth";
 import LoadingScreen from "@/components/LoadingScreen";
 import RouteErrorBoundary from "@/components/RouteErrorBoundary";
 import AutoRetryPage from "@/components/AutoRetryPage";
-import { preloadCriticalRoutes } from "@/lib/routePreloader";
 
 // Lazy load utility components
 const LiveVisitorCounter = lazy(() => import("@/components/LiveVisitorCounter"));
@@ -23,12 +22,11 @@ const NetworkOfflineScreen = lazy(() => import("@/components/NetworkOfflineScree
 const MaintenancePage = lazy(() => import("@/components/MaintenancePage"));
 const GlobalAnnouncementBanner = lazy(() => import("@/components/GlobalAnnouncementBanner"));
 import { PageMaintenanceBlock } from "@/components/PageMaintenanceBlock";
-
-// Optimized lazy loader with instant retry and chunk caching
+// Safer lazy loader (prevents blank screens when a chunk load fails on slow networks)
 const lazyWithRetry = <T extends { default: React.ComponentType<any> }>(
   factory: () => Promise<T>,
-  retries = 1,
-  delayMs = 100
+  retries = 2,
+  delayMs = 300
 ) =>
   lazy(async () => {
     let lastErr: unknown;
@@ -37,7 +35,8 @@ const lazyWithRetry = <T extends { default: React.ComponentType<any> }>(
         return await factory();
       } catch (err) {
         lastErr = err;
-        await new Promise((r) => setTimeout(r, delayMs));
+        // small backoff and retry
+        await new Promise((r) => setTimeout(r, delayMs * (attempt + 1)));
       }
     }
     throw lastErr;
@@ -112,10 +111,10 @@ const queryClient = new QueryClient({
   },
 });
 
-// Ultra-minimal page loading fallback - instant render
+// Minimal page loading fallback
 const PageLoader = memo(() => (
-  <div className="min-h-screen flex items-center justify-center bg-background gpu-accelerated">
-    <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
   </div>
 ));
 PageLoader.displayName = "PageLoader";
@@ -253,6 +252,7 @@ const App = () => {
   useEffect(() => {
     const safeGet = (key: string) => {
       try {
+        // Check both sessionStorage and localStorage for persistence
         return sessionStorage.getItem(key) || localStorage.getItem(key);
       } catch {
         return null;
@@ -262,33 +262,34 @@ const App = () => {
     const safeSet = (key: string, value: string) => {
       try {
         sessionStorage.setItem(key, value);
+        // Also store in localStorage for cross-tab/browser persistence
         localStorage.setItem(key, value);
-      } catch {}
+      } catch {
+        // ignore (some browsers/private modes can block storage)
+      }
     };
 
-    // PERF: Returning users skip loading entirely
+    // PERF: Check if returning user IMMEDIATELY before any timeouts
     const hasVisited = safeGet("slrp_visited");
     if (hasVisited) {
+      // Returning user - show content INSTANTLY, no loading screen
       setIsLoading(false);
       setShowContent(true);
-      // Preload critical routes after content shows
-      startTransition(() => preloadCriticalRoutes());
       return;
     }
 
-    // PERF: Ultra-fast unblock - 250ms max
+    // PERF: Ultra-fast unblock for new users
     const hardUnblock = window.setTimeout(() => {
       setShowContent(true);
       setIsLoading(false);
       safeSet("slrp_visited", "true");
-      startTransition(() => preloadCriticalRoutes());
-    }, 250);
+    }, 400); // Reduced to 400ms for snappier feel
 
-    // Mobile/low-end: skip loading entirely
+    // For low-end devices OR mobile, skip loading screen entirely
     const isLowEndDevice =
       navigator.hardwareConcurrency <= 4 ||
       (navigator as any).deviceMemory <= 4 ||
-      window.innerWidth < 768 ||
+      window.innerWidth < 768 || // Include tablets as low-end for faster load
       /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
     if (isLowEndDevice) {
@@ -296,7 +297,6 @@ const App = () => {
       window.clearTimeout(hardUnblock);
       setIsLoading(false);
       setShowContent(true);
-      startTransition(() => preloadCriticalRoutes());
       return;
     }
 
@@ -307,10 +307,11 @@ const App = () => {
     try {
       sessionStorage.setItem("slrp_visited", "true");
       localStorage.setItem("slrp_visited", "true");
-    } catch {}
+    } catch {
+      // ignore
+    }
     setShowContent(true);
-    setIsLoading(false);
-    startTransition(() => preloadCriticalRoutes());
+    setIsLoading(false); // Instant, no delay
   };
 
   return (
