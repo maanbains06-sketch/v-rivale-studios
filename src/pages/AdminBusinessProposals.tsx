@@ -36,7 +36,8 @@ import {
   ChevronRight,
   FolderOpen,
   FolderClosed,
-  ArrowLeft
+  ArrowLeft,
+  PartyPopper
 } from "lucide-react";
 import { motion } from "framer-motion";
 import headerAdminBg from "@/assets/header-staff.jpg";
@@ -85,6 +86,11 @@ const businessTypeConfig: Record<string, { icon: React.ReactNode; label: string;
     icon: <Car className="w-5 h-5" />, 
     label: "Tuner Shop",
     color: "bg-purple-500/20 text-purple-400 border-purple-500/30"
+  },
+  entertainment: { 
+    icon: <PartyPopper className="w-5 h-5" />, 
+    label: "Entertainment Venue",
+    color: "bg-pink-500/20 text-pink-400 border-pink-500/30"
   },
 };
 

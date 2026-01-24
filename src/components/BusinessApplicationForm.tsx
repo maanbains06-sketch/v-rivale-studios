@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Loader2, Building2, UtensilsCrossed, Wrench, Car, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { Loader2, Building2, UtensilsCrossed, Wrench, Car, ArrowLeft, CheckCircle2, PartyPopper } from "lucide-react";
 import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
 import { ApplicationCooldownTimer } from "@/components/ApplicationCooldownTimer";
 import { PendingApplicationAlert } from "@/components/PendingApplicationAlert";
@@ -70,7 +70,7 @@ const businessApplicationSchema = z.object({
 
 type BusinessApplicationFormData = z.infer<typeof businessApplicationSchema>;
 
-export type BusinessType = "real_estate" | "food_joint" | "mechanic_shop" | "tuner_shop";
+export type BusinessType = "real_estate" | "food_joint" | "mechanic_shop" | "tuner_shop" | "entertainment";
 
 interface BusinessApplicationFormProps {
   businessType: BusinessType;
@@ -126,6 +126,16 @@ const businessConfig: Record<BusinessType, {
     planPrompt: "Describe your tuner shop vision. What modifications will you specialize in? Performance tuning, visual mods, or both? How will you build your reputation in the racing scene?",
     uspPrompt: "What makes your tuner shop the go-to destination? Exclusive parts, racing expertise, or custom fabrication skills?",
     targetPrompt: "Who are your ideal customers? Street racers, car enthusiasts, show car builders, or drift scene members?",
+  },
+  entertainment: {
+    title: "Entertainment Venue",
+    description: "Create unforgettable experiences with clubs, bars, and event spaces.",
+    icon: <PartyPopper className="w-8 h-8" />,
+    color: "text-pink-500",
+    bgGradient: "from-pink-500/20 via-pink-600/10 to-transparent",
+    planPrompt: "Describe your entertainment venue vision. What type of venue will it be (nightclub, bar, event space)? What events will you host? How will you create a unique atmosphere and experience?",
+    uspPrompt: "What makes your venue stand out? Exclusive atmosphere, celebrity appearances, themed nights, or premium VIP services?",
+    targetPrompt: "Who are your ideal patrons? Party-goers, corporate event organizers, high-rollers, or the general nightlife crowd?",
   },
 };
 
