@@ -24,8 +24,19 @@ import {
   Briefcase,
   Shield,
   RefreshCw,
-  Save
+  Save,
+  Monitor,
+  Heart,
+  Wrench,
+  Building2,
+  Car,
+  Newspaper,
+  Gavel,
+  Scale,
+  UtensilsCrossed,
+  PartyPopper
 } from "lucide-react";
+import FeaturedJobsCarousel from "@/components/FeaturedJobsCarousel";
 import { cn } from "@/lib/utils";
 
 interface FeaturedPosition {
@@ -71,6 +82,7 @@ export function FeaturedPositionsManager() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [editingPosition, setEditingPosition] = useState<FeaturedPosition | null>(null);
   const [businessJobsHidden, setBusinessJobsHidden] = useState(false);
   const [savingBusinessToggle, setSavingBusinessToggle] = useState(false);
@@ -311,6 +323,65 @@ export function FeaturedPositionsManager() {
     setIsDialogOpen(true);
   };
 
+  // Map job IDs to icons for preview
+  const getJobIcon = (jobId: string) => {
+    const iconMap: Record<string, React.ReactNode> = {
+      police: <Shield className="w-5 h-5 text-blue-500" />,
+      ems: <Heart className="w-5 h-5 text-red-500" />,
+      firefighter: <Flame className="w-5 h-5 text-orange-500" />,
+      mechanic: <Wrench className="w-5 h-5 text-slate-500" />,
+      pdm: <Car className="w-5 h-5 text-purple-500" />,
+      judge: <Gavel className="w-5 h-5 text-amber-600" />,
+      lawyer: <Scale className="w-5 h-5 text-emerald-500" />,
+      "weazel-news": <Newspaper className="w-5 h-5 text-cyan-500" />,
+      "state-department": <Building2 className="w-5 h-5 text-indigo-500" />,
+      "business-real-estate": <Building2 className="w-5 h-5 text-amber-500" />,
+      "business-food-joint": <UtensilsCrossed className="w-5 h-5 text-orange-500" />,
+      "business-mechanic": <Wrench className="w-5 h-5 text-slate-500" />,
+      "business-tuner": <Car className="w-5 h-5 text-purple-500" />,
+      "business-entertainment": <PartyPopper className="w-5 h-5 text-pink-500" />,
+    };
+    return iconMap[jobId] || <Briefcase className="w-5 h-5 text-primary" />;
+  };
+
+  // Map job IDs to images for preview
+  const getJobImage = (jobId: string) => {
+    const imageMap: Record<string, string> = {
+      police: "/placeholder.svg",
+      ems: "/placeholder.svg",
+      firefighter: "/placeholder.svg",
+      mechanic: "/placeholder.svg",
+      pdm: "/placeholder.svg",
+      judge: "/placeholder.svg",
+      lawyer: "/placeholder.svg",
+      "weazel-news": "/placeholder.svg",
+      "state-department": "/placeholder.svg",
+      "business-real-estate": "/placeholder.svg",
+      "business-food-joint": "/placeholder.svg",
+      "business-mechanic": "/placeholder.svg",
+      "business-tuner": "/placeholder.svg",
+      "business-entertainment": "/placeholder.svg",
+    };
+    return imageMap[jobId] || "/placeholder.svg";
+  };
+
+  // Generate preview jobs from positions
+  const getPreviewJobs = () => {
+    return positions
+      .filter(p => p.is_hiring)
+      .map(position => ({
+        id: position.job_id,
+        name: position.name,
+        icon: getJobIcon(position.job_id),
+        image: getJobImage(position.job_id),
+        urgency: position.urgency,
+        spots: position.spots,
+        description: position.description || "Join our team and make a difference in the community.",
+        department: position.department,
+        color: position.urgency === "critical" ? "red" : position.urgency === "high" ? "amber" : "green",
+      }));
+  };
+
   if (loading) {
     return (
       <Card className="glass-effect border-border/20">
@@ -373,6 +444,15 @@ export function FeaturedPositionsManager() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setIsPreviewOpen(true)}
+                disabled={positions.filter(p => p.is_hiring).length === 0}
+              >
+                <Monitor className="w-4 h-4 mr-2" />
+                Preview
+              </Button>
               <Button variant="outline" size="sm" onClick={loadPositions}>
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Refresh
@@ -595,6 +675,47 @@ export function FeaturedPositionsManager() {
                   {editingPosition ? "Update" : "Add"} Position
                 </>
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Preview Dialog */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Monitor className="w-5 h-5" />
+              Carousel Preview
+            </DialogTitle>
+            <DialogDescription>
+              This is how the featured positions carousel will appear to users on the Jobs page
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4 px-2 bg-background/50 rounded-lg border border-border/50">
+            {getPreviewJobs().length > 0 ? (
+              <FeaturedJobsCarousel 
+                jobs={getPreviewJobs()} 
+                onSelectJob={(jobId) => {
+                  toast({
+                    title: "Preview Mode",
+                    description: `Clicking "${jobId}" would navigate to the application form`,
+                  });
+                }} 
+              />
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                <Eye className="w-12 h-12 mx-auto mb-4 opacity-30" />
+                <p>No hiring positions to preview</p>
+                <p className="text-sm">Enable hiring for at least one position to see the carousel</p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsPreviewOpen(false)}>
+              Close Preview
             </Button>
           </DialogFooter>
         </DialogContent>
