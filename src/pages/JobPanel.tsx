@@ -154,9 +154,9 @@ const JobPanel = () => {
 
           if (!error && data) {
             const filtered = (data as any[]).filter(app => 
-              filters.includes(app.department)
+              filters.includes(app.job_type)
             );
-            newApplications[dept] = filtered.map(app => normalizeApp(app));
+            newApplications[dept] = filtered.map(app => normalizeApp(app, app.job_type));
           }
         } else if (info.table === 'firefighter_applications') {
           const { data, error } = await supabase
