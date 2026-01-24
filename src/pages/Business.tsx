@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, UtensilsCrossed, Wrench, Car, ArrowRight, Sparkles, TrendingUp, Users, Clock, BadgeDollarSign, Crown, Star } from "lucide-react";
+import { Building2, UtensilsCrossed, Wrench, Car, ArrowRight, Sparkles, TrendingUp, Users, Clock, BadgeDollarSign, Crown, Star, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import headerBg from "@/assets/header-business.jpg";
@@ -335,6 +335,107 @@ const Business = () => {
                         <span>Full Support Provided</span>
                       </div>
                     </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Selection Process Instructions */}
+            <motion.div variants={itemVariants}>
+              <Card className="relative overflow-hidden border-amber-500/30 bg-gradient-to-br from-amber-500/5 via-background to-orange-500/5">
+                <div className="absolute inset-0">
+                  <div className="absolute top-0 left-1/4 w-48 h-48 bg-amber-500/10 rounded-full blur-[60px]" />
+                  <div className="absolute bottom-0 right-1/4 w-48 h-48 bg-orange-500/10 rounded-full blur-[60px]" />
+                </div>
+                <CardHeader className="relative text-center pb-2">
+                  <div className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20 mx-auto mb-4">
+                    <FileText className="w-4 h-4 text-amber-500" />
+                    <span className="text-sm font-medium text-amber-500">Selection Process</span>
+                  </div>
+                  <CardTitle className="text-2xl md:text-3xl font-bold text-foreground">
+                    How Business Owners Are Selected
+                  </CardTitle>
+                  <CardDescription className="text-base max-w-2xl mx-auto mt-2">
+                    Understanding the journey from proposal submission to becoming a business owner
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="relative pt-6">
+                  <div className="grid md:grid-cols-3 gap-6 mb-8">
+                    {[
+                      {
+                        step: "01",
+                        title: "Submit Your Proposal",
+                        description: "Fill out the business application form with your vision, business plan, and unique selling points.",
+                        icon: <FileText className="w-6 h-6" />,
+                        color: "text-blue-500",
+                        bgColor: "bg-blue-500/10",
+                      },
+                      {
+                        step: "02",
+                        title: "Proposal Review",
+                        description: "Our management team reviews all proposals. Shortlisted candidates will be notified for the next stage.",
+                        icon: <Clock className="w-6 h-6" />,
+                        color: "text-amber-500",
+                        bgColor: "bg-amber-500/10",
+                      },
+                      {
+                        step: "03",
+                        title: "Governor Meeting",
+                        description: "Selected candidates meet with the Governor to present their vision. The most deserving candidate wins.",
+                        icon: <Crown className="w-6 h-6" />,
+                        color: "text-green-500",
+                        bgColor: "bg-green-500/10",
+                      },
+                    ].map((item, index) => (
+                      <div key={index} className="relative group">
+                        <div className="p-6 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/30 hover:border-amber-500/30 transition-all duration-300 h-full">
+                          <div className="flex items-center gap-3 mb-4">
+                            <div className={`p-3 rounded-xl ${item.bgColor} ${item.color}`}>
+                              {item.icon}
+                            </div>
+                            <span className="text-3xl font-bold text-muted-foreground/30">{item.step}</span>
+                          </div>
+                          <h4 className="text-lg font-semibold text-foreground mb-2">{item.title}</h4>
+                          <p className="text-sm text-muted-foreground">{item.description}</p>
+                        </div>
+                        {index < 2 && (
+                          <div className="hidden md:block absolute top-1/2 -right-3 transform -translate-y-1/2 z-10">
+                            <ArrowRight className="w-6 h-6 text-amber-500/50" />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-6">
+                    <h4 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-amber-500" />
+                      What Makes a Winning Proposal?
+                    </h4>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      {[
+                        "Clear and detailed business plan with realistic goals",
+                        "Long-term vision for growth and community contribution",
+                        "Understanding of the server economy and market needs",
+                        "Creative ideas that add value to the roleplay experience",
+                        "Commitment to active management and customer service",
+                        "Previous experience or strong justification for capability",
+                      ].map((point, index) => (
+                        <div key={index} className="flex items-start gap-3">
+                          <div className="w-5 h-5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <span className="text-xs font-bold text-white">✓</span>
+                          </div>
+                          <span className="text-sm text-muted-foreground">{point}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="mt-6 text-center">
+                    <p className="text-sm text-muted-foreground italic">
+                      "The Governor personally meets with all shortlisted candidates. Only those with exceptional vision, 
+                      dedication, and a genuine passion for building something great will be awarded business ownership."
+                    </p>
                   </div>
                 </CardContent>
               </Card>
