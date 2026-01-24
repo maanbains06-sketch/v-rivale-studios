@@ -56,15 +56,17 @@ const Navigation = () => {
   const { toast } = useToast();
   const { isAdmin, department, loading } = useStaffRole();
   const { hasAccess: hasRosterAccess, loading: rosterLoading } = useRosterAccess();
-  const { settings: siteSettings } = useSiteSettings();
+  const { settings: siteSettings, loading: siteSettingsLoading } = useSiteSettings();
 
   // Determine if roster should be visible (hidden during maintenance for non-staff/owner)
   const isMaintenanceMode = siteSettings.maintenance_mode;
   const canSeeRosterDuringMaintenance = isOwner || hasStaffAdminAccess;
   const showRosterLink = hasRosterAccess && (!isMaintenanceMode || canSeeRosterDuringMaintenance);
 
-  // Business header visibility - hidden from non-owners when toggle is enabled
-  const showBusinessLink = !siteSettings.business_header_hidden || isOwner;
+  // Business header visibility
+  // Avoid showing the Business link during initial refresh before settings finish loading.
+  // Owners still always see it.
+  const showBusinessLink = isOwner || (!siteSettingsLoading && !siteSettings.business_header_hidden);
 
   // Track staff presence when logged in with Discord ID
   useWebsitePresence({ 
