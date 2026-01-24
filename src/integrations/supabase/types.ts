@@ -1367,6 +1367,39 @@ export type Database = {
         }
         Relationships: []
       }
+      panel_access: {
+        Row: {
+          discord_id: string
+          discord_username: string | null
+          granted_at: string
+          granted_by: string | null
+          id: string
+          is_active: boolean
+          notes: string | null
+          panel_type: string
+        }
+        Insert: {
+          discord_id: string
+          discord_username?: string | null
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          panel_type: string
+        }
+        Update: {
+          discord_id?: string
+          discord_username?: string | null
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          panel_type?: string
+        }
+        Relationships: []
+      }
       pdm_applications: {
         Row: {
           additional_info: string | null
@@ -2673,6 +2706,10 @@ export type Database = {
           staff_member_id: string
           staff_user_id: string
         }[]
+      }
+      has_panel_access: {
+        Args: { _panel_type: string; _user_id: string }
+        Returns: boolean
       }
       has_role: {
         Args: {

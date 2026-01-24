@@ -26,6 +26,7 @@ import { FeaturedPositionsManager } from "@/components/FeaturedPositionsManager"
 import { PromoCodeManager } from "@/components/PromoCodeManager";
 import { UnifiedApplicationsTable, ApplicationType } from "@/components/UnifiedApplicationsTable";
 import GiveawayManagement from "@/components/GiveawayManagement";
+import PanelAccessManager from "@/components/PanelAccessManager";
 import { LiveApplicationStats } from "@/components/LiveApplicationStats";
 import { combineAllApplications, filterApplicationsByType } from "@/lib/applicationTransformer";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -1647,6 +1648,10 @@ const OwnerPanel = () => {
                   <Briefcase className="w-4 h-4" />
                   <span className="hidden sm:inline">Business</span>
                 </TabsTrigger>
+                <TabsTrigger value="access" className="flex items-center gap-2 whitespace-nowrap">
+                  <Shield className="w-4 h-4" />
+                  <span className="hidden sm:inline">Access</span>
+                </TabsTrigger>
               </TabsList>
             </div>
             {/* Fade indicators for scroll hint */}
@@ -1685,6 +1690,11 @@ const OwnerPanel = () => {
           {/* Featured Positions Tab */}
           <TabsContent value="featured-positions">
             <FeaturedPositionsManager />
+          </TabsContent>
+
+          {/* Access Tab */}
+          <TabsContent value="access">
+            <PanelAccessManager />
           </TabsContent>
 
           {/* Application Stats Tab */}
