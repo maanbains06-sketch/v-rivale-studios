@@ -102,16 +102,19 @@ const Business = () => {
       <Navigation />
       
       {/* Hero Section with Full Background */}
-      <div className="relative min-h-[70vh] flex items-center justify-center overflow-hidden">
-        {/* Background Image */}
+      <div className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
+        {/* Background Image - Full coverage with proper sizing */}
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${headerBg})` }}
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105"
+          style={{ 
+            backgroundImage: `url(${headerBg})`,
+            backgroundPosition: 'center 30%',
+          }}
         />
         
-        {/* Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/60 to-background" />
-        <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-background/80" />
+        {/* Overlays - Reduced opacity for better image visibility */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-background/40 to-background" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/40 via-transparent to-background/40" />
         
         {/* Animated Particles/Glow Effect */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
