@@ -8,14 +8,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Send, MessageCircle, Plus, Paperclip, X, Download, Star, Sparkles, UserPlus, ThumbsUp, ThumbsDown, CreditCard, Ribbon, Globe, AlertOctagon, Bug } from "lucide-react";
+import { Send, MessageCircle, Plus, Paperclip, X, Download, Star, Sparkles, UserPlus, ThumbsUp, ThumbsDown, CreditCard, Ribbon, Globe, AlertOctagon, Bug, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import headerSupport from "@/assets/header-support.jpg";
 import { format } from "date-fns";
 import { Textarea } from "@/components/ui/textarea";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { FeatureDisabledAlert } from "@/components/FeatureDisabledAlert";
+import { useStaffRole } from "@/hooks/useStaffRole";
 
 interface Message {
   id: string;
@@ -49,6 +51,7 @@ const SupportChat = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { settings, loading: settingsLoading } = useSiteSettings();
+  const { isStaff, isAdmin, loading: staffRoleLoading } = useStaffRole();
   const [searchParams] = useSearchParams();
   const category = searchParams.get('category');
   const tagStaffId = searchParams.get('tagStaff');
@@ -69,12 +72,13 @@ const SupportChat = () => {
   const [attachment, setAttachment] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [messageRatings, setMessageRatings] = useState<Map<string, MessageRating>>(new Map());
+  const [isOwner, setIsOwner] = useState(false);
+  const [deletingChatId, setDeletingChatId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     checkAuth();
-    fetchChats();
     
     // Auto-open create dialog if category is specified and no chats exist
     if (category === 'refund') {
@@ -94,6 +98,13 @@ const SupportChat = () => {
       setCreateDialogOpen(true);
     }
   }, []);
+
+  // Fetch chats when staff role is loaded
+  useEffect(() => {
+    if (!staffRoleLoading) {
+      fetchChats();
+    }
+  }, [staffRoleLoading, isStaff, isAdmin, isOwner]);
 
   useEffect(() => {
     if (selectedChat) {
@@ -116,6 +127,15 @@ const SupportChat = () => {
         variant: "destructive",
       });
       navigate("/auth");
+      return;
+    }
+
+    // Check if user is owner
+    try {
+      const { data: ownerCheck } = await supabase.rpc('is_owner');
+      setIsOwner(ownerCheck === true);
+    } catch {
+      setIsOwner(false);
     }
   };
 
@@ -127,11 +147,20 @@ const SupportChat = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { data, error } = await supabase
+    // Check if user can see all chats (owner or staff)
+    const canSeeAllChats = isOwner || isStaff || isAdmin;
+
+    let query = supabase
       .from("support_chats")
       .select("*")
-      .eq("user_id", user.id)
       .order("last_message_at", { ascending: false });
+
+    // Regular users can only see their own chats
+    if (!canSeeAllChats) {
+      query = query.eq("user_id", user.id);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error("Error fetching chats:", error);
@@ -141,6 +170,78 @@ const SupportChat = () => {
     setChats(data || []);
     if (data && data.length > 0 && !selectedChat) {
       setSelectedChat(data[0]);
+    }
+  };
+
+  const deleteChat = async (chatId: string) => {
+    setDeletingChatId(chatId);
+    try {
+      // First delete all messages in the chat
+      const { error: messagesError } = await supabase
+        .from("support_messages")
+        .delete()
+        .eq("chat_id", chatId);
+
+      if (messagesError) {
+        console.error("Error deleting messages:", messagesError);
+        toast({
+          title: "Error",
+          description: "Failed to delete chat messages.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Delete AI message ratings
+      await supabase
+        .from("ai_message_ratings")
+        .delete()
+        .eq("chat_id", chatId);
+
+      // Delete chat ratings
+      await supabase
+        .from("support_chat_ratings")
+        .delete()
+        .eq("chat_id", chatId);
+
+      // Then delete the chat
+      const { error: chatError } = await supabase
+        .from("support_chats")
+        .delete()
+        .eq("id", chatId);
+
+      if (chatError) {
+        console.error("Error deleting chat:", chatError);
+        toast({
+          title: "Error",
+          description: "Failed to delete chat.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Update local state
+      setChats(prev => prev.filter(chat => chat.id !== chatId));
+      
+      // If the deleted chat was selected, clear selection
+      if (selectedChat?.id === chatId) {
+        setSelectedChat(null);
+        setMessages([]);
+      }
+
+      toast({
+        title: "Chat Deleted",
+        description: "The support chat has been permanently deleted.",
+      });
+    } catch (error) {
+      console.error("Error deleting chat:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingChatId(null);
     }
   };
 
@@ -867,50 +968,86 @@ const SupportChat = () => {
                       }[chat.detected_language || 'en'] || '🌐';
                       
                       return (
-                        <button
+                        <div
                           key={chat.id}
-                          onClick={() => setSelectedChat(chat)}
-                          className={`w-full p-4 text-left transition-all duration-200 hover:bg-accent/50 ${
+                          className={`w-full p-4 text-left transition-all duration-200 hover:bg-accent/50 group relative ${
                             isSelected 
                               ? "bg-gradient-to-r from-primary/10 to-transparent border-l-2 border-primary" 
                               : "border-l-2 border-transparent"
                           }`}
                         >
-                          <div className="flex items-start justify-between mb-2">
-                            <div className="flex items-center gap-2 flex-1">
-                              <span className="text-sm">{languageEmoji}</span>
-                              <p className={`font-medium text-sm truncate ${isSelected ? 'text-primary' : ''}`}>
-                                {chat.subject}
-                              </p>
+                          <button
+                            onClick={() => setSelectedChat(chat)}
+                            className="w-full text-left"
+                          >
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="flex items-center gap-2 flex-1">
+                                <span className="text-sm">{languageEmoji}</span>
+                                <p className={`font-medium text-sm truncate ${isSelected ? 'text-primary' : ''}`}>
+                                  {chat.subject}
+                                </p>
+                              </div>
+                              <span className={`text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0 ml-2 ${
+                                chat.status === "open" 
+                                  ? "bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-500 border border-green-500/30" 
+                                  : chat.status === "closed" 
+                                    ? "bg-gray-500/20 text-gray-400 border border-gray-500/20" 
+                                    : "bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-500 border border-amber-500/30"
+                              }`}>
+                                {chat.status}
+                              </span>
                             </div>
-                            <span className={`text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0 ml-2 ${
-                              chat.status === "open" 
-                                ? "bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-500 border border-green-500/30" 
-                                : chat.status === "closed" 
-                                  ? "bg-gray-500/20 text-gray-400 border border-gray-500/20" 
-                                  : "bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-500 border border-amber-500/30"
-                            }`}>
-                              {chat.status}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            {isRefund && (
-                              <span className="text-xs px-2 py-0.5 rounded-full bg-secondary/20 text-secondary flex items-center gap-1 border border-secondary/30">
-                                <CreditCard className="h-3 w-3" />
-                                Refund
-                              </span>
-                            )}
-                            {isEscalated && (
-                              <span className="text-xs px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-500 flex items-center gap-1 border border-orange-500/30">
-                                <UserPlus className="h-3 w-3" />
-                                Escalated
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-2">
-                            {format(new Date(chat.last_message_at), "PPp")}
-                          </p>
-                        </button>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {isRefund && (
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-secondary/20 text-secondary flex items-center gap-1 border border-secondary/30">
+                                  <CreditCard className="h-3 w-3" />
+                                  Refund
+                                </span>
+                              )}
+                              {isEscalated && (
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-500 flex items-center gap-1 border border-orange-500/30">
+                                  <UserPlus className="h-3 w-3" />
+                                  Escalated
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-2">
+                              {format(new Date(chat.last_message_at), "PPp")}
+                            </p>
+                          </button>
+                          
+                          {/* Delete button */}
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Support Chat</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete this chat? This action cannot be undone and will permanently remove all messages in this conversation.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => deleteChat(chat.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  disabled={deletingChatId === chat.id}
+                                >
+                                  {deletingChatId === chat.id ? "Deleting..." : "Delete"}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       );
                     })}
                   </div>
