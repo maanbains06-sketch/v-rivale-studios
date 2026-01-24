@@ -89,6 +89,7 @@ const AdminDiscordRules = lazy(() => import("./pages/AdminDiscordRules"));
 const AdminBusinessProposals = lazy(() => import("./pages/AdminBusinessProposals"));
 const Giveaway = lazy(() => import("./pages/Giveaway"));
 const Roster = lazy(() => import("./pages/Roster"));
+const JobPanel = lazy(() => import("./pages/JobPanel"));
 
 const DirectMessage = lazy(() => import("./pages/DirectMessage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -174,6 +175,7 @@ const AppRoutes = memo(() => {
           <Route path="/feedback" element={<PageTransition><PageMaintenanceBlock pageKey="feedback"><Feedback /></PageMaintenanceBlock></PageTransition>} />
           <Route path="/giveaway" element={<PageTransition><PageMaintenanceBlock pageKey="giveaway"><Giveaway /></PageMaintenanceBlock></PageTransition>} />
           <Route path="/roster" element={<PageTransition><PageMaintenanceBlock pageKey="roster"><Roster /></PageMaintenanceBlock></PageTransition>} />
+          <Route path="/job-panel" element={<PageTransition><RequireAuth message="Login with Discord to access the Job Panel."><JobPanel /></RequireAuth></PageTransition>} />
           
           <Route path="/direct-message" element={<PageTransition><RequireAuth message="Login with Discord to send direct messages."><DirectMessage /></RequireAuth></PageTransition>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
