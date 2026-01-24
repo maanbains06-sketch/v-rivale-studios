@@ -516,6 +516,7 @@ const JobPanel = () => {
                               <TableHead>Position</TableHead>
                               <TableHead>Status</TableHead>
                               <TableHead>Submitted</TableHead>
+                              <TableHead>Reviewed</TableHead>
                               <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
                           </TableHeader>
@@ -527,6 +528,19 @@ const JobPanel = () => {
                                 <TableCell>{app.position || app.department || '-'}</TableCell>
                                 <TableCell>{getStatusBadge(app.status)}</TableCell>
                                 <TableCell>{new Date(app.created_at).toLocaleDateString()}</TableCell>
+                                <TableCell>
+                                  {app.reviewed_at ? (
+                                    <span className="text-xs text-muted-foreground">
+                                      {new Date(app.reviewed_at).toLocaleDateString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        year: 'numeric'
+                                      })}
+                                    </span>
+                                  ) : (
+                                    <span className="text-xs text-muted-foreground">-</span>
+                                  )}
+                                </TableCell>
                                 <TableCell className="text-right">
                                   <Button
                                     variant="ghost"
