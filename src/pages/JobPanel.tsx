@@ -16,7 +16,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useJobPanelAccess, DEPARTMENT_INFO, type DepartmentKey } from "@/hooks/useJobPanelAccess";
 import { sendDiscordNotification } from "@/lib/discordNotificationSender";
 import { ApplicationType } from "@/components/UnifiedApplicationsTable";
-import { Shield, RefreshCw, CheckCircle, XCircle, Clock, Eye, AlertTriangle, Briefcase } from "lucide-react";
+import { Shield, RefreshCw, CheckCircle, XCircle, Clock, Eye, AlertTriangle, Briefcase, Search, Filter } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import headerJobsImg from "@/assets/header-guides-new.jpg";
 
 // Map department keys to ApplicationType for Discord notifications
@@ -64,8 +66,33 @@ const JobPanel = () => {
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
   const [reviewNotes, setReviewNotes] = useState('');
   const [isReviewing, setIsReviewing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  // Set initial active tab based on accessible departments
+  // Filter applications based on search and status
+  const getFilteredApplications = useCallback((dept: DepartmentKey) => {
+    let filtered = applications[dept] || [];
+    
+    // Filter by status
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(app => app.status === statusFilter);
+    }
+    
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(app => 
+        (app.discord_username?.toLowerCase().includes(query)) ||
+        (app.discord_id?.toLowerCase().includes(query)) ||
+        (app.character_name?.toLowerCase().includes(query)) ||
+        (app.in_game_name?.toLowerCase().includes(query)) ||
+        (app.real_name?.toLowerCase().includes(query)) ||
+        (app.position?.toLowerCase().includes(query))
+      );
+    }
+    
+    return filtered;
+  }, [applications, searchQuery, statusFilter]);
   useEffect(() => {
     if (!accessLoading && accessibleDepartments.length > 0 && !activeTab) {
       setActiveTab(accessibleDepartments[0]);
@@ -423,7 +450,35 @@ const JobPanel = () => {
                   })}
                 </TabsList>
 
-                {accessibleDepartments.map((dept) => (
+                {/* Search and Filter Controls */}
+                <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search by name, Discord, character..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-full sm:w-[180px]">
+                      <Filter className="w-4 h-4 mr-2" />
+                      <SelectValue placeholder="Filter by status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Statuses</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="on_hold">On Hold</SelectItem>
+                      <SelectItem value="approved">Approved</SelectItem>
+                      <SelectItem value="rejected">Rejected</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {accessibleDepartments.map((dept) => {
+                  const filteredApps = getFilteredApplications(dept);
+                  return (
                   <TabsContent key={dept} value={dept}>
                     {loading ? (
                       <div className="space-y-2">
@@ -431,10 +486,25 @@ const JobPanel = () => {
                         <Skeleton className="h-10 w-full" />
                         <Skeleton className="h-10 w-full" />
                       </div>
-                    ) : applications[dept]?.length === 0 ? (
+                    ) : filteredApps.length === 0 ? (
                       <div className="text-center py-12 text-muted-foreground">
                         <Briefcase className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                        <p>No applications found for {DEPARTMENT_INFO[dept].name}</p>
+                        <p>
+                          {(searchQuery || statusFilter !== 'all') 
+                            ? `No applications match your filters for ${DEPARTMENT_INFO[dept].name}`
+                            : `No applications found for ${DEPARTMENT_INFO[dept].name}`
+                          }
+                        </p>
+                        {(searchQuery || statusFilter !== 'all') && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="mt-2"
+                            onClick={() => { setSearchQuery(''); setStatusFilter('all'); }}
+                          >
+                            Clear Filters
+                          </Button>
+                        )}
                       </div>
                     ) : (
                       <div className="rounded-md border border-border/50 overflow-hidden">
@@ -450,7 +520,7 @@ const JobPanel = () => {
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {applications[dept]?.map((app) => (
+                            {filteredApps.map((app) => (
                               <TableRow key={app.id}>
                                 <TableCell className="font-medium">{app.discord_username || app.discord_id || 'Unknown'}</TableCell>
                                 <TableCell>{app.character_name || app.in_game_name || '-'}</TableCell>
@@ -477,7 +547,8 @@ const JobPanel = () => {
                       </div>
                     )}
                   </TabsContent>
-                ))}
+                  );
+                })}
               </Tabs>
             )}
           </CardContent>
