@@ -73,7 +73,7 @@ const AddStaffManualDialog = ({
           call_sign: formData.call_sign || null,
           strikes: formData.strikes || '0/3',
           discord_id: placeholderId,
-          is_active: formData.status === 'active',
+          is_active: formData.status === 'active' || formData.status === 'on_training',
         });
 
       if (error) throw error;
