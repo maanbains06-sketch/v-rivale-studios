@@ -232,20 +232,14 @@ export const EnhancedSiteSettings = ({ settings, onSettingsChange }: EnhancedSit
     const newValue = currentValue === 'true' ? 'false' : 'true';
     setEditedSettings(prev => ({ ...prev, [key]: newValue }));
     
-    // Clear the site settings cache to ensure fresh data on refresh
-    try {
-      localStorage.removeItem('slrp_site_settings');
-    } catch {
-      // Ignore storage errors
-    }
-    
     // Auto-save toggle settings
     const { data: { user } } = await supabase.auth.getUser();
     
     const existingSetting = settings.find(s => s.key === key);
+    let saveError = null;
     
     if (existingSetting) {
-      await supabase
+      const { error } = await supabase
         .from("site_settings")
         .update({
           value: newValue,
@@ -253,14 +247,34 @@ export const EnhancedSiteSettings = ({ settings, onSettingsChange }: EnhancedSit
           updated_at: new Date().toISOString(),
         })
         .eq("key", key);
+      saveError = error;
     } else {
-      await supabase
+      const { error } = await supabase
         .from("site_settings")
         .insert({
           key,
           value: newValue,
           updated_by: user?.id,
         });
+      saveError = error;
+    }
+
+    if (saveError) {
+      toast({
+        title: "Error",
+        description: "Failed to save setting. Please try again.",
+        variant: "destructive",
+      });
+      // Revert local state on error
+      setEditedSettings(prev => ({ ...prev, [key]: currentValue }));
+      return;
+    }
+
+    // Clear the site settings cache AFTER successful save to ensure fresh data on refresh
+    try {
+      localStorage.removeItem('slrp_site_settings');
+    } catch {
+      // Ignore storage errors
     }
 
     await logAction({
@@ -276,6 +290,7 @@ export const EnhancedSiteSettings = ({ settings, onSettingsChange }: EnhancedSit
       description: `${key.replace(/_/g, ' ')} ${newValue === 'true' ? 'enabled' : 'disabled'}.`,
     });
     
+    // Force immediate refresh of settings
     onSettingsChange();
   };
 
