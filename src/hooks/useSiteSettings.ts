@@ -142,8 +142,6 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
         };
 
         setSettings(newSettings);
-        
-        // Cache for next visit
         try {
           const cacheData: CachedSettings = { settings: newSettings, timestamp: Date.now() };
           localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
