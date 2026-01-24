@@ -768,7 +768,6 @@ const Staff = () => {
 
           {/* Department Sections - Clean unified design */}
           {[
-            { key: "leadership", title: "Leadership Team", subtitle: "The visionaries guiding SLRP to excellence", icon: Shield, staff: leadershipStaff, centerSingle: true, noLimit: true },
             { key: "management", title: "Management Team", subtitle: "Ensuring smooth server operations", icon: Users, staff: adminStaff.slice(0, 3), centerSingle: false, noLimit: false },
             { key: "administration", title: "Administration Team", subtitle: "Keeping the community safe and fair", icon: Shield, staff: administrationStaff, centerSingle: true, noLimit: true },
             { key: "development", title: "Development Team", subtitle: "Building innovative features", icon: Code, staff: developerStaff, centerSingle: true, noLimit: true },

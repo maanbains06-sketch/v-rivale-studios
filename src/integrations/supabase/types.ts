@@ -1866,6 +1866,7 @@ export type Database = {
           steam_id: string | null
           strikes: string | null
           timezone: string | null
+          training_status: string | null
           updated_at: string | null
           user_id: string | null
         }
@@ -1893,6 +1894,7 @@ export type Database = {
           steam_id?: string | null
           strikes?: string | null
           timezone?: string | null
+          training_status?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -1920,6 +1922,7 @@ export type Database = {
           steam_id?: string | null
           strikes?: string | null
           timezone?: string | null
+          training_status?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
