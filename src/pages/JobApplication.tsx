@@ -33,6 +33,7 @@ import jobRealEstateImg from "@/assets/job-real-estate.jpg";
 import jobFoodJointImg from "@/assets/job-food-joint.jpg";
 import jobTunerShopImg from "@/assets/job-tuner-shop.jpg";
 import jobEntertainmentImg from "@/assets/job-entertainment.jpg";
+import jobMechanicShopImg from "@/assets/job-mechanic-shop.jpg";
 
 const JobApplication = () => {
   const navigate = useNavigate();
@@ -167,7 +168,7 @@ const JobApplication = () => {
       name: "Mechanic Shop",
       icon: Wrench,
       color: "green-500",
-      image: jobMechanicImg,
+      image: jobMechanicShopImg,
       description: "Work at an established mechanic shop. Repair vehicles and provide quality service.",
       benefits: ["Technical Training", "Steady Income", "Career Growth"],
     },
@@ -244,7 +245,7 @@ const JobApplication = () => {
       case "business-food-joint":
         return <BusinessJobApplicationForm jobType="Food Service Worker" jobImage={jobFoodJointImg} />;
       case "business-mechanic":
-        return <BusinessJobApplicationForm jobType="Business Mechanic" jobImage={jobMechanicImg} />;
+        return <BusinessJobApplicationForm jobType="Business Mechanic" jobImage={jobMechanicShopImg} />;
       case "business-tuner":
         return <BusinessJobApplicationForm jobType="Tuner Specialist" jobImage={jobTunerShopImg} />;
       case "business-entertainment":
