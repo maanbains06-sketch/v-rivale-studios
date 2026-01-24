@@ -277,7 +277,7 @@ const Roster = () => {
     ranks: string[];
     isStaffDept: boolean;
   } | null>(null);
-  const { hasAccess, canEdit, loading: accessLoading, isOwner, accessibleDepartments, canAccessDepartment } = useRosterAccess();
+  const { hasAccess, canEdit, loading: accessLoading, isOwner, accessibleDepartments, canAccessDepartment, canEditDepartment, refetch } = useRosterAccess();
 
   // Helper to check if a rank is Governor
   const isGovernorRank = (rankName: string) => rankName.toLowerCase() === 'governor';
@@ -755,6 +755,7 @@ const Roster = () => {
               });
 
               const isEditing = editMode[deptKey];
+              const canEditThisDept = canEditDepartment(shortKey);
 
               return (
                 <TabsContent 
@@ -801,7 +802,7 @@ const Roster = () => {
                               Save
                             </Button>
                           </div>
-                        ) : canEdit ? (
+                        ) : canEditDepartment(shortKey) ? (
                           <>
                             <Button
                               size="sm"
@@ -864,7 +865,7 @@ const Roster = () => {
 
                             {/* Table Header - Dynamic based on rank */}
                             {isGovernorRank(rankName) ? (
-                              <div className={`grid ${canEdit ? 'grid-cols-5' : 'grid-cols-4'} px-5 py-3 bg-muted/30 border-b border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground`}>
+                              <div className={`grid ${canEditThisDept ? 'grid-cols-5' : 'grid-cols-4'} px-5 py-3 bg-muted/30 border-b border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground`}>
                                 <div className="flex items-center gap-2">
                                   <span className="w-8" />
                                   <span>Name</span>
@@ -872,10 +873,10 @@ const Roster = () => {
                                 <div className="text-center">Rank</div>
                                 <div className="text-center">Status</div>
                                 <div className="text-center">Division</div>
-                                {canEdit && <div className="text-center">Actions</div>}
+                                {canEditThisDept && <div className="text-center">Actions</div>}
                               </div>
                             ) : (
-                              <div className={`grid ${canEdit ? 'grid-cols-8' : 'grid-cols-7'} px-5 py-3 bg-muted/30 border-b border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground`}>
+                              <div className={`grid ${canEditThisDept ? 'grid-cols-8' : 'grid-cols-7'} px-5 py-3 bg-muted/30 border-b border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground`}>
                                 <div className="flex items-center gap-2">
                                   <span className="w-8" />
                                   <span>Officer</span>
@@ -886,7 +887,7 @@ const Roster = () => {
                                 <div className="text-center">Status</div>
                                 <div className="text-center">Division</div>
                                 <div className="text-center">Unit</div>
-                                {canEdit && <div className="text-center">Actions</div>}
+                                {canEditThisDept && <div className="text-center">Actions</div>}
                               </div>
                             )}
 
@@ -897,7 +898,7 @@ const Roster = () => {
                                   /* Governor-specific row layout - no badge/strikes, Name instead of Officer */
                                   <div 
                                     key={member.id}
-                                    className={`grid ${canEdit ? 'grid-cols-5' : 'grid-cols-4'} px-5 py-3 items-center transition-colors hover:bg-muted/30
+                                    className={`grid ${canEditThisDept ? 'grid-cols-5' : 'grid-cols-4'} px-5 py-3 items-center transition-colors hover:bg-muted/30
                                       ${idx % 2 === 0 ? 'bg-transparent' : 'bg-muted/10'}`}
                                   >
                                     {/* Name */}
@@ -1011,7 +1012,7 @@ const Roster = () => {
                                     </div>
 
                                     {/* Actions - Dropdown */}
-                                    {canEdit && (
+                                    {canEditThisDept && (
                                       <div className="flex justify-center">
                                         <DropdownMenu>
                                           <DropdownMenuTrigger asChild>
@@ -1047,7 +1048,7 @@ const Roster = () => {
                                   /* Standard row layout for all other ranks */
                                   <div 
                                     key={member.id}
-                                    className={`grid ${canEdit ? 'grid-cols-8' : 'grid-cols-7'} px-5 py-3 items-center transition-colors hover:bg-muted/30
+                                    className={`grid ${canEditThisDept ? 'grid-cols-8' : 'grid-cols-7'} px-5 py-3 items-center transition-colors hover:bg-muted/30
                                       ${idx % 2 === 0 ? 'bg-transparent' : 'bg-muted/10'}`}
                                   >
                                     {/* Officer */}
@@ -1214,7 +1215,7 @@ const Roster = () => {
                                     </div>
 
                                     {/* Actions - Dropdown */}
-                                    {canEdit && (
+                                    {canEditThisDept && (
                                       <div className="flex justify-center">
                                         <DropdownMenu>
                                           <DropdownMenuTrigger asChild>

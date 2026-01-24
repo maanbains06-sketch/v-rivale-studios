@@ -8,66 +8,71 @@ const corsHeaders = {
 // Department type definition
 type DepartmentKey = 'police' | 'ems' | 'fire' | 'mechanic' | 'doj' | 'state' | 'weazel' | 'pdm' | 'staff';
 
-// Mapping of Discord role IDs to department access
-const DEPARTMENT_ROLE_MAPPING: Record<DepartmentKey, string[]> = {
+// Discord Role ID mappings for each department roster access
+// These are the department lead/management roles that grant access to view their roster
+const ROSTER_VIEW_ROLES: Record<DepartmentKey, string[]> = {
   police: [
-    "1463143859935772672", // PD Management role
-    "1431378586203590687", // PD role
+    "1451442274037923960", // PD Lead/Management role
+    "1431378586203590687", // PD Member role
   ],
   ems: [
-    "1431379430797869207", // EMS Management role
-    "1431378794077487304", // EMS role
+    "1451442460910817371", // EMS Lead/Management role
+    "1431379430797869207", // EMS Member role
+    "1431378794077487304", // EMS Secondary role
   ],
   fire: [
-    "1281554246281461792", // Fire Management role
-    "1281554458563575859", // Fire role
+    "1451442569018998916", // Fire Lead/Management role
+    "1281554246281461792", // Fire Member role
+    "1281554458563575859", // Fire Secondary role
   ],
   mechanic: [
-    "1438258435052535920", // Mechanic Management role
-    "1317457907620646972", // Mechanic role
+    "1451442834229039104", // Mechanic Lead/Management role
+    "1438258435052535920", // Mechanic Member role
+    "1317457907620646972", // Mechanic Secondary role
   ],
   doj: [
-    "1463145983448973519", // DOJ Management role
-    "1451442834229039104", // DOJ role
+    "1463145983448973519", // DOJ Lead/Management role
   ],
   state: [
-    "1463143254324285583", // State Management role
-    "1451442686115581963", // State role
+    "1451442686115581963", // State Lead/Management role
   ],
   weazel: [
-    "1451442569018998916", // Weazel Management role
-    "1451442460910817371", // Weazel role
+    "1463143254324285583", // Weazel Lead/Management role
   ],
   pdm: [
-    "1451442274037923960", // PDM Management role
-    "1451747382592012380", // PDM role
+    "1451747382592012380", // PDM Lead/Management role
   ],
   staff: [
-    "1463145983448973519", // Staff Management
-    "1451442834229039104", // Admin role
+    "1463143859935772672", // Staff/Leadership role
+    "1463145983448973519", // Admin role
   ],
 };
 
-// Roles that grant VIEW access to ALL departments
-const ALL_DEPARTMENTS_VIEW_ROLES = [
-  "1463143859935772672", // Leadership
-  "1463145983448973519", // Head Admin
+// Roles that grant access to ALL department rosters (Leadership/Admin roles)
+const ALL_DEPARTMENTS_ACCESS_ROLES = [
+  "1463143859935772672", // Leadership role
+  "1463145983448973519", // Head Admin role
+  "1451442834229039104", // Admin role
 ];
 
-// Roles that grant EDIT access (per department or all)
-const EDIT_ROLE_IDS = [
-  "1463145983448973519", // Head Admin - can edit all
-  "1451442834229039104", // Admin - can edit all
-  "1463143254324285583", // Management roles...
-  "1451442686115581963",
-  "1451442569018998916",
-  "1451442460910817371",
-  "1451442274037923960",
-  "1451747382592012380",
-];
+// Roles that grant EDIT access to rosters (per department or globally)
+const ROSTER_EDIT_ROLES: Record<DepartmentKey, string[]> = {
+  police: ["1451442274037923960"], // PD Lead can edit PD roster
+  ems: ["1451442460910817371"], // EMS Lead can edit EMS roster
+  fire: ["1451442569018998916"], // Fire Lead can edit Fire roster
+  mechanic: ["1451442834229039104"], // Mechanic Lead can edit Mechanic roster
+  doj: ["1463145983448973519"], // DOJ Lead can edit DOJ roster
+  state: ["1451442686115581963"], // State Lead can edit State roster
+  weazel: ["1463143254324285583"], // Weazel Lead can edit Weazel roster
+  pdm: ["1451747382592012380"], // PDM Lead can edit PDM roster
+  staff: ["1463143859935772672", "1463145983448973519"], // Leadership/Admin can edit Staff roster
+};
 
-// Owner Discord ID - always has full access
-const OWNER_DISCORD_ID = "833680146510381097";
+// Global edit roles (can edit ALL rosters)
+const GLOBAL_EDIT_ROLES = [
+  "1463143859935772672", // Leadership role
+  "1463145983448973519", // Head Admin role
+];
 
 serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -77,6 +82,7 @@ serve(async (req: Request): Promise<Response> => {
   try {
     const discordBotToken = Deno.env.get("DISCORD_BOT_TOKEN");
     const discordServerId = Deno.env.get("DISCORD_SERVER_ID");
+    const ownerDiscordId = Deno.env.get("OWNER_DISCORD_ID") || "833680146510381097";
 
     if (!discordBotToken || !discordServerId) {
       console.error("Discord configuration missing");
@@ -85,6 +91,7 @@ serve(async (req: Request): Promise<Response> => {
           hasAccess: false,
           canEdit: false,
           accessibleDepartments: [],
+          editableDepartments: [],
           error: "Discord configuration incomplete"
         }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -99,21 +106,25 @@ serve(async (req: Request): Promise<Response> => {
           hasAccess: false,
           canEdit: false,
           accessibleDepartments: [],
+          editableDepartments: [],
           error: "Discord ID is required"
         }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
-    // Check if owner - full access to all departments
-    if (discordId === OWNER_DISCORD_ID) {
+    const allDepartments: DepartmentKey[] = ['police', 'ems', 'fire', 'mechanic', 'doj', 'state', 'weazel', 'pdm', 'staff'];
+
+    // Check if owner - full access to all departments with edit rights
+    if (discordId === ownerDiscordId) {
       console.log(`Owner ${discordId} has full roster access to all departments`);
       return new Response(
         JSON.stringify({
           hasAccess: true,
           canEdit: true,
           isOwner: true,
-          accessibleDepartments: ['police', 'ems', 'fire', 'mechanic', 'doj', 'state', 'weazel', 'pdm', 'staff'] as DepartmentKey[],
+          accessibleDepartments: allDepartments,
+          editableDepartments: allDepartments,
         }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
@@ -121,12 +132,13 @@ serve(async (req: Request): Promise<Response> => {
 
     console.log(`Checking roster access for Discord ID: ${discordId}`);
 
-    // Fetch guild member data to get their roles
+    // Fetch guild member data to get their roles - this is the live fetch from Discord
     const memberResponse = await fetch(
       `https://discord.com/api/v10/guilds/${discordServerId}/members/${discordId}`,
       {
         headers: {
           Authorization: `Bot ${discordBotToken}`,
+          "Content-Type": "application/json",
         },
       }
     );
@@ -139,6 +151,7 @@ serve(async (req: Request): Promise<Response> => {
             hasAccess: false,
             canEdit: false,
             accessibleDepartments: [],
+            editableDepartments: [],
             reason: "User not in Discord server"
           }),
           { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -152,6 +165,7 @@ serve(async (req: Request): Promise<Response> => {
           hasAccess: false,
           canEdit: false,
           accessibleDepartments: [],
+          editableDepartments: [],
           error: `Discord API error: ${memberResponse.status}`
         }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -161,38 +175,59 @@ serve(async (req: Request): Promise<Response> => {
     const memberData = await memberResponse.json();
     const userRoles: string[] = memberData.roles || [];
     
-    console.log(`User ${discordId} roles: ${userRoles.join(", ")}`);
+    console.log(`User ${discordId} live Discord roles: ${userRoles.join(", ")}`);
 
-    // Check if user has roles that grant access to all departments
-    const hasAllDepartmentsAccess = userRoles.some(roleId => ALL_DEPARTMENTS_VIEW_ROLES.includes(roleId));
+    // Check if user has roles that grant access to ALL departments
+    const hasAllDepartmentsAccess = userRoles.some(roleId => ALL_DEPARTMENTS_ACCESS_ROLES.includes(roleId));
     
-    // Check which specific departments the user can access
+    // Check if user has global edit access
+    const hasGlobalEditAccess = userRoles.some(roleId => GLOBAL_EDIT_ROLES.includes(roleId));
+    
+    // Determine accessible departments
     const accessibleDepartments: DepartmentKey[] = [];
+    const editableDepartments: DepartmentKey[] = [];
     
     if (hasAllDepartmentsAccess) {
       // User has access to all departments
-      accessibleDepartments.push('police', 'ems', 'fire', 'mechanic', 'doj', 'state', 'weazel', 'pdm', 'staff');
+      accessibleDepartments.push(...allDepartments);
+      
+      if (hasGlobalEditAccess) {
+        // User can edit all departments
+        editableDepartments.push(...allDepartments);
+      }
     } else {
       // Check each department for role-based access
-      for (const [dept, roleIds] of Object.entries(DEPARTMENT_ROLE_MAPPING)) {
-        if (userRoles.some(userRole => roleIds.includes(userRole))) {
-          accessibleDepartments.push(dept as DepartmentKey);
+      for (const dept of allDepartments) {
+        const viewRoles = ROSTER_VIEW_ROLES[dept] || [];
+        const editRoles = ROSTER_EDIT_ROLES[dept] || [];
+        
+        const hasViewAccess = userRoles.some(userRole => viewRoles.includes(userRole));
+        const hasEditAccess = userRoles.some(userRole => editRoles.includes(userRole));
+        
+        if (hasViewAccess || hasEditAccess) {
+          accessibleDepartments.push(dept);
+        }
+        
+        if (hasEditAccess) {
+          editableDepartments.push(dept);
         }
       }
     }
 
-    // Check if user has any of the allowed EDIT roles
-    const hasEditAccess = userRoles.some(roleId => EDIT_ROLE_IDS.includes(roleId));
-
     const hasAccess = accessibleDepartments.length > 0;
+    const canEdit = editableDepartments.length > 0 || hasGlobalEditAccess;
 
-    console.log(`User ${discordId} - Has access: ${hasAccess}, Can edit: ${hasEditAccess}, Departments: ${accessibleDepartments.join(", ")}`);
+    console.log(`User ${discordId} - Has access: ${hasAccess}, Can edit: ${canEdit}`);
+    console.log(`Accessible departments: ${accessibleDepartments.join(", ")}`);
+    console.log(`Editable departments: ${editableDepartments.join(", ")}`);
 
     return new Response(
       JSON.stringify({
         hasAccess,
-        canEdit: hasEditAccess,
+        canEdit,
+        isOwner: false,
         accessibleDepartments,
+        editableDepartments,
         username: memberData.user?.username || null,
         userRoles: userRoles,
       }),
@@ -205,6 +240,7 @@ serve(async (req: Request): Promise<Response> => {
         hasAccess: false,
         canEdit: false,
         accessibleDepartments: [],
+        editableDepartments: [],
         error: error.message
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
