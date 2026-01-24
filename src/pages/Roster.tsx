@@ -277,7 +277,7 @@ const Roster = () => {
     ranks: string[];
     isStaffDept: boolean;
   } | null>(null);
-  const { hasAccess, canEdit, loading: accessLoading, isOwner } = useRosterAccess();
+  const { hasAccess, canEdit, loading: accessLoading, isOwner, accessibleDepartments, canAccessDepartment } = useRosterAccess();
 
   // Helper to check if a rank is Governor
   const isGovernorRank = (rankName: string) => rankName.toLowerCase() === 'governor';
@@ -651,6 +651,40 @@ const Roster = () => {
     );
   }
 
+  // Map department shortName to department key for filtering
+  const getDeptKeyFromShortName = (shortName: string): string => {
+    const mapping: Record<string, string> = {
+      'SLPD': 'police',
+      'EMS': 'ems',
+      'Fire': 'fire',
+      'Mechanic': 'mechanic',
+      'DOJ': 'doj',
+      'State': 'state',
+      'Weazel': 'weazel',
+      'PDM': 'pdm',
+      'Staff': 'staff',
+    };
+    return mapping[shortName] || shortName.toLowerCase();
+  };
+
+  // Filter departments based on user's accessible departments
+  const filteredDepartments = departments.filter(dept => {
+    const deptKey = getDeptKeyFromShortName(dept.shortName);
+    return canAccessDepartment(deptKey);
+  });
+
+  // Set default active tab to first accessible department
+  useEffect(() => {
+    if (filteredDepartments.length > 0 && !accessLoading) {
+      const currentTabExists = filteredDepartments.some(
+        dept => dept.department.toLowerCase().replace(/\s+/g, '-') === activeTab
+      );
+      if (!currentTabExists) {
+        setActiveTab(filteredDepartments[0].department.toLowerCase().replace(/\s+/g, '-'));
+      }
+    }
+  }, [filteredDepartments, accessLoading]);
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -662,11 +696,24 @@ const Roster = () => {
       />
 
       <div className="container mx-auto px-4 py-8">
-        {(
+        {filteredDepartments.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-6">
+              <Lock className="w-10 h-10 text-muted-foreground" />
+            </div>
+            <h2 className="text-2xl font-bold text-foreground mb-3">No Departments Available</h2>
+            <p className="text-muted-foreground max-w-md mb-6">
+              You don't have access to view any department rosters. Contact an administrator if you believe this is an error.
+            </p>
+            <Button variant="outline" onClick={() => window.history.back()}>
+              Go Back
+            </Button>
+          </div>
+        ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
             <ScrollArea className="w-full">
               <TabsList className="inline-flex w-auto gap-1 p-1.5 bg-card/80 backdrop-blur-sm rounded-xl border border-border shadow-xl">
-                {departments.map((dept) => (
+                {filteredDepartments.map((dept) => (
                   <TabsTrigger 
                     key={dept.department}
                     value={dept.department.toLowerCase().replace(/\s+/g, '-')}
@@ -682,7 +729,7 @@ const Roster = () => {
               <ScrollBar orientation="horizontal" />
             </ScrollArea>
 
-            {departments.map((dept) => {
+            {filteredDepartments.map((dept) => {
               const deptKey = dept.department.toLowerCase().replace(/\s+/g, '-');
               // Get short key for division/unit options lookup
               const shortKey = dept.shortName.toLowerCase().replace(/\s+/g, '-');
