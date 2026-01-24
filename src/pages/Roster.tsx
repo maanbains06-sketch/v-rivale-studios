@@ -106,6 +106,7 @@ const statusOptions = [
   { value: 'active', label: 'Active' },
   { value: 'inactive', label: 'Inactive' },
   { value: 'on_leave', label: 'On Leave' },
+  { value: 'on_training', label: 'On Training' },
 ];
 
 // Department-specific division options
