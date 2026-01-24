@@ -46,6 +46,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import AddStaffByDiscordDialog from "@/components/AddStaffByDiscordDialog";
+import AddStaffManualDialog from "@/components/AddStaffManualDialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -274,6 +275,7 @@ const Roster = () => {
     departmentKey: string;
     shortName: string;
     ranks: string[];
+    isStaffDept: boolean;
   } | null>(null);
   const { hasAccess, canEdit, loading: accessLoading, isOwner } = useRosterAccess();
 
@@ -326,11 +328,13 @@ const Roster = () => {
 
   const handleOpenAddStaffDialog = (dept: { department: string; shortName: string; ranks?: string[] }, shortKey: string) => {
     const dbKey = getDatabaseDepartmentKey(shortKey);
+    const isStaffDept = shortKey.toLowerCase() === 'staff';
     setSelectedDeptForAdd({
       departmentLabel: dept.department,
       departmentKey: dbKey, // Use database-compatible key
       shortName: dept.shortName,
       ranks: dept.ranks || [],
+      isStaffDept,
     });
     setAddStaffDialogOpen(true);
   };
@@ -1268,9 +1272,23 @@ const Roster = () => {
           </Tabs>
         )}
 
-        {/* Add Staff Dialog */}
-        {selectedDeptForAdd && (
+        {/* Add Staff Dialog - Discord-based for Staff, Manual for all others */}
+        {selectedDeptForAdd && selectedDeptForAdd.isStaffDept && (
           <AddStaffByDiscordDialog
+            open={addStaffDialogOpen}
+            onOpenChange={setAddStaffDialogOpen}
+            departmentLabel={selectedDeptForAdd.departmentLabel}
+            departmentKey={selectedDeptForAdd.departmentKey}
+            ranks={selectedDeptForAdd.ranks}
+            divisionOptions={divisionOptionsByDept[selectedDeptForAdd.shortName.toLowerCase()] || divisionOptions}
+            unitOptions={unitOptionsByDept[selectedDeptForAdd.shortName.toLowerCase()] || []}
+            onSuccess={handleAddStaffSuccess}
+          />
+        )}
+
+        {/* Manual Entry Dialog for non-Staff departments */}
+        {selectedDeptForAdd && !selectedDeptForAdd.isStaffDept && (
+          <AddStaffManualDialog
             open={addStaffDialogOpen}
             onOpenChange={setAddStaffDialogOpen}
             departmentLabel={selectedDeptForAdd.departmentLabel}
