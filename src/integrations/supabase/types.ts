@@ -615,6 +615,48 @@ export type Database = {
           },
         ]
       }
+      featured_positions: {
+        Row: {
+          created_at: string
+          department: string
+          description: string | null
+          display_order: number
+          id: string
+          is_hiring: boolean
+          job_id: string
+          name: string
+          spots: number
+          updated_at: string
+          urgency: string
+        }
+        Insert: {
+          created_at?: string
+          department?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_hiring?: boolean
+          job_id: string
+          name: string
+          spots?: number
+          updated_at?: string
+          urgency?: string
+        }
+        Update: {
+          created_at?: string
+          department?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_hiring?: boolean
+          job_id?: string
+          name?: string
+          spots?: number
+          updated_at?: string
+          urgency?: string
+        }
+        Relationships: []
+      }
       featured_youtubers: {
         Row: {
           avatar_url: string | null

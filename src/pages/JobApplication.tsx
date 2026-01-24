@@ -36,11 +36,25 @@ import jobTunerShopImg from "@/assets/job-tuner-shop.jpg";
 import jobEntertainmentImg from "@/assets/job-entertainment.jpg";
 import jobMechanicShopImg from "@/assets/job-mechanic-shop.jpg";
 
+interface FeaturedPosition {
+  id: string;
+  job_id: string;
+  name: string;
+  description: string | null;
+  department: string;
+  urgency: "critical" | "high" | "medium";
+  spots: number;
+  is_hiring: boolean;
+  display_order: number;
+}
+
 const JobApplication = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [selectedForm, setSelectedForm] = useState<string | null>(null);
+  const [featuredPositions, setFeaturedPositions] = useState<FeaturedPosition[]>([]);
+  const [isOwner, setIsOwner] = useState(false);
   
   // Use Discord whitelist role for access control
   const { hasAccess, isInServer, hasWhitelistRole, loading: accessLoading, refreshAccess } = useWhitelistAccess();
@@ -48,16 +62,39 @@ const JobApplication = () => {
 
   useEffect(() => {
     checkUser();
+    loadFeaturedPositions();
   }, []);
 
   const checkUser = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user || null);
+      
+      // Check if user is owner
+      if (user) {
+        const { data: isOwnerResult } = await supabase.rpc('is_owner', { _user_id: user.id });
+        setIsOwner(!!isOwnerResult);
+      }
     } catch (error) {
       console.error("Error checking user:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadFeaturedPositions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("featured_positions")
+        .select("*")
+        .eq("is_hiring", true)
+        .order("display_order", { ascending: true });
+
+      if (!error && data) {
+        setFeaturedPositions(data as FeaturedPosition[]);
+      }
+    } catch (error) {
+      console.error("Error loading featured positions:", error);
     }
   };
 
@@ -193,75 +230,59 @@ const JobApplication = () => {
     },
   ];
 
-  // Featured urgent hiring positions for the carousel
-  const featuredJobs = [
-    {
-      id: "police",
-      name: "Police Officer",
-      icon: <Shield className="w-5 h-5 text-primary" />,
-      image: jobPoliceImg,
-      urgency: "critical" as const,
-      spots: 3,
-      description: "Join LSPD and uphold justice. Critical need for dedicated officers to maintain law and order.",
-      department: "Government",
-      color: "primary",
-    },
-    {
-      id: "ems",
-      name: "EMS Paramedic",
-      icon: <Heart className="w-5 h-5 text-red-400" />,
-      image: jobEmsImg,
-      urgency: "critical" as const,
-      spots: 5,
-      description: "Save lives in San Andreas. Emergency medical services desperately need skilled paramedics.",
-      department: "Government",
-      color: "red-500",
-    },
-    {
-      id: "firefighter",
-      name: "Firefighter",
-      icon: <Flame className="w-5 h-5 text-orange-400" />,
-      image: jobFirefighterImg,
-      urgency: "high" as const,
-      spots: 4,
-      description: "Battle blazes and rescue citizens. The fire department needs brave individuals.",
-      department: "Government",
-      color: "orange-500",
-    },
-    {
-      id: "business-mechanic",
-      name: "Shop Mechanic",
-      icon: <Wrench className="w-5 h-5 text-green-400" />,
-      image: jobMechanicShopImg,
-      urgency: "high" as const,
-      spots: 6,
-      description: "Multiple mechanic shops are hiring. Technical skills required for vehicle repairs.",
-      department: "Business",
-      color: "green-500",
-    },
-    {
-      id: "business-food-joint",
-      name: "Restaurant Staff",
-      icon: <UtensilsCrossed className="w-5 h-5 text-orange-400" />,
-      image: jobFoodJointImg,
-      urgency: "medium" as const,
-      spots: 8,
-      description: "Join the hospitality industry. Restaurants across the city are looking for staff.",
-      department: "Business",
-      color: "orange-500",
-    },
-    {
-      id: "weazel-news",
-      name: "News Reporter",
-      icon: <Newspaper className="w-5 h-5 text-red-400" />,
-      image: jobWeazelNewsImg,
-      urgency: "medium" as const,
-      spots: 2,
-      description: "Report breaking news and cover the biggest stories in Los Santos.",
-      department: "Media",
-      color: "red-500",
-    },
-  ];
+  // Map job IDs to images and icons for the carousel
+  const jobImageMap: Record<string, string> = {
+    "police": jobPoliceImg,
+    "ems": jobEmsImg,
+    "firefighter": jobFirefighterImg,
+    "mechanic": jobMechanicImg,
+    "pdm": jobPdmImg,
+    "judge": headerDoj,
+    "lawyer": headerDoj,
+    "weazel-news": jobWeazelNewsImg,
+    "state-department": headerStaffImg,
+    "business-real-estate": jobRealEstateImg,
+    "business-food-joint": jobFoodJointImg,
+    "business-mechanic": jobMechanicShopImg,
+    "business-tuner": jobTunerShopImg,
+    "business-entertainment": jobEntertainmentImg,
+  };
+
+  const getJobIcon = (jobId: string) => {
+    const iconMap: Record<string, React.ReactNode> = {
+      "police": <Shield className="w-5 h-5 text-primary" />,
+      "ems": <Heart className="w-5 h-5 text-red-400" />,
+      "firefighter": <Flame className="w-5 h-5 text-orange-400" />,
+      "mechanic": <Wrench className="w-5 h-5 text-primary" />,
+      "pdm": <Car className="w-5 h-5 text-cyan-400" />,
+      "judge": <Gavel className="w-5 h-5 text-amber-400" />,
+      "lawyer": <Scale className="w-5 h-5 text-emerald-400" />,
+      "weazel-news": <Newspaper className="w-5 h-5 text-red-400" />,
+      "state-department": <Building2 className="w-5 h-5 text-amber-400" />,
+      "business-real-estate": <Building2 className="w-5 h-5 text-blue-400" />,
+      "business-food-joint": <UtensilsCrossed className="w-5 h-5 text-orange-400" />,
+      "business-mechanic": <Wrench className="w-5 h-5 text-green-400" />,
+      "business-tuner": <Car className="w-5 h-5 text-purple-400" />,
+      "business-entertainment": <PartyPopper className="w-5 h-5 text-pink-400" />,
+    };
+    return iconMap[jobId] || <Briefcase className="w-5 h-5 text-primary" />;
+  };
+
+  // Transform dynamic featured positions to the format expected by FeaturedJobsCarousel
+  const featuredJobs = featuredPositions.map(position => ({
+    id: position.job_id,
+    name: position.name,
+    icon: getJobIcon(position.job_id),
+    image: jobImageMap[position.job_id] || jobPoliceImg,
+    urgency: position.urgency,
+    spots: position.spots,
+    description: position.description || "",
+    department: position.department,
+    color: position.urgency === "critical" ? "red-500" : position.urgency === "high" ? "amber-500" : "green-500",
+  }));
+
+  // Check if business jobs should be hidden
+  const showBusinessJobs = isOwner || !siteSettings.business_jobs_hidden;
 
   const isPageLoading = loading || accessLoading || settingsLoading;
 
@@ -501,7 +522,8 @@ const JobApplication = () => {
                 </div>
               </div>
 
-              {/* Business Jobs Section - Premium Design */}
+              {/* Business Jobs Section - Premium Design (conditionally visible) */}
+              {showBusinessJobs && (
               <div className="relative mt-16">
                 {/* Decorative top separator */}
                 <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent rounded-full" />
@@ -645,6 +667,7 @@ const JobApplication = () => {
                   </p>
                 </div>
               </div>
+              )}
             </>
           )}
         </div>

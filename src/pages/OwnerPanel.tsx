@@ -22,6 +22,7 @@ import { EnhancedSiteSettings } from "@/components/EnhancedSiteSettings";
 import { MaintenanceCountdownControl } from "@/components/MaintenanceCountdownControl";
 import { PageMaintenanceControls } from "@/components/PageMaintenanceControls";
 import { FeaturedStreamersManager } from "@/components/FeaturedStreamersManager";
+import { FeaturedPositionsManager } from "@/components/FeaturedPositionsManager";
 import { PromoCodeManager } from "@/components/PromoCodeManager";
 import { UnifiedApplicationsTable, ApplicationType } from "@/components/UnifiedApplicationsTable";
 import GiveawayManagement from "@/components/GiveawayManagement";
@@ -1475,6 +1476,10 @@ const OwnerPanel = () => {
                   <Gift className="w-4 h-4" />
                   <span className="hidden sm:inline">Giveaways</span>
                 </TabsTrigger>
+                <TabsTrigger value="featured-positions" className="flex items-center gap-2 whitespace-nowrap">
+                  <Flame className="w-4 h-4" />
+                  <span className="hidden sm:inline">Featured Jobs</span>
+                </TabsTrigger>
                 <TabsTrigger value="business" className="flex items-center gap-2 whitespace-nowrap" onClick={() => navigate('/admin/business-proposals')}>
                   <Briefcase className="w-4 h-4" />
                   <span className="hidden sm:inline">Business</span>
@@ -1512,6 +1517,11 @@ const OwnerPanel = () => {
           {/* Giveaway Management Tab */}
           <TabsContent value="giveaways">
             <GiveawayManagement />
+          </TabsContent>
+
+          {/* Featured Positions Tab */}
+          <TabsContent value="featured-positions">
+            <FeaturedPositionsManager />
           </TabsContent>
 
           {/* All Applications Tab */}
