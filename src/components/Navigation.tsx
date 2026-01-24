@@ -63,6 +63,9 @@ const Navigation = () => {
   const canSeeRosterDuringMaintenance = isOwner || hasStaffAdminAccess;
   const showRosterLink = hasRosterAccess && (!isMaintenanceMode || canSeeRosterDuringMaintenance);
 
+  // Business header visibility - hidden from non-owners when toggle is enabled
+  const showBusinessLink = !siteSettings.business_header_hidden || isOwner;
+
   // Track staff presence when logged in with Discord ID
   useWebsitePresence({ 
     visitorId: userDiscordId || undefined, 
@@ -255,13 +258,15 @@ const Navigation = () => {
             >
               Jobs
             </NavLink>
-            <NavLink 
-              to="/business" 
-              className="text-foreground/80 hover:text-primary transition-colors"
-              activeClassName="text-primary"
-            >
-              Business
-            </NavLink>
+            {showBusinessLink && (
+              <NavLink 
+                to="/business" 
+                className="text-foreground/80 hover:text-primary transition-colors"
+                activeClassName="text-primary"
+              >
+                Business
+              </NavLink>
+            )}
             <NavLink 
               to="/gang-rp" 
               className="text-foreground/80 hover:text-primary transition-colors"
@@ -417,6 +422,11 @@ const Navigation = () => {
                     <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
                       <Link to="/job-application">Jobs</Link>
                     </Button>
+                    {showBusinessLink && (
+                      <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                        <Link to="/business">Business</Link>
+                      </Button>
+                    )}
                     <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
                       <Link to="/gang-rp">Gang RP</Link>
                     </Button>
