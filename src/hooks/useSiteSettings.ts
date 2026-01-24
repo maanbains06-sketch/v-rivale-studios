@@ -21,6 +21,8 @@ interface SiteSettings {
   business_header_hidden: boolean;
   // Business jobs section visibility
   business_jobs_hidden: boolean;
+  // Featured positions carousel visibility
+  featured_positions_hidden: boolean;
 }
 
 interface UseSiteSettingsReturn {
@@ -49,6 +51,8 @@ const defaultSettings: SiteSettings = {
   business_header_hidden: false,
   // Business jobs - default to visible (false = not hidden)
   business_jobs_hidden: false,
+  // Featured positions - default to visible (false = not hidden)
+  featured_positions_hidden: false,
 };
 
 // Cache settings in localStorage for instant loading
@@ -101,6 +105,7 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
           'creator_applications_enabled',
           'business_header_hidden',
           'business_jobs_hidden',
+          'featured_positions_hidden',
         ]);
 
       if (error) {
@@ -132,6 +137,7 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
           creator_applications_enabled: settingsMap.creator_applications_enabled !== 'false',
           business_header_hidden: settingsMap.business_header_hidden === 'true',
           business_jobs_hidden: settingsMap.business_jobs_hidden === 'true',
+          featured_positions_hidden: settingsMap.featured_positions_hidden === 'true',
         };
 
         setSettings(newSettings);

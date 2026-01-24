@@ -443,11 +443,13 @@ const JobApplication = () => {
             </div>
           ) : (
             <>
-              {/* Featured Jobs Carousel */}
-              <FeaturedJobsCarousel 
-                jobs={featuredJobs} 
-                onSelectJob={(jobId) => setSelectedForm(jobId)} 
-              />
+              {/* Featured Jobs Carousel - only show if not hidden or user is owner */}
+              {(isOwner || !siteSettings.featured_positions_hidden) && featuredJobs.length > 0 && (
+                <FeaturedJobsCarousel 
+                  jobs={featuredJobs} 
+                  onSelectJob={(jobId) => setSelectedForm(jobId)} 
+                />
+              )}
 
               <div className="text-center mb-10">
                 <h2 className="text-3xl font-bold text-gradient mb-3">Choose Your Career Path</h2>
