@@ -67,14 +67,15 @@ interface CachedSettings {
 export const useSiteSettings = (): UseSiteSettingsReturn => {
   const [settings, setSettings] = useState<SiteSettings>(() => {
     // Try to load from cache immediately for instant UI
-    // But only use cache for non-critical settings
+    // Use cached settings even if expired - we'll fetch fresh data anyway
+    // This prevents the toggle from resetting to default on page refresh
     try {
       const cached = localStorage.getItem(CACHE_KEY);
       if (cached) {
         const parsed: CachedSettings = JSON.parse(cached);
-        if (Date.now() - parsed.timestamp < CACHE_DURATION) {
-          return parsed.settings;
-        }
+        // Always use cached settings if available, regardless of expiry
+        // Fresh data will be fetched and will update the state
+        return parsed.settings;
       }
     } catch {
       // Ignore
@@ -173,13 +174,9 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
           table: 'site_settings',
         },
         (payload) => {
-          // Clear cache and refetch on any change to ensure UI stays in sync
-          console.log('[useSiteSettings] Setting changed, clearing cache and refetching:', payload);
-          try {
-            localStorage.removeItem(CACHE_KEY);
-          } catch {
-            // Ignore
-          }
+          // Refetch settings on any change - don't clear cache here
+          // The cache will be updated with fresh data from fetchSettings
+          console.log('[useSiteSettings] Setting changed, refetching:', payload);
           fetchSettings();
         }
       )
