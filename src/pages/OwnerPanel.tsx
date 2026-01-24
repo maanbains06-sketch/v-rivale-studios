@@ -1857,6 +1857,66 @@ const OwnerPanel = () => {
                       toast({ title: "Error", description: `Unexpected error: ${String(err)}`, variant: "destructive" });
                     }
                   }}
+                  onDelete={async (id, type, applicantName) => {
+                    console.log('[OwnerPanel] onDelete called:', { id, type, applicantName });
+                    
+                    type TableName = 'whitelist_applications' | 'staff_applications' | 'job_applications' | 'ban_appeals' | 'creator_applications' | 'firefighter_applications' | 'weazel_news_applications' | 'pdm_applications';
+                    
+                    const tableMap: Record<string, { table: TableName; loader: () => Promise<void> }> = {
+                      whitelist: { table: 'whitelist_applications', loader: loadWhitelistApplications },
+                      staff: { table: 'staff_applications', loader: loadStaffApplications },
+                      police: { table: 'job_applications', loader: loadJobApplications },
+                      ems: { table: 'job_applications', loader: loadJobApplications },
+                      mechanic: { table: 'job_applications', loader: loadJobApplications },
+                      judge: { table: 'job_applications', loader: loadJobApplications },
+                      attorney: { table: 'job_applications', loader: loadJobApplications },
+                      state: { table: 'job_applications', loader: loadJobApplications },
+                      gang: { table: 'job_applications', loader: loadGangApplications },
+                      ban_appeal: { table: 'ban_appeals', loader: loadBanAppeals },
+                      creator: { table: 'creator_applications', loader: loadCreatorApplications },
+                      firefighter: { table: 'firefighter_applications', loader: loadFirefighterApplications },
+                      weazel_news: { table: 'weazel_news_applications', loader: loadWeazelNewsApplications },
+                      pdm: { table: 'pdm_applications', loader: loadPdmApplications },
+                    };
+                    
+                    const config = tableMap[type];
+                    console.log('[OwnerPanel] onDelete config:', config, 'for type:', type);
+                    
+                    if (!config) {
+                      console.error('[OwnerPanel] Unknown application type:', type);
+                      toast({ title: "Error", description: `Unknown application type: ${type}`, variant: "destructive" });
+                      return;
+                    }
+                    
+                    try {
+                      const { error } = await supabase
+                        .from(config.table)
+                        .delete()
+                        .eq('id', id);
+                      
+                      if (error) {
+                        console.error('[OwnerPanel] Error deleting application:', { type, table: config.table, id, error });
+                        toast({ title: "Error", description: `Failed to delete: ${error.message}`, variant: "destructive" });
+                      } else {
+                        console.log('[OwnerPanel] Application deleted successfully:', { id, type, applicantName });
+                        
+                        // Log the deletion to audit log
+                        await logAction({
+                          actionType: 'application_delete',
+                          actionDescription: `Deleted ${type} application from ${applicantName}`,
+                          targetTable: config.table,
+                          targetId: id,
+                          oldValue: { applicantName, type }
+                        });
+                        
+                        toast({ title: "Deleted", description: `Application from ${applicantName} has been permanently deleted.` });
+                        config.loader();
+                      }
+                    } catch (err) {
+                      console.error('[OwnerPanel] Unexpected error deleting application:', err);
+                      toast({ title: "Error", description: `Unexpected error: ${String(err)}`, variant: "destructive" });
+                    }
+                  }}
                 />
               </CardContent>
             </Card>
