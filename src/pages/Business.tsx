@@ -124,10 +124,9 @@ const Business = () => {
               {businessTypes.map((business) => (
                 <motion.div key={business.type} variants={itemVariants}>
                   <Card 
-                    className={`group cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 border ${business.borderColor} overflow-hidden h-full`}
-                    onClick={() => setSelectedBusiness(business.type)}
+                    className={`relative group cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 border ${business.borderColor} overflow-hidden h-full`}
                   >
-                    <div className={`absolute inset-0 bg-gradient-to-br ${business.gradient} opacity-50 group-hover:opacity-100 transition-opacity`} />
+                    <div className={`absolute inset-0 bg-gradient-to-br ${business.gradient} opacity-50 group-hover:opacity-100 transition-opacity pointer-events-none`} />
                     <CardHeader className="relative">
                       <div className="flex items-start justify-between">
                         <div className={`p-3 rounded-xl ${business.iconBg}`}>
@@ -148,11 +147,15 @@ const Business = () => {
                         ))}
                       </div>
                       <Button 
-                        className="w-full mt-6 group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                        className="w-full mt-6"
                         variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedBusiness(business.type);
+                        }}
                       >
                         Apply Now
-                        <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
                     </CardContent>
                   </Card>
