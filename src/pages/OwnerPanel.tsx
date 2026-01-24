@@ -1722,6 +1722,7 @@ const OwnerPanel = () => {
                     }
                   }}
                   onClose={async (id, type) => {
+                    console.log('[OwnerPanel] onClose called:', { id, type });
                     const tableMap: Record<string, { table: string; loader: () => Promise<void> }> = {
                       whitelist: { table: 'whitelist_applications', loader: loadWhitelistApplications },
                       staff: { table: 'staff_applications', loader: loadStaffApplications },
@@ -1740,17 +1741,37 @@ const OwnerPanel = () => {
                     };
                     
                     const config = tableMap[type];
+                    console.log('[OwnerPanel] onClose config:', config, 'for type:', type);
                     if (config) {
-                      await updateApplicationStatus(
-                        config.table as any,
-                        id,
-                        'closed',
-                        `Application closed`,
-                        config.loader
-                      );
+                      const { data: { user } } = await supabase.auth.getUser();
+                      const { data: updatedRows, error } = await supabase
+                        .from(config.table as any)
+                        .update({
+                          status: 'closed',
+                          reviewed_by: user?.id || null,
+                          reviewed_at: new Date().toISOString(),
+                        })
+                        .eq('id', id)
+                        .select('id');
+                      
+                      if (error) {
+                        console.error('[OwnerPanel] Error closing application:', { type, table: config.table, id, error });
+                        toast({ title: "Error", description: `Failed to close application: ${error.message}`, variant: "destructive" });
+                      } else if (!updatedRows || updatedRows.length === 0) {
+                        console.error('[OwnerPanel] Close blocked (0 rows updated):', { type, table: config.table, id });
+                        toast({ title: "Not Updated", description: "Close was blocked by permissions (0 rows updated).", variant: "destructive" });
+                      } else {
+                        console.log('[OwnerPanel] Application closed successfully:', { id, type });
+                        toast({ title: "Success", description: "Application marked as closed." });
+                        config.loader();
+                      }
+                    } else {
+                      console.error('[OwnerPanel] Unknown application type:', type);
+                      toast({ title: "Error", description: `Unknown application type: ${type}`, variant: "destructive" });
                     }
                   }}
                   onMarkOpen={async (id, type) => {
+                    console.log('[OwnerPanel] onMarkOpen called:', { id, type });
                     const tableMap: Record<string, { table: string; loader: () => Promise<void> }> = {
                       whitelist: { table: 'whitelist_applications', loader: loadWhitelistApplications },
                       staff: { table: 'staff_applications', loader: loadStaffApplications },
@@ -1769,14 +1790,33 @@ const OwnerPanel = () => {
                     };
                     
                     const config = tableMap[type];
+                    console.log('[OwnerPanel] onMarkOpen config:', config, 'for type:', type);
                     if (config) {
-                      await updateApplicationStatus(
-                        config.table as any,
-                        id,
-                        'pending',
-                        `Application reopened`,
-                        config.loader
-                      );
+                      const { data: { user } } = await supabase.auth.getUser();
+                      const { data: updatedRows, error } = await supabase
+                        .from(config.table as any)
+                        .update({
+                          status: 'pending',
+                          reviewed_by: user?.id || null,
+                          reviewed_at: new Date().toISOString(),
+                        })
+                        .eq('id', id)
+                        .select('id');
+                      
+                      if (error) {
+                        console.error('[OwnerPanel] Error reopening application:', { type, table: config.table, id, error });
+                        toast({ title: "Error", description: `Failed to reopen application: ${error.message}`, variant: "destructive" });
+                      } else if (!updatedRows || updatedRows.length === 0) {
+                        console.error('[OwnerPanel] Reopen blocked (0 rows updated):', { type, table: config.table, id });
+                        toast({ title: "Not Updated", description: "Reopen was blocked by permissions (0 rows updated).", variant: "destructive" });
+                      } else {
+                        console.log('[OwnerPanel] Application reopened successfully:', { id, type });
+                        toast({ title: "Success", description: "Application marked as open." });
+                        config.loader();
+                      }
+                    } else {
+                      console.error('[OwnerPanel] Unknown application type:', type);
+                      toast({ title: "Error", description: `Unknown application type: ${type}`, variant: "destructive" });
                     }
                   }}
                 />
