@@ -2678,7 +2678,9 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_owner: { Args: { _user_id: string }; Returns: boolean }
+      is_owner:
+        | { Args: never; Returns: boolean }
+        | { Args: { _user_id: string }; Returns: boolean }
       is_owner_session_verified: { Args: never; Returns: boolean }
       log_owner_action: {
         Args: {
