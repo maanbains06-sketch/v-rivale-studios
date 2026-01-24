@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { X, Info, CheckCircle, AlertTriangle, XCircle, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
 
 interface Announcement {
   id: string;
@@ -105,40 +104,34 @@ export const GlobalAnnouncementBanner = () => {
 
   return (
     <div className="w-full z-50">
-      <AnimatePresence>
-        {visibleAnnouncements.map((announcement) => (
-          <motion.div
-            key={announcement.id}
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className={cn(
-              'border-b shadow-lg',
-              getTypeStyles(announcement.type)
-            )}
-          >
-            <div className="container mx-auto px-4 py-3">
-              <div className="flex items-center justify-center gap-3">
-                <Bell className="w-4 h-4 animate-pulse" />
-                {getTypeIcon(announcement.type)}
-                <p className="text-sm font-medium text-center flex-1">
-                  {announcement.message}
-                </p>
-                <button
-                  onClick={() => dismissAnnouncement(announcement.id)}
-                  className="p-1 rounded-full hover:bg-white/20 transition-colors"
-                  aria-label="Dismiss announcement"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
+      {visibleAnnouncements.map((announcement) => (
+        <div
+          key={announcement.id}
+          className={cn(
+            'border-b shadow-lg animate-fade-in',
+            getTypeStyles(announcement.type)
+          )}
+        >
+          <div className="container mx-auto px-4 py-3">
+            <div className="flex items-center justify-center gap-3">
+              <Bell className="w-4 h-4" />
+              {getTypeIcon(announcement.type)}
+              <p className="text-sm font-medium text-center flex-1">
+                {announcement.message}
+              </p>
+              <button
+                onClick={() => dismissAnnouncement(announcement.id)}
+                className="p-1 rounded-full hover:bg-white/20 transition-colors"
+                aria-label="Dismiss announcement"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
-          </motion.div>
-        ))}
-      </AnimatePresence>
+          </div>
+        </div>
+      ))}
     </div>
   );
 };
 
-export default GlobalAnnouncementBanner;
+export default memo(GlobalAnnouncementBanner);

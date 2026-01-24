@@ -156,6 +156,23 @@ All colors MUST be HSL.
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     transition: background-color 0.3s ease, color 0.3s ease;
+    /* Performance optimizations */
+    text-rendering: optimizeSpeed;
+  }
+  
+  /* Content visibility optimization for sections - reduces layout calculation */
+  section, article, .content-block {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 500px;
+  }
+  
+  /* Reduce motion for users who prefer it */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
   
   /* Background overlay - removed for clarity */
