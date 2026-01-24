@@ -53,16 +53,10 @@ serve(async (req) => {
     let content: string;
     let components: any[] = [];
 
-    // Website URLs and Banner Images
+    // Website URLs
     const WEBSITE_URL = "https://roleplay-horizon.lovable.app";
     const GIVEAWAY_URL = `${WEBSITE_URL}/giveaway`;
     const LOGO_URL = `${WEBSITE_URL}/images/slrp-logo.png`;
-    
-    // Pre-made banner image URLs (using Discord-compatible image hosting)
-    // These are placeholder URLs - you can replace with actual hosted banner images
-    const GIVEAWAY_BANNER_URL = "https://i.imgur.com/8K5lXJj.png"; // Golden giveaway banner
-    const WINNER_BANNER_URL = "https://i.imgur.com/VGQhVbq.png"; // Celebration winner banner
-    const OPPORTUNITY_BANNER_URL = "https://i.imgur.com/7vQxYbA.png"; // Don't miss out banner
 
     if (payload.type === 'new_giveaway') {
       channelId = GIVEAWAY_CHANNEL_ID || "";
@@ -76,8 +70,9 @@ serve(async (req) => {
       const endDate = new Date(payload.giveaway.end_date);
       const discordTimestamp = Math.floor(endDate.getTime() / 1000);
 
+      // Build embed WITHOUT black background - using clean design
       embed = {
-        title: "🎁 ━━━━━ NEW GIVEAWAY ━━━━━ 🎁",
+        title: "🎁 NEW GIVEAWAY 🎁",
         description: [
           `## ✨ ${payload.giveaway.title} ✨`,
           "",
@@ -85,52 +80,39 @@ serve(async (req) => {
           "",
           "**🔥 Don't miss this amazing opportunity! 🔥**"
         ].join("\n"),
-        color: 0xFFD700,
+        color: 0xFFD700, // Gold color
         fields: [
           {
-            name: "╔══════════════════════════╗",
-            value: "🎁 **PRIZE DETAILS** 🎁",
-            inline: false
-          },
-          {
             name: "💎 Prize",
-            value: `\`\`\`${payload.giveaway.prize}\`\`\``,
+            value: `**${payload.giveaway.prize}**`,
             inline: false
           },
           {
             name: "🏆 Winners",
-            value: `> **${payload.giveaway.winner_count}** lucky winner${payload.giveaway.winner_count > 1 ? 's' : ''}!`,
+            value: `**${payload.giveaway.winner_count}** lucky winner${payload.giveaway.winner_count > 1 ? 's' : ''}!`,
             inline: true
           },
           {
-            name: "⏰ Time Left",
-            value: `> <t:${discordTimestamp}:R>`,
+            name: "⏰ Ends",
+            value: `<t:${discordTimestamp}:R>`,
             inline: true
           },
           {
-            name: "📅 Ends On",
-            value: `> <t:${discordTimestamp}:F>`,
+            name: "📅 End Date",
+            value: `<t:${discordTimestamp}:F>`,
             inline: true
           },
           {
-            name: "╚══════════════════════════╝",
-            value: "\u200B",
-            inline: false
-          },
-          {
-            name: "📝 HOW TO ENTER",
+            name: "📝 How to Enter",
             value: [
-              "> 1️⃣ Click **Enter Giveaway** button below",
-              "> 2️⃣ Login or Register on our website",
-              "> 3️⃣ Click the **Enter** button on the page",
-              "> 4️⃣ Wait for the results! 🎉",
-              "",
-              "**Good luck to everyone! 🍀**"
+              "1️⃣ Click **Enter Giveaway** button below",
+              "2️⃣ Login or Register on our website",
+              "3️⃣ Click the **Enter** button on the page",
+              "4️⃣ Wait for the results! 🎉"
             ].join("\n"),
             inline: false
           }
         ],
-        image: payload.giveaway.prize_image_url ? { url: payload.giveaway.prize_image_url } : { url: GIVEAWAY_BANNER_URL },
         thumbnail: {
           url: LOGO_URL
         },
@@ -141,38 +123,29 @@ serve(async (req) => {
         timestamp: new Date().toISOString()
       };
 
-      content = [
-        "# 🎊 @everyone NEW GIVEAWAY! 🎊",
-        "",
-        "> 🎁 **An amazing prize awaits one lucky winner!**",
-        "> ⏰ **Limited time only - Enter now!**"
-      ].join("\n");
+      // Add prize image if provided (no black background)
+      if (payload.giveaway.prize_image_url) {
+        embed.image = { url: payload.giveaway.prize_image_url };
+      }
+
+      content = "# 🎊 @everyone NEW GIVEAWAY! 🎊\n\n> 🎁 **An amazing prize awaits one lucky winner!**\n> ⏰ **Limited time only - Enter now!**";
 
       // Add action buttons
       components = [
         {
-          type: 1, // Action Row
+          type: 1,
           components: [
-            {
-              type: 2, // Button
-              style: 5, // Link button
-              label: "🎉 Enter Giveaway",
-              url: GIVEAWAY_URL,
-              emoji: { name: "🎁" }
-            },
             {
               type: 2,
               style: 5,
-              label: "📋 View All Giveaways",
-              url: GIVEAWAY_URL,
-              emoji: { name: "📋" }
+              label: "🎉 Enter Giveaway",
+              url: GIVEAWAY_URL
             },
             {
               type: 2,
               style: 5,
               label: "🌐 Visit Website",
-              url: WEBSITE_URL,
-              emoji: { name: "🌐" }
+              url: WEBSITE_URL
             }
           ]
         }
@@ -190,7 +163,7 @@ serve(async (req) => {
       let winners = payload.winners || [];
       console.log("Winners received:", winners.length);
       
-      // Fetch Discord IDs for all winners from profiles if not already provided
+      // Fetch Discord IDs for all winners from profiles
       const enrichedWinners = await Promise.all(
         winners.map(async (winner) => {
           if (winner.discord_id) {
@@ -241,63 +214,45 @@ serve(async (req) => {
       });
 
       console.log("Winner mentions:", winnerMentions);
-      console.log("Winner list for embed:", winnerListForEmbed);
 
+      // Build embed WITHOUT black background
       embed = {
-        title: "🏆 ━━━━━ WINNERS ANNOUNCED ━━━━━ 🏆",
+        title: "🏆 WINNERS ANNOUNCED! 🏆",
         description: [
           `## 🎉 ${payload.giveaway.title} 🎉`,
           "",
-          "**🌟 Congratulations to our amazing winners! 🌟**",
-          "",
-          "*The moment you've been waiting for is here!*"
+          "**🌟 Congratulations to our amazing winners! 🌟**"
         ].join("\n"),
-        color: 0x00FF00,
+        color: 0x00FF00, // Green color
         thumbnail: {
           url: LOGO_URL
         },
         fields: [
           {
-            name: "╔══════════════════════════╗",
-            value: "🎁 **PRIZE WON** 🎁",
+            name: "💎 Prize Won",
+            value: `**${payload.giveaway.prize}**`,
             inline: false
           },
           {
-            name: "💎 Prize",
-            value: `\`\`\`${payload.giveaway.prize}\`\`\``,
-            inline: false
-          },
-          {
-            name: "╚══════════════════════════╝",
-            value: "\u200B",
-            inline: false
-          },
-          {
-            name: `👑 WINNER${enrichedWinners.length > 1 ? 'S' : ''} (${enrichedWinners.length})`,
+            name: `👑 Winner${enrichedWinners.length > 1 ? 's' : ''} (${enrichedWinners.length})`,
             value: winnerListForEmbed.join('\n') || '❌ No winners selected',
             inline: false
           },
           {
-            name: "📬 CLAIM YOUR PRIZE",
+            name: "📬 How to Claim",
             value: [
-              "> 📩 **Step 1:** Check your Discord DMs",
-              "> ⏰ **Step 2:** Respond within 24 hours",
-              "> 📋 **Step 3:** Follow claim instructions",
-              "> 🎉 **Step 4:** Enjoy your prize!"
+              "📩 Check your Discord DMs",
+              "⏰ Respond within 24 hours",
+              "🎉 Enjoy your prize!"
             ].join("\n"),
             inline: false
           },
           {
-            name: "⚠️ IMPORTANT",
-            value: [
-              "> ✅ Make sure your DMs are **OPEN**",
-              "> ⏳ Claim within **48 hours**",
-              "> 🔄 Unclaimed = New winner selected"
-            ].join("\n"),
+            name: "⚠️ Important",
+            value: "Make sure your DMs are **OPEN**. Claim within **48 hours** or a new winner will be selected!",
             inline: false
           }
         ],
-        image: payload.giveaway.prize_image_url ? { url: payload.giveaway.prize_image_url } : { url: WINNER_BANNER_URL },
         footer: {
           text: "🙏 Thank you all for participating! • SkyLife Roleplay",
           icon_url: LOGO_URL
@@ -305,12 +260,17 @@ serve(async (req) => {
         timestamp: new Date().toISOString()
       };
 
-      // Build the content message with all winner mentions at the start
+      // Add prize image if provided
+      if (payload.giveaway.prize_image_url) {
+        embed.image = { url: payload.giveaway.prize_image_url };
+      }
+
+      // Build the content with winner mentions at the start
       const mentionString = winnerMentions.length > 0 ? winnerMentions.join(' ') : '';
       content = [
-        "# 🎊✨ GIVEAWAY WINNERS! ✨🎊",
+        "# 🎊 GIVEAWAY WINNERS! 🎊",
         "",
-        `${mentionString}`,
+        mentionString,
         "",
         `> 🏆 **Congratulations! You won the ${payload.giveaway.title}!**`,
         "> 📬 **Check your DMs for prize claim instructions!**"
@@ -318,7 +278,6 @@ serve(async (req) => {
       
       console.log("Final content message:", content);
 
-      // Add action buttons for winners
       components = [
         {
           type: 1,
@@ -327,15 +286,13 @@ serve(async (req) => {
               type: 2,
               style: 5,
               label: "🎁 View More Giveaways",
-              url: GIVEAWAY_URL,
-              emoji: { name: "🎁" }
+              url: GIVEAWAY_URL
             },
             {
               type: 2,
               style: 5,
               label: "🌐 Visit Website",
-              url: WEBSITE_URL,
-              emoji: { name: "🌐" }
+              url: WEBSITE_URL
             }
           ]
         }
@@ -345,18 +302,17 @@ serve(async (req) => {
       throw new Error("Invalid payload type: " + payload.type);
     }
 
-    // Build allowed_mentions properly - users and parse:["users"] are mutually exclusive
+    // Build allowed_mentions
     const winnerDiscordIds = payload.winners?.filter(w => w.discord_id).map(w => w.discord_id) || [];
     const allowedMentions: any = {
       parse: ["everyone"]
     };
     
-    // If we have specific user IDs, use those instead of parse: ["users"]
     if (winnerDiscordIds.length > 0) {
       allowedMentions.users = winnerDiscordIds;
     }
 
-    // Send to Discord with components (buttons)
+    // Send to Discord
     const discordResponse = await fetch(
       `https://discord.com/api/v10/channels/${channelId}/messages`,
       {
@@ -376,7 +332,6 @@ serve(async (req) => {
 
     const responseText = await discordResponse.text();
     console.log("Discord API response status:", discordResponse.status);
-    console.log("Discord API response:", responseText);
 
     if (!discordResponse.ok) {
       console.error("Discord API error:", responseText);
