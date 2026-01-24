@@ -473,8 +473,8 @@ const JobPanel = () => {
                 />
               </div>
 
-              {selectedApp.status === 'pending' && (
-                <DialogFooter className="gap-2 sm:gap-0">
+              {(selectedApp.status === 'pending' || selectedApp.status === 'on_hold') && (
+                <DialogFooter className="flex-col sm:flex-row gap-2">
                   <Button
                     variant="destructive"
                     onClick={() => handleReview(selectedApp.id, 'rejected', activeTab as DepartmentKey)}
@@ -483,6 +483,17 @@ const JobPanel = () => {
                     <XCircle className="w-4 h-4 mr-2" />
                     Reject
                   </Button>
+                  {selectedApp.status !== 'on_hold' && (
+                    <Button
+                      variant="outline"
+                      onClick={() => handleReview(selectedApp.id, 'on_hold' as any, activeTab as DepartmentKey)}
+                      disabled={isReviewing}
+                      className="border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10"
+                    >
+                      <Clock className="w-4 h-4 mr-2" />
+                      Put On Hold
+                    </Button>
+                  )}
                   <Button
                     onClick={() => handleReview(selectedApp.id, 'approved', activeTab as DepartmentKey)}
                     disabled={isReviewing}
