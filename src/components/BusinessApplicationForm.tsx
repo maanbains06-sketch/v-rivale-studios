@@ -337,6 +337,19 @@ const BusinessApplicationForm = ({ businessType, onBack }: BusinessApplicationFo
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Business Type Display */}
+              <div className="p-4 rounded-xl bg-muted/50 border border-border/30">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-lg ${config.color} bg-background`}>
+                    {config.icon}
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Applying For</p>
+                    <p className="font-semibold text-foreground">{config.title}</p>
+                  </div>
+                </div>
+              </div>
+
               {/* Basic Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
@@ -344,10 +357,13 @@ const BusinessApplicationForm = ({ businessType, onBack }: BusinessApplicationFo
                   name="business_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Business Name *</FormLabel>
+                      <FormLabel>Your Business Name *</FormLabel>
                       <FormControl>
                         <Input placeholder="Los Santos Properties LLC" {...field} />
                       </FormControl>
+                      <FormDescription>
+                        What will you name your {config.title.toLowerCase()}?
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
