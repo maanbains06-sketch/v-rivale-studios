@@ -113,9 +113,10 @@ const HeroSlideshow = memo(() => {
     <div ref={containerRef} className="fixed inset-0 z-0 overflow-hidden">
       {/* Layer 1 - GPU accelerated */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat gpu-accelerated"
+        className="absolute inset-0 bg-center bg-no-repeat gpu-accelerated"
         style={{
           backgroundImage: `url(${showFirst ? currentImage : prevImage})`,
+          backgroundSize: 'contain',
           opacity: showFirst ? 1 : 0,
           transition: "opacity 1s ease-in-out",
         }}
@@ -124,9 +125,10 @@ const HeroSlideshow = memo(() => {
       
       {/* Layer 2 */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat gpu-accelerated"
+        className="absolute inset-0 bg-center bg-no-repeat gpu-accelerated"
         style={{
           backgroundImage: `url(${showFirst ? prevImage : currentImage})`,
+          backgroundSize: 'contain',
           opacity: showFirst ? 0 : 1,
           transition: "opacity 1s ease-in-out",
         }}
