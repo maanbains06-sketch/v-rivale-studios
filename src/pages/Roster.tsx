@@ -538,7 +538,7 @@ const Roster = () => {
           strikes: s.strikes || '-',
           training_status: s.training_status || 'not_started',
         })),
-      ranks: ['Owner', 'Head Admin', 'Admin', 'Moderator', 'Staff Member', 'Support Staff', 'Event Member', 'Trial Mod'],
+      ranks: ['Head Admin', 'Admin', 'Moderator', 'Staff Member', 'Support Staff', 'Event Member', 'Trial Mod'],
     }
   ];
 
