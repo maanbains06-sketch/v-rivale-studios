@@ -36,6 +36,9 @@ verify_jwt = false
 [functions.notify-unauthorized-owner-access]
 verify_jwt = false
 
+[functions.remove-discord-role]
+verify_jwt = false
+
 [functions.send-application-notification]
 verify_jwt = false
 
