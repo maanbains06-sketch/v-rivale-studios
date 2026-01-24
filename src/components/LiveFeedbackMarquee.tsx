@@ -82,13 +82,12 @@ const LiveFeedbackMarquee = () => {
   }
 
   return (
-    <div className="w-full py-6 md:py-8 overflow-hidden">
+    <div className="w-full py-6 md:py-8 overflow-hidden content-visibility-auto">
       {/* Header */}
       <div className="flex items-center justify-center gap-2 md:gap-3 mb-4 md:mb-6">
         <div className="h-px w-8 md:w-16 bg-gradient-to-r from-transparent to-primary/50" />
         <div className="flex items-center gap-2 px-3 md:px-4 py-1 md:py-1.5 rounded-full bg-primary/10 border border-primary/30">
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
           </span>
           <span className="text-[10px] md:text-xs font-semibold text-primary uppercase tracking-wider">Live Feedback</span>
@@ -96,16 +95,16 @@ const LiveFeedbackMarquee = () => {
         <div className="h-px w-8 md:w-16 bg-gradient-to-l from-transparent to-primary/50" />
       </div>
 
-      {/* Marquee Container - CSS animation for better performance */}
+      {/* Marquee Container - GPU-accelerated CSS animation */}
       <div className="relative">
         <div className="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
         <div className="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
         
         <div 
-          className="flex gap-4 md:gap-6 animate-marquee"
+          className="flex gap-4 md:gap-6 gpu-accelerated"
           style={{ 
             width: 'max-content',
-            animation: `marquee ${displayFeedbacks.length * 6}s linear infinite`
+            animation: `marquee ${Math.max(displayFeedbacks.length * 8, 30)}s linear infinite`,
           }}
         >
           {duplicatedFeedbacks.map((feedback, index) => (
@@ -116,9 +115,10 @@ const LiveFeedbackMarquee = () => {
 
       <style>{`
         @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
+          0% { transform: translate3d(0, 0, 0); }
+          100% { transform: translate3d(-50%, 0, 0); }
         }
+        .content-visibility-auto { content-visibility: auto; contain-intrinsic-size: 0 200px; }
       `}</style>
     </div>
   );

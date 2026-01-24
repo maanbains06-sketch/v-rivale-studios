@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useState, memo, useCallback } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
 import headerStaff from "@/assets/header-staff.jpg";
@@ -28,7 +28,6 @@ import {
   Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState as useStateAlias } from "react";
 import { StaffApplicationForm } from "@/components/StaffApplicationForm";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -84,13 +83,8 @@ const roleIcons = {
   event_manager: Calendar,
 };
 
-// Simplified scroll reveal for performance - minimal animations
-const scrollRevealVariants = {
-  hidden: {},
-  visible: { 
-    transition: { duration: 0.1 }
-  }
-};
+// Disabled scroll reveal for performance - static rendering
+const scrollRevealVariants = { hidden: {}, visible: {} };
 
 const departmentThemes = {
   leadership: {
@@ -178,7 +172,7 @@ const departmentThemes = {
 const Staff = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isApplicationOpen, setIsApplicationOpen] = useStateAlias(false);
+  const [isApplicationOpen, setIsApplicationOpen] = useState(false);
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [openPositions, setOpenPositions] = useState("7");

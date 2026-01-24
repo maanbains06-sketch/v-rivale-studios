@@ -83,14 +83,16 @@ const FeaturedJobsCarousel = ({ jobs, onSelectJob }: FeaturedJobsCarouselProps) 
       setCurrent(api.selectedScrollSnap());
     });
 
-    // Auto-scroll every 5 seconds
+    // Auto-scroll every 8 seconds (increased from 5 for less CPU usage)
     const interval = setInterval(() => {
-      if (api.canScrollNext()) {
-        api.scrollNext();
-      } else {
-        api.scrollTo(0);
+      if (document.visibilityState === 'visible') {
+        if (api.canScrollNext()) {
+          api.scrollNext();
+        } else {
+          api.scrollTo(0);
+        }
       }
-    }, 5000);
+    }, 8000);
 
     return () => clearInterval(interval);
   }, [api]);

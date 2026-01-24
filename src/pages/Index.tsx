@@ -64,21 +64,11 @@ interface FeaturedYoutuber {
   live_stream_url: string | null;
 }
 
-// Scroll animation variants - disabled for performance
-const scrollRevealVariants = {
-  hidden: {},
-  visible: {}
-};
-
-const staggerContainerVariants = {
-  hidden: {},
-  visible: {},
-};
-
-const itemVariants = {
-  hidden: {},
-  visible: {},
-};
+// Scroll animation variants - completely disabled for performance
+// Using empty objects prevents any animation overhead
+const scrollRevealVariants = { hidden: {}, visible: {} };
+const staggerContainerVariants = { hidden: {}, visible: {} };
+const itemVariants = { hidden: {}, visible: {} };
 
 const Index = () => {
   const navigate = useNavigate();
@@ -984,7 +974,7 @@ const Index = () => {
         </motion.section>
       )}
 
-      {/* Footer */}
+      {/* Footer - Using CSS animation for INDIA text instead of framer-motion */}
       <footer className="border-t border-primary/20 py-10 relative z-10 bg-background/90">
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center text-center gap-4">
@@ -994,32 +984,12 @@ const Index = () => {
                 <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">SKYLIFE</span>
                 <span className="text-foreground ml-2">ROLEPLAY</span>
               </span>
-              <span className="flex gap-1 text-sm md:text-base font-semibold tracking-[0.3em] mt-2">
-                <motion.span 
-                  animate={{ color: ['#FF9933', '#FFFFFF', '#138808', '#FF9933'] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  style={{ textShadow: '0 0 6px currentColor' }}
-                >I</motion.span>
-                <motion.span 
-                  animate={{ color: ['#FFFFFF', '#138808', '#FF9933', '#FFFFFF'] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.15 }}
-                  style={{ textShadow: '0 0 6px currentColor' }}
-                >N</motion.span>
-                <motion.span 
-                  animate={{ color: ['#138808', '#FF9933', '#FFFFFF', '#138808'] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
-                  style={{ textShadow: '0 0 6px currentColor' }}
-                >D</motion.span>
-                <motion.span 
-                  animate={{ color: ['#FF9933', '#FFFFFF', '#138808', '#FF9933'] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.45 }}
-                  style={{ textShadow: '0 0 6px currentColor' }}
-                >I</motion.span>
-                <motion.span 
-                  animate={{ color: ['#FFFFFF', '#138808', '#FF9933', '#FFFFFF'] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
-                  style={{ textShadow: '0 0 6px currentColor' }}
-                >A</motion.span>
+              <span className="flex gap-1 text-sm md:text-base font-semibold tracking-[0.3em] mt-2 india-tricolor-text">
+                <span className="india-letter-1">I</span>
+                <span className="india-letter-2">N</span>
+                <span className="india-letter-3">D</span>
+                <span className="india-letter-4">I</span>
+                <span className="india-letter-5">A</span>
               </span>
             </div>
             
