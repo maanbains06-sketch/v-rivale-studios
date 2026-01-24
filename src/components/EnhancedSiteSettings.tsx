@@ -232,6 +232,13 @@ export const EnhancedSiteSettings = ({ settings, onSettingsChange }: EnhancedSit
     const newValue = currentValue === 'true' ? 'false' : 'true';
     setEditedSettings(prev => ({ ...prev, [key]: newValue }));
     
+    // Clear the site settings cache to ensure fresh data on refresh
+    try {
+      localStorage.removeItem('slrp_site_settings');
+    } catch {
+      // Ignore storage errors
+    }
+    
     // Auto-save toggle settings
     const { data: { user } } = await supabase.auth.getUser();
     
