@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -41,6 +41,7 @@ import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { exportApplicationsToCSV, exportApplicationsToPDF, exportSingleApplicationToPDF } from "@/lib/applicationExporter";
+import { useDiscordNames } from "@/hooks/useDiscordNames";
 
 export type ApplicationType = 
   | 'whitelist' 
@@ -142,6 +143,36 @@ export const UnifiedApplicationsTable = ({
   const { toast } = useToast();
   const itemsPerPage = 10;
 
+  // Extract all Discord IDs from applications for batch fetching
+  const discordIds = useMemo(() => {
+    return applications
+      .map(app => app.discordId)
+      .filter((id): id is string => !!id && /^\d{17,19}$/.test(id));
+  }, [applications]);
+
+  // Use the Discord names hook to fetch display names
+  const { getDisplayName, getAvatar, isLoading: isLoadingDiscordName } = useDiscordNames(discordIds);
+
+  // Helper to get the best available name for an applicant
+  const getApplicantDisplayName = (app: UnifiedApplication): string => {
+    // First try to get the synced Discord display name
+    if (app.discordId) {
+      const discordName = getDisplayName(app.discordId);
+      if (discordName) return discordName;
+    }
+    // Fallback to the stored applicant name
+    return app.applicantName || 'Unknown';
+  };
+
+  // Helper to get avatar URL
+  const getApplicantAvatar = (app: UnifiedApplication): string | undefined => {
+    if (app.discordId) {
+      const discordAvatar = getAvatar(app.discordId);
+      if (discordAvatar) return discordAvatar;
+    }
+    return app.applicantAvatar;
+  };
+
   // Fetch staff names for handled_by display - resolve by user_id from staff_members
   useEffect(() => {
     const fetchStaffNames = async () => {
@@ -240,9 +271,11 @@ export const UnifiedApplicationsTable = ({
     return `Staff (${handledBy.substring(0, 8)}...)`;
   };
 
-  // Filter applications based on search and status
+  // Filter applications based on search and status - include Discord display names in search
   const filteredApps = applications.filter(app => {
-    const matchesSearch = app.applicantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const displayName = getApplicantDisplayName(app);
+    const matchesSearch = displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      app.applicantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       app.organization?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       app.discordId?.includes(searchQuery) ||
       typeLabels[app.applicationType].toLowerCase().includes(searchQuery.toLowerCase());
@@ -499,15 +532,22 @@ export const UnifiedApplicationsTable = ({
                 {/* Applicant */}
                 <div className="flex items-center gap-3 min-w-0 relative z-10">
                   <Avatar className="h-10 w-10 border-2 border-primary/30 ring-2 ring-primary/10 group-hover:ring-primary/30 transition-all">
-                    <AvatarImage src={app.applicantAvatar} />
+                    <AvatarImage src={getApplicantAvatar(app)} />
                     <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
-                      {app.applicantName.charAt(0).toUpperCase()}
+                      {getApplicantDisplayName(app).charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <p className="font-semibold text-foreground truncate text-sm group-hover:text-primary transition-colors">
-                        {app.applicantName}
+                        {isLoadingDiscordName(app.discordId) ? (
+                          <span className="flex items-center gap-1">
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            Loading...
+                          </span>
+                        ) : (
+                          getApplicantDisplayName(app)
+                        )}
                       </p>
                       <Eye className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
@@ -638,13 +678,22 @@ export const UnifiedApplicationsTable = ({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
                         <Avatar className="h-12 w-12 border-2 border-primary/50">
-                          <AvatarImage src={selectedApp.applicantAvatar} />
+                          <AvatarImage src={getApplicantAvatar(selectedApp)} />
                           <AvatarFallback className="bg-primary/10 text-primary font-bold">
-                            {selectedApp.applicantName.charAt(0).toUpperCase()}
+                            {getApplicantDisplayName(selectedApp).charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <DialogTitle className="text-xl font-bold">{selectedApp.applicantName}</DialogTitle>
+                          <DialogTitle className="text-xl font-bold">
+                            {isLoadingDiscordName(selectedApp.discordId) ? (
+                              <span className="flex items-center gap-2">
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                Loading...
+                              </span>
+                            ) : (
+                              getApplicantDisplayName(selectedApp)
+                            )}
+                          </DialogTitle>
                           <Badge className={`${typeColors[selectedApp.applicationType]} mt-1`}>
                             {typeLabels[selectedApp.applicationType]}
                           </Badge>
@@ -739,8 +788,10 @@ export const UnifiedApplicationsTable = ({
                     size="sm"
                     onClick={() => {
                       try {
+                        const displayName = getApplicantDisplayName(selectedApp);
                         exportSingleApplicationToPDF({
                           ...selectedApp,
+                          applicantName: displayName,
                           handledByName: selectedApp.handledByName || getStaffName(selectedApp.handledBy)
                         });
                         toast({ title: "PDF exported", description: "Application details downloaded" });
@@ -793,7 +844,8 @@ export const UnifiedApplicationsTable = ({
                               });
                               return;
                             }
-                            onReject(selectedApp.id, notes, selectedApp.applicationType, selectedApp.applicantName, selectedApp.discordId);
+                            const displayName = getApplicantDisplayName(selectedApp);
+                            onReject(selectedApp.id, notes, selectedApp.applicationType, displayName, selectedApp.discordId);
                             setSelectedApp(null);
                           }}
                         >
@@ -804,7 +856,8 @@ export const UnifiedApplicationsTable = ({
                       {onApprove && (
                         <Button 
                           onClick={() => {
-                            onApprove(selectedApp.id, notes, selectedApp.applicationType, selectedApp.applicantName, selectedApp.discordId);
+                            const displayName = getApplicantDisplayName(selectedApp);
+                            onApprove(selectedApp.id, notes, selectedApp.applicationType, displayName, selectedApp.discordId);
                             setSelectedApp(null);
                           }}
                           className="bg-green-600 hover:bg-green-700"
