@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
@@ -16,7 +16,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useJobPanelAccess, DEPARTMENT_INFO, type DepartmentKey } from "@/hooks/useJobPanelAccess";
 import { sendDiscordNotification } from "@/lib/discordNotificationSender";
 import { ApplicationType } from "@/components/UnifiedApplicationsTable";
-import { Shield, RefreshCw, CheckCircle, XCircle, Clock, Eye, AlertTriangle, Briefcase, Search, Filter, Download } from "lucide-react";
+import { useDiscordNames } from "@/hooks/useDiscordNames";
+import { Shield, RefreshCw, CheckCircle, XCircle, Clock, Eye, AlertTriangle, Briefcase, Search, Filter, Download, Loader2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -74,6 +75,33 @@ const JobPanel = () => {
   });
   const ITEMS_PER_PAGE = 10;
 
+  // Extract all Discord IDs from applications for batch fetching
+  const allDiscordIds = useMemo(() => {
+    const ids: string[] = [];
+    Object.values(applications).forEach(deptApps => {
+      deptApps.forEach(app => {
+        if (app.discord_id && /^\d{17,19}$/.test(app.discord_id)) {
+          ids.push(app.discord_id);
+        }
+      });
+    });
+    return [...new Set(ids)];
+  }, [applications]);
+
+  // Use the Discord names hook to fetch display names
+  const { getDisplayName, isLoading: isLoadingDiscordName } = useDiscordNames(allDiscordIds);
+
+  // Helper to get the best available name for an applicant
+  const getApplicantDisplayName = useCallback((app: Application): string => {
+    // First try to get the synced Discord display name
+    if (app.discord_id) {
+      const discordName = getDisplayName(app.discord_id);
+      if (discordName) return discordName;
+    }
+    // Fallback to stored values
+    return app.discord_username || app.discord_id || 'Unknown';
+  }, [getDisplayName]);
+
   // Filter applications based on search and status
   const getFilteredApplications = useCallback((dept: DepartmentKey) => {
     let filtered = applications[dept] || [];
@@ -83,21 +111,25 @@ const JobPanel = () => {
       filtered = filtered.filter(app => app.status === statusFilter);
     }
     
-    // Filter by search query
+    // Filter by search query - include synced Discord display names
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
-      filtered = filtered.filter(app => 
-        (app.discord_username?.toLowerCase().includes(query)) ||
-        (app.discord_id?.toLowerCase().includes(query)) ||
-        (app.character_name?.toLowerCase().includes(query)) ||
-        (app.in_game_name?.toLowerCase().includes(query)) ||
-        (app.real_name?.toLowerCase().includes(query)) ||
-        (app.position?.toLowerCase().includes(query))
-      );
+      filtered = filtered.filter(app => {
+        const discordDisplayName = app.discord_id ? getDisplayName(app.discord_id) : null;
+        return (
+          (discordDisplayName?.toLowerCase().includes(query)) ||
+          (app.discord_username?.toLowerCase().includes(query)) ||
+          (app.discord_id?.toLowerCase().includes(query)) ||
+          (app.character_name?.toLowerCase().includes(query)) ||
+          (app.in_game_name?.toLowerCase().includes(query)) ||
+          (app.real_name?.toLowerCase().includes(query)) ||
+          (app.position?.toLowerCase().includes(query))
+        );
+      });
     }
     
     return filtered;
-  }, [applications, searchQuery, statusFilter]);
+  }, [applications, searchQuery, statusFilter, getDisplayName]);
 
   // Get paginated applications for a department
   const getPaginatedApplications = useCallback((dept: DepartmentKey) => {
@@ -685,7 +717,16 @@ const JobPanel = () => {
                             <TableBody>
                               {paginatedApps.map((app) => (
                                 <TableRow key={app.id}>
-                                  <TableCell className="font-medium">{app.discord_username || app.discord_id || 'Unknown'}</TableCell>
+                                  <TableCell className="font-medium">
+                                    {isLoadingDiscordName(app.discord_id) ? (
+                                      <span className="flex items-center gap-1">
+                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                        Loading...
+                                      </span>
+                                    ) : (
+                                      getApplicantDisplayName(app)
+                                    )}
+                                  </TableCell>
                                   <TableCell>{app.character_name || app.in_game_name || '-'}</TableCell>
                                   <TableCell>{app.position || app.department || '-'}</TableCell>
                                   <TableCell>{getStatusBadge(app.status)}</TableCell>
@@ -815,7 +856,16 @@ const JobPanel = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Discord Username</label>
-                  <p className="font-medium">{selectedApp.discord_username || selectedApp.discord_id || 'Unknown'}</p>
+                  <p className="font-medium">
+                    {isLoadingDiscordName(selectedApp.discord_id) ? (
+                      <span className="flex items-center gap-1">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        Loading...
+                      </span>
+                    ) : (
+                      getApplicantDisplayName(selectedApp)
+                    )}
+                  </p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Character Name</label>
