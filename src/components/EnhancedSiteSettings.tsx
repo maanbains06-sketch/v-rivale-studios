@@ -57,9 +57,39 @@ export const EnhancedSiteSettings = ({ settings, onSettingsChange }: EnhancedSit
   const [sendingAnnouncement, setSendingAnnouncement] = useState(false);
   const [activeAnnouncements, setActiveAnnouncements] = useState<Announcement[]>([]);
 
+  const loadCachedSettingsMap = (): Record<string, string> | null => {
+    try {
+      const cached = localStorage.getItem('slrp_site_settings');
+      if (!cached) return null;
+      const parsed = JSON.parse(cached) as { settings?: Record<string, unknown> };
+      const s = parsed?.settings;
+      if (!s || typeof s !== 'object') return null;
+
+      const map: Record<string, string> = {};
+      for (const [k, v] of Object.entries(s)) {
+        if (typeof v === 'boolean') map[k] = v ? 'true' : 'false';
+        else if (typeof v === 'string') map[k] = v;
+        else if (typeof v === 'number') map[k] = String(v);
+      }
+      return map;
+    } catch {
+      return null;
+    }
+  };
+
   useEffect(() => {
+    // Prevent toggles (esp. default=false ones) from visually flipping OFF on refresh
+    // while the Owner Panel is still loading settings.
+    if (!settings || settings.length === 0) {
+      const cached = loadCachedSettingsMap();
+      if (cached) {
+        setEditedSettings(cached);
+        return;
+      }
+    }
+
     const settingsMap: Record<string, string> = {};
-    settings.forEach(s => settingsMap[s.key] = s.value);
+    settings.forEach(s => (settingsMap[s.key] = s.value));
     setEditedSettings(settingsMap);
   }, [settings]);
 
