@@ -35,8 +35,20 @@ import {
   Sparkles,
   Download,
   FileText,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Trash2,
+  AlertTriangle
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -87,6 +99,7 @@ interface UnifiedApplicationsTableProps {
   onHold?: (id: string, notes: string, type: ApplicationType) => void;
   onClose?: (id: string, type: ApplicationType) => void;
   onMarkOpen?: (id: string, type: ApplicationType) => void;
+  onDelete?: (id: string, type: ApplicationType, applicantName: string) => void;
   title?: string;
 }
 
@@ -131,6 +144,7 @@ export const UnifiedApplicationsTable = ({
   onHold,
   onClose,
   onMarkOpen,
+  onDelete,
   title = "Organization Applications"
 }: UnifiedApplicationsTableProps) => {
   const [selectedApp, setSelectedApp] = useState<UnifiedApplication | null>(null);
@@ -140,6 +154,8 @@ export const UnifiedApplicationsTable = ({
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'on_hold' | 'closed'>('all');
   const [staffNames, setStaffNames] = useState<Record<string, string>>({});
   const [loadingStaff, setLoadingStaff] = useState(true);
+  const [deleteConfirmApp, setDeleteConfirmApp] = useState<UnifiedApplication | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
   const itemsPerPage = 10;
 
@@ -804,7 +820,21 @@ export const UnifiedApplicationsTable = ({
                     <Download className="w-3.5 h-3.5" />
                     Download PDF
                   </Button>
-                  <div></div>
+                  
+                  {/* Delete button - only shown when onDelete is provided (Owner Panel only) */}
+                  {onDelete && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setDeleteConfirmApp(selectedApp);
+                      }}
+                      className="gap-1.5 text-xs border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Delete Application
+                    </Button>
+                  )}
                 </div>
                 {/* Show actions for pending applications */}
                 {(onApprove || onReject || onHold) && selectedApp.status === 'pending' && (
@@ -899,6 +929,54 @@ export const UnifiedApplicationsTable = ({
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteConfirmApp} onOpenChange={(open) => !open && setDeleteConfirmApp(null)}>
+        <AlertDialogContent className="border-red-500/20">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-red-400">
+              <AlertTriangle className="w-5 h-5" />
+              Delete Application
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
+              Are you sure you want to permanently delete this application from{' '}
+              <span className="font-semibold text-foreground">
+                {deleteConfirmApp ? getApplicantDisplayName(deleteConfirmApp) : ''}
+              </span>
+              ? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isDeleting}
+              onClick={() => {
+                if (deleteConfirmApp && onDelete) {
+                  setIsDeleting(true);
+                  const displayName = getApplicantDisplayName(deleteConfirmApp);
+                  onDelete(deleteConfirmApp.id, deleteConfirmApp.applicationType, displayName);
+                  setIsDeleting(false);
+                  setDeleteConfirmApp(null);
+                  setSelectedApp(null);
+                }
+              }}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
