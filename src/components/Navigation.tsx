@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, memo } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield, LogOut, Menu, UserCircle, Mail, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, ExternalLink, Crown, LayoutDashboard, Gift } from "lucide-react";
+import { Users, Shield, LogOut, Menu, UserCircle, Mail, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, ExternalLink, Crown, LayoutDashboard, Gift, Briefcase } from "lucide-react";
 import { Button } from "./ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
@@ -392,6 +392,17 @@ const Navigation = () => {
                             <Link to="/admin">
                               <Shield className="w-4 h-4 mr-2 text-primary" />
                               Admin Panel
+                            </Link>
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            className="justify-start glass-effect border-green-500/30"
+                            asChild
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <Link to="/job-panel">
+                              <Briefcase className="w-4 h-4 mr-2 text-green-400" />
+                              Job Panel
                             </Link>
                           </Button>
                         </>

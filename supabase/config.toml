@@ -27,6 +27,9 @@ verify_jwt = false
 [functions.fetch-youtube-channel]
 verify_jwt = false
 
+[functions.fivem-server-status]
+verify_jwt = false
+
 [functions.notify-staff-discord-dm]
 verify_jwt = false
 
@@ -36,10 +39,10 @@ verify_jwt = false
 [functions.send-application-notification]
 verify_jwt = false
 
-[functions.send-application-test-notifications]
+[functions.send-ban-appeal-notification]
 verify_jwt = false
 
-[functions.send-ban-appeal-notification]
+[functions.send-cooldown-expiry-notification]
 verify_jwt = false
 
 [functions.send-creator-notification]
@@ -87,7 +90,7 @@ verify_jwt = false
 [functions.sync-staff-discord-info]
 verify_jwt = false
 
-[functions.upload-application-images]
+[functions.sync-youtube-live-status]
 verify_jwt = false
 
 [functions.upload-local-banner]
@@ -103,6 +106,9 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.verify-discord-requirements]
+verify_jwt = false
+
+[functions.verify-job-panel-access]
 verify_jwt = false
 
 [functions.verify-roster-access]
