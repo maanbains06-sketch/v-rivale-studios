@@ -14,8 +14,22 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useJobPanelAccess, DEPARTMENT_INFO, type DepartmentKey } from "@/hooks/useJobPanelAccess";
+import { sendDiscordNotification } from "@/lib/discordNotificationSender";
+import { ApplicationType } from "@/components/UnifiedApplicationsTable";
 import { Shield, RefreshCw, CheckCircle, XCircle, Clock, Eye, AlertTriangle, Briefcase } from "lucide-react";
 import headerJobsImg from "@/assets/header-guides-new.jpg";
+
+// Map department keys to ApplicationType for Discord notifications
+const deptToApplicationType: Record<DepartmentKey, ApplicationType> = {
+  pd: 'police',
+  ems: 'ems',
+  firefighter: 'firefighter',
+  doj: 'judge', // Will be refined based on actual position
+  state: 'state',
+  mechanic: 'mechanic',
+  pdm: 'pdm',
+  weazel: 'weazel_news',
+};
 
 interface Application {
   id: string;
@@ -178,26 +192,58 @@ const JobPanel = () => {
         notes: reviewNotes || null,
       };
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from(info.table as any)
         .update(updateData)
-        .eq('id', appId);
+        .eq('id', appId)
+        .select();
 
       if (error) throw error;
 
+      // Check if update was blocked by RLS
+      if (!data || data.length === 0) {
+        throw new Error('Update blocked - insufficient permissions or application not found');
+      }
+
+      // Determine the correct application type for Discord notification
+      let applicationType: ApplicationType = deptToApplicationType[dept];
+      
+      // Refine DOJ type based on position
+      if (dept === 'doj' && selectedApp.position) {
+        if (selectedApp.position.toLowerCase().includes('attorney')) {
+          applicationType = 'attorney';
+        } else if (selectedApp.position.toLowerCase().includes('judge')) {
+          applicationType = 'judge';
+        }
+      }
+
+      // Send Discord notification
+      const applicantName = selectedApp.discord_username || selectedApp.real_name || selectedApp.discord_id || 'Unknown';
+      const notificationResult = await sendDiscordNotification({
+        applicationType,
+        applicantName,
+        applicantDiscordId: selectedApp.discord_id,
+        status,
+        adminNotes: reviewNotes || undefined,
+      });
+
+      if (!notificationResult.success) {
+        console.warn('Discord notification failed:', notificationResult.error);
+      }
+
       toast({
         title: status === 'approved' ? "Application Approved" : "Application Rejected",
-        description: `The application has been ${status}.`,
+        description: `The application has been ${status}${notificationResult.success ? ' and notification sent' : ''}.`,
       });
 
       setSelectedApp(null);
       setReviewNotes('');
       loadApplications();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating application:', error);
       toast({
         title: "Error",
-        description: "Failed to update application status",
+        description: error.message || "Failed to update application status",
         variant: "destructive",
       });
     } finally {
