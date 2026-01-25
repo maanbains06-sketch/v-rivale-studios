@@ -49,6 +49,7 @@ const PanelAccessManager = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [entries, setEntries] = useState<PanelAccessEntry[]>([]);
+  const [staffMembers, setStaffMembers] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [panelFilter, setPanelFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("all");
@@ -62,12 +63,18 @@ const PanelAccessManager = () => {
   const [fetchedUser, setFetchedUser] = useState<DiscordUserInfo | null>(null);
   const [fetchError, setFetchError] = useState("");
 
+  // Collect all Discord IDs from entries and staff members
+  const allDiscordIds = [
+    ...entries.map(e => e.discord_id),
+    ...staffMembers.map(s => s.discord_id)
+  ].filter(Boolean);
+  
   // Fetch Discord names for all entries
-  const discordIds = entries.map(e => e.discord_id).filter(Boolean);
-  const { getDisplayName, getAvatar, isLoading: discordLoading } = useDiscordNames(discordIds);
+  const { getDisplayName, getAvatar, isLoading: discordLoading, nameCache, refetch: refetchDiscord } = useDiscordNames(allDiscordIds);
 
   useEffect(() => {
     loadEntries();
+    loadStaffMembers();
   }, []);
 
   const loadEntries = async () => {
@@ -92,6 +99,21 @@ const PanelAccessManager = () => {
     }
   };
 
+  const loadStaffMembers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("staff_members")
+        .select("id, discord_id, discord_username, discord_avatar, name, role, is_active")
+        .eq("is_active", true)
+        .order("name");
+
+      if (error) throw error;
+      setStaffMembers(data || []);
+    } catch (error) {
+      console.error("Error loading staff members:", error);
+    }
+  };
+
   const fetchDiscordUser = async () => {
     if (!newDiscordId || !/^\d{17,19}$/.test(newDiscordId)) {
       setFetchError("Please enter a valid Discord ID (17-19 digits)");
@@ -107,17 +129,18 @@ const PanelAccessManager = () => {
         body: { discordId: newDiscordId },
       });
 
-      if (error || !data?.user) {
+      // Handle both direct response and nested user format
+      const userData = data?.user || data;
+      
+      if (error || !userData) {
         setFetchError("Could not find Discord user");
         return;
       }
 
       setFetchedUser({
-        username: data.user.username,
-        avatar: data.user.avatar 
-          ? `https://cdn.discordapp.com/avatars/${newDiscordId}/${data.user.avatar}.png`
-          : null,
-        global_name: data.user.global_name,
+        username: userData.username,
+        avatar: userData.avatar || null,
+        global_name: userData.globalName || userData.global_name || userData.displayName,
       });
     } catch (error) {
       console.error("Error fetching Discord user:", error);
@@ -250,8 +273,10 @@ const PanelAccessManager = () => {
   };
 
   const filteredEntries = entries.filter(entry => {
+    const displayName = getDisplayName(entry.discord_id) || entry.discord_username || '';
     const matchesSearch = 
       entry.discord_id.includes(searchQuery) ||
+      displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       entry.discord_username?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesPanel = panelFilter === "all" || entry.panel_type === panelFilter;
     return matchesSearch && matchesPanel;
@@ -276,14 +301,38 @@ const PanelAccessManager = () => {
     return acc;
   }, {} as Record<string, PanelAccessEntry[]>);
 
-  // Get display name from Discord API or fallback to stored username
+  // Get display name from Discord API or fallback to stored username or staff member info
   const getEntryDisplayName = (entry: PanelAccessEntry) => {
+    // First check if we have a fetched name from Discord API
     const fetchedName = getDisplayName(entry.discord_id);
-    return fetchedName || entry.discord_username || "Unknown User";
+    if (fetchedName) return fetchedName;
+    
+    // Fallback to stored username
+    if (entry.discord_username) return entry.discord_username;
+    
+    // Check if this is a staff member
+    const staffMember = staffMembers.find(s => s.discord_id === entry.discord_id);
+    if (staffMember) return staffMember.name || staffMember.discord_username;
+    
+    return "Unknown User";
   };
 
   const getEntryAvatar = (discordId: string) => {
-    return getAvatar(discordId);
+    // First check Discord API fetched avatar
+    const fetchedAvatar = getAvatar(discordId);
+    if (fetchedAvatar) return fetchedAvatar;
+    
+    // Fallback to staff member avatar
+    const staffMember = staffMembers.find(s => s.discord_id === discordId);
+    if (staffMember?.discord_avatar) return staffMember.discord_avatar;
+    
+    return null;
+  };
+
+  const handleRefresh = async () => {
+    await loadEntries();
+    await loadStaffMembers();
+    refetchDiscord();
   };
 
   return (
@@ -336,105 +385,189 @@ const PanelAccessManager = () => {
                   className="pl-10"
                 />
               </div>
-              <Button variant="outline" size="icon" onClick={loadEntries}>
-                <RefreshCw className="h-4 w-4" />
+              <Button variant="outline" size="icon" onClick={handleRefresh} disabled={loading}>
+                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
               </Button>
             </div>
 
             {loading ? (
-              <div className="text-center py-12 text-muted-foreground">Loading...</div>
-            ) : filteredEntries.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
-                <Shield className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No panel access entries found</p>
+                <RefreshCw className="h-8 w-8 mx-auto mb-3 animate-spin" />
+                <p>Loading access entries...</p>
+              </div>
+            ) : filteredEntries.length === 0 ? (
+              <div className="space-y-6">
+                <div className="text-center py-8 text-muted-foreground">
+                  <Shield className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No panel access entries found</p>
+                  <p className="text-sm mt-2">Add users by clicking "Add Access" to grant panel permissions</p>
+                </div>
+                
+                {/* Show Staff Members Section */}
+                {staffMembers.length > 0 && (
+                  <Card className="border-border/30">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Users className="h-5 w-5 text-primary" />
+                        Staff Members (Auto Access)
+                      </CardTitle>
+                      <CardDescription>
+                        These staff members have automatic access based on their roles
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        {staffMembers.map(staff => {
+                          const displayName = getDisplayName(staff.discord_id) || staff.name || staff.discord_username;
+                          const avatar = getAvatar(staff.discord_id) || staff.discord_avatar;
+                          return (
+                            <div key={staff.id} className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
+                              <Avatar className="h-10 w-10">
+                                <AvatarImage src={avatar || undefined} />
+                                <AvatarFallback className="bg-primary/20 text-primary">
+                                  {displayName?.charAt(0)?.toUpperCase() || 'U'}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium truncate">{displayName}</p>
+                                <p className="text-xs text-muted-foreground">{staff.role}</p>
+                              </div>
+                              <Badge variant="secondary" className="text-xs">Staff</Badge>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead>Panel</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Granted</TableHead>
-                    <TableHead>Notes</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredEntries.map((entry) => (
-                    <TableRow key={entry.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={getEntryAvatar(entry.discord_id) || undefined} />
-                            <AvatarFallback className="bg-primary/20 text-primary text-xs">
-                              {getEntryDisplayName(entry).charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium">{getEntryDisplayName(entry)}</p>
-                            <p className="text-xs text-muted-foreground font-mono">{entry.discord_id}</p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          {getPanelIcon(entry.panel_type)}
-                          <span>{getPanelLabel(entry.panel_type)}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {entry.is_active ? (
-                          <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                            Active
-                          </Badge>
-                        ) : (
-                          <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
-                            <XCircle className="h-3 w-3 mr-1" />
-                            Disabled
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-sm">
-                        {format(new Date(entry.granted_at), "MMM d, yyyy")}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
-                        {entry.notes || "-"}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Switch
-                            checked={entry.is_active}
-                            onCheckedChange={() => handleToggleActive(entry)}
-                          />
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Remove Access?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  This will permanently remove {getEntryDisplayName(entry)}'s access to the {getPanelLabel(entry.panel_type)}.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDeleteAccess(entry.id)}>
-                                  Remove
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </TableCell>
+              <>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>User</TableHead>
+                      <TableHead>Panel</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Granted</TableHead>
+                      <TableHead>Notes</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredEntries.map((entry) => (
+                      <TableRow key={entry.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={getEntryAvatar(entry.discord_id) || undefined} />
+                              <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                                {getEntryDisplayName(entry).charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium">{getEntryDisplayName(entry)}</p>
+                              <p className="text-xs text-muted-foreground font-mono">{entry.discord_id}</p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {getPanelIcon(entry.panel_type)}
+                            <span>{getPanelLabel(entry.panel_type)}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {entry.is_active ? (
+                            <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Active
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
+                              <XCircle className="h-3 w-3 mr-1" />
+                              Disabled
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm">
+                          {format(new Date(entry.granted_at), "MMM d, yyyy")}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
+                          {entry.notes || "-"}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              checked={entry.is_active}
+                              onCheckedChange={() => handleToggleActive(entry)}
+                            />
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Remove Access?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This will permanently remove {getEntryDisplayName(entry)}'s access to the {getPanelLabel(entry.panel_type)}.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDeleteAccess(entry.id)}>
+                                    Remove
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                
+                {/* Staff Members Section */}
+                {staffMembers.length > 0 && (
+                  <Card className="border-border/30 mt-6">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Users className="h-5 w-5 text-primary" />
+                        Staff Members (Auto Access)
+                      </CardTitle>
+                      <CardDescription>
+                        Staff members have automatic access to panels based on their roles
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        {staffMembers.map(staff => {
+                          const displayName = getDisplayName(staff.discord_id) || staff.name || staff.discord_username;
+                          const avatar = getAvatar(staff.discord_id) || staff.discord_avatar;
+                          return (
+                            <div key={staff.id} className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
+                              <Avatar className="h-10 w-10">
+                                <AvatarImage src={avatar || undefined} />
+                                <AvatarFallback className="bg-primary/20 text-primary">
+                                  {displayName?.charAt(0)?.toUpperCase() || 'U'}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium truncate">{displayName}</p>
+                                <p className="text-xs text-muted-foreground">{staff.role}</p>
+                              </div>
+                              <Badge variant="secondary" className="text-xs shrink-0">Staff</Badge>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
             )}
           </TabsContent>
 
@@ -449,11 +582,12 @@ const PanelAccessManager = () => {
                   </CardTitle>
                   <CardDescription>{panel.description}</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
+                  {/* Granted Access Users */}
                   {entriesByPanel[panel.id]?.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Users className="h-10 w-10 mx-auto mb-3 opacity-50" />
-                      <p className="text-sm">No users have access to this panel</p>
+                    <div className="text-center py-6 text-muted-foreground bg-muted/20 rounded-lg">
+                      <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">No users have been granted access to this panel</p>
                       <Button 
                         variant="outline" 
                         size="sm" 
@@ -514,6 +648,38 @@ const PanelAccessManager = () => {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  )}
+                  
+                  {/* Staff Members with Auto Access */}
+                  {staffMembers.length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+                        <Shield className="h-3 w-3" />
+                        Staff members with automatic access:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {staffMembers.slice(0, 6).map(staff => {
+                          const displayName = getDisplayName(staff.discord_id) || staff.name || staff.discord_username;
+                          const avatar = getAvatar(staff.discord_id) || staff.discord_avatar;
+                          return (
+                            <div key={staff.id} className="flex items-center gap-2 px-2 py-1 bg-muted/30 rounded-full text-xs">
+                              <Avatar className="h-5 w-5">
+                                <AvatarImage src={avatar || undefined} />
+                                <AvatarFallback className="text-[10px]">
+                                  {displayName?.charAt(0)?.toUpperCase() || 'U'}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span>{displayName}</span>
+                            </div>
+                          );
+                        })}
+                        {staffMembers.length > 6 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{staffMembers.length - 6} more
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   )}
                 </CardContent>
