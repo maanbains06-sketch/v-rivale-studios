@@ -274,6 +274,39 @@ export type Database = {
         }
         Relationships: []
       }
+      contract_templates: {
+        Row: {
+          content: Json
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_default: boolean | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cooldown_expiry_notifications: {
         Row: {
           application_id: string
@@ -390,6 +423,77 @@ export type Database = {
           why_join?: string
         }
         Relationships: []
+      }
+      creator_contracts: {
+        Row: {
+          contract_data: Json
+          created_at: string
+          created_by: string | null
+          creator_discord_id: string | null
+          creator_email: string | null
+          creator_ip_address: string | null
+          creator_name: string
+          creator_signature: string | null
+          creator_signed_at: string | null
+          id: string
+          owner_ip_address: string | null
+          owner_signature: string | null
+          owner_signed_at: string | null
+          status: string
+          template_id: string | null
+          updated_at: string
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          contract_data?: Json
+          created_at?: string
+          created_by?: string | null
+          creator_discord_id?: string | null
+          creator_email?: string | null
+          creator_ip_address?: string | null
+          creator_name: string
+          creator_signature?: string | null
+          creator_signed_at?: string | null
+          id?: string
+          owner_ip_address?: string | null
+          owner_signature?: string | null
+          owner_signed_at?: string | null
+          status?: string
+          template_id?: string | null
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          contract_data?: Json
+          created_at?: string
+          created_by?: string | null
+          creator_discord_id?: string | null
+          creator_email?: string | null
+          creator_ip_address?: string | null
+          creator_name?: string
+          creator_signature?: string | null
+          creator_signed_at?: string | null
+          id?: string
+          owner_ip_address?: string | null
+          owner_signature?: string | null
+          owner_signed_at?: string | null
+          status?: string
+          template_id?: string | null
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_contracts_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "contract_templates"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       direct_messages: {
         Row: {
