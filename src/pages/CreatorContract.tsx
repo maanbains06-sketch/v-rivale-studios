@@ -240,273 +240,398 @@ const CreatorContract = () => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
-    const margin = 20;
+    const margin = 15;
     const contentWidth = pageWidth - (margin * 2);
     let yPos = 0;
 
-    // Header with dark background
-    doc.setFillColor(30, 41, 59);
-    doc.rect(0, 0, pageWidth, 50, 'F');
+    // Colors
+    const headerBg: [number, number, number] = [30, 41, 59];
+    const black: [number, number, number] = [0, 0, 0];
+    const gray: [number, number, number] = [100, 100, 100];
+    const lightGray: [number, number, number] = [230, 230, 230];
+
+    // ========== PAGE 1 - Header and Party Details ==========
+    
+    // Header Box
+    doc.setFillColor(...headerBg);
+    doc.rect(0, 0, pageWidth, 35, 'F');
     
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(22);
+    doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
-    doc.text('SKYLIFE ROLEPLAY INDIA', pageWidth / 2, 20, { align: 'center' });
+    doc.text('SKYLIFE ROLEPLAY INDIA', pageWidth / 2, 15, { align: 'center' });
     
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'italic');
-    doc.text('Content Creator Agreement', pageWidth / 2, 32, { align: 'center' });
-    
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Contract ID: ${selectedContractId || 'DRAFT'}`, pageWidth / 2, 42, { align: 'center' });
+    doc.text('CONTENT CREATOR AGREEMENT', pageWidth / 2, 25, { align: 'center' });
 
-    yPos = 60;
+    yPos = 45;
 
-    // Section helper with enhanced styling
-    const addSection = (title: string, content: { label: string; value: string; bold?: boolean; italic?: boolean }[], twoColumn = false) => {
-      if (yPos > 250) {
-        doc.addPage();
-        yPos = 20;
-      }
+    // Contract Info Row
+    doc.setTextColor(...black);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Contract ID:', margin, yPos);
+    doc.setFont('helvetica', 'normal');
+    doc.text(selectedContractId?.slice(0, 8) || 'DRAFT', margin + 25, yPos);
+    
+    doc.setFont('helvetica', 'bold');
+    doc.text('Date:', pageWidth - 60, yPos);
+    doc.setFont('helvetica', 'normal');
+    doc.text(format(new Date(), 'dd/MM/yyyy'), pageWidth - 45, yPos);
 
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(37, 99, 235);
-      doc.text(title.toUpperCase(), margin, yPos);
+    yPos += 10;
+
+    // Helper: Draw a form field with label and value in a box
+    const drawFormField = (label: string, value: string, x: number, y: number, width: number, height: number = 8) => {
+      // Label background
+      doc.setFillColor(...lightGray);
+      doc.rect(x, y, 45, height, 'F');
       
-      doc.setDrawColor(37, 99, 235);
-      doc.setLineWidth(0.5);
-      doc.line(margin, yPos + 2, margin + doc.getTextWidth(title.toUpperCase()), yPos + 2);
-      yPos += 10;
-
-      doc.setTextColor(30, 30, 30);
-      doc.setFontSize(10);
-
-      if (twoColumn) {
-        const halfWidth = contentWidth / 2 - 5;
-        const leftCol = margin;
-        const rightCol = margin + halfWidth + 10;
-        const halfContent = Math.ceil(content.length / 2);
-        
-        content.forEach((item, index) => {
-          if (yPos > 270) {
-            doc.addPage();
-            yPos = 20;
-          }
-          
-          const col = index < halfContent ? leftCol : rightCol;
-          const adjustedY = index < halfContent ? yPos : yPos - (index - halfContent) * 6;
-          
-          doc.setFont('helvetica', item.bold ? 'bold' : 'normal');
-          if (item.italic) doc.setFont('helvetica', 'italic');
-          doc.text(`${item.label}: ${item.value}`, col, adjustedY);
-          
-          if (index < halfContent) yPos += 6;
-        });
-        yPos += 5;
-      } else {
-        content.forEach(item => {
-          if (yPos > 270) {
-            doc.addPage();
-            yPos = 20;
-          }
-          
-          doc.setFont('helvetica', item.bold ? 'bold' : 'normal');
-          if (item.italic) doc.setFont('helvetica', 'italic');
-          
-          const lines = doc.splitTextToSize(`${item.label}${item.label ? ': ' : ''}${item.value}`, contentWidth);
-          lines.forEach((line: string) => {
-            doc.text(line, margin, yPos);
-            yPos += 5;
-          });
-        });
-      }
-      yPos += 8;
+      // Full border
+      doc.setDrawColor(...black);
+      doc.setLineWidth(0.3);
+      doc.rect(x, y, width, height);
+      
+      // Divider line
+      doc.line(x + 45, y, x + 45, y + height);
+      
+      // Label text
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...black);
+      doc.text(label, x + 2, y + 5.5);
+      
+      // Value text
+      doc.setFont('helvetica', 'normal');
+      doc.text(value || '', x + 47, y + 5.5);
     };
 
-    // Parties Section
-    addSection('Party A - Server Representative', [
-      { label: 'Organization', value: contractData.serverName, bold: true },
-      { label: 'Representative', value: contractData.serverOwner },
-      { label: 'Email', value: contractData.serverEmail },
-      { label: 'Discord', value: contractData.serverDiscord },
-      { label: 'Website', value: contractData.serverWebsite },
-      { label: 'Address', value: contractData.serverAddress },
-      ...(contractData.serverGSTIN ? [{ label: 'GSTIN', value: contractData.serverGSTIN }] : []),
-    ]);
+    // Helper: Draw section header
+    const drawSectionHeader = (title: string, y: number) => {
+      doc.setFillColor(...headerBg);
+      doc.rect(margin, y, contentWidth, 8, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text(title.toUpperCase(), margin + 3, y + 5.5);
+      return y + 10;
+    };
 
-    addSection('Party B - Content Creator', [
-      { label: 'Full Name', value: contractData.creatorName || '[To be filled]', bold: true },
-      { label: 'Address', value: contractData.creatorAddress || '[To be filled]' },
-      { label: 'Email', value: contractData.creatorEmail || '[To be filled]' },
-      { label: 'Phone', value: contractData.creatorPhone || '[To be filled]' },
-      { label: 'Discord ID', value: contractData.creatorDiscord || '[To be filled]' },
-      ...(contractData.creatorPAN ? [{ label: 'PAN', value: contractData.creatorPAN }] : []),
-      { label: 'Channel Name', value: contractData.channelName || '[To be filled]' },
-      { label: 'Platform Links', value: contractData.platformLinks || '[To be filled]' },
-      { label: 'Subscriber Count', value: contractData.subscriberCount || '[To be filled]' },
-      { label: 'Avg. Views', value: contractData.averageViews || '[To be filled]' },
-    ]);
+    // ========== PARTY A SECTION ==========
+    yPos = drawSectionHeader('Party A - Server Representative', yPos);
 
-    // Contract Period
-    addSection('Contract Period', [
-      { label: 'Duration', value: contractData.contractDuration, bold: true },
-      { label: 'Commencement Date', value: format(new Date(contractData.startDate), 'dd MMMM yyyy') },
-      { label: 'Expiry Date', value: format(new Date(contractData.endDate), 'dd MMMM yyyy') },
-      { label: 'Exclusivity', value: contractData.exclusivityClause, italic: true },
-    ]);
+    const halfWidth = contentWidth / 2 - 2;
+    
+    drawFormField('Organization', contractData.serverName, margin, yPos, halfWidth);
+    drawFormField('Representative', contractData.serverOwner, margin + halfWidth + 4, yPos, halfWidth);
+    yPos += 10;
+    
+    drawFormField('Email', contractData.serverEmail, margin, yPos, halfWidth);
+    drawFormField('Discord', contractData.serverDiscord, margin + halfWidth + 4, yPos, halfWidth);
+    yPos += 10;
+    
+    drawFormField('Website', contractData.serverWebsite, margin, yPos, halfWidth);
+    drawFormField('Address', contractData.serverAddress, margin + halfWidth + 4, yPos, halfWidth);
+    yPos += 10;
 
-    // Compensation
-    addSection('Compensation & Payment Terms', [
-      { label: 'Monthly Retainer', value: `₹${contractData.monthlyPayment}`, bold: true },
-      { label: 'Payment Method', value: contractData.paymentMethod },
-      { label: 'Payment Schedule', value: 'Within 7 working days of each calendar month end' },
-      { label: 'Performance Bonus', value: contractData.performanceBonus, italic: true },
-    ]);
+    if (contractData.serverGSTIN) {
+      drawFormField('GSTIN', contractData.serverGSTIN, margin, yPos, contentWidth);
+      yPos += 10;
+    }
 
-    // Content Requirements
-    addSection('Content Deliverables', [
-      { label: 'Minimum Videos', value: `${contractData.minimumVideos} per month`, bold: true },
-      { label: 'Minimum Streams', value: `${contractData.minimumStreams} hours per month`, bold: true },
-      { label: '', value: '• All content must prominently feature Skylife Roleplay India' },
-      { label: '', value: '• Server name and Discord link required in video descriptions' },
-      { label: '', value: '• Content must adhere to community guidelines' },
-      { label: '', value: '• No promotion of competing GTA RP servers during contract period' },
-    ]);
+    yPos += 5;
 
-    // Obligations
+    // ========== PARTY B SECTION ==========
+    yPos = drawSectionHeader('Party B - Content Creator', yPos);
+
+    drawFormField('Full Name', contractData.creatorName || '[To be filled]', margin, yPos, halfWidth);
+    drawFormField('Email', contractData.creatorEmail || '[To be filled]', margin + halfWidth + 4, yPos, halfWidth);
+    yPos += 10;
+    
+    drawFormField('Phone', contractData.creatorPhone || '[To be filled]', margin, yPos, halfWidth);
+    drawFormField('Discord ID', contractData.creatorDiscord || '[To be filled]', margin + halfWidth + 4, yPos, halfWidth);
+    yPos += 10;
+    
+    drawFormField('Address', contractData.creatorAddress || '[To be filled]', margin, yPos, contentWidth);
+    yPos += 10;
+    
+    if (contractData.creatorPAN) {
+      drawFormField('PAN', contractData.creatorPAN, margin, yPos, halfWidth);
+      yPos += 10;
+    }
+    
+    drawFormField('Channel Name', contractData.channelName || '[To be filled]', margin, yPos, halfWidth);
+    drawFormField('Platform Links', contractData.platformLinks || '[To be filled]', margin + halfWidth + 4, yPos, halfWidth);
+    yPos += 10;
+    
+    drawFormField('Subscribers', contractData.subscriberCount || '[To be filled]', margin, yPos, halfWidth);
+    drawFormField('Avg. Views', contractData.averageViews || '[To be filled]', margin + halfWidth + 4, yPos, halfWidth);
+    yPos += 15;
+
+    // ========== CONTRACT PERIOD SECTION ==========
+    yPos = drawSectionHeader('Contract Period', yPos);
+
+    const quarterWidth = contentWidth / 4 - 3;
+    
+    drawFormField('Duration', contractData.contractDuration, margin, yPos, quarterWidth + 15);
+    drawFormField('Start Date', format(new Date(contractData.startDate), 'dd/MM/yyyy'), margin + quarterWidth + 18, yPos, quarterWidth + 15);
+    drawFormField('End Date', format(new Date(contractData.endDate), 'dd/MM/yyyy'), margin + (quarterWidth + 18) * 2, yPos, quarterWidth + 14);
+    yPos += 10;
+    
+    drawFormField('Exclusivity', contractData.exclusivityClause, margin, yPos, contentWidth);
+    yPos += 15;
+
+    // ========== COMPENSATION SECTION ==========
+    yPos = drawSectionHeader('Compensation & Payment Terms', yPos);
+
+    drawFormField('Monthly Payment', `₹${contractData.monthlyPayment}`, margin, yPos, halfWidth);
+    drawFormField('Payment Method', contractData.paymentMethod, margin + halfWidth + 4, yPos, halfWidth);
+    yPos += 10;
+    
+    drawFormField('Performance Bonus', contractData.performanceBonus, margin, yPos, contentWidth);
+    yPos += 10;
+    
+    drawFormField('Payment Schedule', 'Within 7 working days of each calendar month end', margin, yPos, contentWidth);
+    yPos += 15;
+
+    // ========== CONTENT DELIVERABLES SECTION ==========
+    yPos = drawSectionHeader('Content Deliverables', yPos);
+
+    drawFormField('Min. Videos/Month', contractData.minimumVideos, margin, yPos, halfWidth);
+    drawFormField('Min. Stream Hours', contractData.minimumStreams, margin + halfWidth + 4, yPos, halfWidth);
+    yPos += 12;
+
+    // Content Guidelines Box
+    doc.setDrawColor(...black);
+    doc.setLineWidth(0.3);
+    doc.rect(margin, yPos, contentWidth, 28);
+    
+    doc.setFillColor(...lightGray);
+    doc.rect(margin, yPos, contentWidth, 6, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(...black);
+    doc.text('Content Guidelines:', margin + 2, yPos + 4);
+    
+    doc.setFont('helvetica', 'normal');
+    const guidelines = [
+      '• All content must prominently feature Skylife Roleplay India gameplay',
+      '• Server name and Discord link required in all video descriptions',
+      '• Content must adhere to community guidelines and be family-friendly',
+      '• No promotion of competing GTA RP servers during contract period'
+    ];
+    
+    let guideY = yPos + 10;
+    guidelines.forEach(g => {
+      doc.text(g, margin + 3, guideY);
+      guideY += 5;
+    });
+
+    // ========== PAGE 2 ==========
     doc.addPage();
     yPos = 20;
 
-    addSection('Creator Obligations', [
-      { label: '', value: '1. Maintain active and positive presence on the server' },
-      { label: '', value: '2. Engage constructively with the community' },
-      { label: '', value: '3. Report technical issues and provide feedback' },
-      { label: '', value: '4. Provide 14 days written notice before contract termination' },
-      { label: '', value: '5. Maintain confidentiality of server-sensitive information' },
-      { label: '', value: '6. Comply with all server rules and regulations' },
-      { label: '', value: '7. Attend mandatory creator meetings when scheduled' },
-    ]);
+    // ========== OBLIGATIONS SECTION ==========
+    yPos = drawSectionHeader('Creator Obligations', yPos);
 
-    addSection('Server Obligations', [
-      { label: '', value: '1. Provide priority queue access to the server' },
-      { label: '', value: '2. Offer dedicated support for content creation needs' },
-      { label: '', value: '3. Feature creator content on official channels' },
-      { label: '', value: '4. Provide agreed-upon in-game perks and benefits' },
-      { label: '', value: '5. Maintain open and timely communication' },
-      { label: '', value: '6. Process payments within the stipulated timeframe' },
-    ]);
+    doc.setDrawColor(...black);
+    doc.setLineWidth(0.3);
+    doc.rect(margin, yPos, contentWidth, 38);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...black);
+    
+    const creatorObligations = [
+      '1. Maintain active and positive presence on the server',
+      '2. Engage constructively with the community',
+      '3. Report technical issues and provide feedback',
+      '4. Provide 14 days written notice before contract termination',
+      '5. Maintain confidentiality of server-sensitive information',
+      '6. Comply with all server rules and regulations',
+      '7. Attend mandatory creator meetings when scheduled'
+    ];
+    
+    let obligY = yPos + 5;
+    creatorObligations.forEach(o => {
+      doc.text(o, margin + 3, obligY);
+      obligY += 5;
+    });
+    yPos += 43;
 
-    addSection('Termination Clause', [
-      { label: '', value: 'Either party may terminate this agreement with 14 days written notice.', italic: true },
-      { label: '', value: '' },
-      { label: '', value: 'Grounds for immediate termination:', bold: true },
-      { label: '', value: '• Violation of server rules or community guidelines' },
-      { label: '', value: '• Failure to meet deliverables for 2 consecutive months' },
-      { label: '', value: '• Actions damaging to either party\'s reputation' },
-      { label: '', value: '• Breach of confidentiality obligations' },
-      { label: '', value: '• Engagement in fraudulent or illegal activities' },
-    ]);
+    yPos = drawSectionHeader('Server Obligations', yPos);
 
-    // Special Terms
+    doc.rect(margin, yPos, contentWidth, 33);
+    
+    const serverObligations = [
+      '1. Provide priority queue access to the server',
+      '2. Offer dedicated support for content creation needs',
+      '3. Feature creator content on official channels',
+      '4. Provide agreed-upon in-game perks and benefits',
+      '5. Maintain open and timely communication',
+      '6. Process payments within the stipulated timeframe'
+    ];
+    
+    obligY = yPos + 5;
+    serverObligations.forEach(o => {
+      doc.text(o, margin + 3, obligY);
+      obligY += 5;
+    });
+    yPos += 38;
+
+    // ========== TERMINATION SECTION ==========
+    yPos = drawSectionHeader('Termination Clause', yPos);
+
+    doc.rect(margin, yPos, contentWidth, 35);
+    
+    doc.setFont('helvetica', 'italic');
+    doc.text('Either party may terminate this agreement with 14 days written notice.', margin + 3, yPos + 5);
+    
+    doc.setFont('helvetica', 'bold');
+    doc.text('Grounds for Immediate Termination:', margin + 3, yPos + 12);
+    
+    doc.setFont('helvetica', 'normal');
+    const terminationGrounds = [
+      '• Violation of server rules or community guidelines',
+      '• Failure to meet deliverables for 2 consecutive months',
+      '• Actions damaging to either party\'s reputation',
+      '• Breach of confidentiality obligations'
+    ];
+    
+    let termY = yPos + 17;
+    terminationGrounds.forEach(t => {
+      doc.text(t, margin + 5, termY);
+      termY += 4.5;
+    });
+    yPos += 40;
+
+    // ========== SPECIAL TERMS SECTION ==========
     if (contractData.specialTerms) {
-      addSection('Special Terms & Conditions', [
-        { label: '', value: contractData.specialTerms },
-      ]);
+      yPos = drawSectionHeader('Special Terms & Conditions', yPos);
+      
+      const termLines = doc.splitTextToSize(contractData.specialTerms, contentWidth - 6);
+      const termHeight = Math.max(20, termLines.length * 4 + 6);
+      
+      doc.rect(margin, yPos, contentWidth, termHeight);
+      doc.setFont('helvetica', 'normal');
+      
+      let termYPos = yPos + 5;
+      termLines.forEach((line: string) => {
+        if (termYPos < yPos + termHeight - 2) {
+          doc.text(line, margin + 3, termYPos);
+          termYPos += 4;
+        }
+      });
+      yPos += termHeight + 5;
     }
 
-    // Signatures Page
-    if (yPos > 180) {
+    // ========== SIGNATURES SECTION ==========
+    if (yPos > 200) {
       doc.addPage();
       yPos = 20;
     }
 
-    yPos += 10;
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(37, 99, 235);
-    doc.text('SIGNATURES & ACKNOWLEDGEMENT', margin, yPos);
-    yPos += 15;
+    yPos = drawSectionHeader('Signatures & Acknowledgement', yPos);
 
-    doc.setTextColor(30, 30, 30);
-    doc.setFontSize(9);
     doc.setFont('helvetica', 'italic');
-    doc.text('By signing below, both parties acknowledge that they have read, understood, and agree to all terms of this agreement.', margin, yPos, { maxWidth: contentWidth });
-    yPos += 15;
+    doc.setFontSize(7);
+    doc.setTextColor(...gray);
+    doc.text('By signing below, both parties acknowledge that they have read, understood, and agree to all terms of this agreement.', margin, yPos + 4);
+    yPos += 12;
 
     // Signature boxes
-    const sigBoxWidth = 80;
-    const sigBoxHeight = 35;
+    const sigBoxWidth = (contentWidth - 10) / 2;
+    const sigBoxHeight = 30;
 
-    // Party A Signature
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    doc.text('For Skylife Roleplay India (Party A):', margin, yPos);
-    yPos += 5;
-    
-    doc.setDrawColor(200, 200, 200);
+    // Party A Signature Box
+    doc.setDrawColor(...black);
     doc.setLineWidth(0.3);
-    doc.rect(margin, yPos, sigBoxWidth, sigBoxHeight);
+    doc.rect(margin, yPos, sigBoxWidth, sigBoxHeight + 25);
+    
+    doc.setFillColor(...lightGray);
+    doc.rect(margin, yPos, sigBoxWidth, 6, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(...black);
+    doc.text('Party A - Server Representative', margin + 2, yPos + 4);
+    
+    // Signature area
+    doc.setDrawColor(...gray);
+    doc.setLineDashPattern([2, 2], 0);
+    doc.rect(margin + 5, yPos + 10, sigBoxWidth - 10, sigBoxHeight - 5);
+    doc.setLineDashPattern([], 0);
     
     if (ownerSignature) {
       try {
-        doc.addImage(ownerSignature, 'PNG', margin + 2, yPos + 2, sigBoxWidth - 4, sigBoxHeight - 4);
+        doc.addImage(ownerSignature, 'PNG', margin + 7, yPos + 12, sigBoxWidth - 14, sigBoxHeight - 9);
       } catch (e) {
         doc.setFont('helvetica', 'italic');
-        doc.setFontSize(8);
-        doc.text('[Signature on file]', margin + 5, yPos + 18);
+        doc.setFontSize(10);
+        doc.text('[Signature on file]', margin + sigBoxWidth / 2 - 15, yPos + 25);
       }
     }
     
-    yPos += sigBoxHeight + 3;
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.text('Authorized Signature', margin, yPos);
-    yPos += 4;
-    doc.text(`Name: ${contractData.serverOwner}`, margin, yPos);
-    yPos += 4;
-    doc.text(`Date: ${ownerSignedAt ? format(new Date(ownerSignedAt), 'dd/MM/yyyy HH:mm') : '________________'}`, margin, yPos);
+    doc.setFontSize(7);
+    doc.text(`Name: ${contractData.serverOwner}`, margin + 3, yPos + sigBoxHeight + 8);
+    doc.text(`Date: ${ownerSignedAt ? format(new Date(ownerSignedAt), 'dd/MM/yyyy HH:mm') : '____________________'}`, margin + 3, yPos + sigBoxHeight + 13);
+    doc.text('Authorized Signature', margin + 3, yPos + sigBoxHeight + 18);
 
-    // Party B Signature
-    const rightCol = pageWidth / 2 + 10;
-    let sigYPos = yPos - sigBoxHeight - 11 - 8;
+    // Party B Signature Box
+    const partyBX = margin + sigBoxWidth + 10;
+    doc.setDrawColor(...black);
+    doc.rect(partyBX, yPos, sigBoxWidth, sigBoxHeight + 25);
     
+    doc.setFillColor(...lightGray);
+    doc.rect(partyBX, yPos, sigBoxWidth, 6, 'F');
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    doc.text(`For ${contractData.creatorName || 'Creator'} (Party B):`, rightCol, sigYPos);
-    sigYPos += 5;
+    doc.setFontSize(8);
+    doc.text('Party B - Content Creator', partyBX + 2, yPos + 4);
     
-    doc.rect(rightCol, sigYPos, sigBoxWidth, sigBoxHeight);
+    // Signature area
+    doc.setDrawColor(...gray);
+    doc.setLineDashPattern([2, 2], 0);
+    doc.rect(partyBX + 5, yPos + 10, sigBoxWidth - 10, sigBoxHeight - 5);
+    doc.setLineDashPattern([], 0);
     
     if (creatorSignature) {
       try {
-        doc.addImage(creatorSignature, 'PNG', rightCol + 2, sigYPos + 2, sigBoxWidth - 4, sigBoxHeight - 4);
+        doc.addImage(creatorSignature, 'PNG', partyBX + 7, yPos + 12, sigBoxWidth - 14, sigBoxHeight - 9);
       } catch (e) {
         doc.setFont('helvetica', 'italic');
-        doc.setFontSize(8);
-        doc.text('[Signature on file]', rightCol + 5, sigYPos + 18);
+        doc.setFontSize(10);
+        doc.text('[Signature on file]', partyBX + sigBoxWidth / 2 - 15, yPos + 25);
       }
     }
     
-    sigYPos += sigBoxHeight + 3;
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.text('Creator Signature', rightCol, sigYPos);
-    sigYPos += 4;
-    doc.text(`Name: ${contractData.creatorName || '________________'}`, rightCol, sigYPos);
-    sigYPos += 4;
-    doc.text(`Date: ${creatorSignedAt ? format(new Date(creatorSignedAt), 'dd/MM/yyyy HH:mm') : '________________'}`, rightCol, sigYPos);
+    doc.setFontSize(7);
+    doc.text(`Name: ${contractData.creatorName || '____________________'}`, partyBX + 3, yPos + sigBoxHeight + 8);
+    doc.text(`Date: ${creatorSignedAt ? format(new Date(creatorSignedAt), 'dd/MM/yyyy HH:mm') : '____________________'}`, partyBX + 3, yPos + sigBoxHeight + 13);
+    doc.text('Creator Signature', partyBX + 3, yPos + sigBoxHeight + 18);
 
     // Footer
-    yPos = pageHeight - 15;
-    doc.setFontSize(7);
-    doc.setTextColor(120, 120, 120);
+    yPos = pageHeight - 12;
+    doc.setDrawColor(...black);
+    doc.setLineWidth(0.5);
+    doc.line(margin, yPos - 3, pageWidth - margin, yPos - 3);
+    
+    doc.setFontSize(6);
+    doc.setTextColor(...gray);
     doc.setFont('helvetica', 'italic');
-    doc.text('This is a legally binding document. Both parties acknowledge having read and understood all terms and conditions stated herein.', pageWidth / 2, yPos, { align: 'center' });
-    yPos += 4;
+    doc.text('This is a legally binding electronic document. Both parties acknowledge having read and understood all terms and conditions stated herein.', pageWidth / 2, yPos, { align: 'center' });
     doc.setFont('helvetica', 'normal');
-    doc.text(`Skylife Roleplay India | Content Creator Contract | Generated: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, pageWidth / 2, yPos, { align: 'center' });
+    doc.text(`Skylife Roleplay India | Content Creator Contract | Generated: ${format(new Date(), 'dd/MM/yyyy HH:mm')} | Page ${doc.getNumberOfPages()}`, pageWidth / 2, yPos + 4, { align: 'center' });
+
+    // Add page numbers to all pages
+    const totalPages = doc.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(7);
+      doc.setTextColor(...gray);
+      doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin, pageHeight - 5, { align: 'right' });
+    }
 
     // Save
     const fileName = `SLRP-Contract-${contractData.creatorName?.replace(/\s+/g, '-') || 'Draft'}-${format(new Date(), 'yyyy-MM-dd')}.pdf`;
@@ -644,32 +769,32 @@ const CreatorContract = () => {
                         {isEditing ? (
                           <div className="space-y-3">
                             <div>
-                              <Label className="text-xs font-semibold text-slate-600">Organization Name</Label>
-                              <Input value={contractData.serverName} onChange={(e) => handleInputChange('serverName', e.target.value)} className="h-9 mt-1" />
+                              <Label className="text-xs font-semibold text-slate-700">Organization Name</Label>
+                              <Input value={contractData.serverName} onChange={(e) => handleInputChange('serverName', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-600">Representative Name</Label>
-                              <Input value={contractData.serverOwner} onChange={(e) => handleInputChange('serverOwner', e.target.value)} className="h-9 mt-1" />
+                              <Label className="text-xs font-semibold text-slate-700">Representative Name</Label>
+                              <Input value={contractData.serverOwner} onChange={(e) => handleInputChange('serverOwner', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-600">Email</Label>
-                              <Input value={contractData.serverEmail} onChange={(e) => handleInputChange('serverEmail', e.target.value)} className="h-9 mt-1" />
+                              <Label className="text-xs font-semibold text-slate-700">Email</Label>
+                              <Input value={contractData.serverEmail} onChange={(e) => handleInputChange('serverEmail', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-600">Discord Server</Label>
-                              <Input value={contractData.serverDiscord} onChange={(e) => handleInputChange('serverDiscord', e.target.value)} className="h-9 mt-1" />
+                              <Label className="text-xs font-semibold text-slate-700">Discord Server</Label>
+                              <Input value={contractData.serverDiscord} onChange={(e) => handleInputChange('serverDiscord', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-600">Website</Label>
-                              <Input value={contractData.serverWebsite} onChange={(e) => handleInputChange('serverWebsite', e.target.value)} className="h-9 mt-1" />
+                              <Label className="text-xs font-semibold text-slate-700">Website</Label>
+                              <Input value={contractData.serverWebsite} onChange={(e) => handleInputChange('serverWebsite', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-600">Address</Label>
-                              <Input value={contractData.serverAddress} onChange={(e) => handleInputChange('serverAddress', e.target.value)} className="h-9 mt-1" />
+                              <Label className="text-xs font-semibold text-slate-700">Address</Label>
+                              <Input value={contractData.serverAddress} onChange={(e) => handleInputChange('serverAddress', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-600">GSTIN (Optional)</Label>
-                              <Input value={contractData.serverGSTIN} onChange={(e) => handleInputChange('serverGSTIN', e.target.value)} className="h-9 mt-1" placeholder="Optional" />
+                              <Label className="text-xs font-semibold text-slate-700">GSTIN (Optional)</Label>
+                              <Input value={contractData.serverGSTIN} onChange={(e) => handleInputChange('serverGSTIN', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" placeholder="Optional" />
                             </div>
                           </div>
                         ) : (
@@ -694,45 +819,45 @@ const CreatorContract = () => {
                         {isEditing ? (
                           <div className="space-y-3">
                             <div>
-                              <Label className="text-xs font-semibold text-slate-600">Full Legal Name *</Label>
-                              <Input value={contractData.creatorName} onChange={(e) => handleInputChange('creatorName', e.target.value)} className="h-9 mt-1" placeholder="Required" />
+                              <Label className="text-xs font-semibold text-slate-700">Full Legal Name *</Label>
+                              <Input value={contractData.creatorName} onChange={(e) => handleInputChange('creatorName', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" placeholder="Required" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-600">Address</Label>
-                              <Input value={contractData.creatorAddress} onChange={(e) => handleInputChange('creatorAddress', e.target.value)} className="h-9 mt-1" />
+                              <Label className="text-xs font-semibold text-slate-700">Address</Label>
+                              <Input value={contractData.creatorAddress} onChange={(e) => handleInputChange('creatorAddress', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-600">Email</Label>
-                              <Input type="email" value={contractData.creatorEmail} onChange={(e) => handleInputChange('creatorEmail', e.target.value)} className="h-9 mt-1" />
+                              <Label className="text-xs font-semibold text-slate-700">Email</Label>
+                              <Input type="email" value={contractData.creatorEmail} onChange={(e) => handleInputChange('creatorEmail', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-600">Phone Number</Label>
-                              <Input value={contractData.creatorPhone} onChange={(e) => handleInputChange('creatorPhone', e.target.value)} className="h-9 mt-1" />
+                              <Label className="text-xs font-semibold text-slate-700">Phone Number</Label>
+                              <Input value={contractData.creatorPhone} onChange={(e) => handleInputChange('creatorPhone', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-600">Discord ID</Label>
-                              <Input value={contractData.creatorDiscord} onChange={(e) => handleInputChange('creatorDiscord', e.target.value)} className="h-9 mt-1" />
+                              <Label className="text-xs font-semibold text-slate-700">Discord ID</Label>
+                              <Input value={contractData.creatorDiscord} onChange={(e) => handleInputChange('creatorDiscord', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-600">PAN (Optional)</Label>
-                              <Input value={contractData.creatorPAN} onChange={(e) => handleInputChange('creatorPAN', e.target.value)} className="h-9 mt-1" placeholder="For tax purposes" />
+                              <Label className="text-xs font-semibold text-slate-700">PAN (Optional)</Label>
+                              <Input value={contractData.creatorPAN} onChange={(e) => handleInputChange('creatorPAN', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" placeholder="For tax purposes" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-600">Channel Name</Label>
-                              <Input value={contractData.channelName} onChange={(e) => handleInputChange('channelName', e.target.value)} className="h-9 mt-1" />
+                              <Label className="text-xs font-semibold text-slate-700">Channel Name</Label>
+                              <Input value={contractData.channelName} onChange={(e) => handleInputChange('channelName', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-600">Platform Links</Label>
-                              <Input value={contractData.platformLinks} onChange={(e) => handleInputChange('platformLinks', e.target.value)} className="h-9 mt-1" placeholder="YouTube, Twitch, etc." />
+                              <Label className="text-xs font-semibold text-slate-700">Platform Links</Label>
+                              <Input value={contractData.platformLinks} onChange={(e) => handleInputChange('platformLinks', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" placeholder="YouTube, Twitch, etc." />
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <Label className="text-xs font-semibold text-slate-600">Subscribers</Label>
-                                <Input value={contractData.subscriberCount} onChange={(e) => handleInputChange('subscriberCount', e.target.value)} className="h-9 mt-1" />
+                                <Label className="text-xs font-semibold text-slate-700">Subscribers</Label>
+                                <Input value={contractData.subscriberCount} onChange={(e) => handleInputChange('subscriberCount', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
                               </div>
                               <div>
-                                <Label className="text-xs font-semibold text-slate-600">Avg. Views</Label>
-                                <Input value={contractData.averageViews} onChange={(e) => handleInputChange('averageViews', e.target.value)} className="h-9 mt-1" />
+                                <Label className="text-xs font-semibold text-slate-700">Avg. Views</Label>
+                                <Input value={contractData.averageViews} onChange={(e) => handleInputChange('averageViews', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
                               </div>
                             </div>
                           </div>
@@ -763,9 +888,9 @@ const CreatorContract = () => {
                       {isEditing ? (
                         <>
                           <div>
-                            <Label className="text-xs font-semibold text-slate-600">Duration</Label>
+                            <Label className="text-xs font-semibold text-slate-700">Duration</Label>
                             <Select value={contractData.contractDuration} onValueChange={(v) => handleInputChange('contractDuration', v)}>
-                              <SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger>
+                              <SelectTrigger className="h-9 mt-1 bg-white border-slate-300 text-slate-900"><SelectValue /></SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="1 month">1 Month</SelectItem>
                                 <SelectItem value="3 months">3 Months</SelectItem>
@@ -775,17 +900,17 @@ const CreatorContract = () => {
                             </Select>
                           </div>
                           <div>
-                            <Label className="text-xs font-semibold text-slate-600">Start Date</Label>
-                            <Input type="date" value={contractData.startDate} onChange={(e) => handleInputChange('startDate', e.target.value)} className="h-9 mt-1" />
+                            <Label className="text-xs font-semibold text-slate-700">Start Date</Label>
+                            <Input type="date" value={contractData.startDate} onChange={(e) => handleInputChange('startDate', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
                           </div>
                           <div>
-                            <Label className="text-xs font-semibold text-slate-600">End Date</Label>
-                            <Input type="date" value={contractData.endDate} onChange={(e) => handleInputChange('endDate', e.target.value)} className="h-9 mt-1" />
+                            <Label className="text-xs font-semibold text-slate-700">End Date</Label>
+                            <Input type="date" value={contractData.endDate} onChange={(e) => handleInputChange('endDate', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
                           </div>
                           <div>
-                            <Label className="text-xs font-semibold text-slate-600">Exclusivity</Label>
+                            <Label className="text-xs font-semibold text-slate-700">Exclusivity</Label>
                             <Select value={contractData.exclusivityClause} onValueChange={(v) => handleInputChange('exclusivityClause', v)}>
-                              <SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger>
+                              <SelectTrigger className="h-9 mt-1 bg-white border-slate-300 text-slate-900"><SelectValue /></SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="Non-exclusive">Non-exclusive</SelectItem>
                                 <SelectItem value="Exclusive">Exclusive</SelectItem>
@@ -826,16 +951,16 @@ const CreatorContract = () => {
                       {isEditing ? (
                         <>
                           <div>
-                            <Label className="text-xs font-semibold text-slate-600">Monthly Payment (₹)</Label>
-                            <Input value={contractData.monthlyPayment} onChange={(e) => handleInputChange('monthlyPayment', e.target.value)} className="h-10 mt-1 text-lg font-bold" />
+                            <Label className="text-xs font-semibold text-slate-700">Monthly Payment (₹)</Label>
+                            <Input value={contractData.monthlyPayment} onChange={(e) => handleInputChange('monthlyPayment', e.target.value)} className="h-10 mt-1 text-lg font-bold bg-white border-slate-300 text-slate-900" />
                           </div>
                           <div>
-                            <Label className="text-xs font-semibold text-slate-600">Payment Method</Label>
-                            <Input value={contractData.paymentMethod} onChange={(e) => handleInputChange('paymentMethod', e.target.value)} className="h-10 mt-1" />
+                            <Label className="text-xs font-semibold text-slate-700">Payment Method</Label>
+                            <Input value={contractData.paymentMethod} onChange={(e) => handleInputChange('paymentMethod', e.target.value)} className="h-10 mt-1 bg-white border-slate-300 text-slate-900" />
                           </div>
                           <div className="md:col-span-2">
-                            <Label className="text-xs font-semibold text-slate-600">Performance Bonus</Label>
-                            <Input value={contractData.performanceBonus} onChange={(e) => handleInputChange('performanceBonus', e.target.value)} className="h-10 mt-1" />
+                            <Label className="text-xs font-semibold text-slate-700">Performance Bonus</Label>
+                            <Input value={contractData.performanceBonus} onChange={(e) => handleInputChange('performanceBonus', e.target.value)} className="h-10 mt-1 bg-white border-slate-300 text-slate-900" />
                           </div>
                         </>
                       ) : (
@@ -864,12 +989,12 @@ const CreatorContract = () => {
                       {isEditing ? (
                         <>
                           <div>
-                            <Label className="text-xs font-semibold text-slate-600">Minimum Videos per Month</Label>
-                            <Input value={contractData.minimumVideos} onChange={(e) => handleInputChange('minimumVideos', e.target.value)} className="h-10 mt-1 text-lg font-bold" />
+                            <Label className="text-xs font-semibold text-slate-700">Minimum Videos per Month</Label>
+                            <Input value={contractData.minimumVideos} onChange={(e) => handleInputChange('minimumVideos', e.target.value)} className="h-10 mt-1 text-lg font-bold bg-white border-slate-300 text-slate-900" />
                           </div>
                           <div>
-                            <Label className="text-xs font-semibold text-slate-600">Minimum Stream Hours per Month</Label>
-                            <Input value={contractData.minimumStreams} onChange={(e) => handleInputChange('minimumStreams', e.target.value)} className="h-10 mt-1 text-lg font-bold" />
+                            <Label className="text-xs font-semibold text-slate-700">Minimum Stream Hours per Month</Label>
+                            <Input value={contractData.minimumStreams} onChange={(e) => handleInputChange('minimumStreams', e.target.value)} className="h-10 mt-1 text-lg font-bold bg-white border-slate-300 text-slate-900" />
                           </div>
                         </>
                       ) : (
@@ -955,14 +1080,26 @@ const CreatorContract = () => {
                       <Textarea
                         value={contractData.specialTerms}
                         onChange={(e) => handleInputChange('specialTerms', e.target.value)}
-                        placeholder="Add any special terms, conditions, or additional agreements here..."
-                        className="min-h-[120px]"
+                        placeholder="Add any special terms, conditions, or additional agreements here...
+
+Example:
+• Creator will receive exclusive in-game vehicle
+• Creator agrees to participate in server events
+• Server will provide VIP status for creator's friends
+• Additional bonus of ₹500 for every sponsored video"
+                        className="min-h-[150px] bg-white border-slate-300 text-slate-900"
                       />
                     ) : (
-                      <div className="bg-slate-50 p-4 rounded-lg min-h-[80px]">
-                        <p className="text-sm text-slate-700 whitespace-pre-wrap">
-                          {contractData.specialTerms || <span className="italic text-slate-400">No special terms specified.</span>}
-                        </p>
+                      <div className="bg-slate-50 p-4 rounded-lg min-h-[80px] border border-slate-200">
+                        {contractData.specialTerms ? (
+                          <div className="text-sm text-slate-700 whitespace-pre-wrap">
+                            {contractData.specialTerms.split('\n').map((line, i) => (
+                              <p key={i} className={line.startsWith('•') ? 'ml-2' : ''}>{line}</p>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="italic text-slate-400">No special terms specified.</p>
+                        )}
                       </div>
                     )}
                   </section>
