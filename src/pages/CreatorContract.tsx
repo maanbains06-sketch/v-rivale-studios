@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Download, Edit2, Save, X, Plus, FileText, CheckCircle, Clock } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ArrowLeft, Download, Edit2, Save, X, Plus, FileText, CheckCircle, Clock, PlusCircle, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import jsPDF from "jspdf";
@@ -17,6 +18,12 @@ import SignaturePad from "@/components/SignaturePad";
 import ContractTemplateManager from "@/components/ContractTemplateManager";
 import ContractsList from "@/components/ContractsList";
 import type { Json } from "@/integrations/supabase/types";
+
+interface SpecialTermItem {
+  id: string;
+  text: string;
+  enabled: boolean;
+}
 
 interface ContractData {
   // Party A Details
@@ -47,9 +54,22 @@ interface ContractData {
   startDate: string;
   endDate: string;
   specialTerms: string;
+  specialTermsList: SpecialTermItem[];
+  customTerms: string;
   exclusivityClause: string;
   performanceBonus: string;
 }
+
+const defaultSpecialTerms: SpecialTermItem[] = [
+  { id: '1', text: 'Creator will receive exclusive in-game vehicle upon signing', enabled: false },
+  { id: '2', text: 'Creator agrees to participate in all major server events', enabled: false },
+  { id: '3', text: 'Server will provide VIP status for up to 3 of creator\'s friends', enabled: false },
+  { id: '4', text: 'Creator will receive priority support from development team', enabled: false },
+  { id: '5', text: 'Additional bonus of ₹500 for every sponsored video crossing 5k views', enabled: false },
+  { id: '6', text: 'Creator will be featured on server\'s official social media monthly', enabled: false },
+  { id: '7', text: 'Creator will receive early access to new server updates and features', enabled: false },
+  { id: '8', text: 'Server will provide custom roleplay scenarios for content creation', enabled: false },
+];
 
 const defaultContractData: ContractData = {
   serverName: "Skylife Roleplay India",
@@ -77,6 +97,8 @@ const defaultContractData: ContractData = {
   startDate: new Date().toISOString().split('T')[0],
   endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
   specialTerms: "",
+  specialTermsList: defaultSpecialTerms,
+  customTerms: "",
   exclusivityClause: "Non-exclusive",
   performanceBonus: "₹1000 per video exceeding 10,000 views",
 };
@@ -134,6 +156,46 @@ const CreatorContract = () => {
 
   const handleInputChange = (field: keyof ContractData, value: string) => {
     setContractData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleToggleSpecialTerm = (termId: string) => {
+    setContractData(prev => ({
+      ...prev,
+      specialTermsList: prev.specialTermsList.map(term =>
+        term.id === termId ? { ...term, enabled: !term.enabled } : term
+      )
+    }));
+  };
+
+  const handleAddCustomTerm = () => {
+    const newId = Date.now().toString();
+    setContractData(prev => ({
+      ...prev,
+      specialTermsList: [
+        ...prev.specialTermsList,
+        { id: newId, text: '', enabled: true }
+      ]
+    }));
+  };
+
+  const handleUpdateCustomTerm = (termId: string, text: string) => {
+    setContractData(prev => ({
+      ...prev,
+      specialTermsList: prev.specialTermsList.map(term =>
+        term.id === termId ? { ...term, text } : term
+      )
+    }));
+  };
+
+  const handleRemoveCustomTerm = (termId: string) => {
+    setContractData(prev => ({
+      ...prev,
+      specialTermsList: prev.specialTermsList.filter(term => term.id !== termId)
+    }));
+  };
+
+  const getActiveSpecialTerms = () => {
+    return contractData.specialTermsList.filter(term => term.enabled && term.text.trim());
   };
 
   const handleSelectContract = (contract: any) => {
@@ -507,23 +569,49 @@ const CreatorContract = () => {
     yPos += 40;
 
     // ========== SPECIAL TERMS SECTION ==========
-    if (contractData.specialTerms) {
+    const activeTerms = getActiveSpecialTerms();
+    if (activeTerms.length > 0 || contractData.customTerms) {
       yPos = drawSectionHeader('Special Terms & Conditions', yPos);
       
-      const termLines = doc.splitTextToSize(contractData.specialTerms, contentWidth - 6);
-      const termHeight = Math.max(20, termLines.length * 4 + 6);
+      // Calculate height needed
+      const termCount = activeTerms.length;
+      const customTermLines = contractData.customTerms ? doc.splitTextToSize(contractData.customTerms, contentWidth - 10) : [];
+      const totalHeight = Math.max(20, (termCount * 5) + (customTermLines.length * 4) + 15);
       
-      doc.rect(margin, yPos, contentWidth, termHeight);
+      doc.rect(margin, yPos, contentWidth, totalHeight);
       doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
       
       let termYPos = yPos + 5;
-      termLines.forEach((line: string) => {
-        if (termYPos < yPos + termHeight - 2) {
-          doc.text(line, margin + 3, termYPos);
-          termYPos += 4;
+      
+      // Render active special terms
+      activeTerms.forEach((term, index) => {
+        if (termYPos < yPos + totalHeight - 5) {
+          doc.setFont('helvetica', 'bold');
+          doc.text(`${index + 1}.`, margin + 3, termYPos);
+          doc.setFont('helvetica', 'normal');
+          doc.text(term.text, margin + 10, termYPos);
+          termYPos += 5;
         }
       });
-      yPos += termHeight + 5;
+      
+      // Render custom terms/notes
+      if (contractData.customTerms && termYPos < yPos + totalHeight - 5) {
+        termYPos += 3;
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(7);
+        doc.text('Additional Notes:', margin + 3, termYPos);
+        termYPos += 4;
+        doc.setFont('helvetica', 'normal');
+        customTermLines.forEach((line: string) => {
+          if (termYPos < yPos + totalHeight - 2) {
+            doc.text(line, margin + 5, termYPos);
+            termYPos += 4;
+          }
+        });
+      }
+      
+      yPos += totalHeight + 5;
     }
 
     // ========== SIGNATURES SECTION ==========
@@ -1077,25 +1165,94 @@ const CreatorContract = () => {
                       Special Terms & Conditions
                     </h2>
                     {isEditing ? (
-                      <Textarea
-                        value={contractData.specialTerms}
-                        onChange={(e) => handleInputChange('specialTerms', e.target.value)}
-                        placeholder="Add any special terms, conditions, or additional agreements here...
-
-Example:
-• Creator will receive exclusive in-game vehicle
-• Creator agrees to participate in server events
-• Server will provide VIP status for creator's friends
-• Additional bonus of ₹500 for every sponsored video"
-                        className="min-h-[150px] bg-white border-slate-300 text-slate-900"
-                      />
-                    ) : (
-                      <div className="bg-slate-50 p-4 rounded-lg min-h-[80px] border border-slate-200">
-                        {contractData.specialTerms ? (
-                          <div className="text-sm text-slate-700 whitespace-pre-wrap">
-                            {contractData.specialTerms.split('\n').map((line, i) => (
-                              <p key={i} className={line.startsWith('•') ? 'ml-2' : ''}>{line}</p>
+                      <div className="space-y-4">
+                        {/* Predefined Terms with Checkboxes */}
+                        <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                          <p className="text-sm font-semibold text-slate-700 mb-3">Select applicable terms:</p>
+                          <div className="space-y-3">
+                            {contractData.specialTermsList.map((term, index) => (
+                              <div key={term.id} className="flex items-start gap-3 p-2 rounded hover:bg-slate-100 transition-colors">
+                                <Checkbox
+                                  id={`term-${term.id}`}
+                                  checked={term.enabled}
+                                  onCheckedChange={() => handleToggleSpecialTerm(term.id)}
+                                  className="mt-0.5"
+                                />
+                                {index < 8 ? (
+                                  <label
+                                    htmlFor={`term-${term.id}`}
+                                    className={`text-sm cursor-pointer ${term.enabled ? 'text-slate-800 font-medium' : 'text-slate-600'}`}
+                                  >
+                                    {term.text}
+                                  </label>
+                                ) : (
+                                  <div className="flex-1 flex items-center gap-2">
+                                    <Input
+                                      value={term.text}
+                                      onChange={(e) => handleUpdateCustomTerm(term.id, e.target.value)}
+                                      placeholder="Enter custom term..."
+                                      className="flex-1 h-8 bg-white border-slate-300 text-slate-900 text-sm"
+                                    />
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                                      onClick={() => handleRemoveCustomTerm(term.id)}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
                             ))}
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleAddCustomTerm}
+                            className="mt-4 gap-2"
+                          >
+                            <PlusCircle className="h-4 w-4" />
+                            Add Custom Term
+                          </Button>
+                        </div>
+
+                        {/* Additional Notes */}
+                        <div>
+                          <Label className="text-xs font-semibold text-slate-700">Additional Notes / Custom Terms</Label>
+                          <Textarea
+                            value={contractData.customTerms}
+                            onChange={(e) => handleInputChange('customTerms', e.target.value)}
+                            placeholder="Add any additional custom terms or notes that aren't covered above..."
+                            className="min-h-[80px] mt-1 bg-white border-slate-300 text-slate-900"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                        {getActiveSpecialTerms().length > 0 || contractData.customTerms ? (
+                          <div className="space-y-3">
+                            {getActiveSpecialTerms().length > 0 && (
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Agreed Terms:</p>
+                                <ul className="space-y-2">
+                                  {getActiveSpecialTerms().map((term, index) => (
+                                    <li key={term.id} className="flex items-start gap-2 text-sm text-slate-700">
+                                      <span className="text-green-600 font-bold flex-shrink-0">{index + 1}.</span>
+                                      <span>{term.text}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {contractData.customTerms && (
+                              <div className="pt-3 border-t border-slate-200">
+                                <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Additional Notes:</p>
+                                <p className="text-sm text-slate-700 whitespace-pre-wrap italic">
+                                  {contractData.customTerms}
+                                </p>
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <p className="italic text-slate-400">No special terms specified.</p>
