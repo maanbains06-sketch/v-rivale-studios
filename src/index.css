@@ -310,6 +310,54 @@ All colors MUST be HSL.
   .animate-gradient-shift {
     animation: gradient-shift 4s ease-in-out infinite;
   }
+
+  /* Theme decoration animations - Slow and subtle */
+  @keyframes fall-snow-slow {
+    0% {
+      transform: translateY(0) rotate(0deg);
+      opacity: 0;
+    }
+    5% {
+      opacity: 0.4;
+    }
+    95% {
+      opacity: 0.4;
+    }
+    100% {
+      transform: translateY(100vh) rotate(180deg);
+      opacity: 0;
+    }
+  }
+
+  @keyframes fall-confetti-slow {
+    0% {
+      transform: translateY(0) rotate(0deg) translateX(0);
+      opacity: 0;
+    }
+    5% {
+      opacity: 0.5;
+    }
+    95% {
+      opacity: 0.5;
+    }
+    100% {
+      transform: translateY(100vh) rotate(360deg) translateX(30px);
+      opacity: 0;
+    }
+  }
+
+  .animate-fall-snow-slow {
+    animation: fall-snow-slow linear infinite;
+  }
+
+  .animate-fall-confetti-slow {
+    animation: fall-confetti-slow linear infinite;
+  }
+
+  /* Radial gradient utility for theme decorations */
+  .bg-gradient-radial {
+    background: radial-gradient(circle, var(--tw-gradient-from), var(--tw-gradient-to));
+  }
 }
 
 @layer utilities {
