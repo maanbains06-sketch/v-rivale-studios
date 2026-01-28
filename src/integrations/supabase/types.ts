@@ -1517,6 +1517,7 @@ export type Database = {
           is_active: boolean
           notes: string | null
           panel_type: string
+          roster_departments: string[] | null
         }
         Insert: {
           discord_id: string
@@ -1527,6 +1528,7 @@ export type Database = {
           is_active?: boolean
           notes?: string | null
           panel_type: string
+          roster_departments?: string[] | null
         }
         Update: {
           discord_id?: string
@@ -1537,6 +1539,7 @@ export type Database = {
           is_active?: boolean
           notes?: string | null
           panel_type?: string
+          roster_departments?: string[] | null
         }
         Relationships: []
       }
@@ -2847,6 +2850,10 @@ export type Database = {
           staff_user_id: string
         }[]
       }
+      get_roster_departments_for_user: {
+        Args: { _discord_id: string }
+        Returns: string[]
+      }
       has_panel_access: {
         Args: { _panel_type: string; _user_id: string }
         Returns: boolean
@@ -2856,6 +2863,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      has_roster_department_access: {
+        Args: { _department: string; _discord_id: string }
         Returns: boolean
       }
       is_owner:

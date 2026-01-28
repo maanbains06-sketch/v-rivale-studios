@@ -30,6 +30,7 @@ interface PanelAccessEntry {
   granted_at: string;
   is_active: boolean;
   notes: string | null;
+  roster_departments: string[] | null;
 }
 
 interface DiscordUserInfo {
@@ -46,6 +47,20 @@ const PANEL_TYPES = [
   { id: "admin", label: "Admin Panel", icon: Settings, description: "Full admin access to all features" },
 ];
 
+// All roster department options
+const ROSTER_DEPARTMENTS = [
+  { id: "all", label: "All Departments", description: "Access to all department rosters" },
+  { id: "police", label: "Police Department", description: "SLPD roster access" },
+  { id: "ems", label: "EMS Department", description: "EMS roster access" },
+  { id: "fire", label: "Fire Department", description: "Fire dept roster access" },
+  { id: "mechanic", label: "Mechanic Shop", description: "Mechanic roster access" },
+  { id: "doj", label: "Department of Justice", description: "DOJ roster access" },
+  { id: "state", label: "State Department", description: "State dept roster access" },
+  { id: "weazel", label: "Weazel News", description: "Weazel News roster access" },
+  { id: "pdm", label: "Premium Deluxe Motorsport", description: "PDM roster access" },
+  { id: "staff", label: "Server Staff", description: "Staff roster access" },
+];
+
 const PanelAccessManager = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
@@ -60,6 +75,7 @@ const PanelAccessManager = () => {
   const [newDiscordId, setNewDiscordId] = useState("");
   const [newPanelType, setNewPanelType] = useState("");
   const [newNotes, setNewNotes] = useState("");
+  const [newRosterDepartments, setNewRosterDepartments] = useState<string[]>([]);
   const [fetchingUser, setFetchingUser] = useState(false);
   const [fetchedUser, setFetchedUser] = useState<DiscordUserInfo | null>(null);
   const [fetchError, setFetchError] = useState("");
@@ -164,6 +180,11 @@ const PanelAccessManager = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
+      // Prepare roster departments - if "all" is selected, store null (means all access)
+      const rosterDepts = newPanelType === "roster" 
+        ? (newRosterDepartments.includes("all") ? null : newRosterDepartments.length > 0 ? newRosterDepartments : null)
+        : null;
+      
       const { error } = await supabase
         .from("panel_access")
         .insert({
@@ -172,6 +193,7 @@ const PanelAccessManager = () => {
           panel_type: newPanelType,
           granted_by: user?.id,
           notes: newNotes || null,
+          roster_departments: rosterDepts,
         });
 
       if (error) {
@@ -258,8 +280,49 @@ const PanelAccessManager = () => {
     setNewDiscordId("");
     setNewPanelType("");
     setNewNotes("");
+    setNewRosterDepartments([]);
     setFetchedUser(null);
     setFetchError("");
+  };
+
+  // Toggle roster department selection
+  const toggleRosterDepartment = (deptId: string) => {
+    if (deptId === "all") {
+      // If "all" is selected, clear others and just set "all"
+      setNewRosterDepartments(prev => prev.includes("all") ? [] : ["all"]);
+    } else {
+      setNewRosterDepartments(prev => {
+        // Remove "all" if another specific dept is selected
+        const filtered = prev.filter(d => d !== "all");
+        if (filtered.includes(deptId)) {
+          return filtered.filter(d => d !== deptId);
+        }
+        return [...filtered, deptId];
+      });
+    }
+  };
+
+  // Get roster departments display for table
+  const getRosterDepartmentsDisplay = (entry: PanelAccessEntry) => {
+    if (entry.panel_type !== "roster") return null;
+    if (!entry.roster_departments || entry.roster_departments.length === 0) {
+      return <Badge variant="outline" className="text-xs">All Departments</Badge>;
+    }
+    if (entry.roster_departments.includes("all")) {
+      return <Badge variant="outline" className="text-xs">All Departments</Badge>;
+    }
+    return (
+      <div className="flex flex-wrap gap-1">
+        {entry.roster_departments.slice(0, 2).map(dept => (
+          <Badge key={dept} variant="secondary" className="text-xs">
+            {ROSTER_DEPARTMENTS.find(d => d.id === dept)?.label || dept}
+          </Badge>
+        ))}
+        {entry.roster_departments.length > 2 && (
+          <Badge variant="outline" className="text-xs">+{entry.roster_departments.length - 2}</Badge>
+        )}
+      </div>
+    );
   };
 
   const getPanelIcon = (panelType: string) => {
@@ -473,9 +536,12 @@ const PanelAccessManager = () => {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-2">
-                            {getPanelIcon(entry.panel_type)}
-                            <span>{getPanelLabel(entry.panel_type)}</span>
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              {getPanelIcon(entry.panel_type)}
+                              <span>{getPanelLabel(entry.panel_type)}</span>
+                            </div>
+                            {getRosterDepartmentsDisplay(entry)}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -754,7 +820,12 @@ const PanelAccessManager = () => {
             {/* Panel Type */}
             <div className="space-y-2">
               <Label htmlFor="panel_type">Panel</Label>
-              <Select value={newPanelType} onValueChange={setNewPanelType}>
+              <Select value={newPanelType} onValueChange={(val) => {
+                setNewPanelType(val);
+                if (val !== "roster") {
+                  setNewRosterDepartments([]);
+                }
+              }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a panel" />
                 </SelectTrigger>
@@ -775,6 +846,45 @@ const PanelAccessManager = () => {
                 </p>
               )}
             </div>
+
+            {/* Roster Departments Selection - only show when roster panel is selected */}
+            {newPanelType === "roster" && (
+              <div className="space-y-2">
+                <Label>Roster Departments</Label>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Select which department rosters this user can access
+                </p>
+                <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto p-2 bg-muted/20 rounded-lg border border-border/50">
+                  {ROSTER_DEPARTMENTS.map(dept => (
+                    <div
+                      key={dept.id}
+                      onClick={() => toggleRosterDepartment(dept.id)}
+                      className={`flex items-center gap-2 p-2 rounded-md cursor-pointer transition-colors ${
+                        newRosterDepartments.includes(dept.id)
+                          ? "bg-primary/20 border border-primary/50"
+                          : "bg-background/50 border border-border/30 hover:bg-muted/50"
+                      }`}
+                    >
+                      <div className={`w-4 h-4 rounded border flex items-center justify-center ${
+                        newRosterDepartments.includes(dept.id)
+                          ? "bg-primary border-primary"
+                          : "border-muted-foreground/50"
+                      }`}>
+                        {newRosterDepartments.includes(dept.id) && (
+                          <CheckCircle className="w-3 h-3 text-primary-foreground" />
+                        )}
+                      </div>
+                      <span className="text-sm">{dept.label}</span>
+                    </div>
+                  ))}
+                </div>
+                {newRosterDepartments.length > 0 && !newRosterDepartments.includes("all") && (
+                  <p className="text-xs text-muted-foreground">
+                    Selected: {newRosterDepartments.map(d => ROSTER_DEPARTMENTS.find(r => r.id === d)?.label).join(", ")}
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Notes */}
             <div className="space-y-2">
