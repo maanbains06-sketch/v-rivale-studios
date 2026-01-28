@@ -21,6 +21,7 @@ const StaffPresenceTracker = lazy(() => import("@/components/StaffPresenceTracke
 const NetworkOfflineScreen = lazy(() => import("@/components/NetworkOfflineScreen"));
 const MaintenancePage = lazy(() => import("@/components/MaintenancePage"));
 const GlobalAnnouncementBanner = lazy(() => import("@/components/GlobalAnnouncementBanner"));
+const ThemeDecorations = lazy(() => import("@/components/ThemeDecorations"));
 import { PageMaintenanceBlock } from "@/components/PageMaintenanceBlock";
 // Safer lazy loader (prevents blank screens when a chunk load fails on slow networks)
 const lazyWithRetry = <T extends { default: React.ComponentType<any> }>(
@@ -243,6 +244,7 @@ const AppContent = memo(() => {
             <GlobalAnnouncementBanner />
             <LiveVisitorCounter />
             <StaffPresenceTracker />
+            <ThemeDecorations />
           </Suspense>
           <AppRoutes />
         </>
