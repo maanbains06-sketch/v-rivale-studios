@@ -346,12 +346,90 @@ All colors MUST be HSL.
     }
   }
 
+  @keyframes float-sparkle {
+    0%, 100% {
+      transform: translateY(0) scale(1);
+      opacity: 0.6;
+    }
+    50% {
+      transform: translateY(-15px) scale(1.1);
+      opacity: 0.9;
+    }
+  }
+
+  @keyframes float-color {
+    0%, 100% {
+      transform: translateY(0) translateX(0) scale(1);
+    }
+    33% {
+      transform: translateY(-20px) translateX(10px) scale(1.1);
+    }
+    66% {
+      transform: translateY(-10px) translateX(-10px) scale(0.95);
+    }
+  }
+
+  @keyframes float-spooky {
+    0%, 100% {
+      transform: translateY(0) translateX(0);
+    }
+    25% {
+      transform: translateY(-10px) translateX(5px);
+    }
+    50% {
+      transform: translateY(-5px) translateX(-8px);
+    }
+    75% {
+      transform: translateY(-15px) translateX(3px);
+    }
+  }
+
+  @keyframes float-ghost {
+    0%, 100% {
+      transform: translateY(0) translateX(0) rotate(0deg);
+      opacity: 0.4;
+    }
+    50% {
+      transform: translateY(-20px) translateX(10px) rotate(5deg);
+      opacity: 0.6;
+    }
+  }
+
+  @keyframes float-balloon {
+    0%, 100% {
+      transform: translateY(0) rotate(-3deg);
+    }
+    50% {
+      transform: translateY(-20px) rotate(3deg);
+    }
+  }
+
   .animate-fall-snow-slow {
     animation: fall-snow-slow linear infinite;
   }
 
   .animate-fall-confetti-slow {
     animation: fall-confetti-slow linear infinite;
+  }
+
+  .animate-float-sparkle {
+    animation: float-sparkle ease-in-out infinite;
+  }
+
+  .animate-float-color {
+    animation: float-color ease-in-out infinite;
+  }
+
+  .animate-float-spooky {
+    animation: float-spooky ease-in-out infinite;
+  }
+
+  .animate-float-ghost {
+    animation: float-ghost ease-in-out infinite;
+  }
+
+  .animate-float-balloon {
+    animation: float-balloon ease-in-out infinite;
   }
 
   /* Radial gradient utility for theme decorations */
