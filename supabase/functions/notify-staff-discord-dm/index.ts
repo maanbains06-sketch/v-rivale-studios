@@ -20,6 +20,7 @@ Deno.serve(async (req) => {
     const DISCORD_BOT_TOKEN = Deno.env.get('DISCORD_BOT_TOKEN');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const OWNER_DISCORD_ID = Deno.env.get('OWNER_DISCORD_ID');
 
     if (!DISCORD_BOT_TOKEN) {
       console.error('DISCORD_BOT_TOKEN not configured');
@@ -32,7 +33,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
     const { chatId, userName, subject }: NotifyStaffRequest = await req.json();
-    console.log(`Processing notification for chat ${chatId} from ${userName}`);
+    console.log(`Processing human support notification for chat ${chatId} from ${userName}`);
 
     // Get all active staff members who have Discord IDs
     const { data: staffMembers, error: staffError } = await supabase
@@ -46,33 +47,35 @@ Deno.serve(async (req) => {
       throw staffError;
     }
 
-    // Check which staff members are offline (not in discord_presence or status is offline)
-    const { data: onlineStaff, error: presenceError } = await supabase
-      .from('discord_presence')
-      .select('discord_id, is_online, status, updated_at')
-      .in('discord_id', staffMembers?.map(s => s.discord_id) || []);
+    // Build list of Discord IDs to notify (all staff + owner)
+    const discordIdsToNotify: { discord_id: string; name: string }[] = [];
 
-    if (presenceError) {
-      console.error('Error checking presence:', presenceError);
+    // Add all staff members
+    if (staffMembers) {
+      staffMembers.forEach(staff => {
+        if (staff.discord_id) {
+          discordIdsToNotify.push({
+            discord_id: staff.discord_id,
+            name: staff.name || 'Staff Member'
+          });
+        }
+      });
     }
 
-    const onlineStaffIds = new Set(
-      (onlineStaff || [])
-        .filter(p => p.is_online && p.status !== 'offline')
-        .map(p => p.discord_id)
-    );
+    // Add owner if not already in list
+    if (OWNER_DISCORD_ID && !discordIdsToNotify.some(s => s.discord_id === OWNER_DISCORD_ID)) {
+      discordIdsToNotify.push({
+        discord_id: OWNER_DISCORD_ID,
+        name: 'Owner'
+      });
+    }
 
-    // Get offline staff to notify
-    const offlineStaff = (staffMembers || []).filter(
-      s => s.discord_id && !onlineStaffIds.has(s.discord_id)
-    );
-
-    console.log(`Found ${offlineStaff.length} offline staff members to notify`);
+    console.log(`Notifying ${discordIdsToNotify.length} people via Discord DM`);
 
     let sentCount = 0;
     let failedCount = 0;
 
-    for (const staff of offlineStaff) {
+    for (const recipient of discordIdsToNotify) {
       try {
         // Create DM channel
         const dmChannelResponse = await fetch('https://discord.com/api/v10/users/@me/channels', {
@@ -82,23 +85,24 @@ Deno.serve(async (req) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            recipient_id: staff.discord_id,
+            recipient_id: recipient.discord_id,
           }),
         });
 
         if (!dmChannelResponse.ok) {
-          console.error(`Failed to create DM channel for ${staff.name}:`, await dmChannelResponse.text());
+          const errorText = await dmChannelResponse.text();
+          console.error(`Failed to create DM channel for ${recipient.name}:`, errorText);
           failedCount++;
           continue;
         }
 
         const dmChannel = await dmChannelResponse.json();
 
-        // Send DM
+        // Send DM with the notification
         const embed = {
-          title: '🔔 User Requesting Human Support',
-          description: `A user on the website is requesting to speak with a human staff member.`,
-          color: 0xFFAA00, // Orange/amber color
+          title: '🚨 User Requesting Human Support',
+          description: `A user on the website has requested to speak with a human staff member. Please assist them as soon as possible.`,
+          color: 0xFF6B6B, // Red color for urgency
           fields: [
             {
               name: '👤 User',
@@ -111,14 +115,19 @@ Deno.serve(async (req) => {
               inline: true,
             },
             {
+              name: '⚡ Priority',
+              value: '**HIGH** - Immediate attention needed',
+              inline: false,
+            },
+            {
               name: '🔗 Action Required',
-              value: `Please log in to the website and check the support chat.\n[Open Support Dashboard](https://roleplay-horizon.lovable.app/admin/support-chat)`,
+              value: `Please log in to the website and check the support chat.\n**[Open Support Dashboard](https://roleplay-horizon.lovable.app/admin/support-chat)**`,
               inline: false,
             },
           ],
           timestamp: new Date().toISOString(),
           footer: {
-            text: 'SkyLife RP • Support System',
+            text: 'SkyLife RP • Human Support Request',
             icon_url: 'https://roleplay-horizon.lovable.app/images/slrp-logo.png',
           },
         };
@@ -130,29 +139,32 @@ Deno.serve(async (req) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            content: `<@${staff.discord_id}> 🚨 **Attention Required**`,
+            content: `<@${recipient.discord_id}> 🚨 **HUMAN SUPPORT REQUESTED**\n\n**${userName || 'A user'}** has opened a support chat on the website and is requesting human assistance!\n\n**Subject:** ${subject || 'Support Request'}`,
             embeds: [embed],
           }),
         });
 
         if (messageResponse.ok) {
-          console.log(`Successfully notified ${staff.name}`);
+          console.log(`Successfully notified ${recipient.name} (${recipient.discord_id})`);
           sentCount++;
         } else {
-          console.error(`Failed to send DM to ${staff.name}:`, await messageResponse.text());
+          const errorText = await messageResponse.text();
+          console.error(`Failed to send DM to ${recipient.name}:`, errorText);
           failedCount++;
         }
 
-        // Rate limit delay
+        // Rate limit delay to avoid Discord API limits
         await new Promise(resolve => setTimeout(resolve, 500));
       } catch (err) {
-        console.error(`Error notifying ${staff.name}:`, err);
+        console.error(`Error notifying ${recipient.name}:`, err);
         failedCount++;
       }
     }
 
-    // Also create a notification in the database for all staff
-    for (const staff of offlineStaff) {
+    // Also create database notifications for staff with user_id
+    for (const staff of staffMembers || []) {
+      if (!staff.discord_id) continue;
+      
       const { data: staffUser } = await supabase
         .from('staff_members')
         .select('user_id')
@@ -162,7 +174,7 @@ Deno.serve(async (req) => {
       if (staffUser?.user_id) {
         await supabase.from('notifications').insert({
           user_id: staffUser.user_id,
-          title: 'User Requesting Human Support',
+          title: '🚨 User Requesting Human Support',
           message: `${userName || 'A user'} is requesting human assistance for: "${subject || 'Support Request'}"`,
           type: 'support_chats',
           reference_id: chatId,
@@ -175,7 +187,7 @@ Deno.serve(async (req) => {
         success: true,
         notified: sentCount,
         failed: failedCount,
-        message: `Notified ${sentCount} offline staff members via Discord DM`,
+        message: `Notified ${sentCount} staff members via Discord DM`,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

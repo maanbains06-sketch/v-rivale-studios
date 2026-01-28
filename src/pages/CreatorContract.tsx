@@ -524,7 +524,13 @@ const CreatorContract = () => {
 
     yPos = drawSectionHeader('Server Obligations', yPos);
 
+    doc.setTextColor(...black);  // Reset text color after header
+    doc.setDrawColor(...black);
+    doc.setLineWidth(0.3);
     doc.rect(margin, yPos, contentWidth, 33);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
     
     const serverObligations = [
       '1. Provide priority queue access to the server',
@@ -542,11 +548,14 @@ const CreatorContract = () => {
     });
     yPos += 38;
 
-    // ========== TERMINATION SECTION ==========
     yPos = drawSectionHeader('Termination Clause', yPos);
 
+    doc.setTextColor(...black);  // Reset text color after header
+    doc.setDrawColor(...black);
+    doc.setLineWidth(0.3);
     doc.rect(margin, yPos, contentWidth, 35);
     
+    doc.setFontSize(8);
     doc.setFont('helvetica', 'italic');
     doc.text('Either party may terminate this agreement with 14 days written notice.', margin + 3, yPos + 5);
     
@@ -572,6 +581,10 @@ const CreatorContract = () => {
     const activeTerms = getActiveSpecialTerms();
     if (activeTerms.length > 0 || contractData.customTerms) {
       yPos = drawSectionHeader('Special Terms & Conditions', yPos);
+      
+      doc.setTextColor(...black);  // Reset text color after header
+      doc.setDrawColor(...black);
+      doc.setLineWidth(0.3);
       
       // Calculate height needed
       const termCount = activeTerms.length;
