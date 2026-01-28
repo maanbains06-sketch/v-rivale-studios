@@ -333,13 +333,13 @@ const JobPanel = () => {
         const info = DEPARTMENT_INFO[dept];
         
         if (info.table === 'job_applications') {
-          // Build department filter
+          // Build department filter - match exact job_type values from database
           const deptFilters: Record<string, string[]> = {
-            pd: ['Police Department'],
-            ems: ['Emergency Medical Services'],
-            doj: ['DOJ Attorney', 'DOJ Judge'],
-            state: ['State Department'],
-            mechanic: ['Mechanic'],
+            pd: ['Police Department', 'Police', 'PD'],
+            ems: ['Emergency Medical Services', 'EMS'],
+            doj: ['DOJ Attorney', 'DOJ Judge', 'Attorney', 'Judge'],
+            state: ['State Department', 'State'],
+            mechanic: ['Mechanic', 'Mechanic Shop'],
           };
           
           const filters = deptFilters[dept] || [];
@@ -867,156 +867,202 @@ const JobPanel = () => {
         </Card>
       </main>
 
-      {/* Review Dialog */}
+      {/* Review Dialog - Full Application View */}
       <Dialog open={!!selectedApp} onOpenChange={() => setSelectedApp(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Application Review</DialogTitle>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0">
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-xl">Application Details</DialogTitle>
+              {selectedApp && getStatusBadge(selectedApp.status)}
+            </div>
             <DialogDescription>
-              Review the application details and approve or reject
+              Complete application information for {selectedApp?.position || selectedApp?.department || 'Unknown Position'}
             </DialogDescription>
           </DialogHeader>
 
           {selectedApp && (
-            <div className="space-y-4">
-              {/* Basic Info Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Discord Username</label>
-                  <p className="font-medium">
-                    {isLoadingDiscordName(selectedApp.discord_id) ? (
-                      <span className="flex items-center gap-1">
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                        Loading...
-                      </span>
-                    ) : (
-                      getApplicantDisplayName(selectedApp)
-                    )}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Discord ID</label>
-                  <p className="font-medium">{selectedApp.discord_id || '-'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Character Name</label>
-                  <p className="font-medium">{selectedApp.character_name || selectedApp.in_game_name || '-'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Department/Position</label>
-                  <p className="font-medium">{selectedApp.position || selectedApp.department || '-'}</p>
-                </div>
-                {selectedApp.age && (
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Age</label>
-                    <p className="font-medium">{selectedApp.age}</p>
+            <div className="flex-1 overflow-y-auto space-y-6 pr-2">
+              {/* Applicant Information Section */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-primary uppercase tracking-wider border-b border-primary/30 pb-1">
+                  Applicant Information
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <div className="p-3 bg-muted/30 rounded-lg border border-border/30">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Discord Username</label>
+                    <p className="font-medium mt-1">
+                      {isLoadingDiscordName(selectedApp.discord_id) ? (
+                        <span className="flex items-center gap-1">
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          Loading...
+                        </span>
+                      ) : (
+                        getApplicantDisplayName(selectedApp)
+                      )}
+                    </p>
                   </div>
-                )}
-                {selectedApp.phone_number && (
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Phone Number</label>
-                    <p className="font-medium">{selectedApp.phone_number}</p>
+                  <div className="p-3 bg-muted/30 rounded-lg border border-border/30">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Discord ID</label>
+                    <p className="font-medium mt-1 font-mono text-sm">{selectedApp.discord_id || '-'}</p>
                   </div>
-                )}
-                {selectedApp.steam_id && (
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Steam ID</label>
-                    <p className="font-medium">{selectedApp.steam_id}</p>
-                  </div>
-                )}
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Status</label>
-                  <div>{getStatusBadge(selectedApp.status)}</div>
+                  {selectedApp.age !== undefined && selectedApp.age !== null && (
+                    <div className="p-3 bg-muted/30 rounded-lg border border-border/30">
+                      <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Age</label>
+                      <p className="font-medium mt-1">{selectedApp.age}</p>
+                    </div>
+                  )}
+                  {selectedApp.phone_number && (
+                    <div className="p-3 bg-muted/30 rounded-lg border border-border/30">
+                      <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Phone Number</label>
+                      <p className="font-medium mt-1">{selectedApp.phone_number}</p>
+                    </div>
+                  )}
+                  {selectedApp.steam_id && (
+                    <div className="p-3 bg-muted/30 rounded-lg border border-border/30">
+                      <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Steam ID</label>
+                      <p className="font-medium mt-1 font-mono text-sm">{selectedApp.steam_id}</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Character Background */}
-              {selectedApp.character_background && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Character Background</label>
-                  <p className="mt-1 p-3 bg-muted/30 rounded-lg text-sm whitespace-pre-wrap">{selectedApp.character_background}</p>
+              {/* Character Information Section */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-primary uppercase tracking-wider border-b border-primary/30 pb-1">
+                  Character Information
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="p-3 bg-muted/30 rounded-lg border border-border/30">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Character Name</label>
+                    <p className="font-medium mt-1">{selectedApp.character_name || selectedApp.in_game_name || '-'}</p>
+                  </div>
+                  <div className="p-3 bg-muted/30 rounded-lg border border-border/30">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Department / Position</label>
+                    <p className="font-medium mt-1">{selectedApp.position || selectedApp.department || '-'}</p>
+                  </div>
                 </div>
-              )}
+              </div>
 
-              {/* Previous Experience */}
-              {(selectedApp.previous_experience || selectedApp.experience) && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Previous Experience</label>
-                  <p className="mt-1 p-3 bg-muted/30 rounded-lg text-sm whitespace-pre-wrap">{selectedApp.previous_experience || selectedApp.experience}</p>
+              {/* Application Responses Section */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-primary uppercase tracking-wider border-b border-primary/30 pb-1">
+                  Application Responses
+                </h3>
+                <div className="space-y-4">
+                  {/* Character Background */}
+                  {selectedApp.character_background && (
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-primary">Character Background / Story</label>
+                      <div className="p-4 bg-muted/20 rounded-lg border border-border/30 text-sm whitespace-pre-wrap leading-relaxed">
+                        {selectedApp.character_background}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Previous Experience */}
+                  {(selectedApp.previous_experience || selectedApp.experience) && (
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-primary">Previous Experience</label>
+                      <div className="p-4 bg-muted/20 rounded-lg border border-border/30 text-sm whitespace-pre-wrap leading-relaxed">
+                        {selectedApp.previous_experience || selectedApp.experience}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Why Join */}
+                  {selectedApp.why_join && (
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-primary">Why do you want to join?</label>
+                      <div className="p-4 bg-muted/20 rounded-lg border border-border/30 text-sm whitespace-pre-wrap leading-relaxed">
+                        {selectedApp.why_join}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Availability */}
+                  {(selectedApp.availability || selectedApp.weekly_availability) && (
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-primary">Availability</label>
+                      <div className="p-4 bg-muted/20 rounded-lg border border-border/30 text-sm whitespace-pre-wrap leading-relaxed">
+                        {selectedApp.availability || selectedApp.weekly_availability}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Strengths */}
+                  {selectedApp.strengths && (
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-primary">Strengths</label>
+                      <div className="p-4 bg-muted/20 rounded-lg border border-border/30 text-sm whitespace-pre-wrap leading-relaxed">
+                        {selectedApp.strengths}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Job Specific Answer */}
+                  {selectedApp.job_specific_answer && (
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-primary">Department-Specific Response</label>
+                      <div className="p-4 bg-muted/20 rounded-lg border border-border/30 text-sm whitespace-pre-wrap leading-relaxed">
+                        {selectedApp.job_specific_answer}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* PDM-specific fields */}
+                  {selectedApp.sales_experience && (
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-primary">Sales Experience</label>
+                      <div className="p-4 bg-muted/20 rounded-lg border border-border/30 text-sm whitespace-pre-wrap leading-relaxed">
+                        {selectedApp.sales_experience}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedApp.vehicle_knowledge && (
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-primary">Vehicle Knowledge</label>
+                      <div className="p-4 bg-muted/20 rounded-lg border border-border/30 text-sm whitespace-pre-wrap leading-relaxed">
+                        {selectedApp.vehicle_knowledge}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedApp.customer_scenario && (
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-primary">Customer Scenario Response</label>
+                      <div className="p-4 bg-muted/20 rounded-lg border border-border/30 text-sm whitespace-pre-wrap leading-relaxed">
+                        {selectedApp.customer_scenario}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Additional Info */}
+                  {selectedApp.additional_info && (
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-primary">Additional Information</label>
+                      <div className="p-4 bg-muted/20 rounded-lg border border-border/30 text-sm whitespace-pre-wrap leading-relaxed">
+                        {selectedApp.additional_info}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
 
-              {/* Why Join */}
-              {selectedApp.why_join && (
+              {/* Admin Review Section */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-amber-400 uppercase tracking-wider border-b border-amber-400/30 pb-1">
+                  Admin Review
+                </h3>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Why do you want to join?</label>
-                  <p className="mt-1 p-3 bg-muted/30 rounded-lg text-sm whitespace-pre-wrap">{selectedApp.why_join}</p>
+                  <label className="text-xs font-semibold text-muted-foreground">Admin Notes (Optional - visible to applicant on rejection)</label>
+                  <Textarea
+                    value={reviewNotes}
+                    onChange={(e) => setReviewNotes(e.target.value)}
+                    placeholder="Add notes for this application..."
+                    className="mt-2 min-h-[80px]"
+                  />
                 </div>
-              )}
-
-              {/* Availability */}
-              {(selectedApp.availability || selectedApp.weekly_availability) && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Availability</label>
-                  <p className="mt-1 p-3 bg-muted/30 rounded-lg text-sm whitespace-pre-wrap">{selectedApp.availability || selectedApp.weekly_availability}</p>
-                </div>
-              )}
-
-              {/* Strengths */}
-              {selectedApp.strengths && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Strengths</label>
-                  <p className="mt-1 p-3 bg-muted/30 rounded-lg text-sm whitespace-pre-wrap">{selectedApp.strengths}</p>
-                </div>
-              )}
-
-              {/* Job Specific Answer */}
-              {selectedApp.job_specific_answer && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Job-Specific Response</label>
-                  <p className="mt-1 p-3 bg-muted/30 rounded-lg text-sm whitespace-pre-wrap">{selectedApp.job_specific_answer}</p>
-                </div>
-              )}
-
-              {/* PDM-specific fields */}
-              {selectedApp.sales_experience && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Sales Experience</label>
-                  <p className="mt-1 p-3 bg-muted/30 rounded-lg text-sm whitespace-pre-wrap">{selectedApp.sales_experience}</p>
-                </div>
-              )}
-
-              {selectedApp.vehicle_knowledge && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Vehicle Knowledge</label>
-                  <p className="mt-1 p-3 bg-muted/30 rounded-lg text-sm whitespace-pre-wrap">{selectedApp.vehicle_knowledge}</p>
-                </div>
-              )}
-
-              {selectedApp.customer_scenario && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Customer Scenario Response</label>
-                  <p className="mt-1 p-3 bg-muted/30 rounded-lg text-sm whitespace-pre-wrap">{selectedApp.customer_scenario}</p>
-                </div>
-              )}
-
-              {/* Additional Info */}
-              {selectedApp.additional_info && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Additional Information</label>
-                  <p className="mt-1 p-3 bg-muted/30 rounded-lg text-sm whitespace-pre-wrap">{selectedApp.additional_info}</p>
-                </div>
-              )}
-
-              {/* Review Notes */}
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Admin Notes (Optional)</label>
-                <Textarea
-                  value={reviewNotes}
-                  onChange={(e) => setReviewNotes(e.target.value)}
-                  placeholder="Add notes for this application..."
-                  className="mt-1"
-                />
               </div>
 
               {/* Action Buttons */}
