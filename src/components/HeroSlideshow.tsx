@@ -1,7 +1,7 @@
-import { useState, useEffect, memo, useRef, useCallback } from "react";
-import { useActiveTheme } from "@/hooks/useActiveTheme";
+import { useState, useEffect, memo, useRef } from "react";
+import { useActiveTheme, ThemeType } from "@/hooks/useActiveTheme";
 
-// Import only 8 essential slideshow images for better performance
+// Import default slideshow images
 import cityNight from "@/assets/slideshow/city-night.jpg";
 import policeChase from "@/assets/slideshow/police-chase.jpg";
 import beachSunset from "@/assets/slideshow/beach-sunset.jpg";
@@ -10,6 +10,48 @@ import nightclub from "@/assets/slideshow/nightclub.jpg";
 import downtown from "@/assets/slideshow/downtown.jpg";
 import carMeet from "@/assets/slideshow/car-meet.jpg";
 import highwaySunset from "@/assets/slideshow/highway-sunset.jpg";
+
+// Import winter themed slideshow images
+import winterSlide1 from "@/assets/themes/winter/slideshow-1.jpg";
+import winterSlide2 from "@/assets/themes/winter/slideshow-2.jpg";
+import winterSlide3 from "@/assets/themes/winter/slideshow-3.jpg";
+import winterSlide4 from "@/assets/themes/winter/slideshow-4.jpg";
+
+// Import christmas themed slideshow images
+import christmasSlide1 from "@/assets/themes/christmas/slideshow-1.jpg";
+import christmasSlide2 from "@/assets/themes/christmas/slideshow-2.jpg";
+import christmasSlide3 from "@/assets/themes/christmas/slideshow-3.jpg";
+import christmasSlide4 from "@/assets/themes/christmas/slideshow-4.jpg";
+
+// Import halloween themed slideshow images
+import halloweenSlide1 from "@/assets/themes/halloween/slideshow-1.jpg";
+import halloweenSlide2 from "@/assets/themes/halloween/slideshow-2.jpg";
+import halloweenSlide3 from "@/assets/themes/halloween/slideshow-3.jpg";
+import halloweenSlide4 from "@/assets/themes/halloween/slideshow-4.jpg";
+
+// Import diwali themed slideshow images
+import diwaliSlide1 from "@/assets/themes/diwali/slideshow-1.jpg";
+import diwaliSlide2 from "@/assets/themes/diwali/slideshow-2.jpg";
+import diwaliSlide3 from "@/assets/themes/diwali/slideshow-3.jpg";
+import diwaliSlide4 from "@/assets/themes/diwali/slideshow-4.jpg";
+
+// Import holi themed slideshow images
+import holiSlide1 from "@/assets/themes/holi/slideshow-1.jpg";
+import holiSlide2 from "@/assets/themes/holi/slideshow-2.jpg";
+import holiSlide3 from "@/assets/themes/holi/slideshow-3.jpg";
+import holiSlide4 from "@/assets/themes/holi/slideshow-4.jpg";
+
+// Import new year themed slideshow images
+import newYearSlide1 from "@/assets/themes/new_year/slideshow-1.jpg";
+import newYearSlide2 from "@/assets/themes/new_year/slideshow-2.jpg";
+import newYearSlide3 from "@/assets/themes/new_year/slideshow-3.jpg";
+import newYearSlide4 from "@/assets/themes/new_year/slideshow-4.jpg";
+
+// Import birthday themed slideshow images
+import birthdaySlide1 from "@/assets/themes/birthday/slideshow-1.jpg";
+import birthdaySlide2 from "@/assets/themes/birthday/slideshow-2.jpg";
+import birthdaySlide3 from "@/assets/themes/birthday/slideshow-3.jpg";
+import birthdaySlide4 from "@/assets/themes/birthday/slideshow-4.jpg";
 
 // Default slideshow images
 const DEFAULT_SLIDESHOW_IMAGES = [
@@ -23,15 +65,16 @@ const DEFAULT_SLIDESHOW_IMAGES = [
   highwaySunset,
 ];
 
-// Theme-specific home header image imports
-const themeHomeImages: Record<string, () => Promise<{ default: string }>> = {
-  winter: () => import('@/assets/themes/winter/header-home.jpg'),
-  christmas: () => import('@/assets/themes/christmas/header-home.jpg'),
-  halloween: () => import('@/assets/themes/halloween/header-home.jpg'),
-  diwali: () => import('@/assets/themes/diwali/header-home.jpg'),
-  holi: () => import('@/assets/themes/holi/header-home.jpg'),
-  new_year: () => import('@/assets/themes/new_year/header-home.jpg'),
-  birthday: () => import('@/assets/themes/birthday/header-home.jpg'),
+// Theme-specific slideshow images
+const THEMED_SLIDESHOW_IMAGES: Record<ThemeType, string[]> = {
+  default: DEFAULT_SLIDESHOW_IMAGES,
+  winter: [winterSlide1, winterSlide2, winterSlide3, winterSlide4],
+  christmas: [christmasSlide1, christmasSlide2, christmasSlide3, christmasSlide4],
+  halloween: [halloweenSlide1, halloweenSlide2, halloweenSlide3, halloweenSlide4],
+  diwali: [diwaliSlide1, diwaliSlide2, diwaliSlide3, diwaliSlide4],
+  holi: [holiSlide1, holiSlide2, holiSlide3, holiSlide4],
+  new_year: [newYearSlide1, newYearSlide2, newYearSlide3, newYearSlide4],
+  birthday: [birthdaySlide1, birthdaySlide2, birthdaySlide3, birthdaySlide4],
 };
 
 // Adaptive slide duration based on device
@@ -45,38 +88,20 @@ const HeroSlideshow = memo(() => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [showFirst, setShowFirst] = useState(true);
   const [isVisible, setIsVisible] = useState(true);
-  const [themedImage, setThemedImage] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const preloadedRef = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
   
   const { activeTheme, loading: themeLoading } = useActiveTheme();
 
-  // Load themed home image when theme changes
+  // Get the correct slideshow images based on theme
+  const slideshowImages = THEMED_SLIDESHOW_IMAGES[activeTheme] || DEFAULT_SLIDESHOW_IMAGES;
+
+  // Reset slideshow when theme changes
   useEffect(() => {
-    const loadThemedImage = async () => {
-      if (activeTheme === 'default' || themeLoading) {
-        setThemedImage(null);
-        return;
-      }
-
-      const importFn = themeHomeImages[activeTheme];
-      if (!importFn) {
-        setThemedImage(null);
-        return;
-      }
-
-      try {
-        const module = await importFn();
-        setThemedImage(module.default);
-      } catch (error) {
-        console.warn(`Failed to load themed home image for ${activeTheme}:`, error);
-        setThemedImage(null);
-      }
-    };
-
-    loadThemedImage();
-  }, [activeTheme, themeLoading]);
+    setActiveIndex(0);
+    setShowFirst(true);
+  }, [activeTheme]);
 
   // Pause slideshow when not visible (tab hidden or scrolled away)
   useEffect(() => {
@@ -108,9 +133,9 @@ const HeroSlideshow = memo(() => {
     if (preloadedRef.current) return;
     preloadedRef.current = true;
     
-    // Delay preload to not block initial render - use requestIdleCallback if available
+    // Delay preload to not block initial render
     const preload = () => {
-      DEFAULT_SLIDESHOW_IMAGES.slice(2).forEach((src) => {
+      slideshowImages.slice(2).forEach((src) => {
         const img = new Image();
         img.src = src;
       });
@@ -121,20 +146,11 @@ const HeroSlideshow = memo(() => {
     } else {
       setTimeout(preload, 2000);
     }
-  }, []);
+  }, [slideshowImages]);
 
-  // Slideshow timer - only runs when visible and NOT using themed image
+  // Slideshow timer - runs for all themes
   useEffect(() => {
-    // If we have a themed image, don't run the slideshow
-    if (themedImage) {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-      return;
-    }
-
-    if (!isVisible) {
+    if (!isVisible || themeLoading) {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
@@ -144,7 +160,7 @@ const HeroSlideshow = memo(() => {
     
     const duration = getOptimalDuration();
     timerRef.current = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % DEFAULT_SLIDESHOW_IMAGES.length);
+      setActiveIndex((prev) => (prev + 1) % slideshowImages.length);
       setShowFirst((prev) => !prev);
     }, duration);
 
@@ -153,30 +169,11 @@ const HeroSlideshow = memo(() => {
         clearInterval(timerRef.current);
       }
     };
-  }, [isVisible, themedImage]);
-
-  // If themed image is active, show only that
-  if (themedImage) {
-    return (
-      <div ref={containerRef} className="fixed inset-0 z-0 overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat gpu-accelerated"
-          style={{
-            backgroundImage: `url(${themedImage})`,
-          }}
-          aria-hidden="true"
-        />
-        {/* Dark overlay for text readability */}
-        <div className="absolute inset-0 bg-background/25" />
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-transparent to-background/50" />
-      </div>
-    );
-  }
+  }, [isVisible, themeLoading, slideshowImages.length]);
 
   // Calculate which image goes on which layer
-  const currentImage = DEFAULT_SLIDESHOW_IMAGES[activeIndex];
-  const prevImage = DEFAULT_SLIDESHOW_IMAGES[(activeIndex - 1 + DEFAULT_SLIDESHOW_IMAGES.length) % DEFAULT_SLIDESHOW_IMAGES.length];
+  const currentImage = slideshowImages[activeIndex];
+  const prevImage = slideshowImages[(activeIndex - 1 + slideshowImages.length) % slideshowImages.length];
 
   return (
     <div ref={containerRef} className="fixed inset-0 z-0 overflow-hidden">
