@@ -784,6 +784,7 @@ const SupportChat = () => {
           title="Live Support Chat"
           description="Get real-time assistance from our support team"
           backgroundImage={headerSupport}
+          pageKey="support"
         />
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-2xl mx-auto">
@@ -801,6 +802,7 @@ const SupportChat = () => {
         title={category === 'refund' ? "Refund Support" : "Live Support Chat"}
         description={category === 'refund' ? "Get assistance with refund requests and billing issues" : "Get real-time assistance from our AI and support team"}
         backgroundImage={headerSupport}
+        pageKey="support"
       />
 
       <div className="container mx-auto px-4 py-8">

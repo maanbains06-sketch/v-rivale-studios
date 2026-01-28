@@ -1284,6 +1284,7 @@ const Admin = () => {
         title="Admin Dashboard"
         description="Manage applications, analytics, and server"
         backgroundImage={headerAdminBg}
+        pageKey="staff"
       />
       
       <div className="container mx-auto px-4 py-8">

@@ -324,6 +324,7 @@ const BusinessPanel = () => {
         title="Business Panel" 
         description="Manage business job applications"
         backgroundImage={headerImage}
+        pageKey="business"
       />
 
       <div className="container mx-auto px-4 py-8">

@@ -472,6 +472,7 @@ const Dashboard = () => {
           description="Track all your applications in one place"
           badge="Applications"
           backgroundImage={headerCommunity}
+          pageKey="community"
         />
         <div className="container mx-auto px-4 pb-16 flex justify-center items-center min-h-[40vh]">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -489,6 +490,7 @@ const Dashboard = () => {
         description="Track all your applications in one place"
         badge="Applications"
         backgroundImage={headerCommunity}
+        pageKey="community"
       />
       
       <main className="container mx-auto px-4 pb-16">
