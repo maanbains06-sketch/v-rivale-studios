@@ -69,6 +69,42 @@ export const useRosterAccess = () => {
         return;
       }
 
+      // Check manual panel_access table for roster access
+      if (discordId && /^\d{17,19}$/.test(discordId)) {
+        const { data: panelAccessData, error: panelAccessError } = await supabase
+          .from('panel_access')
+          .select('roster_departments')
+          .eq('discord_id', discordId)
+          .eq('panel_type', 'roster')
+          .eq('is_active', true)
+          .maybeSingle();
+
+        if (!panelAccessError && panelAccessData) {
+          // User has manual roster access granted by owner
+          let accessibleDepts: RosterDepartmentKey[] = [];
+          
+          if (!panelAccessData.roster_departments || panelAccessData.roster_departments.length === 0 || panelAccessData.roster_departments.includes('all')) {
+            // Full access to all departments
+            accessibleDepts = allDepts;
+          } else {
+            accessibleDepts = panelAccessData.roster_departments as RosterDepartmentKey[];
+          }
+
+          console.log('Manual panel_access roster access found:', accessibleDepts);
+          
+          setAccess({
+            hasAccess: true,
+            canEdit: true, // Manual access grants edit permission
+            loading: false,
+            isOwner: false,
+            isStaff: isStaff || isAdmin || false,
+            accessibleDepartments: accessibleDepts,
+            editableDepartments: accessibleDepts,
+          });
+          return;
+        }
+      }
+
       // Check Discord roles for edit/view permission via edge function (live fetch)
       if (discordId && /^\d{17,19}$/.test(discordId)) {
         console.log('Fetching live roster access for Discord ID:', discordId);
