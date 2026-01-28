@@ -45,6 +45,7 @@ const Guides = () => {
         title="📚 Player Guides"
         description="Everything you need to know to get started on SLRP"
         backgroundImage={headerGuides}
+        pageKey="guides"
       />
       
       <main className="pb-16">

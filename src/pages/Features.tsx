@@ -57,6 +57,7 @@ const Features = () => {
         title="Server Features"
         description="Experience unmatched gameplay with our custom features and systems"
         backgroundImage={headerFeatures}
+        pageKey="features"
       />
       
       <main className="pb-16">

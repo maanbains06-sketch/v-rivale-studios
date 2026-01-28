@@ -67,6 +67,7 @@ const Community = () => {
         title="Join Our Community"
         description="Connect with thousands of players and be part of something amazing"
         backgroundImage={headerCommunity}
+        pageKey="community"
       />
       
       <main className="pb-16">

@@ -293,6 +293,7 @@ const Support = () => {
         title="Support Center"
         description="Get help, find answers, and connect with our dedicated support team. We're here to ensure your SLRP experience is exceptional."
         backgroundImage={headerSupport}
+        pageKey="support"
       />
       
       <main className="container mx-auto px-4 pb-12">

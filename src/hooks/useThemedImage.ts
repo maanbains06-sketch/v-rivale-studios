@@ -1,64 +1,5 @@
+import { useState, useEffect } from 'react';
 import { useActiveTheme, ThemeType } from './useActiveTheme';
-
-// Theme image mapping - organized by theme and page
-// Each theme has a set of page-specific images, falling back to the home image
-const themeImages: Record<ThemeType, Record<string, string>> = {
-  default: {},
-  winter: {
-    home: '/src/assets/themes/winter/header-home.jpg',
-    about: '/src/assets/themes/winter/header-about.jpg',
-    business: '/src/assets/themes/winter/header-business.jpg',
-    community: '/src/assets/themes/winter/header-community.jpg',
-    features: '/src/assets/themes/winter/header-features.jpg',
-    gallery: '/src/assets/themes/winter/header-gallery.jpg',
-    guides: '/src/assets/themes/winter/header-guides.jpg',
-    rules: '/src/assets/themes/winter/header-rules.jpg',
-    staff: '/src/assets/themes/winter/header-staff.jpg',
-    support: '/src/assets/themes/winter/header-support.jpg',
-    whitelist: '/src/assets/themes/winter/header-whitelist.jpg',
-    gang: '/src/assets/themes/winter/header-gang.jpg',
-  },
-  christmas: {
-    home: '/src/assets/themes/christmas/header-home.jpg',
-    about: '/src/assets/themes/christmas/header-about.jpg',
-    business: '/src/assets/themes/christmas/header-business.jpg',
-    community: '/src/assets/themes/christmas/header-community.jpg',
-    features: '/src/assets/themes/christmas/header-features.jpg',
-    gallery: '/src/assets/themes/christmas/header-gallery.jpg',
-    guides: '/src/assets/themes/christmas/header-guides.jpg',
-    rules: '/src/assets/themes/christmas/header-rules.jpg',
-    staff: '/src/assets/themes/christmas/header-staff.jpg',
-    support: '/src/assets/themes/christmas/header-support.jpg',
-    whitelist: '/src/assets/themes/christmas/header-whitelist.jpg',
-    gang: '/src/assets/themes/christmas/header-gang.jpg',
-  },
-  halloween: {
-    home: '/src/assets/themes/halloween/header-home.jpg',
-    about: '/src/assets/themes/halloween/header-about.jpg',
-    business: '/src/assets/themes/halloween/header-business.jpg',
-    community: '/src/assets/themes/halloween/header-community.jpg',
-    features: '/src/assets/themes/halloween/header-features.jpg',
-    gallery: '/src/assets/themes/halloween/header-gallery.jpg',
-    guides: '/src/assets/themes/halloween/header-guides.jpg',
-    rules: '/src/assets/themes/halloween/header-rules.jpg',
-    staff: '/src/assets/themes/halloween/header-staff.jpg',
-    support: '/src/assets/themes/halloween/header-support.jpg',
-    whitelist: '/src/assets/themes/halloween/header-whitelist.jpg',
-    gang: '/src/assets/themes/halloween/header-gang.jpg',
-  },
-  diwali: {
-    home: '/src/assets/themes/diwali/header-home.jpg',
-  },
-  holi: {
-    home: '/src/assets/themes/holi/header-home.jpg',
-  },
-  new_year: {
-    home: '/src/assets/themes/new_year/header-home.jpg',
-  },
-  birthday: {
-    home: '/src/assets/themes/birthday/header-home.jpg',
-  },
-};
 
 // Dynamic imports for theme images
 const themeImageImports: Record<string, Record<string, () => Promise<{ default: string }>>> = {
@@ -133,10 +74,10 @@ export function useThemedImage(page: string, defaultImage: string): {
   activeTheme: ThemeType;
 } {
   const { activeTheme, loading: themeLoading } = useActiveTheme();
-  const [themedImage, setThemedImage] = React.useState<string>(defaultImage);
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [themedImage, setThemedImage] = useState<string>(defaultImage);
+  const [isLoading, setIsLoading] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const loadThemedImage = async () => {
       // Use default image when theme is 'default' or loading
       if (activeTheme === 'default' || themeLoading) {
@@ -195,5 +136,3 @@ export function useThemedImage(page: string, defaultImage: string): {
 
   return { themedImage, isLoading, activeTheme };
 }
-
-import React from 'react';

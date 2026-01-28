@@ -129,6 +129,7 @@ const Gallery = () => {
         description="Explore stunning screenshots, epic moments, and memorable experiences from our roleplay community"
         badge="Media Gallery"
         backgroundImage={headerGallery}
+        pageKey="gallery"
       />
       
       <main className="pb-16">

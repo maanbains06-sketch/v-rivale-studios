@@ -170,6 +170,7 @@ const GangRP = () => {
           description="Rules and applications for criminal roleplay"
           badge="Criminal RP"
           backgroundImage={headerGang}
+          pageKey="gang"
         />
         <div className="container mx-auto px-4 pb-16 flex justify-center items-center min-h-[40vh]">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -255,6 +256,7 @@ const GangRP = () => {
         backgroundImage={headerGang}
         backgroundPosition="center center"
         minHeight="70vh"
+        pageKey="gang"
       />
       
       <main className="container mx-auto px-4 pb-16">

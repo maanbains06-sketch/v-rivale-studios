@@ -397,6 +397,7 @@ const Whitelist = () => {
           title="Whitelist Application"
           description="Apply to join SLRP and become part of our exclusive roleplay community"
           backgroundImage={headerWhitelist}
+          pageKey="whitelist"
         />
         <main className="pb-16">
           <div className="container mx-auto px-4">
@@ -417,6 +418,7 @@ const Whitelist = () => {
         title="Whitelist Application"
         description="Apply to join SLRP and become part of our exclusive roleplay community"
         backgroundImage={headerWhitelist}
+        pageKey="whitelist"
       />
       
       <main className="pb-16">
