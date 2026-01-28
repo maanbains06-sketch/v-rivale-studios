@@ -16,6 +16,7 @@ const ROSTER_ROLE_MAPPING: Record<string, DepartmentKey> = {
   "1451442569018998916": "fire",      // Fire Department role
   "1451442834229039104": "mechanic",  // Mechanic Shop role
   "1463145983448973519": "doj",       // Department of Justice role
+  "1451442686115581963": "state",     // State Department role
   "1463143254324285583": "weazel",    // Weazel News role
   "1451747382592012380": "pdm",       // Premium Deluxe Motorsport role
 };
@@ -27,6 +28,7 @@ const ROSTER_EDIT_ROLES: Record<string, DepartmentKey> = {
   "1451442569018998916": "fire",      // Fire role can edit Fire roster
   "1451442834229039104": "mechanic",  // Mechanic role can edit Mechanic roster
   "1463145983448973519": "doj",       // DOJ role can edit DOJ roster
+  "1451442686115581963": "state",     // State role can edit State roster
   "1463143254324285583": "weazel",    // Weazel role can edit Weazel roster
   "1451747382592012380": "pdm",       // PDM role can edit PDM roster
 };
