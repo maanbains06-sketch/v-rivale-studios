@@ -11,6 +11,7 @@ const TermsOfService = () => {
         title="Terms of Service"
         description="Rules and conditions for using SLRP services"
         backgroundImage={headerImage}
+        pageKey="community"
       />
 
       <div className="container mx-auto px-4 py-16">

@@ -105,6 +105,7 @@ const ContactOwner = () => {
         title="Contact Server Owner"
         description="Send a direct message to the server owner. Your message will be delivered via Discord DM."
         backgroundImage={headerSupport}
+        pageKey="support"
       />
       
       <main className="container mx-auto px-4 pb-12 pt-8">

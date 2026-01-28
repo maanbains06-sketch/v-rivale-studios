@@ -295,6 +295,7 @@ const JobApplication = () => {
           description="Apply for various positions in San Andreas"
           badge="Join Our Team"
           backgroundImage={headerJobs}
+          pageKey="guides"
         />
         <main className="container mx-auto px-4 pb-16">
           <div className="max-w-6xl mx-auto">
@@ -422,6 +423,7 @@ const JobApplication = () => {
         description="Apply for various positions in San Andreas"
         badge="Join Our Team"
         backgroundImage={headerJobs}
+        pageKey="guides"
       />
       
       <main className="container mx-auto px-4 pb-16">

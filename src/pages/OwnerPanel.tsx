@@ -1580,6 +1580,7 @@ const OwnerPanel = () => {
         description="Complete control over your server"
         badge="Owner Access Only"
         backgroundImage={headerAdminBg}
+        pageKey="staff"
       />
       
       <div className="container mx-auto px-4 py-12">
