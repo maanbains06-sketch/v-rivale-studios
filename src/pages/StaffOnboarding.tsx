@@ -1,6 +1,7 @@
 import { useState } from "react";
 import DOMPurify from "dompurify";
 import Navigation from "@/components/Navigation";
+import PageHeader from "@/components/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,6 +12,7 @@ import { OnboardingChecklistItemComponent } from "@/components/OnboardingCheckli
 import { useStaffTraining, TrainingModule } from "@/hooks/useStaffTraining";
 import { useStaffOnboarding } from "@/hooks/useStaffOnboarding";
 import { GraduationCap, CheckSquare, Award, Loader2 } from "lucide-react";
+import headerStaff from "@/assets/header-staff.jpg";
 
 const StaffOnboarding = () => {
   const [selectedModule, setSelectedModule] = useState<TrainingModule | null>(null);
@@ -36,14 +38,15 @@ const StaffOnboarding = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       
+      <PageHeader
+        title="Staff Onboarding"
+        description="Welcome to the team! Complete your training and onboarding checklist to get started."
+        badge="Training"
+        backgroundImage={headerStaff}
+        pageKey="staff"
+      />
+      
       <div className="container mx-auto px-4 py-8 space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold">Staff Onboarding</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Welcome to the team! Complete your training and onboarding checklist to get started.
-          </p>
-        </div>
 
         {/* Overall Progress */}
         <Card>

@@ -11,6 +11,7 @@ const PrivacyPolicy = () => {
         title="Privacy Policy"
         description="How we collect, use, and protect your information"
         backgroundImage={headerImage}
+        pageKey="rules"
       />
 
       <div className="container mx-auto px-4 py-16">

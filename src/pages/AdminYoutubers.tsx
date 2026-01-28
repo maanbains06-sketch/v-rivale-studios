@@ -271,6 +271,7 @@ const AdminYoutubers = () => {
         title="Manage Featured YouTubers"
         description="Add, edit, and manage featured streamers displayed on homepage"
         backgroundImage={headerBg}
+        pageKey="staff"
       />
 
       <div className="container mx-auto px-4 py-8">

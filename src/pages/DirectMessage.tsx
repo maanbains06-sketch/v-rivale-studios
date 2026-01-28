@@ -324,6 +324,7 @@ const DirectMessage = () => {
         title="Direct Messages"
         description="Chat directly with our team members"
         backgroundImage={headerSupport}
+        pageKey="support"
       />
 
       <div className="container mx-auto px-4 py-8 max-w-6xl">

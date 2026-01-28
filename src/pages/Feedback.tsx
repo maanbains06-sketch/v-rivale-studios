@@ -108,6 +108,7 @@ const Feedback = () => {
           description="Your feedback has been submitted"
           badge="Feedback Received"
           backgroundImage={headerCommunityBg}
+          pageKey="community"
         />
         
         <div className="container mx-auto px-4 py-16">
@@ -150,6 +151,7 @@ const Feedback = () => {
         description="Tell us about your experience at Skylife Roleplay India"
         badge="Community Voices"
         backgroundImage={headerCommunityBg}
+        pageKey="community"
       />
       
       <div className="container mx-auto px-4 py-12">

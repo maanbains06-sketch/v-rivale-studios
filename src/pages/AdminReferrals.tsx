@@ -182,6 +182,7 @@ const AdminReferrals = () => {
         title="Referral Analytics"
         description="Manage and track referral program performance"
         backgroundImage={headerStore}
+        pageKey="staff"
       />
 
       <div className="container mx-auto px-4 py-16">
