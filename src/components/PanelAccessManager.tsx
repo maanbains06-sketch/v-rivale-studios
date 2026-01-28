@@ -39,12 +39,13 @@ interface DiscordUserInfo {
   global_name: string | null;
 }
 
-// Note: Contract Panel is owner-only and not accessible via panel_access
+// Contract Panel is owner-only by default, but owner can manually grant access
 const PANEL_TYPES = [
   { id: "business", label: "Business Panel", icon: Building2, description: "Manage business job applications" },
   { id: "job", label: "Job Panel", icon: Briefcase, description: "Manage department job applications" },
   { id: "roster", label: "Roster Panel", icon: Users, description: "View and edit department rosters" },
   { id: "admin", label: "Admin Panel", icon: Settings, description: "Full admin access to all features" },
+  { id: "contract", label: "Contract Panel", icon: FileText, description: "Manage creator contracts (Owner-only by default)" },
 ];
 
 // All roster department options
