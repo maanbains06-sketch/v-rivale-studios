@@ -28,6 +28,7 @@ import { UnifiedApplicationsTable, ApplicationType } from "@/components/UnifiedA
 import GiveawayManagement from "@/components/GiveawayManagement";
 import PanelAccessManager from "@/components/PanelAccessManager";
 import BusinessTypeManager from "@/components/BusinessTypeManager";
+import ThemeManager from "@/components/ThemeManager";
 import { LiveApplicationStats } from "@/components/LiveApplicationStats";
 import { combineAllApplications, filterApplicationsByType } from "@/lib/applicationTransformer";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -66,7 +67,8 @@ import {
   Youtube,
   Gift,
   BarChart3,
-  Store
+  Store,
+  Palette
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StaffManagementDialog } from "@/components/StaffManagementDialog";
@@ -1658,6 +1660,10 @@ const OwnerPanel = () => {
                   <Store className="w-4 h-4" />
                   <span className="hidden sm:inline">Business Types</span>
                 </TabsTrigger>
+                <TabsTrigger value="theme" className="flex items-center gap-2 whitespace-nowrap">
+                  <Palette className="w-4 h-4" />
+                  <span className="hidden sm:inline">Theme</span>
+                </TabsTrigger>
               </TabsList>
             </div>
             {/* Fade indicators for scroll hint */}
@@ -1706,6 +1712,11 @@ const OwnerPanel = () => {
           {/* Business Types Tab */}
           <TabsContent value="business-types">
             <BusinessTypeManager />
+          </TabsContent>
+
+          {/* Theme Tab */}
+          <TabsContent value="theme">
+            <ThemeManager />
           </TabsContent>
 
           {/* Application Stats Tab */}
