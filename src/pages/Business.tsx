@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import headerBg from "@/assets/header-business.jpg";
 import BusinessApplicationForm, { BusinessType } from "@/components/BusinessApplicationForm";
+import { useThemedImage } from "@/hooks/useThemedImage";
 
 const businessTypes: {
   type: BusinessType;
@@ -96,6 +97,7 @@ const itemVariants = {
 
 const Business = () => {
   const [selectedBusiness, setSelectedBusiness] = useState<BusinessType | null>(null);
+  const { themedImage } = useThemedImage('business', headerBg);
 
   return (
     <div className="min-h-screen bg-background">
@@ -107,7 +109,7 @@ const Business = () => {
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105"
           style={{ 
-            backgroundImage: `url(${headerBg})`,
+            backgroundImage: `url(${themedImage})`,
             backgroundPosition: 'center 30%',
           }}
         />

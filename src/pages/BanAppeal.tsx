@@ -116,6 +116,7 @@ const BanAppeal = () => {
           title="Ban Appeal"
           description="Submit an appeal if you believe your ban was unjustified"
           backgroundImage={headerBg}
+          pageKey="support"
         />
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-3xl mx-auto">
@@ -138,6 +139,7 @@ const BanAppeal = () => {
           title="Ban Appeal"
           description="Submit an appeal if you believe your ban was unjustified"
           backgroundImage={headerBg}
+          pageKey="support"
         />
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-3xl mx-auto">
@@ -155,6 +157,7 @@ const BanAppeal = () => {
         title="Ban Appeal"
         description="Submit an appeal if you believe your ban was unjustified"
         backgroundImage={headerBg}
+        pageKey="support"
       />
       
       <div className="container mx-auto px-4 py-16">

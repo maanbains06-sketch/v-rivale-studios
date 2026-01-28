@@ -15,6 +15,7 @@ const RefundPolicy = () => {
         title="Refund Policy"
         description="Important information about our no-refund policy"
         backgroundImage={headerImage}
+        pageKey="support"
       />
 
       <div className="container mx-auto px-4 py-16">

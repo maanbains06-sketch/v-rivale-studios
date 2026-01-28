@@ -629,6 +629,7 @@ const Roster = () => {
           description="Official personnel listings for all departments"
           badge="Official Rosters"
           backgroundImage={headerJobsBg}
+          pageKey="staff"
         />
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center py-20">
@@ -649,6 +650,7 @@ const Roster = () => {
           description="Official personnel listings for all departments"
           badge="Restricted Access"
           backgroundImage={headerJobsBg}
+          pageKey="staff"
         />
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -676,6 +678,7 @@ const Roster = () => {
         description="Official personnel listings for all departments"
         badge="Official Rosters"
         backgroundImage={headerJobsBg}
+        pageKey="staff"
       />
 
       <div className="container mx-auto px-4 py-8">

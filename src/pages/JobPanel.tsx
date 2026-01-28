@@ -568,7 +568,7 @@ const JobPanel = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
-        <PageHeader title="Job Panel" description="Loading..." backgroundImage={headerJobsImg} />
+        <PageHeader title="Job Panel" description="Loading..." backgroundImage={headerJobsImg} pageKey="guides" />
         <main className="container mx-auto px-4 py-8">
           <div className="space-y-4">
             <Skeleton className="h-12 w-full" />
@@ -584,7 +584,7 @@ const JobPanel = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
-        <PageHeader title="Job Panel" description="Department Application Management" backgroundImage={headerJobsImg} />
+        <PageHeader title="Job Panel" description="Department Application Management" backgroundImage={headerJobsImg} pageKey="guides" />
         <main className="container mx-auto px-4 py-8">
           <Alert variant="destructive" className="max-w-lg mx-auto">
             <AlertTriangle className="h-4 w-4" />
@@ -604,6 +604,7 @@ const JobPanel = () => {
         title="Job Panel" 
         description="Review and manage department job applications" 
         backgroundImage={headerJobsImg}
+        pageKey="guides"
       />
       
       <main className="container mx-auto px-4 py-8">

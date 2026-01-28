@@ -892,6 +892,7 @@ const Giveaway = () => {
         title="Exclusive Giveaways"
         description="Win epic prizes, in-game items, and exclusive rewards! Enter our active giveaways for your chance to win."
         backgroundImage={headerGiveaway}
+        pageKey="giveaway"
       />
 
       <main className="pb-16">
