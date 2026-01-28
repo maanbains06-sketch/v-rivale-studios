@@ -222,28 +222,28 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 overflow-hidden relative">
+    <div className="min-h-screen min-h-[100dvh] bg-background flex items-center justify-center p-4 overflow-hidden relative">
       {/* Background effects */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-0 left-1/4 w-48 h-48 md:w-96 md:h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 right-1/4 w-48 h-48 md:w-96 md:h-96 bg-orange-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="relative z-10 max-w-lg w-full text-center"
+        className="relative z-10 max-w-lg w-full text-center px-2"
       >
-        <div className="glass-effect rounded-2xl p-8 md:p-12 border-border/20 space-y-6">
+        <div className="glass-effect rounded-2xl p-6 md:p-12 border-border/20 space-y-4 md:space-y-6">
           {/* Icon */}
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-orange-500/20 border border-orange-500/30 mb-4"
+            className="inline-flex items-center justify-center w-16 h-16 md:w-24 md:h-24 rounded-full bg-orange-500/20 border border-orange-500/30 mb-2 md:mb-4"
           >
-            <Wrench className="w-12 h-12 text-orange-400 animate-bounce" />
+            <Wrench className="w-8 h-8 md:w-12 md:h-12 text-orange-400 animate-bounce" />
           </motion.div>
 
           {/* Title */}
@@ -251,7 +251,7 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="text-3xl md:text-4xl font-bold text-gradient"
+            className="text-2xl md:text-4xl font-bold text-gradient"
           >
             Under Maintenance
           </motion.h1>
@@ -261,7 +261,7 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="text-muted-foreground text-lg"
+            className="text-muted-foreground text-sm md:text-lg px-2"
           >
             We're performing scheduled maintenance to improve your experience. The site will be back online shortly.
           </motion.p>
@@ -302,17 +302,17 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
-            className="grid grid-cols-2 gap-4 mt-8"
+            className="grid grid-cols-2 gap-2 md:gap-4 mt-4 md:mt-8"
           >
-            <div className="p-4 rounded-lg bg-muted/30 border border-border/20 text-center">
-              <Clock className="w-6 h-6 text-primary mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Expected Duration</p>
-              <p className="font-semibold text-foreground">{getDurationText()}</p>
+            <div className="p-3 md:p-4 rounded-lg bg-muted/30 border border-border/20 text-center">
+              <Clock className="w-5 h-5 md:w-6 md:h-6 text-primary mx-auto mb-1 md:mb-2" />
+              <p className="text-xs md:text-sm text-muted-foreground">Expected Duration</p>
+              <p className="font-semibold text-foreground text-sm md:text-base">{getDurationText()}</p>
             </div>
-            <div className="p-4 rounded-lg bg-muted/30 border border-border/20 text-center">
-              <Shield className="w-6 h-6 text-green-400 mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Data Status</p>
-              <p className="font-semibold text-foreground">Safe & Secure</p>
+            <div className="p-3 md:p-4 rounded-lg bg-muted/30 border border-border/20 text-center">
+              <Shield className="w-5 h-5 md:w-6 md:h-6 text-green-400 mx-auto mb-1 md:mb-2" />
+              <p className="text-xs md:text-sm text-muted-foreground">Data Status</p>
+              <p className="font-semibold text-foreground text-sm md:text-base">Safe & Secure</p>
             </div>
           </motion.div>
 

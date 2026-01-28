@@ -28,7 +28,11 @@ interface AppConfig {
   departmentName: string;
   color: { approved: number; rejected: number };
   emoji: string;
+  imageKey: string;
 }
+
+// Base URL for notification images
+const BASE_IMAGE_URL = 'https://roleplay-horizon.lovable.app/images/applications';
 
 const applicationConfigs: Record<string, AppConfig> = {
   'Police Department': {
@@ -36,182 +40,208 @@ const applicationConfigs: Record<string, AppConfig> = {
     title: 'Police Department Application',
     departmentName: 'Police Department',
     color: { approved: 0x3B82F6, rejected: 0xED4245 },
-    emoji: '👮'
+    emoji: '👮',
+    imageKey: 'pd'
   },
   'police': {
     channelEnvKey: 'DISCORD_PD_CHANNEL_ID',
     title: 'Police Department Application',
     departmentName: 'Police Department',
     color: { approved: 0x3B82F6, rejected: 0xED4245 },
-    emoji: '👮'
+    emoji: '👮',
+    imageKey: 'pd'
   },
   'EMS': {
     channelEnvKey: 'DISCORD_EMS_CHANNEL_ID',
     title: 'EMS Application',
     departmentName: 'EMS',
     color: { approved: 0xEF4444, rejected: 0xED4245 },
-    emoji: '🚑'
+    emoji: '🚑',
+    imageKey: 'ems'
   },
   'ems': {
     channelEnvKey: 'DISCORD_EMS_CHANNEL_ID',
     title: 'EMS Application',
     departmentName: 'EMS',
     color: { approved: 0xEF4444, rejected: 0xED4245 },
-    emoji: '🚑'
+    emoji: '🚑',
+    imageKey: 'ems'
   },
   'Mechanic': {
     channelEnvKey: 'DISCORD_MECHANIC_CHANNEL_ID',
     title: 'Mechanic Application',
     departmentName: 'Mechanic Shop',
     color: { approved: 0xF97316, rejected: 0xED4245 },
-    emoji: '🔧'
+    emoji: '🔧',
+    imageKey: 'mechanic'
   },
   'mechanic': {
     channelEnvKey: 'DISCORD_MECHANIC_CHANNEL_ID',
     title: 'Mechanic Application',
     departmentName: 'Mechanic Shop',
     color: { approved: 0xF97316, rejected: 0xED4245 },
-    emoji: '🔧'
+    emoji: '🔧',
+    imageKey: 'mechanic'
   },
   'DOJ - Judge': {
     channelEnvKey: 'DISCORD_DOJ_JUDGE_CHANNEL_ID',
     title: 'DOJ Judge Application',
     departmentName: 'Department of Justice',
     color: { approved: 0x8B5CF6, rejected: 0xED4245 },
-    emoji: '⚖️'
+    emoji: '⚖️',
+    imageKey: 'doj-judge'
   },
   'judge': {
     channelEnvKey: 'DISCORD_DOJ_JUDGE_CHANNEL_ID',
     title: 'DOJ Judge Application',
     departmentName: 'Department of Justice',
     color: { approved: 0x8B5CF6, rejected: 0xED4245 },
-    emoji: '⚖️'
+    emoji: '⚖️',
+    imageKey: 'doj-judge'
   },
   'DOJ - Attorney': {
     channelEnvKey: 'DISCORD_DOJ_ATTORNEY_CHANNEL_ID',
     title: 'DOJ Attorney Application',
     departmentName: 'Department of Justice',
     color: { approved: 0x8B5CF6, rejected: 0xED4245 },
-    emoji: '⚖️'
+    emoji: '⚖️',
+    imageKey: 'doj-attorney'
   },
   'attorney': {
     channelEnvKey: 'DISCORD_DOJ_ATTORNEY_CHANNEL_ID',
     title: 'DOJ Attorney Application',
     departmentName: 'Department of Justice',
     color: { approved: 0x8B5CF6, rejected: 0xED4245 },
-    emoji: '⚖️'
+    emoji: '⚖️',
+    imageKey: 'doj-attorney'
   },
   'State Department': {
     channelEnvKey: 'DISCORD_STATE_CHANNEL_ID',
     title: 'State Department Application',
     departmentName: 'State Department',
     color: { approved: 0x10B981, rejected: 0xED4245 },
-    emoji: '🏛️'
+    emoji: '🏛️',
+    imageKey: 'state'
   },
   'state': {
     channelEnvKey: 'DISCORD_STATE_CHANNEL_ID',
     title: 'State Department Application',
     departmentName: 'State Department',
     color: { approved: 0x10B981, rejected: 0xED4245 },
-    emoji: '🏛️'
+    emoji: '🏛️',
+    imageKey: 'state'
   },
   'Gang RP': {
     channelEnvKey: 'DISCORD_GANG_CHANNEL_ID',
     title: 'Gang RP Application',
     departmentName: 'Gang RP',
     color: { approved: 0x991B1B, rejected: 0xED4245 },
-    emoji: '🔫'
+    emoji: '🔫',
+    imageKey: 'gang'
   },
   'gang': {
     channelEnvKey: 'DISCORD_GANG_CHANNEL_ID',
     title: 'Gang RP Application',
     departmentName: 'Gang RP',
     color: { approved: 0x991B1B, rejected: 0xED4245 },
-    emoji: '🔫'
+    emoji: '🔫',
+    imageKey: 'gang'
   },
   'Gang Roleplay': {
     channelEnvKey: 'DISCORD_GANG_CHANNEL_ID',
     title: 'Gang RP Application',
     departmentName: 'Gang RP',
     color: { approved: 0x991B1B, rejected: 0xED4245 },
-    emoji: '🔫'
+    emoji: '🔫',
+    imageKey: 'gang'
   },
   'PDM': {
     channelEnvKey: 'DISCORD_PDM_CHANNEL_ID',
     title: 'PDM Dealership Application',
     departmentName: 'Premium Deluxe Motorsport',
     color: { approved: 0xEAB308, rejected: 0xED4245 },
-    emoji: '🚗'
+    emoji: '🚗',
+    imageKey: 'pdm'
   },
   'pdm': {
     channelEnvKey: 'DISCORD_PDM_CHANNEL_ID',
     title: 'PDM Dealership Application',
     departmentName: 'Premium Deluxe Motorsport',
     color: { approved: 0xEAB308, rejected: 0xED4245 },
-    emoji: '🚗'
+    emoji: '🚗',
+    imageKey: 'pdm'
   },
   'Firefighter': {
     channelEnvKey: 'DISCORD_FIREFIGHTER_CHANNEL_ID',
     title: 'Firefighter Application',
     departmentName: 'Fire Department',
     color: { approved: 0xDC2626, rejected: 0xED4245 },
-    emoji: '🚒'
+    emoji: '🚒',
+    imageKey: 'firefighter'
   },
   'firefighter': {
     channelEnvKey: 'DISCORD_FIREFIGHTER_CHANNEL_ID',
     title: 'Firefighter Application',
     departmentName: 'Fire Department',
     color: { approved: 0xDC2626, rejected: 0xED4245 },
-    emoji: '🚒'
+    emoji: '🚒',
+    imageKey: 'firefighter'
   },
   'Weazel News': {
     channelEnvKey: 'DISCORD_WEAZEL_CHANNEL_ID',
     title: 'Weazel News Application',
     departmentName: 'Weazel News',
     color: { approved: 0x06B6D4, rejected: 0xED4245 },
-    emoji: '📺'
+    emoji: '📺',
+    imageKey: 'weazel'
   },
   'weazel': {
     channelEnvKey: 'DISCORD_WEAZEL_CHANNEL_ID',
     title: 'Weazel News Application',
     departmentName: 'Weazel News',
     color: { approved: 0x06B6D4, rejected: 0xED4245 },
-    emoji: '📺'
+    emoji: '📺',
+    imageKey: 'weazel'
   },
   'weazel_news': {
     channelEnvKey: 'DISCORD_WEAZEL_CHANNEL_ID',
     title: 'Weazel News Application',
     departmentName: 'Weazel News',
     color: { approved: 0x06B6D4, rejected: 0xED4245 },
-    emoji: '📺'
+    emoji: '📺',
+    imageKey: 'weazel'
   },
   'Creator': {
     channelEnvKey: 'DISCORD_CREATOR_CHANNEL_ID',
     title: 'Creator Program Application',
     departmentName: 'Creator Program',
     color: { approved: 0xA855F7, rejected: 0xED4245 },
-    emoji: '🎬'
+    emoji: '🎬',
+    imageKey: 'creator'
   },
   'creator': {
     channelEnvKey: 'DISCORD_CREATOR_CHANNEL_ID',
     title: 'Creator Program Application',
     departmentName: 'Creator Program',
     color: { approved: 0xA855F7, rejected: 0xED4245 },
-    emoji: '🎬'
+    emoji: '🎬',
+    imageKey: 'creator'
   },
   'Staff': {
     channelEnvKey: 'DISCORD_STAFF_CHANNEL_ID',
     title: 'Staff Application',
     departmentName: 'Staff Team',
     color: { approved: 0x22C55E, rejected: 0xED4245 },
-    emoji: '⭐'
+    emoji: '⭐',
+    imageKey: 'staff'
   },
   'staff': {
     channelEnvKey: 'DISCORD_STAFF_CHANNEL_ID',
     title: 'Staff Application',
     departmentName: 'Staff Team',
     color: { approved: 0x22C55E, rejected: 0xED4245 },
-    emoji: '⭐'
+    emoji: '⭐',
+    imageKey: 'staff'
   }
 };
 
@@ -304,7 +334,11 @@ serve(async (req) => {
       ? `<@${moderatorDiscordId}>` 
       : `**${moderatorDisplayName}**`;
 
-    // Clean embed design WITHOUT black backgrounds
+    // Build image URL for this application type
+    const imageUrl = `${BASE_IMAGE_URL}/${config.imageKey}-${isApproved ? 'approved' : 'rejected'}.jpg`;
+    console.log(`Using notification image: ${imageUrl}`);
+
+    // Clean embed design with image
     const embed: Record<string, unknown> = {
       title: isApproved 
         ? `${config.emoji} ${config.title} - APPROVED ✅` 
@@ -330,6 +364,9 @@ serve(async (req) => {
           inline: true
         }
       ],
+      image: {
+        url: imageUrl
+      },
       thumbnail: {
         url: 'https://roleplay-horizon.lovable.app/images/slrp-logo.png'
       },
