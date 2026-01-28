@@ -1,7 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Eraser, Check, Type, PenTool } from "lucide-react";
 
 interface SignaturePadProps {
@@ -20,7 +19,7 @@ const SignaturePad = ({ onSave, existingSignature, disabled, label }: SignatureP
 
   useEffect(() => {
     initCanvas();
-  }, []);
+  }, [signatureMode]);
 
   useEffect(() => {
     if (existingSignature) {
@@ -42,9 +41,9 @@ const SignaturePad = ({ onSave, existingSignature, disabled, label }: SignatureP
     canvas.height = rect.height * 2;
     ctx.scale(2, 2);
     
-    // Set drawing style
+    // Set drawing style - thicker line for easier drawing
     ctx.strokeStyle = '#1a1a1a';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 3;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
   };
@@ -83,6 +82,7 @@ const SignaturePad = ({ onSave, existingSignature, disabled, label }: SignatureP
 
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
     if (disabled) return;
+    e.preventDefault();
     
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
@@ -97,6 +97,7 @@ const SignaturePad = ({ onSave, existingSignature, disabled, label }: SignatureP
 
   const draw = (e: React.MouseEvent | React.TouchEvent) => {
     if (!isDrawing || disabled) return;
+    e.preventDefault();
     
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
@@ -133,7 +134,7 @@ const SignaturePad = ({ onSave, existingSignature, disabled, label }: SignatureP
 
     // Draw typed signature with cursive style
     ctx.fillStyle = '#1a1a1a';
-    ctx.font = 'italic 28px "Brush Script MT", "Segoe Script", cursive';
+    ctx.font = 'italic 32px "Brush Script MT", "Segoe Script", cursive';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
@@ -143,10 +144,10 @@ const SignaturePad = ({ onSave, existingSignature, disabled, label }: SignatureP
     // Draw underline
     const textWidth = ctx.measureText(text).width;
     ctx.beginPath();
-    ctx.moveTo(canvas.width / 4 - textWidth / 2 - 10, canvas.height / 4 + 15);
-    ctx.lineTo(canvas.width / 4 + textWidth / 2 + 10, canvas.height / 4 + 15);
+    ctx.moveTo(canvas.width / 4 - textWidth / 2 - 10, canvas.height / 4 + 18);
+    ctx.lineTo(canvas.width / 4 + textWidth / 2 + 10, canvas.height / 4 + 18);
     ctx.strokeStyle = '#1a1a1a';
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 1.5;
     ctx.stroke();
 
     setHasSignature(true);
@@ -155,13 +156,19 @@ const SignaturePad = ({ onSave, existingSignature, disabled, label }: SignatureP
   const saveSignature = () => {
     if (signatureMode === "type" && typedName.trim()) {
       generateTypedSignature();
+      // Small delay to ensure canvas is rendered
+      setTimeout(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const signature = canvas.toDataURL('image/png');
+        onSave(signature);
+      }, 50);
+    } else {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const signature = canvas.toDataURL('image/png');
+      onSave(signature);
     }
-
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const signature = canvas.toDataURL('image/png');
-    onSave(signature);
   };
 
   if (disabled && existingSignature) {
@@ -182,19 +189,38 @@ const SignaturePad = ({ onSave, existingSignature, disabled, label }: SignatureP
     <div className="space-y-3">
       <p className="text-sm font-bold text-slate-800">{label}</p>
       
-      <Tabs value={signatureMode} onValueChange={(v) => setSignatureMode(v as "draw" | "type")} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 h-9">
-          <TabsTrigger value="type" className="text-xs gap-1">
-            <Type className="h-3 w-3" />
-            Type Name
-          </TabsTrigger>
-          <TabsTrigger value="draw" className="text-xs gap-1">
-            <PenTool className="h-3 w-3" />
-            Draw
-          </TabsTrigger>
-        </TabsList>
+      {/* Simple Mode Toggle */}
+      <div className="flex gap-2">
+        <Button
+          type="button"
+          variant={signatureMode === "type" ? "default" : "outline"}
+          size="sm"
+          onClick={() => {
+            setSignatureMode("type");
+            clearSignature();
+          }}
+          className="flex-1 gap-1"
+        >
+          <Type className="h-4 w-4" />
+          Type Name
+        </Button>
+        <Button
+          type="button"
+          variant={signatureMode === "draw" ? "default" : "outline"}
+          size="sm"
+          onClick={() => {
+            setSignatureMode("draw");
+            clearSignature();
+          }}
+          className="flex-1 gap-1"
+        >
+          <PenTool className="h-4 w-4" />
+          Draw
+        </Button>
+      </div>
 
-        <TabsContent value="type" className="mt-3 space-y-3">
+      {signatureMode === "type" ? (
+        <div className="space-y-3">
           <Input
             value={typedName}
             onChange={(e) => {
@@ -203,46 +229,46 @@ const SignaturePad = ({ onSave, existingSignature, disabled, label }: SignatureP
                 setHasSignature(true);
               }
             }}
-            placeholder="Type your full name"
-            className="h-11 text-lg bg-white border-slate-300 text-slate-900 placeholder:text-slate-400"
+            placeholder="Type your full name here"
+            className="h-12 text-lg bg-white border-slate-300 text-slate-900 placeholder:text-slate-400"
             disabled={disabled}
           />
-          <div className="border-2 border-dashed border-slate-300 rounded-lg bg-white p-4 min-h-[60px] flex items-center justify-center">
+          <div className="border-2 border-dashed border-slate-300 rounded-lg bg-white p-4 min-h-[70px] flex items-center justify-center">
             {typedName.trim() ? (
-              <p className="text-2xl italic font-serif text-slate-800" style={{ fontFamily: '"Brush Script MT", "Segoe Script", cursive' }}>
+              <p className="text-3xl italic text-slate-800" style={{ fontFamily: '"Brush Script MT", "Segoe Script", cursive' }}>
                 {typedName}
               </p>
             ) : (
               <p className="text-slate-400 text-sm">Your signature will appear here</p>
             )}
           </div>
-        </TabsContent>
-
-        <TabsContent value="draw" className="mt-3">
-          <div 
-            className={`relative border-2 border-dashed rounded-lg bg-white ${
-              disabled ? 'border-slate-200 opacity-60' : 'border-slate-300 hover:border-blue-400'
-            }`}
-          >
-            <canvas
-              ref={canvasRef}
-              className="w-full h-24 cursor-crosshair touch-none"
-              onMouseDown={startDrawing}
-              onMouseMove={draw}
-              onMouseUp={stopDrawing}
-              onMouseLeave={stopDrawing}
-              onTouchStart={startDrawing}
-              onTouchMove={draw}
-              onTouchEnd={stopDrawing}
-            />
-            {!hasSignature && !disabled && signatureMode === "draw" && (
-              <p className="absolute inset-0 flex items-center justify-center text-slate-400 text-sm pointer-events-none">
-                Draw your signature here
-              </p>
-            )}
-          </div>
-        </TabsContent>
-      </Tabs>
+          {/* Hidden canvas for type mode */}
+          <canvas ref={canvasRef} className="hidden" style={{ width: 300, height: 80 }} />
+        </div>
+      ) : (
+        <div 
+          className={`relative border-2 border-dashed rounded-lg bg-white ${
+            disabled ? 'border-slate-200 opacity-60' : 'border-slate-300 hover:border-blue-400'
+          }`}
+        >
+          <canvas
+            ref={canvasRef}
+            className="w-full h-28 cursor-crosshair touch-none"
+            onMouseDown={startDrawing}
+            onMouseMove={draw}
+            onMouseUp={stopDrawing}
+            onMouseLeave={stopDrawing}
+            onTouchStart={startDrawing}
+            onTouchMove={draw}
+            onTouchEnd={stopDrawing}
+          />
+          {!hasSignature && !disabled && (
+            <p className="absolute inset-0 flex items-center justify-center text-slate-400 text-sm pointer-events-none">
+              Draw your signature using mouse or finger
+            </p>
+          )}
+        </div>
+      )}
 
       {!disabled && (
         <div className="flex gap-2">
@@ -251,9 +277,9 @@ const SignaturePad = ({ onSave, existingSignature, disabled, label }: SignatureP
             variant="outline" 
             size="sm" 
             onClick={clearSignature}
-            className="text-xs flex-1"
+            className="flex-1"
           >
-            <Eraser className="h-3 w-3 mr-1" />
+            <Eraser className="h-4 w-4 mr-1" />
             Clear
           </Button>
           <Button 
@@ -261,10 +287,10 @@ const SignaturePad = ({ onSave, existingSignature, disabled, label }: SignatureP
             size="sm" 
             onClick={saveSignature}
             disabled={signatureMode === "type" ? !typedName.trim() : !hasSignature}
-            className="text-xs flex-1 bg-green-600 hover:bg-green-700"
+            className="flex-1 bg-green-600 hover:bg-green-700"
           >
-            <Check className="h-3 w-3 mr-1" />
-            Confirm Signature
+            <Check className="h-4 w-4 mr-1" />
+            Confirm
           </Button>
         </div>
       )}

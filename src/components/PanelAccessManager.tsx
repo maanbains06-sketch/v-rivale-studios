@@ -17,7 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Shield, UserPlus, Trash2, Search, RefreshCw, 
-  Building2, Briefcase, Users, Settings, CheckCircle, XCircle
+  Building2, Briefcase, Users, Settings, CheckCircle, XCircle, FileText
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -42,6 +42,7 @@ const PANEL_TYPES = [
   { id: "business", label: "Business Panel", icon: Building2, description: "Manage business job applications" },
   { id: "job", label: "Job Panel", icon: Briefcase, description: "Manage department job applications" },
   { id: "roster", label: "Roster Panel", icon: Users, description: "View and edit department rosters" },
+  { id: "contract", label: "Contract Panel", icon: FileText, description: "Manage creator contracts and agreements" },
   { id: "admin", label: "Admin Panel", icon: Settings, description: "Full admin access to all features" },
 ];
 

@@ -262,15 +262,18 @@ const Staff = () => {
   const developerStaff = getStaffByDepartment("development");
   const administrationStaff = getStaffByDepartment("administration");
   
-  // Combined Staff Team - includes both moderation and general staff, excludes administration department members
+  // Combined Staff Team - includes both moderation and general staff, excludes administration and leadership department members
   const combinedStaffTeam = staffMembers.filter(
-    (m) => (m.department === "moderation" || m.department === "staff" || m.role_type === "moderator") && m.department !== "administration"
+    (m) => (m.department === "moderation" || m.department === "staff" || m.role_type === "moderator") && m.department !== "administration" && m.department !== "leadership"
   );
 
   // Support team (display_order 40-42)
   const supportStaff = staffMembers.filter((m) => m.display_order >= 40 && m.display_order <= 42);
 
   const eventStaff = getStaffByDepartment("events");
+
+  // Count only staff members shown on staff page (exclude leadership for the stats count)
+  const displayedStaffCount = staffMembers.filter(m => m.department !== "leadership").length;
 
   const hasAnyStaff = staffMembers.length > 0;
 
@@ -668,8 +671,8 @@ const Staff = () => {
                     <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl flex items-center justify-center group-hover:from-primary/30 group-hover:to-primary/10 transition-colors duration-300 border border-primary/20">
                       <Users className="w-6 h-6 text-primary" />
                     </div>
-                    <div className="text-3xl font-bold text-foreground mb-0.5">{staffMembers.length}+</div>
-                    <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Team Members</div>
+                    <div className="text-3xl font-bold text-foreground mb-0.5">{displayedStaffCount}+</div>
+                    <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Staff Members</div>
                   </div>
                 </div>
               </motion.div>
@@ -768,6 +771,7 @@ const Staff = () => {
 
           {/* Department Sections - Clean unified design */}
           {[
+            { key: "leadership", title: "Leadership Team", subtitle: "The visionaries guiding SLRP to excellence", icon: Shield, staff: leadershipStaff, centerSingle: true, noLimit: true },
             { key: "management", title: "Management Team", subtitle: "Ensuring smooth server operations", icon: Users, staff: adminStaff.slice(0, 3), centerSingle: false, noLimit: false },
             { key: "administration", title: "Administration Team", subtitle: "Keeping the community safe and fair", icon: Shield, staff: administrationStaff, centerSingle: true, noLimit: true },
             { key: "development", title: "Development Team", subtitle: "Building innovative features", icon: Code, staff: developerStaff, centerSingle: true, noLimit: true },
