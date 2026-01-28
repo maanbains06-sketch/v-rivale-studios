@@ -1509,6 +1509,7 @@ export type Database = {
       }
       panel_access: {
         Row: {
+          departments: string[] | null
           discord_id: string
           discord_username: string | null
           granted_at: string
@@ -1520,6 +1521,7 @@ export type Database = {
           roster_departments: string[] | null
         }
         Insert: {
+          departments?: string[] | null
           discord_id: string
           discord_username?: string | null
           granted_at?: string
@@ -1531,6 +1533,7 @@ export type Database = {
           roster_departments?: string[] | null
         }
         Update: {
+          departments?: string[] | null
           discord_id?: string
           discord_username?: string | null
           granted_at?: string
