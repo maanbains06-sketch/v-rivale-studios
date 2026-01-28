@@ -11,26 +11,26 @@ type DepartmentKey = 'police' | 'ems' | 'fire' | 'mechanic' | 'doj' | 'state' | 
 // Discord Role ID mappings - EXACT role IDs for each department
 // Users with these roles can VIEW their corresponding roster ONLY
 const ROSTER_ROLE_MAPPING: Record<string, DepartmentKey> = {
-  "1451442274037923960": "police",    // Police Department role
-  "1451442460910817371": "ems",       // EMS Department role
-  "1451442569018998916": "fire",      // Fire Department role
-  "1451442834229039104": "mechanic",  // Mechanic Shop role
-  "1463145983448973519": "doj",       // Department of Justice role
-  "1451442686115581963": "state",     // State Department role
-  "1463143254324285583": "weazel",    // Weazel News role
-  "1451747382592012380": "pdm",       // Premium Deluxe Motorsport role
+  "1281554246281461792": "police",    // Police Department role
+  "1281554458563575859": "ems",       // EMS Department role
+  "1438258435052535920": "fire",      // Fire Department role
+  "1449226861522583757": "mechanic",  // Mechanic Shop role
+  "1431378586203590687": "doj",       // Department of Justice role
+  "1439053653112782968": "state",     // State Department role
+  "1463143859935772672": "weazel",    // Weazel News role
+  "1317457907620646972": "pdm",       // Premium Deluxe Motorsport role
 };
 
 // Roles that grant EDIT access to their corresponding department roster
 const ROSTER_EDIT_ROLES: Record<string, DepartmentKey> = {
-  "1451442274037923960": "police",    // PD role can edit PD roster
-  "1451442460910817371": "ems",       // EMS role can edit EMS roster
-  "1451442569018998916": "fire",      // Fire role can edit Fire roster
-  "1451442834229039104": "mechanic",  // Mechanic role can edit Mechanic roster
-  "1463145983448973519": "doj",       // DOJ role can edit DOJ roster
-  "1451442686115581963": "state",     // State role can edit State roster
-  "1463143254324285583": "weazel",    // Weazel role can edit Weazel roster
-  "1451747382592012380": "pdm",       // PDM role can edit PDM roster
+  "1281554246281461792": "police",    // PD role can edit PD roster
+  "1281554458563575859": "ems",       // EMS role can edit EMS roster
+  "1438258435052535920": "fire",      // Fire role can edit Fire roster
+  "1449226861522583757": "mechanic",  // Mechanic role can edit Mechanic roster
+  "1431378586203590687": "doj",       // DOJ role can edit DOJ roster
+  "1439053653112782968": "state",     // State role can edit State roster
+  "1463143859935772672": "weazel",    // Weazel role can edit Weazel roster
+  "1317457907620646972": "pdm",       // PDM role can edit PDM roster
 };
 
 // Leadership/Admin roles that grant access to ALL rosters (optional - can add if needed)
