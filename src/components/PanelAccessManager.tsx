@@ -31,6 +31,7 @@ interface PanelAccessEntry {
   is_active: boolean;
   notes: string | null;
   roster_departments: string[] | null;
+  departments: string[] | null;
 }
 
 interface DiscordUserInfo {
@@ -41,26 +42,50 @@ interface DiscordUserInfo {
 
 // Contract Panel is owner-only by default, but owner can manually grant access
 const PANEL_TYPES = [
-  { id: "business", label: "Business Panel", icon: Building2, description: "Manage business job applications" },
-  { id: "job", label: "Job Panel", icon: Briefcase, description: "Manage department job applications" },
-  { id: "roster", label: "Roster Panel", icon: Users, description: "View and edit department rosters" },
-  { id: "admin", label: "Admin Panel", icon: Settings, description: "Full admin access to all features" },
-  { id: "contract", label: "Contract Panel", icon: FileText, description: "Manage creator contracts (Owner-only by default)" },
+  { id: "business", label: "Business Panel", icon: Building2, description: "Manage business job applications", hasDepartments: true },
+  { id: "job", label: "Job Panel", icon: Briefcase, description: "Manage department job applications", hasDepartments: true },
+  { id: "roster", label: "Roster Panel", icon: Users, description: "View and edit department rosters", hasDepartments: true },
+  { id: "admin", label: "Admin Panel", icon: Settings, description: "Full admin access to all features", hasDepartments: false },
+  { id: "contract", label: "Contract Panel", icon: FileText, description: "Manage creator contracts (Owner-only by default)", hasDepartments: false },
 ];
 
-// All roster department options
-const ROSTER_DEPARTMENTS = [
-  { id: "all", label: "All Departments", description: "Access to all department rosters" },
-  { id: "police", label: "Police Department", description: "SLPD roster access" },
-  { id: "ems", label: "EMS Department", description: "EMS roster access" },
-  { id: "fire", label: "Fire Department", description: "Fire dept roster access" },
-  { id: "mechanic", label: "Mechanic Shop", description: "Mechanic roster access" },
-  { id: "doj", label: "Department of Justice", description: "DOJ roster access" },
-  { id: "state", label: "State Department", description: "State dept roster access" },
-  { id: "weazel", label: "Weazel News", description: "Weazel News roster access" },
-  { id: "pdm", label: "Premium Deluxe Motorsport", description: "PDM roster access" },
-  { id: "staff", label: "Server Staff", description: "Staff roster access" },
-];
+// Department options for each panel type
+const PANEL_DEPARTMENTS: Record<string, { id: string; label: string; description: string }[]> = {
+  business: [
+    { id: "all", label: "All Business Types", description: "Access to all business applications" },
+    { id: "restaurant", label: "Restaurant", description: "Restaurant business applications" },
+    { id: "dealership", label: "Dealership", description: "Vehicle dealership applications" },
+    { id: "nightclub", label: "Nightclub", description: "Nightclub/bar applications" },
+    { id: "retail", label: "Retail Store", description: "Retail store applications" },
+    { id: "services", label: "Services", description: "Service business applications" },
+  ],
+  job: [
+    { id: "all", label: "All Departments", description: "Access to all job applications" },
+    { id: "pd", label: "Police Department", description: "Police job applications" },
+    { id: "ems", label: "EMS Department", description: "EMS job applications" },
+    { id: "fire", label: "Fire Department", description: "Fire dept job applications" },
+    { id: "mechanic", label: "Mechanic Shop", description: "Mechanic job applications" },
+    { id: "doj", label: "Department of Justice", description: "DOJ job applications" },
+    { id: "state", label: "State Department", description: "State dept job applications" },
+    { id: "weazel", label: "Weazel News", description: "Weazel News job applications" },
+    { id: "pdm", label: "Premium Deluxe Motorsport", description: "PDM job applications" },
+  ],
+  roster: [
+    { id: "all", label: "All Departments", description: "Access to all department rosters" },
+    { id: "police", label: "Police Department", description: "SLPD roster access" },
+    { id: "ems", label: "EMS Department", description: "EMS roster access" },
+    { id: "fire", label: "Fire Department", description: "Fire dept roster access" },
+    { id: "mechanic", label: "Mechanic Shop", description: "Mechanic roster access" },
+    { id: "doj", label: "Department of Justice", description: "DOJ roster access" },
+    { id: "state", label: "State Department", description: "State dept roster access" },
+    { id: "weazel", label: "Weazel News", description: "Weazel News roster access" },
+    { id: "pdm", label: "Premium Deluxe Motorsport", description: "PDM roster access" },
+    { id: "staff", label: "Server Staff", description: "Staff roster access" },
+  ],
+};
+
+// Backward compatibility - keep ROSTER_DEPARTMENTS for existing code
+const ROSTER_DEPARTMENTS = PANEL_DEPARTMENTS.roster;
 
 const PanelAccessManager = () => {
   const { toast } = useToast();
@@ -76,7 +101,8 @@ const PanelAccessManager = () => {
   const [newDiscordId, setNewDiscordId] = useState("");
   const [newPanelType, setNewPanelType] = useState("");
   const [newNotes, setNewNotes] = useState("");
-  const [newRosterDepartments, setNewRosterDepartments] = useState<string[]>([]);
+  const [newDepartments, setNewDepartments] = useState<string[]>([]);
+  const [newRosterDepartments, setNewRosterDepartments] = useState<string[]>([]); // Keep for backward compatibility
   const [fetchingUser, setFetchingUser] = useState(false);
   const [fetchedUser, setFetchedUser] = useState<DiscordUserInfo | null>(null);
   const [fetchError, setFetchError] = useState("");
@@ -181,10 +207,14 @@ const PanelAccessManager = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      // Prepare roster departments - if "all" is selected, store null (means all access)
-      const rosterDepts = newPanelType === "roster" 
-        ? (newRosterDepartments.includes("all") ? null : newRosterDepartments.length > 0 ? newRosterDepartments : null)
+      // Get departments for the selected panel type
+      const panelHasDepts = PANEL_TYPES.find(p => p.id === newPanelType)?.hasDepartments;
+      const selectedDepts = panelHasDepts 
+        ? (newDepartments.includes("all") ? null : newDepartments.length > 0 ? newDepartments : null)
         : null;
+      
+      // For roster panel, also set roster_departments for backward compatibility
+      const rosterDepts = newPanelType === "roster" ? selectedDepts : null;
       
       const { error } = await supabase
         .from("panel_access")
@@ -195,6 +225,7 @@ const PanelAccessManager = () => {
           granted_by: user?.id,
           notes: newNotes || null,
           roster_departments: rosterDepts,
+          departments: selectedDepts,
         });
 
       if (error) {
@@ -281,18 +312,19 @@ const PanelAccessManager = () => {
     setNewDiscordId("");
     setNewPanelType("");
     setNewNotes("");
+    setNewDepartments([]);
     setNewRosterDepartments([]);
     setFetchedUser(null);
     setFetchError("");
   };
 
-  // Toggle roster department selection
-  const toggleRosterDepartment = (deptId: string) => {
+  // Toggle department selection (generic for any panel type)
+  const toggleDepartment = (deptId: string) => {
     if (deptId === "all") {
       // If "all" is selected, clear others and just set "all"
-      setNewRosterDepartments(prev => prev.includes("all") ? [] : ["all"]);
+      setNewDepartments(prev => prev.includes("all") ? [] : ["all"]);
     } else {
-      setNewRosterDepartments(prev => {
+      setNewDepartments(prev => {
         // Remove "all" if another specific dept is selected
         const filtered = prev.filter(d => d !== "all");
         if (filtered.includes(deptId)) {
@@ -303,28 +335,38 @@ const PanelAccessManager = () => {
     }
   };
 
-  // Get roster departments display for table
-  const getRosterDepartmentsDisplay = (entry: PanelAccessEntry) => {
-    if (entry.panel_type !== "roster") return null;
-    if (!entry.roster_departments || entry.roster_departments.length === 0) {
-      return <Badge variant="outline" className="text-xs">All Departments</Badge>;
+  // Get departments display for any panel type
+  const getDepartmentsDisplay = (entry: PanelAccessEntry) => {
+    const panelConfig = PANEL_TYPES.find(p => p.id === entry.panel_type);
+    if (!panelConfig?.hasDepartments) return null;
+    
+    // Use departments or fall back to roster_departments for backward compatibility
+    const departments = entry.departments || entry.roster_departments;
+    
+    if (!departments || departments.length === 0) {
+      return <Badge variant="outline" className="text-xs">All {entry.panel_type === "business" ? "Types" : "Departments"}</Badge>;
     }
-    if (entry.roster_departments.includes("all")) {
-      return <Badge variant="outline" className="text-xs">All Departments</Badge>;
+    if (departments.includes("all")) {
+      return <Badge variant="outline" className="text-xs">All {entry.panel_type === "business" ? "Types" : "Departments"}</Badge>;
     }
+    
+    const deptConfig = PANEL_DEPARTMENTS[entry.panel_type] || [];
     return (
       <div className="flex flex-wrap gap-1">
-        {entry.roster_departments.slice(0, 2).map(dept => (
+        {departments.slice(0, 2).map(dept => (
           <Badge key={dept} variant="secondary" className="text-xs">
-            {ROSTER_DEPARTMENTS.find(d => d.id === dept)?.label || dept}
+            {deptConfig.find(d => d.id === dept)?.label || dept}
           </Badge>
         ))}
-        {entry.roster_departments.length > 2 && (
-          <Badge variant="outline" className="text-xs">+{entry.roster_departments.length - 2}</Badge>
+        {departments.length > 2 && (
+          <Badge variant="outline" className="text-xs">+{departments.length - 2}</Badge>
         )}
       </div>
     );
   };
+
+  // Keep old function for backward compatibility
+  const getRosterDepartmentsDisplay = (entry: PanelAccessEntry) => getDepartmentsDisplay(entry);
 
   const getPanelIcon = (panelType: string) => {
     const panel = PANEL_TYPES.find(p => p.id === panelType);
@@ -823,9 +865,9 @@ const PanelAccessManager = () => {
               <Label htmlFor="panel_type">Panel</Label>
               <Select value={newPanelType} onValueChange={(val) => {
                 setNewPanelType(val);
-                if (val !== "roster") {
-                  setNewRosterDepartments([]);
-                }
+                // Reset departments when panel changes
+                setNewDepartments([]);
+                setNewRosterDepartments([]);
               }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a panel" />
@@ -848,30 +890,34 @@ const PanelAccessManager = () => {
               )}
             </div>
 
-            {/* Roster Departments Selection - only show when roster panel is selected */}
-            {newPanelType === "roster" && (
+            {/* Departments Selection - show for panels that have departments */}
+            {newPanelType && PANEL_TYPES.find(p => p.id === newPanelType)?.hasDepartments && PANEL_DEPARTMENTS[newPanelType] && (
               <div className="space-y-2">
-                <Label>Roster Departments</Label>
+                <Label>
+                  {newPanelType === "roster" ? "Roster Departments" : 
+                   newPanelType === "job" ? "Job Departments" : 
+                   newPanelType === "business" ? "Business Types" : "Departments"}
+                </Label>
                 <p className="text-xs text-muted-foreground mb-2">
-                  Select which department rosters this user can access
+                  Select which {newPanelType === "business" ? "business types" : "departments"} this user can access
                 </p>
                 <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto p-2 bg-muted/20 rounded-lg border border-border/50">
-                  {ROSTER_DEPARTMENTS.map(dept => (
+                  {PANEL_DEPARTMENTS[newPanelType].map(dept => (
                     <div
                       key={dept.id}
-                      onClick={() => toggleRosterDepartment(dept.id)}
+                      onClick={() => toggleDepartment(dept.id)}
                       className={`flex items-center gap-2 p-2 rounded-md cursor-pointer transition-colors ${
-                        newRosterDepartments.includes(dept.id)
+                        newDepartments.includes(dept.id)
                           ? "bg-primary/20 border border-primary/50"
                           : "bg-background/50 border border-border/30 hover:bg-muted/50"
                       }`}
                     >
                       <div className={`w-4 h-4 rounded border flex items-center justify-center ${
-                        newRosterDepartments.includes(dept.id)
+                        newDepartments.includes(dept.id)
                           ? "bg-primary border-primary"
                           : "border-muted-foreground/50"
                       }`}>
-                        {newRosterDepartments.includes(dept.id) && (
+                        {newDepartments.includes(dept.id) && (
                           <CheckCircle className="w-3 h-3 text-primary-foreground" />
                         )}
                       </div>
@@ -879,9 +925,9 @@ const PanelAccessManager = () => {
                     </div>
                   ))}
                 </div>
-                {newRosterDepartments.length > 0 && !newRosterDepartments.includes("all") && (
+                {newDepartments.length > 0 && !newDepartments.includes("all") && (
                   <p className="text-xs text-muted-foreground">
-                    Selected: {newRosterDepartments.map(d => ROSTER_DEPARTMENTS.find(r => r.id === d)?.label).join(", ")}
+                    Selected: {newDepartments.map(d => PANEL_DEPARTMENTS[newPanelType]?.find(r => r.id === d)?.label).join(", ")}
                   </p>
                 )}
               </div>
