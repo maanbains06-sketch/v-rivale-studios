@@ -47,12 +47,25 @@ interface Application {
   status: string;
   created_at: string;
   experience?: string;
+  previous_experience?: string;
   why_join?: string;
   availability?: string;
   reviewed_by?: string;
   reviewed_at?: string;
   notes?: string;
   admin_notes?: string;
+  // Additional fields for comprehensive view
+  age?: number;
+  phone_number?: string;
+  character_background?: string;
+  additional_info?: string;
+  job_specific_answer?: string;
+  strengths?: string;
+  weekly_availability?: string;
+  steam_id?: string;
+  sales_experience?: string;
+  vehicle_knowledge?: string;
+  customer_scenario?: string;
 }
 
 const JobPanel = () => {
@@ -290,16 +303,29 @@ const JobPanel = () => {
         in_game_name: app.in_game_name,
         real_name: app.real_name,
         department: deptName || app.department,
-        position: app.position,
+        position: app.position || app.job_type,
         status: app.status,
         created_at: app.created_at,
         experience: app.experience,
+        previous_experience: app.previous_experience,
         why_join: app.why_join,
         availability: app.availability,
+        weekly_availability: app.weekly_availability,
         reviewed_by: app.reviewed_by,
         reviewed_at: app.reviewed_at,
         notes: app.notes,
         admin_notes: app.admin_notes,
+        // Additional fields
+        age: app.age,
+        phone_number: app.phone_number,
+        character_background: app.character_background,
+        additional_info: app.additional_info,
+        job_specific_answer: app.job_specific_answer,
+        strengths: app.strengths,
+        steam_id: app.steam_id,
+        sales_experience: app.sales_experience,
+        vehicle_knowledge: app.vehicle_knowledge,
+        customer_scenario: app.customer_scenario,
       });
 
       // Load applications for each accessible department
@@ -462,7 +488,7 @@ const JobPanel = () => {
         status,
         reviewed_by: user?.id,
         reviewed_at: new Date().toISOString(),
-        notes: reviewNotes || null,
+        admin_notes: reviewNotes || null,
       };
 
       const { data, error } = await supabase
@@ -853,6 +879,7 @@ const JobPanel = () => {
 
           {selectedApp && (
             <div className="space-y-4">
+              {/* Basic Info Grid */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Discord Username</label>
@@ -868,6 +895,10 @@ const JobPanel = () => {
                   </p>
                 </div>
                 <div>
+                  <label className="text-sm font-medium text-muted-foreground">Discord ID</label>
+                  <p className="font-medium">{selectedApp.discord_id || '-'}</p>
+                </div>
+                <div>
                   <label className="text-sm font-medium text-muted-foreground">Character Name</label>
                   <p className="font-medium">{selectedApp.character_name || selectedApp.in_game_name || '-'}</p>
                 </div>
@@ -875,35 +906,111 @@ const JobPanel = () => {
                   <label className="text-sm font-medium text-muted-foreground">Department/Position</label>
                   <p className="font-medium">{selectedApp.position || selectedApp.department || '-'}</p>
                 </div>
+                {selectedApp.age && (
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Age</label>
+                    <p className="font-medium">{selectedApp.age}</p>
+                  </div>
+                )}
+                {selectedApp.phone_number && (
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Phone Number</label>
+                    <p className="font-medium">{selectedApp.phone_number}</p>
+                  </div>
+                )}
+                {selectedApp.steam_id && (
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Steam ID</label>
+                    <p className="font-medium">{selectedApp.steam_id}</p>
+                  </div>
+                )}
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Status</label>
                   <div>{getStatusBadge(selectedApp.status)}</div>
                 </div>
               </div>
 
-              {selectedApp.experience && (
+              {/* Character Background */}
+              {selectedApp.character_background && (
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Experience</label>
-                  <p className="mt-1 p-3 bg-muted/30 rounded-lg text-sm">{selectedApp.experience}</p>
+                  <label className="text-sm font-medium text-muted-foreground">Character Background</label>
+                  <p className="mt-1 p-3 bg-muted/30 rounded-lg text-sm whitespace-pre-wrap">{selectedApp.character_background}</p>
                 </div>
               )}
 
+              {/* Previous Experience */}
+              {(selectedApp.previous_experience || selectedApp.experience) && (
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Previous Experience</label>
+                  <p className="mt-1 p-3 bg-muted/30 rounded-lg text-sm whitespace-pre-wrap">{selectedApp.previous_experience || selectedApp.experience}</p>
+                </div>
+              )}
+
+              {/* Why Join */}
               {selectedApp.why_join && (
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Why Join</label>
-                  <p className="mt-1 p-3 bg-muted/30 rounded-lg text-sm">{selectedApp.why_join}</p>
+                  <label className="text-sm font-medium text-muted-foreground">Why do you want to join?</label>
+                  <p className="mt-1 p-3 bg-muted/30 rounded-lg text-sm whitespace-pre-wrap">{selectedApp.why_join}</p>
                 </div>
               )}
 
-              {selectedApp.availability && (
+              {/* Availability */}
+              {(selectedApp.availability || selectedApp.weekly_availability) && (
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Availability</label>
-                  <p className="mt-1 p-3 bg-muted/30 rounded-lg text-sm">{selectedApp.availability}</p>
+                  <p className="mt-1 p-3 bg-muted/30 rounded-lg text-sm whitespace-pre-wrap">{selectedApp.availability || selectedApp.weekly_availability}</p>
                 </div>
               )}
 
+              {/* Strengths */}
+              {selectedApp.strengths && (
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Strengths</label>
+                  <p className="mt-1 p-3 bg-muted/30 rounded-lg text-sm whitespace-pre-wrap">{selectedApp.strengths}</p>
+                </div>
+              )}
+
+              {/* Job Specific Answer */}
+              {selectedApp.job_specific_answer && (
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Job-Specific Response</label>
+                  <p className="mt-1 p-3 bg-muted/30 rounded-lg text-sm whitespace-pre-wrap">{selectedApp.job_specific_answer}</p>
+                </div>
+              )}
+
+              {/* PDM-specific fields */}
+              {selectedApp.sales_experience && (
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Sales Experience</label>
+                  <p className="mt-1 p-3 bg-muted/30 rounded-lg text-sm whitespace-pre-wrap">{selectedApp.sales_experience}</p>
+                </div>
+              )}
+
+              {selectedApp.vehicle_knowledge && (
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Vehicle Knowledge</label>
+                  <p className="mt-1 p-3 bg-muted/30 rounded-lg text-sm whitespace-pre-wrap">{selectedApp.vehicle_knowledge}</p>
+                </div>
+              )}
+
+              {selectedApp.customer_scenario && (
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Customer Scenario Response</label>
+                  <p className="mt-1 p-3 bg-muted/30 rounded-lg text-sm whitespace-pre-wrap">{selectedApp.customer_scenario}</p>
+                </div>
+              )}
+
+              {/* Additional Info */}
+              {selectedApp.additional_info && (
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Additional Information</label>
+                  <p className="mt-1 p-3 bg-muted/30 rounded-lg text-sm whitespace-pre-wrap">{selectedApp.additional_info}</p>
+                </div>
+              )}
+
+              {/* Review Notes */}
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Review Notes (Optional)</label>
+                <label className="text-sm font-medium text-muted-foreground">Admin Notes (Optional)</label>
                 <Textarea
                   value={reviewNotes}
                   onChange={(e) => setReviewNotes(e.target.value)}
@@ -912,6 +1019,7 @@ const JobPanel = () => {
                 />
               </div>
 
+              {/* Action Buttons */}
               {(selectedApp.status === 'pending' || selectedApp.status === 'on_hold') && (
                 <DialogFooter className="flex-col sm:flex-row gap-2">
                   <Button
@@ -919,7 +1027,7 @@ const JobPanel = () => {
                     onClick={() => handleReview(selectedApp.id, 'rejected', activeTab as DepartmentKey)}
                     disabled={isReviewing}
                   >
-                    <XCircle className="w-4 h-4 mr-2" />
+                    {isReviewing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <XCircle className="w-4 h-4 mr-2" />}
                     Reject
                   </Button>
                   {selectedApp.status !== 'on_hold' && (
@@ -929,7 +1037,7 @@ const JobPanel = () => {
                       disabled={isReviewing}
                       className="border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10"
                     >
-                      <Clock className="w-4 h-4 mr-2" />
+                      {isReviewing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Clock className="w-4 h-4 mr-2" />}
                       Put On Hold
                     </Button>
                   )}
@@ -938,7 +1046,7 @@ const JobPanel = () => {
                     disabled={isReviewing}
                     className="bg-green-600 hover:bg-green-700"
                   >
-                    <CheckCircle className="w-4 h-4 mr-2" />
+                    {isReviewing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-2" />}
                     Approve
                   </Button>
                 </DialogFooter>

@@ -593,6 +593,11 @@ const SupportChat = () => {
     if (!selectedChat) return;
 
     try {
+      // Get user info for the notification
+      const { data: { user } } = await supabase.auth.getUser();
+      const discordId = user?.user_metadata?.discord_id || user?.user_metadata?.provider_id;
+      const discordUsername = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email || 'Anonymous User';
+
       const { error } = await supabase
         .from("support_chats")
         .update({ 
@@ -604,12 +609,32 @@ const SupportChat = () => {
 
       if (error) throw error;
 
+      // Send Discord DM notifications to all staff members
+      try {
+        const { data: notifyResult, error: notifyError } = await supabase.functions.invoke("notify-staff-discord-dm", {
+          body: {
+            chatId: selectedChat.id,
+            userName: discordUsername,
+            subject: selectedChat.subject || 'Support Request',
+          },
+        });
+
+        if (notifyError) {
+          console.error("Failed to send staff DM notifications:", notifyError);
+        } else {
+          console.log("Staff DM notification result:", notifyResult);
+        }
+      } catch (notifyErr) {
+        console.error("Error invoking notify-staff-discord-dm:", notifyErr);
+        // Don't fail the request if notifications fail
+      }
+
       // Refresh chats to update UI
       await fetchChats();
 
       toast({
         title: "Human support requested",
-        description: "A staff member will assist you shortly.",
+        description: "A staff member will assist you shortly. They have been notified via Discord.",
       });
     } catch (error) {
       console.error("Error requesting human support:", error);
