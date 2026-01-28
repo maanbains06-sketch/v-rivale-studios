@@ -81,6 +81,7 @@ const Rules = () => {
         title="Server Rules"
         description="Follow these rules to ensure a fair and enjoyable experience for everyone"
         backgroundImage={headerRules}
+        pageKey="rules"
       />
       
       <main className="pb-16">

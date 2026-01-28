@@ -243,6 +243,7 @@ const Staff = () => {
           description="Passionate professionals dedicated to creating the most immersive and professional roleplay experience"
           badge="24/7 Available"
           backgroundImage={headerStaff}
+          pageKey="staff"
         />
         <main className="pb-16">
           <div className="container mx-auto px-4">
@@ -647,6 +648,7 @@ const Staff = () => {
         description="Passionate professionals dedicated to creating the most immersive and professional roleplay experience"
         badge="24/7 Available"
         backgroundImage={headerStaff}
+        pageKey="staff"
       />
 
       <main className="pb-16">

@@ -1,3 +1,5 @@
+import { useThemedImage } from "@/hooks/useThemedImage";
+
 interface PageHeaderProps {
   title: string;
   description?: string;
@@ -5,14 +7,29 @@ interface PageHeaderProps {
   backgroundImage?: string;
   backgroundPosition?: string;
   minHeight?: string;
+  pageKey?: string; // Key for themed image lookup (e.g., 'about', 'features', 'rules')
 }
 
-const PageHeader = ({ title, description, badge, backgroundImage, backgroundPosition = 'center 25%', minHeight = '40vh' }: PageHeaderProps) => {
+const PageHeader = ({ 
+  title, 
+  description, 
+  badge, 
+  backgroundImage, 
+  backgroundPosition = 'center 25%', 
+  minHeight = '40vh',
+  pageKey 
+}: PageHeaderProps) => {
+  // Use themed image if pageKey is provided
+  const { themedImage } = useThemedImage(pageKey || '', backgroundImage || '');
+  
+  // Determine which image to use: themed image (if available) or the original backgroundImage
+  const displayImage = pageKey ? themedImage : backgroundImage;
+
   return (
     <section 
       className="relative flex items-center justify-center overflow-hidden mb-12 pt-20"
       style={{
-        backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
+        backgroundImage: displayImage ? `url(${displayImage})` : 'none',
         backgroundSize: 'cover',
         backgroundPosition: backgroundPosition,
         minHeight: minHeight,

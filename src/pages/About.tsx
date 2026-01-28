@@ -39,6 +39,7 @@ const About = () => {
         description="Building India's most immersive and professional GTA 5 roleplay community"
         badge="About Skylife Roleplay India"
         backgroundImage={headerAbout}
+        pageKey="about"
       />
       
       <main className="pb-16">
