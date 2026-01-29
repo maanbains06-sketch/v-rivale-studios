@@ -325,22 +325,28 @@ serve(async (req) => {
 
     // Build allowed_mentions - use enrichedWinners for winner announcements
     const winnerDiscordIds: string[] = [];
-    if (payload.type === 'winner_selected' && payload.winners) {
-      // For winner selection, use the enrichedWinners we built above
-      // Get the discord_ids from the embed fields (they were built from enrichedWinners)
-      payload.winners.forEach(w => {
-        if (w.discord_id && /^\d{17,19}$/.test(w.discord_id)) {
-          winnerDiscordIds.push(w.discord_id);
-        }
-      });
+    if (payload.type === 'winner_selected') {
+      // Extract discord IDs from the content which uses enrichedWinners
+      const mentionMatches = content.match(/<@(\d{17,19})>/g);
+      if (mentionMatches) {
+        mentionMatches.forEach(match => {
+          const id = match.replace(/<@|>/g, '');
+          if (!winnerDiscordIds.includes(id)) {
+            winnerDiscordIds.push(id);
+          }
+        });
+      }
+      console.log("Extracted Discord IDs for allowed_mentions:", winnerDiscordIds);
     }
     
     const allowedMentions: any = {
       parse: ["everyone"]
     };
     
+    // Always add user mentions for winners
     if (winnerDiscordIds.length > 0) {
       allowedMentions.users = winnerDiscordIds;
+      console.log("Setting allowed_mentions.users:", winnerDiscordIds);
     }
 
     // Send to Discord

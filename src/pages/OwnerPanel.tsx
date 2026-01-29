@@ -1376,6 +1376,22 @@ const OwnerPanel = () => {
       } catch (notifyError) {
         console.error("Failed to send Discord notification:", notifyError);
       }
+      
+      // Auto-assign whitelist Discord role for approved whitelist applications
+      if (table === 'whitelist_applications' && status === 'approved') {
+        try {
+          const { error: roleError } = await supabase.functions.invoke('assign-whitelist-role', {
+            body: { applicationId: appId }
+          });
+          if (roleError) {
+            console.error('Error assigning whitelist role:', roleError);
+          } else {
+            console.log('Whitelist Discord role assigned successfully');
+          }
+        } catch (roleErr) {
+          console.error('Whitelist role assignment error:', roleErr);
+        }
+      }
     }
 
     await logAction({

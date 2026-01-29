@@ -1485,6 +1485,19 @@ const Admin = () => {
                           adminNotes: notes,
                         }).catch(err => console.error('Discord notification error:', err));
                         
+                        // Auto-assign whitelist Discord role for whitelist approvals
+                        if (type === 'whitelist') {
+                          supabase.functions.invoke('assign-whitelist-role', {
+                            body: { applicationId: id }
+                          }).then(({ error }) => {
+                            if (error) {
+                              console.error('Error assigning whitelist role:', error);
+                            } else {
+                              console.log('Whitelist Discord role assigned successfully');
+                            }
+                          }).catch(err => console.error('Whitelist role assignment error:', err));
+                        }
+                        
                         toast({ title: "Success", description: "Application approved successfully." });
                         config.loader();
                       }
