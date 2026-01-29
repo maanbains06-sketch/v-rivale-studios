@@ -16,6 +16,8 @@ interface FeaturedYoutuber {
   role: string;
   is_live: boolean;
   live_stream_url: string | null;
+  live_stream_title: string | null;
+  live_stream_thumbnail: string | null;
 }
 
 // Fetch server status with aggressive caching - ultra optimized to prevent lag
@@ -102,7 +104,7 @@ export const useFeaturedYoutubers = () => {
             console.log('Realtime YouTuber update:', payload.eventType, payload.new);
             
             if (payload.eventType === 'UPDATE') {
-              // Update the cache immediately with new data
+              // Update the cache immediately with new data including thumbnail/title
               queryClient.setQueryData<FeaturedYoutuber[]>(['featured-youtubers'], (old) => {
                 if (!old) return old;
                 const newData = payload.new as FeaturedYoutuber;
@@ -112,6 +114,8 @@ export const useFeaturedYoutubers = () => {
                         ...youtuber, 
                         is_live: newData.is_live, 
                         live_stream_url: newData.live_stream_url,
+                        live_stream_title: newData.live_stream_title,
+                        live_stream_thumbnail: newData.live_stream_thumbnail,
                         name: newData.name,
                         avatar_url: newData.avatar_url,
                         role: newData.role,
