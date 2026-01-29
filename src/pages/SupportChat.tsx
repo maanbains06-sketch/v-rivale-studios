@@ -99,10 +99,45 @@ const SupportChat = () => {
     }
   }, []);
 
-  // Fetch chats when staff role is loaded
+  // Fetch chats when staff role is loaded and setup realtime subscription
   useEffect(() => {
     if (!staffRoleLoading) {
       fetchChats();
+      
+      // Setup realtime subscription for chat list changes (including deletions)
+      const channel = supabase
+        .channel('user-support-chats-list')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'support_chats',
+          },
+          (payload) => {
+            if (payload.eventType === 'DELETE') {
+              // Remove deleted chat from local state
+              const deletedId = (payload.old as Chat).id;
+              setChats(prev => prev.filter(c => c.id !== deletedId));
+              if (selectedChat?.id === deletedId) {
+                setSelectedChat(null);
+                setMessages([]);
+              }
+            } else if (payload.eventType === 'INSERT') {
+              // Add new chat to list (will be filtered by fetchChats based on user permissions)
+              fetchChats();
+            } else if (payload.eventType === 'UPDATE') {
+              setChats(prev => prev.map(c => 
+                c.id === (payload.new as Chat).id ? payload.new as Chat : c
+              ));
+            }
+          }
+        )
+        .subscribe();
+      
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [staffRoleLoading, isStaff, isAdmin, isOwner]);
 
