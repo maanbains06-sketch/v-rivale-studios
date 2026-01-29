@@ -15,6 +15,9 @@ verify_jwt = false
 [functions.assign-whitelist-role]
 verify_jwt = false
 
+[functions.auto-assign-application-role]
+verify_jwt = false
+
 [functions.auto-assign-chats]
 verify_jwt = false
 

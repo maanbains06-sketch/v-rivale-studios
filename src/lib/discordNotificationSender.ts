@@ -19,6 +19,9 @@ const applicationTypeMap: Record<ApplicationType, string> = {
   pdm: 'PDM',
 };
 
+// Application types that should NOT get auto role assignment
+const excludedFromAutoRole: ApplicationType[] = ['staff', 'gang', 'ban_appeal', 'whitelist'];
+
 interface SendDiscordNotificationParams {
   applicationType: ApplicationType;
   applicantName: string;
@@ -28,8 +31,42 @@ interface SendDiscordNotificationParams {
 }
 
 /**
+ * Auto-assign Discord role when application is approved.
+ * Excluded: Staff, Gang, Ban Appeal, Whitelist (whitelist has its own role system)
+ */
+const autoAssignDiscordRole = async (
+  applicationType: ApplicationType,
+  applicantDiscordId: string | null | undefined
+): Promise<void> => {
+  // Skip if no Discord ID or excluded type
+  if (!applicantDiscordId || excludedFromAutoRole.includes(applicationType)) {
+    console.log(`Skipping auto role assignment for ${applicationType} (excluded or no Discord ID)`);
+    return;
+  }
+
+  try {
+    console.log(`Auto-assigning role for ${applicationType} to Discord ID: ${applicantDiscordId}`);
+    
+    const { data, error } = await supabase.functions.invoke("auto-assign-application-role", {
+      body: {
+        applicationType: applicationTypeMap[applicationType],
+        discordUserId: applicantDiscordId,
+      }
+    });
+
+    if (error) {
+      console.error("Failed to auto-assign Discord role:", error);
+    } else {
+      console.log("Auto role assignment result:", data);
+    }
+  } catch (err) {
+    console.error("Error in auto role assignment:", err);
+  }
+};
+
+/**
  * Sends Discord notification for application approval/rejection.
- * Works for all application types.
+ * Also auto-assigns Discord roles on approval (except Staff/Gang).
  */
 export const sendDiscordNotification = async ({
   applicationType,
@@ -71,6 +108,11 @@ export const sendDiscordNotification = async ({
 
     const moderatorName = staffData?.name || user.email || "Staff";
     const moderatorDiscordId = staffData?.discord_id || userDiscordId;
+
+    // Auto-assign Discord role on approval (except excluded types)
+    if (status === 'approved') {
+      await autoAssignDiscordRole(applicationType, applicantDiscordId);
+    }
 
     // Whitelist uses a separate dedicated function
     if (applicationType === 'whitelist') {

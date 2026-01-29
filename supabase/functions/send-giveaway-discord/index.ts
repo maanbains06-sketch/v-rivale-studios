@@ -162,16 +162,20 @@ serve(async (req) => {
 
       let winners = payload.winners || [];
       console.log("Winners received:", winners.length);
+      console.log("Winners data:", JSON.stringify(winners, null, 2));
       
-      // Fetch Discord IDs for all winners from profiles
+      // Fetch Discord IDs for all winners from profiles - improved lookup
       const enrichedWinners = await Promise.all(
         winners.map(async (winner) => {
-          if (winner.discord_id) {
-            console.log(`Winner ${winner.discord_username} already has Discord ID: ${winner.discord_id}`);
+          // If we already have a valid Discord ID, use it
+          if (winner.discord_id && /^\d{17,19}$/.test(winner.discord_id)) {
+            console.log(`Winner ${winner.discord_username} already has valid Discord ID: ${winner.discord_id}`);
             return winner;
           }
           
           console.log(`Fetching Discord ID for user: ${winner.user_id}`);
+          
+          // Try to get Discord ID from profiles table
           const { data: profile, error } = await supabase
             .from("profiles")
             .select("discord_id, discord_username")
@@ -182,7 +186,7 @@ serve(async (req) => {
             console.error(`Error fetching profile for ${winner.user_id}:`, error);
           }
           
-          if (profile?.discord_id) {
+          if (profile?.discord_id && /^\d{17,19}$/.test(profile.discord_id)) {
             console.log(`Found Discord ID for ${winner.discord_username}: ${profile.discord_id}`);
             return {
               ...winner,
@@ -191,7 +195,24 @@ serve(async (req) => {
             };
           }
           
-          console.log(`No Discord ID found for user: ${winner.user_id}`);
+          // Fallback: try to get Discord ID from giveaway_entries table
+          const { data: entry } = await supabase
+            .from("giveaway_entries")
+            .select("discord_id, discord_username")
+            .eq("user_id", winner.user_id)
+            .eq("giveaway_id", payload.giveaway.id)
+            .single();
+          
+          if (entry?.discord_id && /^\d{17,19}$/.test(entry.discord_id)) {
+            console.log(`Found Discord ID from entries for ${winner.discord_username}: ${entry.discord_id}`);
+            return {
+              ...winner,
+              discord_id: entry.discord_id,
+              discord_username: entry.discord_username || winner.discord_username
+            };
+          }
+          
+          console.log(`No valid Discord ID found for user: ${winner.user_id}`);
           return winner;
         })
       );
@@ -302,8 +323,18 @@ serve(async (req) => {
       throw new Error("Invalid payload type: " + payload.type);
     }
 
-    // Build allowed_mentions
-    const winnerDiscordIds = payload.winners?.filter(w => w.discord_id).map(w => w.discord_id) || [];
+    // Build allowed_mentions - use enrichedWinners for winner announcements
+    const winnerDiscordIds: string[] = [];
+    if (payload.type === 'winner_selected' && payload.winners) {
+      // For winner selection, use the enrichedWinners we built above
+      // Get the discord_ids from the embed fields (they were built from enrichedWinners)
+      payload.winners.forEach(w => {
+        if (w.discord_id && /^\d{17,19}$/.test(w.discord_id)) {
+          winnerDiscordIds.push(w.discord_id);
+        }
+      });
+    }
+    
     const allowedMentions: any = {
       parse: ["everyone"]
     };

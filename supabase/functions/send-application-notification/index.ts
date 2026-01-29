@@ -173,7 +173,7 @@ const applicationConfigs: Record<string, AppConfig> = {
   },
   'Firefighter': {
     channelEnvKey: 'DISCORD_FIREFIGHTER_CHANNEL_ID',
-    title: 'Firefighter Application',
+    title: 'Fire Department Application',
     departmentName: 'Fire Department',
     color: { approved: 0xDC2626, rejected: 0xED4245 },
     emoji: '🚒',
@@ -181,7 +181,7 @@ const applicationConfigs: Record<string, AppConfig> = {
   },
   'firefighter': {
     channelEnvKey: 'DISCORD_FIREFIGHTER_CHANNEL_ID',
-    title: 'Firefighter Application',
+    title: 'Fire Department Application',
     departmentName: 'Fire Department',
     color: { approved: 0xDC2626, rejected: 0xED4245 },
     emoji: '🚒',
