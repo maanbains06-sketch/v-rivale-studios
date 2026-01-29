@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
 import headerWhitelist from "@/assets/header-whitelist.jpg";
@@ -15,10 +15,12 @@ import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
-import { CheckCircle2, Clock, XCircle, Loader2, LogOut, Timer, Save, FileText, Mail } from "lucide-react";
+import { CheckCircle2, Clock, XCircle, Loader2, LogOut, Timer, Save, FileText, Mail, Sparkles, Play, Crown, Star, PartyPopper, RefreshCw } from "lucide-react";
 import { differenceInDays, differenceInHours, differenceInMinutes, addDays } from "date-fns";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import ApplicationsPausedAlert from "@/components/ApplicationsPausedAlert";
+import { useWhitelistRoleSync } from "@/hooks/useWhitelistRoleSync";
+import { motion } from "framer-motion";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -90,6 +92,15 @@ const Whitelist = () => {
   const [showLoadDraftDialog, setShowLoadDraftDialog] = useState(false);
   
   const { settings: siteSettings, loading: settingsLoading } = useSiteSettings();
+  
+  // Live sync whitelist role status from Discord
+  const { 
+    hasWhitelistRole, 
+    isInDiscordServer, 
+    isLoading: isCheckingRole,
+    discordUsername,
+    refresh: refreshWhitelistStatus 
+  } = useWhitelistRoleSync(user?.id || null);
 
   const form = useForm<WhitelistFormValues>({
     resolver: zodResolver(whitelistSchema),
@@ -403,6 +414,185 @@ const Whitelist = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto">
               <ApplicationsPausedAlert variant="card" applicationType="Whitelist Applications" />
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Show congratulation message if user already has whitelist role on Discord (live sync)
+  if (hasWhitelistRole && !existingApplication) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <PageHeader 
+          title="Whitelist Application"
+          description="Apply to join SLRP and become part of our exclusive roleplay community"
+          backgroundImage={headerWhitelist}
+          pageKey="whitelist"
+        />
+        <main className="pb-16">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mx-auto">
+              {/* Already Whitelisted - Celebration Card */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="relative overflow-hidden rounded-3xl border-2 border-green-500/50 bg-gradient-to-br from-green-950/40 via-emerald-900/20 to-background"
+              >
+                {/* Animated background effects */}
+                <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                  <div className="absolute top-0 left-1/4 w-96 h-96 bg-green-500/10 rounded-full blur-[100px] animate-pulse" />
+                  <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
+                </div>
+                
+                <div className="relative z-10 p-8 md:p-12 text-center">
+                  {/* Celebration Icons */}
+                  <motion.div 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                    className="flex justify-center gap-4 mb-6"
+                  >
+                    <PartyPopper className="w-10 h-10 md:w-14 md:h-14 text-yellow-400 animate-bounce" style={{ animationDelay: '0.1s' }} />
+                    <Crown className="w-12 h-12 md:w-16 md:h-16 text-green-400" />
+                    <PartyPopper className="w-10 h-10 md:w-14 md:h-14 text-yellow-400 animate-bounce" style={{ animationDelay: '0.3s' }} />
+                  </motion.div>
+                  
+                  {/* Main Badge */}
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                    className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-green-500/20 border border-green-500/40 mb-6"
+                  >
+                    <CheckCircle2 className="w-5 h-5 text-green-400" />
+                    <span className="text-green-400 font-bold text-sm uppercase tracking-wider">Whitelisted Member</span>
+                    <Sparkles className="w-5 h-5 text-green-400" />
+                  </motion.div>
+                  
+                  {/* Title */}
+                  <motion.h1 
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                    className="text-3xl md:text-5xl font-bold mb-4"
+                  >
+                    <span className="bg-gradient-to-r from-green-400 via-emerald-300 to-green-400 bg-clip-text text-transparent">
+                      🎉 Congratulations! 🎉
+                    </span>
+                  </motion.h1>
+                  
+                  <motion.h2
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                    className="text-xl md:text-2xl font-semibold text-foreground mb-6"
+                  >
+                    You Are Already Whitelisted!
+                  </motion.h2>
+                  
+                  {/* Message */}
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.6 }}
+                    className="max-w-xl mx-auto space-y-4 mb-8"
+                  >
+                    <p className="text-lg text-foreground/90">
+                      Welcome to the <strong className="text-green-400">SkyLife Roleplay India</strong> family!
+                    </p>
+                    <p className="text-muted-foreground">
+                      Your Discord account {discordUsername && <strong className="text-green-400">(@{discordUsername})</strong>} already has the 
+                      <Badge className="mx-2 bg-green-500/20 text-green-400 border border-green-500/40">
+                        <Star className="w-3 h-3 mr-1" /> Whitelisted
+                      </Badge> 
+                      role on our Discord server.
+                    </p>
+                    <p className="text-muted-foreground">
+                      You have full access to join and play on our server. Start your roleplay journey now!
+                    </p>
+                  </motion.div>
+                  
+                  {/* Stats/Info Cards */}
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.7 }}
+                    className="grid md:grid-cols-3 gap-4 mb-8"
+                  >
+                    <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20">
+                      <CheckCircle2 className="w-8 h-8 text-green-400 mx-auto mb-2" />
+                      <p className="text-sm font-semibold text-green-400">Discord Verified</p>
+                      <p className="text-xs text-muted-foreground">Role synced live</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                      <Crown className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
+                      <p className="text-sm font-semibold text-emerald-400">Whitelist Status</p>
+                      <p className="text-xs text-muted-foreground">Full access granted</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20">
+                      <Play className="w-8 h-8 text-green-400 mx-auto mb-2" />
+                      <p className="text-sm font-semibold text-green-400">Server Access</p>
+                      <p className="text-xs text-muted-foreground">Ready to play</p>
+                    </div>
+                  </motion.div>
+                  
+                  {/* Action Buttons */}
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.8 }}
+                    className="flex flex-col sm:flex-row gap-4 justify-center"
+                  >
+                    <Button
+                      size="lg"
+                      className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold px-8 py-6 rounded-xl shadow-lg shadow-green-500/30 hover:shadow-green-500/50 transition-all duration-300 hover:scale-105"
+                      asChild
+                    >
+                      <Link to="/">
+                        <Play className="w-5 h-5 mr-2 fill-current" />
+                        Join Server & Play
+                      </Link>
+                    </Button>
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="border-green-500/50 text-green-400 hover:bg-green-500/10 px-8 py-6 rounded-xl"
+                      asChild
+                    >
+                      <a href="https://discord.gg/W2nU97maBh" target="_blank" rel="noopener noreferrer">
+                        <Sparkles className="w-5 h-5 mr-2" />
+                        Visit Discord Server
+                      </a>
+                    </Button>
+                  </motion.div>
+                  
+                  {/* Refresh Status */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1 }}
+                    className="mt-8 pt-6 border-t border-green-500/20"
+                  >
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={refreshWhitelistStatus}
+                      disabled={isCheckingRole}
+                      className="text-muted-foreground hover:text-green-400"
+                    >
+                      <RefreshCw className={`w-4 h-4 mr-2 ${isCheckingRole ? 'animate-spin' : ''}`} />
+                      {isCheckingRole ? 'Checking...' : 'Refresh Status'}
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Status syncs live every 30 seconds with Discord
+                    </p>
+                  </motion.div>
+                </div>
+              </motion.div>
             </div>
           </div>
         </main>
