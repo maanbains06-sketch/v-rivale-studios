@@ -115,31 +115,42 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
       }
     }
 
-    // Check if we're NOT on a watch page (no video = not live)
-    const watchMatch = finalUrl.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
-    if (!watchMatch && !finalUrl.includes('/watch')) {
-      console.log(`${channelName} is NOT LIVE - No video redirect (stayed on channel page)`);
-      return { isLive: false, liveStreamUrl: null, detectedBy: 'no_video_redirect' };
-    }
-
-    // Extract video ID
+    // Extract video ID from various sources BEFORE checking redirect
+    // This handles cases where the /live page doesn't redirect but contains live video data
     let videoId: string | null = null;
+    
+    // Try URL first
+    const watchMatch = finalUrl.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
     if (watchMatch) {
       videoId = watchMatch[1];
-    } else {
+    }
+    
+    // Try to extract from HTML if not in URL
+    if (!videoId) {
       const videoIdPatterns = [
         /"videoId":"([a-zA-Z0-9_-]{11})"/,
         /video-id="([a-zA-Z0-9_-]{11})"/,
+        /"currentVideoEndpoint":\{"clickTrackingParams":"[^"]+","watchEndpoint":\{"videoId":"([a-zA-Z0-9_-]{11})"/,
+        /"videoDetails":\{"videoId":"([a-zA-Z0-9_-]{11})"/,
+        /embed\/([a-zA-Z0-9_-]{11})/,
       ];
       for (const pattern of videoIdPatterns) {
         const match = html.match(pattern);
         if (match) {
           videoId = match[1];
+          console.log(`Found video ID in HTML: ${videoId}`);
           break;
         }
       }
     }
 
+    // Check if we're NOT on a watch page AND no video ID found in HTML
+    if (!watchMatch && !finalUrl.includes('/watch') && !videoId) {
+      console.log(`${channelName} is NOT LIVE - No video redirect (stayed on channel page)`);
+      return { isLive: false, liveStreamUrl: null, detectedBy: 'no_video_redirect' };
+    }
+
+    // At this point we have a videoId from above, check if it's valid
     if (!videoId) {
       console.log(`${channelName} is NOT LIVE - No video ID found`);
       return { isLive: false, liveStreamUrl: null, detectedBy: 'no_video_id' };
