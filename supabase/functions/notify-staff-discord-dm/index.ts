@@ -94,20 +94,20 @@ Deno.serve(async (req) => {
         },
         {
           name: '🔗 Action Required',
-          value: `Please log in to the website and check the support chat.\n**[Open Support Dashboard](https://roleplay-horizon.lovable.app/admin/support-chat)**`,
+          value: `Please log in to the website and check the support chat.\n**[Open Support Dashboard](https://skyliferoleplay.com/admin/support-chat)**`,
           inline: false,
         },
       ],
       image: {
-        url: 'https://roleplay-horizon.lovable.app/images/support-request.jpg',
+        url: 'https://skyliferoleplay.com/images/support-request.jpg',
       },
       thumbnail: {
-        url: 'https://roleplay-horizon.lovable.app/images/slrp-logo.png',
+        url: 'https://skyliferoleplay.com/images/slrp-logo.png',
       },
       timestamp: new Date().toISOString(),
       footer: {
         text: 'SkyLife RP India • Human Support Request',
-        icon_url: 'https://roleplay-horizon.lovable.app/images/slrp-logo.png',
+        icon_url: 'https://skyliferoleplay.com/images/slrp-logo.png',
       },
     };
 
