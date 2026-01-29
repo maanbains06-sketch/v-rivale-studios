@@ -72,37 +72,99 @@ export const useServerStatus = () => {
   });
 };
 
-// Fetch featured YouTubers with realtime subscription for live status updates
+// Fetch featured YouTubers with robust realtime subscription for live status updates
 export const useFeaturedYoutubers = () => {
   const queryClient = useQueryClient();
 
-  // Subscribe to realtime changes for live status updates
+  // Subscribe to realtime changes for live status updates with auto-retry
   useEffect(() => {
-    const channel = supabase
-      .channel('featured-youtubers-live')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'featured_youtubers',
-        },
-        (payload) => {
-          // Update the cache with new data when is_live or live_stream_url changes
-          queryClient.setQueryData<FeaturedYoutuber[]>(['featured-youtubers'], (old) => {
-            if (!old) return old;
-            return old.map((youtuber) =>
-              youtuber.id === payload.new.id
-                ? { ...youtuber, is_live: payload.new.is_live, live_stream_url: payload.new.live_stream_url }
-                : youtuber
-            );
-          });
-        }
-      )
-      .subscribe();
+    let retryTimeoutId: NodeJS.Timeout | null = null;
+    let isSubscribed = true;
+
+    const setupChannel = () => {
+      if (!isSubscribed) return null;
+
+      const channel = supabase
+        .channel('featured-youtubers-live', {
+          config: {
+            broadcast: { self: false },
+          }
+        })
+        .on(
+          'postgres_changes',
+          {
+            event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+            schema: 'public',
+            table: 'featured_youtubers',
+          },
+          (payload) => {
+            console.log('Realtime YouTuber update:', payload.eventType, payload.new);
+            
+            if (payload.eventType === 'UPDATE') {
+              // Update the cache immediately with new data
+              queryClient.setQueryData<FeaturedYoutuber[]>(['featured-youtubers'], (old) => {
+                if (!old) return old;
+                const newData = payload.new as FeaturedYoutuber;
+                return old.map((youtuber) =>
+                  youtuber.id === newData.id
+                    ? { 
+                        ...youtuber, 
+                        is_live: newData.is_live, 
+                        live_stream_url: newData.live_stream_url,
+                        name: newData.name,
+                        avatar_url: newData.avatar_url,
+                        role: newData.role,
+                        channel_url: newData.channel_url,
+                      }
+                    : youtuber
+                );
+              });
+            } else if (payload.eventType === 'INSERT') {
+              // Add new YouTuber to cache
+              queryClient.setQueryData<FeaturedYoutuber[]>(['featured-youtubers'], (old) => {
+                if (!old) return [payload.new as FeaturedYoutuber];
+                return [...old, payload.new as FeaturedYoutuber];
+              });
+            } else if (payload.eventType === 'DELETE') {
+              // Remove YouTuber from cache
+              queryClient.setQueryData<FeaturedYoutuber[]>(['featured-youtubers'], (old) => {
+                if (!old) return old;
+                return old.filter((youtuber) => youtuber.id !== (payload.old as any).id);
+              });
+            }
+          }
+        )
+        .subscribe((status, err) => {
+          console.log('YouTuber realtime channel status:', status, err);
+          
+          if (status === 'SUBSCRIBED') {
+            console.log('YouTuber realtime subscription active');
+          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            console.error('YouTuber realtime subscription error, retrying in 3s...');
+            // Auto-retry on error
+            if (isSubscribed) {
+              retryTimeoutId = setTimeout(() => {
+                channel.subscribe();
+              }, 3000);
+            }
+          } else if (status === 'CLOSED') {
+            console.log('YouTuber realtime channel closed');
+          }
+        });
+
+      return channel;
+    };
+
+    const channel = setupChannel();
 
     return () => {
-      supabase.removeChannel(channel);
+      isSubscribed = false;
+      if (retryTimeoutId) {
+        clearTimeout(retryTimeoutId);
+      }
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
   }, [queryClient]);
 
@@ -122,12 +184,12 @@ export const useFeaturedYoutubers = () => {
       
       return data || [];
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes - shorter for live updates
+    staleTime: 1000 * 60 * 2, // 2 minutes - shorter for live updates
     gcTime: 1000 * 60 * 30, // 30 minutes
-    refetchOnMount: false,
+    refetchOnMount: true, // Refetch on mount to get latest data
     refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    retry: false,
+    refetchOnReconnect: true, // Refetch when network reconnects
+    retry: 1,
   });
 };
 
