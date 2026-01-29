@@ -57,17 +57,20 @@
     <style>
       /* Ultra-minimal critical CSS */
       *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-      html{-webkit-text-size-adjust:100%;line-height:1.5}
-      body{background:#0d1117;color:#fff;font-family:system-ui,sans-serif}
-      #root{min-height:100vh}
+      html{-webkit-text-size-adjust:100%;line-height:1.5;scroll-behavior:smooth;-webkit-tap-highlight-color:transparent}
+      body{background:#0d1117;color:#fff;font-family:system-ui,sans-serif;contain:layout style}
+      #root{min-height:100vh;contain:layout}
       
       /* Minimal loader */
       .initial-loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#0d1117;z-index:9999}
       .initial-loader-spinner{width:24px;height:24px;border:2px solid rgba(14,165,233,0.2);border-top-color:#0ea5e9;border-radius:50%;animation:spin 0.6s linear infinite}
       @keyframes spin{to{transform:rotate(360deg)}}
       
-      /* Instant disable for reduced motion */
+      /* Performance: Disable animations for reduced motion */
       @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+      
+      /* Mobile: simpler rendering */
+      @media(max-width:767px){.initial-loader-spinner{width:20px;height:20px}}
     </style>
   </head>
 

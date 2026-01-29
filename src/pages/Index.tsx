@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { useNavigate, Link } from "react-router-dom";
-import { useEffect, useState, useMemo, lazy, Suspense, useRef, useCallback, memo } from "react";
+import { useEffect, useState, useMemo, lazy, Suspense, useCallback, memo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import Navigation from "@/components/Navigation";
 import AnimatedLogo from "@/components/AnimatedLogo";
@@ -64,8 +64,7 @@ interface FeaturedYoutuber {
   live_stream_url: string | null;
 }
 
-// PERFORMANCE: All scroll animations completely disabled
-// Using empty variants prevents any framer-motion overhead
+// PERFORMANCE: Empty variants = no animation overhead, just renders instantly
 const scrollRevealVariants = {};
 const staggerContainerVariants = {};
 const itemVariants = {};
