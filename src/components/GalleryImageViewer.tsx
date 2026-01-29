@@ -1,11 +1,11 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { X, ChevronLeft, ChevronRight, Download, Heart } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { useState, useEffect } from "react";
 import { ShareButtons } from "@/components/ShareButtons";
-import { useGalleryLikes } from "@/hooks/useGalleryLikes";
+import { useGalleryReactions } from "@/hooks/useGalleryReactions";
+import { GalleryReactionPicker } from "@/components/GalleryReactionPicker";
 import { GalleryComments } from "@/components/GalleryComments";
-import { Separator } from "@/components/ui/separator";
 
 interface GallerySubmission {
   id: string;
@@ -33,7 +33,7 @@ export const GalleryImageViewer = ({
 }: GalleryImageViewerProps) => {
   const [index, setIndex] = useState(currentIndex);
   const currentSubmission = submissions[index];
-  const { likeCount, isLiked, loading, toggleLike } = useGalleryLikes(currentSubmission?.id || "");
+  const { reactions, loading, toggleReaction } = useGalleryReactions(currentSubmission?.id || "");
 
   useEffect(() => {
     setIndex(currentIndex);
@@ -99,16 +99,12 @@ export const GalleryImageViewer = ({
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={toggleLike}
-                  disabled={loading}
-                  className={`text-white hover:bg-white/10 ${isLiked ? 'text-red-500' : ''}`}
-                >
-                  <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
-                </Button>
-                <span className="text-white text-sm">{likeCount}</span>
+                <GalleryReactionPicker
+                  reactions={reactions}
+                  onReact={toggleReaction}
+                  loading={loading}
+                  variant="viewer"
+                />
                 <ShareButtons
                   title={shareTitle}
                   url={shareUrl}
