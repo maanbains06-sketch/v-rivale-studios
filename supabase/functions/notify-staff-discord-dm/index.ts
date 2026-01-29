@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
       hour12: true
     });
 
-    // Build the embed for the support channel
+    // Build the embed for the support channel with branded image
     const embed = {
       title: '🚨 Human Support Requested',
       description: `A user on the website has requested to speak with a human staff member.\n\n**Please assist them as soon as possible!**`,
@@ -98,12 +98,15 @@ Deno.serve(async (req) => {
           inline: false,
         },
       ],
+      image: {
+        url: 'https://roleplay-horizon.lovable.app/images/support-request.jpg',
+      },
       thumbnail: {
         url: 'https://roleplay-horizon.lovable.app/images/slrp-logo.png',
       },
       timestamp: new Date().toISOString(),
       footer: {
-        text: 'SkyLife RP • Human Support Request',
+        text: 'SkyLife RP India • Human Support Request',
         icon_url: 'https://roleplay-horizon.lovable.app/images/slrp-logo.png',
       },
     };
