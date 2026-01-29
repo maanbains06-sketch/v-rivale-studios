@@ -806,6 +806,8 @@ export type Database = {
           id: string
           is_active: boolean | null
           is_live: boolean | null
+          live_stream_thumbnail: string | null
+          live_stream_title: string | null
           live_stream_url: string | null
           name: string
           role: string | null
@@ -819,6 +821,8 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_live?: boolean | null
+          live_stream_thumbnail?: string | null
+          live_stream_title?: string | null
           live_stream_url?: string | null
           name: string
           role?: string | null
@@ -832,6 +836,8 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_live?: boolean | null
+          live_stream_thumbnail?: string | null
+          live_stream_title?: string | null
           live_stream_url?: string | null
           name?: string
           role?: string | null

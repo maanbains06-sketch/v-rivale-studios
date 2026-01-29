@@ -37,16 +37,51 @@ function extractChannelIdentifier(url: string): { type: 'handle' | 'id' | 'custo
   return null;
 }
 
+// Extract stream title from HTML
+function extractStreamTitle(html: string): string | null {
+  const patterns = [
+    /"title":"([^"]+)"/,
+    /<meta name="title" content="([^"]+)"/,
+    /<title>([^<]+)<\/title>/,
+    /"videoDetails":\{[^}]*"title":"([^"]+)"/,
+  ];
+  
+  for (const pattern of patterns) {
+    const match = html.match(pattern);
+    if (match && match[1]) {
+      let title = match[1];
+      // Decode unicode escapes
+      title = title.replace(/\\u([0-9a-fA-F]{4})/g, (_, code) => 
+        String.fromCharCode(parseInt(code, 16))
+      );
+      // Remove " - YouTube" suffix
+      title = title.replace(/ - YouTube$/, '').trim();
+      if (title && title.length > 0) {
+        return title;
+      }
+    }
+  }
+  return null;
+}
+
+// Extract stream thumbnail from video ID
+function getStreamThumbnail(videoId: string): string {
+  // Use maxresdefault for highest quality, fallback to hqdefault
+  return `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
+}
+
 // Check live status by fetching the channel's /live page
 async function checkLiveStatus(channelUrl: string, channelName: string): Promise<{
   isLive: boolean;
   liveStreamUrl: string | null;
+  liveStreamTitle: string | null;
+  liveStreamThumbnail: string | null;
   detectedBy: string;
 }> {
   const identifier = extractChannelIdentifier(channelUrl);
   if (!identifier) {
     console.log(`Could not extract channel identifier from: ${channelUrl}`);
-    return { isLive: false, liveStreamUrl: null, detectedBy: 'invalid_url' };
+    return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'invalid_url' };
   }
 
   // Build the /live URL based on identifier type
@@ -111,12 +146,11 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
     for (const indicator of notLiveIndicators) {
       if (html.includes(indicator)) {
         console.log(`${channelName} is NOT LIVE - Found indicator: ${indicator}`);
-        return { isLive: false, liveStreamUrl: null, detectedBy: `not_live:${indicator.substring(0, 30)}` };
+        return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: `not_live:${indicator.substring(0, 30)}` };
       }
     }
 
-    // Extract video ID from various sources BEFORE checking redirect
-    // This handles cases where the /live page doesn't redirect but contains live video data
+    // Extract video ID from various sources
     let videoId: string | null = null;
     
     // Try URL first
@@ -147,13 +181,12 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
     // Check if we're NOT on a watch page AND no video ID found in HTML
     if (!watchMatch && !finalUrl.includes('/watch') && !videoId) {
       console.log(`${channelName} is NOT LIVE - No video redirect (stayed on channel page)`);
-      return { isLive: false, liveStreamUrl: null, detectedBy: 'no_video_redirect' };
+      return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'no_video_redirect' };
     }
 
-    // At this point we have a videoId from above, check if it's valid
     if (!videoId) {
       console.log(`${channelName} is NOT LIVE - No video ID found`);
-      return { isLive: false, liveStreamUrl: null, detectedBy: 'no_video_id' };
+      return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'no_video_id' };
     }
 
     console.log(`Found video ID: ${videoId} for ${channelName}`);
@@ -181,7 +214,6 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
 
     // Method 2: Check for live badge in player
     if (!isLive) {
-      // Look for the live badge specifically in player context
       if (html.includes('"liveBadge":{"liveBadgeRenderer"')) {
         isLive = true;
         detectedBy = 'liveBadgeRenderer';
@@ -200,18 +232,13 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
 
     // Method 4: Check for active live chat (NOT replay)
     if (!isLive) {
-      // Only consider it live if there's live chat AND we haven't seen replay indicators
       const hasLiveChat = html.includes('/live_chat?') || html.includes('"liveChatRenderer"');
       const hasActiveChatIndicator = html.includes('"isReplay":false') || 
                                       (hasLiveChat && !html.includes('live_chat_replay'));
-      
-      // Additional check: look for continuation token which indicates active chat
       const hasChatContinuation = html.includes('"liveChatContinuation"') && !html.includes('"isReplay":true');
       
       if (hasActiveChatIndicator && hasChatContinuation) {
-        // Double check it's not a replay by looking for more indicators
         if (html.includes('"viewCount":{"videoViewCountRenderer":{"viewCount":{"runs"')) {
-          // This pattern appears in live streams showing live viewer count
           isLive = true;
           detectedBy = 'live_chat_active';
           console.log(`${channelName} is LIVE! Detected via active live chat`);
@@ -219,18 +246,25 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
       }
     }
 
-    // If still no definitive answer, assume NOT live (safer default)
+    // If still no definitive answer, assume NOT live
     if (!isLive) {
       console.log(`${channelName} - No definitive live indicators found, assuming NOT LIVE`);
-      return { isLive: false, liveStreamUrl: null, detectedBy: 'no_definitive_indicators' };
+      return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'no_definitive_indicators' };
     }
 
+    // Extract stream title and thumbnail
     const liveStreamUrl = `https://www.youtube.com/watch?v=${videoId}`;
-    return { isLive, liveStreamUrl, detectedBy };
+    const liveStreamTitle = extractStreamTitle(html);
+    const liveStreamThumbnail = getStreamThumbnail(videoId);
+    
+    console.log(`${channelName} stream title: ${liveStreamTitle}`);
+    console.log(`${channelName} stream thumbnail: ${liveStreamThumbnail}`);
+
+    return { isLive, liveStreamUrl, liveStreamTitle, liveStreamThumbnail, detectedBy };
 
   } catch (error: any) {
     console.error(`Error checking ${channelName}:`, error.message);
-    return { isLive: false, liveStreamUrl: null, detectedBy: `error:${error.message}` };
+    return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: `error:${error.message}` };
   }
 }
 
@@ -266,7 +300,9 @@ serve(async (req) => {
       name: string; 
       wasLive: boolean;
       isLive: boolean; 
-      liveUrl?: string; 
+      liveUrl?: string;
+      liveTitle?: string;
+      liveThumbnail?: string;
       detectedBy: string;
       statusChanged: boolean;
     }[] = [];
@@ -274,7 +310,7 @@ serve(async (req) => {
     for (const youtuber of youtubers) {
       console.log(`\n--- Checking: ${youtuber.name} ---`);
       
-      const { isLive, liveStreamUrl, detectedBy } = await checkLiveStatus(youtuber.channel_url, youtuber.name);
+      const { isLive, liveStreamUrl, liveStreamTitle, liveStreamThumbnail, detectedBy } = await checkLiveStatus(youtuber.channel_url, youtuber.name);
       
       const statusChanged = youtuber.is_live !== isLive;
       
@@ -282,12 +318,14 @@ serve(async (req) => {
         console.log(`STATUS CHANGED for ${youtuber.name}: ${youtuber.is_live} -> ${isLive}`);
       }
 
-      // Update the database
+      // Update the database with all live stream info
       const { error: updateError } = await supabase
         .from('featured_youtubers')
         .update({ 
           is_live: isLive,
           live_stream_url: isLive ? liveStreamUrl : null,
+          live_stream_title: isLive ? liveStreamTitle : null,
+          live_stream_thumbnail: isLive ? liveStreamThumbnail : null,
           updated_at: new Date().toISOString()
         })
         .eq('id', youtuber.id);
@@ -295,7 +333,7 @@ serve(async (req) => {
       if (updateError) {
         console.error(`Error updating ${youtuber.name}:`, updateError);
       } else {
-        console.log(`Updated ${youtuber.name}: is_live=${isLive}, url=${liveStreamUrl || 'null'}, detected_by=${detectedBy}`);
+        console.log(`Updated ${youtuber.name}: is_live=${isLive}, title=${liveStreamTitle || 'null'}, detected_by=${detectedBy}`);
       }
 
       results.push({ 
@@ -303,7 +341,9 @@ serve(async (req) => {
         name: youtuber.name, 
         wasLive: youtuber.is_live || false,
         isLive, 
-        liveUrl: liveStreamUrl || undefined, 
+        liveUrl: liveStreamUrl || undefined,
+        liveTitle: liveStreamTitle || undefined,
+        liveThumbnail: liveStreamThumbnail || undefined,
         detectedBy,
         statusChanged
       });

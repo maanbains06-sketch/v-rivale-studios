@@ -62,6 +62,8 @@ interface FeaturedYoutuber {
   role: string;
   is_live: boolean;
   live_stream_url: string | null;
+  live_stream_title: string | null;
+  live_stream_thumbnail: string | null;
 }
 
 // PERFORMANCE: All scroll animations completely disabled
@@ -886,27 +888,39 @@ const Index = () => {
                       className="group relative rounded-2xl overflow-hidden border border-destructive/30 hover:border-destructive transition-colors"
                     >
                       <div className="absolute top-3 left-3 z-10">
-                        <Badge className="bg-destructive text-destructive-foreground font-bold">LIVE</Badge>
+                        <Badge className="bg-destructive text-destructive-foreground font-bold animate-pulse">🔴 LIVE</Badge>
                       </div>
-                      <div className="aspect-video bg-transparent">
+                      <div className="aspect-video bg-muted">
                         <img
-                          src={youtuber.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${youtuber.name}`}
-                          alt={youtuber.name}
-                          className="w-full h-full object-cover"
+                          src={youtuber.live_stream_thumbnail || youtuber.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${youtuber.name}`}
+                          alt={youtuber.live_stream_title || `${youtuber.name} Live Stream`}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          onError={(e) => {
+                            // Fallback to hqdefault if maxresdefault fails
+                            const target = e.currentTarget;
+                            if (target.src.includes('maxresdefault')) {
+                              target.src = target.src.replace('maxresdefault', 'hqdefault');
+                            }
+                          }}
                         />
                       </div>
-                      <div className="p-4 bg-background/75 backdrop-blur-sm">
+                      <div className="p-4 bg-background/90 backdrop-blur-sm">
+                        {youtuber.live_stream_title && (
+                          <p className="text-sm font-medium line-clamp-2 mb-3 group-hover:text-primary transition-colors">
+                            {youtuber.live_stream_title}
+                          </p>
+                        )}
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary">
+                          <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary flex-shrink-0">
                             <img
                               src={youtuber.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${youtuber.name}`}
                               alt={youtuber.name}
                               className="w-full h-full object-cover"
                             />
                           </div>
-                          <div>
-                            <h4 className="font-bold group-hover:text-primary transition-colors">{youtuber.name}</h4>
-                            <p className="text-sm text-muted-foreground">{youtuber.role}</p>
+                          <div className="min-w-0">
+                            <h4 className="font-bold group-hover:text-primary transition-colors truncate">{youtuber.name}</h4>
+                            <p className="text-sm text-muted-foreground truncate">{youtuber.role}</p>
                           </div>
                         </div>
                       </div>
