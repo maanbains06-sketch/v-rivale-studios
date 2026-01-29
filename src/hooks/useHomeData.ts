@@ -73,6 +73,7 @@ export const useServerStatus = () => {
 };
 
 // Fetch featured YouTubers with robust realtime subscription for live status updates
+// Also includes automatic polling to sync live status
 export const useFeaturedYoutubers = () => {
   const queryClient = useQueryClient();
 
@@ -167,6 +168,32 @@ export const useFeaturedYoutubers = () => {
       }
     };
   }, [queryClient]);
+
+  // Periodic sync of YouTube live status - runs every 2 minutes
+  useEffect(() => {
+    const syncLiveStatus = async () => {
+      try {
+        console.log('[YouTuber Sync] Triggering live status sync...');
+        await supabase.functions.invoke('sync-youtube-live-status', {
+          body: {},
+        });
+        console.log('[YouTuber Sync] Live status sync completed');
+      } catch (err) {
+        console.error('[YouTuber Sync] Failed to sync:', err);
+      }
+    };
+
+    // Initial sync on mount (after a short delay to not block initial load)
+    const initialTimeout = setTimeout(syncLiveStatus, 5000);
+    
+    // Periodic sync every 2 minutes
+    const intervalId = setInterval(syncLiveStatus, 2 * 60 * 1000);
+
+    return () => {
+      clearTimeout(initialTimeout);
+      clearInterval(intervalId);
+    };
+  }, []);
 
   return useQuery<FeaturedYoutuber[]>({
     queryKey: ['featured-youtubers'],
