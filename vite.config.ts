@@ -15,26 +15,4 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  build: {
-    // Performance optimizations
-    target: 'esnext',
-    minify: 'esbuild',
-    cssMinify: true,
-    rollupOptions: {
-      output: {
-        // Code splitting for better caching
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tooltip'],
-          'vendor-query': ['@tanstack/react-query'],
-        },
-      },
-    },
-    // Reduce chunk size warnings
-    chunkSizeWarningLimit: 1000,
-  },
-  // Optimize deps
-  optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query'],
-  },
 }));

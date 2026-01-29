@@ -148,12 +148,6 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
-  /* PERFORMANCE: Optimize rendering pipeline */
-  html {
-    scroll-behavior: smooth;
-    -webkit-tap-highlight-color: transparent;
-  }
-
   body {
     @apply bg-background text-foreground;
     background-color: hsl(var(--background));
@@ -161,45 +155,22 @@ All colors MUST be HSL.
     overflow-y: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Performance: instant color changes, no transition delay */
     text-rendering: optimizeSpeed;
-    /* Prevent layout thrashing */
-    contain: layout style;
   }
   
-  /* Content visibility optimization - major perf gain */
+  /* Content visibility optimization for sections - reduces layout calculation */
   section, article, .content-block {
     content-visibility: auto;
     contain-intrinsic-size: 0 500px;
   }
-
-  /* Optimize images globally */
-  img, video {
-    content-visibility: auto;
-    max-width: 100%;
-    height: auto;
-  }
-
-  /* Reduce motion for users who prefer it + battery saving */
+  
+  /* Reduce motion for users who prefer it */
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
-    }
-  }
-
-  /* Mobile performance: disable expensive effects */
-  @media (max-width: 767px) {
-    .glass-effect {
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-    }
-    
-    /* Simpler shadows on mobile */
-    .card-hover:hover {
-      transform: none;
-      box-shadow: 0 4px 12px hsl(0 0% 0% / 0.15);
     }
   }
   

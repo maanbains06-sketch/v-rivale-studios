@@ -1,22 +1,27 @@
-import { useState, useEffect, useRef, ReactNode, memo } from "react";
+import { useState, useEffect, useRef, ReactNode } from "react";
 import { Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface AutoRetryPageProps {
   children: ReactNode;
+  /** Max time (ms) to wait for content before auto-retry */
   timeout?: number;
+  /** Max number of auto-retries */
   maxRetries?: number;
+  /** Page name for display */
   pageName?: string;
+  /** Force hard refresh on final retry */
   hardRefreshOnFinal?: boolean;
 }
 
 /**
- * Optimized wrapper that auto-retries if content doesn't render within timeout.
+ * Wraps a page and auto-retries if content doesn't render within timeout.
+ * After maxRetries, shows a manual retry button.
  */
-const AutoRetryPage = memo(({
+const AutoRetryPage = ({
   children,
-  timeout = 3000,
-  maxRetries = 3,
+  timeout = 2500,
+  maxRetries = 6,
   pageName = "Page",
   hardRefreshOnFinal = true,
 }: AutoRetryPageProps) => {
@@ -29,11 +34,14 @@ const AutoRetryPage = memo(({
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
+    let checkTimeoutId: ReturnType<typeof setTimeout>;
+    let checkCount = 0;
 
     const checkContentLoaded = () => {
       if (contentRef.current) {
         const hasContent = contentRef.current.children.length > 0 &&
           contentRef.current.innerHTML.trim().length > 50;
+        
         if (hasContent) {
           setIsLoading(false);
           return true;
@@ -42,16 +50,30 @@ const AutoRetryPage = memo(({
       return false;
     };
 
-    // Quick initial check
-    if (checkContentLoaded()) return;
+    // Check content less frequently - every 500ms instead of 100ms
+    const scheduleCheck = () => {
+      if (checkCount < 5) { // Only check 5 times max
+        checkCount++;
+        checkTimeoutId = setTimeout(() => {
+          if (!checkContentLoaded()) {
+            scheduleCheck();
+          }
+        }, 500);
+      }
+    };
+    
+    // Start checking after a small delay
+    scheduleCheck();
 
     // Set timeout for auto-retry
     timeoutId = setTimeout(() => {
       if (!checkContentLoaded()) {
         if (retryCount < maxRetries) {
+          console.log(`AutoRetryPage: ${pageName} - Retry ${retryCount + 1}/${maxRetries}`);
           retryKey.current += 1;
-          setRetryCount(prev => prev + 1);
+          setRetryCount((prev) => prev + 1);
         } else if (hardRefreshOnFinal && !hasTriedHardRefresh.current) {
+          console.log(`AutoRetryPage: ${pageName} - Final attempt, forcing hard refresh`);
           hasTriedHardRefresh.current = true;
           window.location.reload();
         } else {
@@ -61,8 +83,11 @@ const AutoRetryPage = memo(({
       }
     }, timeout);
 
-    return () => clearTimeout(timeoutId);
-  }, [retryCount, timeout, maxRetries, hardRefreshOnFinal]);
+    return () => {
+      clearTimeout(timeoutId);
+      clearTimeout(checkTimeoutId);
+    };
+  }, [retryCount, timeout, maxRetries, pageName, hardRefreshOnFinal]);
 
   const handleManualRetry = () => {
     hasTriedHardRefresh.current = false;
@@ -70,6 +95,10 @@ const AutoRetryPage = memo(({
     setShowManualRetry(false);
     setIsLoading(true);
     retryKey.current += 1;
+  };
+
+  const handleHardRefresh = () => {
+    window.location.reload();
   };
 
   if (showManualRetry) {
@@ -80,18 +109,26 @@ const AutoRetryPage = memo(({
             <RefreshCw className="w-8 h-8 text-primary" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold mb-2">{pageName} didn't load</h2>
-            <p className="text-muted-foreground">Your connection may be slow. Try refreshing.</p>
+            <h2 className="text-xl font-semibold mb-2">
+              {pageName} didn't load
+            </h2>
+            <p className="text-muted-foreground">
+              Your connection may be slow. Try refreshing the page.
+            </p>
           </div>
           <div className="space-y-3">
             <Button onClick={handleManualRetry} className="w-full">
               <RefreshCw className="w-4 h-4 mr-2" />
               Try Again
             </Button>
-            <Button onClick={() => window.location.reload()} variant="outline" className="w-full">
+            <Button onClick={handleHardRefresh} variant="outline" className="w-full">
               Hard Refresh
             </Button>
-            <Button onClick={() => window.history.back()} variant="ghost" className="w-full">
+            <Button 
+              onClick={() => window.history.back()} 
+              variant="ghost" 
+              className="w-full"
+            >
               Go Back
             </Button>
           </div>
@@ -108,7 +145,11 @@ const AutoRetryPage = memo(({
             <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
             <p className="text-muted-foreground">
               Loading {pageName}...
-              {retryCount > 0 && <span className="block text-xs mt-1">Retry {retryCount}/{maxRetries}</span>}
+              {retryCount > 0 && (
+                <span className="block text-xs mt-1">
+                  Retry {retryCount}/{maxRetries}
+                </span>
+              )}
             </p>
           </div>
         </div>
@@ -118,8 +159,6 @@ const AutoRetryPage = memo(({
       </div>
     </div>
   );
-});
-
-AutoRetryPage.displayName = "AutoRetryPage";
+};
 
 export default AutoRetryPage;

@@ -97,23 +97,22 @@ const CreatorContract = lazy(() => import("./pages/CreatorContract"));
 const DirectMessage = lazy(() => import("./pages/DirectMessage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-// PERFORMANCE: Ultra-optimized query client
+// PERFORMANCE: Ultra-optimized query client for butter-smooth experience
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 30, // 30 min - data stays fresh longer
-      gcTime: 1000 * 60 * 60, // 1 hour cache
-      retry: 1, // Single retry for resilience
-      retryDelay: 1000,
+      staleTime: 1000 * 60 * 60, // 1 hour - data stays fresh much longer
+      gcTime: 1000 * 60 * 180, // 3 hours cache - keep data in memory longer
+      retry: 0, // No retries for faster perceived speed
       refetchOnWindowFocus: false,
       refetchOnMount: false,
       refetchOnReconnect: false,
-      networkMode: 'offlineFirst',
+      networkMode: 'offlineFirst', // Use cache first, fetch later
       refetchInterval: false,
-      structuralSharing: true,
+      structuralSharing: true, // Optimize re-renders
     },
     mutations: {
-      retry: 1,
+      retry: 0,
     },
   },
 });

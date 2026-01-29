@@ -5,16 +5,14 @@ interface LoadingScreenProps {
   minDuration?: number;
 }
 
-/**
- * Ultra-minimal loading screen - completes instantly for returning visitors
- */
-export const LoadingScreen = memo(({ onComplete, minDuration = 50 }: LoadingScreenProps) => {
+// Ultra-minimal loading screen - completes ASAP
+export const LoadingScreen = memo(({ onComplete, minDuration = 100 }: LoadingScreenProps) => {
   const completedRef = useRef(false);
 
   useEffect(() => {
     if (completedRef.current) return;
     
-    // Complete on next animation frame for smooth transition
+    // Complete immediately after a single frame
     const rafId = requestAnimationFrame(() => {
       if (!completedRef.current) {
         completedRef.current = true;
@@ -22,7 +20,7 @@ export const LoadingScreen = memo(({ onComplete, minDuration = 50 }: LoadingScre
       }
     });
 
-    // Fallback timeout
+    // Safety fallback
     const timeout = setTimeout(() => {
       if (!completedRef.current) {
         completedRef.current = true;
@@ -37,10 +35,7 @@ export const LoadingScreen = memo(({ onComplete, minDuration = 50 }: LoadingScre
   }, [minDuration, onComplete]);
 
   return (
-    <div 
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-background"
-      style={{ contain: 'layout paint' }}
-    >
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background">
       <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
     </div>
   );
