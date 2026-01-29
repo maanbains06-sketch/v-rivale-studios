@@ -609,20 +609,21 @@ const SupportChat = () => {
 
       if (error) throw error;
 
-      // Send Discord DM notifications to all staff members
+      // Send Discord channel notification with role ping (replaces DM notifications)
       try {
         const { data: notifyResult, error: notifyError } = await supabase.functions.invoke("notify-staff-discord-dm", {
           body: {
             chatId: selectedChat.id,
             userName: discordUsername,
             subject: selectedChat.subject || 'Support Request',
+            userDiscordId: discordId,
           },
         });
 
         if (notifyError) {
-          console.error("Failed to send staff DM notifications:", notifyError);
+          console.error("Failed to send staff channel notification:", notifyError);
         } else {
-          console.log("Staff DM notification result:", notifyResult);
+          console.log("Staff channel notification result:", notifyResult);
         }
       } catch (notifyErr) {
         console.error("Error invoking notify-staff-discord-dm:", notifyErr);
