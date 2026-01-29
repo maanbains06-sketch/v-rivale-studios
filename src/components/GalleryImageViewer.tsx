@@ -83,51 +83,45 @@ export const GalleryImageViewer = ({
           {/* Main Content Area */}
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Header */}
-            <div className="absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent p-6">
-            <div className="flex items-start justify-between">
-              <div className="flex-1 mr-4">
-                <h2 className="text-xl font-bold text-white mb-1">
-                  {currentSubmission.title}
-                </h2>
-                {currentSubmission.description && (
-                  <p className="text-sm text-white/70">
-                    {currentSubmission.description}
+            <div className="absolute top-0 left-0 right-[400px] z-50 bg-gradient-to-b from-black/80 to-transparent p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-xl font-bold text-white mb-1 truncate">
+                    {currentSubmission.title}
+                  </h2>
+                  {currentSubmission.description && (
+                    <p className="text-sm text-white/70 line-clamp-2">
+                      {currentSubmission.description}
+                    </p>
+                  )}
+                  <p className="text-xs text-white/50 mt-1">
+                    {new Date(currentSubmission.created_at).toLocaleDateString()}
                   </p>
-                )}
-                <p className="text-xs text-white/50 mt-1">
-                  {new Date(currentSubmission.created_at).toLocaleDateString()}
-                </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <ShareButtons
+                    title={shareTitle}
+                    url={shareUrl}
+                    description={shareDescription}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleDownload}
+                    className="text-white hover:bg-white/10"
+                  >
+                    <Download className="h-5 w-5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={onClose}
+                    className="text-white hover:bg-white/10"
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <GalleryReactionPicker
-                  reactions={reactions}
-                  onReact={toggleReaction}
-                  loading={loading}
-                  variant="viewer"
-                />
-                <ShareButtons
-                  title={shareTitle}
-                  url={shareUrl}
-                  description={shareDescription}
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleDownload}
-                  className="text-white hover:bg-white/10"
-                >
-                  <Download className="h-5 w-5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onClose}
-                  className="text-white hover:bg-white/10"
-                >
-                  <X className="h-5 w-5" />
-                </Button>
-              </div>
-            </div>
             </div>
 
             {/* Media Content */}
@@ -180,9 +174,20 @@ export const GalleryImageViewer = ({
             )}
           </div>
 
-          {/* Comments Sidebar */}
+          {/* Comments Sidebar with Reactions */}
           <div className="w-[400px] bg-black/60 backdrop-blur-sm border-l border-white/10 flex flex-col">
-            <div className="p-6 flex-1 overflow-hidden flex flex-col">
+            {/* Reactions Section */}
+            <div className="p-4 border-b border-white/10 shrink-0">
+              <p className="text-xs text-white/50 uppercase tracking-wide mb-3">Reactions</p>
+              <GalleryReactionPicker
+                reactions={reactions}
+                onReact={toggleReaction}
+                loading={loading}
+                variant="viewer"
+              />
+            </div>
+            {/* Comments Section */}
+            <div className="p-4 flex-1 overflow-hidden flex flex-col">
               <GalleryComments submissionId={currentSubmission.id} />
             </div>
           </div>
