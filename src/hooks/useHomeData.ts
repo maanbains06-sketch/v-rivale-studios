@@ -173,9 +173,13 @@ export const useFeaturedYoutubers = () => {
     };
   }, [queryClient]);
 
-  // Periodic sync of YouTube live status - runs every 2 minutes
+  // Periodic sync of YouTube live status - runs every 3 minutes (increased for performance)
   useEffect(() => {
+    let isMounted = true;
+    
     const syncLiveStatus = async () => {
+      if (!isMounted) return;
+      
       try {
         console.log('[YouTuber Sync] Triggering live status sync...');
         await supabase.functions.invoke('sync-youtube-live-status', {
@@ -188,12 +192,13 @@ export const useFeaturedYoutubers = () => {
     };
 
     // Initial sync on mount (after a short delay to not block initial load)
-    const initialTimeout = setTimeout(syncLiveStatus, 5000);
+    const initialTimeout = setTimeout(syncLiveStatus, 8000);
     
-    // Periodic sync every 2 minutes
-    const intervalId = setInterval(syncLiveStatus, 2 * 60 * 1000);
+    // Periodic sync every 3 minutes (increased from 2 for better performance)
+    const intervalId = setInterval(syncLiveStatus, 3 * 60 * 1000);
 
     return () => {
+      isMounted = false;
       clearTimeout(initialTimeout);
       clearInterval(intervalId);
     };

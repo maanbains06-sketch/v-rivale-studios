@@ -236,6 +236,13 @@ const CreatorContract = () => {
 
     setSaving(true);
     try {
+      // Get current user for created_by field
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({ title: "Authentication required", variant: "destructive" });
+        return;
+      }
+
       const contractPayload = {
         creator_name: contractData.creatorName,
         creator_email: contractData.creatorEmail || null,
@@ -249,15 +256,21 @@ const CreatorContract = () => {
         creator_signature: creatorSignature,
         creator_signed_at: creatorSignedAt,
         template_id: selectedTemplateId || null,
+        created_by: user.id,
       };
 
       if (selectedContractId) {
+        // Don't update created_by on update, only on insert
+        const { created_by, ...updatePayload } = contractPayload;
         const { error } = await supabase
           .from("creator_contracts")
-          .update(contractPayload)
+          .update(updatePayload)
           .eq("id", selectedContractId);
 
-        if (error) throw error;
+        if (error) {
+          console.error("Update error details:", error);
+          throw error;
+        }
         toast({ title: "Contract updated successfully" });
       } else {
         const { data, error } = await supabase
@@ -266,16 +279,23 @@ const CreatorContract = () => {
           .select()
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error("Insert error details:", error);
+          throw error;
+        }
         setSelectedContractId(data.id);
         toast({ title: "Contract saved successfully" });
       }
 
       setIsEditing(false);
       setRefreshTrigger(prev => prev + 1);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving contract:", error);
-      toast({ title: "Failed to save contract", variant: "destructive" });
+      toast({ 
+        title: "Failed to save contract", 
+        description: error?.message || "Please try again",
+        variant: "destructive" 
+      });
     } finally {
       setSaving(false);
     }
