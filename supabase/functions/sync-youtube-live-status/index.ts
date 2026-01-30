@@ -40,6 +40,7 @@ function extractChannelIdentifier(url: string): { type: 'handle' | 'id' | 'custo
 // Extract stream title from HTML
 function extractStreamTitle(html: string): string | null {
   const patterns = [
+    /"title"\s*:\s*\{\s*"runs"\s*:\s*\[\s*\{\s*"text"\s*:\s*"([^"]+)"/,
     /"title":"([^"]+)"/,
     /<meta name="title" content="([^"]+)"/,
     /<title>([^<]+)<\/title>/,
@@ -124,39 +125,14 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
     
     console.log(`Final URL for ${channelName}: ${finalUrl}`);
 
-    // FIRST: Check for definitive NOT LIVE indicators
-    const notLiveIndicators = [
-      '"isLive":false',
-      '"isLiveNow":false',
-      'This live stream recording is not available',
-      'This video is unavailable',
-      'This video is private',
-      '"isReplay":true',
-      'live_chat_replay',
-      '"isPremiere":true',
-      '"isUpcoming":true',
-      'Premieres',
-      'Scheduled for',
-      'Stream ended',
-      'Streamed live',
-      '"playabilityStatus":{"status":"LIVE_STREAM_OFFLINE"',
-      'LIVE_STREAM_OFFLINE',
-    ];
-
-    for (const indicator of notLiveIndicators) {
-      if (html.includes(indicator)) {
-        console.log(`${channelName} is NOT LIVE - Found indicator: ${indicator}`);
-        return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: `not_live:${indicator.substring(0, 30)}` };
-      }
-    }
-
     // Extract video ID from various sources
     let videoId: string | null = null;
     
-    // Try URL first
+    // Try URL first (if redirected to a /watch page)
     const watchMatch = finalUrl.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
     if (watchMatch) {
       videoId = watchMatch[1];
+      console.log(`Found video ID in URL: ${videoId}`);
     }
     
     // Try to extract from HTML if not in URL
@@ -178,78 +154,95 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
       }
     }
 
-    // Check if we're NOT on a watch page AND no video ID found in HTML
-    if (!watchMatch && !finalUrl.includes('/watch') && !videoId) {
-      console.log(`${channelName} is NOT LIVE - No video redirect (stayed on channel page)`);
-      return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'no_video_redirect' };
+    // FIRST: Check for definitive NOT LIVE indicators
+    const notLiveIndicators = [
+      { text: '"isLive":false', name: 'isLive_false' },
+      { text: '"isLiveNow":false', name: 'isLiveNow_false' },
+      { text: 'This live stream recording is not available', name: 'recording_unavailable' },
+      { text: 'This video is unavailable', name: 'video_unavailable' },
+      { text: 'This video is private', name: 'video_private' },
+      { text: '"isReplay":true', name: 'is_replay' },
+      { text: '"isPremiere":true', name: 'is_premiere' },
+      { text: '"isUpcoming":true', name: 'is_upcoming' },
+      { text: 'LIVE_STREAM_OFFLINE', name: 'stream_offline' },
+    ];
+
+    for (const indicator of notLiveIndicators) {
+      if (html.includes(indicator.text)) {
+        console.log(`${channelName} is NOT LIVE - Found indicator: ${indicator.name}`);
+        return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: `not_live:${indicator.name}` };
+      }
     }
 
+    // Check for LIVE indicators - be more permissive
+    let isLive = false;
+    let detectedBy = '';
+
+    // IMPROVED: Check multiple live indicators and be more lenient
+    const liveIndicators = [
+      { pattern: '"isLive":true', name: 'isLive_true' },
+      { pattern: '"isLiveNow":true', name: 'isLiveNow_true' },
+      { pattern: '"BADGE_STYLE_TYPE_LIVE_NOW"', name: 'badge_live_now' },
+      { pattern: '"style":"LIVE"', name: 'style_live' },
+      { pattern: '"liveBadge":', name: 'liveBadge' },
+      { pattern: '"liveChatRenderer"', name: 'liveChatRenderer' },
+      { pattern: '"liveStreamabilityRenderer"', name: 'liveStreamabilityRenderer' },
+      { pattern: '"broadcastId":', name: 'broadcastId' },
+      { pattern: '"latencyClass":"MDE_STREAM_OPTIMIZATIONS_RENDERER_LATENCY_', name: 'latency_class' },
+      { pattern: '"isLiveContent":true', name: 'isLiveContent_true' },
+      { pattern: '"LIVE_STREAM_STARTED"', name: 'stream_started' },
+    ];
+
+    for (const { pattern, name } of liveIndicators) {
+      if (html.includes(pattern)) {
+        // Double-check it's not a replay by looking at context
+        const isReplay = html.includes('"isReplay":true') || html.includes('live_chat_replay');
+        if (!isReplay) {
+          isLive = true;
+          detectedBy = `json:${name}`;
+          console.log(`${channelName} is LIVE! Detected via: ${name}`);
+          break;
+        }
+      }
+    }
+
+    // Method 2: Check for active live chat (NOT replay)
+    if (!isLive) {
+      const hasLiveChat = html.includes('/live_chat?') && !html.includes('live_chat_replay');
+      const hasRealtimeChat = html.includes('"liveChatContinuation"') && !html.includes('"isReplay":true');
+      
+      if (hasLiveChat || hasRealtimeChat) {
+        isLive = true;
+        detectedBy = 'live_chat_active';
+        console.log(`${channelName} is LIVE! Detected via active live chat`);
+      }
+    }
+
+    // Method 3: Check if redirected to /watch AND has a video ID AND page has live stream elements
+    if (!isLive && videoId && (finalUrl.includes('/watch') || html.includes('"videoDetails"'))) {
+      // Check for any live-related content without strong NOT LIVE markers
+      const hasLiveElements = html.includes('"liveBadgeRenderer"') || 
+                              html.includes('"viewCount":{"videoViewCountRenderer":{"viewCount":{"runs"') ||
+                              html.includes('"isLive"') ||
+                              (html.includes('"publishDate"') === false && html.includes('"lengthSeconds":"0"'));
+      
+      if (hasLiveElements) {
+        isLive = true;
+        detectedBy = 'live_elements_detected';
+        console.log(`${channelName} is LIVE! Detected via live elements in watch page`);
+      }
+    }
+
+    // If still no video found and stayed on channel page, not live
     if (!videoId) {
       console.log(`${channelName} is NOT LIVE - No video ID found`);
       return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'no_video_id' };
     }
 
-    console.log(`Found video ID: ${videoId} for ${channelName}`);
-
-    // Now check for DEFINITIVE live indicators
-    let isLive = false;
-    let detectedBy = '';
-
-    // Method 1: Strongest JSON indicators that MUST be true
-    const strongLiveIndicators = [
-      { pattern: '"isLive":true', name: 'isLive_true' },
-      { pattern: '"isLiveNow":true', name: 'isLiveNow_true' },
-      { pattern: '"BADGE_STYLE_TYPE_LIVE_NOW"', name: 'badge_live_now' },
-      { pattern: '"style":"LIVE"', name: 'style_live' },
-    ];
-
-    for (const { pattern, name } of strongLiveIndicators) {
-      if (html.includes(pattern)) {
-        isLive = true;
-        detectedBy = `json:${name}`;
-        console.log(`${channelName} is LIVE! Detected via: ${name}`);
-        break;
-      }
-    }
-
-    // Method 2: Check for live badge in player
+    // If not live, return early
     if (!isLive) {
-      if (html.includes('"liveBadge":{"liveBadgeRenderer"')) {
-        isLive = true;
-        detectedBy = 'liveBadgeRenderer';
-        console.log(`${channelName} is LIVE! Detected via liveBadgeRenderer`);
-      }
-    }
-
-    // Method 3: Check for live streaming metadata
-    if (!isLive) {
-      if (html.includes('"liveStreamabilityRenderer"') && html.includes('"isLiveNow":true')) {
-        isLive = true;
-        detectedBy = 'liveStreamabilityRenderer';
-        console.log(`${channelName} is LIVE! Detected via liveStreamabilityRenderer`);
-      }
-    }
-
-    // Method 4: Check for active live chat (NOT replay)
-    if (!isLive) {
-      const hasLiveChat = html.includes('/live_chat?') || html.includes('"liveChatRenderer"');
-      const hasActiveChatIndicator = html.includes('"isReplay":false') || 
-                                      (hasLiveChat && !html.includes('live_chat_replay'));
-      const hasChatContinuation = html.includes('"liveChatContinuation"') && !html.includes('"isReplay":true');
-      
-      if (hasActiveChatIndicator && hasChatContinuation) {
-        if (html.includes('"viewCount":{"videoViewCountRenderer":{"viewCount":{"runs"')) {
-          isLive = true;
-          detectedBy = 'live_chat_active';
-          console.log(`${channelName} is LIVE! Detected via active live chat`);
-        }
-      }
-    }
-
-    // If still no definitive answer, assume NOT live
-    if (!isLive) {
-      console.log(`${channelName} - No definitive live indicators found, assuming NOT LIVE`);
-      return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'no_definitive_indicators' };
+      console.log(`${channelName} - No definitive live indicators found`);
+      return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'no_live_indicators' };
     }
 
     // Extract stream title and thumbnail

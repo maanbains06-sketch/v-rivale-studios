@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
@@ -18,6 +18,7 @@ interface Comment {
   created_at: string;
   updated_at: string;
   user_email?: string;
+  discord_avatar?: string;
 }
 
 export const useGalleryComments = (submissionId: string) => {
@@ -25,6 +26,106 @@ export const useGalleryComments = (submissionId: string) => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
+
+  // Fetch Discord user info by ID
+  const fetchDiscordUser = useCallback(async (discordId: string) => {
+    if (!discordId || !/^\d{17,19}$/.test(discordId)) return null;
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-discord-user', {
+        body: { discordId }
+      });
+      
+      if (error || !data) return null;
+      
+      return {
+        displayName: data.displayName || data.globalName || data.username || null,
+        avatar: data.avatar || null,
+      };
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const loadComments = useCallback(async () => {
+    if (!submissionId) return;
+    
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("gallery_comments")
+        .select("*")
+        .eq("submission_id", submissionId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        // Fetch user profiles with discord info
+        const userIds = [...new Set(data.map(c => c.user_id))];
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, discord_username, discord_id, discord_avatar")
+          .in("id", userIds);
+
+        // Build initial comments with profile data
+        const commentsWithUsers: Comment[] = data.map(comment => {
+          const profile = profiles?.find(p => p.id === comment.user_id);
+          return {
+            ...comment,
+            user_email: profile?.discord_username || "User",
+            discord_avatar: profile?.discord_avatar || null,
+          };
+        });
+
+        setComments(commentsWithUsers);
+
+        // Async enhancement: Fetch Discord names for users with Discord IDs but no username
+        const discordIdsToFetch = profiles
+          ?.filter(p => p.discord_id && /^\d{17,19}$/.test(p.discord_id) && !p.discord_username)
+          .map(p => ({ id: p.id, discord_id: p.discord_id })) || [];
+
+        if (discordIdsToFetch.length > 0) {
+          // Fetch in background to not block initial render
+          Promise.all(
+            discordIdsToFetch.map(async ({ id, discord_id }) => {
+              const discordData = await fetchDiscordUser(discord_id);
+              if (discordData) {
+                return { userId: id, ...discordData };
+              }
+              return null;
+            })
+          ).then(results => {
+            const validResults = results.filter(Boolean);
+            if (validResults.length > 0) {
+              setComments(prev => prev.map(comment => {
+                const discordInfo = validResults.find(r => r && r.userId === comment.user_id);
+                if (discordInfo) {
+                  return {
+                    ...comment,
+                    user_email: discordInfo.displayName || comment.user_email,
+                    discord_avatar: discordInfo.avatar || comment.discord_avatar,
+                  };
+                }
+                return comment;
+              }));
+            }
+          });
+        }
+      } else {
+        setComments([]);
+      }
+    } catch (error: any) {
+      console.error("Error loading comments:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load comments",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [submissionId, fetchDiscordUser, toast]);
 
   useEffect(() => {
     if (!submissionId) return;
@@ -51,47 +152,7 @@ export const useGalleryComments = (submissionId: string) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [submissionId]);
-
-  const loadComments = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from("gallery_comments")
-        .select("*")
-        .eq("submission_id", submissionId)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-
-      // Fetch user emails for comments
-      if (data && data.length > 0) {
-        const userIds = [...new Set(data.map(c => c.user_id))];
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("id, discord_username")
-          .in("id", userIds);
-
-        const commentsWithUsers = data.map(comment => ({
-          ...comment,
-          user_email: profiles?.find(p => p.id === comment.user_id)?.discord_username || "Anonymous User"
-        }));
-
-        setComments(commentsWithUsers);
-      } else {
-        setComments([]);
-      }
-    } catch (error: any) {
-      console.error("Error loading comments:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load comments",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [submissionId, loadComments]);
 
   const addComment = async (commentText: string) => {
     try {
