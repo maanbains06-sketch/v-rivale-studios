@@ -6,6 +6,7 @@ export interface FeaturedYoutuber {
   id: string;
   name: string;
   channel_url: string;
+  channel_id: string | null;
   avatar_url: string | null;
   role: string;
   is_live: boolean;

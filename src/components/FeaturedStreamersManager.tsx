@@ -26,6 +26,7 @@ interface FeaturedYoutuber {
   id: string;
   name: string;
   channel_url: string;
+  channel_id: string | null;
   avatar_url: string | null;
   role: string | null;
   is_active: boolean;
@@ -40,7 +41,10 @@ export const FeaturedStreamersManager = () => {
   const [youtubers, setYoutubers] = useState<FeaturedYoutuber[]>([]);
   const [loading, setLoading] = useState(true);
   const [channelUrl, setChannelUrl] = useState('');
+  const [channelId, setChannelId] = useState('');
   const [fetchingChannel, setFetchingChannel] = useState(false);
+  const [editingChannelId, setEditingChannelId] = useState<string | null>(null);
+  const [editChannelIdValue, setEditChannelIdValue] = useState('');
 
   useEffect(() => {
     fetchYoutubers();
@@ -92,6 +96,7 @@ export const FeaturedStreamersManager = () => {
         .insert({
           name: channelInfo.channelName,
           channel_url: channelUrl,
+          channel_id: channelId.trim() || channelInfo.channelId || null,
           avatar_url: channelInfo.avatarUrl,
           role: 'Content Creator',
           is_active: true,
@@ -117,6 +122,7 @@ export const FeaturedStreamersManager = () => {
       });
 
       setChannelUrl('');
+      setChannelId('');
       fetchYoutubers();
     } catch (error: any) {
       toast({
@@ -208,6 +214,45 @@ export const FeaturedStreamersManager = () => {
     }
   };
 
+  const saveChannelId = async (id: string, name: string) => {
+    try {
+      const { error } = await supabase
+        .from('featured_youtubers')
+        .update({ channel_id: editChannelIdValue.trim() || null })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      await logAction({
+        actionType: 'creator_update',
+        actionDescription: `Updated channel ID for ${name}`,
+        targetTable: 'featured_youtubers',
+        targetId: id,
+        newValue: { channel_id: editChannelIdValue.trim() || null }
+      });
+
+      toast({
+        title: "Channel ID Updated",
+        description: `Channel ID for ${name} has been updated.`,
+      });
+
+      setEditingChannelId(null);
+      setEditChannelIdValue('');
+      fetchYoutubers();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update channel ID",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const startEditChannelId = (youtuber: FeaturedYoutuber) => {
+    setEditingChannelId(youtuber.id);
+    setEditChannelIdValue(youtuber.channel_id || '');
+  };
+
   const syncLiveStatus = async () => {
     setLoading(true);
     try {
@@ -285,21 +330,35 @@ export const FeaturedStreamersManager = () => {
             <Plus className="w-4 h-4 text-primary" />
             <Label className="font-semibold">Add New Streamer</Label>
           </div>
-          <div className="flex gap-2">
-            <Input
-              placeholder="Paste YouTube channel URL (e.g., youtube.com/@channelname)"
-              value={channelUrl}
-              onChange={(e) => setChannelUrl(e.target.value)}
-              className="flex-1"
-            />
-            <Button onClick={addYoutuber} disabled={fetchingChannel}>
-              {fetchingChannel ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <Plus className="w-4 h-4 mr-2" />
-              )}
-              Add Streamer
-            </Button>
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <Input
+                placeholder="Paste YouTube channel URL (e.g., youtube.com/@channelname)"
+                value={channelUrl}
+                onChange={(e) => setChannelUrl(e.target.value)}
+                className="flex-1"
+              />
+              <Button onClick={addYoutuber} disabled={fetchingChannel}>
+                {fetchingChannel ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Plus className="w-4 h-4 mr-2" />
+                )}
+                Add Streamer
+              </Button>
+            </div>
+            <div>
+              <Input
+                placeholder="Channel ID (optional, e.g., UCxxxxxxxxxxxxxxxx)"
+                value={channelId}
+                onChange={(e) => setChannelId(e.target.value)}
+                className="flex-1"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Optional: Provide YouTube Channel ID to ensure only this streamer's live streams are shown.
+                Find it in YouTube Studio → Settings → Channel → Advanced settings.
+              </p>
+            </div>
           </div>
           <p className="text-xs text-muted-foreground">
             The channel name and profile image will be automatically fetched from YouTube.
@@ -317,7 +376,8 @@ export const FeaturedStreamersManager = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Streamer</TableHead>
+              <TableHead>Streamer</TableHead>
+                <TableHead>Channel ID</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Live</TableHead>
@@ -347,6 +407,50 @@ export const FeaturedStreamersManager = () => {
                         </a>
                       </div>
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    {editingChannelId === youtuber.id ? (
+                      <div className="flex gap-1 items-center">
+                        <Input
+                          value={editChannelIdValue}
+                          onChange={(e) => setEditChannelIdValue(e.target.value)}
+                          placeholder="UCxxxxxxxx"
+                          className="w-32 h-8 text-xs"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => saveChannelId(youtuber.id, youtuber.name)}
+                          className="h-8 w-8 p-0 text-green-500"
+                        >
+                          <Check className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setEditingChannelId(null);
+                            setEditChannelIdValue('');
+                          }}
+                          className="h-8 w-8 p-0 text-muted-foreground"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => startEditChannelId(youtuber)}
+                        className="text-xs font-mono"
+                      >
+                        {youtuber.channel_id ? (
+                          <span className="truncate max-w-[100px]">{youtuber.channel_id}</span>
+                        ) : (
+                          <span className="text-muted-foreground">Set ID</span>
+                        )}
+                      </Button>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary">{youtuber.role || 'Creator'}</Badge>

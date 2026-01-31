@@ -255,7 +255,7 @@ function verifyStreamOwnership(html: string, expectedChannelId: string | null, c
 }
 
 // Check live status by fetching the channel's /live page
-async function checkLiveStatus(channelUrl: string, channelName: string): Promise<{
+async function checkLiveStatus(channelUrl: string, channelName: string, storedChannelId: string | null): Promise<{
   isLive: boolean;
   liveStreamUrl: string | null;
   liveStreamTitle: string | null;
@@ -268,8 +268,14 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
     return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'invalid_url' };
   }
 
-  // Get the expected channel ID first for ownership verification
-  const expectedChannelId = await getExpectedChannelId(channelUrl);
+  // Use stored channel ID if available, otherwise try to get it from the channel page
+  let expectedChannelId = storedChannelId;
+  if (!expectedChannelId) {
+    expectedChannelId = await getExpectedChannelId(channelUrl);
+    console.log(`No stored channel ID, fetched from page: ${expectedChannelId || 'not found'}`);
+  } else {
+    console.log(`Using stored channel ID: ${expectedChannelId}`);
+  }
   console.log(`Expected channel ID for ${channelName}: ${expectedChannelId || 'not found'}`);
 
   // Build the /live URL
@@ -474,7 +480,7 @@ serve(async (req) => {
     // Get all active featured youtubers
     const { data: youtubers, error: fetchError } = await supabase
       .from('featured_youtubers')
-      .select('id, channel_url, is_live, name')
+      .select('id, channel_url, channel_id, is_live, name')
       .eq('is_active', true);
 
     if (fetchError) throw fetchError;
@@ -504,7 +510,8 @@ serve(async (req) => {
     const checkPromises = youtubers.map(async (youtuber) => {
       console.log(`\n--- Checking: ${youtuber.name} ---`);
       
-      const { isLive, liveStreamUrl, liveStreamTitle, liveStreamThumbnail, detectedBy } = await checkLiveStatus(youtuber.channel_url, youtuber.name);
+      // Pass stored channel_id for reliable ownership verification
+      const { isLive, liveStreamUrl, liveStreamTitle, liveStreamThumbnail, detectedBy } = await checkLiveStatus(youtuber.channel_url, youtuber.name, youtuber.channel_id || null);
       
       const statusChanged = youtuber.is_live !== isLive;
       
