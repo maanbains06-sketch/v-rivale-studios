@@ -49,7 +49,10 @@ Deno.serve(async (req) => {
     const DISCORD_BOT_TOKEN = Deno.env.get('DISCORD_BOT_TOKEN');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    // Channel for new ticket submissions (staff notifications)
     const TICKET_CHANNEL_ID = Deno.env.get('DISCORD_TICKET_CHANNEL_ID') || Deno.env.get('DISCORD_SUPPORT_CHANNEL_ID');
+    // Channel for ticket status updates (user responses - on hold, resolved, etc.)
+    const TICKET_RESPONSE_CHANNEL_ID = Deno.env.get('DISCORD_TICKET_RESPONSE_CHANNEL_ID') || TICKET_CHANNEL_ID;
     const TICKET_ROLE_ID = Deno.env.get('DISCORD_TICKET_ROLE_ID') || Deno.env.get('DISCORD_SUPPORT_ROLE_ID');
 
     if (!DISCORD_BOT_TOKEN) {
@@ -259,9 +262,12 @@ Deno.serve(async (req) => {
       messageContent = `${userMention} 🔧 Your ticket **${ticket.ticket_number}** is now being worked on!\n\nA staff member has picked up your ticket. Please be patient while we investigate your issue.`;
     }
 
-    console.log(`Sending notification to channel: ${TICKET_CHANNEL_ID}`);
+    // Determine which channel to send to based on status
+    // New tickets go to TICKET_CHANNEL_ID (for staff), status updates go to TICKET_RESPONSE_CHANNEL_ID (for users)
+    const targetChannelId = isNew ? TICKET_CHANNEL_ID : TICKET_RESPONSE_CHANNEL_ID;
+    console.log(`Sending notification to channel: ${targetChannelId} (isNew: ${isNew})`);
 
-    const messageResponse = await fetch(`https://discord.com/api/v10/channels/${TICKET_CHANNEL_ID}/messages`, {
+    const messageResponse = await fetch(`https://discord.com/api/v10/channels/${targetChannelId}/messages`, {
       method: 'POST',
       headers: {
         'Authorization': `Bot ${DISCORD_BOT_TOKEN}`,
