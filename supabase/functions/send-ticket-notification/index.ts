@@ -247,8 +247,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Add branded support image
-    embed.image = { url: 'https://skyliferoleplay.com/images/support-request.jpg' };
+    // Add status-specific branded images
+    const statusImages: Record<string, string> = {
+      open: 'https://skyliferoleplay.com/images/tickets/ticket-new.jpg',
+      in_progress: 'https://skyliferoleplay.com/images/tickets/ticket-in-progress.jpg',
+      on_hold: 'https://skyliferoleplay.com/images/tickets/ticket-on-hold.jpg',
+      resolved: 'https://skyliferoleplay.com/images/tickets/ticket-resolved.jpg',
+    };
+    embed.image = { url: statusImages[status] || statusImages.open };
 
     // Build message content with role ping for new tickets
     let messageContent = '';
