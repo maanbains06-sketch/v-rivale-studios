@@ -31,6 +31,7 @@ import BusinessTypeManager from "@/components/BusinessTypeManager";
 import ThemeManager from "@/components/ThemeManager";
 import { OwnerGalleryManager } from "@/components/OwnerGalleryManager";
 import { LiveApplicationStats } from "@/components/LiveApplicationStats";
+import OwnerLiveChatManager from "@/components/OwnerLiveChatManager";
 import AdminTicketManagement from "@/components/AdminTicketManagement";
 import { combineAllApplications, filterApplicationsByType } from "@/lib/applicationTransformer";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -1692,6 +1693,10 @@ const OwnerPanel = () => {
                   <Ticket className="w-4 h-4" />
                   <span className="hidden sm:inline">Tickets</span>
                 </TabsTrigger>
+                <TabsTrigger value="live-chats" className="flex items-center gap-2 whitespace-nowrap">
+                  <MessageSquare className="w-4 h-4" />
+                  <span className="hidden sm:inline">Live Chats</span>
+                </TabsTrigger>
               </TabsList>
             </div>
             {/* Fade indicators for scroll hint */}
@@ -2638,6 +2643,11 @@ const OwnerPanel = () => {
           {/* Tickets Tab */}
           <TabsContent value="tickets">
             <AdminTicketManagement />
+          </TabsContent>
+
+          {/* Live Chats Tab */}
+          <TabsContent value="live-chats">
+            <OwnerLiveChatManager />
           </TabsContent>
         </Tabs>
       </div>
