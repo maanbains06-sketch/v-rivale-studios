@@ -511,34 +511,77 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
     }
 
     // FINAL OWNERSHIP DECISION
-    // In practice, YouTube often serves consent/blocked HTML or mixed metadata on /live.
-    // For the website UX we prefer false-positives that link to the channel /live page
-    // over false-negatives that hide live streamers completely.
-    let preferLivePageUrl = false;
-
-    // If we know the expected channel ID:
-    // - when we can verify match: great
-    // - when we cannot verify OR mismatch: still show as live but link to /live
+    // For featured streamers, we ONLY show them as live if:
+    // 1. We can verify ownership matches, OR
+    // 2. We cannot verify but the video is clearly from their channel
+    // This prevents showing other channels' streams in the "Currently Live" section.
+    
+    let ownershipVerified = false;
+    
     if (expectedChannelId) {
-      if (videoOwnerChannelId && videoOwnerChannelId !== expectedChannelId) {
-        console.log(`${channelName} - Ownership mismatch (expected: ${expectedChannelId}, got: ${videoOwnerChannelId}); keeping LIVE but linking to /live to avoid false negatives`);
-        preferLivePageUrl = true;
-        detectedBy = `${detectedBy}|ownership_mismatch`;
-      }
-
-      if (videoOwnerChannelId === expectedChannelId) {
+      if (videoOwnerChannelId && videoOwnerChannelId === expectedChannelId) {
         console.log(`${channelName} - Ownership verified via channel ID match: ${expectedChannelId}`);
+        ownershipVerified = true;
+      } else if (videoOwnerChannelId && videoOwnerChannelId !== expectedChannelId) {
+        // MISMATCH: This is NOT the streamer's own content - mark as NOT LIVE
+        console.log(`${channelName} - Ownership mismatch! Expected: ${expectedChannelId}, Got: ${videoOwnerChannelId}`);
+        console.log(`${channelName} - Marking as NOT LIVE to prevent showing other channels' content`);
+        return { 
+          isLive: false, 
+          liveStreamUrl: null, 
+          liveStreamTitle: null, 
+          liveStreamThumbnail: null, 
+          detectedBy: `ownership_mismatch:expected=${expectedChannelId},got=${videoOwnerChannelId}` 
+        };
       } else {
-        console.log(`${channelName} - Ownership not verifiable (missing owner channel ID); allowing LIVE to avoid false negatives`);
-        preferLivePageUrl = true;
-        detectedBy = `${detectedBy}|ownership_unverified`;
+        // Cannot verify - check if author name matches channel name closely
+        if (videoAuthor) {
+          const authorLower = videoAuthor.toLowerCase().replace(/[^a-z0-9]/g, '');
+          const channelLower = channelName.toLowerCase().replace(/[^a-z0-9]/g, '');
+          if (authorLower.includes(channelLower) || channelLower.includes(authorLower)) {
+            console.log(`${channelName} - Ownership verified via author name match: "${videoAuthor}"`);
+            ownershipVerified = true;
+          } else {
+            console.log(`${channelName} - Author name "${videoAuthor}" does not match channel name "${channelName}"`);
+            console.log(`${channelName} - Marking as NOT LIVE to prevent showing other channels' content`);
+            return { 
+              isLive: false, 
+              liveStreamUrl: null, 
+              liveStreamTitle: null, 
+              liveStreamThumbnail: null, 
+              detectedBy: `author_mismatch:expected=${channelName},got=${videoAuthor}` 
+            };
+          }
+        } else {
+          // No way to verify - be conservative and mark as not live
+          console.log(`${channelName} - Cannot verify ownership, marking as NOT LIVE for safety`);
+          return { 
+            isLive: false, 
+            liveStreamUrl: null, 
+            liveStreamTitle: null, 
+            liveStreamThumbnail: null, 
+            detectedBy: 'ownership_unverifiable' 
+          };
+        }
       }
     }
 
-    // Extract stream title and thumbnail
-    const liveStreamUrl = preferLivePageUrl ? finalUrl : `https://www.youtube.com/watch?v=${videoId}`;
-    const liveStreamTitle = preferLivePageUrl ? null : extractStreamTitle(html);
-    const liveStreamThumbnail = preferLivePageUrl ? null : getStreamThumbnail(videoId);
+    // Only proceed if ownership is verified
+    if (!ownershipVerified) {
+      console.log(`${channelName} - Ownership not verified, marking as NOT LIVE`);
+      return { 
+        isLive: false, 
+        liveStreamUrl: null, 
+        liveStreamTitle: null, 
+        liveStreamThumbnail: null, 
+        detectedBy: 'ownership_not_verified' 
+      };
+    }
+
+    // Extract stream title and thumbnail - ownership is verified
+    const liveStreamUrl = `https://www.youtube.com/watch?v=${videoId}`;
+    const liveStreamTitle = extractStreamTitle(html);
+    const liveStreamThumbnail = getStreamThumbnail(videoId);
     
     console.log(`${channelName} stream title: ${liveStreamTitle}`);
     console.log(`${channelName} stream thumbnail: ${liveStreamThumbnail}`);

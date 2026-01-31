@@ -1,17 +1,18 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Ticket, Clock, CheckCircle, AlertCircle, Loader2, Trash2, Eye, RefreshCw, Pause, Play, Wrench } from "lucide-react";
+import { Ticket, Clock, CheckCircle, Loader2, Trash2, Eye, RefreshCw, Pause, Wrench, Search, Image as ImageIcon, Video, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 
 interface SupportTicket {
@@ -21,6 +22,8 @@ interface SupportTicket {
   discord_id: string | null;
   discord_username: string | null;
   steam_id: string | null;
+  player_id: string | null;
+  player_name: string | null;
   category: string;
   subject: string;
   description: string;
@@ -31,6 +34,7 @@ interface SupportTicket {
   created_at: string;
   resolved_at: string | null;
   assigned_to: string | null;
+  attachments: string[] | null;
 }
 
 const ticketCategories = [
@@ -60,6 +64,7 @@ const AdminTicketManagement = () => {
   const [updating, setUpdating] = useState(false);
   const [ticketToDelete, setTicketToDelete] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const fetchTickets = useCallback(async () => {
     setLoading(true);
@@ -91,7 +96,6 @@ const AdminTicketManagement = () => {
   useEffect(() => {
     fetchTickets();
 
-    // Real-time subscription
     const channel = supabase
       .channel('admin-tickets')
       .on(
@@ -105,6 +109,16 @@ const AdminTicketManagement = () => {
       supabase.removeChannel(channel);
     };
   }, [fetchTickets]);
+
+  // Filter tickets by search query
+  const filteredTickets = tickets.filter(ticket => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase().trim();
+    return ticket.ticket_number.toLowerCase().includes(query) ||
+           ticket.subject.toLowerCase().includes(query) ||
+           (ticket.player_name?.toLowerCase().includes(query)) ||
+           (ticket.player_id?.toLowerCase().includes(query));
+  });
 
   const updateTicketStatus = async (ticketId: string, newStatus: string) => {
     setUpdating(true);
@@ -126,7 +140,6 @@ const AdminTicketManagement = () => {
 
       if (error) throw error;
 
-      // Send Discord notification
       try {
         await supabase.functions.invoke("send-ticket-notification", {
           body: {
@@ -218,14 +231,27 @@ const AdminTicketManagement = () => {
     return ticketCategories.find(c => c.value === value)?.label || value;
   };
 
+  const isImage = (url: string) => /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+  const isVideo = (url: string) => /\.(mp4|webm|mov)$/i.test(url);
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-2">
           <Ticket className="w-5 h-5 text-primary" />
           <h2 className="text-xl font-bold">Ticket Support Management</h2>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Search by ticket number */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by ticket #..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 w-48"
+            />
+          </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Filter by status" />
@@ -252,10 +278,10 @@ const AdminTicketManagement = () => {
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
             </div>
-          ) : tickets.length === 0 ? (
+          ) : filteredTickets.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <Ticket className="w-12 h-12 mb-4 opacity-20" />
-              <p>No tickets found</p>
+              <p>{searchQuery ? "No tickets match your search" : "No tickets found"}</p>
             </div>
           ) : (
             <ScrollArea className="max-h-[600px]">
@@ -265,7 +291,7 @@ const AdminTicketManagement = () => {
                     <TableHead>Ticket #</TableHead>
                     <TableHead>Category</TableHead>
                     <TableHead>Subject</TableHead>
-                    <TableHead>Discord</TableHead>
+                    <TableHead>Player</TableHead>
                     <TableHead>Priority</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Created</TableHead>
@@ -273,17 +299,25 @@ const AdminTicketManagement = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {tickets.map((ticket) => (
+                  {filteredTickets.map((ticket) => (
                     <TableRow key={ticket.id}>
                       <TableCell className="font-mono text-sm">
-                        {ticket.ticket_number}
+                        <div className="flex items-center gap-1">
+                          {ticket.ticket_number}
+                          {ticket.attachments && ticket.attachments.length > 0 && (
+                            <ImageIcon className="w-3 h-3 text-muted-foreground" />
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>{getCategoryLabel(ticket.category)}</TableCell>
                       <TableCell className="max-w-[200px] truncate">
                         {ticket.subject}
                       </TableCell>
                       <TableCell>
-                        {ticket.discord_username || (ticket.discord_id ? `<@${ticket.discord_id}>` : '-')}
+                        <div className="text-xs">
+                          <p className="font-medium">{ticket.player_name || '-'}</p>
+                          <p className="text-muted-foreground">ID: {ticket.player_id || '-'}</p>
+                        </div>
                       </TableCell>
                       <TableCell>{getPriorityBadge(ticket.priority)}</TableCell>
                       <TableCell>{getStatusBadge(ticket.status)}</TableCell>
@@ -324,7 +358,7 @@ const AdminTicketManagement = () => {
 
       {/* Ticket Detail Dialog */}
       <Dialog open={!!selectedTicket} onOpenChange={() => setSelectedTicket(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           {selectedTicket && (
             <>
               <DialogHeader>
@@ -338,33 +372,78 @@ const AdminTicketManagement = () => {
               </DialogHeader>
 
               <div className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-4 gap-4">
                   <div>
-                    <Label className="text-muted-foreground">Category</Label>
-                    <p className="font-medium">{getCategoryLabel(selectedTicket.category)}</p>
+                    <Label className="text-muted-foreground text-xs">Category</Label>
+                    <p className="font-medium text-sm">{getCategoryLabel(selectedTicket.category)}</p>
                   </div>
-                  <div className="flex gap-2">
+                  <div>
+                    <Label className="text-muted-foreground text-xs">Player ID</Label>
+                    <p className="font-mono text-sm">{selectedTicket.player_id || '-'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground text-xs">Player Name</Label>
+                    <p className="font-medium text-sm">{selectedTicket.player_name || '-'}</p>
+                  </div>
+                  <div className="flex gap-2 items-start">
                     {getPriorityBadge(selectedTicket.priority)}
                     {getStatusBadge(selectedTicket.status)}
                   </div>
                 </div>
 
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-muted-foreground text-xs">Steam ID</Label>
+                    <p className="font-mono text-sm">{selectedTicket.steam_id || '-'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground text-xs">Discord</Label>
+                    <p className="text-sm">{selectedTicket.discord_username || selectedTicket.discord_id || '-'}</p>
+                  </div>
+                </div>
+
                 <div>
-                  <Label className="text-muted-foreground">Subject</Label>
+                  <Label className="text-muted-foreground text-xs">Subject</Label>
                   <p className="font-medium">{selectedTicket.subject}</p>
                 </div>
 
                 <div>
-                  <Label className="text-muted-foreground">Description</Label>
+                  <Label className="text-muted-foreground text-xs">Description</Label>
                   <div className="p-3 rounded-lg bg-muted/50 mt-1 whitespace-pre-wrap text-sm">
                     {selectedTicket.description}
                   </div>
                 </div>
 
-                {selectedTicket.discord_id && (
+                {/* Attachments */}
+                {selectedTicket.attachments && selectedTicket.attachments.length > 0 && (
                   <div>
-                    <Label className="text-muted-foreground">Discord</Label>
-                    <p className="font-mono text-sm">{selectedTicket.discord_username || selectedTicket.discord_id}</p>
+                    <Label className="text-muted-foreground text-xs">Attachments ({selectedTicket.attachments.length})</Label>
+                    <div className="grid grid-cols-3 md:grid-cols-4 gap-2 mt-2">
+                      {selectedTicket.attachments.map((url, idx) => (
+                        <a
+                          key={idx}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="relative group rounded-lg overflow-hidden border border-border/50 hover:border-primary transition-colors"
+                        >
+                          {isImage(url) ? (
+                            <img src={url} alt={`Attachment ${idx + 1}`} className="w-full h-20 object-cover" />
+                          ) : isVideo(url) ? (
+                            <div className="w-full h-20 bg-muted flex items-center justify-center">
+                              <Video className="w-6 h-6 text-muted-foreground" />
+                            </div>
+                          ) : (
+                            <div className="w-full h-20 bg-muted flex items-center justify-center">
+                              <ExternalLink className="w-6 h-6 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                            <ExternalLink className="w-5 h-5 text-white" />
+                          </div>
+                        </a>
+                      ))}
+                    </div>
                   </div>
                 )}
 
