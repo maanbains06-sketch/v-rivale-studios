@@ -155,8 +155,10 @@ All colors MUST be HSL.
     overflow-y: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* Performance: instant color changes, no transition delay */
+    /* Performance optimizations */
     text-rendering: optimizeSpeed;
+    /* Reduce paint work */
+    contain: layout style;
   }
   
   /* Content visibility optimization for sections - reduces layout calculation */
