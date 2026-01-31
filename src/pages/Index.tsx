@@ -245,21 +245,13 @@ const Index = () => {
         <FloatingParticles />
 
         <div className="container mx-auto px-4 relative z-10">
-          <motion.div 
-            className="text-center"
-            variants={staggerContainerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            <motion.div variants={itemVariants} className="mb-6 flex justify-center">
+          <div className="text-center">
+            <div className="mb-6 flex justify-center">
               <LaunchingSoonButton />
-            </motion.div>
+            </div>
 
             {/* Impressive Server Name - FlameCity Style */}
-            <motion.div 
-              variants={itemVariants} 
-              className="mb-10 relative"
-            >
+            <div className="mb-10 relative">
               {/* Glow effect behind text - subtle */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="w-[500px] h-[250px] bg-gradient-to-r from-primary/8 via-primary/10 to-primary/8 blur-[100px] rounded-full gpu-accelerated"></div>
@@ -328,9 +320,9 @@ const Index = () => {
                   <span className="india-letter-5 motion-reduce:animate-none">A</span>
                 </span>
               </h1>
-            </motion.div>
+            </div>
 
-            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center mb-8 px-4">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 px-4">
               {/* Mobile: Use Sheet for requirements */}
               {isMobile ? (
                 <Sheet open={mobileRequirementsOpen} onOpenChange={setMobileRequirementsOpen}>
@@ -564,7 +556,7 @@ const Index = () => {
                   Watch Trailer
                 </a>
               </Button>
-            </motion.div>
+            </div>
 
             {/* Live Server Status - Enhanced */}
              <motion.div variants={itemVariants} className="flex justify-center mt-6">
@@ -709,7 +701,7 @@ const Index = () => {
                 </div>
               </motion.div>
             </motion.div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
