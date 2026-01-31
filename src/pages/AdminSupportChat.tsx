@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +51,7 @@ interface Chat {
 
 const AdminSupportChat = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [chats, setChats] = useState<Chat[]>([]);
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
@@ -62,31 +63,25 @@ const AdminSupportChat = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [attachment, setAttachment] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [initialChatId, setInitialChatId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Get chat ID from URL params for staff redirect
+  useEffect(() => {
+    const chatId = searchParams.get('chatId');
+    if (chatId) {
+      setInitialChatId(chatId);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     checkAdminAccess();
   }, []);
 
-  useEffect(() => {
-    if (isAdmin) {
-      fetchChats();
-      fetchCannedResponses();
-      setupChatsRealtimeSubscription();
-    }
-  }, [isAdmin, statusFilter]);
-
-  useEffect(() => {
-    if (selectedChat) {
-      fetchMessages(selectedChat.id);
-      setupMessagesRealtimeSubscription(selectedChat.id);
-    }
-  }, [selectedChat]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   const checkAdminAccess = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -115,11 +110,7 @@ const AdminSupportChat = () => {
     setIsAdmin(true);
   };
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const fetchChats = async () => {
+  const fetchChats = useCallback(async () => {
     const { data, error } = await supabase
       .from("support_chats")
       .select("*")
@@ -132,7 +123,51 @@ const AdminSupportChat = () => {
     }
 
     setChats(data || []);
-  };
+
+    // Auto-select chat from URL param if provided
+    if (initialChatId && data) {
+      const targetChat = data.find(c => c.id === initialChatId);
+      if (targetChat) {
+        setSelectedChat(targetChat);
+        setInitialChatId(null); // Clear after use
+      } else {
+        // If not found in current filter, try fetching it directly
+        const { data: specificChat } = await supabase
+          .from("support_chats")
+          .select("*")
+          .eq("id", initialChatId)
+          .maybeSingle();
+        
+        if (specificChat) {
+          setSelectedChat(specificChat);
+          // Update filter to match the chat's status
+          if (specificChat.status !== statusFilter) {
+            setStatusFilter(specificChat.status);
+          }
+        }
+        setInitialChatId(null);
+      }
+    }
+  }, [statusFilter, initialChatId]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchChats();
+      fetchCannedResponses();
+      setupChatsRealtimeSubscription();
+    }
+  }, [isAdmin, statusFilter, fetchChats]);
+
+  useEffect(() => {
+    if (selectedChat) {
+      fetchMessages(selectedChat.id);
+      setupMessagesRealtimeSubscription(selectedChat.id);
+    }
+  }, [selectedChat]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const fetchCannedResponses = async () => {
     const { data, error } = await supabase

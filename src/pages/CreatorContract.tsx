@@ -234,12 +234,34 @@ const CreatorContract = () => {
       return;
     }
 
+    // Verify owner permission before saving
+    if (!isOwner) {
+      toast({ 
+        title: "Permission Denied", 
+        description: "Only the owner can save contracts.",
+        variant: "destructive" 
+      });
+      return;
+    }
+
     setSaving(true);
     try {
       // Get current user for created_by field
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast({ title: "Authentication required", variant: "destructive" });
+        return;
+      }
+
+      // Double-check owner permission via RPC
+      const { data: ownerCheck } = await supabase.rpc("is_owner", { _user_id: user.id });
+      if (!ownerCheck) {
+        toast({ 
+          title: "Permission Denied", 
+          description: "Only the owner can save contracts.",
+          variant: "destructive" 
+        });
+        setSaving(false);
         return;
       }
 

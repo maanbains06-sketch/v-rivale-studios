@@ -2481,6 +2481,69 @@ export type Database = {
         }
         Relationships: []
       }
+      support_tickets: {
+        Row: {
+          admin_notes: string | null
+          assigned_to: string | null
+          category: string
+          created_at: string
+          description: string
+          discord_id: string | null
+          discord_username: string | null
+          id: string
+          priority: string
+          resolution: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          steam_id: string | null
+          subject: string
+          ticket_number: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          assigned_to?: string | null
+          category?: string
+          created_at?: string
+          description: string
+          discord_id?: string | null
+          discord_username?: string | null
+          id?: string
+          priority?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          steam_id?: string | null
+          subject: string
+          ticket_number?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          assigned_to?: string | null
+          category?: string
+          created_at?: string
+          description?: string
+          discord_id?: string | null
+          discord_username?: string | null
+          id?: string
+          priority?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          steam_id?: string | null
+          subject?: string
+          ticket_number?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       testimonials: {
         Row: {
           avatar_url: string | null

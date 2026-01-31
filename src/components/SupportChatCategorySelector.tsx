@@ -1,5 +1,5 @@
 import { Label } from "@/components/ui/label";
-import { Ribbon, Globe, AlertOctagon, CreditCard, Bug } from "lucide-react";
+import { Ribbon, Globe, AlertOctagon, CreditCard, Bug, ShieldAlert } from "lucide-react";
 
 interface SupportCategory {
   id: string;
@@ -30,6 +30,13 @@ const categories: SupportCategory[] = [
     description: 'Report rule violations or player misconduct',
     icon: <AlertOctagon className="w-6 h-6" />,
     color: 'from-red-500/20 to-red-600/10 border-red-500/30 hover:border-red-500/60'
+  },
+  {
+    id: 'staff_report',
+    name: 'Staff Report',
+    description: 'Report staff misconduct or abuse of power',
+    icon: <ShieldAlert className="w-6 h-6" />,
+    color: 'from-purple-500/20 to-purple-600/10 border-purple-500/30 hover:border-purple-500/60'
   },
   {
     id: 'purchase',
@@ -98,6 +105,8 @@ export const getCategoryTags = (categoryId: string): string[] => {
       return ['in-game', 'whitelisted'];
     case 'report':
       return ['player-report', 'misconduct'];
+    case 'staff_report':
+      return ['staff-report', 'staff-misconduct', 'confidential'];
     case 'purchase':
       return ['billing', 'purchase', 'payment'];
     case 'bug':
