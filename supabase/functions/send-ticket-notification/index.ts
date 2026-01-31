@@ -13,6 +13,33 @@ interface TicketNotificationRequest {
   isNew?: boolean;
 }
 
+interface DiscordUser {
+  id: string;
+  username: string;
+  global_name?: string;
+  avatar?: string;
+}
+
+async function fetchDiscordUser(discordId: string, botToken: string): Promise<DiscordUser | null> {
+  try {
+    const response = await fetch(`https://discord.com/api/v10/users/${discordId}`, {
+      headers: {
+        Authorization: `Bot ${botToken}`,
+      },
+    });
+
+    if (!response.ok) {
+      console.error('Failed to fetch Discord user:', response.status);
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching Discord user:', error);
+    return null;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -22,7 +49,6 @@ Deno.serve(async (req) => {
     const DISCORD_BOT_TOKEN = Deno.env.get('DISCORD_BOT_TOKEN');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    // You can add a dedicated DISCORD_TICKET_CHANNEL_ID secret or reuse support channel
     const TICKET_CHANNEL_ID = Deno.env.get('DISCORD_TICKET_CHANNEL_ID') || Deno.env.get('DISCORD_SUPPORT_CHANNEL_ID');
     const TICKET_ROLE_ID = Deno.env.get('DISCORD_TICKET_ROLE_ID') || Deno.env.get('DISCORD_SUPPORT_ROLE_ID');
 
@@ -62,6 +88,21 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Fetch Discord user info if we have a Discord ID
+    let discordUser: DiscordUser | null = null;
+    let userDisplayName = ticket.discord_username || 'Unknown User';
+    let userAvatarUrl = 'https://skyliferoleplay.com/images/slrp-logo.png';
+
+    if (ticket.discord_id && /^\d{17,19}$/.test(ticket.discord_id)) {
+      discordUser = await fetchDiscordUser(ticket.discord_id, DISCORD_BOT_TOKEN);
+      if (discordUser) {
+        userDisplayName = discordUser.global_name || discordUser.username || userDisplayName;
+        if (discordUser.avatar) {
+          userAvatarUrl = `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png?size=256`;
+        }
+      }
+    }
+
     const now = new Date();
     const formattedDate = now.toLocaleDateString('en-US', {
       month: '2-digit',
@@ -82,59 +123,63 @@ Deno.serve(async (req) => {
     switch (status) {
       case 'open':
         embedColor = 0x3498db;
-        statusEmoji = '📋';
+        statusEmoji = '🎫';
         statusTitle = isNew ? 'New Support Ticket Created' : 'Ticket Reopened';
         statusMessage = isNew 
-          ? 'A new support ticket has been submitted and requires attention.'
-          : 'This ticket has been reopened for further review.';
+          ? `**${userDisplayName}** has submitted a new support ticket requiring attention.`
+          : `Ticket from **${userDisplayName}** has been reopened for further review.`;
         break;
       case 'in_progress':
         embedColor = 0xf39c12;
         statusEmoji = '🔧';
         statusTitle = 'Ticket In Progress';
-        statusMessage = 'A staff member is now working on this ticket.';
+        statusMessage = `A staff member is now working on **${userDisplayName}**'s ticket.`;
         break;
       case 'on_hold':
         embedColor = 0xe67e22;
         statusEmoji = '⏸️';
         statusTitle = 'Ticket On Hold';
-        statusMessage = 'This ticket has been placed on hold. The user will be notified with additional information if needed.';
+        statusMessage = `**${userDisplayName}**'s ticket has been placed on hold. Additional information may be needed.`;
         break;
       case 'resolved':
         embedColor = 0x2ecc71;
         statusEmoji = '✅';
         statusTitle = 'Ticket Resolved';
-        statusMessage = 'This ticket has been successfully resolved and closed.';
+        statusMessage = `**${userDisplayName}**'s ticket has been successfully resolved and closed.`;
         break;
     }
 
     // User mention
-    const userMention = ticket.discord_id ? `<@${ticket.discord_id}>` : ticket.discord_username || 'Unknown User';
+    const userMention = ticket.discord_id ? `<@${ticket.discord_id}>` : userDisplayName;
 
     // Category labels
     const categoryLabels: Record<string, string> = {
-      whitelist: 'Whitelist Issue',
-      refund: 'Refund Request',
-      account: 'Account Issue',
-      technical: 'Technical Support',
-      staff_complaint: 'Staff Complaint',
-      ban_inquiry: 'Ban Inquiry',
-      other: 'Other',
+      whitelist: '🎯 Whitelist Issue',
+      refund: '💰 Refund Request',
+      account: '👤 Account Issue',
+      technical: '🔧 Technical Support',
+      staff_complaint: '📢 Staff Complaint',
+      ban_inquiry: '⛔ Ban Inquiry',
+      other: '📝 Other',
     };
 
-    // Priority labels
+    // Priority labels with emojis
     const priorityEmojis: Record<string, string> = {
-      critical: '🔴 Critical',
+      critical: '🔴 **CRITICAL**',
       high: '🟠 High',
       normal: '🟡 Normal',
       low: '🟢 Low',
     };
 
-    // Build embed
+    // Build embed with author showing user info
     const embed: Record<string, any> = {
       title: `${statusEmoji} ${statusTitle}`,
       description: statusMessage,
       color: embedColor,
+      author: {
+        name: userDisplayName,
+        icon_url: userAvatarUrl,
+      },
       fields: [
         {
           name: '🎫 Ticket Number',
@@ -163,7 +208,7 @@ Deno.serve(async (req) => {
         },
       ],
       thumbnail: {
-        url: 'https://skyliferoleplay.com/images/slrp-logo.png',
+        url: userAvatarUrl,
       },
       timestamp: new Date().toISOString(),
       footer: {
@@ -199,24 +244,19 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Add image based on status
-    const statusImages: Record<string, string> = {
-      open: 'https://skyliferoleplay.com/images/support-request.jpg',
-      in_progress: 'https://skyliferoleplay.com/images/support-request.jpg',
-      on_hold: 'https://skyliferoleplay.com/images/support-request.jpg',
-      resolved: 'https://skyliferoleplay.com/images/support-request.jpg',
-    };
-    
-    embed.image = { url: statusImages[status] || statusImages.open };
+    // Add branded support image
+    embed.image = { url: 'https://skyliferoleplay.com/images/support-request.jpg' };
 
     // Build message content with role ping for new tickets
     let messageContent = '';
     if (isNew && TICKET_ROLE_ID) {
-      messageContent = `<@&${TICKET_ROLE_ID}> 📋 **New Support Ticket Submitted**\n\n${userMention} has submitted a new support ticket requiring attention.`;
+      messageContent = `<@&${TICKET_ROLE_ID}> 🎫 **NEW SUPPORT TICKET**\n\n${userMention} has submitted a new support ticket requiring attention!\n\n**Ticket:** \`${ticket.ticket_number}\`\n**Category:** ${categoryLabels[ticket.category] || ticket.category}\n**Priority:** ${priorityEmojis[ticket.priority] || ticket.priority}`;
     } else if (status === 'resolved') {
-      messageContent = `${userMention} Your ticket **${ticket.ticket_number}** has been resolved! 🎉`;
+      messageContent = `${userMention} 🎉 Your ticket **${ticket.ticket_number}** has been resolved!\n\nThank you for contacting SkyLife RP India Support. If you have any further questions, feel free to submit a new ticket.`;
     } else if (status === 'on_hold') {
-      messageContent = `${userMention} Your ticket **${ticket.ticket_number}** has been placed on hold. Our team will update you soon.`;
+      messageContent = `${userMention} ⏸️ Your ticket **${ticket.ticket_number}** has been placed on hold.\n\nOur team needs additional information or is waiting for a response. Please check your ticket status for updates.`;
+    } else if (status === 'in_progress') {
+      messageContent = `${userMention} 🔧 Your ticket **${ticket.ticket_number}** is now being worked on!\n\nA staff member has picked up your ticket. Please be patient while we investigate your issue.`;
     }
 
     console.log(`Sending notification to channel: ${TICKET_CHANNEL_ID}`);
