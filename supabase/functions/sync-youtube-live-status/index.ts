@@ -304,15 +304,11 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
     const videoOwnerChannelId = extractVideoOwnerChannelId(html);
     console.log(`Video owner channel ID: ${videoOwnerChannelId}, Expected: ${expectedChannelId}`);
     
-    if (expectedChannelId && videoOwnerChannelId && expectedChannelId !== videoOwnerChannelId) {
-      console.log(`${channelName} is NOT LIVE - Video belongs to a different channel (expected: ${expectedChannelId}, got: ${videoOwnerChannelId})`);
-      return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'wrong_channel_video' };
-    }
-    
-    // Additional check: verify the channel name/author matches approximately
+    // Extract the author name for additional validation
     const authorPatterns = [
+      /"ownerChannelName":"([^"]+)"/,  // Most reliable for video owner
+      /"videoDetails":[^}]*"author":"([^"]+)"/,  // From video details specifically
       /"author":"([^"]+)"/,
-      /"ownerChannelName":"([^"]+)"/,
       /"shortBylineText":\{"runs":\[\{"text":"([^"]+)"/,
     ];
     
@@ -325,24 +321,45 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
       }
     }
     
-    if (videoAuthor) {
-      console.log(`Video author: "${videoAuthor}", Channel name: "${channelName}"`);
-      // Normalize both names for comparison (remove special chars, lowercase)
-      const normalizedAuthor = videoAuthor.toLowerCase().replace(/[^a-z0-9]/g, '');
-      const normalizedChannelName = channelName.toLowerCase().replace(/[^a-z0-9]/g, '');
-      
-      // If we don't have channel IDs to compare, use fuzzy name matching as fallback
-      if (!expectedChannelId || !videoOwnerChannelId) {
-        // Check if one contains the other or they're similar
-        const isSimilar = normalizedAuthor.includes(normalizedChannelName) || 
-                          normalizedChannelName.includes(normalizedAuthor) ||
-                          normalizedAuthor === normalizedChannelName;
-        
-        if (!isSimilar) {
-          console.log(`${channelName} is NOT LIVE - Video author "${videoAuthor}" doesn't match channel "${channelName}"`);
-          return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'author_mismatch' };
-        }
+    console.log(`Video author: "${videoAuthor}", Channel name: "${channelName}"`);
+    
+    // Normalize names for comparison
+    const normalizedAuthor = (videoAuthor || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const normalizedChannelName = channelName.toLowerCase().replace(/[^a-z0-9]/g, '');
+    
+    // Check author similarity
+    const isAuthorSimilar = normalizedAuthor && (
+      normalizedAuthor.includes(normalizedChannelName) || 
+      normalizedChannelName.includes(normalizedAuthor) ||
+      normalizedAuthor === normalizedChannelName
+    );
+    
+    // VALIDATION LOGIC:
+    // 1. If we have both channel IDs and they don't match -> NOT the channel's stream
+    if (expectedChannelId && videoOwnerChannelId && expectedChannelId !== videoOwnerChannelId) {
+      console.log(`${channelName} is NOT LIVE - Channel ID mismatch (expected: ${expectedChannelId}, got: ${videoOwnerChannelId})`);
+      return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'wrong_channel_video' };
+    }
+    
+    // 2. If channel IDs match (or we have expected ID and video ID is null), trust it
+    if (expectedChannelId && (videoOwnerChannelId === expectedChannelId || !videoOwnerChannelId)) {
+      // Channel ID matches or we only have expected ID - proceed with the stream
+      // We already have the expected channel ID and the page was their /live page
+      console.log(`${channelName} - Channel ID validated or trusted from /live page`);
+    }
+    // 3. If we don't have channel IDs, fall back to author name matching
+    else if (!expectedChannelId && !videoOwnerChannelId) {
+      if (videoAuthor && !isAuthorSimilar) {
+        console.log(`${channelName} is NOT LIVE - Video author "${videoAuthor}" doesn't match channel "${channelName}"`);
+        return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'author_mismatch' };
       }
+    }
+    
+    // ADDITIONAL CHECK: If the page stayed on /live URL (didn't redirect to /watch), 
+    // and we found live indicators, trust it - this is the channel's live page
+    const stayedOnLivePage = finalUrl.includes('/live');
+    if (stayedOnLivePage) {
+      console.log(`${channelName} - Stayed on /live page, trusting as channel's own stream`);
     }
 
     // Extract stream title and thumbnail
