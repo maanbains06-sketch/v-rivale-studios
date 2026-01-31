@@ -47,12 +47,9 @@ const AnimatedSLRPLogo = ({ size = "md", className = "" }: AnimatedSLRPLogoProps
         <div 
           className="w-full h-full rounded-full"
           style={{
-            background: "conic-gradient(from 0deg, transparent 0%, hsl(var(--primary) / 0.3) 15%, transparent 30%, hsl(186 100% 50% / 0.2) 50%, transparent 70%, hsl(var(--primary) / 0.3) 85%, transparent 100%)",
-            padding: "1px",
+            background: "conic-gradient(from 0deg, transparent 0%, hsl(var(--primary) / 0.4) 15%, transparent 30%, hsl(186 100% 50% / 0.3) 50%, transparent 70%, hsl(var(--primary) / 0.4) 85%, transparent 100%)",
           }}
-        >
-          <div className="w-full h-full rounded-full bg-background/90" />
-        </div>
+        />
       </motion.div>
 
       {/* Second Rotating Ring */}
@@ -65,12 +62,9 @@ const AnimatedSLRPLogo = ({ size = "md", className = "" }: AnimatedSLRPLogoProps
         <div 
           className="w-full h-full rounded-full"
           style={{
-            background: "conic-gradient(from 0deg, transparent 0%, hsl(var(--primary) / 0.7) 25%, transparent 50%, hsl(var(--primary) / 0.5) 75%, transparent 100%)",
-            padding: "2px",
+            background: "conic-gradient(from 0deg, transparent 0%, hsl(var(--primary) / 0.8) 25%, transparent 50%, hsl(var(--primary) / 0.6) 75%, transparent 100%)",
           }}
-        >
-          <div className="w-full h-full rounded-full bg-background" />
-        </div>
+        />
       </motion.div>
 
       {/* Third Rotating Ring (opposite direction) */}
@@ -83,12 +77,9 @@ const AnimatedSLRPLogo = ({ size = "md", className = "" }: AnimatedSLRPLogoProps
         <div 
           className="w-full h-full rounded-full"
           style={{
-            background: "conic-gradient(from 180deg, transparent 0%, hsl(186 100% 50% / 0.5) 30%, transparent 60%, hsl(186 100% 50% / 0.4) 80%, transparent 100%)",
-            padding: "2px",
+            background: "conic-gradient(from 180deg, transparent 0%, hsl(186 100% 50% / 0.6) 30%, transparent 60%, hsl(186 100% 50% / 0.5) 80%, transparent 100%)",
           }}
-        >
-          <div className="w-full h-full rounded-full bg-background" />
-        </div>
+        />
       </motion.div>
 
       {/* Inner Rotating Ring (fastest) */}
@@ -101,12 +92,9 @@ const AnimatedSLRPLogo = ({ size = "md", className = "" }: AnimatedSLRPLogoProps
         <div 
           className="w-full h-full rounded-full"
           style={{
-            background: "conic-gradient(from 90deg, transparent 0%, hsl(var(--primary) / 0.4) 20%, transparent 40%, hsl(186 100% 50% / 0.3) 60%, transparent 80%, hsl(var(--primary) / 0.4) 100%)",
-            padding: "1px",
+            background: "conic-gradient(from 90deg, transparent 0%, hsl(var(--primary) / 0.5) 20%, transparent 40%, hsl(186 100% 50% / 0.4) 60%, transparent 80%, hsl(var(--primary) / 0.5) 100%)",
           }}
-        >
-          <div className="w-full h-full rounded-full bg-background" />
-        </div>
+        />
       </motion.div>
 
       {/* Logo Image with 3D Rotation */}
