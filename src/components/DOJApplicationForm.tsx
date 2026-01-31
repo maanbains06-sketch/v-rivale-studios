@@ -307,10 +307,7 @@ const DOJApplicationForm = ({ applicationType, jobImage }: DOJApplicationFormPro
                   <FormLabel>Character Legal Background *</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder={isJudge 
-                        ? "Describe your character's legal career journey. Include education (law school), previous positions as attorney/prosecutor, years of experience, notable cases..."
-                        : "Describe your character's legal education and any law-related experience. Include law school attended, areas of specialization, internships..."
-                      }
+                      placeholder=""
                       className="min-h-[100px]"
                       {...field}
                     />
@@ -328,10 +325,7 @@ const DOJApplicationForm = ({ applicationType, jobImage }: DOJApplicationFormPro
                   <FormLabel>{isJudge ? "Judicial Experience *" : "Legal Experience *"}</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder={isJudge
-                        ? "Describe your experience in legal proceedings, court cases, and any previous experience as a judge or magistrate in RP servers..."
-                        : "Describe your experience representing clients, court appearances, legal research, and any RP server legal experience..."
-                      }
+                      placeholder=""
                       className="min-h-[100px]"
                       {...field}
                     />
@@ -349,7 +343,7 @@ const DOJApplicationForm = ({ applicationType, jobImage }: DOJApplicationFormPro
                   <FormLabel>Knowledge of San Andreas Law *</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Explain your understanding of criminal law, civil law, and court procedures in San Andreas. Mention any penal codes you're familiar with..."
+                      placeholder=""
                       className="min-h-[100px]"
                       {...field}
                     />
@@ -372,10 +366,7 @@ const DOJApplicationForm = ({ applicationType, jobImage }: DOJApplicationFormPro
                   </FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder={isJudge
-                        ? "Scenario: A defendant is charged with armed robbery. The prosecution presents strong evidence including surveillance footage, but the defense argues illegal search and seizure. How would you handle this case? Explain your ruling process and reasoning..."
-                        : "Scenario: Your client is charged with assault causing grievous bodily harm. The victim claims your client attacked unprovoked, but your client claims self-defense. What would be your defense strategy? How would you present the case in court?..."
-                      }
+                      placeholder=""
                       className="min-h-[150px]"
                       {...field}
                     />
@@ -396,7 +387,7 @@ const DOJApplicationForm = ({ applicationType, jobImage }: DOJApplicationFormPro
                   <FormLabel>Why Do You Want to Join DOJ? *</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder={`Explain your motivation for becoming a ${isJudge ? "Judge" : "Attorney"} and how you will contribute to the justice system in San Andreas...`}
+                      placeholder=""
                       className="min-h-[100px]"
                       {...field}
                     />
@@ -414,7 +405,7 @@ const DOJApplicationForm = ({ applicationType, jobImage }: DOJApplicationFormPro
                   <FormLabel>Weekly Availability & Timezone *</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="e.g., Available Monday-Friday 6PM-10PM IST, Weekends 2PM-10PM IST. Can attend scheduled court sessions with 24hr notice..."
+                      placeholder=""
                       className="min-h-[80px]"
                       {...field}
                     />
@@ -432,7 +423,7 @@ const DOJApplicationForm = ({ applicationType, jobImage }: DOJApplicationFormPro
                   <FormLabel>Additional Information</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Any additional information you'd like to share about your qualifications, previous RP experience, or anything else..."
+                      placeholder=""
                       className="min-h-[80px]"
                       {...field}
                     />

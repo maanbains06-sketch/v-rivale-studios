@@ -403,11 +403,7 @@ const TicketSupport = () => {
                     id="description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Please describe your issue in detail. Include any relevant information such as:
-- When the issue occurred
-- Steps to reproduce the problem
-- Any error messages you received
-- What you've already tried"
+                    placeholder=""
                     rows={8}
                     className="resize-none"
                   />

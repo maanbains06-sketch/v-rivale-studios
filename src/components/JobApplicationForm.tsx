@@ -370,7 +370,7 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
                   <FormLabel>Why do you want to join the {jobType}? *</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Explain your deep motivation for pursuing this career path. What drives you to serve in this role?"
+                      placeholder=""
                       className="min-h-[120px]"
                       {...field} 
                     />
@@ -391,7 +391,7 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
                   <FormLabel>Previous Roleplay Experience *</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Describe any relevant roleplay experience in similar roles. Include servers, positions held, and what you learned..."
+                      placeholder=""
                       className="min-h-[100px]"
                       {...field} 
                     />
@@ -412,7 +412,7 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
                   <FormLabel>Character Background *</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Tell us about your character's background and story..."
+                      placeholder=""
                       className="min-h-[120px]"
                       {...field} 
                     />
@@ -433,7 +433,7 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
                   <FormLabel>{getJobSpecificQuestion().label}</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder={getJobSpecificQuestion().placeholder}
+                      placeholder=""
                       className="min-h-[150px]"
                       {...field} 
                     />
@@ -454,7 +454,7 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
                   <FormLabel>{getStrengthsPrompt().label}</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder={getStrengthsPrompt().placeholder}
+                      placeholder=""
                       className="min-h-[120px]"
                       {...field} 
                     />
@@ -475,7 +475,7 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
                   <FormLabel>Weekly Availability & Timezone *</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Example: Monday-Friday 6PM-11PM IST, weekends 12PM-12AM IST. Approximately 20-30 hours per week..."
+                      placeholder=""
                       className="min-h-[80px]"
                       {...field} 
                     />
@@ -496,7 +496,7 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
                   <FormLabel>Additional Information</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Any other information you'd like to share (optional)..."
+                      placeholder=""
                       className="min-h-[80px]"
                       {...field} 
                     />

@@ -304,11 +304,11 @@ const FirefighterApplicationForm = ({ jobImage }: FirefighterApplicationFormProp
                   <FormItem>
                     <FormLabel>Weekly Availability *</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Example: Monday-Friday 6PM-11PM IST, weekends 12PM-12AM IST. Approximately 20-30 hours per week..."
-                        className="min-h-[100px]"
-                        {...field} 
-                      />
+                    <Textarea 
+                      placeholder=""
+                      className="min-h-[100px]"
+                      {...field} 
+                    />
                     </FormControl>
                     <FormDescription>
                       How much time can you dedicate to this job weekly? Include days, hours, and timezone.

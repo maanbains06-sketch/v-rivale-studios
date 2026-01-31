@@ -569,7 +569,7 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
                   <FormLabel>Relevant Experience & Skills *</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Describe your experience with roleplay, moderation, development, or relevant skills. Include any technical expertise, leadership experience, or community management background..."
+                      placeholder=""
                       className="min-h-[120px]"
                       {...field}
                     />
@@ -591,7 +591,7 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
                   <FormLabel>Why Do You Want To Join Our Staff Team? *</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Explain your motivation, what unique value you bring, and how you'll contribute to creating the best roleplay experience for our community..."
+                      placeholder=""
                       className="min-h-[120px]"
                       {...field}
                     />
@@ -613,7 +613,7 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
                   <FormLabel>Weekly Availability & Timezone *</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Example: Available Monday-Friday 6PM-11PM EST, and weekends 12PM-12AM EST. Approximately 20-30 hours per week..."
+                      placeholder=""
                       className="min-h-[80px]"
                       {...field}
                     />
@@ -634,7 +634,7 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
                   <FormLabel>Previous Staff Experience (Optional)</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="If you have previous experience as staff on other servers, please describe your role, duration, and what you learned..."
+                      placeholder=""
                       className="min-h-[80px]"
                       {...field}
                     />
