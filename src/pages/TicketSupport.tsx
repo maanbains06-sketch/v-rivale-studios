@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
@@ -11,9 +11,21 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Ticket, Send, Clock, CheckCircle, AlertCircle, FileText, ArrowLeft } from "lucide-react";
+import { Ticket, Send, Clock, CheckCircle, AlertCircle, FileText, ArrowLeft, Upload, X, Image, Video } from "lucide-react";
 import { format } from "date-fns";
 import headerSupport from "@/assets/header-support.jpg";
+
+const ACCEPTED_FILE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+];
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+const MAX_FILES = 5;
 
 interface SupportTicket {
   id: string;
@@ -64,6 +76,9 @@ const TicketSupport = () => {
   const [steamId, setSteamId] = useState("");
   const [playerId, setPlayerId] = useState("");
   const [playerName, setPlayerName] = useState("");
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Reset form fields when showing form
   const resetFormFields = () => {
@@ -75,6 +90,83 @@ const TicketSupport = () => {
     setSteamId("");
     setPlayerId("");
     setPlayerName("");
+    setAttachments([]);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    
+    // Validate files
+    const validFiles: File[] = [];
+    for (const file of files) {
+      if (!ACCEPTED_FILE_TYPES.includes(file.type)) {
+        toast({
+          title: "Invalid File Type",
+          description: `${file.name} is not a supported file type. Please upload images (JPG, PNG, GIF, WebP) or videos (MP4, WebM, MOV).`,
+          variant: "destructive",
+        });
+        continue;
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        toast({
+          title: "File Too Large",
+          description: `${file.name} exceeds the 50MB size limit.`,
+          variant: "destructive",
+        });
+        continue;
+      }
+      validFiles.push(file);
+    }
+
+    // Check total count
+    if (attachments.length + validFiles.length > MAX_FILES) {
+      toast({
+        title: "Too Many Files",
+        description: `You can only upload up to ${MAX_FILES} files.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setAttachments((prev) => [...prev, ...validFiles]);
+    
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const uploadFiles = async (userId: string, ticketId: string): Promise<string[]> => {
+    const uploadedUrls: string[] = [];
+    
+    for (const file of attachments) {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${userId}/${ticketId}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+      
+      const { data, error } = await supabase.storage
+        .from("ticket-attachments")
+        .upload(fileName, file, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+      
+      if (error) {
+        console.error("Upload error:", error);
+        throw new Error(`Failed to upload ${file.name}`);
+      }
+      
+      const { data: urlData } = supabase.storage
+        .from("ticket-attachments")
+        .getPublicUrl(data.path);
+      
+      uploadedUrls.push(urlData.publicUrl);
+    }
+    
+    return uploadedUrls;
   };
 
   useEffect(() => {
@@ -127,6 +219,15 @@ const TicketSupport = () => {
       return;
     }
 
+    if (attachments.length === 0) {
+      toast({
+        title: "Proof Required",
+        description: "Please upload at least one image or video as proof for your ticket.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setSubmitting(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -137,6 +238,7 @@ const TicketSupport = () => {
 
       const discordUsername = user.user_metadata?.full_name || user.user_metadata?.name || null;
 
+      // First create the ticket to get the ID
       const { data, error } = await supabase
         .from("support_tickets")
         .insert({
@@ -155,6 +257,29 @@ const TicketSupport = () => {
         .single();
 
       if (error) throw error;
+
+      // Upload attachments
+      setUploadingFiles(true);
+      try {
+        const uploadedUrls = await uploadFiles(user.id, data.id);
+        
+        // Update ticket with attachment URLs
+        if (uploadedUrls.length > 0) {
+          await supabase
+            .from("support_tickets")
+            .update({ attachments: uploadedUrls })
+            .eq("id", data.id);
+        }
+      } catch (uploadError) {
+        console.error("Failed to upload attachments:", uploadError);
+        toast({
+          title: "Warning",
+          description: "Ticket created but some attachments failed to upload.",
+          variant: "destructive",
+        });
+      } finally {
+        setUploadingFiles(false);
+      }
 
       toast({
         title: "Ticket Submitted",
@@ -430,8 +555,88 @@ const TicketSupport = () => {
                     className="resize-none"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Be as detailed as possible. Include screenshots or videos if available.
+                    Be as detailed as possible about your issue.
                   </p>
+                </div>
+
+                {/* File Upload Section */}
+                <div className="space-y-3">
+                  <Label className="flex items-center gap-2">
+                    <Upload className="w-4 h-4" />
+                    Proof (Images/Videos) *
+                  </Label>
+                  <p className="text-xs text-muted-foreground -mt-1">
+                    Upload screenshots or video evidence to support your ticket. At least 1 file is required.
+                  </p>
+                  
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept={ACCEPTED_FILE_TYPES.join(",")}
+                    multiple
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+                  
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-2 border-dashed border-primary/30 rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="flex gap-2">
+                        <Image className="w-8 h-8 text-primary/60" />
+                        <Video className="w-8 h-8 text-primary/60" />
+                      </div>
+                      <p className="text-sm font-medium">Click to upload files</p>
+                      <p className="text-xs text-muted-foreground">
+                        JPG, PNG, GIF, WebP, MP4, WebM, MOV (max 50MB each, up to 5 files)
+                      </p>
+                    </div>
+                  </div>
+
+                  {attachments.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Selected Files ({attachments.length}/{MAX_FILES}):</p>
+                      <div className="grid gap-2">
+                        {attachments.map((file, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border"
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              {file.type.startsWith("image/") ? (
+                                <Image className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                              ) : (
+                                <Video className="w-5 h-5 text-purple-500 flex-shrink-0" />
+                              )}
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium truncate">{file.name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {(file.size / (1024 * 1024)).toFixed(2)} MB
+                                </p>
+                              </div>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removeAttachment(index)}
+                              className="flex-shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {attachments.length === 0 && (
+                    <p className="text-xs text-destructive flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      At least one proof file is required
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex gap-3 pt-4">
@@ -439,18 +644,19 @@ const TicketSupport = () => {
                     variant="outline"
                     onClick={() => setShowForm(false)}
                     className="flex-1"
+                    disabled={submitting || uploadingFiles}
                   >
                     Cancel
                   </Button>
                   <Button
                     onClick={submitTicket}
-                    disabled={submitting}
+                    disabled={submitting || uploadingFiles || attachments.length === 0}
                     className="flex-1"
                   >
-                    {submitting ? (
+                    {submitting || uploadingFiles ? (
                       <>
                         <Clock className="w-4 h-4 mr-2 animate-spin" />
-                        Submitting...
+                        {uploadingFiles ? "Uploading..." : "Submitting..."}
                       </>
                     ) : (
                       <>

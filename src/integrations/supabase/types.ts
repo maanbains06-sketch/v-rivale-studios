@@ -2485,6 +2485,7 @@ export type Database = {
         Row: {
           admin_notes: string | null
           assigned_to: string | null
+          attachments: string[] | null
           category: string
           created_at: string
           description: string
@@ -2507,6 +2508,7 @@ export type Database = {
         Insert: {
           admin_notes?: string | null
           assigned_to?: string | null
+          attachments?: string[] | null
           category?: string
           created_at?: string
           description: string
@@ -2529,6 +2531,7 @@ export type Database = {
         Update: {
           admin_notes?: string | null
           assigned_to?: string | null
+          attachments?: string[] | null
           category?: string
           created_at?: string
           description?: string
