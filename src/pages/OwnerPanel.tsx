@@ -31,6 +31,7 @@ import BusinessTypeManager from "@/components/BusinessTypeManager";
 import ThemeManager from "@/components/ThemeManager";
 import { OwnerGalleryManager } from "@/components/OwnerGalleryManager";
 import { LiveApplicationStats } from "@/components/LiveApplicationStats";
+import AdminTicketManagement from "@/components/AdminTicketManagement";
 import { combineAllApplications, filterApplicationsByType } from "@/lib/applicationTransformer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
@@ -1687,6 +1688,10 @@ const OwnerPanel = () => {
                   <Image className="w-4 h-4" />
                   <span className="hidden sm:inline">Gallery</span>
                 </TabsTrigger>
+                <TabsTrigger value="tickets" className="flex items-center gap-2 whitespace-nowrap">
+                  <Ticket className="w-4 h-4" />
+                  <span className="hidden sm:inline">Tickets</span>
+                </TabsTrigger>
               </TabsList>
             </div>
             {/* Fade indicators for scroll hint */}
@@ -2628,6 +2633,11 @@ const OwnerPanel = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Tickets Tab */}
+          <TabsContent value="tickets">
+            <AdminTicketManagement />
           </TabsContent>
         </Tabs>
       </div>

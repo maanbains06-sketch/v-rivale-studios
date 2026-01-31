@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { UnifiedApplicationsTable, ApplicationType } from "@/components/UnifiedApplicationsTable";
 import { combineAllApplications, filterApplicationsByType } from "@/lib/applicationTransformer";
 import { sendDiscordNotification } from "@/lib/discordNotificationSender";
+import AdminTicketManagement from "@/components/AdminTicketManagement";
 import { 
   Loader2, 
   Shield, 
@@ -29,6 +30,7 @@ import {
   TrendingUp,
   Gift,
   Ticket,
+  FileQuestion,
   DollarSign,
   CheckCircle,
   XCircle,
@@ -1328,6 +1330,10 @@ const Admin = () => {
               <Briefcase className="w-4 h-4" />
               <span className="hidden sm:inline">Business</span>
             </TabsTrigger>
+            <TabsTrigger value="tickets" className="flex items-center gap-1 text-xs sm:text-sm">
+              <FileQuestion className="w-4 h-4" />
+              <span className="hidden sm:inline">Tickets</span>
+            </TabsTrigger>
           </TabsList>
 
           {/* Organization Applications Tab - Unified View */}
@@ -2086,6 +2092,11 @@ const Admin = () => {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Tickets Tab */}
+          <TabsContent value="tickets">
+            <AdminTicketManagement />
           </TabsContent>
 
           {/* Players Tab */}
