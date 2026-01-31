@@ -71,6 +71,42 @@ function getStreamThumbnail(videoId: string): string {
   return `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
 }
 
+// Extract channel ID from HTML to verify ownership
+function extractChannelIdFromHtml(html: string): string | null {
+  const patterns = [
+    /"channelId":"(UC[a-zA-Z0-9_-]{22})"/,
+    /"externalChannelId":"(UC[a-zA-Z0-9_-]{22})"/,
+    /channel\/(UC[a-zA-Z0-9_-]{22})/,
+    /"browseId":"(UC[a-zA-Z0-9_-]{22})"/,
+  ];
+  
+  for (const pattern of patterns) {
+    const match = html.match(pattern);
+    if (match) {
+      return match[1];
+    }
+  }
+  return null;
+}
+
+// Extract the channel ID of the video owner from video page HTML
+function extractVideoOwnerChannelId(html: string): string | null {
+  const patterns = [
+    /"videoDetails":\{[^}]*"channelId":"(UC[a-zA-Z0-9_-]{22})"/,
+    /"ownerChannelName":[^,]+,"externalChannelId":"(UC[a-zA-Z0-9_-]{22})"/,
+    /"shortBylineText":\{"runs":\[\{"text":"[^"]+","navigationEndpoint":\{"[^}]+,"browseEndpoint":\{"browseId":"(UC[a-zA-Z0-9_-]{22})"/,
+    /"author":"[^"]+","channelId":"(UC[a-zA-Z0-9_-]{22})"/,
+  ];
+  
+  for (const pattern of patterns) {
+    const match = html.match(pattern);
+    if (match) {
+      return match[1];
+    }
+  }
+  return null;
+}
+
 // Check live status by fetching the channel's /live page
 async function checkLiveStatus(channelUrl: string, channelName: string): Promise<{
   isLive: boolean;
@@ -87,12 +123,16 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
 
   // Build the /live URL based on identifier type
   let livePageUrl: string;
+  let channelPageUrl: string;
   if (identifier.type === 'handle') {
     livePageUrl = `https://www.youtube.com/@${identifier.value}/live`;
+    channelPageUrl = `https://www.youtube.com/@${identifier.value}`;
   } else if (identifier.type === 'id') {
     livePageUrl = `https://www.youtube.com/channel/${identifier.value}/live`;
+    channelPageUrl = `https://www.youtube.com/channel/${identifier.value}`;
   } else {
     livePageUrl = `https://www.youtube.com/c/${identifier.value}/live`;
+    channelPageUrl = `https://www.youtube.com/c/${identifier.value}`;
   }
 
   console.log(`Checking live page: ${livePageUrl} for ${channelName}`);
@@ -124,6 +164,20 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
     const finalUrl = response.url;
     
     console.log(`Final URL for ${channelName}: ${finalUrl}`);
+
+    // IMPORTANT: First extract the expected channel ID from the page
+    // If we're on a channel's /live page, we should be able to find the channel's ID
+    let expectedChannelId: string | null = null;
+    
+    // If the identifier is already a channel ID, use it directly
+    if (identifier.type === 'id') {
+      expectedChannelId = identifier.value;
+    } else {
+      // Try to extract from the HTML
+      expectedChannelId = extractChannelIdFromHtml(html);
+    }
+    
+    console.log(`Expected channel ID for ${channelName}: ${expectedChannelId}`);
 
     // Extract video ID from various sources
     let videoId: string | null = null;
@@ -243,6 +297,52 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
     if (!isLive) {
       console.log(`${channelName} - No definitive live indicators found`);
       return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'no_live_indicators' };
+    }
+
+    // CRITICAL: Verify the video actually belongs to this channel
+    // Extract the video owner's channel ID and compare it with the expected channel ID
+    const videoOwnerChannelId = extractVideoOwnerChannelId(html);
+    console.log(`Video owner channel ID: ${videoOwnerChannelId}, Expected: ${expectedChannelId}`);
+    
+    if (expectedChannelId && videoOwnerChannelId && expectedChannelId !== videoOwnerChannelId) {
+      console.log(`${channelName} is NOT LIVE - Video belongs to a different channel (expected: ${expectedChannelId}, got: ${videoOwnerChannelId})`);
+      return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'wrong_channel_video' };
+    }
+    
+    // Additional check: verify the channel name/author matches approximately
+    const authorPatterns = [
+      /"author":"([^"]+)"/,
+      /"ownerChannelName":"([^"]+)"/,
+      /"shortBylineText":\{"runs":\[\{"text":"([^"]+)"/,
+    ];
+    
+    let videoAuthor: string | null = null;
+    for (const pattern of authorPatterns) {
+      const match = html.match(pattern);
+      if (match) {
+        videoAuthor = match[1];
+        break;
+      }
+    }
+    
+    if (videoAuthor) {
+      console.log(`Video author: "${videoAuthor}", Channel name: "${channelName}"`);
+      // Normalize both names for comparison (remove special chars, lowercase)
+      const normalizedAuthor = videoAuthor.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const normalizedChannelName = channelName.toLowerCase().replace(/[^a-z0-9]/g, '');
+      
+      // If we don't have channel IDs to compare, use fuzzy name matching as fallback
+      if (!expectedChannelId || !videoOwnerChannelId) {
+        // Check if one contains the other or they're similar
+        const isSimilar = normalizedAuthor.includes(normalizedChannelName) || 
+                          normalizedChannelName.includes(normalizedAuthor) ||
+                          normalizedAuthor === normalizedChannelName;
+        
+        if (!isSimilar) {
+          console.log(`${channelName} is NOT LIVE - Video author "${videoAuthor}" doesn't match channel "${channelName}"`);
+          return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'author_mismatch' };
+        }
+      }
     }
 
     // Extract stream title and thumbnail
