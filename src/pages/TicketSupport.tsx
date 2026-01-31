@@ -62,6 +62,8 @@ const TicketSupport = () => {
   const [priority, setPriority] = useState("normal");
   const [discordId, setDiscordId] = useState("");
   const [steamId, setSteamId] = useState("");
+  const [playerId, setPlayerId] = useState("");
+  const [playerName, setPlayerName] = useState("");
 
   // Reset form fields when showing form
   const resetFormFields = () => {
@@ -71,6 +73,8 @@ const TicketSupport = () => {
     setPriority("normal");
     setDiscordId("");
     setSteamId("");
+    setPlayerId("");
+    setPlayerName("");
   };
 
   useEffect(() => {
@@ -114,10 +118,10 @@ const TicketSupport = () => {
   };
 
   const submitTicket = async () => {
-    if (!category || !subject.trim() || !description.trim() || !steamId.trim()) {
+    if (!category || !subject.trim() || !description.trim() || !steamId.trim() || !playerId.trim() || !playerName.trim()) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required fields (including Steam ID).",
+        description: "Please fill in all required fields (Steam ID, Player ID, and Player Name).",
         variant: "destructive",
       });
       return;
@@ -140,6 +144,8 @@ const TicketSupport = () => {
           discord_id: discordId || null,
           discord_username: discordUsername,
           steam_id: steamId.trim(),
+          player_id: playerId.trim(),
+          player_name: playerName.trim(),
           category,
           subject,
           description,
@@ -324,21 +330,42 @@ const TicketSupport = () => {
               <CardContent className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="discord_id">Discord ID</Label>
+                    <Label htmlFor="player_id">Player ID (In-Game) *</Label>
                     <Input
-                      id="discord_id"
-                      value={discordId}
-                      onChange={(e) => setDiscordId(e.target.value)}
-                      placeholder=""
+                      id="player_id"
+                      value={playerId}
+                      onChange={(e) => setPlayerId(e.target.value)}
+                      placeholder="Your in-game player ID"
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="player_name">Player Name (In-Game) *</Label>
+                    <Input
+                      id="player_name"
+                      value={playerName}
+                      onChange={(e) => setPlayerName(e.target.value)}
+                      placeholder="Your character name"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="steam_id">Steam ID *</Label>
                     <Input
                       id="steam_id"
                       value={steamId}
                       onChange={(e) => setSteamId(e.target.value)}
-                      placeholder=""
+                      placeholder="Your Steam ID"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="discord_id">Discord ID</Label>
+                    <Input
+                      id="discord_id"
+                      value={discordId}
+                      onChange={(e) => setDiscordId(e.target.value)}
+                      placeholder="Optional"
                     />
                   </div>
                 </div>

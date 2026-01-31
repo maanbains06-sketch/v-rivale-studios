@@ -2491,6 +2491,8 @@ export type Database = {
           discord_id: string | null
           discord_username: string | null
           id: string
+          player_id: string | null
+          player_name: string | null
           priority: string
           resolution: string | null
           resolved_at: string | null
@@ -2511,6 +2513,8 @@ export type Database = {
           discord_id?: string | null
           discord_username?: string | null
           id?: string
+          player_id?: string | null
+          player_name?: string | null
           priority?: string
           resolution?: string | null
           resolved_at?: string | null
@@ -2531,6 +2535,8 @@ export type Database = {
           discord_id?: string | null
           discord_username?: string | null
           id?: string
+          player_id?: string | null
+          player_name?: string | null
           priority?: string
           resolution?: string | null
           resolved_at?: string | null
