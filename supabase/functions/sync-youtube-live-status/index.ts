@@ -78,6 +78,10 @@ function extractChannelIdFromHtml(html: string): string | null {
     /"externalChannelId":"(UC[a-zA-Z0-9_-]{22})"/,
     /channel\/(UC[a-zA-Z0-9_-]{22})/,
     /"browseId":"(UC[a-zA-Z0-9_-]{22})"/,
+    // Escaped JSON variants (sometimes present in consent / embedded blobs)
+    /\\"channelId\\":\\"(UC[a-zA-Z0-9_-]{22})\\"/,
+    /\\"externalChannelId\\":\\"(UC[a-zA-Z0-9_-]{22})\\"/,
+    /\\"browseId\\":\\"(UC[a-zA-Z0-9_-]{22})\\"/,
   ];
   
   for (const pattern of patterns) {
@@ -96,6 +100,11 @@ function extractVideoOwnerChannelId(html: string): string | null {
     /"ownerChannelName":[^,]+,"externalChannelId":"(UC[a-zA-Z0-9_-]{22})"/,
     /"shortBylineText":\{"runs":\[\{"text":"[^"]+","navigationEndpoint":\{"[^}]+,"browseEndpoint":\{"browseId":"(UC[a-zA-Z0-9_-]{22})"/,
     /"author":"[^"]+","channelId":"(UC[a-zA-Z0-9_-]{22})"/,
+    // Escaped JSON variants (common when the HTML embeds JSON as a string)
+    /\\"videoDetails\\":\{[^}]*\\"channelId\\":\\"(UC[a-zA-Z0-9_-]{22})\\"/,
+    /\\"externalChannelId\\":\\"(UC[a-zA-Z0-9_-]{22})\\"/,
+    /\\"browseId\\":\\"(UC[a-zA-Z0-9_-]{22})\\"/,
+    /\\"channelId\\":\\"(UC[a-zA-Z0-9_-]{22})\\"/,
   ];
   
   for (const pattern of patterns) {
@@ -138,43 +147,55 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
   console.log(`Checking live page: ${livePageUrl} for ${channelName}`);
 
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 20000);
+    const defaultHeaders: Record<string, string> = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache',
+      'Sec-Fetch-Dest': 'document',
+      'Sec-Fetch-Mode': 'navigate',
+      'Sec-Fetch-Site': 'none',
+      'Sec-Fetch-User': '?1',
+      'Upgrade-Insecure-Requests': '1',
+    };
 
-    const response = await fetch(livePageUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache',
-        'Sec-Fetch-Dest': 'document',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'none',
-        'Sec-Fetch-User': '?1',
-        'Upgrade-Insecure-Requests': '1',
-      },
-      redirect: 'follow',
-      signal: controller.signal,
-    });
+    const fetchHtml = async (url: string, timeoutMs: number) => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      const response = await fetch(url, {
+        headers: defaultHeaders,
+        redirect: 'follow',
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      return {
+        html: await response.text(),
+        finalUrl: response.url,
+      };
+    };
 
-    clearTimeout(timeoutId);
-
-    const html = await response.text();
-    const finalUrl = response.url;
+    const { html, finalUrl } = await fetchHtml(livePageUrl, 20000);
     
     console.log(`Final URL for ${channelName}: ${finalUrl}`);
 
-    // IMPORTANT: First extract the expected channel ID from the page
-    // If we're on a channel's /live page, we should be able to find the channel's ID
+    // IMPORTANT: Resolve the *expected* channel ID from the channel's main page.
+    // The /live page may include other channels' metadata (recommendations), so it is not reliable.
     let expectedChannelId: string | null = null;
     
     // If the identifier is already a channel ID, use it directly
     if (identifier.type === 'id') {
       expectedChannelId = identifier.value;
     } else {
-      // Try to extract from the HTML
-      expectedChannelId = extractChannelIdFromHtml(html);
+      try {
+        const channelPage = await fetchHtml(channelPageUrl, 15000);
+        expectedChannelId = extractChannelIdFromHtml(channelPage.html);
+        console.log(`Resolved expected channel ID for ${channelName} from channel page (${channelPage.finalUrl}): ${expectedChannelId}`);
+      } catch (e: any) {
+        console.error(`${channelName} - Failed to resolve expected channel ID from channel page:`, e?.message || e);
+        // Fallback to best-effort from /live HTML if channel page fails
+        expectedChannelId = extractChannelIdFromHtml(html);
+      }
     }
     
     console.log(`Expected channel ID for ${channelName}: ${expectedChannelId}`);
@@ -300,11 +321,12 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
     }
 
     // CRITICAL: Verify the video actually belongs to this channel
-    // Extract the video owner's channel ID and compare it with the expected channel ID
-    const videoOwnerChannelId = extractVideoOwnerChannelId(html);
-    console.log(`Video owner channel ID: ${videoOwnerChannelId}, Expected: ${expectedChannelId}`);
-    
-    // Extract the author name for additional validation
+    // IMPORTANT: YouTube /live pages sometimes surface other channels' streams.
+    // We must confirm ownership based on the video's actual watch page when needed.
+    let videoOwnerChannelId = extractVideoOwnerChannelId(html);
+    console.log(`Video owner channel ID (from live page): ${videoOwnerChannelId}, Expected: ${expectedChannelId}`);
+
+    // Extract the author name for additional logging / fallback
     const authorPatterns = [
       /"ownerChannelName":"([^"]+)"/,  // Most reliable for video owner
       /"videoDetails":[^}]*"author":"([^"]+)"/,  // From video details specifically
@@ -321,42 +343,102 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
       }
     }
     
-    console.log(`Video author: "${videoAuthor}", Channel name: "${channelName}"`);
-    
-    // Normalize names for comparison
-    const normalizedAuthor = (videoAuthor || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-    const normalizedChannelName = channelName.toLowerCase().replace(/[^a-z0-9]/g, '');
-    
-    // Check author similarity
-    const isAuthorSimilar = normalizedAuthor && (
-      normalizedAuthor.includes(normalizedChannelName) || 
-      normalizedChannelName.includes(normalizedAuthor) ||
-      normalizedAuthor === normalizedChannelName
-    );
-    
-    // CRITICAL VALIDATION: Only show streams that actually belong to this channel
-    // YouTube's /live page can show other channels' streams when the channel is not live
-    
-    // 1. If we have both channel IDs, they MUST match
-    if (expectedChannelId && videoOwnerChannelId) {
-      if (expectedChannelId !== videoOwnerChannelId) {
-        console.log(`${channelName} is NOT LIVE - Channel ID mismatch (expected: ${expectedChannelId}, got: ${videoOwnerChannelId})`);
+    console.log(`Video author (from live page): "${videoAuthor}", Channel name: "${channelName}"`);
+
+    // If we have an expected channel ID but couldn't reliably extract the owner ID from the /live HTML,
+    // fetch the video's watch page and extract the owner channel ID there (much more reliable).
+    if (expectedChannelId && (!videoOwnerChannelId || videoOwnerChannelId !== expectedChannelId)) {
+      const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
+      console.log(`${channelName} - Verifying ownership via watch page: ${watchUrl}`);
+      try {
+        const watch = await fetchHtml(watchUrl, 15000);
+        const watchOwner = extractVideoOwnerChannelId(watch.html);
+        console.log(`${channelName} - Video owner channel ID (from watch page): ${watchOwner}, Expected: ${expectedChannelId}`);
+        if (watchOwner) {
+          videoOwnerChannelId = watchOwner;
+        }
+      } catch (e: any) {
+        console.error(`${channelName} - Watch page verification failed:`, e?.message || e);
+      }
+    }
+
+    // If the watch page doesn't contain an owner channel ID (common when YouTube serves consent/blocked pages),
+    // use oEmbed to get the author URL, then resolve that to a channel ID.
+    if (expectedChannelId && !videoOwnerChannelId) {
+      try {
+        const oEmbedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(
+          `https://www.youtube.com/watch?v=${videoId}`,
+        )}&format=json`;
+        console.log(`${channelName} - Resolving ownership via oEmbed: ${oEmbedUrl}`);
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        const res = await fetch(oEmbedUrl, {
+          headers: {
+            'User-Agent': defaultHeaders['User-Agent'],
+            'Accept': 'application/json',
+          },
+          redirect: 'follow',
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const data = await res.json();
+          const authorUrl: string | undefined = data?.author_url;
+          console.log(`${channelName} - oEmbed author_url: ${authorUrl}`);
+
+          if (authorUrl) {
+            // If oEmbed gives a direct /channel/UC... URL, extract it immediately.
+            const directChannelMatch = authorUrl.match(/youtube\.com\/channel\/(UC[a-zA-Z0-9_-]{22})/);
+            if (directChannelMatch) {
+              videoOwnerChannelId = directChannelMatch[1];
+              console.log(`${channelName} - Owner channel ID resolved directly from oEmbed author_url: ${videoOwnerChannelId}`);
+            } else {
+              // Otherwise resolve the channel ID by fetching the author URL page.
+              const authorIdentifier = extractChannelIdentifier(authorUrl);
+              if (authorIdentifier) {
+                let authorPageUrl: string;
+                if (authorIdentifier.type === 'handle') {
+                  authorPageUrl = `https://www.youtube.com/@${authorIdentifier.value}`;
+                } else if (authorIdentifier.type === 'id') {
+                  authorPageUrl = `https://www.youtube.com/channel/${authorIdentifier.value}`;
+                } else {
+                  authorPageUrl = `https://www.youtube.com/c/${authorIdentifier.value}`;
+                }
+
+                console.log(`${channelName} - Fetching author page to resolve channel ID: ${authorPageUrl}`);
+                const authorPage = await fetchHtml(authorPageUrl, 12000);
+                const resolved = extractChannelIdFromHtml(authorPage.html);
+                console.log(`${channelName} - Owner channel ID resolved from author page: ${resolved}`);
+                if (resolved) {
+                  videoOwnerChannelId = resolved;
+                }
+              }
+            }
+          }
+        } else {
+          console.log(`${channelName} - oEmbed request failed: ${res.status}`);
+        }
+      } catch (e: any) {
+        console.error(`${channelName} - oEmbed ownership resolution failed:`, e?.message || e);
+      }
+    }
+
+    // FINAL OWNERSHIP DECISION
+    // If we know the expected channel ID, only accept if the video's owner channel ID matches it.
+    if (expectedChannelId) {
+      if (!videoOwnerChannelId) {
+        console.log(`${channelName} is NOT LIVE - Cannot verify ownership (missing video owner channel ID)`);
+        return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'cannot_verify_ownership' };
+      }
+
+      if (videoOwnerChannelId !== expectedChannelId) {
+        console.log(`${channelName} is NOT LIVE - Video belongs to a different channel (expected: ${expectedChannelId}, got: ${videoOwnerChannelId})`);
         return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'wrong_channel_video' };
       }
-      console.log(`${channelName} - Channel ID validated: ${expectedChannelId}`);
-    }
-    // 2. If we don't have video owner channel ID, we MUST verify by author name
-    else if (videoAuthor) {
-      if (!isAuthorSimilar) {
-        console.log(`${channelName} is NOT LIVE - Video author "${videoAuthor}" doesn't match channel "${channelName}" (author mismatch)`);
-        return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'author_mismatch' };
-      }
-      console.log(`${channelName} - Author name validated: "${videoAuthor}" matches "${channelName}"`);
-    }
-    // 3. If we have no way to verify ownership, reject the stream
-    else {
-      console.log(`${channelName} is NOT LIVE - Cannot verify stream ownership (no channel ID or author name)`);
-      return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'cannot_verify_ownership' };
+
+      console.log(`${channelName} - Ownership verified via channel ID match: ${expectedChannelId}`);
     }
 
     // Extract stream title and thumbnail
