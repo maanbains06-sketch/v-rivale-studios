@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 // Extract channel ID/handle from various YouTube URL formats
@@ -65,6 +65,68 @@ function extractStreamTitle(html: string): string | null {
   return null;
 }
 
+function extractCanonicalWatchVideoId(html: string): string | null {
+  const match = html.match(/<link\s+rel="canonical"\s+href="https:\/\/www\.youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})"/);
+  return match?.[1] ?? null;
+}
+
+function extractOgWatchVideoId(html: string): string | null {
+  const patterns = [
+    /<meta\s+property="og:url"\s+content="https:\/\/www\.youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})"/,
+    /<meta\s+property="og:video:url"\s+content="https:\/\/www\.youtube\.com\/embed\/([a-zA-Z0-9_-]{11})"/,
+    /<meta\s+property="og:video:secure_url"\s+content="https:\/\/www\.youtube\.com\/embed\/([a-zA-Z0-9_-]{11})"/,
+  ];
+
+  for (const p of patterns) {
+    const m = html.match(p);
+    if (m?.[1]) return m[1];
+  }
+
+  return null;
+}
+
+function extractPrimaryVideoIdFromHtml(html: string): string | null {
+  // 1) Prefer a videoId that is in the SAME neighborhood as LIVE markers.
+  // This avoids picking random/recommended videos on the /live page.
+  const liveMarkers = [
+    '"isLive":true',
+    '"isLiveNow":true',
+    '"BADGE_STYLE_TYPE_LIVE_NOW"',
+    '"liveStreamabilityRenderer"',
+    '"liveChatRenderer"',
+  ];
+
+  const videoIdRe = /"videoId":"([a-zA-Z0-9_-]{11})"/g;
+  let m: RegExpExecArray | null;
+  while ((m = videoIdRe.exec(html))) {
+    const id = m[1];
+    const idx = m.index;
+    const start = Math.max(0, idx - 2500);
+    const end = Math.min(html.length, idx + 2500);
+    const windowHtml = html.slice(start, end);
+
+    const hasLiveMarker = liveMarkers.some((marker) => windowHtml.includes(marker));
+    const hasReplayMarker = windowHtml.includes('"isReplay":true') || windowHtml.includes('live_chat_replay');
+
+    if (hasLiveMarker && !hasReplayMarker) {
+      return id;
+    }
+  }
+
+  // 2) Fallback to the page's primary player response / videoDetails.
+  const patterns: RegExp[] = [
+    /"videoDetails":\{[^}]*"videoId":"([a-zA-Z0-9_-]{11})"/,
+    /"videoDetails":\{[^}]*"videoId"\s*:\s*"([a-zA-Z0-9_-]{11})"/,
+    /"currentVideoEndpoint":\{"clickTrackingParams":"[^"]+","watchEndpoint":\{"videoId":"([a-zA-Z0-9_-]{11})"/,
+  ];
+  for (const p of patterns) {
+    const mm = html.match(p);
+    if (mm?.[1]) return mm[1];
+  }
+
+  return null;
+}
+
 // Extract stream thumbnail from video ID
 function getStreamThumbnail(videoId: string): string {
   // Use maxresdefault for highest quality, fallback to hqdefault
@@ -98,6 +160,7 @@ function extractVideoOwnerChannelId(html: string): string | null {
   const patterns = [
     /"videoDetails":\{[^}]*"channelId":"(UC[a-zA-Z0-9_-]{22})"/,
     /"ownerChannelName":[^,]+,"externalChannelId":"(UC[a-zA-Z0-9_-]{22})"/,
+    /"playerMicroformatRenderer":\{[^}]*"externalChannelId":"(UC[a-zA-Z0-9_-]{22})"/,
     /"shortBylineText":\{"runs":\[\{"text":"[^"]+","navigationEndpoint":\{"[^}]+,"browseEndpoint":\{"browseId":"(UC[a-zA-Z0-9_-]{22})"/,
     /"author":"[^"]+","channelId":"(UC[a-zA-Z0-9_-]{22})"/,
     // Escaped JSON variants (common when the HTML embeds JSON as a string)
@@ -202,12 +265,36 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
 
     // Extract video ID from various sources
     let videoId: string | null = null;
+
+    // Highest priority: OpenGraph URL (tends to be accurate for /live pages)
+    videoId = extractOgWatchVideoId(html);
+    if (videoId) {
+      console.log(`Found video ID from OpenGraph metadata: ${videoId}`);
+    }
+
+    // Highest priority: player/videoDetails on the page (avoids grabbing recommended videos)
+    if (!videoId) {
+      videoId = extractPrimaryVideoIdFromHtml(html);
+      if (videoId) {
+        console.log(`Found primary video ID from player data: ${videoId}`);
+      }
+    }
+
+    // Prefer canonical watch URL (usually points to the channel's live stream)
+    if (!videoId) {
+      videoId = extractCanonicalWatchVideoId(html);
+      if (videoId) {
+        console.log(`Found video ID from canonical link: ${videoId}`);
+      }
+    }
     
-    // Try URL first (if redirected to a /watch page)
-    const watchMatch = finalUrl.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
-    if (watchMatch) {
-      videoId = watchMatch[1];
-      console.log(`Found video ID in URL: ${videoId}`);
+    // Try URL next (if redirected to a /watch page)
+    if (!videoId) {
+      const watchMatch = finalUrl.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+      if (watchMatch) {
+        videoId = watchMatch[1];
+        console.log(`Found video ID in URL: ${videoId}`);
+      }
     }
     
     // Try to extract from HTML if not in URL
@@ -215,15 +302,13 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
       const videoIdPatterns = [
         /"videoId":"([a-zA-Z0-9_-]{11})"/,
         /video-id="([a-zA-Z0-9_-]{11})"/,
-        /"currentVideoEndpoint":\{"clickTrackingParams":"[^"]+","watchEndpoint":\{"videoId":"([a-zA-Z0-9_-]{11})"/,
-        /"videoDetails":\{"videoId":"([a-zA-Z0-9_-]{11})"/,
         /embed\/([a-zA-Z0-9_-]{11})/,
       ];
       for (const pattern of videoIdPatterns) {
         const match = html.match(pattern);
         if (match) {
           videoId = match[1];
-          console.log(`Found video ID in HTML: ${videoId}`);
+          console.log(`Found fallback video ID in HTML: ${videoId}`);
           break;
         }
       }
@@ -426,25 +511,34 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
     }
 
     // FINAL OWNERSHIP DECISION
-    // If we know the expected channel ID, only accept if the video's owner channel ID matches it.
+    // In practice, YouTube often serves consent/blocked HTML or mixed metadata on /live.
+    // For the website UX we prefer false-positives that link to the channel /live page
+    // over false-negatives that hide live streamers completely.
+    let preferLivePageUrl = false;
+
+    // If we know the expected channel ID:
+    // - when we can verify match: great
+    // - when we cannot verify OR mismatch: still show as live but link to /live
     if (expectedChannelId) {
-      if (!videoOwnerChannelId) {
-        console.log(`${channelName} is NOT LIVE - Cannot verify ownership (missing video owner channel ID)`);
-        return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'cannot_verify_ownership' };
+      if (videoOwnerChannelId && videoOwnerChannelId !== expectedChannelId) {
+        console.log(`${channelName} - Ownership mismatch (expected: ${expectedChannelId}, got: ${videoOwnerChannelId}); keeping LIVE but linking to /live to avoid false negatives`);
+        preferLivePageUrl = true;
+        detectedBy = `${detectedBy}|ownership_mismatch`;
       }
 
-      if (videoOwnerChannelId !== expectedChannelId) {
-        console.log(`${channelName} is NOT LIVE - Video belongs to a different channel (expected: ${expectedChannelId}, got: ${videoOwnerChannelId})`);
-        return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'wrong_channel_video' };
+      if (videoOwnerChannelId === expectedChannelId) {
+        console.log(`${channelName} - Ownership verified via channel ID match: ${expectedChannelId}`);
+      } else {
+        console.log(`${channelName} - Ownership not verifiable (missing owner channel ID); allowing LIVE to avoid false negatives`);
+        preferLivePageUrl = true;
+        detectedBy = `${detectedBy}|ownership_unverified`;
       }
-
-      console.log(`${channelName} - Ownership verified via channel ID match: ${expectedChannelId}`);
     }
 
     // Extract stream title and thumbnail
-    const liveStreamUrl = `https://www.youtube.com/watch?v=${videoId}`;
-    const liveStreamTitle = extractStreamTitle(html);
-    const liveStreamThumbnail = getStreamThumbnail(videoId);
+    const liveStreamUrl = preferLivePageUrl ? finalUrl : `https://www.youtube.com/watch?v=${videoId}`;
+    const liveStreamTitle = preferLivePageUrl ? null : extractStreamTitle(html);
+    const liveStreamThumbnail = preferLivePageUrl ? null : getStreamThumbnail(videoId);
     
     console.log(`${channelName} stream title: ${liveStreamTitle}`);
     console.log(`${channelName} stream thumbnail: ${liveStreamThumbnail}`);
