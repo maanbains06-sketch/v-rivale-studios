@@ -478,7 +478,7 @@ const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
           <CardContent className="space-y-4">
             <FormField label="RP Experience" icon={<Gamepad2 className="w-4 h-4" />} required error={errors.rpExperience}>
               <Textarea
-                placeholder="Describe your roleplay experience..."
+                placeholder=""
                 value={formData.rpExperience || ""}
                 onChange={(e) => handleInputChange("rpExperience", e.target.value)}
                 className="min-h-[100px]"
@@ -486,7 +486,7 @@ const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
             </FormField>
             <FormField label="Content Style" icon={<Palette className="w-4 h-4" />} required error={errors.contentStyle}>
               <Textarea
-                placeholder="Describe your content style and approach..."
+                placeholder=""
                 value={formData.contentStyle || ""}
                 onChange={(e) => handleInputChange("contentStyle", e.target.value)}
                 className="min-h-[100px]"
@@ -494,7 +494,7 @@ const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
             </FormField>
             <FormField label="Why Join SLRP?" required error={errors.whyJoin}>
               <Textarea
-                placeholder="Why do you want to join our creator program?"
+                placeholder=""
                 value={formData.whyJoin || ""}
                 onChange={(e) => handleInputChange("whyJoin", e.target.value)}
                 className="min-h-[120px]"
@@ -502,7 +502,7 @@ const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
             </FormField>
             <FormField label="Expected Benefits" icon={<Gift className="w-4 h-4" />} required error={errors.expectedBenefits}>
               <Textarea
-                placeholder="What benefits do you expect from this partnership?"
+                placeholder=""
                 value={formData.expectedBenefits || ""}
                 onChange={(e) => handleInputChange("expectedBenefits", e.target.value)}
                 className="min-h-[100px]"
@@ -510,7 +510,7 @@ const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
             </FormField>
             <FormField label="Value Contribution" required error={errors.valueContribution}>
               <Textarea
-                placeholder="How will you contribute value to SLRP?"
+                placeholder=""
                 value={formData.valueContribution || ""}
                 onChange={(e) => handleInputChange("valueContribution", e.target.value)}
                 className="min-h-[100px]"
@@ -518,7 +518,7 @@ const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
             </FormField>
             <FormField label="Storyline Ideas (Optional)" error={errors.storylineIdeas}>
               <Textarea
-                placeholder="Share any storyline or content ideas you have..."
+                placeholder=""
                 value={formData.storylineIdeas || ""}
                 onChange={(e) => handleInputChange("storylineIdeas", e.target.value)}
                 className="min-h-[80px]"

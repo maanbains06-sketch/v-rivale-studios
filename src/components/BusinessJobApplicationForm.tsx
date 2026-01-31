@@ -431,7 +431,7 @@ const BusinessJobApplicationForm = ({ jobType, jobImage }: BusinessJobApplicatio
                     <FormLabel>Why do you want to work as a {jobType}? *</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Explain your motivation for pursuing this career path. What drives you to work in this industry?"
+                        placeholder=""
                         className="min-h-[120px]"
                         {...field} 
                       />
@@ -452,7 +452,7 @@ const BusinessJobApplicationForm = ({ jobType, jobImage }: BusinessJobApplicatio
                     <FormLabel>Previous Roleplay Experience *</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Describe any relevant roleplay experience in similar roles. Include servers, positions held, and what you learned..."
+                        placeholder=""
                         className="min-h-[100px]"
                         {...field} 
                       />
@@ -473,7 +473,7 @@ const BusinessJobApplicationForm = ({ jobType, jobImage }: BusinessJobApplicatio
                     <FormLabel>Character Background *</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Tell us about your character's background, story, and why they want this job..."
+                        placeholder=""
                         className="min-h-[120px]"
                         {...field} 
                       />
@@ -494,7 +494,7 @@ const BusinessJobApplicationForm = ({ jobType, jobImage }: BusinessJobApplicatio
                     <FormLabel>{config.scenarioQuestion.label}</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder={config.scenarioQuestion.placeholder}
+                        placeholder=""
                         className="min-h-[150px]"
                         {...field} 
                       />
@@ -515,7 +515,7 @@ const BusinessJobApplicationForm = ({ jobType, jobImage }: BusinessJobApplicatio
                     <FormLabel>{config.strengthsPrompt.label}</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder={config.strengthsPrompt.placeholder}
+                        placeholder=""
                         className="min-h-[120px]"
                         {...field} 
                       />
@@ -536,7 +536,7 @@ const BusinessJobApplicationForm = ({ jobType, jobImage }: BusinessJobApplicatio
                     <FormLabel>Weekly Availability & Timezone *</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Example: Monday-Friday 6PM-11PM IST, weekends 12PM-12AM IST. Approximately 20-30 hours per week..."
+                        placeholder=""
                         className="min-h-[80px]"
                         {...field} 
                       />
@@ -557,7 +557,7 @@ const BusinessJobApplicationForm = ({ jobType, jobImage }: BusinessJobApplicatio
                     <FormLabel>Additional Information (Optional)</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Any additional skills, certifications, or information you'd like us to know..."
+                        placeholder=""
                         className="min-h-[80px]"
                         {...field} 
                       />

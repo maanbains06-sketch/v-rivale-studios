@@ -896,7 +896,7 @@ const Whitelist = () => {
                           <FormLabel>Roleplay Experience *</FormLabel>
                           <FormControl>
                             <Textarea 
-                              placeholder="Describe your previous roleplay experience, what servers you've played on, your favorite roleplay scenarios, etc. (minimum 50 characters)"
+                              placeholder=""
                               className="min-h-[120px] bg-background/50 resize-none"
                               {...field}
                             />
@@ -917,7 +917,7 @@ const Whitelist = () => {
                           <FormLabel>Character Backstory *</FormLabel>
                           <FormControl>
                             <Textarea 
-                              placeholder="Create a detailed backstory for your character. Include their background, personality, goals, and what brought them to Los Santos. Be creative! (minimum 100 characters)"
+                              placeholder=""
                               className="min-h-[180px] bg-background/50 resize-none"
                               {...field}
                             />

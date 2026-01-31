@@ -599,7 +599,7 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
                     <FormLabel>11. How do you understand gang hierarchy and ranking systems? *</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Explain your understanding of gang structure and your willingness to follow it..."
+                        placeholder=""
                         className="min-h-[80px]"
                         {...field} 
                       />
@@ -640,7 +640,7 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
                     <FormLabel>13. How will you ensure you follow server and gang rules? *</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Explain your commitment to following rules and maintaining quality RP..."
+                        placeholder=""
                         className="min-h-[80px]"
                         {...field} 
                       />
@@ -658,7 +658,7 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
                     <FormLabel>14. What is your daily/weekly availability? *</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Describe your typical availability and timezone..."
+                        placeholder=""
                         className="min-h-[80px]"
                         {...field} 
                       />
