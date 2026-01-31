@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Ticket, Send, Clock, CheckCircle, FileText, ArrowLeft, Upload, X, Image as ImageIcon, Video, Plus, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
-import slrpLogoNew from "@/assets/slrp-logo-new.png";
+import AnimatedSLRPLogo from "@/components/AnimatedSLRPLogo";
 
 interface SupportTicket {
   id: string;
@@ -323,55 +323,56 @@ const TicketSupport = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      {/* Custom Header - Premium Design Matching Reference */}
-      <div className="relative w-full overflow-hidden">
-        {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
+      {/* Custom Header - Premium Design with Animated Logo */}
+      <div className="relative w-full overflow-hidden pt-16 md:pt-20">
+        {/* Multi-layer background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-primary/5 to-transparent" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-cyan-500/10 via-transparent to-transparent" />
         
-        {/* Subtle pattern overlay */}
-        <div className="absolute inset-0 opacity-5" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+        {/* Animated grid pattern */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: `linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(to right, hsl(var(--primary)) 1px, transparent 1px)`,
+          backgroundSize: '40px 40px'
         }} />
         
-        <div className="relative container mx-auto px-4 py-8 md:py-10">
-          <div className="flex items-center gap-5 md:gap-6">
-            {/* Rotating Logo */}
-            <div className="relative">
-              <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
-              <img 
-                src={slrpLogoNew} 
-                alt="SKYLIFE ROLEPLAY" 
-                className="relative w-20 h-20 md:w-24 md:h-24 object-contain drop-shadow-2xl animate-[spin_20s_linear_infinite]"
-                style={{ filter: 'drop-shadow(0 0 20px rgba(59, 130, 246, 0.5))' }}
-              />
-            </div>
+        {/* Floating orbs */}
+        <div className="absolute top-10 left-[10%] w-32 h-32 bg-primary/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-5 right-[15%] w-40 h-40 bg-cyan-500/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        
+        <div className="relative container mx-auto px-4 py-10 md:py-16">
+          <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10">
+            {/* Animated SLRP Logo - Same as Auth Panel */}
+            <AnimatedSLRPLogo size="md" />
             
-            <div className="flex flex-col">
-              <h1 className="text-2xl md:text-4xl font-black tracking-wider text-white uppercase">
+            <div className="flex flex-col text-center md:text-left">
+              <h1 className="text-3xl md:text-5xl font-black tracking-wider text-white uppercase">
                 SKYLIFE ROLEPLAY{' '}
                 <span 
-                  className="font-black italic"
+                  className="font-black italic inline-block"
                   style={{
                     background: 'linear-gradient(90deg, #FF9933 0%, #FFFFFF 50%, #138808 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
-                    textShadow: '0 0 30px rgba(255, 153, 51, 0.3)'
                   }}
                 >
                   INDIA
                 </span>
               </h1>
-              <p className="text-base md:text-xl text-slate-400 font-semibold tracking-[0.3em] uppercase mt-1">
+              <p className="text-lg md:text-2xl text-primary/80 font-semibold tracking-[0.4em] uppercase mt-3">
                 Ticket Support
+              </p>
+              <p className="text-sm text-muted-foreground mt-2 max-w-md">
+                Submit tickets for whitelist issues, refunds, staff complaints, and more
               </p>
             </div>
           </div>
         </div>
         
-        {/* Bottom border glow */}
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+        {/* Bottom decorative border */}
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
+        <div className="absolute bottom-0 left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent blur-sm" />
       </div>
 
       <main className="container mx-auto px-4 py-8">
