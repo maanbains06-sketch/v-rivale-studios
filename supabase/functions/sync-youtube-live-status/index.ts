@@ -535,10 +535,14 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
       }
     }
 
-    // Extract stream title and thumbnail
-    const liveStreamUrl = preferLivePageUrl ? finalUrl : `https://www.youtube.com/watch?v=${videoId}`;
-    const liveStreamTitle = preferLivePageUrl ? null : extractStreamTitle(html);
-    const liveStreamThumbnail = preferLivePageUrl ? null : getStreamThumbnail(videoId);
+    // Extract stream title and thumbnail - always extract when we have a video ID
+    const liveStreamUrl = preferLivePageUrl ? livePageUrl : `https://www.youtube.com/watch?v=${videoId}`;
+    
+    // Always try to extract title from HTML
+    let liveStreamTitle = extractStreamTitle(html);
+    
+    // Always generate thumbnail from video ID
+    const liveStreamThumbnail = getStreamThumbnail(videoId);
     
     console.log(`${channelName} stream title: ${liveStreamTitle}`);
     console.log(`${channelName} stream thumbnail: ${liveStreamThumbnail}`);
