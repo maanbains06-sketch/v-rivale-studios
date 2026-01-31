@@ -7,7 +7,6 @@ const LiveVisitorCounter = memo(() => {
 
   useEffect(() => {
     const sessionId = `visitor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    let isActive = true;
     
     const channel = supabase.channel('website_presence', {
       config: { presence: { key: sessionId } },
@@ -15,18 +14,16 @@ const LiveVisitorCounter = memo(() => {
 
     channel
       .on('presence', { event: 'sync' }, () => {
-        if (!isActive) return;
         const count = Object.keys(channel.presenceState()).length;
         setVisitorCount(count > 0 ? count : 1);
       })
       .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED' && isActive) {
+        if (status === 'SUBSCRIBED') {
           await channel.track({ online_at: new Date().toISOString() });
         }
       });
 
     return () => {
-      isActive = false;
       supabase.removeChannel(channel);
     };
   }, []);

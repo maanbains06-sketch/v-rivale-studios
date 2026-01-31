@@ -41,11 +41,11 @@ export const useFeaturedYoutubers = () => {
       if (error) return [];
       return data || [];
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes - increased for less refetching
-    gcTime: 1000 * 60 * 60, // 1 hour - keep in cache longer
-    refetchOnMount: false, // Use cached data on mount
+    staleTime: 1000 * 60 * 2,
+    gcTime: 1000 * 60 * 30,
+    refetchOnMount: true,
     refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    refetchOnReconnect: true,
     retry: 1,
   });
 
@@ -92,6 +92,7 @@ export const useFeaturedYoutubers = () => {
         .subscribe((status) => {
           if (cancelled) return;
           if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+            // Recreate channel (calling channel.subscribe() repeatedly can multiply work)
             try {
               supabase.removeChannel(channel);
             } catch {
@@ -101,7 +102,7 @@ export const useFeaturedYoutubers = () => {
               retryTimeout = setTimeout(() => {
                 retryTimeout = null;
                 if (!cancelled) attach();
-              }, 5000); // Increased retry delay
+              }, 3000);
             }
           }
         });
@@ -130,16 +131,16 @@ export const useFeaturedYoutubers = () => {
     const tick = async () => {
       if (cancelled) return;
 
-      // Don't sync when tab is hidden or offline (saves CPU + avoids perceived lag)
+      // Don’t sync when tab is hidden or offline (saves CPU + avoids perceived lag)
       if (!isPageActive() || (typeof navigator !== "undefined" && !navigator.onLine)) {
-        timeoutId = setTimeout(tick, 60_000); // Check again in 1 minute
+        timeoutId = setTimeout(tick, 30_000);
         return;
       }
 
       // De-dupe: avoid spamming sync if multiple hook instances ever mount
       const now = Date.now();
-      if (now - lastSyncAtRef.current < 180_000) { // 3 min debounce
-        timeoutId = setTimeout(tick, 60_000);
+      if (now - lastSyncAtRef.current < 60_000) {
+        timeoutId = setTimeout(tick, 30_000);
         return;
       }
 
@@ -151,12 +152,11 @@ export const useFeaturedYoutubers = () => {
         // silent: realtime + DB query already keep UI usable
       }
 
-      // Next sync in 5 minutes (reduced frequency for less overhead)
-      timeoutId = setTimeout(tick, 5 * 60_000);
+      timeoutId = setTimeout(tick, 3 * 60_000);
     };
 
-    // Initial sync after a longer delay (20s) so it never competes with first paint
-    timeoutId = setTimeout(tick, 20_000);
+    // Initial sync after a short delay so it never competes with first paint
+    timeoutId = setTimeout(tick, 10_000);
 
     return () => {
       cancelled = true;

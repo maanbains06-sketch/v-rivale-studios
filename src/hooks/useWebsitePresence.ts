@@ -95,13 +95,10 @@ export const useWebsitePresence = ({ visitorId, enabled = true }: UseWebsitePres
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('beforeunload', handleBeforeUnload);
 
-    // Heartbeat to keep presence alive every 60 seconds (reduced from 30s for less network overhead)
+    // Heartbeat to keep presence alive every 30 seconds
     heartbeatRef.current = window.setInterval(async () => {
-      // Only send heartbeat if tab is visible to reduce background work
-      if (document.visibilityState === 'visible') {
-        await updatePresence(true, 'online');
-      }
-    }, 60000);
+      await updatePresence(true, document.visibilityState === 'visible' ? 'online' : 'idle');
+    }, 30000);
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-const IDLE_TIMEOUT_MS = 3 * 60 * 1000; // 3 minutes of inactivity = idle
-const HEARTBEAT_INTERVAL_MS = 90000; // 90 seconds (increased for less network overhead)
+const IDLE_TIMEOUT_MS = 3 * 60 * 1000; // 3 minutes of inactivity = idle (increased from 2)
+const HEARTBEAT_INTERVAL_MS = 60000; // 60 seconds (increased from 30s for less network overhead)
 
 /**
  * Tracks staff presence on the website with proper idle detection.
@@ -94,13 +94,11 @@ export const StaffPresenceTracker = () => {
     const staffId = staffMemberIdRef.current;
     if (!staffId) return;
 
-    // Skip heartbeat when tab is hidden to reduce background CPU/network
-    if (document.visibilityState !== 'visible') return;
-
     const timeSinceActivity = Date.now() - lastActivityRef.current;
+    const isTabVisible = document.visibilityState === 'visible';
     
     let newStatus: string;
-    if (timeSinceActivity > IDLE_TIMEOUT_MS) {
+    if (!isTabVisible || timeSinceActivity > IDLE_TIMEOUT_MS) {
       newStatus = 'idle';
     } else {
       newStatus = 'online';
