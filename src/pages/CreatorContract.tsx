@@ -797,7 +797,7 @@ const CreatorContract = () => {
   if (!isOwner) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 py-6 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 py-6 px-4 cursor-default [&_*]:cursor-auto [&_input]:cursor-text [&_textarea]:cursor-text [&_button]:cursor-pointer [&_a]:cursor-pointer">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

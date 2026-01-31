@@ -952,7 +952,12 @@ const Index = () => {
                   variants={itemVariants}
                   className="flex flex-col items-center text-center group"
                 >
-                  <div className="relative mb-4">
+                  <a 
+                    href={youtuber.channel_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="relative mb-4 cursor-pointer"
+                  >
                     {youtuber.is_live && (
                       <div className="absolute -top-2 -right-2 z-10">
                         <Badge className="bg-destructive text-destructive-foreground animate-pulse">LIVE</Badge>
@@ -966,7 +971,7 @@ const Index = () => {
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       />
                     </div>
-                  </div>
+                  </a>
                   <h3 className="font-bold text-lg md:text-xl mb-1 group-hover:text-primary transition-colors duration-300">
                     {youtuber.name}
                   </h3>

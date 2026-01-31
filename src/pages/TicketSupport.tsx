@@ -55,13 +55,22 @@ const TicketSupport = () => {
   const [showForm, setShowForm] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
 
-  // Form state
+  // Form state - always start with empty values
   const [category, setCategory] = useState("");
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("normal");
   const [discordId, setDiscordId] = useState("");
   const [steamId, setSteamId] = useState("");
+
+  // Reset form fields when showing form
+  const resetFormFields = () => {
+    setCategory("");
+    setSubject("");
+    setDescription("");
+    setPriority("normal");
+    setSteamId("");
+  };
 
   useEffect(() => {
     checkAuthAndFetch();
@@ -153,12 +162,11 @@ const TicketSupport = () => {
 
       // Send Discord notification for new ticket
       try {
-        await supabase.functions.invoke("send-application-notification", {
+        await supabase.functions.invoke("send-ticket-notification", {
           body: {
-            type: "support_ticket",
-            applicant_name: discordUsername || "Unknown User",
-            application_id: data.ticket_number,
-            details: `Category: ${category}\nPriority: ${priority}\nSubject: ${subject}`,
+            ticketId: data.id,
+            status: "open",
+            isNew: true,
           },
         });
       } catch (notifyError) {
@@ -166,11 +174,7 @@ const TicketSupport = () => {
       }
 
       // Reset form
-      setCategory("");
-      setSubject("");
-      setDescription("");
-      setPriority("normal");
-      setSteamId("");
+      resetFormFields();
       setShowForm(false);
       fetchTickets();
     } catch (error: any) {
