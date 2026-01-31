@@ -59,7 +59,9 @@ function extractStreamTitle(html: string): string | null {
 }
 
 // Extract video ID from HTML - prioritize primary content
-function extractVideoId(html: string, finalUrl: string): string | null {
+// If expectedChannelId is provided, try to pick a videoId that references that channel nearby
+// (prevents selecting a featured/recommended live stream from another creator on the /live page).
+function extractVideoId(html: string, finalUrl: string, expectedChannelId?: string | null): string | null {
   // 1. Check URL first (most reliable if redirected to /watch)
   const watchMatch = finalUrl.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
   if (watchMatch) return watchMatch[1];
@@ -92,6 +94,15 @@ function extractVideoId(html: string, finalUrl: string): string | null {
     const isReplay = windowHtml.includes('"isReplay":true');
     
     if (hasLiveMarker && !isReplay) {
+      // If we know the expected channel id, prefer a videoId that references it nearby.
+      if (expectedChannelId) {
+        const referencesExpected = windowHtml.includes(`\"videoOwnerChannelId\":\"${expectedChannelId}\"`) ||
+                                   windowHtml.includes(`\"ownerChannelId\":\"${expectedChannelId}\"`) ||
+                                   windowHtml.includes(`\"channelId\":\"${expectedChannelId}\"`);
+        if (referencesExpected) return id;
+        // Otherwise keep scanning; we only fall back later.
+        continue;
+      }
       return id;
     }
   }
@@ -108,7 +119,48 @@ function getStreamThumbnail(videoId: string): string {
   return `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
 }
 
+// When /live is unreliable (often surfaces featured/hosted streams), use the channel's /streams page
+// which is scoped to that channel and tends to include the correct owned LIVE item.
+async function findOwnedLiveVideoIdFromStreamsPage(
+  expectedChannelId: string,
+  headers: Record<string, string>,
+  channelName: string
+): Promise<string | null> {
+  const streamsUrl = `https://www.youtube.com/channel/${expectedChannelId}/streams`;
+  console.log(`${channelName} - Fallback: checking streams page: ${streamsUrl}`);
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
+
+    const res = await fetch(streamsUrl, {
+      headers,
+      redirect: 'follow',
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    const html = await res.text();
+    const finalUrl = res.url;
+    console.log(`${channelName} - Streams final URL: ${finalUrl}`);
+
+    // Try to pick a LIVE videoId that references the expected channel.
+    const videoId = extractVideoId(html, finalUrl, expectedChannelId);
+    if (videoId) {
+      console.log(`${channelName} - Streams page candidate video ID: ${videoId}`);
+      return videoId;
+    }
+
+    return null;
+  } catch (e: any) {
+    console.log(`${channelName} - Streams fallback failed: ${e?.message || e}`);
+    return null;
+  }
+}
+
 // Fallback: verify ownership via YouTube oEmbed (works even if HTML is consent/limited)
+// Note: oEmbed often returns author_url as a /@handle (no /channel/UC...); when that happens,
+// resolve the handle to a canonical channel ID and compare.
 async function verifyOwnershipViaOEmbed(liveStreamUrl: string, expectedChannelId: string): Promise<{ ok: boolean; reason: string }> {
   try {
     const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(liveStreamUrl)}&format=json`;
@@ -132,7 +184,15 @@ async function verifyOwnershipViaOEmbed(liveStreamUrl: string, expectedChannelId
       return { ok: idMatch[1] === expectedChannelId, reason: `oembed_author_channel:${idMatch[1]}` };
     }
 
-    // If no channel id in author_url, we can't strictly verify.
+    // If no channel id in author_url, try resolving @handle/custom URL to canonical /channel/UC...
+    if (authorUrl) {
+      const resolved = await getExpectedChannelId(authorUrl);
+      if (resolved) {
+        return { ok: resolved === expectedChannelId, reason: `oembed_resolved_channel:${resolved}` };
+      }
+    }
+
+    // If still no channel id, we can't strictly verify.
     return { ok: false, reason: `oembed_no_channel_id:${data?.author_name || 'unknown'}` };
   } catch (e: any) {
     return { ok: false, reason: `oembed_error:${e?.message || e}` };
@@ -305,8 +365,13 @@ async function checkLiveStatus(channelUrl: string, channelName: string, storedCh
   console.log(`Expected channel ID for ${channelName}: ${expectedChannelId || 'not found'}`);
 
   // Build the /live URL
+  // CRITICAL: If we have a stored/expected channel ID (UC...), always prefer the canonical
+  // /channel/<UC...>/live endpoint. In practice this is the most reliable way to get an owned
+  // live redirect; the @handle/live page often surfaces featured/hosted lives.
   let livePageUrl: string;
-  if (identifier.type === 'handle') {
+  if (expectedChannelId) {
+    livePageUrl = `https://www.youtube.com/channel/${expectedChannelId}/live`;
+  } else if (identifier.type === 'handle') {
     livePageUrl = `https://www.youtube.com/@${identifier.value}/live`;
   } else if (identifier.type === 'id') {
     livePageUrl = `https://www.youtube.com/channel/${identifier.value}/live`;
@@ -443,7 +508,7 @@ async function checkLiveStatus(channelUrl: string, channelName: string, storedCh
     }
 
     // Extract video ID (needed for definitive ownership verification)
-    const videoId = extractVideoId(html, finalUrl);
+    const videoId = extractVideoId(html, finalUrl, expectedChannelId);
     
     // If we have an expectedChannelId (manual channel id), require a watch-page verification.
     // The /live page often lacks videoOwnerChannelId and can false-positive from recommendations.
@@ -459,7 +524,7 @@ async function checkLiveStatus(channelUrl: string, channelName: string, storedCh
     }
 
     // Build watch URL (if we have it)
-    const liveStreamUrl = videoId ? `https://www.youtube.com/watch?v=${videoId}` : livePageUrl;
+    let liveStreamUrl = videoId ? `https://www.youtube.com/watch?v=${videoId}` : livePageUrl;
 
     // If channel ID is provided and we have a videoId, verify ownership on the watch page
     // (most reliable place for videoOwnerChannelId).
@@ -491,6 +556,45 @@ async function checkLiveStatus(channelUrl: string, channelName: string, storedCh
     }
     console.log(`${channelName} - Ownership check: ${ownership.isOwned ? 'OWNED' : 'NOT OWNED'} (${ownership.reason})`);
 
+    // If ownership verification fails, attempt a strict fallback:
+    // - Find an owned LIVE videoId on /streams (channel-scoped)
+    // - Verify ownership on the watch page
+    if (!ownership.isOwned && expectedChannelId) {
+      const fallbackVideoId = await findOwnedLiveVideoIdFromStreamsPage(expectedChannelId, defaultHeaders, channelName);
+      if (fallbackVideoId) {
+        const fallbackWatchUrl = `https://www.youtube.com/watch?v=${fallbackVideoId}`;
+        try {
+          const watchRes = await fetch(fallbackWatchUrl, {
+            headers: defaultHeaders,
+            redirect: 'follow',
+          });
+          const watchHtml = await watchRes.text();
+          let fbOwnership = verifyStreamOwnership(watchHtml, expectedChannelId, channelName);
+
+          // If HTML can't provide definitive owner IDs, use oEmbed as the strict fallback.
+          if (!fbOwnership.isOwned && fbOwnership.reason === 'no_definitive_owner_id') {
+            const o = await verifyOwnershipViaOEmbed(fallbackWatchUrl, expectedChannelId);
+            fbOwnership = o.ok
+              ? { isOwned: true, reason: o.reason }
+              : { isOwned: false, reason: `${fbOwnership.reason}|${o.reason}` };
+          }
+
+          console.log(`${channelName} - Streams fallback ownership: ${fbOwnership.isOwned ? 'OWNED' : 'NOT OWNED'} (${fbOwnership.reason})`);
+
+          if (fbOwnership.isOwned) {
+            ownership = fbOwnership;
+            ownershipHtml = watchHtml;
+            liveStreamUrl = fallbackWatchUrl;
+
+            console.log(`${channelName} - Using streams fallback video ID: ${fallbackVideoId}`);
+            // NOTE: Keep 'videoId' const untouched; we derive thumbnail from URL later.
+          }
+        } catch (e: any) {
+          console.log(`${channelName} - Streams fallback watch fetch failed: ${e?.message || e}`);
+        }
+      }
+    }
+
     if (!ownership.isOwned) {
       console.log(`${channelName} - Stream belongs to another channel, marking as NOT LIVE`);
       return {
@@ -505,14 +609,16 @@ async function checkLiveStatus(channelUrl: string, channelName: string, storedCh
     // Extract stream info (prefer watch page HTML if we fetched it)
     const titleHtml = expectedChannelId ? ownershipHtml : html;
     let liveStreamTitle = extractStreamTitle(titleHtml);
-    const liveStreamThumbnail = videoId ? getStreamThumbnail(videoId) : null;
+    const urlVideoIdMatch = liveStreamUrl.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+    const thumbVideoId = urlVideoIdMatch?.[1] || videoId || null;
+    const liveStreamThumbnail = thumbVideoId ? getStreamThumbnail(thumbVideoId) : null;
     
     // Fallback title if extraction failed
     if (!liveStreamTitle) {
       liveStreamTitle = `${channelName} is Live!`;
     }
     
-    if (videoId) console.log(`${channelName} - LIVE with video ID: ${videoId}`);
+    if (thumbVideoId) console.log(`${channelName} - LIVE with video ID: ${thumbVideoId}`);
     console.log(`${channelName} - Title: ${liveStreamTitle}`);
     console.log(`${channelName} - Thumbnail: ${liveStreamThumbnail}`);
 
