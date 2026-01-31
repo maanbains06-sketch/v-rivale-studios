@@ -211,7 +211,7 @@ Deno.serve(async (req) => {
         },
       ],
       thumbnail: {
-        url: userAvatarUrl,
+        url: 'https://skyliferoleplay.com/images/slrp-logo.png',
       },
       timestamp: new Date().toISOString(),
       footer: {
