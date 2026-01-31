@@ -323,30 +323,23 @@ const TicketSupport = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      {/* Custom Header - Premium Design with Animated Logo */}
+      {/* Custom Header - Compact Premium Design */}
       <div className="relative w-full overflow-hidden pt-16 md:pt-20">
         {/* Multi-layer background */}
         <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-primary/5 to-transparent" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-cyan-500/10 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/15 via-transparent to-transparent" />
         
-        {/* Animated grid pattern */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: `linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(to right, hsl(var(--primary)) 1px, transparent 1px)`,
-          backgroundSize: '40px 40px'
-        }} />
+        {/* Subtle floating orbs */}
+        <div className="absolute top-4 left-[10%] w-20 h-20 bg-primary/15 rounded-full blur-2xl" />
+        <div className="absolute bottom-2 right-[15%] w-24 h-24 bg-cyan-500/10 rounded-full blur-2xl" />
         
-        {/* Floating orbs */}
-        <div className="absolute top-10 left-[10%] w-32 h-32 bg-primary/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-5 right-[15%] w-40 h-40 bg-cyan-500/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-        
-        <div className="relative container mx-auto px-4 py-10 md:py-16">
-          <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10">
-            {/* Animated SLRP Logo - Same as Auth Panel */}
-            <AnimatedSLRPLogo size="md" />
+        <div className="relative container mx-auto px-4 py-6 md:py-8">
+          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
+            {/* Animated SLRP Logo - Smaller size */}
+            <AnimatedSLRPLogo size="sm" />
             
             <div className="flex flex-col text-center md:text-left">
-              <h1 className="text-3xl md:text-5xl font-black tracking-wider text-white uppercase">
+              <h1 className="text-2xl md:text-3xl font-black tracking-wider text-white uppercase">
                 SKYLIFE ROLEPLAY{' '}
                 <span 
                   className="font-black italic inline-block"
@@ -360,19 +353,15 @@ const TicketSupport = () => {
                   INDIA
                 </span>
               </h1>
-              <p className="text-lg md:text-2xl text-primary/80 font-semibold tracking-[0.4em] uppercase mt-3">
+              <p className="text-sm md:text-base text-primary/80 font-semibold tracking-[0.3em] uppercase mt-1">
                 Ticket Support
-              </p>
-              <p className="text-sm text-muted-foreground mt-2 max-w-md">
-                Submit tickets for whitelist issues, refunds, staff complaints, and more
               </p>
             </div>
           </div>
         </div>
         
         {/* Bottom decorative border */}
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
-        <div className="absolute bottom-0 left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent blur-sm" />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
       </div>
 
       <main className="container mx-auto px-4 py-8">
