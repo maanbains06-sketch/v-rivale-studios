@@ -353,7 +353,7 @@ const StateDepartmentApplicationForm = ({ jobImage }: StateDepartmentApplication
                   <FormLabel>Government RP Experience</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Describe any previous experience with government roleplay in GTA 5 RP or other servers..."
+                      placeholder=""
                       className="min-h-[100px]"
                       {...field}
                     />
@@ -372,7 +372,7 @@ const StateDepartmentApplicationForm = ({ jobImage }: StateDepartmentApplication
                   <FormLabel>Knowledge of Laws & Regulations</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Describe your understanding of San Andreas laws, city ordinances, and government procedures..."
+                      placeholder=""
                       className="min-h-[100px]"
                       {...field}
                     />
@@ -391,7 +391,7 @@ const StateDepartmentApplicationForm = ({ jobImage }: StateDepartmentApplication
                   <FormLabel>Policy Proposal</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="If you could propose one new policy or law for Los Santos, what would it be and why?"
+                      placeholder=""
                       className="min-h-[100px]"
                       {...field}
                     />
@@ -410,7 +410,7 @@ const StateDepartmentApplicationForm = ({ jobImage }: StateDepartmentApplication
                   <FormLabel>Scenario: Citizen Complaint</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="A citizen comes to you claiming the police unfairly impounded their vehicle. How would you handle this situation?"
+                      placeholder=""
                       className="min-h-[120px]"
                       {...field}
                     />
@@ -429,7 +429,7 @@ const StateDepartmentApplicationForm = ({ jobImage }: StateDepartmentApplication
                   <FormLabel>Scenario: Handling Corruption</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="You discover that a fellow government official is accepting bribes. What do you do?"
+                      placeholder=""
                       className="min-h-[100px]"
                       {...field}
                     />
@@ -448,7 +448,7 @@ const StateDepartmentApplicationForm = ({ jobImage }: StateDepartmentApplication
                   <FormLabel>Why do you want to join the State Department?</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="What motivates you to serve in government and what unique perspective do you bring?"
+                      placeholder=""
                       className="min-h-[100px]"
                       {...field}
                     />

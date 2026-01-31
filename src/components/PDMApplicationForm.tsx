@@ -319,11 +319,11 @@ const PDMApplicationForm = ({ jobImage }: PDMApplicationFormProps) => {
                   <FormItem>
                     <FormLabel>Why do you want to work at PDM Car Dealership? *</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Explain your motivation for joining PDM. What attracts you to the car sales industry?"
-                        className="min-h-[120px]"
-                        {...field} 
-                      />
+                    <Textarea 
+                      placeholder=""
+                      className="min-h-[120px]"
+                      {...field} 
+                    />
                     </FormControl>
                     <FormDescription>
                       Be genuine and detailed (minimum 100 characters)
@@ -340,11 +340,11 @@ const PDMApplicationForm = ({ jobImage }: PDMApplicationFormProps) => {
                   <FormItem>
                     <FormLabel>Previous Roleplay Experience *</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Describe any relevant roleplay experience, especially in sales or customer service roles..."
-                        className="min-h-[100px]"
-                        {...field} 
-                      />
+                    <Textarea 
+                      placeholder=""
+                      className="min-h-[100px]"
+                      {...field} 
+                    />
                     </FormControl>
                     <FormDescription>
                       Detail your relevant RP background (minimum 50 characters)
@@ -361,11 +361,11 @@ const PDMApplicationForm = ({ jobImage }: PDMApplicationFormProps) => {
                   <FormItem>
                     <FormLabel>Character Background *</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Tell us about your character's background and how they ended up wanting to work in car sales..."
-                        className="min-h-[120px]"
-                        {...field} 
-                      />
+                    <Textarea 
+                      placeholder=""
+                      className="min-h-[120px]"
+                      {...field} 
+                    />
                     </FormControl>
                     <FormDescription>
                       Provide a detailed character background (minimum 100 characters)
@@ -382,11 +382,11 @@ const PDMApplicationForm = ({ jobImage }: PDMApplicationFormProps) => {
                   <FormItem>
                     <FormLabel>Sales Experience & Skills *</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Describe your sales experience, negotiation skills, and how you handle customer objections. Include any real-life or in-game sales experience..."
-                        className="min-h-[120px]"
-                        {...field} 
-                      />
+                    <Textarea 
+                      placeholder=""
+                      className="min-h-[120px]"
+                      {...field} 
+                    />
                     </FormControl>
                     <FormDescription>
                       Explain your sales background and customer handling skills (minimum 75 characters)
@@ -403,11 +403,11 @@ const PDMApplicationForm = ({ jobImage }: PDMApplicationFormProps) => {
                   <FormItem>
                     <FormLabel>Vehicle Knowledge *</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Demonstrate your knowledge of vehicles - types, brands, features, performance specs. What makes you qualified to recommend vehicles to customers?"
-                        className="min-h-[120px]"
-                        {...field} 
-                      />
+                    <Textarea 
+                      placeholder=""
+                      className="min-h-[120px]"
+                      {...field} 
+                    />
                     </FormControl>
                     <FormDescription>
                       Show us your automotive knowledge (minimum 75 characters)
@@ -424,11 +424,11 @@ const PDMApplicationForm = ({ jobImage }: PDMApplicationFormProps) => {
                   <FormItem>
                     <FormLabel>Scenario: A customer comes in with a budget of $50,000 looking for a family car. They're indecisive and comparing with a competitor. How would you handle this sale? *</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Walk us through your approach: greeting, needs assessment, vehicle recommendations, handling objections, closing techniques, and after-sale follow-up..."
-                        className="min-h-[150px]"
-                        {...field} 
-                      />
+                    <Textarea 
+                      placeholder=""
+                      className="min-h-[150px]"
+                      {...field} 
+                    />
                     </FormControl>
                     <FormDescription>
                       Provide a comprehensive response demonstrating your sales approach (minimum 100 characters)
@@ -445,11 +445,11 @@ const PDMApplicationForm = ({ jobImage }: PDMApplicationFormProps) => {
                   <FormItem>
                     <FormLabel>Availability *</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="What days and times are you available to work? Include your timezone..."
-                        className="min-h-[80px]"
-                        {...field} 
-                      />
+                    <Textarea 
+                      placeholder=""
+                      className="min-h-[80px]"
+                      {...field} 
+                    />
                     </FormControl>
                     <FormDescription>
                       Be specific about your schedule (minimum 20 characters)

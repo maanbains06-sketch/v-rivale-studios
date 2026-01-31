@@ -434,11 +434,11 @@ const BusinessApplicationForm = ({ businessType, onBack }: BusinessApplicationFo
                   <FormItem>
                     <FormLabel>Target Customer Base *</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder={config.targetPrompt}
-                        className="min-h-[80px]"
-                        {...field} 
-                      />
+                    <Textarea 
+                      placeholder=""
+                      className="min-h-[80px]"
+                      {...field} 
+                    />
                     </FormControl>
                     <FormDescription>
                       Describe who your ideal customers are
@@ -456,7 +456,7 @@ const BusinessApplicationForm = ({ businessType, onBack }: BusinessApplicationFo
                     <FormLabel>Business Plan *</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder={config.planPrompt}
+                        placeholder=""
                         className="min-h-[180px]"
                         {...field} 
                       />
@@ -477,7 +477,7 @@ const BusinessApplicationForm = ({ businessType, onBack }: BusinessApplicationFo
                     <FormLabel>Previous Business/RP Experience *</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Describe any previous experience running businesses in RP or similar roles..."
+                        placeholder=""
                         className="min-h-[100px]"
                         {...field} 
                       />
@@ -495,7 +495,7 @@ const BusinessApplicationForm = ({ businessType, onBack }: BusinessApplicationFo
                     <FormLabel>Why Do You Want This Business? *</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Explain your motivation for starting this particular business. What drives your passion for this venture?"
+                        placeholder=""
                         className="min-h-[120px]"
                         {...field} 
                       />

@@ -205,7 +205,7 @@ const BanAppeal = () => {
                   <Textarea
                     id="banReason"
                     name="banReason"
-                    placeholder="What were you banned for?"
+                    placeholder=""
                     value={formData.banReason}
                     onChange={handleChange}
                     required
@@ -218,7 +218,7 @@ const BanAppeal = () => {
                   <Textarea
                     id="appealReason"
                     name="appealReason"
-                    placeholder="Explain why you believe the ban should be lifted. Be honest and detailed."
+                    placeholder=""
                     value={formData.appealReason}
                     onChange={handleChange}
                     required
@@ -234,7 +234,7 @@ const BanAppeal = () => {
                   <Textarea
                     id="additionalInfo"
                     name="additionalInfo"
-                    placeholder="Any other relevant details..."
+                    placeholder=""
                     value={formData.additionalInfo}
                     onChange={handleChange}
                     className="min-h-[100px]"

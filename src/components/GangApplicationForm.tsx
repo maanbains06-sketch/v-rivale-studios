@@ -403,11 +403,11 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
                   <FormItem>
                     <FormLabel>1. Describe your overall roleplay experience *</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Tell us about your roleplay background, servers you've played on, and what you've learned..."
-                        className="min-h-[100px]"
-                        {...field} 
-                      />
+                    <Textarea 
+                      placeholder=""
+                      className="min-h-[100px]"
+                      {...field} 
+                    />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -421,11 +421,11 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
                   <FormItem>
                     <FormLabel>2. What is your experience with criminal roleplay? *</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Describe any criminal RP you've participated in before..."
-                        className="min-h-[100px]"
-                        {...field} 
-                      />
+                    <Textarea 
+                      placeholder=""
+                      className="min-h-[100px]"
+                      {...field} 
+                    />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -440,7 +440,7 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
                     <FormLabel>3. Have you been part of any gangs in other RP servers? *</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Describe your previous gang experience, roles held, and what you learned..."
+                        placeholder=""
                         className="min-h-[80px]"
                         {...field} 
                       />
@@ -463,7 +463,7 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
                     <FormLabel>4. Write your character's backstory and how they got into gang life *</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Tell us about your character's history, motivations, and their journey into the criminal world..."
+                        placeholder=""
                         className="min-h-[150px]"
                         {...field} 
                       />
@@ -481,7 +481,7 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
                     <FormLabel>5. Why does your character want to join a gang? *</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Explain your character's motivation for seeking gang membership..."
+                        placeholder=""
                         className="min-h-[100px]"
                         {...field} 
                       />
@@ -504,7 +504,7 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
                     <FormLabel>6. A rival gang member insults your gang in public. How do you handle it? *</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Describe how you would roleplay this situation, considering consequences and gang hierarchy..."
+                        placeholder=""
                         className="min-h-[120px]"
                         {...field} 
                       />
@@ -522,7 +522,7 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
                     <FormLabel>7. During a drug deal, police arrive. What do you do? *</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Explain your response while considering RP rules, consequences, and realistic roleplay..."
+                        placeholder=""
                         className="min-h-[120px]"
                         {...field} 
                       />
@@ -540,7 +540,7 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
                     <FormLabel>8. Your gang leader orders you to participate in a turf war. How do you approach it? *</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Describe your approach to gang warfare while respecting RP guidelines..."
+                        placeholder=""
                         className="min-h-[120px]"
                         {...field} 
                       />

@@ -324,11 +324,11 @@ const WeazelNewsApplicationForm = ({ jobImage }: WeazelNewsApplicationFormProps)
                   <FormItem>
                     <FormLabel>Why do you want to work at Weazel News? *</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Explain your motivation for joining Weazel News. What draws you to journalism in Los Santos? Do you want to be the next big anchor or an investigative reporter?"
-                        className="min-h-[120px]"
-                        {...field} 
-                      />
+                    <Textarea 
+                      placeholder=""
+                      className="min-h-[120px]"
+                      {...field} 
+                    />
                     </FormControl>
                     <FormDescription>
                       Be genuine and detailed (minimum 100 characters)
@@ -345,11 +345,11 @@ const WeazelNewsApplicationForm = ({ jobImage }: WeazelNewsApplicationFormProps)
                   <FormItem>
                     <FormLabel>Previous Roleplay Experience *</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Describe any relevant roleplay experience, especially in media, journalism, or content creation roles on FiveM or other RP servers..."
-                        className="min-h-[100px]"
-                        {...field} 
-                      />
+                    <Textarea 
+                      placeholder=""
+                      className="min-h-[100px]"
+                      {...field} 
+                    />
                     </FormControl>
                     <FormDescription>
                       Detail your relevant RP background (minimum 50 characters)
@@ -366,11 +366,11 @@ const WeazelNewsApplicationForm = ({ jobImage }: WeazelNewsApplicationFormProps)
                   <FormItem>
                     <FormLabel>Character Background *</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Tell us about your character's background story. Why did they come to Los Santos? What drives them to pursue a career in journalism? What's their dream story to cover?"
-                        className="min-h-[120px]"
-                        {...field} 
-                      />
+                    <Textarea 
+                      placeholder=""
+                      className="min-h-[120px]"
+                      {...field} 
+                    />
                     </FormControl>
                     <FormDescription>
                       Provide a detailed character background (minimum 100 characters)
@@ -387,11 +387,11 @@ const WeazelNewsApplicationForm = ({ jobImage }: WeazelNewsApplicationFormProps)
                   <FormItem>
                     <FormLabel>Journalism & Reporting Skills *</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Do you have any real-life or in-game experience with journalism, reporting, interviewing, or content creation? Describe your writing style and how you approach storytelling..."
-                        className="min-h-[120px]"
-                        {...field} 
-                      />
+                    <Textarea 
+                      placeholder=""
+                      className="min-h-[120px]"
+                      {...field} 
+                    />
                     </FormControl>
                     <FormDescription>
                       Explain your journalism background and skills (minimum 75 characters)
@@ -408,11 +408,11 @@ const WeazelNewsApplicationForm = ({ jobImage }: WeazelNewsApplicationFormProps)
                   <FormItem>
                     <FormLabel>Writing Sample: Breaking News Report *</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Write a short breaking news report about a fictional event in Los Santos. Example: A major heist at the Pacific Standard Bank, a high-speed chase through the city, or a celebrity scandal at the Vinewood Casino. Show us your writing skills!"
-                        className="min-h-[180px]"
-                        {...field} 
-                      />
+                    <Textarea 
+                      placeholder=""
+                      className="min-h-[180px]"
+                      {...field} 
+                    />
                     </FormControl>
                     <FormDescription>
                       Show us your reporting and writing abilities (minimum 150 characters)
@@ -429,11 +429,11 @@ const WeazelNewsApplicationForm = ({ jobImage }: WeazelNewsApplicationFormProps)
                   <FormItem>
                     <FormLabel>Scenario: How would you conduct an interview with the Mayor about corruption allegations? *</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Describe your approach: How would you prepare for the interview? What questions would you ask? How would you handle deflection or hostility? How would you ensure fairness while pursuing the truth?"
-                        className="min-h-[150px]"
-                        {...field} 
-                      />
+                    <Textarea 
+                      placeholder=""
+                      className="min-h-[150px]"
+                      {...field} 
+                    />
                     </FormControl>
                     <FormDescription>
                       Demonstrate your interviewing approach (minimum 100 characters)
@@ -450,11 +450,11 @@ const WeazelNewsApplicationForm = ({ jobImage }: WeazelNewsApplicationFormProps)
                   <FormItem>
                     <FormLabel>Camera & Video Production Skills *</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Describe any experience with camera work, video editing, live broadcasting, or content creation. Are you comfortable operating cameras in the field? Do you have experience with Rockstar Editor or streaming?"
-                        className="min-h-[100px]"
-                        {...field} 
-                      />
+                    <Textarea 
+                      placeholder=""
+                      className="min-h-[100px]"
+                      {...field} 
+                    />
                     </FormControl>
                     <FormDescription>
                       Detail your technical media skills (minimum 50 characters)
