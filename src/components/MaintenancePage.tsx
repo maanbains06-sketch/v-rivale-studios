@@ -224,7 +224,8 @@ const MaintenancePage = ({ onAccessGranted }: MaintenancePageProps) => {
   };
 
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-background flex items-center justify-center p-4 overflow-hidden relative">
+    <div className="fixed inset-0 min-h-screen min-h-[100dvh] bg-background flex items-center justify-center p-4 overflow-auto z-[9999] safe-area-inset">
+      {/* Prevent any scrolling issues on mobile */}
       {/* Theme Decorations */}
       <Suspense fallback={null}>
         <ThemeDecorations />

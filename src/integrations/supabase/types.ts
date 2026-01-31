@@ -2485,12 +2485,15 @@ export type Database = {
         Row: {
           admin_notes: string | null
           assigned_to: string | null
+          attachments: string[] | null
           category: string
           created_at: string
           description: string
           discord_id: string | null
           discord_username: string | null
           id: string
+          player_id: string | null
+          player_name: string | null
           priority: string
           resolution: string | null
           resolved_at: string | null
@@ -2505,12 +2508,15 @@ export type Database = {
         Insert: {
           admin_notes?: string | null
           assigned_to?: string | null
+          attachments?: string[] | null
           category?: string
           created_at?: string
           description: string
           discord_id?: string | null
           discord_username?: string | null
           id?: string
+          player_id?: string | null
+          player_name?: string | null
           priority?: string
           resolution?: string | null
           resolved_at?: string | null
@@ -2525,12 +2531,15 @@ export type Database = {
         Update: {
           admin_notes?: string | null
           assigned_to?: string | null
+          attachments?: string[] | null
           category?: string
           created_at?: string
           description?: string
           discord_id?: string | null
           discord_username?: string | null
           id?: string
+          player_id?: string | null
+          player_name?: string | null
           priority?: string
           resolution?: string | null
           resolved_at?: string | null
