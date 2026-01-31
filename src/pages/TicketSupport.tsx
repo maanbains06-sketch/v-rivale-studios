@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Ticket, Send, Clock, CheckCircle, FileText, ArrowLeft, Upload, X, Image as ImageIcon, Video, Plus, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
-import slrpLogo from "@/assets/slrp-logo.png";
+import slrpLogoNew from "@/assets/slrp-logo-new.png";
 
 interface SupportTicket {
   id: string;
@@ -323,25 +323,55 @@ const TicketSupport = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      {/* Custom Header - Matching Reference Design */}
-      <div className="relative w-full bg-gradient-to-r from-background via-card to-background border-b border-border/30">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-4">
-            <img 
-              src={slrpLogo} 
-              alt="SKYLIFE ROLEPLAY" 
-              className="w-16 h-16 md:w-20 md:h-20 object-contain"
-            />
-            <div>
-              <h1 className="text-xl md:text-3xl font-black tracking-wide text-foreground uppercase">
-                SKYLIFE ROLEPLAY INDIA
+      {/* Custom Header - Premium Design Matching Reference */}
+      <div className="relative w-full overflow-hidden">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
+        
+        {/* Subtle pattern overlay */}
+        <div className="absolute inset-0 opacity-5" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+        }} />
+        
+        <div className="relative container mx-auto px-4 py-8 md:py-10">
+          <div className="flex items-center gap-5 md:gap-6">
+            {/* Rotating Logo */}
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
+              <img 
+                src={slrpLogoNew} 
+                alt="SKYLIFE ROLEPLAY" 
+                className="relative w-20 h-20 md:w-24 md:h-24 object-contain drop-shadow-2xl animate-[spin_20s_linear_infinite]"
+                style={{ filter: 'drop-shadow(0 0 20px rgba(59, 130, 246, 0.5))' }}
+              />
+            </div>
+            
+            <div className="flex flex-col">
+              <h1 className="text-2xl md:text-4xl font-black tracking-wider text-white uppercase">
+                SKYLIFE ROLEPLAY{' '}
+                <span 
+                  className="font-black italic"
+                  style={{
+                    background: 'linear-gradient(90deg, #FF9933 0%, #FFFFFF 50%, #138808 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    textShadow: '0 0 30px rgba(255, 153, 51, 0.3)'
+                  }}
+                >
+                  INDIA
+                </span>
               </h1>
-              <p className="text-sm md:text-lg text-muted-foreground font-medium tracking-widest uppercase">
+              <p className="text-base md:text-xl text-slate-400 font-semibold tracking-[0.3em] uppercase mt-1">
                 Ticket Support
               </p>
             </div>
           </div>
         </div>
+        
+        {/* Bottom border glow */}
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
       </div>
 
       <main className="container mx-auto px-4 py-8">
@@ -695,12 +725,12 @@ const TicketSupport = () => {
         ) : (
           /* Tickets List */
           <div className="max-w-4xl mx-auto">
-            {/* Header with Create Button - Matching Reference */}
-            <div className="flex items-center justify-between mb-6 p-4 rounded-xl bg-card/50 border border-border/30">
-              <h2 className="text-xl md:text-2xl font-bold uppercase tracking-wide">Support Tickets</h2>
+            {/* Header with Create Button - Premium Design */}
+            <div className="flex items-center justify-between mb-6 p-5 rounded-xl bg-gradient-to-r from-slate-800/80 via-slate-800/60 to-slate-800/80 border border-slate-700/50 backdrop-blur-sm shadow-xl">
+              <h2 className="text-xl md:text-2xl font-black uppercase tracking-wider text-white">Support Tickets</h2>
               <Button 
                 onClick={() => { resetFormFields(); setShowForm(true); }}
-                className="bg-primary hover:bg-primary/90"
+                className="bg-slate-700 hover:bg-slate-600 text-white border border-slate-600 shadow-lg uppercase tracking-wider font-semibold px-6"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Create New Ticket
