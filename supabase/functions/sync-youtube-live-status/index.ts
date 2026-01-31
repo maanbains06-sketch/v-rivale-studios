@@ -334,32 +334,29 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
       normalizedAuthor === normalizedChannelName
     );
     
-    // VALIDATION LOGIC:
-    // 1. If we have both channel IDs and they don't match -> NOT the channel's stream
-    if (expectedChannelId && videoOwnerChannelId && expectedChannelId !== videoOwnerChannelId) {
-      console.log(`${channelName} is NOT LIVE - Channel ID mismatch (expected: ${expectedChannelId}, got: ${videoOwnerChannelId})`);
-      return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'wrong_channel_video' };
-    }
+    // CRITICAL VALIDATION: Only show streams that actually belong to this channel
+    // YouTube's /live page can show other channels' streams when the channel is not live
     
-    // 2. If channel IDs match (or we have expected ID and video ID is null), trust it
-    if (expectedChannelId && (videoOwnerChannelId === expectedChannelId || !videoOwnerChannelId)) {
-      // Channel ID matches or we only have expected ID - proceed with the stream
-      // We already have the expected channel ID and the page was their /live page
-      console.log(`${channelName} - Channel ID validated or trusted from /live page`);
+    // 1. If we have both channel IDs, they MUST match
+    if (expectedChannelId && videoOwnerChannelId) {
+      if (expectedChannelId !== videoOwnerChannelId) {
+        console.log(`${channelName} is NOT LIVE - Channel ID mismatch (expected: ${expectedChannelId}, got: ${videoOwnerChannelId})`);
+        return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'wrong_channel_video' };
+      }
+      console.log(`${channelName} - Channel ID validated: ${expectedChannelId}`);
     }
-    // 3. If we don't have channel IDs, fall back to author name matching
-    else if (!expectedChannelId && !videoOwnerChannelId) {
-      if (videoAuthor && !isAuthorSimilar) {
-        console.log(`${channelName} is NOT LIVE - Video author "${videoAuthor}" doesn't match channel "${channelName}"`);
+    // 2. If we don't have video owner channel ID, we MUST verify by author name
+    else if (videoAuthor) {
+      if (!isAuthorSimilar) {
+        console.log(`${channelName} is NOT LIVE - Video author "${videoAuthor}" doesn't match channel "${channelName}" (author mismatch)`);
         return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'author_mismatch' };
       }
+      console.log(`${channelName} - Author name validated: "${videoAuthor}" matches "${channelName}"`);
     }
-    
-    // ADDITIONAL CHECK: If the page stayed on /live URL (didn't redirect to /watch), 
-    // and we found live indicators, trust it - this is the channel's live page
-    const stayedOnLivePage = finalUrl.includes('/live');
-    if (stayedOnLivePage) {
-      console.log(`${channelName} - Stayed on /live page, trusting as channel's own stream`);
+    // 3. If we have no way to verify ownership, reject the stream
+    else {
+      console.log(`${channelName} is NOT LIVE - Cannot verify stream ownership (no channel ID or author name)`);
+      return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'cannot_verify_ownership' };
     }
 
     // Extract stream title and thumbnail
