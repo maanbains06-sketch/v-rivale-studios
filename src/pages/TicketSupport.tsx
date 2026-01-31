@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
-import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,9 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Ticket, Send, Clock, CheckCircle, AlertCircle, FileText, ArrowLeft, Upload, X, Image, Video } from "lucide-react";
+import { Ticket, Send, Clock, CheckCircle, AlertCircle, FileText, ArrowLeft, Upload, X, Image, Video, Plus, Headphones } from "lucide-react";
 import { format } from "date-fns";
-import headerSupport from "@/assets/header-support.jpg";
+import slrpLogo from "@/assets/slrp-logo.png";
 
 const ACCEPTED_FILE_TYPES = [
   "image/jpeg",
@@ -318,13 +317,13 @@ const TicketSupport = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "open":
-        return <Badge className="bg-blue-500/20 text-blue-500 border-blue-500/50">Open</Badge>;
+        return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/50">Open</Badge>;
       case "in_progress":
-        return <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/50">In Progress</Badge>;
+        return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/50">In Progress</Badge>;
       case "resolved":
-        return <Badge className="bg-green-500/20 text-green-500 border-green-500/50">Resolved</Badge>;
+        return <Badge className="bg-green-500/20 text-green-400 border-green-500/50">Resolved</Badge>;
       case "closed":
-        return <Badge className="bg-gray-500/20 text-gray-500 border-gray-500/50">Closed</Badge>;
+        return <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/50">Closed</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -335,7 +334,7 @@ const TicketSupport = () => {
       case "critical":
         return <Badge variant="destructive">Critical</Badge>;
       case "high":
-        return <Badge className="bg-orange-500/20 text-orange-500 border-orange-500/50">High</Badge>;
+        return <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/50">High</Badge>;
       case "normal":
         return <Badge variant="secondary">Normal</Badge>;
       case "low":
@@ -353,35 +352,83 @@ const TicketSupport = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      <PageHeader 
-        title="Ticket Support"
-        description="Submit a formal support ticket for issues that require detailed investigation. Our team will respond within 24-48 hours."
-        backgroundImage={headerSupport}
-        pageKey="ticket-support"
-      />
+      {/* Custom Dark Header Section */}
+      <section className="relative pt-20">
+        <div className="bg-gradient-to-r from-[#1a1f2e] via-[#1e2538] to-[#1a1f2e] border-b border-primary/20">
+          <div className="container mx-auto px-4">
+            {/* Main Header with Logo */}
+            <div className="flex items-center gap-6 py-8">
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full"></div>
+                <img 
+                  src={slrpLogo} 
+                  alt="Skylife RP Logo" 
+                  className="w-24 h-24 md:w-32 md:h-32 object-contain relative z-10 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+                />
+              </div>
+              <div>
+                <h1 className="text-2xl md:text-4xl font-bold text-white tracking-wide uppercase">
+                  Skylife Roleplay India
+                </h1>
+                <div className="flex items-center gap-2 mt-2">
+                  <Headphones className="w-5 h-5 text-primary" />
+                  <span className="text-lg md:text-xl text-primary font-semibold uppercase tracking-wider">
+                    Ticket Support
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Section Header Bar */}
+        <div className="bg-gradient-to-r from-[#12151f] via-[#161a26] to-[#12151f] border-b border-white/5">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between py-4">
+              <h2 className="text-xl md:text-2xl font-bold text-white uppercase tracking-wide flex items-center gap-3">
+                <Ticket className="w-6 h-6 text-primary" />
+                Support Tickets
+              </h2>
+              {!showForm && !selectedTicket && (
+                <Button 
+                  onClick={() => setShowForm(true)}
+                  className="bg-[#1e2538] hover:bg-[#252b3d] border border-primary/30 text-white px-6 uppercase tracking-wide text-sm font-semibold"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create New Ticket
+                </Button>
+              )}
+              {(showForm || selectedTicket) && (
+                <Button 
+                  variant="ghost"
+                  onClick={() => {
+                    setShowForm(false);
+                    setSelectedTicket(null);
+                  }}
+                  className="text-muted-foreground hover:text-white"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Tickets
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <main className="container mx-auto px-4 py-12">
+      <main className="container mx-auto px-4 py-8">
         {/* Ticket Details View */}
         {selectedTicket ? (
           <div className="max-w-3xl mx-auto">
-            <Button 
-              variant="ghost" 
-              onClick={() => setSelectedTicket(null)}
-              className="mb-6"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Tickets
-            </Button>
-
-            <Card className="glass-effect border-primary/20">
-              <CardHeader>
+            <Card className="bg-[#1a1f2e] border-primary/20 shadow-xl">
+              <CardHeader className="border-b border-white/5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-white">
                       <Ticket className="w-5 h-5 text-primary" />
                       {selectedTicket.ticket_number}
                     </CardTitle>
-                    <CardDescription className="mt-1">
+                    <CardDescription className="mt-1 text-gray-400">
                       Submitted on {format(new Date(selectedTicket.created_at), "PPP 'at' p")}
                     </CardDescription>
                   </div>
@@ -391,30 +438,30 @@ const TicketSupport = () => {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 pt-6">
                 <div>
-                  <Label className="text-muted-foreground">Category</Label>
-                  <p className="font-medium">{getCategoryLabel(selectedTicket.category)}</p>
+                  <Label className="text-gray-400 text-sm">Category</Label>
+                  <p className="font-medium text-white">{getCategoryLabel(selectedTicket.category)}</p>
                 </div>
 
                 <div>
-                  <Label className="text-muted-foreground">Subject</Label>
-                  <p className="font-medium">{selectedTicket.subject}</p>
+                  <Label className="text-gray-400 text-sm">Subject</Label>
+                  <p className="font-medium text-white">{selectedTicket.subject}</p>
                 </div>
 
                 <div>
-                  <Label className="text-muted-foreground">Description</Label>
-                  <p className="whitespace-pre-wrap text-sm mt-1 p-4 rounded-lg bg-muted/50">
+                  <Label className="text-gray-400 text-sm">Description</Label>
+                  <p className="whitespace-pre-wrap text-sm mt-1 p-4 rounded-lg bg-black/30 text-gray-300 border border-white/5">
                     {selectedTicket.description}
                   </p>
                 </div>
 
                 {selectedTicket.resolution && (
                   <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/30">
-                    <Label className="text-green-500">Resolution</Label>
-                    <p className="text-sm mt-1 whitespace-pre-wrap">{selectedTicket.resolution}</p>
+                    <Label className="text-green-400">Resolution</Label>
+                    <p className="text-sm mt-1 whitespace-pre-wrap text-gray-300">{selectedTicket.resolution}</p>
                     {selectedTicket.resolved_at && (
-                      <p className="text-xs text-muted-foreground mt-2">
+                      <p className="text-xs text-gray-500 mt-2">
                         Resolved on {format(new Date(selectedTicket.resolved_at), "PPP 'at' p")}
                       </p>
                     )}
@@ -423,8 +470,8 @@ const TicketSupport = () => {
 
                 {selectedTicket.admin_notes && (
                   <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/30">
-                    <Label className="text-blue-500">Staff Notes</Label>
-                    <p className="text-sm mt-1 whitespace-pre-wrap">{selectedTicket.admin_notes}</p>
+                    <Label className="text-blue-400">Staff Notes</Label>
+                    <p className="text-sm mt-1 whitespace-pre-wrap text-gray-300">{selectedTicket.admin_notes}</p>
                   </div>
                 )}
               </CardContent>
@@ -433,80 +480,75 @@ const TicketSupport = () => {
         ) : showForm ? (
           /* New Ticket Form */
           <div className="max-w-2xl mx-auto">
-            <Button 
-              variant="ghost" 
-              onClick={() => setShowForm(false)}
-              className="mb-6"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Tickets
-            </Button>
-
-            <Card className="glass-effect border-primary/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <Card className="bg-[#1a1f2e] border-primary/20 shadow-xl">
+              <CardHeader className="border-b border-white/5">
+                <CardTitle className="flex items-center gap-2 text-white">
                   <FileText className="w-5 h-5 text-primary" />
                   Submit New Ticket
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-gray-400">
                   Please provide as much detail as possible to help us resolve your issue quickly.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 pt-6">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="player_id">Player ID (In-Game) *</Label>
+                    <Label htmlFor="player_id" className="text-gray-300">Player ID (In-Game) *</Label>
                     <Input
                       id="player_id"
                       value={playerId}
                       onChange={(e) => setPlayerId(e.target.value)}
                       placeholder="Your in-game player ID"
+                      className="bg-black/30 border-white/10 text-white placeholder:text-gray-500"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="player_name">Player Name (In-Game) *</Label>
+                    <Label htmlFor="player_name" className="text-gray-300">Player Name (In-Game) *</Label>
                     <Input
                       id="player_name"
                       value={playerName}
                       onChange={(e) => setPlayerName(e.target.value)}
                       placeholder="Your character name"
+                      className="bg-black/30 border-white/10 text-white placeholder:text-gray-500"
                     />
                   </div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="steam_id">Steam ID *</Label>
+                    <Label htmlFor="steam_id" className="text-gray-300">Steam ID *</Label>
                     <Input
                       id="steam_id"
                       value={steamId}
                       onChange={(e) => setSteamId(e.target.value)}
                       placeholder="Your Steam ID"
+                      className="bg-black/30 border-white/10 text-white placeholder:text-gray-500"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="discord_id">Discord ID</Label>
+                    <Label htmlFor="discord_id" className="text-gray-300">Discord ID</Label>
                     <Input
                       id="discord_id"
                       value={discordId}
                       onChange={(e) => setDiscordId(e.target.value)}
                       placeholder="Optional"
+                      className="bg-black/30 border-white/10 text-white placeholder:text-gray-500"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="category">Category *</Label>
+                  <Label htmlFor="category" className="text-gray-300">Category *</Label>
                   <Select value={category} onValueChange={setCategory}>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-black/30 border-white/10 text-white">
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-[#1a1f2e] border-white/10">
                       {ticketCategories.map((cat) => (
-                        <SelectItem key={cat.value} value={cat.value}>
+                        <SelectItem key={cat.value} value={cat.value} className="text-white hover:bg-white/5">
                           <div className="flex flex-col">
                             <span>{cat.label}</span>
-                            <span className="text-xs text-muted-foreground">{cat.description}</span>
+                            <span className="text-xs text-gray-500">{cat.description}</span>
                           </div>
                         </SelectItem>
                       ))}
@@ -515,17 +557,17 @@ const TicketSupport = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="priority">Priority</Label>
+                  <Label htmlFor="priority" className="text-gray-300">Priority</Label>
                   <Select value={priority} onValueChange={setPriority}>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-black/30 border-white/10 text-white">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-[#1a1f2e] border-white/10">
                       {priorityOptions.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
+                        <SelectItem key={opt.value} value={opt.value} className="text-white hover:bg-white/5">
                           <div className="flex flex-col">
                             <span>{opt.label}</span>
-                            <span className="text-xs text-muted-foreground">{opt.description}</span>
+                            <span className="text-xs text-gray-500">{opt.description}</span>
                           </div>
                         </SelectItem>
                       ))}
@@ -534,38 +576,39 @@ const TicketSupport = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="subject">Subject *</Label>
+                  <Label htmlFor="subject" className="text-gray-300">Subject *</Label>
                   <Input
                     id="subject"
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
                     placeholder=""
                     maxLength={100}
+                    className="bg-black/30 border-white/10 text-white placeholder:text-gray-500"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description *</Label>
+                  <Label htmlFor="description" className="text-gray-300">Description *</Label>
                   <Textarea
                     id="description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder=""
                     rows={8}
-                    className="resize-none"
+                    className="resize-none bg-black/30 border-white/10 text-white placeholder:text-gray-500"
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-gray-500">
                     Be as detailed as possible about your issue.
                   </p>
                 </div>
 
                 {/* File Upload Section */}
                 <div className="space-y-3">
-                  <Label className="flex items-center gap-2">
+                  <Label className="flex items-center gap-2 text-gray-300">
                     <Upload className="w-4 h-4" />
                     Proof (Images/Videos) *
                   </Label>
-                  <p className="text-xs text-muted-foreground -mt-1">
+                  <p className="text-xs text-gray-500 -mt-1">
                     Upload screenshots or video evidence to support your ticket. At least 1 file is required.
                   </p>
                   
@@ -580,15 +623,15 @@ const TicketSupport = () => {
                   
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-primary/30 rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
+                    className="border-2 border-dashed border-primary/30 rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors bg-black/20"
                   >
                     <div className="flex flex-col items-center gap-2">
                       <div className="flex gap-2">
                         <Image className="w-8 h-8 text-primary/60" />
                         <Video className="w-8 h-8 text-primary/60" />
                       </div>
-                      <p className="text-sm font-medium">Click to upload files</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-sm font-medium text-gray-300">Click to upload files</p>
+                      <p className="text-xs text-gray-500">
                         JPG, PNG, GIF, WebP, MP4, WebM, MOV (max 50MB each, up to 5 files)
                       </p>
                     </div>
@@ -596,22 +639,22 @@ const TicketSupport = () => {
 
                   {attachments.length > 0 && (
                     <div className="space-y-2">
-                      <p className="text-sm font-medium">Selected Files ({attachments.length}/{MAX_FILES}):</p>
+                      <p className="text-sm font-medium text-gray-300">Selected Files ({attachments.length}/{MAX_FILES}):</p>
                       <div className="grid gap-2">
                         {attachments.map((file, index) => (
                           <div
                             key={index}
-                            className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border"
+                            className="flex items-center justify-between p-3 rounded-lg bg-black/30 border border-white/5"
                           >
                             <div className="flex items-center gap-3 min-w-0">
                               {file.type.startsWith("image/") ? (
-                                <Image className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                                <Image className="w-5 h-5 text-blue-400 flex-shrink-0" />
                               ) : (
-                                <Video className="w-5 h-5 text-purple-500 flex-shrink-0" />
+                                <Video className="w-5 h-5 text-purple-400 flex-shrink-0" />
                               )}
                               <div className="min-w-0">
-                                <p className="text-sm font-medium truncate">{file.name}</p>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-sm font-medium truncate text-gray-300">{file.name}</p>
+                                <p className="text-xs text-gray-500">
                                   {(file.size / (1024 * 1024)).toFixed(2)} MB
                                 </p>
                               </div>
@@ -621,7 +664,7 @@ const TicketSupport = () => {
                               variant="ghost"
                               size="icon"
                               onClick={() => removeAttachment(index)}
-                              className="flex-shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                              className="flex-shrink-0 text-red-400 hover:text-red-300 hover:bg-red-500/10"
                             >
                               <X className="w-4 h-4" />
                             </Button>
@@ -632,7 +675,7 @@ const TicketSupport = () => {
                   )}
 
                   {attachments.length === 0 && (
-                    <p className="text-xs text-destructive flex items-center gap-1">
+                    <p className="text-xs text-red-400 flex items-center gap-1">
                       <AlertCircle className="w-3 h-3" />
                       At least one proof file is required
                     </p>
@@ -643,7 +686,7 @@ const TicketSupport = () => {
                   <Button
                     variant="outline"
                     onClick={() => setShowForm(false)}
-                    className="flex-1"
+                    className="flex-1 border-white/10 text-gray-300 hover:bg-white/5"
                     disabled={submitting || uploadingFiles}
                   >
                     Cancel
@@ -651,7 +694,7 @@ const TicketSupport = () => {
                   <Button
                     onClick={submitTicket}
                     disabled={submitting || uploadingFiles || attachments.length === 0}
-                    className="flex-1"
+                    className="flex-1 bg-primary hover:bg-primary/90"
                   >
                     {submitting || uploadingFiles ? (
                       <>
@@ -667,9 +710,9 @@ const TicketSupport = () => {
                   </Button>
                 </div>
 
-                <div className="p-4 rounded-lg bg-muted/50 border border-border">
-                  <h4 className="font-medium text-sm mb-2">📋 Ticket Guidelines</h4>
-                  <ul className="text-xs text-muted-foreground space-y-1">
+                <div className="p-4 rounded-lg bg-black/30 border border-white/5">
+                  <h4 className="font-medium text-sm mb-2 text-gray-300">📋 Ticket Guidelines</h4>
+                  <ul className="text-xs text-gray-500 space-y-1">
                     <li>• Tickets are reviewed within 24-48 hours</li>
                     <li>• For urgent in-game issues, use Live Chat Support instead</li>
                     <li>• Ban appeals should be submitted separately</li>
@@ -683,31 +726,20 @@ const TicketSupport = () => {
         ) : (
           /* Tickets List */
           <div className="max-w-4xl mx-auto">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className="text-2xl font-bold">Your Tickets</h2>
-                <p className="text-muted-foreground">View and manage your support tickets</p>
-              </div>
-              <Button onClick={() => setShowForm(true)}>
-                <Ticket className="w-4 h-4 mr-2" />
-                New Ticket
-              </Button>
-            </div>
-
             {loading ? (
               <div className="text-center py-12">
                 <Clock className="w-8 h-8 mx-auto mb-2 animate-spin text-primary" />
-                <p className="text-muted-foreground">Loading tickets...</p>
+                <p className="text-gray-400">Loading tickets...</p>
               </div>
             ) : tickets.length === 0 ? (
-              <Card className="glass-effect border-border/20">
+              <Card className="bg-[#1a1f2e] border-primary/20 shadow-xl">
                 <CardContent className="py-12 text-center">
-                  <Ticket className="w-16 h-16 mx-auto mb-4 text-muted-foreground/30" />
-                  <h3 className="text-xl font-semibold mb-2">No Tickets Yet</h3>
-                  <p className="text-muted-foreground mb-6">
+                  <Ticket className="w-16 h-16 mx-auto mb-4 text-gray-600" />
+                  <h3 className="text-xl font-semibold mb-2 text-white">No Tickets Yet</h3>
+                  <p className="text-gray-400 mb-6">
                     You haven't submitted any support tickets. Create one to get help from our team.
                   </p>
-                  <Button onClick={() => setShowForm(true)}>
+                  <Button onClick={() => setShowForm(true)} className="bg-primary hover:bg-primary/90">
                     <Ticket className="w-4 h-4 mr-2" />
                     Create Your First Ticket
                   </Button>
@@ -718,7 +750,7 @@ const TicketSupport = () => {
                 {tickets.map((ticket) => (
                   <Card 
                     key={ticket.id}
-                    className="glass-effect border-border/20 hover:border-primary/50 transition-all cursor-pointer"
+                    className="bg-[#1a1f2e] border-white/5 hover:border-primary/50 transition-all cursor-pointer shadow-lg"
                     onClick={() => setSelectedTicket(ticket)}
                   >
                     <CardContent className="py-4">
@@ -726,12 +758,12 @@ const TicketSupport = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-3 mb-1">
                             <span className="font-mono text-sm text-primary">{ticket.ticket_number}</span>
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-xs border-white/10 text-gray-400">
                               {getCategoryLabel(ticket.category)}
                             </Badge>
                           </div>
-                          <h3 className="font-medium truncate">{ticket.subject}</h3>
-                          <p className="text-sm text-muted-foreground truncate mt-1">
+                          <h3 className="font-medium truncate text-white">{ticket.subject}</h3>
+                          <p className="text-sm text-gray-500 truncate mt-1">
                             {ticket.description.substring(0, 100)}...
                           </p>
                         </div>
@@ -740,7 +772,7 @@ const TicketSupport = () => {
                             {getStatusBadge(ticket.status)}
                             {getPriorityBadge(ticket.priority)}
                           </div>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-xs text-gray-500">
                             {format(new Date(ticket.created_at), "MMM d, yyyy")}
                           </span>
                         </div>
