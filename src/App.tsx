@@ -93,6 +93,7 @@ const Roster = lazy(() => import("./pages/Roster"));
 const JobPanel = lazy(() => import("./pages/JobPanel"));
 const BusinessPanel = lazy(() => import("./pages/BusinessPanel"));
 const CreatorContract = lazy(() => import("./pages/CreatorContract"));
+const TicketSupport = lazy(() => import("./pages/TicketSupport"));
 
 const DirectMessage = lazy(() => import("./pages/DirectMessage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -184,6 +185,7 @@ const AppRoutes = memo(() => {
           <Route path="/job-panel" element={<PageTransition><RequireAuth message="Login with Discord to access the Job Panel."><JobPanel /></RequireAuth></PageTransition>} />
           <Route path="/business-panel" element={<PageTransition><RequireAuth message="Login with Discord to access the Business Panel."><BusinessPanel /></RequireAuth></PageTransition>} />
           <Route path="/creator-contract" element={<PageTransition><RequireAuth message="Login with Discord to access contracts."><CreatorContract /></RequireAuth></PageTransition>} />
+          <Route path="/ticket-support" element={<PageTransition><RequireAuth message="Login with Discord to submit tickets."><TicketSupport /></RequireAuth></PageTransition>} />
           
           <Route path="/direct-message" element={<PageTransition><RequireAuth message="Login with Discord to send direct messages."><DirectMessage /></RequireAuth></PageTransition>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

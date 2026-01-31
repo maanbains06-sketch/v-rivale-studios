@@ -1,20 +1,31 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Users, RefreshCw, TrendingUp, AlertCircle } from "lucide-react";
+import { Users, RefreshCw, TrendingUp, AlertCircle, Circle } from "lucide-react";
 
 interface StaffWorkload {
   user_id: string;
+  staff_id: string;
   name: string;
   discord_username: string;
+  discord_id: string | null;
   current_workload: number;
   max_concurrent_chats: number;
   is_available: boolean;
   workload_percentage: number;
+  is_online: boolean;
+  discord_status: string;
+}
+
+interface DiscordPresenceData {
+  staff_member_id: string;
+  is_online: boolean;
+  status: string;
+  updated_at: string;
 }
 
 export const StaffWorkloadDashboard = () => {
@@ -23,11 +34,102 @@ export const StaffWorkloadDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [rebalancing, setRebalancing] = useState(false);
 
+  const fetchWorkloads = useCallback(async () => {
+    setLoading(true);
+    
+    try {
+      // Fetch staff availability with staff member details
+      const { data: availabilityData, error: availError } = await supabase
+        .from('staff_availability')
+        .select(`
+          user_id,
+          current_workload,
+          max_concurrent_chats,
+          is_available,
+          staff_members!inner(id, name, discord_username, discord_id, is_active, role_type)
+        `)
+        .eq('staff_members.is_active', true)
+        .in('staff_members.role_type', ['admin', 'moderator', 'owner', 'developer']);
+
+      if (availError) {
+        console.error('Error fetching workloads:', availError);
+        setLoading(false);
+        return;
+      }
+
+      // Get staff member IDs to fetch Discord presence
+      const staffIds = (availabilityData || []).map((item: any) => item.staff_members.id);
+      
+      // Fetch Discord presence data
+      let presenceMap = new Map<string, DiscordPresenceData>();
+      if (staffIds.length > 0) {
+        const { data: presenceData, error: presenceError } = await supabase
+          .from('discord_presence')
+          .select('staff_member_id, is_online, status, updated_at')
+          .in('staff_member_id', staffIds);
+
+        if (!presenceError && presenceData) {
+          presenceData.forEach((p: DiscordPresenceData) => {
+            presenceMap.set(p.staff_member_id, p);
+          });
+        }
+      }
+
+      const now = new Date();
+      const formattedData: StaffWorkload[] = (availabilityData || []).map((item: any) => {
+        const presence = presenceMap.get(item.staff_members.id);
+        let isOnline = false;
+        let discordStatus = 'offline';
+
+        if (presence) {
+          const updatedAt = new Date(presence.updated_at);
+          const secondsSinceUpdate = (now.getTime() - updatedAt.getTime()) / 1000;
+          
+          // Consider presence data valid if updated within 60 seconds
+          if (secondsSinceUpdate <= 60) {
+            isOnline = presence.is_online;
+            discordStatus = presence.status || 'offline';
+          } else if (secondsSinceUpdate <= 120) {
+            isOnline = presence.is_online;
+            discordStatus = presence.is_online ? 'idle' : 'offline';
+          }
+        }
+
+        return {
+          user_id: item.user_id,
+          staff_id: item.staff_members.id,
+          name: item.staff_members.name,
+          discord_username: item.staff_members.discord_username,
+          discord_id: item.staff_members.discord_id,
+          current_workload: item.current_workload || 0,
+          max_concurrent_chats: item.max_concurrent_chats || 5,
+          is_available: item.is_available,
+          workload_percentage: ((item.current_workload || 0) / (item.max_concurrent_chats || 5)) * 100,
+          is_online: isOnline,
+          discord_status: discordStatus,
+        };
+      });
+
+      setWorkloads(formattedData.sort((a, b) => {
+        // Sort by online status first, then by workload
+        if (a.is_online !== b.is_online) return b.is_online ? 1 : -1;
+        return b.workload_percentage - a.workload_percentage;
+      }));
+    } catch (error) {
+      console.error('Error fetching workloads:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchWorkloads();
     
-    // Set up real-time subscription
-    const channel = supabase
+    // Refresh every 15 seconds for real-time Discord status
+    const interval = setInterval(fetchWorkloads, 15000);
+    
+    // Set up real-time subscription for staff_availability changes
+    const availabilityChannel = supabase
       .channel('staff-workload-changes')
       .on(
         'postgres_changes',
@@ -36,51 +138,30 @@ export const StaffWorkloadDashboard = () => {
           schema: 'public',
           table: 'staff_availability',
         },
-        () => {
-          fetchWorkloads();
-        }
+        () => fetchWorkloads()
+      )
+      .subscribe();
+
+    // Subscribe to Discord presence changes
+    const presenceChannel = supabase
+      .channel('workload-presence-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'discord_presence',
+        },
+        () => fetchWorkloads()
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      clearInterval(interval);
+      supabase.removeChannel(availabilityChannel);
+      supabase.removeChannel(presenceChannel);
     };
-  }, []);
-
-  const fetchWorkloads = async () => {
-    setLoading(true);
-    
-    const { data, error } = await supabase
-      .from('staff_availability')
-      .select(`
-        user_id,
-        current_workload,
-        max_concurrent_chats,
-        is_available,
-        staff_members!inner(name, discord_username, is_active, role_type)
-      `)
-      .eq('staff_members.is_active', true)
-      .in('staff_members.role_type', ['admin', 'moderator', 'owner', 'developer']);
-
-    if (error) {
-      console.error('Error fetching workloads:', error);
-      setLoading(false);
-      return;
-    }
-
-    const formattedData: StaffWorkload[] = (data || []).map((item: any) => ({
-      user_id: item.user_id,
-      name: item.staff_members.name,
-      discord_username: item.staff_members.discord_username,
-      current_workload: item.current_workload || 0,
-      max_concurrent_chats: item.max_concurrent_chats || 5,
-      is_available: item.is_available,
-      workload_percentage: ((item.current_workload || 0) / (item.max_concurrent_chats || 5)) * 100
-    }));
-
-    setWorkloads(formattedData.sort((a, b) => b.workload_percentage - a.workload_percentage));
-    setLoading(false);
-  };
+  }, [fetchWorkloads]);
 
   const triggerRebalance = async () => {
     setRebalancing(true);
@@ -178,18 +259,45 @@ export const StaffWorkloadDashboard = () => {
             workloads.map((staff) => (
               <div
                 key={staff.user_id}
-                className="p-4 rounded-lg border border-border/50 hover:border-primary/50 transition-colors"
+                className={`p-4 rounded-lg border transition-colors ${
+                  staff.is_online 
+                    ? 'border-green-500/50 bg-green-500/5' 
+                    : 'border-border/50 opacity-75'
+                } hover:border-primary/50`}
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-3">
+                    {/* Online Status Indicator */}
+                    <div className="relative">
+                      <Circle 
+                        className={`w-3 h-3 ${
+                          staff.is_online 
+                            ? staff.discord_status === 'dnd' 
+                              ? 'fill-red-500 text-red-500'
+                              : staff.discord_status === 'idle'
+                                ? 'fill-yellow-500 text-yellow-500'
+                                : 'fill-green-500 text-green-500 animate-pulse'
+                            : 'fill-gray-500 text-gray-500'
+                        }`} 
+                      />
+                    </div>
                     <div className="flex flex-col">
                       <span className="font-medium">{staff.name}</span>
                       <span className="text-xs text-muted-foreground">
                         {staff.discord_username}
+                        {staff.is_online && (
+                          <span className="ml-1 text-green-500">• {staff.discord_status}</span>
+                        )}
                       </span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
+                    <Badge 
+                      variant={staff.is_online ? "default" : "secondary"}
+                      className={staff.is_online ? "bg-green-500/20 text-green-500 border-green-500/50" : ""}
+                    >
+                      {staff.is_online ? "Online" : "Offline"}
+                    </Badge>
                     <Badge variant={staff.is_available ? "default" : "secondary"}>
                       {staff.is_available ? "Available" : "Unavailable"}
                     </Badge>

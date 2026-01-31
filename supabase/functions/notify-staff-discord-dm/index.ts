@@ -66,6 +66,9 @@ Deno.serve(async (req) => {
       hour12: true
     });
 
+    // Build direct link to the specific chat
+    const directChatLink = `https://skyliferoleplay.com/admin/support-chat?chatId=${chatId}`;
+
     // Build the embed for the support channel with branded image
     const embed = {
       title: '🚨 Human Support Requested',
@@ -94,7 +97,7 @@ Deno.serve(async (req) => {
         },
         {
           name: '🔗 Action Required',
-          value: `Please log in to the website and check the support chat.\n**[Open Support Dashboard](https://skyliferoleplay.com/admin/support-chat)**`,
+          value: `Please log in to the website and respond to this chat.\n**[Open This Chat Directly](${directChatLink})**\n\n_Or go to [Support Dashboard](https://skyliferoleplay.com/admin/support-chat)_`,
           inline: false,
         },
       ],
