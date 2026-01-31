@@ -69,6 +69,7 @@ const TicketSupport = () => {
     setSubject("");
     setDescription("");
     setPriority("normal");
+    setDiscordId("");
     setSteamId("");
   };
 
@@ -86,12 +87,6 @@ const TicketSupport = () => {
       });
       navigate("/auth");
       return;
-    }
-
-    // Get Discord ID from user metadata
-    const userDiscordId = user.user_metadata?.discord_id || user.user_metadata?.provider_id;
-    if (userDiscordId) {
-      setDiscordId(userDiscordId);
     }
 
     fetchTickets();
@@ -119,10 +114,10 @@ const TicketSupport = () => {
   };
 
   const submitTicket = async () => {
-    if (!category || !subject.trim() || !description.trim()) {
+    if (!category || !subject.trim() || !description.trim() || !steamId.trim()) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required fields.",
+        description: "Please fill in all required fields (including Steam ID).",
         variant: "destructive",
       });
       return;
@@ -144,7 +139,7 @@ const TicketSupport = () => {
           user_id: user.id,
           discord_id: discordId || null,
           discord_username: discordUsername,
-          steam_id: steamId || null,
+          steam_id: steamId.trim(),
           category,
           subject,
           description,
@@ -334,16 +329,16 @@ const TicketSupport = () => {
                       id="discord_id"
                       value={discordId}
                       onChange={(e) => setDiscordId(e.target.value)}
-                      placeholder="Your 17-19 digit Discord ID"
+                      placeholder=""
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="steam_id">Steam ID (Optional)</Label>
+                    <Label htmlFor="steam_id">Steam ID *</Label>
                     <Input
                       id="steam_id"
                       value={steamId}
                       onChange={(e) => setSteamId(e.target.value)}
-                      placeholder="Your Steam ID (e.g., steam:110000...)"
+                      placeholder=""
                     />
                   </div>
                 </div>
@@ -392,7 +387,7 @@ const TicketSupport = () => {
                     id="subject"
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
-                    placeholder="Brief summary of your issue"
+                    placeholder=""
                     maxLength={100}
                   />
                 </div>

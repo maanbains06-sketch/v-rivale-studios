@@ -25,7 +25,7 @@ const businessJobSchema = z.object({
     .trim()
     .min(2, "Character name must be at least 2 characters")
     .max(50, "Character name must be less than 50 characters"),
-  age: z.number()
+  age: z.coerce.number()
     .min(18, "Must be at least 18 years old")
     .max(100, "Invalid age"),
   phone_number: z.string()
@@ -62,7 +62,8 @@ const businessJobSchema = z.object({
     .optional(),
 });
 
-type BusinessJobFormData = z.infer<typeof businessJobSchema>;
+type BusinessJobFormInput = z.input<typeof businessJobSchema>;
+type BusinessJobFormData = z.output<typeof businessJobSchema>;
 
 export type BusinessJobType = 
   | "Real Estate Agent" 
@@ -173,12 +174,12 @@ const BusinessJobApplicationForm = ({ jobType, jobImage }: BusinessJobApplicatio
     { column: 'job_type', value: jobType }
   );
 
-  const form = useForm<BusinessJobFormData>({
+  const form = useForm<BusinessJobFormInput>({
     resolver: zodResolver(businessJobSchema),
     defaultValues: {
       business_name: "",
       character_name: "",
-      age: 18,
+      age: "" as unknown as BusinessJobFormInput["age"],
       phone_number: "",
       previous_experience: "",
       why_join: "",
@@ -190,7 +191,7 @@ const BusinessJobApplicationForm = ({ jobType, jobImage }: BusinessJobApplicatio
     },
   });
 
-  const onSubmit = async (data: BusinessJobFormData) => {
+  const onSubmit = async (data: BusinessJobFormInput) => {
     setIsSubmitting(true);
     
     try {
@@ -205,20 +206,22 @@ const BusinessJobApplicationForm = ({ jobType, jobImage }: BusinessJobApplicatio
         return;
       }
 
+      const parsed: BusinessJobFormData = businessJobSchema.parse(data);
+
       const { error } = await supabase
         .from("job_applications")
         .insert({
-          character_name: data.character_name,
-          age: data.age,
-          phone_number: data.phone_number,
-          previous_experience: data.previous_experience,
-          why_join: data.why_join,
-          character_background: data.character_background,
-          job_specific_answer: data.job_specific_answer,
-          strengths: data.strengths,
-          availability: data.availability,
-          additional_info: data.additional_info,
-          business_name: data.business_name,
+          character_name: parsed.character_name,
+          age: parsed.age,
+          phone_number: parsed.phone_number,
+          previous_experience: parsed.previous_experience,
+          why_join: parsed.why_join,
+          character_background: parsed.character_background,
+          job_specific_answer: parsed.job_specific_answer,
+          strengths: parsed.strengths,
+          availability: parsed.availability,
+          additional_info: parsed.additional_info,
+          business_name: parsed.business_name,
           job_type: jobType,
           user_id: user.id,
           status: "pending",
@@ -358,7 +361,7 @@ const BusinessJobApplicationForm = ({ jobType, jobImage }: BusinessJobApplicatio
                     </FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder={`Enter the name of the ${jobType.toLowerCase()} business you're applying to...`} 
+                        placeholder="" 
                         className="border-amber-500/30 focus:border-amber-500/50"
                         {...field} 
                       />
@@ -379,7 +382,7 @@ const BusinessJobApplicationForm = ({ jobType, jobImage }: BusinessJobApplicatio
                     <FormItem>
                       <FormLabel>Character Name *</FormLabel>
                       <FormControl>
-                        <Input placeholder="John Doe" {...field} />
+                        <Input placeholder="" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -395,9 +398,9 @@ const BusinessJobApplicationForm = ({ jobType, jobImage }: BusinessJobApplicatio
                       <FormControl>
                         <Input 
                           type="number" 
-                          placeholder="25" 
-                          {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value) || 18)}
+                          placeholder="" 
+                          value={(field.value as any) ?? ""}
+                          onChange={(e) => field.onChange(e.target.value)}
                         />
                       </FormControl>
                       <FormMessage />
@@ -413,7 +416,7 @@ const BusinessJobApplicationForm = ({ jobType, jobImage }: BusinessJobApplicatio
                   <FormItem>
                     <FormLabel>In-Game Phone Number *</FormLabel>
                     <FormControl>
-                      <Input placeholder="555-0123" {...field} />
+                  <Input placeholder="" {...field} />
                     </FormControl>
                     <FormDescription>
                       Your character's in-game phone number

@@ -20,7 +20,7 @@ const jobApplicationSchema = z.object({
     .trim()
     .min(2, "Character name must be at least 2 characters")
     .max(50, "Character name must be less than 50 characters"),
-  age: z.number()
+  age: z.coerce.number()
     .min(18, "Must be at least 18 years old")
     .max(100, "Invalid age"),
   phone_number: z.string()
@@ -57,7 +57,8 @@ const jobApplicationSchema = z.object({
     .optional(),
 });
 
-type JobApplicationFormData = z.infer<typeof jobApplicationSchema>;
+type JobApplicationFormInput = z.input<typeof jobApplicationSchema>;
+type JobApplicationFormData = z.output<typeof jobApplicationSchema>;
 
 interface JobApplicationFormProps {
   jobType: "Police Department" | "EMS" | "Mechanic";
@@ -85,11 +86,11 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
     { column: 'job_type', value: jobType }
   );
 
-  const form = useForm<JobApplicationFormData>({
+  const form = useForm<JobApplicationFormInput>({
     resolver: zodResolver(jobApplicationSchema),
     defaultValues: {
       character_name: "",
-      age: 18,
+      age: "" as unknown as JobApplicationFormInput["age"],
       phone_number: "",
       previous_experience: "",
       why_join: "",
@@ -101,7 +102,7 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
     },
   });
 
-  const onSubmit = async (data: JobApplicationFormData) => {
+  const onSubmit = async (data: JobApplicationFormInput) => {
     setIsSubmitting(true);
     
     try {
@@ -116,10 +117,12 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
         return;
       }
 
+      const parsed: JobApplicationFormData = jobApplicationSchema.parse(data);
+
       const { error } = await supabase
         .from("job_applications")
         .insert({
-          ...data,
+          ...parsed,
           job_type: jobType,
           user_id: user.id,
           status: "pending",
@@ -318,7 +321,7 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
                   <FormItem>
                     <FormLabel>Character Name *</FormLabel>
                     <FormControl>
-                      <Input placeholder="John Doe" {...field} />
+                      <Input placeholder="" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -334,9 +337,9 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
                     <FormControl>
                       <Input 
                         type="number" 
-                        placeholder="25" 
-                        {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 18)}
+                        placeholder="" 
+                        value={(field.value as any) ?? ""}
+                        onChange={(e) => field.onChange(e.target.value)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -352,7 +355,7 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
                 <FormItem>
                   <FormLabel>In-Game Phone Number *</FormLabel>
                   <FormControl>
-                    <Input placeholder="555-0123" {...field} />
+                    <Input placeholder="" {...field} />
                   </FormControl>
                   <FormDescription>
                     Your character's in-game phone number
