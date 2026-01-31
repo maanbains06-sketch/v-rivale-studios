@@ -800,6 +800,7 @@ export type Database = {
       featured_youtubers: {
         Row: {
           avatar_url: string | null
+          channel_id: string | null
           channel_url: string
           created_at: string
           display_order: number | null
@@ -815,6 +816,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          channel_id?: string | null
           channel_url: string
           created_at?: string
           display_order?: number | null
@@ -830,6 +832,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          channel_id?: string | null
           channel_url?: string
           created_at?: string
           display_order?: number | null
