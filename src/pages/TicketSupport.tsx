@@ -364,28 +364,40 @@ const TicketSupport = () => {
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
       </div>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 relative">
+        {/* Ambient background effects */}
+        <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-cyan-500/5 rounded-full blur-3xl" />
+        </div>
+
         {/* Ticket Details View */}
         {selectedTicket ? (
           <div className="max-w-3xl mx-auto">
             <Button 
               variant="ghost" 
               onClick={() => setSelectedTicket(null)}
-              className="mb-6"
+              className="mb-6 group"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
+              <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
               Back to Tickets
             </Button>
 
-            <Card className="glass-effect border-primary/20">
-              <CardHeader>
+            <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-900/90 via-slate-800/90 to-slate-900/90 backdrop-blur-xl shadow-2xl">
+              {/* Card glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-cyan-500/10 pointer-events-none" />
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+              
+              <CardHeader className="relative">
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Ticket className="w-5 h-5 text-primary" />
-                      {selectedTicket.ticket_number}
+                    <CardTitle className="flex items-center gap-3 text-xl">
+                      <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                        <Ticket className="w-5 h-5 text-primary" />
+                      </div>
+                      <span className="font-mono text-primary">{selectedTicket.ticket_number}</span>
                     </CardTitle>
-                    <CardDescription className="mt-1">
+                    <CardDescription className="mt-2 ml-13">
                       Submitted on {format(new Date(selectedTicket.created_at), "PPP 'at' p")}
                     </CardDescription>
                   </div>
@@ -395,56 +407,59 @@ const TicketSupport = () => {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 relative">
                 <div className="grid md:grid-cols-3 gap-4">
-                  <div>
-                    <Label className="text-muted-foreground text-xs">Category</Label>
-                    <p className="font-medium">{getCategoryLabel(selectedTicket.category)}</p>
+                  <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+                    <Label className="text-muted-foreground text-xs uppercase tracking-wider">Category</Label>
+                    <p className="font-semibold mt-1">{getCategoryLabel(selectedTicket.category)}</p>
                   </div>
-                  <div>
-                    <Label className="text-muted-foreground text-xs">Player ID</Label>
-                    <p className="font-mono">{selectedTicket.player_id || '-'}</p>
+                  <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+                    <Label className="text-muted-foreground text-xs uppercase tracking-wider">Player ID</Label>
+                    <p className="font-mono mt-1 text-primary">{selectedTicket.player_id || '-'}</p>
                   </div>
-                  <div>
-                    <Label className="text-muted-foreground text-xs">Player Name</Label>
-                    <p className="font-medium">{selectedTicket.player_name || '-'}</p>
+                  <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+                    <Label className="text-muted-foreground text-xs uppercase tracking-wider">Player Name</Label>
+                    <p className="font-semibold mt-1">{selectedTicket.player_name || '-'}</p>
                   </div>
                 </div>
 
-                <div>
-                  <Label className="text-muted-foreground text-xs">Subject</Label>
-                  <p className="font-medium">{selectedTicket.subject}</p>
+                <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                  <Label className="text-muted-foreground text-xs uppercase tracking-wider">Subject</Label>
+                  <p className="font-semibold mt-1 text-lg">{selectedTicket.subject}</p>
                 </div>
 
-                <div>
-                  <Label className="text-muted-foreground text-xs">Description</Label>
-                  <div className="p-3 rounded-lg bg-muted/50 mt-1 whitespace-pre-wrap text-sm">
+                <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                  <Label className="text-muted-foreground text-xs uppercase tracking-wider">Description</Label>
+                  <div className="mt-2 whitespace-pre-wrap text-sm text-foreground/80 leading-relaxed">
                     {selectedTicket.description}
                   </div>
                 </div>
 
                 {/* Attachments Display */}
                 {selectedTicket.attachments && selectedTicket.attachments.length > 0 && (
-                  <div>
-                    <Label className="text-muted-foreground text-xs">Attachments</Label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
+                  <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                    <Label className="text-muted-foreground text-xs uppercase tracking-wider flex items-center gap-2">
+                      <ImageIcon className="w-4 h-4" />
+                      Attachments ({selectedTicket.attachments.length})
+                    </Label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
                       {selectedTicket.attachments.map((url, idx) => (
                         <a
                           key={idx}
                           href={url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="block rounded-lg overflow-hidden border border-border/50 hover:border-primary/50 transition-colors"
+                          className="block rounded-xl overflow-hidden border-2 border-white/10 hover:border-primary/50 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/10"
                         >
                           {isImage(url) ? (
-                            <img src={url} alt={`Attachment ${idx + 1}`} className="w-full h-24 object-cover" />
+                            <img src={url} alt={`Attachment ${idx + 1}`} className="w-full h-28 object-cover" />
                           ) : isVideo(url) ? (
-                            <div className="w-full h-24 bg-muted flex items-center justify-center">
-                              <Video className="w-8 h-8 text-muted-foreground" />
+                            <div className="w-full h-28 bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
+                              <Video className="w-10 h-10 text-purple-400" />
                             </div>
                           ) : (
-                            <div className="w-full h-24 bg-muted flex items-center justify-center">
-                              <FileText className="w-8 h-8 text-muted-foreground" />
+                            <div className="w-full h-28 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center">
+                              <FileText className="w-10 h-10 text-blue-400" />
                             </div>
                           )}
                         </a>
@@ -454,11 +469,14 @@ const TicketSupport = () => {
                 )}
 
                 {selectedTicket.resolution && (
-                  <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/30">
-                    <Label className="text-green-500">Resolution</Label>
-                    <p className="text-sm mt-1 whitespace-pre-wrap">{selectedTicket.resolution}</p>
+                  <div className="p-4 rounded-xl bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30">
+                    <Label className="text-green-400 flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4" />
+                      Resolution
+                    </Label>
+                    <p className="text-sm mt-2 whitespace-pre-wrap text-green-100/80">{selectedTicket.resolution}</p>
                     {selectedTicket.resolved_at && (
-                      <p className="text-xs text-muted-foreground mt-2">
+                      <p className="text-xs text-green-400/60 mt-3">
                         Resolved on {format(new Date(selectedTicket.resolved_at), "PPP 'at' p")}
                       </p>
                     )}
@@ -466,9 +484,12 @@ const TicketSupport = () => {
                 )}
 
                 {selectedTicket.admin_notes && (
-                  <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/30">
-                    <Label className="text-blue-500">Staff Notes</Label>
-                    <p className="text-sm mt-1 whitespace-pre-wrap">{selectedTicket.admin_notes}</p>
+                  <div className="p-4 rounded-xl bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-500/30">
+                    <Label className="text-blue-400 flex items-center gap-2">
+                      <FileText className="w-4 h-4" />
+                      Staff Notes
+                    </Label>
+                    <p className="text-sm mt-2 whitespace-pre-wrap text-blue-100/80">{selectedTicket.admin_notes}</p>
                   </div>
                 )}
               </CardContent>
@@ -716,62 +737,91 @@ const TicketSupport = () => {
           /* Tickets List */
           <div className="max-w-4xl mx-auto">
             {/* Header with Create Button - Premium Design */}
-            <div className="flex items-center justify-between mb-6 p-5 rounded-xl bg-gradient-to-r from-slate-800/80 via-slate-800/60 to-slate-800/80 border border-slate-700/50 backdrop-blur-sm shadow-xl">
-              <h2 className="text-xl md:text-2xl font-black uppercase tracking-wider text-white">Support Tickets</h2>
+            <div className="relative flex items-center justify-between mb-8 p-6 rounded-2xl overflow-hidden">
+              {/* Background effects */}
+              <div className="absolute inset-0 bg-gradient-to-r from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-xl" />
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-cyan-500/10" />
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
+              
+              <div className="relative flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-cyan-500/20 flex items-center justify-center border border-white/10">
+                  <Ticket className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-xl md:text-2xl font-black uppercase tracking-wider text-white">Support Tickets</h2>
+                  <p className="text-sm text-muted-foreground">Manage your support requests</p>
+                </div>
+              </div>
               <Button 
                 onClick={() => { resetFormFields(); setShowForm(true); }}
-                className="bg-slate-700 hover:bg-slate-600 text-white border border-slate-600 shadow-lg uppercase tracking-wider font-semibold px-6"
+                className="relative bg-gradient-to-r from-primary to-cyan-500 hover:from-primary/90 hover:to-cyan-500/90 text-white border-0 shadow-lg shadow-primary/25 uppercase tracking-wider font-bold px-6 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Create New Ticket
+                Create Ticket
               </Button>
             </div>
 
             {loading ? (
-              <div className="text-center py-12">
-                <Clock className="w-8 h-8 mx-auto mb-2 animate-spin text-primary" />
-                <p className="text-muted-foreground">Loading tickets...</p>
+              <div className="text-center py-16">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
+                  <Clock className="w-8 h-8 animate-spin text-primary" />
+                </div>
+                <p className="text-muted-foreground">Loading your tickets...</p>
               </div>
             ) : tickets.length === 0 ? (
-              <Card className="glass-effect border-border/20">
-                <CardContent className="py-12 text-center">
-                  <Ticket className="w-16 h-16 mx-auto mb-4 text-muted-foreground/30" />
-                  <h3 className="text-xl font-semibold mb-2">No Tickets Yet</h3>
-                  <p className="text-muted-foreground mb-6">
+              <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-900/90 via-slate-800/90 to-slate-900/90 backdrop-blur-xl">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-cyan-500/5" />
+                <CardContent className="py-16 text-center relative">
+                  <div className="w-24 h-24 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-primary/20 to-cyan-500/20 flex items-center justify-center border border-white/10">
+                    <Ticket className="w-12 h-12 text-primary/50" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3">No Tickets Yet</h3>
+                  <p className="text-muted-foreground mb-8 max-w-md mx-auto">
                     You haven't submitted any support tickets. Create one to get help from our team.
                   </p>
-                  <Button onClick={() => { resetFormFields(); setShowForm(true); }}>
+                  <Button 
+                    onClick={() => { resetFormFields(); setShowForm(true); }}
+                    className="bg-gradient-to-r from-primary to-cyan-500 hover:from-primary/90 hover:to-cyan-500/90 text-white shadow-lg shadow-primary/25"
+                  >
                     <Ticket className="w-4 h-4 mr-2" />
                     Create Your First Ticket
                   </Button>
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-3">
-                {tickets.map((ticket) => (
+              <div className="space-y-4">
+                {tickets.map((ticket, idx) => (
                   <Card 
                     key={ticket.id}
-                    className="glass-effect border-border/20 hover:border-primary/50 transition-all cursor-pointer"
+                    className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-900/80 via-slate-800/80 to-slate-900/80 backdrop-blur-xl cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/10 group"
                     onClick={() => setSelectedTicket(ticket)}
+                    style={{ animationDelay: `${idx * 50}ms` }}
                   >
-                    <CardContent className="py-4">
+                    {/* Hover glow effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-cyan-500/0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:via-primary/50 transition-colors" />
+                    
+                    <CardContent className="py-5 relative">
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-3 mb-1 flex-wrap">
-                            <span className="font-mono text-sm text-primary">{ticket.ticket_number}</span>
-                            <Badge variant="outline" className="text-xs">
+                          <div className="flex items-center gap-3 mb-2 flex-wrap">
+                            <span className="font-mono text-sm font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">
+                              {ticket.ticket_number}
+                            </span>
+                            <Badge variant="outline" className="text-xs border-white/20 bg-white/5">
                               {getCategoryLabel(ticket.category)}
                             </Badge>
                             {ticket.attachments && ticket.attachments.length > 0 && (
-                              <Badge variant="secondary" className="text-xs">
+                              <Badge className="text-xs bg-purple-500/20 text-purple-300 border-purple-500/30">
                                 <ImageIcon className="w-3 h-3 mr-1" />
                                 {ticket.attachments.length}
                               </Badge>
                             )}
                           </div>
-                          <h3 className="font-medium truncate">{ticket.subject}</h3>
+                          <h3 className="font-semibold text-lg truncate group-hover:text-primary transition-colors">{ticket.subject}</h3>
                           <p className="text-sm text-muted-foreground truncate mt-1">
-                            {ticket.description.substring(0, 80)}...
+                            {ticket.description.substring(0, 100)}...
                           </p>
                         </div>
                         <div className="flex flex-col items-end gap-2 shrink-0">
@@ -779,7 +829,8 @@ const TicketSupport = () => {
                             {getStatusBadge(ticket.status)}
                             {getPriorityBadge(ticket.priority)}
                           </div>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
                             {format(new Date(ticket.created_at), "MMM d, yyyy")}
                           </span>
                         </div>
