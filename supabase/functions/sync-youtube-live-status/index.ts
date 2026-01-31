@@ -10,41 +10,34 @@ const corsHeaders = {
 function extractChannelIdentifier(url: string): { type: 'handle' | 'id' | 'custom', value: string } | null {
   const cleanUrl = url.split('?')[0].replace(/\/$/, '');
   
-  // Handle format: youtube.com/@username
   const handleMatch = cleanUrl.match(/youtube\.com\/@([^\/]+)/);
-  if (handleMatch) {
-    return { type: 'handle', value: handleMatch[1] };
-  }
+  if (handleMatch) return { type: 'handle', value: handleMatch[1] };
   
-  // Channel ID format: youtube.com/channel/UC...
   const channelIdMatch = cleanUrl.match(/youtube\.com\/channel\/(UC[a-zA-Z0-9_-]+)/);
-  if (channelIdMatch) {
-    return { type: 'id', value: channelIdMatch[1] };
-  }
+  if (channelIdMatch) return { type: 'id', value: channelIdMatch[1] };
   
-  // Custom URL format: youtube.com/c/username
   const customMatch = cleanUrl.match(/youtube\.com\/c\/([^\/]+)/);
-  if (customMatch) {
-    return { type: 'custom', value: customMatch[1] };
-  }
+  if (customMatch) return { type: 'custom', value: customMatch[1] };
   
-  // User format: youtube.com/user/username
   const userMatch = cleanUrl.match(/youtube\.com\/user\/([^\/]+)/);
-  if (userMatch) {
-    return { type: 'custom', value: userMatch[1] };
-  }
+  if (userMatch) return { type: 'custom', value: userMatch[1] };
   
   return null;
 }
 
-// Extract stream title from HTML
+// Extract stream title from HTML - improved patterns
 function extractStreamTitle(html: string): string | null {
   const patterns = [
+    // Primary player metadata
     /"title"\s*:\s*\{\s*"runs"\s*:\s*\[\s*\{\s*"text"\s*:\s*"([^"]+)"/,
-    /"title":"([^"]+)"/,
-    /<meta name="title" content="([^"]+)"/,
+    /"videoDetails":[^}]*"title"\s*:\s*"([^"]+)"/,
+    /"title":"([^"]+)","lengthSeconds"/,
+    /"title":"([^"]+)","channelId"/,
+    // OpenGraph
+    /<meta\s+property="og:title"\s+content="([^"]+)"/,
+    /<meta\s+name="title"\s+content="([^"]+)"/,
+    // Fallback
     /<title>([^<]+)<\/title>/,
-    /"videoDetails":\{[^}]*"title":"([^"]+)"/,
   ];
   
   for (const pattern of patterns) {
@@ -57,7 +50,7 @@ function extractStreamTitle(html: string): string | null {
       );
       // Remove " - YouTube" suffix
       title = title.replace(/ - YouTube$/, '').trim();
-      if (title && title.length > 0) {
+      if (title && title.length > 0 && !title.toLowerCase().includes('youtube')) {
         return title;
       }
     }
@@ -65,118 +58,54 @@ function extractStreamTitle(html: string): string | null {
   return null;
 }
 
-function extractCanonicalWatchVideoId(html: string): string | null {
-  const match = html.match(/<link\s+rel="canonical"\s+href="https:\/\/www\.youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})"/);
-  return match?.[1] ?? null;
-}
-
-function extractOgWatchVideoId(html: string): string | null {
-  const patterns = [
-    /<meta\s+property="og:url"\s+content="https:\/\/www\.youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})"/,
-    /<meta\s+property="og:video:url"\s+content="https:\/\/www\.youtube\.com\/embed\/([a-zA-Z0-9_-]{11})"/,
-    /<meta\s+property="og:video:secure_url"\s+content="https:\/\/www\.youtube\.com\/embed\/([a-zA-Z0-9_-]{11})"/,
-  ];
-
-  for (const p of patterns) {
-    const m = html.match(p);
-    if (m?.[1]) return m[1];
-  }
-
-  return null;
-}
-
-function extractPrimaryVideoIdFromHtml(html: string): string | null {
-  // 1) Prefer a videoId that is in the SAME neighborhood as LIVE markers.
-  // This avoids picking random/recommended videos on the /live page.
-  const liveMarkers = [
-    '"isLive":true',
-    '"isLiveNow":true',
-    '"BADGE_STYLE_TYPE_LIVE_NOW"',
-    '"liveStreamabilityRenderer"',
-    '"liveChatRenderer"',
-  ];
-
+// Extract video ID from HTML - prioritize primary content
+function extractVideoId(html: string, finalUrl: string): string | null {
+  // 1. Check URL first (most reliable if redirected to /watch)
+  const watchMatch = finalUrl.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+  if (watchMatch) return watchMatch[1];
+  
+  // 2. OpenGraph URL
+  const ogMatch = html.match(/<meta\s+property="og:url"\s+content="https:\/\/www\.youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})"/);
+  if (ogMatch) return ogMatch[1];
+  
+  // 3. Canonical link
+  const canonicalMatch = html.match(/<link\s+rel="canonical"\s+href="https:\/\/www\.youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})"/);
+  if (canonicalMatch) return canonicalMatch[1];
+  
+  // 4. Video details (player data)
+  const videoDetailsMatch = html.match(/"videoDetails":\{[^}]*"videoId":"([a-zA-Z0-9_-]{11})"/);
+  if (videoDetailsMatch) return videoDetailsMatch[1];
+  
+  // 5. Look for videoId near LIVE indicators
+  const liveMarkers = ['"isLive":true', '"isLiveNow":true', '"BADGE_STYLE_TYPE_LIVE_NOW"', '"liveChatRenderer"'];
   const videoIdRe = /"videoId":"([a-zA-Z0-9_-]{11})"/g;
   let m: RegExpExecArray | null;
+  
   while ((m = videoIdRe.exec(html))) {
     const id = m[1];
     const idx = m.index;
-    const start = Math.max(0, idx - 2500);
-    const end = Math.min(html.length, idx + 2500);
+    const start = Math.max(0, idx - 3000);
+    const end = Math.min(html.length, idx + 3000);
     const windowHtml = html.slice(start, end);
-
-    const hasLiveMarker = liveMarkers.some((marker) => windowHtml.includes(marker));
-    const hasReplayMarker = windowHtml.includes('"isReplay":true') || windowHtml.includes('live_chat_replay');
-
-    if (hasLiveMarker && !hasReplayMarker) {
+    
+    const hasLiveMarker = liveMarkers.some(marker => windowHtml.includes(marker));
+    const isReplay = windowHtml.includes('"isReplay":true');
+    
+    if (hasLiveMarker && !isReplay) {
       return id;
     }
   }
-
-  // 2) Fallback to the page's primary player response / videoDetails.
-  const patterns: RegExp[] = [
-    /"videoDetails":\{[^}]*"videoId":"([a-zA-Z0-9_-]{11})"/,
-    /"videoDetails":\{[^}]*"videoId"\s*:\s*"([a-zA-Z0-9_-]{11})"/,
-    /"currentVideoEndpoint":\{"clickTrackingParams":"[^"]+","watchEndpoint":\{"videoId":"([a-zA-Z0-9_-]{11})"/,
-  ];
-  for (const p of patterns) {
-    const mm = html.match(p);
-    if (mm?.[1]) return mm[1];
-  }
-
+  
+  // 6. Fallback: first videoId found
+  const firstMatch = html.match(/"videoId":"([a-zA-Z0-9_-]{11})"/);
+  if (firstMatch) return firstMatch[1];
+  
   return null;
 }
 
-// Extract stream thumbnail from video ID
+// Get stream thumbnail from video ID
 function getStreamThumbnail(videoId: string): string {
-  // Use maxresdefault for highest quality, fallback to hqdefault
   return `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
-}
-
-// Extract channel ID from HTML to verify ownership
-function extractChannelIdFromHtml(html: string): string | null {
-  const patterns = [
-    /"channelId":"(UC[a-zA-Z0-9_-]{22})"/,
-    /"externalChannelId":"(UC[a-zA-Z0-9_-]{22})"/,
-    /channel\/(UC[a-zA-Z0-9_-]{22})/,
-    /"browseId":"(UC[a-zA-Z0-9_-]{22})"/,
-    // Escaped JSON variants (sometimes present in consent / embedded blobs)
-    /\\"channelId\\":\\"(UC[a-zA-Z0-9_-]{22})\\"/,
-    /\\"externalChannelId\\":\\"(UC[a-zA-Z0-9_-]{22})\\"/,
-    /\\"browseId\\":\\"(UC[a-zA-Z0-9_-]{22})\\"/,
-  ];
-  
-  for (const pattern of patterns) {
-    const match = html.match(pattern);
-    if (match) {
-      return match[1];
-    }
-  }
-  return null;
-}
-
-// Extract the channel ID of the video owner from video page HTML
-function extractVideoOwnerChannelId(html: string): string | null {
-  const patterns = [
-    /"videoDetails":\{[^}]*"channelId":"(UC[a-zA-Z0-9_-]{22})"/,
-    /"ownerChannelName":[^,]+,"externalChannelId":"(UC[a-zA-Z0-9_-]{22})"/,
-    /"playerMicroformatRenderer":\{[^}]*"externalChannelId":"(UC[a-zA-Z0-9_-]{22})"/,
-    /"shortBylineText":\{"runs":\[\{"text":"[^"]+","navigationEndpoint":\{"[^}]+,"browseEndpoint":\{"browseId":"(UC[a-zA-Z0-9_-]{22})"/,
-    /"author":"[^"]+","channelId":"(UC[a-zA-Z0-9_-]{22})"/,
-    // Escaped JSON variants (common when the HTML embeds JSON as a string)
-    /\\"videoDetails\\":\{[^}]*\\"channelId\\":\\"(UC[a-zA-Z0-9_-]{22})\\"/,
-    /\\"externalChannelId\\":\\"(UC[a-zA-Z0-9_-]{22})\\"/,
-    /\\"browseId\\":\\"(UC[a-zA-Z0-9_-]{22})\\"/,
-    /\\"channelId\\":\\"(UC[a-zA-Z0-9_-]{22})\\"/,
-  ];
-  
-  for (const pattern of patterns) {
-    const match = html.match(pattern);
-    if (match) {
-      return match[1];
-    }
-  }
-  return null;
 }
 
 // Check live status by fetching the channel's /live page
@@ -193,18 +122,14 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
     return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'invalid_url' };
   }
 
-  // Build the /live URL based on identifier type
+  // Build the /live URL
   let livePageUrl: string;
-  let channelPageUrl: string;
   if (identifier.type === 'handle') {
     livePageUrl = `https://www.youtube.com/@${identifier.value}/live`;
-    channelPageUrl = `https://www.youtube.com/@${identifier.value}`;
   } else if (identifier.type === 'id') {
     livePageUrl = `https://www.youtube.com/channel/${identifier.value}/live`;
-    channelPageUrl = `https://www.youtube.com/channel/${identifier.value}`;
   } else {
     livePageUrl = `https://www.youtube.com/c/${identifier.value}/live`;
-    channelPageUrl = `https://www.youtube.com/c/${identifier.value}`;
   }
 
   console.log(`Checking live page: ${livePageUrl} for ${channelName}`);
@@ -212,107 +137,30 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
   try {
     const defaultHeaders: Record<string, string> = {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
       'Accept-Language': 'en-US,en;q=0.9',
       'Cache-Control': 'no-cache',
       'Pragma': 'no-cache',
       'Sec-Fetch-Dest': 'document',
       'Sec-Fetch-Mode': 'navigate',
       'Sec-Fetch-Site': 'none',
-      'Sec-Fetch-User': '?1',
       'Upgrade-Insecure-Requests': '1',
     };
 
-    const fetchHtml = async (url: string, timeoutMs: number) => {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-      const response = await fetch(url, {
-        headers: defaultHeaders,
-        redirect: 'follow',
-        signal: controller.signal,
-      });
-      clearTimeout(timeoutId);
-      return {
-        html: await response.text(),
-        finalUrl: response.url,
-      };
-    };
-
-    const { html, finalUrl } = await fetchHtml(livePageUrl, 20000);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
+    
+    const response = await fetch(livePageUrl, {
+      headers: defaultHeaders,
+      redirect: 'follow',
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    
+    const html = await response.text();
+    const finalUrl = response.url;
     
     console.log(`Final URL for ${channelName}: ${finalUrl}`);
-
-    // IMPORTANT: Resolve the *expected* channel ID from the channel's main page.
-    // The /live page may include other channels' metadata (recommendations), so it is not reliable.
-    let expectedChannelId: string | null = null;
-    
-    // If the identifier is already a channel ID, use it directly
-    if (identifier.type === 'id') {
-      expectedChannelId = identifier.value;
-    } else {
-      try {
-        const channelPage = await fetchHtml(channelPageUrl, 15000);
-        expectedChannelId = extractChannelIdFromHtml(channelPage.html);
-        console.log(`Resolved expected channel ID for ${channelName} from channel page (${channelPage.finalUrl}): ${expectedChannelId}`);
-      } catch (e: any) {
-        console.error(`${channelName} - Failed to resolve expected channel ID from channel page:`, e?.message || e);
-        // Fallback to best-effort from /live HTML if channel page fails
-        expectedChannelId = extractChannelIdFromHtml(html);
-      }
-    }
-    
-    console.log(`Expected channel ID for ${channelName}: ${expectedChannelId}`);
-
-    // Extract video ID from various sources
-    let videoId: string | null = null;
-
-    // Highest priority: OpenGraph URL (tends to be accurate for /live pages)
-    videoId = extractOgWatchVideoId(html);
-    if (videoId) {
-      console.log(`Found video ID from OpenGraph metadata: ${videoId}`);
-    }
-
-    // Highest priority: player/videoDetails on the page (avoids grabbing recommended videos)
-    if (!videoId) {
-      videoId = extractPrimaryVideoIdFromHtml(html);
-      if (videoId) {
-        console.log(`Found primary video ID from player data: ${videoId}`);
-      }
-    }
-
-    // Prefer canonical watch URL (usually points to the channel's live stream)
-    if (!videoId) {
-      videoId = extractCanonicalWatchVideoId(html);
-      if (videoId) {
-        console.log(`Found video ID from canonical link: ${videoId}`);
-      }
-    }
-    
-    // Try URL next (if redirected to a /watch page)
-    if (!videoId) {
-      const watchMatch = finalUrl.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
-      if (watchMatch) {
-        videoId = watchMatch[1];
-        console.log(`Found video ID in URL: ${videoId}`);
-      }
-    }
-    
-    // Try to extract from HTML if not in URL
-    if (!videoId) {
-      const videoIdPatterns = [
-        /"videoId":"([a-zA-Z0-9_-]{11})"/,
-        /video-id="([a-zA-Z0-9_-]{11})"/,
-        /embed\/([a-zA-Z0-9_-]{11})/,
-      ];
-      for (const pattern of videoIdPatterns) {
-        const match = html.match(pattern);
-        if (match) {
-          videoId = match[1];
-          console.log(`Found fallback video ID in HTML: ${videoId}`);
-          break;
-        }
-      }
-    }
 
     // FIRST: Check for definitive NOT LIVE indicators
     const notLiveIndicators = [
@@ -327,18 +175,33 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
       { text: 'LIVE_STREAM_OFFLINE', name: 'stream_offline' },
     ];
 
+    // Only check for explicit NOT LIVE if the page has these indicators
+    // Be lenient - don't block if we're not sure
+    let definitelyNotLive = false;
     for (const indicator of notLiveIndicators) {
+      // Only consider it NOT LIVE if the indicator appears AND there's no contradicting LIVE indicator nearby
       if (html.includes(indicator.text)) {
-        console.log(`${channelName} is NOT LIVE - Found indicator: ${indicator.name}`);
-        return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: `not_live:${indicator.name}` };
+        // Double check for live indicators
+        const hasLiveIndicator = html.includes('"isLive":true') || 
+                                  html.includes('"isLiveNow":true') ||
+                                  html.includes('"BADGE_STYLE_TYPE_LIVE_NOW"');
+        
+        if (!hasLiveIndicator) {
+          console.log(`${channelName} is NOT LIVE - Found indicator: ${indicator.name}`);
+          definitelyNotLive = true;
+          break;
+        }
       }
     }
 
-    // Check for LIVE indicators - be more permissive
+    if (definitelyNotLive) {
+      return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'not_live_indicator' };
+    }
+
+    // Check for LIVE indicators
     let isLive = false;
     let detectedBy = '';
 
-    // IMPROVED: Check multiple live indicators and be more lenient
     const liveIndicators = [
       { pattern: '"isLive":true', name: 'isLive_true' },
       { pattern: '"isLiveNow":true', name: 'isLiveNow_true' },
@@ -355,7 +218,6 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
 
     for (const { pattern, name } of liveIndicators) {
       if (html.includes(pattern)) {
-        // Double-check it's not a replay by looking at context
         const isReplay = html.includes('"isReplay":true') || html.includes('live_chat_replay');
         if (!isReplay) {
           isLive = true;
@@ -366,7 +228,7 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
       }
     }
 
-    // Method 2: Check for active live chat (NOT replay)
+    // Check for active live chat
     if (!isLive) {
       const hasLiveChat = html.includes('/live_chat?') && !html.includes('live_chat_replay');
       const hasRealtimeChat = html.includes('"liveChatContinuation"') && !html.includes('"isReplay":true');
@@ -378,215 +240,55 @@ async function checkLiveStatus(channelUrl: string, channelName: string): Promise
       }
     }
 
-    // Method 3: Check if redirected to /watch AND has a video ID AND page has live stream elements
-    if (!isLive && videoId && (finalUrl.includes('/watch') || html.includes('"videoDetails"'))) {
-      // Check for any live-related content without strong NOT LIVE markers
+    // Check if redirected to /watch page (strong indicator of live)
+    if (!isLive && finalUrl.includes('/watch')) {
+      const hasVideoDetails = html.includes('"videoDetails"');
       const hasLiveElements = html.includes('"liveBadgeRenderer"') || 
-                              html.includes('"viewCount":{"videoViewCountRenderer":{"viewCount":{"runs"') ||
                               html.includes('"isLive"') ||
-                              (html.includes('"publishDate"') === false && html.includes('"lengthSeconds":"0"'));
+                              html.includes('"lengthSeconds":"0"');
       
-      if (hasLiveElements) {
+      if (hasVideoDetails || hasLiveElements) {
         isLive = true;
-        detectedBy = 'live_elements_detected';
-        console.log(`${channelName} is LIVE! Detected via live elements in watch page`);
+        detectedBy = 'watch_redirect';
+        console.log(`${channelName} is LIVE! Detected via /watch redirect`);
       }
-    }
-
-    // If still no video found and stayed on channel page, not live
-    if (!videoId) {
-      console.log(`${channelName} is NOT LIVE - No video ID found`);
-      return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'no_video_id' };
     }
 
     // If not live, return early
     if (!isLive) {
-      console.log(`${channelName} - No definitive live indicators found`);
+      console.log(`${channelName} - No live indicators found`);
       return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'no_live_indicators' };
     }
 
-    // CRITICAL: Verify the video actually belongs to this channel
-    // IMPORTANT: YouTube /live pages sometimes surface other channels' streams.
-    // We must confirm ownership based on the video's actual watch page when needed.
-    let videoOwnerChannelId = extractVideoOwnerChannelId(html);
-    console.log(`Video owner channel ID (from live page): ${videoOwnerChannelId}, Expected: ${expectedChannelId}`);
-
-    // Extract the author name for additional logging / fallback
-    const authorPatterns = [
-      /"ownerChannelName":"([^"]+)"/,  // Most reliable for video owner
-      /"videoDetails":[^}]*"author":"([^"]+)"/,  // From video details specifically
-      /"author":"([^"]+)"/,
-      /"shortBylineText":\{"runs":\[\{"text":"([^"]+)"/,
-    ];
+    // Extract video ID
+    const videoId = extractVideoId(html, finalUrl);
     
-    let videoAuthor: string | null = null;
-    for (const pattern of authorPatterns) {
-      const match = html.match(pattern);
-      if (match) {
-        videoAuthor = match[1];
-        break;
-      }
-    }
-    
-    console.log(`Video author (from live page): "${videoAuthor}", Channel name: "${channelName}"`);
-
-    // If we have an expected channel ID but couldn't reliably extract the owner ID from the /live HTML,
-    // fetch the video's watch page and extract the owner channel ID there (much more reliable).
-    if (expectedChannelId && (!videoOwnerChannelId || videoOwnerChannelId !== expectedChannelId)) {
-      const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
-      console.log(`${channelName} - Verifying ownership via watch page: ${watchUrl}`);
-      try {
-        const watch = await fetchHtml(watchUrl, 15000);
-        const watchOwner = extractVideoOwnerChannelId(watch.html);
-        console.log(`${channelName} - Video owner channel ID (from watch page): ${watchOwner}, Expected: ${expectedChannelId}`);
-        if (watchOwner) {
-          videoOwnerChannelId = watchOwner;
-        }
-      } catch (e: any) {
-        console.error(`${channelName} - Watch page verification failed:`, e?.message || e);
-      }
-    }
-
-    // If the watch page doesn't contain an owner channel ID (common when YouTube serves consent/blocked pages),
-    // use oEmbed to get the author URL, then resolve that to a channel ID.
-    if (expectedChannelId && !videoOwnerChannelId) {
-      try {
-        const oEmbedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(
-          `https://www.youtube.com/watch?v=${videoId}`,
-        )}&format=json`;
-        console.log(`${channelName} - Resolving ownership via oEmbed: ${oEmbedUrl}`);
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000);
-        const res = await fetch(oEmbedUrl, {
-          headers: {
-            'User-Agent': defaultHeaders['User-Agent'],
-            'Accept': 'application/json',
-          },
-          redirect: 'follow',
-          signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
-
-        if (res.ok) {
-          const data = await res.json();
-          const authorUrl: string | undefined = data?.author_url;
-          console.log(`${channelName} - oEmbed author_url: ${authorUrl}`);
-
-          if (authorUrl) {
-            // If oEmbed gives a direct /channel/UC... URL, extract it immediately.
-            const directChannelMatch = authorUrl.match(/youtube\.com\/channel\/(UC[a-zA-Z0-9_-]{22})/);
-            if (directChannelMatch) {
-              videoOwnerChannelId = directChannelMatch[1];
-              console.log(`${channelName} - Owner channel ID resolved directly from oEmbed author_url: ${videoOwnerChannelId}`);
-            } else {
-              // Otherwise resolve the channel ID by fetching the author URL page.
-              const authorIdentifier = extractChannelIdentifier(authorUrl);
-              if (authorIdentifier) {
-                let authorPageUrl: string;
-                if (authorIdentifier.type === 'handle') {
-                  authorPageUrl = `https://www.youtube.com/@${authorIdentifier.value}`;
-                } else if (authorIdentifier.type === 'id') {
-                  authorPageUrl = `https://www.youtube.com/channel/${authorIdentifier.value}`;
-                } else {
-                  authorPageUrl = `https://www.youtube.com/c/${authorIdentifier.value}`;
-                }
-
-                console.log(`${channelName} - Fetching author page to resolve channel ID: ${authorPageUrl}`);
-                const authorPage = await fetchHtml(authorPageUrl, 12000);
-                const resolved = extractChannelIdFromHtml(authorPage.html);
-                console.log(`${channelName} - Owner channel ID resolved from author page: ${resolved}`);
-                if (resolved) {
-                  videoOwnerChannelId = resolved;
-                }
-              }
-            }
-          }
-        } else {
-          console.log(`${channelName} - oEmbed request failed: ${res.status}`);
-        }
-      } catch (e: any) {
-        console.error(`${channelName} - oEmbed ownership resolution failed:`, e?.message || e);
-      }
-    }
-
-    // FINAL OWNERSHIP DECISION
-    // For featured streamers, we ONLY show them as live if:
-    // 1. We can verify ownership matches, OR
-    // 2. We cannot verify but the video is clearly from their channel
-    // This prevents showing other channels' streams in the "Currently Live" section.
-    
-    let ownershipVerified = false;
-    
-    if (expectedChannelId) {
-      if (videoOwnerChannelId && videoOwnerChannelId === expectedChannelId) {
-        console.log(`${channelName} - Ownership verified via channel ID match: ${expectedChannelId}`);
-        ownershipVerified = true;
-      } else if (videoOwnerChannelId && videoOwnerChannelId !== expectedChannelId) {
-        // MISMATCH: This is NOT the streamer's own content - mark as NOT LIVE
-        console.log(`${channelName} - Ownership mismatch! Expected: ${expectedChannelId}, Got: ${videoOwnerChannelId}`);
-        console.log(`${channelName} - Marking as NOT LIVE to prevent showing other channels' content`);
-        return { 
-          isLive: false, 
-          liveStreamUrl: null, 
-          liveStreamTitle: null, 
-          liveStreamThumbnail: null, 
-          detectedBy: `ownership_mismatch:expected=${expectedChannelId},got=${videoOwnerChannelId}` 
-        };
-      } else {
-        // Cannot verify - check if author name matches channel name closely
-        if (videoAuthor) {
-          const authorLower = videoAuthor.toLowerCase().replace(/[^a-z0-9]/g, '');
-          const channelLower = channelName.toLowerCase().replace(/[^a-z0-9]/g, '');
-          if (authorLower.includes(channelLower) || channelLower.includes(authorLower)) {
-            console.log(`${channelName} - Ownership verified via author name match: "${videoAuthor}"`);
-            ownershipVerified = true;
-          } else {
-            console.log(`${channelName} - Author name "${videoAuthor}" does not match channel name "${channelName}"`);
-            console.log(`${channelName} - Marking as NOT LIVE to prevent showing other channels' content`);
-            return { 
-              isLive: false, 
-              liveStreamUrl: null, 
-              liveStreamTitle: null, 
-              liveStreamThumbnail: null, 
-              detectedBy: `author_mismatch:expected=${channelName},got=${videoAuthor}` 
-            };
-          }
-        } else {
-          // No way to verify - be conservative and mark as not live
-          console.log(`${channelName} - Cannot verify ownership, marking as NOT LIVE for safety`);
-          return { 
-            isLive: false, 
-            liveStreamUrl: null, 
-            liveStreamTitle: null, 
-            liveStreamThumbnail: null, 
-            detectedBy: 'ownership_unverifiable' 
-          };
-        }
-      }
-    }
-
-    // Only proceed if ownership is verified
-    if (!ownershipVerified) {
-      console.log(`${channelName} - Ownership not verified, marking as NOT LIVE`);
+    if (!videoId) {
+      console.log(`${channelName} - Live but no video ID found, using channel /live URL`);
       return { 
-        isLive: false, 
-        liveStreamUrl: null, 
-        liveStreamTitle: null, 
+        isLive: true, 
+        liveStreamUrl: livePageUrl, 
+        liveStreamTitle: `${channelName} is Live!`,
         liveStreamThumbnail: null, 
-        detectedBy: 'ownership_not_verified' 
+        detectedBy: detectedBy + '_no_video_id' 
       };
     }
 
-    // Extract stream title and thumbnail - ownership is verified
+    // Extract stream info
     const liveStreamUrl = `https://www.youtube.com/watch?v=${videoId}`;
-    const liveStreamTitle = extractStreamTitle(html);
+    let liveStreamTitle = extractStreamTitle(html);
     const liveStreamThumbnail = getStreamThumbnail(videoId);
     
-    console.log(`${channelName} stream title: ${liveStreamTitle}`);
-    console.log(`${channelName} stream thumbnail: ${liveStreamThumbnail}`);
+    // Fallback title if extraction failed
+    if (!liveStreamTitle) {
+      liveStreamTitle = `${channelName} is Live!`;
+    }
+    
+    console.log(`${channelName} - LIVE with video ID: ${videoId}`);
+    console.log(`${channelName} - Title: ${liveStreamTitle}`);
+    console.log(`${channelName} - Thumbnail: ${liveStreamThumbnail}`);
 
-    return { isLive, liveStreamUrl, liveStreamTitle, liveStreamThumbnail, detectedBy };
+    return { isLive: true, liveStreamUrl, liveStreamTitle, liveStreamThumbnail, detectedBy };
 
   } catch (error: any) {
     console.error(`Error checking ${channelName}:`, error.message);
@@ -633,7 +335,8 @@ serve(async (req) => {
       statusChanged: boolean;
     }[] = [];
 
-    for (const youtuber of youtubers) {
+    // Process channels in parallel for faster syncing
+    const checkPromises = youtubers.map(async (youtuber) => {
       console.log(`\n--- Checking: ${youtuber.name} ---`);
       
       const { isLive, liveStreamUrl, liveStreamTitle, liveStreamThumbnail, detectedBy } = await checkLiveStatus(youtuber.channel_url, youtuber.name);
@@ -659,10 +362,10 @@ serve(async (req) => {
       if (updateError) {
         console.error(`Error updating ${youtuber.name}:`, updateError);
       } else {
-        console.log(`Updated ${youtuber.name}: is_live=${isLive}, title=${liveStreamTitle || 'null'}, detected_by=${detectedBy}`);
+        console.log(`Updated ${youtuber.name}: is_live=${isLive}, title=${liveStreamTitle || 'null'}`);
       }
 
-      results.push({ 
+      return { 
         id: youtuber.id, 
         name: youtuber.name, 
         wasLive: youtuber.is_live || false,
@@ -672,11 +375,12 @@ serve(async (req) => {
         liveThumbnail: liveStreamThumbnail || undefined,
         detectedBy,
         statusChanged
-      });
+      };
+    });
 
-      // Small delay between requests
-      await new Promise(resolve => setTimeout(resolve, 500));
-    }
+    // Wait for all checks to complete
+    const allResults = await Promise.all(checkPromises);
+    results.push(...allResults);
 
     const liveCount = results.filter(r => r.isLive).length;
     const changedCount = results.filter(r => r.statusChanged).length;
