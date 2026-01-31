@@ -472,7 +472,7 @@ const WeazelNewsApplicationForm = ({ jobImage }: WeazelNewsApplicationFormProps)
                     <FormLabel>Weekly Availability & Timezone *</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Example: Monday-Friday 6PM-11PM IST, weekends 12PM-12AM IST. Approximately 20-30 hours per week..."
+                        placeholder=""
                         className="min-h-[80px]"
                         {...field} 
                       />
@@ -493,7 +493,7 @@ const WeazelNewsApplicationForm = ({ jobImage }: WeazelNewsApplicationFormProps)
                     <FormLabel>Additional Information</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Any other information you'd like to share (optional)..."
+                        placeholder=""
                         className="min-h-[80px]"
                         {...field} 
                       />
