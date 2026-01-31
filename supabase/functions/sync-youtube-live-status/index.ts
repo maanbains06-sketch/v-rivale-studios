@@ -108,6 +108,37 @@ function getStreamThumbnail(videoId: string): string {
   return `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
 }
 
+// Fallback: verify ownership via YouTube oEmbed (works even if HTML is consent/limited)
+async function verifyOwnershipViaOEmbed(liveStreamUrl: string, expectedChannelId: string): Promise<{ ok: boolean; reason: string }> {
+  try {
+    const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(liveStreamUrl)}&format=json`;
+    const res = await fetch(oembedUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        'Accept': 'application/json,text/plain;q=0.9,*/*;q=0.8',
+      },
+    });
+
+    if (!res.ok) {
+      return { ok: false, reason: `oembed_http_${res.status}` };
+    }
+
+    const data = await res.json() as { author_url?: string; author_name?: string };
+    const authorUrl = data?.author_url || '';
+
+    // Often returns: https://www.youtube.com/channel/UCxxxxxxxx
+    const idMatch = authorUrl.match(/\/channel\/(UC[a-zA-Z0-9_-]+)/);
+    if (idMatch?.[1]) {
+      return { ok: idMatch[1] === expectedChannelId, reason: `oembed_author_channel:${idMatch[1]}` };
+    }
+
+    // If no channel id in author_url, we can't strictly verify.
+    return { ok: false, reason: `oembed_no_channel_id:${data?.author_name || 'unknown'}` };
+  } catch (e: any) {
+    return { ok: false, reason: `oembed_error:${e?.message || e}` };
+  }
+}
+
 // Extract channel ID from HTML to verify ownership
 function extractChannelIdFromHtml(html: string): string | null {
   const patterns = [
@@ -228,30 +259,25 @@ function verifyStreamOwnership(html: string, expectedChannelId: string | null, c
       return { isOwned: false, reason: `ownerId_mismatch:${ownerMatch[1]}` };
     }
   }
-  
-  // Check channelId in video details
-  const channelIdMatch = html.match(/"channelId":"(UC[a-zA-Z0-9_-]+)"/);
-  if (channelIdMatch) {
-    if (channelIdMatch[1] === expectedChannelId) {
-      return { isOwned: true, reason: 'channelId_match' };
+
+  // Safer fallback: extract channelId ONLY from the videoDetails object.
+  // This avoids false positives from recommended videos elsewhere in the HTML.
+  const videoDetailsBlock = html.match(/"videoDetails":\{[\s\S]*?\}/);
+  if (videoDetailsBlock?.[0]) {
+    const vdChannelId = videoDetailsBlock[0].match(/"channelId":"(UC[a-zA-Z0-9_-]+)"/);
+    if (vdChannelId?.[1]) {
+      if (vdChannelId[1] === expectedChannelId) {
+        return { isOwned: true, reason: 'videoDetails_channelId_match' };
+      }
+      console.log(`videoDetails channelId mismatch: "${vdChannelId[1]}" vs expected "${expectedChannelId}"`);
+      return { isOwned: false, reason: `videoDetails_channelId_mismatch:${vdChannelId[1]}` };
     }
   }
-  
-  // Fall back to author name comparison
-  const authorMatch = html.match(/"author":"([^"]+)"/);
-  if (authorMatch && authorMatch[1]) {
-    const author = authorMatch[1].toLowerCase().replace(/\s+/g, '');
-    const expected = channelName.toLowerCase().replace(/\s+/g, '');
-    
-    if (author.includes(expected) || expected.includes(author)) {
-      return { isOwned: true, reason: `author_name_match:${authorMatch[1]}` };
-    } else {
-      console.log(`Author mismatch: "${authorMatch[1]}" vs expected "${channelName}"`);
-      return { isOwned: false, reason: `author_mismatch:${authorMatch[1]}` };
-    }
-  }
-  
-  return { isOwned: false, reason: 'no_ownership_data' };
+
+  // IMPORTANT: When an expectedChannelId is provided, we require a definitive owner id match.
+  // Using generic "channelId" or author name matching can false-positive due to recommended videos
+  // embedded in the HTML.
+  return { isOwned: false, reason: 'no_definitive_owner_id' };
 }
 
 // Check live status by fetching the channel's /live page
@@ -416,46 +442,77 @@ async function checkLiveStatus(channelUrl: string, channelName: string, storedCh
       return { isLive: false, liveStreamUrl: null, liveStreamTitle: null, liveStreamThumbnail: null, detectedBy: 'no_live_indicators' };
     }
 
-    // *** CRITICAL: Verify stream ownership ***
-    const ownership = verifyStreamOwnership(html, expectedChannelId, channelName);
-    console.log(`${channelName} - Ownership check: ${ownership.isOwned ? 'OWNED' : 'NOT OWNED'} (${ownership.reason})`);
-    
-    if (!ownership.isOwned) {
-      console.log(`${channelName} - Stream belongs to another channel, marking as NOT LIVE`);
-      return { 
-        isLive: false, 
-        liveStreamUrl: null, 
-        liveStreamTitle: null, 
-        liveStreamThumbnail: null, 
-        detectedBy: `ownership_failed:${ownership.reason}` 
-      };
-    }
-
-    // Extract video ID
+    // Extract video ID (needed for definitive ownership verification)
     const videoId = extractVideoId(html, finalUrl);
     
-    if (!videoId) {
-      console.log(`${channelName} - Live but no video ID found, using channel /live URL`);
-      return { 
-        isLive: true, 
-        liveStreamUrl: livePageUrl, 
-        liveStreamTitle: `${channelName} is Live!`,
-        liveStreamThumbnail: null, 
-        detectedBy: detectedBy + '_no_video_id' 
+    // If we have an expectedChannelId (manual channel id), require a watch-page verification.
+    // The /live page often lacks videoOwnerChannelId and can false-positive from recommendations.
+    if (expectedChannelId && !videoId) {
+      console.log(`${channelName} - Live indicators found but no video ID; cannot verify ownership, marking as NOT LIVE`);
+      return {
+        isLive: false,
+        liveStreamUrl: null,
+        liveStreamTitle: null,
+        liveStreamThumbnail: null,
+        detectedBy: detectedBy + '_no_video_id_for_verification',
       };
     }
 
-    // Extract stream info
-    const liveStreamUrl = `https://www.youtube.com/watch?v=${videoId}`;
-    let liveStreamTitle = extractStreamTitle(html);
-    const liveStreamThumbnail = getStreamThumbnail(videoId);
+    // Build watch URL (if we have it)
+    const liveStreamUrl = videoId ? `https://www.youtube.com/watch?v=${videoId}` : livePageUrl;
+
+    // If channel ID is provided and we have a videoId, verify ownership on the watch page
+    // (most reliable place for videoOwnerChannelId).
+    let ownershipHtml = html;
+    if (expectedChannelId && videoId) {
+      try {
+        const watchRes = await fetch(liveStreamUrl, {
+          headers: defaultHeaders,
+          redirect: 'follow',
+        });
+        ownershipHtml = await watchRes.text();
+      } catch (e: any) {
+        console.log(`${channelName} - Failed to fetch watch page for ownership verification: ${e?.message || e}`);
+      }
+    }
+
+    // *** CRITICAL: Verify stream ownership ***
+    let ownership = verifyStreamOwnership(ownershipHtml, expectedChannelId, channelName);
+
+    // If we have a manual channel id and HTML-based checks can't find definitive owner IDs,
+    // fall back to oEmbed for the specific watch URL.
+    if (!ownership.isOwned && expectedChannelId && videoId && ownership.reason === 'no_definitive_owner_id') {
+      const o = await verifyOwnershipViaOEmbed(liveStreamUrl, expectedChannelId);
+      if (o.ok) {
+        ownership = { isOwned: true, reason: o.reason };
+      } else {
+        ownership = { isOwned: false, reason: `${ownership.reason}|${o.reason}` };
+      }
+    }
+    console.log(`${channelName} - Ownership check: ${ownership.isOwned ? 'OWNED' : 'NOT OWNED'} (${ownership.reason})`);
+
+    if (!ownership.isOwned) {
+      console.log(`${channelName} - Stream belongs to another channel, marking as NOT LIVE`);
+      return {
+        isLive: false,
+        liveStreamUrl: null,
+        liveStreamTitle: null,
+        liveStreamThumbnail: null,
+        detectedBy: `ownership_failed:${ownership.reason}`,
+      };
+    }
+
+    // Extract stream info (prefer watch page HTML if we fetched it)
+    const titleHtml = expectedChannelId ? ownershipHtml : html;
+    let liveStreamTitle = extractStreamTitle(titleHtml);
+    const liveStreamThumbnail = videoId ? getStreamThumbnail(videoId) : null;
     
     // Fallback title if extraction failed
     if (!liveStreamTitle) {
       liveStreamTitle = `${channelName} is Live!`;
     }
     
-    console.log(`${channelName} - LIVE with video ID: ${videoId}`);
+    if (videoId) console.log(`${channelName} - LIVE with video ID: ${videoId}`);
     console.log(`${channelName} - Title: ${liveStreamTitle}`);
     console.log(`${channelName} - Thumbnail: ${liveStreamThumbnail}`);
 
