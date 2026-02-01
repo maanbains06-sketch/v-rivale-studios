@@ -79,6 +79,21 @@ serve(async (req) => {
     console.log(`Processing whitelist notification for ${applicantDiscord} (ID: ${applicantDiscordId || 'none'}), status: ${status}`);
     console.log(`Moderator: ${moderatorName} (Discord ID: ${moderatorDiscordId || 'none'})`);
 
+    // Fetch applicant's real Discord name if Discord ID is provided
+    let applicantDisplayName = applicantDiscord;
+    let applicantAvatarUrl: string | null = null;
+    
+    if (applicantDiscordId) {
+      const applicantUser = await fetchDiscordUser(applicantDiscordId, DISCORD_BOT_TOKEN);
+      if (applicantUser) {
+        applicantDisplayName = applicantUser.global_name || applicantUser.username;
+        if (applicantUser.avatar) {
+          applicantAvatarUrl = `https://cdn.discordapp.com/avatars/${applicantUser.id}/${applicantUser.avatar}.png?size=128`;
+        }
+        console.log(`Fetched applicant Discord info: ${applicantDisplayName}`);
+      }
+    }
+
     // Fetch moderator's real Discord name if Discord ID is provided
     let moderatorDisplayName = moderatorName;
     let moderatorAvatarUrl: string | null = null;
@@ -125,9 +140,9 @@ serve(async (req) => {
     const rejectedImageUrl = 'https://roleplay-horizon.lovable.app/images/whitelist-rejected.jpg';
     const imageUrl = isApproved ? approvedImageUrl : rejectedImageUrl;
 
-    // Build applicant mention
+    // Build applicant mention with proper tagging AND display name
     const applicantMention = applicantDiscordId 
-      ? `<@${applicantDiscordId}>` 
+      ? `<@${applicantDiscordId}> (${applicantDisplayName})` 
       : `@${applicantDiscord}`;
 
     // Build moderator display with real Discord name
