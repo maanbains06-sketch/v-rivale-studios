@@ -323,6 +323,21 @@ const Whitelist = () => {
         throw error;
       }
 
+      // Assign pending whitelist role in Discord
+      if (data.discordId && /^\d{17,19}$/.test(data.discordId)) {
+        try {
+          await supabase.functions.invoke('manage-pending-whitelist-role', {
+            body: {
+              discordId: data.discordId,
+              action: 'add',
+            },
+          });
+          console.log('Pending whitelist role assigned successfully');
+        } catch (roleError) {
+          console.error('Failed to assign pending role (non-blocking):', roleError);
+        }
+      }
+
       toast({
         title: "Application Submitted!",
         description: "We'll review your application within 24-48 hours and contact you on Discord.",

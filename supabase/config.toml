@@ -33,6 +33,9 @@ verify_jwt = false
 [functions.fivem-server-status]
 verify_jwt = false
 
+[functions.manage-pending-whitelist-role]
+verify_jwt = false
+
 [functions.notify-staff-discord-dm]
 verify_jwt = false
 
@@ -82,6 +85,9 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.send-rules-to-discord]
+verify_jwt = false
+
+[functions.send-ticket-notification]
 verify_jwt = false
 
 [functions.send-whitelist-notification]
