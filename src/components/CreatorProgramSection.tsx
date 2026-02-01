@@ -20,9 +20,7 @@ import {
   Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import CreatorApplicationForm from "./CreatorApplicationForm";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
@@ -74,7 +72,6 @@ const evaluations = [
 ];
 
 const CreatorProgramSection = () => {
-  const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const navigate = useNavigate();
@@ -111,6 +108,7 @@ const CreatorProgramSection = () => {
     });
     navigate("/auth?tab=signup");
   };
+
   return (
     <motion.section 
       className="py-20 md:py-28 relative z-[10] bg-background/80"
@@ -212,21 +210,15 @@ const CreatorProgramSection = () => {
 
             <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-center gap-4">
               {user ? (
-                <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                  <DialogTrigger asChild>
-                    <Button
-                      size="lg"
-                      className="bg-red-600 hover:bg-red-500 text-white font-semibold px-8 py-6 rounded-xl shadow-lg shadow-red-500/20 hover:shadow-red-500/30 transition-all duration-300 text-base group"
-                    >
-                      <Video className="w-5 h-5 mr-2" />
-                      Apply for Creator Program
-                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden bg-gradient-to-b from-background via-background to-red-950/20 backdrop-blur-2xl border border-red-400/25 p-0 shadow-2xl shadow-red-500/15">
-                    <CreatorApplicationForm onClose={() => setIsOpen(false)} />
-                  </DialogContent>
-                </Dialog>
+                <Button
+                  size="lg"
+                  onClick={() => navigate("/creator-application")}
+                  className="bg-red-600 hover:bg-red-500 text-white font-semibold px-8 py-6 rounded-xl shadow-lg shadow-red-500/20 hover:shadow-red-500/30 transition-all duration-300 text-base group"
+                >
+                  <Video className="w-5 h-5 mr-2" />
+                  Apply for Creator Program
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
               ) : (
                 <div className="flex flex-col sm:flex-row items-center gap-3">
                   <Button
