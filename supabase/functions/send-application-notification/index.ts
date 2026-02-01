@@ -306,6 +306,21 @@ serve(async (req) => {
       );
     }
 
+    // Fetch applicant's Discord info for display
+    let applicantDisplayName = applicantName;
+    let applicantAvatarUrl: string | null = null;
+    
+    if (applicantDiscordId) {
+      const applicantUser = await fetchDiscordUser(applicantDiscordId, DISCORD_BOT_TOKEN);
+      if (applicantUser) {
+        applicantDisplayName = applicantUser.global_name || applicantUser.username;
+        if (applicantUser.avatar) {
+          applicantAvatarUrl = `https://cdn.discordapp.com/avatars/${applicantUser.id}/${applicantUser.avatar}.png?size=128`;
+        }
+        console.log(`Fetched applicant Discord info: ${applicantDisplayName}`);
+      }
+    }
+
     // Fetch moderator's Discord info
     let moderatorDisplayName = moderatorName;
     let moderatorAvatarUrl: string | null = null;
@@ -324,9 +339,9 @@ serve(async (req) => {
     const now = new Date();
     const isApproved = status === 'approved';
 
-    // Build applicant mention
+    // Build applicant mention with proper tagging AND display name
     const applicantMention = applicantDiscordId 
-      ? `<@${applicantDiscordId}>` 
+      ? `<@${applicantDiscordId}> (${applicantDisplayName})` 
       : `**${applicantName}**`;
 
     // Build moderator display
