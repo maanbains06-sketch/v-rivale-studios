@@ -39,8 +39,7 @@ const whitelistSchema = z.object({
     .max(37, "Discord username must not exceed 37 characters"),
   discordId: z.string()
     .trim()
-    .max(20, "Discord ID must not exceed 20 characters")
-    .optional(),
+    .regex(/^\d{17,19}$/, "Discord ID must be 17-19 digits"),
   age: z.string()
     .refine((val) => !isNaN(Number(val)) && Number(val) >= 16, "Must be at least 16 years old")
     .refine((val) => !isNaN(Number(val)) && Number(val) <= 100, "Please enter a valid age"),

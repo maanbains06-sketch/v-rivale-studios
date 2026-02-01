@@ -19,6 +19,7 @@ import { ApprovedApplicationAlert } from "@/components/ApprovedApplicationAlert"
 import { OnHoldApplicationAlert } from "@/components/OnHoldApplicationAlert";
 const formSchema = z.object({
   characterName: z.string().min(2, "Character name must be at least 2 characters"),
+  discordId: z.string().regex(/^\d{17,19}$/, "Discord ID must be 17-19 digits"),
   age: z.number().min(18, "Must be at least 18").max(100, "Must be under 100"),
   phoneNumber: z.string().min(7, "Phone number must be at least 7 digits"),
   departmentRole: z.string().min(1, "Please select a department role"),
@@ -64,6 +65,7 @@ const StateDepartmentApplicationForm = ({ jobImage }: StateDepartmentApplication
     resolver: zodResolver(formSchema),
     defaultValues: {
       characterName: "",
+      discordId: "",
       age: 21,
       phoneNumber: "",
       departmentRole: "",
@@ -116,6 +118,7 @@ const StateDepartmentApplicationForm = ({ jobImage }: StateDepartmentApplication
           user_id: user.id,
           job_type: "State Department",
           character_name: values.characterName,
+          discord_id: values.discordId,
           age: values.age,
           phone_number: values.phoneNumber,
           previous_experience: values.governmentExperience,

@@ -196,10 +196,20 @@ const TicketSupport = () => {
 
   const submitTicket = async () => {
     // Validate required fields
-    if (!category || !subject.trim() || !description.trim() || !steamId.trim() || !playerId.trim() || !playerName.trim()) {
+    if (!category || !subject.trim() || !description.trim() || !steamId.trim() || !playerId.trim() || !playerName.trim() || !discordId.trim()) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required fields (Steam ID, Player ID, Player Name).",
+        description: "Please fill in all required fields (Discord ID, Steam ID, Player ID, Player Name).",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate Discord ID format
+    if (!/^\d{17,19}$/.test(discordId.trim())) {
+      toast({
+        title: "Invalid Discord ID",
+        description: "Discord ID must be 17-19 digits.",
         variant: "destructive",
       });
       return;
@@ -231,7 +241,7 @@ const TicketSupport = () => {
         .from("support_tickets")
         .insert({
           user_id: user.id,
-          discord_id: discordId || null,
+          discord_id: discordId.trim(),
           discord_username: discordUsername,
           steam_id: steamId.trim(),
           player_id: playerId.trim(),
@@ -558,13 +568,15 @@ const TicketSupport = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="discord_id">Discord ID (Optional)</Label>
+                      <Label htmlFor="discord_id">Discord ID *</Label>
                       <Input
                         id="discord_id"
                         value={discordId}
                         onChange={(e) => setDiscordId(e.target.value)}
-                        placeholder=""
+                        placeholder="e.g., 123456789012345678"
+                        required
                       />
+                      <p className="text-xs text-muted-foreground">Your 17-19 digit Discord ID</p>
                     </div>
                   </div>
                 </div>

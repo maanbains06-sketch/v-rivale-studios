@@ -35,7 +35,7 @@ import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
 const creatorSchema = z.object({
   fullName: z.string().min(2, "Name must be at least 2 characters").max(100),
   discordUsername: z.string().min(2, "Discord username is required").max(50),
-  discordId: z.string().regex(/^\d{17,19}$/, "Discord ID must be 17-19 digits").optional().or(z.literal("")),
+  discordId: z.string().regex(/^\d{17,19}$/, "Discord ID must be 17-19 digits"),
   steamId: z.string().min(5, "Steam ID is required").max(50),
   contactEmail: z.string().email("Please enter a valid email address").max(255),
   channelUrl: z.string().url("Please enter a valid URL"),

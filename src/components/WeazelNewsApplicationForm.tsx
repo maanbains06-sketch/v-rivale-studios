@@ -20,6 +20,9 @@ const weazelNewsSchema = z.object({
     .trim()
     .min(2, "Character name must be at least 2 characters")
     .max(50, "Character name must be less than 50 characters"),
+  discord_id: z.string()
+    .trim()
+    .regex(/^\d{17,19}$/, "Discord ID must be 17-19 digits"),
   age: z.number()
     .min(18, "Must be at least 18 years old")
     .max(100, "Invalid age"),
@@ -96,6 +99,7 @@ const WeazelNewsApplicationForm = ({ jobImage }: WeazelNewsApplicationFormProps)
     resolver: zodResolver(weazelNewsSchema),
     defaultValues: {
       character_name: "",
+      discord_id: "",
       age: 18,
       phone_number: "",
       previous_experience: "",
@@ -131,6 +135,7 @@ const WeazelNewsApplicationForm = ({ jobImage }: WeazelNewsApplicationFormProps)
           user_id: user.id,
           job_type: "Weazel News",
           character_name: data.character_name,
+          discord_id: data.discord_id,
           age: data.age,
           phone_number: data.phone_number,
           previous_experience: data.previous_experience,
@@ -302,12 +307,29 @@ const WeazelNewsApplicationForm = ({ jobImage }: WeazelNewsApplicationFormProps)
 
               <FormField
                 control={form.control}
+                name="discord_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Discord ID *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., 123456789012345678" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Your 17-19 digit Discord ID (required for role assignment)
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="phone_number"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>In-Game Phone Number *</FormLabel>
                     <FormControl>
-                      <Input placeholder="555-0123" {...field} />
+                      <Input placeholder="" {...field} />
                     </FormControl>
                     <FormDescription>
                       Your character's in-game phone number
