@@ -12,6 +12,8 @@ interface AssignRoleRequest {
 
 // Map application types to their Discord role IDs (from environment variables)
 const applicationRoleMap: Record<string, string> = {
+  'whitelist': 'DISCORD_WHITELIST_ROLE_ID',
+  'Whitelist': 'DISCORD_WHITELIST_ROLE_ID',
   'police': 'DISCORD_POLICE_ROLE_ID',
   'Police Department': 'DISCORD_POLICE_ROLE_ID',
   'ems': 'DISCORD_EMS_ROLE_ID',
@@ -26,6 +28,7 @@ const applicationRoleMap: Record<string, string> = {
   'Creator': 'DISCORD_CREATOR_ROLE_ID_1',
   'firefighter': 'DISCORD_FIRE_ROLE_ID',
   'Firefighter': 'DISCORD_FIRE_ROLE_ID',
+  'fire': 'DISCORD_FIRE_ROLE_ID',
   'state': 'DISCORD_STATE_ROLE_ID',
   'State Department': 'DISCORD_STATE_ROLE_ID',
   'pdm': 'DISCORD_PDM_ROLE_ID',
@@ -36,7 +39,7 @@ const applicationRoleMap: Record<string, string> = {
 };
 
 // Excluded application types that should NOT get auto role assignment
-const excludedTypes = ['staff', 'Staff', 'gang', 'Gang RP', 'Gang Roleplay', 'ban_appeal', 'whitelist'];
+const excludedTypes = ['staff', 'Staff', 'gang', 'Gang RP', 'Gang Roleplay', 'ban_appeal'];
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {

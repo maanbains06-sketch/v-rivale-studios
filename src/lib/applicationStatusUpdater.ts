@@ -47,8 +47,89 @@ interface UpdateApplicationStatusResult {
 }
 
 /**
+ * Helper function to get Discord ID from an application
+ */
+const getDiscordIdFromApplication = async (
+  id: string, 
+  type: ApplicationType, 
+  table: ApplicationTable
+): Promise<string | null> => {
+  try {
+    // Different tables store discord_id in different columns
+    if (table === 'whitelist_applications') {
+      const { data } = await supabase
+        .from('whitelist_applications')
+        .select('discord_id')
+        .eq('id', id)
+        .single();
+      return data?.discord_id || null;
+    }
+    
+    if (table === 'job_applications') {
+      const { data } = await supabase
+        .from('job_applications')
+        .select('discord_id')
+        .eq('id', id)
+        .single();
+      return data?.discord_id || null;
+    }
+    
+    if (table === 'creator_applications') {
+      const { data } = await supabase
+        .from('creator_applications')
+        .select('discord_id')
+        .eq('id', id)
+        .single();
+      return data?.discord_id || null;
+    }
+    
+    if (table === 'firefighter_applications') {
+      const { data } = await supabase
+        .from('firefighter_applications')
+        .select('discord_id')
+        .eq('id', id)
+        .single();
+      return data?.discord_id || null;
+    }
+    
+    if (table === 'weazel_news_applications') {
+      const { data } = await supabase
+        .from('weazel_news_applications')
+        .select('discord_id')
+        .eq('id', id)
+        .single();
+      return data?.discord_id || null;
+    }
+    
+    if (table === 'pdm_applications') {
+      const { data } = await supabase
+        .from('pdm_applications')
+        .select('discord_id')
+        .eq('id', id)
+        .single();
+      return data?.discord_id || null;
+    }
+    
+    if (table === 'staff_applications') {
+      const { data } = await supabase
+        .from('staff_applications')
+        .select('discord_id')
+        .eq('id', id)
+        .single();
+      return data?.discord_id || null;
+    }
+    
+    return null;
+  } catch (err) {
+    console.error('Error fetching discord_id:', err);
+    return null;
+  }
+};
+
+/**
  * Universal function to update application status for any application type.
  * Works for all panels (Admin, OwnerPanel) without errors.
+ * Automatically assigns Discord roles when applications are approved.
  */
 export const updateApplicationStatusGeneric = async ({
   id,
@@ -72,15 +153,10 @@ export const updateApplicationStatusGeneric = async ({
       updatePayload.admin_notes = notes;
     }
 
-    // For whitelist applications, get the discord_id before updating
+    // Get discord_id before updating (needed for role assignment)
     let discordId: string | null = null;
-    if (type === 'whitelist' && (status === 'approved' || status === 'rejected')) {
-      const { data: appData } = await supabase
-        .from('whitelist_applications')
-        .select('discord_id')
-        .eq('id', id)
-        .single();
-      discordId = appData?.discord_id || null;
+    if (status === 'approved' || status === 'rejected') {
+      discordId = await getDiscordIdFromApplication(id, type, table);
     }
 
     // Use 'as any' to allow dynamic table access since all application tables share the same structure
@@ -101,7 +177,32 @@ export const updateApplicationStatusGeneric = async ({
       return { success: false, error: 'Update was blocked by permissions (0 rows updated)' };
     }
 
-    // Remove pending whitelist role when application is approved or rejected
+    // Handle Discord role assignment when approved
+    if (status === 'approved' && discordId && /^\d{17,19}$/.test(discordId)) {
+      try {
+        // Call auto-assign-application-role for all types (except excluded ones like gang, staff, ban_appeal)
+        const excludedFromRoleAssignment = ['gang', 'ban_appeal', 'staff'];
+        
+        if (!excludedFromRoleAssignment.includes(type)) {
+          const { data: roleResult, error: roleError } = await supabase.functions.invoke('auto-assign-application-role', {
+            body: {
+              applicationType: type,
+              discordUserId: discordId,
+            },
+          });
+          
+          if (roleError) {
+            console.error(`Failed to assign Discord role for ${type}:`, roleError);
+          } else {
+            console.log(`Discord role assigned for ${type}:`, roleResult);
+          }
+        }
+      } catch (roleError) {
+        console.error('Failed to assign Discord role (non-blocking):', roleError);
+      }
+    }
+
+    // Remove pending whitelist role when whitelist application is approved or rejected
     if (type === 'whitelist' && discordId && (status === 'approved' || status === 'rejected')) {
       try {
         await supabase.functions.invoke('manage-pending-whitelist-role', {
