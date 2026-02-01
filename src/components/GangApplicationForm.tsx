@@ -19,6 +19,7 @@ import { ApprovedApplicationAlert } from "@/components/ApprovedApplicationAlert"
 import { OnHoldApplicationAlert } from "@/components/OnHoldApplicationAlert";
 const gangFormSchema = z.object({
   discord_username: z.string().min(2, "Discord username is required"),
+  discord_id: z.string().regex(/^\d{17,19}$/, "Discord ID must be 17-19 digits"),
   steam_id: z.string().min(5, "Steam ID is required"),
   age: z.number().min(16, "You must be at least 16 years old"),
   character_name: z.string().min(2, "Character name is required"),
@@ -71,6 +72,7 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
     resolver: zodResolver(gangFormSchema),
     defaultValues: {
       discord_username: "",
+      discord_id: "",
       steam_id: "",
       age: 18 as number,
       character_name: "",
@@ -114,6 +116,7 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
           user_id: user.id,
           job_type: "Gang Roleplay",
           character_name: data.character_name,
+          discord_id: data.discord_id,
           phone_number: data.discord_username,
           age: data.age,
           previous_experience: data.rp_experience,

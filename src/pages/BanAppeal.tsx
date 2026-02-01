@@ -42,6 +42,17 @@ const BanAppeal = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate Discord ID
+    if (!formData.discordId || !/^\d{17,19}$/.test(formData.discordId.trim())) {
+      toast({
+        title: "Invalid Discord ID",
+        description: "Please enter a valid Discord ID (17-19 digits).",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -60,7 +71,7 @@ const BanAppeal = () => {
       const { error } = await supabase.from("ban_appeals").insert({
         user_id: user.id,
         discord_username: formData.discordUsername,
-        discord_id: formData.discordId || null,
+        discord_id: formData.discordId.trim(),
         steam_id: "N/A", // Steam ID removed from authentication
         ban_reason: formData.banReason,
         appeal_reason: formData.appealReason,
@@ -188,15 +199,16 @@ const BanAppeal = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="discordId">Discord ID</Label>
+                    <Label htmlFor="discordId">Discord ID *</Label>
                     <Input
                       id="discordId"
                       name="discordId"
                       placeholder="e.g., 123456789012345678"
                       value={formData.discordId}
                       onChange={handleChange}
+                      required
                     />
-                    <p className="text-xs text-muted-foreground">Your unique Discord ID (18-digit number)</p>
+                    <p className="text-xs text-muted-foreground">Your 17-19 digit Discord ID (required)</p>
                   </div>
                 </div>
 

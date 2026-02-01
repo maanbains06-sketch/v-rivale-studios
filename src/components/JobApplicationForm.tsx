@@ -20,6 +20,9 @@ const jobApplicationSchema = z.object({
     .trim()
     .min(2, "Character name must be at least 2 characters")
     .max(50, "Character name must be less than 50 characters"),
+  discord_id: z.string()
+    .trim()
+    .regex(/^\d{17,19}$/, "Discord ID must be 17-19 digits"),
   age: z.coerce.number()
     .min(18, "Must be at least 18 years old")
     .max(100, "Invalid age"),
@@ -90,6 +93,7 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
     resolver: zodResolver(jobApplicationSchema),
     defaultValues: {
       character_name: "",
+      discord_id: "",
       age: "" as unknown as JobApplicationFormInput["age"],
       phone_number: "",
       previous_experience: "",
@@ -347,6 +351,23 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="discord_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Discord ID *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., 123456789012345678" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Your 17-19 digit Discord ID (required for role assignment)
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}

@@ -34,8 +34,7 @@ const staffApplicationSchema = z.object({
     }),
   discordId: z.string()
     .trim()
-    .max(20, { message: "Discord ID must be less than 20 characters" })
-    .optional(),
+    .regex(/^\d{17,19}$/, { message: "Discord ID must be 17-19 digits" }),
   inGameName: z.string()
     .trim()
     .min(2, { message: "In-game name must be at least 2 characters" })

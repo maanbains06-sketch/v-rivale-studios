@@ -21,6 +21,7 @@ const dojApplicationSchema = z.object({
     message: "You must be at least 21 years old for DOJ positions"
   }),
   phoneNumber: z.string().min(7, "Valid phone number is required"),
+  discordId: z.string().regex(/^\d{17,19}$/, "Discord ID must be 17-19 digits"),
   discordUsername: z.string().min(3, "Discord username is required"),
   legalExperience: z.string().min(50, "Please provide at least 50 characters about your legal experience"),
   lawKnowledge: z.string().min(50, "Please provide at least 50 characters about your knowledge of law"),
@@ -70,6 +71,7 @@ const DOJApplicationForm = ({ applicationType, jobImage }: DOJApplicationFormPro
       characterName: "",
       age: "",
       phoneNumber: "",
+      discordId: "",
       discordUsername: "",
       legalExperience: "",
       lawKnowledge: "",
@@ -102,6 +104,7 @@ const DOJApplicationForm = ({ applicationType, jobImage }: DOJApplicationFormPro
           user_id: user.id,
           job_type: jobType,
           character_name: data.characterName,
+          discord_id: data.discordId,
           age: parseInt(data.age),
           phone_number: data.phoneNumber,
           previous_experience: data.legalExperience,
