@@ -72,6 +72,17 @@ export const updateApplicationStatusGeneric = async ({
       updatePayload.admin_notes = notes;
     }
 
+    // For whitelist applications, get the discord_id before updating
+    let discordId: string | null = null;
+    if (type === 'whitelist' && (status === 'approved' || status === 'rejected')) {
+      const { data: appData } = await supabase
+        .from('whitelist_applications')
+        .select('discord_id')
+        .eq('id', id)
+        .single();
+      discordId = appData?.discord_id || null;
+    }
+
     // Use 'as any' to allow dynamic table access since all application tables share the same structure
     const { data: updatedRows, error } = await supabase
       .from(table as any)
@@ -88,6 +99,22 @@ export const updateApplicationStatusGeneric = async ({
     if (!updatedRows || updatedRows.length === 0) {
       console.error('Application update blocked (0 rows updated):', { table, id, status });
       return { success: false, error: 'Update was blocked by permissions (0 rows updated)' };
+    }
+
+    // Remove pending whitelist role when application is approved or rejected
+    if (type === 'whitelist' && discordId && (status === 'approved' || status === 'rejected')) {
+      try {
+        await supabase.functions.invoke('manage-pending-whitelist-role', {
+          body: {
+            discordId,
+            action: 'remove',
+            applicationId: id,
+          },
+        });
+        console.log(`Pending whitelist role removed for Discord ID: ${discordId}`);
+      } catch (roleError) {
+        console.error('Failed to remove pending role (non-blocking):', roleError);
+      }
     }
 
     return { success: true };
