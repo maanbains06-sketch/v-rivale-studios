@@ -15,7 +15,7 @@ import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
-import { CheckCircle2, Clock, XCircle, Loader2, LogOut, Timer, Save, FileText, Mail, Sparkles, Play, Crown, Star, PartyPopper, RefreshCw } from "lucide-react";
+import { CheckCircle2, Clock, XCircle, Loader2, LogOut, Timer, Save, FileText, Mail, Sparkles, Play, Crown, Star, PartyPopper, RefreshCw, Search, UserCheck } from "lucide-react";
 import { differenceInDays, differenceInHours, differenceInMinutes, addDays } from "date-fns";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import ApplicationsPausedAlert from "@/components/ApplicationsPausedAlert";
@@ -90,6 +90,8 @@ const Whitelist = () => {
   const [loadingDraft, setLoadingDraft] = useState(false);
   const [existingDraft, setExistingDraft] = useState<ApplicationDraft | null>(null);
   const [showLoadDraftDialog, setShowLoadDraftDialog] = useState(false);
+  const [fetchingDiscordUser, setFetchingDiscordUser] = useState(false);
+  const [discordIdError, setDiscordIdError] = useState<string | null>(null);
   
   const { settings: siteSettings, loading: settingsLoading } = useSiteSettings();
   
@@ -291,6 +293,56 @@ const Whitelist = () => {
         description: error.message || "Failed to delete draft.",
         variant: "destructive",
       });
+    }
+  };
+
+  // Fetch Discord username from Discord ID
+  const fetchDiscordUsername = async (discordId: string) => {
+    if (!discordId || !/^\d{17,19}$/.test(discordId)) {
+      setDiscordIdError("Please enter a valid 17-19 digit Discord ID");
+      return;
+    }
+    
+    setFetchingDiscordUser(true);
+    setDiscordIdError(null);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-discord-user', {
+        body: { discordId },
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      if (data?.username || data?.globalName) {
+        // Format the display name - prefer globalName over username
+        const displayName = data.globalName || data.displayName || data.username;
+        form.setValue("discord", displayName);
+        toast({
+          title: "Discord User Found",
+          description: `Found user: ${displayName} (@${data.username})`,
+        });
+      } else if (data?.error) {
+        setDiscordIdError(data.error);
+        toast({
+          title: "User Not Found",
+          description: data.error,
+          variant: "destructive",
+        });
+      } else {
+        setDiscordIdError("User not found. Please check the Discord ID.");
+      }
+    } catch (error: any) {
+      console.error('Error fetching Discord user:', error);
+      setDiscordIdError("Failed to fetch Discord user. Please enter username manually.");
+      toast({
+        title: "Fetch Failed",
+        description: "Could not fetch Discord user. Please enter username manually.",
+        variant: "destructive",
+      });
+    } finally {
+      setFetchingDiscordUser(false);
     }
   };
 
@@ -865,16 +917,36 @@ const Whitelist = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Discord ID</FormLabel>
-                            <FormControl>
-                              <Input 
-                                placeholder="e.g., 123456789012345678" 
-                                {...field}
-                                className="bg-background/50"
-                              />
-                            </FormControl>
+                            <div className="flex gap-2">
+                              <FormControl>
+                                <Input 
+                                  placeholder="e.g., 123456789012345678" 
+                                  {...field}
+                                  className="bg-background/50"
+                                />
+                              </FormControl>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                onClick={() => fetchDiscordUsername(field.value || '')}
+                                disabled={fetchingDiscordUser || !field.value}
+                                className="flex-shrink-0"
+                                title="Fetch username from Discord ID"
+                              >
+                                {fetchingDiscordUser ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <UserCheck className="w-4 h-4" />
+                                )}
+                              </Button>
+                            </div>
                             <FormDescription>
-                              Your 18-digit Discord ID (optional)
+                              Enter your 17-19 digit Discord ID and click the button to auto-fill username
                             </FormDescription>
+                            {discordIdError && (
+                              <p className="text-xs text-red-500 mt-1">{discordIdError}</p>
+                            )}
                             <FormMessage />
                           </FormItem>
                         )}

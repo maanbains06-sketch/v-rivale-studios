@@ -153,10 +153,11 @@ export const updateApplicationStatusGeneric = async ({
       updatePayload.admin_notes = notes;
     }
 
-    // Get discord_id before updating (needed for role assignment)
+    // Get discord_id before updating (needed for role assignment and pending role removal)
     let discordId: string | null = null;
     if (status === 'approved' || status === 'rejected') {
       discordId = await getDiscordIdFromApplication(id, type, table);
+      console.log(`Fetched Discord ID for ${type} application ${id}: ${discordId}`);
     }
 
     // Use 'as any' to allow dynamic table access since all application tables share the same structure
@@ -203,16 +204,22 @@ export const updateApplicationStatusGeneric = async ({
     }
 
     // Remove pending whitelist role when whitelist application is approved or rejected
-    if (type === 'whitelist' && discordId && (status === 'approved' || status === 'rejected')) {
+    if (type === 'whitelist' && discordId && /^\d{17,19}$/.test(discordId) && (status === 'approved' || status === 'rejected')) {
       try {
-        await supabase.functions.invoke('manage-pending-whitelist-role', {
+        console.log(`Removing pending whitelist role for Discord ID: ${discordId}, status: ${status}`);
+        const { data: roleRemoveResult, error: roleRemoveError } = await supabase.functions.invoke('manage-pending-whitelist-role', {
           body: {
             discordId,
             action: 'remove',
             applicationId: id,
           },
         });
-        console.log(`Pending whitelist role removed for Discord ID: ${discordId}`);
+        
+        if (roleRemoveError) {
+          console.error('Error removing pending whitelist role:', roleRemoveError);
+        } else {
+          console.log(`Pending whitelist role removal result:`, roleRemoveResult);
+        }
       } catch (roleError) {
         console.error('Failed to remove pending role (non-blocking):', roleError);
       }
