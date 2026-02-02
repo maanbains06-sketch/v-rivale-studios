@@ -2348,6 +2348,14 @@ const OwnerPanel = () => {
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
+                      size="icon"
+                      onClick={loadStaffMembers}
+                      title="Refresh staff list"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
                       onClick={() => navigate("/staff-setup")}
                       className="border-primary/50 text-primary hover:bg-primary/10"
                     >
@@ -2358,6 +2366,7 @@ const OwnerPanel = () => {
                       setSelectedStaff(null);
                       setIsStaffDialogOpen(true);
                     }}>
+                      <UserPlus className="w-4 h-4 mr-2" />
                       Add Staff Member
                     </Button>
                   </div>
