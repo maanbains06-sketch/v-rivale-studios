@@ -838,9 +838,14 @@ const OwnerPanel = () => {
   };
 
   const loadStaffMembers = async () => {
+    // Only load staff members that appear on the public Staff page
+    // Exclude roster-only departments (police, ems, firefighter, state, etc.)
+    const staffPageDepartments = ["leadership", "management", "development", "administration", "moderation", "staff", "events", "support"];
+    
     const { data, error } = await supabase
       .from("staff_members")
       .select("*")
+      .in("department", staffPageDepartments)
       .order("display_order", { ascending: true });
 
     if (error) {
