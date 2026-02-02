@@ -50,40 +50,55 @@ const AddStaffManualDialog = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.rank) {
-      toast.error('Please fill in required fields (Name and Rank)');
+    if (!formData.name?.trim()) {
+      toast.error('Please enter a name');
+      return;
+    }
+    
+    if (!formData.rank) {
+      toast.error('Please select a rank');
       return;
     }
 
     setLoading(true);
     try {
-      // Generate unique placeholder for discord_id
-      const placeholderId = `MANUAL-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      // Generate unique placeholder for discord_id - ensures uniqueness
+      const placeholderId = `ROSTER-${departmentKey.toUpperCase()}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
-      const { error } = await supabase
+      const insertData = {
+        name: formData.name.trim(),
+        role: formData.rank,
+        role_type: 'member', // Non-staff departments get 'member' role type
+        department: departmentKey,
+        badge_number: formData.badge_number?.trim() || null,
+        status: formData.status || 'active',
+        division: formData.division || null,
+        call_sign: formData.call_sign || null,
+        strikes: formData.strikes || '0/3',
+        discord_id: placeholderId,
+        is_active: formData.status === 'active' || formData.status === 'on_training',
+        responsibilities: [], // Required array field
+      };
+
+      console.log('Inserting roster member:', insertData);
+
+      const { data, error } = await supabase
         .from('staff_members')
-        .insert({
-          name: formData.name,
-          role: formData.rank,
-          role_type: 'member', // Non-staff departments get 'member' role type
-          department: departmentKey,
-          badge_number: formData.badge_number || null,
-          status: formData.status,
-          division: formData.division || null,
-          call_sign: formData.call_sign || null,
-          strikes: formData.strikes || '0/3',
-          discord_id: placeholderId,
-          is_active: formData.status === 'active' || formData.status === 'on_training',
-        });
+        .insert(insertData)
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
+      console.log('Roster member added:', data);
       toast.success(`${formData.name} added to ${departmentLabel} successfully!`);
       handleReset();
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
-      console.error('Error adding staff:', error);
+      console.error('Error adding roster member:', error);
       toast.error(error.message || 'Failed to add member');
     } finally {
       setLoading(false);
