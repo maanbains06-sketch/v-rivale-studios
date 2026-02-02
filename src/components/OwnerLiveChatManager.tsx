@@ -143,19 +143,38 @@ const OwnerLiveChatManager = () => {
     setIsDeleting(true);
     try {
       // Get all chat IDs
-      const { data: allChats } = await supabase.from("support_chats").select("id");
+      const { data: allChats, error: fetchError } = await supabase.from("support_chats").select("id");
+      
+      if (fetchError) {
+        console.error("Error fetching chats for deletion:", fetchError);
+        throw fetchError;
+      }
       
       if (allChats && allChats.length > 0) {
         const chatIds = allChats.map(c => c.id);
         
-        // Delete all related data
-        await supabase.from("support_messages").delete().in("chat_id", chatIds);
-        await supabase.from("ai_message_ratings").delete().in("chat_id", chatIds);
-        await supabase.from("support_chat_ratings").delete().in("chat_id", chatIds);
+        // Delete all related data with error handling
+        const { error: messagesError } = await supabase.from("support_messages").delete().in("chat_id", chatIds);
+        if (messagesError) {
+          console.error("Error deleting messages:", messagesError);
+        }
         
-        // Delete all chats
-        const { error } = await supabase.from("support_chats").delete().neq("id", "00000000-0000-0000-0000-000000000000");
-        if (error) throw error;
+        const { error: aiRatingsError } = await supabase.from("ai_message_ratings").delete().in("chat_id", chatIds);
+        if (aiRatingsError) {
+          console.error("Error deleting AI ratings:", aiRatingsError);
+        }
+        
+        const { error: chatRatingsError } = await supabase.from("support_chat_ratings").delete().in("chat_id", chatIds);
+        if (chatRatingsError) {
+          console.error("Error deleting chat ratings:", chatRatingsError);
+        }
+        
+        // Delete all chats - use .in() with chatIds for proper deletion
+        const { error: chatsError } = await supabase.from("support_chats").delete().in("id", chatIds);
+        if (chatsError) {
+          console.error("Error deleting chats:", chatsError);
+          throw chatsError;
+        }
       }
 
       toast({
