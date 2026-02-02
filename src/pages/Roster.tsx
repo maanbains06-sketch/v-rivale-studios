@@ -851,12 +851,14 @@ const Roster = () => {
 
                             {/* Table Header - Dynamic based on rank */}
                             {isGovernorRank(rankName) ? (
-                              <div className={`grid ${canEditThisDept ? 'grid-cols-5' : 'grid-cols-4'} px-5 py-3 bg-muted/30 border-b border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground`}>
+                              <div className={`grid ${canEditThisDept ? 'grid-cols-7' : 'grid-cols-6'} px-5 py-3 bg-muted/30 border-b border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground`}>
                                 <div className="flex items-center gap-2">
                                   <span className="w-8" />
                                   <span>Name</span>
                                 </div>
                                 <div className="text-center">Rank</div>
+                                <div className="text-center">Badge Number</div>
+                                <div className="text-center">Strikes</div>
                                 <div className="text-center">Status</div>
                                 <div className="text-center">Division</div>
                                 {canEditThisDept && <div className="text-center">Actions</div>}
@@ -881,10 +883,10 @@ const Roster = () => {
                             <div className="divide-y divide-border/50 min-h-[60px]">
                               {members.length > 0 ? members.map((member, idx) => (
                                 isGovernorRank(rankName) ? (
-                                  /* Governor-specific row layout - no badge/strikes, Name instead of Officer */
+                                  /* Governor-specific row layout - includes Badge Number and Strikes */
                                   <div 
                                     key={member.id}
-                                    className={`grid ${canEditThisDept ? 'grid-cols-5' : 'grid-cols-4'} px-5 py-3 items-center transition-colors hover:bg-muted/30
+                                    className={`grid ${canEditThisDept ? 'grid-cols-7' : 'grid-cols-6'} px-5 py-3 items-center transition-colors hover:bg-muted/30
                                       ${idx % 2 === 0 ? 'bg-transparent' : 'bg-muted/10'}`}
                                   >
                                     {/* Name */}
@@ -929,6 +931,36 @@ const Roster = () => {
                                         </Select>
                                       ) : (
                                         <span className="text-sm text-muted-foreground">{member.rank}</span>
+                                      )}
+                                    </div>
+
+                                    {/* Badge Number */}
+                                    <div className="text-center">
+                                      {isEditing ? (
+                                        <Input
+                                          value={getMemberValue(deptKey, member, 'badge_number')}
+                                          onChange={(e) => updateMemberField(deptKey, member.id, 'badge_number', e.target.value)}
+                                          placeholder="Badge #"
+                                          className="h-8 text-sm font-mono text-center"
+                                        />
+                                      ) : (
+                                        <span className="font-mono text-sm px-2.5 py-1 rounded-md bg-muted border border-border">
+                                          {member.badge_number || '-'}
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    {/* Strikes */}
+                                    <div className="text-center">
+                                      {isEditing ? (
+                                        <Input
+                                          value={getMemberValue(deptKey, member, 'strikes')}
+                                          onChange={(e) => updateMemberField(deptKey, member.id, 'strikes', e.target.value)}
+                                          placeholder="0/3"
+                                          className="h-8 text-sm text-center"
+                                        />
+                                      ) : (
+                                        <span className="text-muted-foreground">{member.strikes || '-'}</span>
                                       )}
                                     </div>
 
