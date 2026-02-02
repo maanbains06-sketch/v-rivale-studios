@@ -273,8 +273,16 @@ const Staff = () => {
 
   const eventStaff = getStaffByDepartment("events");
 
-  // Count only staff members shown on staff page (exclude leadership for the stats count)
-  const displayedStaffCount = staffMembers.filter(m => m.department !== "leadership").length;
+  // Count ONLY staff members actually displayed on this page (with slice limits applied)
+  // This calculation matches exactly what is rendered in the department sections
+  const displayedStaffCount = 
+    leadershipStaff.length +
+    Math.min(adminStaff.length, 3) + // adminStaff.slice(0, 3)
+    administrationStaff.length +
+    developerStaff.length +
+    combinedStaffTeam.length +
+    Math.min(supportStaff.length, 3) + // supportStaff.slice(0, 3)
+    Math.min(eventStaff.length, 3); // eventStaff.slice(0, 3)
 
   const hasAnyStaff = staffMembers.length > 0;
 
