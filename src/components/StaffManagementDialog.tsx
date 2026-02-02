@@ -165,14 +165,44 @@ export const StaffManagementDialog = ({ open, onOpenChange, staffMember, onSucce
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate required fields
+    if (!formData.name?.trim()) {
+      toast({
+        title: "Error",
+        description: "Name is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!formData.role?.trim()) {
+      toast({
+        title: "Error",
+        description: "Role Title is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setLoading(true);
 
     try {
+      // Prepare data for submission
+      const submitData = {
+        ...formData,
+        // Generate unique discord_id if not provided for new members
+        discord_id: formData.discord_id?.trim() || `MANUAL-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        // Ensure responsibilities is an array
+        responsibilities: formData.responsibilities || [],
+      };
+
       if (staffMember?.id) {
-        // Update existing staff member
+        // Update existing staff member - remove id from update data
+        const { id, ...updateData } = submitData;
         const { error } = await supabase
           .from("staff_members")
-          .update(formData)
+          .update(updateData)
           .eq("id", staffMember.id);
 
         if (error) throw error;
@@ -182,10 +212,11 @@ export const StaffManagementDialog = ({ open, onOpenChange, staffMember, onSucce
           description: "Staff member updated successfully",
         });
       } else {
-        // Create new staff member
+        // Create new staff member - remove id from insert data
+        const { id, ...insertData } = submitData;
         const { error } = await supabase
           .from("staff_members")
-          .insert([formData]);
+          .insert([insertData]);
 
         if (error) throw error;
 
@@ -225,9 +256,9 @@ export const StaffManagementDialog = ({ open, onOpenChange, staffMember, onSucce
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Discord ID - Auto-fetches info */}
           <div className="space-y-2">
-            <Label htmlFor="discord_id">Discord ID *</Label>
+            <Label htmlFor="discord_id">Discord ID (Optional)</Label>
             <p className="text-xs text-muted-foreground">
-              Just paste the Discord ID - name & avatar will sync automatically
+              Paste a Discord ID for auto-sync, or leave empty for manual entry
             </p>
             <div className="flex gap-2">
               <div className="relative flex-1">
@@ -235,8 +266,7 @@ export const StaffManagementDialog = ({ open, onOpenChange, staffMember, onSucce
                   id="discord_id"
                   value={formData.discord_id}
                   onChange={(e) => setFormData({ ...formData, discord_id: e.target.value })}
-                  placeholder="Paste Discord ID here..."
-                  required
+                  placeholder="Enter Discord ID (optional)..."
                   className={`pr-10 ${discordFetched ? 'border-green-500 bg-green-500/5' : ''}`}
                 />
                 {fetchingDiscord && (
