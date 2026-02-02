@@ -38,26 +38,40 @@ export const StaffManagementDialog = ({ open, onOpenChange, staffMember, onSucce
   const [loading, setLoading] = useState(false);
   const [fetchingDiscord, setFetchingDiscord] = useState(false);
   
-  const [formData, setFormData] = useState<StaffMember>({
-    name: staffMember?.name || "",
-    discord_id: staffMember?.discord_id || "",
-    discord_username: staffMember?.discord_username || "",
-    discord_avatar: staffMember?.discord_avatar || "",
-    email: staffMember?.email || "",
-    steam_id: staffMember?.steam_id || "",
-    role: staffMember?.role || "",
-    role_type: staffMember?.role_type || "staff",
-    department: staffMember?.department || "support",
-    bio: staffMember?.bio || "",
-    responsibilities: staffMember?.responsibilities || [],
-    is_active: staffMember?.is_active ?? true,
-    display_order: staffMember?.display_order || 0,
+  // Initialize form data from staffMember prop
+  const getInitialFormData = (member?: StaffMember | null): StaffMember => ({
+    id: member?.id,
+    name: member?.name || "",
+    discord_id: member?.discord_id || "",
+    discord_username: member?.discord_username || "",
+    discord_avatar: member?.discord_avatar || "",
+    email: member?.email || "",
+    steam_id: member?.steam_id || "",
+    role: member?.role || "",
+    role_type: member?.role_type || "staff",
+    department: member?.department || "support",
+    bio: member?.bio || "",
+    responsibilities: member?.responsibilities || [],
+    is_active: member?.is_active ?? true,
+    display_order: member?.display_order || 0,
   });
+
+  const [formData, setFormData] = useState<StaffMember>(getInitialFormData(staffMember));
 
   const [responsibilityInput, setResponsibilityInput] = useState("");
   const [discordFetched, setDiscordFetched] = useState(false);
   const fetchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastFetchedIdRef = useRef<string>("");
+
+  // Reset form data when staffMember prop changes or dialog opens
+  useEffect(() => {
+    if (open) {
+      setFormData(getInitialFormData(staffMember));
+      setResponsibilityInput("");
+      setDiscordFetched(!!staffMember?.discord_avatar);
+      lastFetchedIdRef.current = staffMember?.discord_id || "";
+    }
+  }, [open, staffMember]);
 
   // Auto-fetch Discord info when a valid Discord ID is entered
   const isValidDiscordId = (id: string) => /^\d{17,19}$/.test(id);
@@ -130,13 +144,7 @@ export const StaffManagementDialog = ({ open, onOpenChange, staffMember, onSucce
     };
   }, [formData.discord_id]);
 
-  // Reset state when dialog opens with new/different staff member
-  useEffect(() => {
-    if (open) {
-      setDiscordFetched(!!staffMember?.discord_avatar);
-      lastFetchedIdRef.current = staffMember?.discord_id || "";
-    }
-  }, [open, staffMember]);
+  // Note: Form reset is now handled in the main useEffect above
 
   const addResponsibility = () => {
     if (responsibilityInput.trim()) {
