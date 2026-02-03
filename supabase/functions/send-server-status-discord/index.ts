@@ -110,8 +110,8 @@ const handler = async (req: Request): Promise<Response> => {
         name: "SkyLife Roleplay India",
         icon_url: "https://skyliferoleplay.com/images/slrp-logo.png"
       },
-      title: "🎮 SkyLife Roleplay Server Status",
-      description: customMessage || "Real-time server status update from SkyLife Status Bot",
+      title: "🌐 SkyLife Roleplay Website Status",
+      description: customMessage || "Real-time website status update from SkyLife Status Bot",
       fields: [
         {
           name: "▎ STATUS",
@@ -119,8 +119,8 @@ const handler = async (req: Request): Promise<Response> => {
           inline: true
         },
         {
-          name: "▎ PLAYERS",
-          value: `👥 **${players}/${maxPlayers}**`,
+          name: "▎ USERS ACTIVE",
+          value: `👥 **${players}**`,
           inline: true
         },
         {
@@ -129,8 +129,8 @@ const handler = async (req: Request): Promise<Response> => {
           inline: false
         },
         {
-          name: "▎ F8 CONNECT COMMAND",
-          value: `\`\`\`${connectCommand}\`\`\``,
+          name: "▎ WEBSITE LINK",
+          value: `\`\`\`${websiteUrl}\`\`\``,
           inline: false
         },
         {
