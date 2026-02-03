@@ -33,6 +33,7 @@ import { OwnerGalleryManager } from "@/components/OwnerGalleryManager";
 import { LiveApplicationStats } from "@/components/LiveApplicationStats";
 import OwnerLiveChatManager from "@/components/OwnerLiveChatManager";
 import AdminTicketManagement from "@/components/AdminTicketManagement";
+import ServerStatusDiscordSender from "@/components/ServerStatusDiscordSender";
 import { combineAllApplications, filterApplicationsByType } from "@/lib/applicationTransformer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
@@ -1702,6 +1703,10 @@ const OwnerPanel = () => {
                   <MessageSquare className="w-4 h-4" />
                   <span className="hidden sm:inline">Live Chats</span>
                 </TabsTrigger>
+                <TabsTrigger value="server-status" className="flex items-center gap-2 whitespace-nowrap">
+                  <Radio className="w-4 h-4" />
+                  <span className="hidden sm:inline">Server Status</span>
+                </TabsTrigger>
               </TabsList>
             </div>
             {/* Fade indicators for scroll hint */}
@@ -2662,6 +2667,11 @@ const OwnerPanel = () => {
           {/* Live Chats Tab */}
           <TabsContent value="live-chats">
             <OwnerLiveChatManager />
+          </TabsContent>
+
+          {/* Server Status Discord Sender Tab */}
+          <TabsContent value="server-status">
+            <ServerStatusDiscordSender />
           </TabsContent>
         </Tabs>
       </div>
