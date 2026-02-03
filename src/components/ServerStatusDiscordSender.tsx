@@ -132,8 +132,8 @@ const ServerStatusDiscordSender = () => {
                 <Server className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <CardTitle className="text-gradient">Server Status Discord Sender</CardTitle>
-                <CardDescription>Send real-time server status updates to Discord</CardDescription>
+                <CardTitle className="text-gradient">Website Status Discord Sender</CardTitle>
+                <CardDescription>Send real-time website status updates to Discord</CardDescription>
               </div>
             </div>
             <Button variant="outline" size="sm" onClick={handleRefreshStatus}>
@@ -155,7 +155,7 @@ const ServerStatusDiscordSender = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-muted-foreground" />
-                <span>Players: <strong>{config.players}/{config.maxPlayers}</strong></span>
+                <span>Users Active: <strong>{config.players}</strong></span>
               </div>
               <div className="flex items-center gap-2">
                 {getStatusIcon(config.status)}
@@ -197,44 +197,32 @@ const ServerStatusDiscordSender = () => {
             <div className="space-y-2">
               <Label htmlFor="players" className="flex items-center gap-2">
                 <Users className="w-4 h-4" />
-                Player Count
+                Users Active
               </Label>
-              <div className="flex gap-2">
-                <Input
-                  id="players"
-                  type="number"
-                  min="0"
-                  value={config.players}
-                  onChange={(e) =>
-                    setConfig(prev => ({ ...prev, players: parseInt(e.target.value) || 0 }))
-                  }
-                  placeholder="Current players"
-                />
-                <span className="flex items-center text-muted-foreground">/</span>
-                <Input
-                  type="number"
-                  min="1"
-                  value={config.maxPlayers}
-                  onChange={(e) =>
-                    setConfig(prev => ({ ...prev, maxPlayers: parseInt(e.target.value) || 64 }))
-                  }
-                  placeholder="Max players"
-                />
-              </div>
+              <Input
+                id="players"
+                type="number"
+                min="0"
+                value={config.players}
+                onChange={(e) =>
+                  setConfig(prev => ({ ...prev, players: parseInt(e.target.value) || 0 }))
+                }
+                placeholder="Active users on website"
+              />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="connectCommand" className="flex items-center gap-2">
-                <Terminal className="w-4 h-4" />
-                F8 Connect Command
+              <Label htmlFor="websiteUrl" className="flex items-center gap-2">
+                <Globe className="w-4 h-4" />
+                Website Link
               </Label>
               <Input
-                id="connectCommand"
-                value={config.connectCommand}
+                id="websiteUrl"
+                value={config.websiteUrl}
                 onChange={(e) =>
-                  setConfig(prev => ({ ...prev, connectCommand: e.target.value }))
+                  setConfig(prev => ({ ...prev, websiteUrl: e.target.value }))
                 }
-                placeholder="connect cfx.re/join/..."
+                placeholder="https://skyliferoleplay.com"
               />
             </div>
 
@@ -341,9 +329,9 @@ const ServerStatusDiscordSender = () => {
                 />
                 <span className="text-sm text-gray-400">SkyLife Roleplay India</span>
               </div>
-              <h4 className="font-semibold mb-2">🎮 SkyLife Roleplay Server Status</h4>
+              <h4 className="font-semibold mb-2">🌐 SkyLife Roleplay Website Status</h4>
               <p className="text-sm text-gray-400 mb-3">
-                {config.customMessage || "Real-time server status update from SkyLife Status Bot"}
+                {config.customMessage || "Real-time website status update from SkyLife Status Bot"}
               </p>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
@@ -354,12 +342,15 @@ const ServerStatusDiscordSender = () => {
                   </div>
                 </div>
                 <div>
-                  <span className="text-gray-400">▎ PLAYERS</span>
-                  <div className="font-semibold">👥 {config.players}/{config.maxPlayers}</div>
+                  <span className="text-gray-400">▎ USERS ACTIVE</span>
+                  <div className="font-semibold">👥 {config.players}</div>
                 </div>
               </div>
-              <div className="mt-3 p-2 bg-[#2f3136] rounded font-mono text-sm">
-                {config.connectCommand}
+              <div className="mt-3">
+                <span className="text-gray-400 text-sm">▎ WEBSITE LINK</span>
+                <div className="p-2 bg-[#2f3136] rounded font-mono text-sm mt-1">
+                  {config.websiteUrl}
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm mt-3">
                 <div>
