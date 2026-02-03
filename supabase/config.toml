@@ -125,3 +125,6 @@ verify_jwt = false
 
 [functions.verify-roster-access]
 verify_jwt = false
+
+[functions.send-server-status-discord]
+verify_jwt = false
