@@ -1,106 +1,285 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useServerStatus } from "@/hooks/home/useServerStatus";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { 
   Send, 
-  Server, 
+  Globe, 
   Users, 
   Wifi, 
   WifiOff, 
   AlertTriangle,
   RefreshCw,
   Clock,
-  Terminal,
-  Globe,
-  MessageSquare
+  MessageSquare,
+  Zap,
+  Timer
 } from "lucide-react";
 
-type ServerStatusType = "online" | "maintenance" | "offline";
+type WebsiteStatusType = "online" | "maintenance" | "offline";
 
 interface StatusConfig {
-  status: ServerStatusType;
-  players: number;
-  maxPlayers: number;
-  connectCommand: string;
-  nextRestart: string;
+  status: WebsiteStatusType;
+  usersActive: number;
   uptime: string;
   customMessage: string;
   websiteUrl: string;
   discordUrl: string;
+  maintenanceCountdown: { hours: number; minutes: number; seconds: number } | null;
+  scheduledEndAt: string | null;
 }
 
 const ServerStatusDiscordSender = () => {
   const { toast } = useToast();
-  const { data: currentStatus, refetch: refetchStatus } = useServerStatus();
+  const { settings: siteSettings } = useSiteSettings();
   const [isSending, setIsSending] = useState(false);
+  const [autoUpdate, setAutoUpdate] = useState(false);
+  const [storedMessageId, setStoredMessageId] = useState<string | null>(null);
+  const [visitorCount, setVisitorCount] = useState(1);
+  const [maintenanceStartTime, setMaintenanceStartTime] = useState<Date | null>(null);
+  const [maintenanceEndTime, setMaintenanceEndTime] = useState<Date | null>(null);
+  const [countdown, setCountdown] = useState<{ hours: number; minutes: number; seconds: number } | null>(null);
+  
   const [config, setConfig] = useState<StatusConfig>({
     status: "online",
-    players: 0,
-    maxPlayers: 64,
-    connectCommand: "connect cfx.re/join/skylife",
-    nextRestart: "in 2 hours",
+    usersActive: 0,
     uptime: "0 mins",
     customMessage: "",
     websiteUrl: "https://skyliferoleplay.com",
-    discordUrl: "https://discord.gg/skyliferp"
+    discordUrl: "https://discord.gg/skyliferp",
+    maintenanceCountdown: null,
+    scheduledEndAt: null
   });
 
-  // Sync with real-time server status
+  // Fetch stored message ID
   useEffect(() => {
-    if (currentStatus) {
-      setConfig(prev => ({
-        ...prev,
-        status: currentStatus.status as ServerStatusType,
-        players: currentStatus.players,
-        maxPlayers: currentStatus.maxPlayers
-      }));
-    }
-  }, [currentStatus]);
+    const fetchMessageId = async () => {
+      const { data } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'discord_status_message_id')
+        .maybeSingle();
+      
+      if (data?.value) {
+        setStoredMessageId(data.value);
+      }
+    };
+    fetchMessageId();
+  }, []);
 
-  const handleSendStatus = async () => {
-    setIsSending(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("send-server-status-discord", {
-        body: config
+  // Connect to website presence (live visitor counter)
+  useEffect(() => {
+    const sessionId = `status_sender_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    const channel = supabase.channel('website_presence_status', {
+      config: { presence: { key: sessionId } },
+    });
+
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const count = Object.keys(channel.presenceState()).length;
+        setVisitorCount(count > 0 ? count : 1);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({ online_at: new Date().toISOString() });
+        }
       });
 
-      if (error) {
-        throw error;
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // Fetch maintenance scheduled end time
+  useEffect(() => {
+    const fetchMaintenanceEnd = async () => {
+      const { data } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'maintenance_scheduled_end')
+        .maybeSingle();
+      
+      if (data?.value) {
+        setMaintenanceEndTime(new Date(data.value));
+      }
+    };
+    
+    fetchMaintenanceEnd();
+
+    // Subscribe to maintenance changes
+    const channel = supabase
+      .channel('maintenance_status_sender')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'site_settings',
+          filter: 'key=in.(maintenance_mode,maintenance_scheduled_end)',
+        },
+        () => {
+          fetchMaintenanceEnd();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // Sync with website maintenance mode
+  useEffect(() => {
+    const newStatus: WebsiteStatusType = siteSettings.maintenance_mode ? "maintenance" : "online";
+    
+    if (newStatus === "maintenance" && config.status !== "maintenance") {
+      // Just entered maintenance - record start time
+      setMaintenanceStartTime(new Date());
+    } else if (newStatus === "online" && config.status === "maintenance") {
+      // Just exited maintenance - update start time for uptime calculation
+      setMaintenanceStartTime(new Date());
+    }
+    
+    setConfig(prev => ({
+      ...prev,
+      status: newStatus
+    }));
+  }, [siteSettings.maintenance_mode]);
+
+  // Update users active count from live visitor counter
+  useEffect(() => {
+    setConfig(prev => ({
+      ...prev,
+      usersActive: visitorCount
+    }));
+  }, [visitorCount]);
+
+  // Calculate uptime
+  useEffect(() => {
+    if (config.status !== "online") {
+      setConfig(prev => ({ ...prev, uptime: "N/A" }));
+      return;
+    }
+
+    const startTime = maintenanceStartTime || new Date();
+    
+    const updateUptime = () => {
+      const now = new Date();
+      const diff = now.getTime() - startTime.getTime();
+      
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      
+      let uptimeStr = "";
+      if (hours > 0) uptimeStr += `${hours}h `;
+      uptimeStr += `${minutes}m`;
+      
+      setConfig(prev => ({ ...prev, uptime: uptimeStr || "0m" }));
+    };
+
+    updateUptime();
+    const interval = setInterval(updateUptime, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, [config.status, maintenanceStartTime]);
+
+  // Calculate maintenance countdown
+  useEffect(() => {
+    if (config.status !== "maintenance" || !maintenanceEndTime) {
+      setCountdown(null);
+      setConfig(prev => ({ ...prev, maintenanceCountdown: null, scheduledEndAt: null }));
+      return;
+    }
+
+    const updateCountdown = () => {
+      const now = new Date();
+      const diff = maintenanceEndTime.getTime() - now.getTime();
+      
+      if (diff <= 0) {
+        setCountdown(null);
+        setConfig(prev => ({ ...prev, maintenanceCountdown: null }));
+        return;
+      }
+
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      
+      const newCountdown = { hours, minutes, seconds };
+      setCountdown(newCountdown);
+      setConfig(prev => ({ 
+        ...prev, 
+        maintenanceCountdown: newCountdown,
+        scheduledEndAt: maintenanceEndTime.toISOString()
+      }));
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+
+    return () => clearInterval(interval);
+  }, [config.status, maintenanceEndTime]);
+
+  // Auto-update Discord when status changes
+  const sendStatusToDiscord = useCallback(async (useStoredId = true) => {
+    setIsSending(true);
+    try {
+      const payload = {
+        ...config,
+        messageId: useStoredId ? storedMessageId : null
+      };
+
+      const { data, error } = await supabase.functions.invoke("send-server-status-discord", {
+        body: payload
+      });
+
+      if (error) throw error;
+
+      if (data?.messageId) {
+        setStoredMessageId(data.messageId);
       }
 
       toast({
-        title: "Status Sent Successfully",
-        description: "Server status has been posted to Discord.",
+        title: data?.isEdit ? "Status Updated" : "Status Sent",
+        description: data?.isEdit 
+          ? "Discord message has been updated with latest status."
+          : "Website status has been posted to Discord.",
       });
     } catch (error: any) {
       console.error("Error sending status:", error);
       toast({
         title: "Failed to Send Status",
-        description: error.message || "Could not send server status to Discord.",
+        description: error.message || "Could not send website status to Discord.",
         variant: "destructive",
       });
     } finally {
       setIsSending(false);
     }
-  };
+  }, [config, storedMessageId, toast]);
 
-  const handleRefreshStatus = async () => {
-    await refetchStatus();
-    toast({
-      title: "Status Refreshed",
-      description: "Server status has been updated from the live server.",
-    });
-  };
+  // Auto-update when enabled and status changes
+  useEffect(() => {
+    if (autoUpdate && storedMessageId) {
+      const debounceTimer = setTimeout(() => {
+        sendStatusToDiscord(true);
+      }, 2000); // Debounce 2 seconds
 
-  const getStatusIcon = (status: ServerStatusType) => {
+      return () => clearTimeout(debounceTimer);
+    }
+  }, [autoUpdate, config.status, config.usersActive, countdown, storedMessageId]);
+
+  const handleSendNew = () => sendStatusToDiscord(false);
+  const handleUpdateExisting = () => sendStatusToDiscord(true);
+
+  const getStatusIcon = (status: WebsiteStatusType) => {
     switch (status) {
       case "online":
         return <Wifi className="w-5 h-5 text-green-500" />;
@@ -111,7 +290,7 @@ const ServerStatusDiscordSender = () => {
     }
   };
 
-  const getStatusBadge = (status: ServerStatusType) => {
+  const getStatusBadge = (status: WebsiteStatusType) => {
     switch (status) {
       case "online":
         return <Badge className="bg-green-500/20 text-green-400 border-green-500/30">🟢 Online</Badge>;
@@ -122,140 +301,90 @@ const ServerStatusDiscordSender = () => {
     }
   };
 
+  const formatCountdownDisplay = (cd: { hours: number; minutes: number; seconds: number } | null) => {
+    if (!cd) return "N/A";
+    const parts = [];
+    if (cd.hours > 0) parts.push(`${cd.hours}h`);
+    if (cd.minutes > 0) parts.push(`${cd.minutes}m`);
+    parts.push(`${cd.seconds}s`);
+    return parts.join(" ");
+  };
+
   return (
     <div className="space-y-6">
       <Card className="glass-effect border-border/20">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
-                <Server className="w-6 h-6 text-primary" />
+                <Globe className="w-6 h-6 text-primary" />
               </div>
               <div>
                 <CardTitle className="text-gradient">Website Status Discord Sender</CardTitle>
-                <CardDescription>Send real-time website status updates to Discord</CardDescription>
+                <CardDescription>Real-time website status updates to Discord</CardDescription>
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={handleRefreshStatus}>
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Refresh Live Status
-            </Button>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={autoUpdate}
+                  onCheckedChange={setAutoUpdate}
+                  id="auto-update"
+                />
+                <Label htmlFor="auto-update" className="text-sm flex items-center gap-1">
+                  <Zap className="w-4 h-4 text-yellow-500" />
+                  Auto-Update
+                </Label>
+              </div>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Current Status Preview */}
-          <div className="p-4 rounded-xl bg-secondary/10 border border-secondary/20">
+          {/* Live Status Dashboard */}
+          <div className="p-4 rounded-xl bg-gradient-to-r from-primary/5 via-secondary/5 to-primary/5 border border-primary/20">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold flex items-center gap-2">
-                <Server className="w-4 h-4" />
-                Current Live Status
+                <Zap className="w-4 h-4 text-yellow-500" />
+                Live Website Status
               </h3>
               {getStatusBadge(config.status)}
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-muted-foreground" />
-                <span>Users Active: <strong>{config.players}</strong></span>
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-background/50">
+                <Users className="w-4 h-4 text-green-500" />
+                <div>
+                  <div className="text-muted-foreground text-xs">Users Active</div>
+                  <div className="font-bold text-lg">{config.usersActive}</div>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-background/50">
                 {getStatusIcon(config.status)}
-                <span>Status: <strong className="capitalize">{config.status}</strong></span>
+                <div>
+                  <div className="text-muted-foreground text-xs">Status</div>
+                  <div className="font-bold capitalize">{config.status}</div>
+                </div>
               </div>
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-background/50">
+                <Clock className="w-4 h-4 text-blue-500" />
+                <div>
+                  <div className="text-muted-foreground text-xs">Uptime</div>
+                  <div className="font-bold">{config.uptime}</div>
+                </div>
+              </div>
+              {config.status === "maintenance" && countdown && (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                  <Timer className="w-4 h-4 text-yellow-500" />
+                  <div>
+                    <div className="text-muted-foreground text-xs">Countdown</div>
+                    <div className="font-bold text-yellow-500">{formatCountdownDisplay(countdown)}</div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Status Configuration */}
+          {/* Configuration */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="status" className="flex items-center gap-2">
-                <Wifi className="w-4 h-4" />
-                Server Status
-              </Label>
-              <Select
-                value={config.status}
-                onValueChange={(value: ServerStatusType) =>
-                  setConfig(prev => ({ ...prev, status: value }))
-                }
-              >
-                <SelectTrigger id="status">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="online">
-                    <span className="flex items-center gap-2">🟢 Online</span>
-                  </SelectItem>
-                  <SelectItem value="maintenance">
-                    <span className="flex items-center gap-2">🟡 Under Maintenance</span>
-                  </SelectItem>
-                  <SelectItem value="offline">
-                    <span className="flex items-center gap-2">🔴 Offline</span>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="players" className="flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                Users Active
-              </Label>
-              <Input
-                id="players"
-                type="number"
-                min="0"
-                value={config.players}
-                onChange={(e) =>
-                  setConfig(prev => ({ ...prev, players: parseInt(e.target.value) || 0 }))
-                }
-                placeholder="Active users on website"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="websiteUrl" className="flex items-center gap-2">
-                <Globe className="w-4 h-4" />
-                Website Link
-              </Label>
-              <Input
-                id="websiteUrl"
-                value={config.websiteUrl}
-                onChange={(e) =>
-                  setConfig(prev => ({ ...prev, websiteUrl: e.target.value }))
-                }
-                placeholder="https://skyliferoleplay.com"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="nextRestart" className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                Next Restart
-              </Label>
-              <Input
-                id="nextRestart"
-                value={config.nextRestart}
-                onChange={(e) =>
-                  setConfig(prev => ({ ...prev, nextRestart: e.target.value }))
-                }
-                placeholder="in 2 hours"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="uptime" className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                Uptime
-              </Label>
-              <Input
-                id="uptime"
-                value={config.uptime}
-                onChange={(e) =>
-                  setConfig(prev => ({ ...prev, uptime: e.target.value }))
-                }
-                placeholder="45 mins"
-              />
-            </div>
-
             <div className="space-y-2">
               <Label htmlFor="websiteUrl" className="flex items-center gap-2">
                 <Globe className="w-4 h-4" />
@@ -271,7 +400,7 @@ const ServerStatusDiscordSender = () => {
               />
             </div>
 
-            <div className="space-y-2 md:col-span-2">
+            <div className="space-y-2">
               <Label htmlFor="discordUrl" className="flex items-center gap-2">
                 <MessageSquare className="w-4 h-4" />
                 Discord Invite URL
@@ -298,92 +427,199 @@ const ServerStatusDiscordSender = () => {
                   setConfig(prev => ({ ...prev, customMessage: e.target.value }))
                 }
                 placeholder="Add a custom message to the status update..."
-                rows={3}
+                rows={2}
               />
             </div>
           </div>
 
-          {/* Preview Card */}
-          <div className="p-4 rounded-xl bg-[#2f3136] border border-[#202225] text-white">
+          {/* Enhanced Discord Preview */}
+          <div className="p-4 rounded-xl bg-[#36393f] border border-[#202225] text-white overflow-hidden">
             <div className="flex items-start gap-3 mb-3">
-              <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                <Server className="w-5 h-5" />
+              <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center shadow-lg">
+                <Globe className="w-5 h-5" />
               </div>
-              <div>
+              <div className="flex items-center gap-2">
                 <span className="font-semibold text-primary">SkyLife Status Bot</span>
-                <Badge className="ml-2 bg-[#5865f2] text-xs">BOT</Badge>
+                <Badge className="bg-[#5865f2] text-xs px-1.5 py-0.5">BOT</Badge>
               </div>
             </div>
+            
+            {/* Embed */}
             <div className={`border-l-4 ${
               config.status === 'online' ? 'border-green-500' : 
               config.status === 'maintenance' ? 'border-yellow-500' : 'border-red-500'
-            } bg-[#36393f] p-4 rounded`}>
-              <div className="flex items-center gap-2 mb-2">
+            } bg-[#2f3136] rounded-r-lg overflow-hidden`}>
+              {/* Header */}
+              <div className="p-4 pb-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <img 
+                    src="/images/slrp-logo.png" 
+                    alt="SLRP" 
+                    className="w-6 h-6 rounded-full"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/placeholder.svg';
+                    }}
+                  />
+                  <span className="text-sm text-gray-300">✨ ***SkyLife Roleplay India*** ✨</span>
+                </div>
+                <h4 className="font-bold text-lg mb-2">🌐 ***Website Status*** 🌐</h4>
+                <p className="text-sm text-gray-400 italic">
+                  {config.customMessage || (
+                    config.status === "online" 
+                      ? "Real-time status updates from SkyLife Roleplay\n\n✅ All systems operational!"
+                      : config.status === "maintenance"
+                      ? "Real-time status updates from SkyLife Roleplay\n\n🔧 Scheduled maintenance in progress"
+                      : "Real-time status updates from SkyLife Roleplay\n\n⚠️ Website is currently unavailable"
+                  )}
+                </p>
+              </div>
+
+              {/* Decorative Separator */}
+              <div className="px-4 text-gray-600 text-xs font-mono">╔══════════════════════════════╗</div>
+
+              {/* Status Fields */}
+              <div className="p-4 grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-xs text-gray-400 mb-1">📊 ***STATUS***</div>
+                  <div className="font-bold italic">
+                    {config.status === 'online' ? '🟢' : config.status === 'maintenance' ? '🟡' : '🔴'} 
+                    {' '}<em><strong>{config.status === 'online' ? 'Online' : config.status === 'maintenance' ? 'Under Maintenance' : 'Offline'}</strong></em>
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-400 mb-1">👥 ***USERS ACTIVE***</div>
+                  <div className="font-bold italic"><em><strong>{config.usersActive}</strong></em> <span className="text-gray-400 font-normal">online now</span></div>
+                </div>
+              </div>
+
+              {/* Separator */}
+              <div className="px-4 text-gray-600 text-xs font-mono">╠══════════════════════════════╣</div>
+
+              {/* Website Link */}
+              <div className="p-4">
+                <div className="text-xs text-gray-400 mb-1">🌐 ***WEBSITE***</div>
+                <a href={config.websiteUrl} className="text-blue-400 hover:underline font-bold italic">
+                  <em><strong>Visit SkyLife Roleplay</strong></em>
+                </a>
+              </div>
+
+              {/* Uptime and Countdown */}
+              <div className="p-4 pt-0 grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-xs text-gray-400 mb-1">⏱️ ***UPTIME***</div>
+                  <div className="font-bold italic"><em><strong>{config.uptime}</strong></em></div>
+                </div>
+                {config.status === "maintenance" && countdown && (
+                  <div className="p-2 rounded bg-yellow-500/10 border border-yellow-500/30">
+                    <div className="text-xs text-yellow-400 mb-1">⏳ ***MAINTENANCE COUNTDOWN***</div>
+                    <div className="font-bold text-yellow-400 italic">
+                      🔄 <em><strong>{formatCountdownDisplay(countdown)}</strong></em> <span className="font-normal">remaining</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer Separator */}
+              <div className="px-4 text-gray-600 text-xs font-mono">╚══════════════════════════════╝</div>
+
+              {/* Image Preview */}
+              <div className="p-4">
+                <img 
+                  src="/images/social-card.jpg" 
+                  alt="SkyLife Banner"
+                  className="w-full rounded-lg"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              </div>
+
+              {/* Footer */}
+              <div className="px-4 pb-3 flex items-center gap-2 text-xs text-gray-400">
                 <img 
                   src="/images/slrp-logo.png" 
                   alt="SLRP" 
-                  className="w-6 h-6 rounded-full"
+                  className="w-4 h-4 rounded-full"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = '/placeholder.svg';
                   }}
                 />
-                <span className="text-sm text-gray-400">SkyLife Roleplay India</span>
+                <span>🤖 SkyLife Status Bot • Live Updates</span>
               </div>
-              <h4 className="font-semibold mb-2">🌐 SkyLife Roleplay Website Status</h4>
-              <p className="text-sm text-gray-400 mb-3">
-                {config.customMessage || "Real-time website status update from SkyLife Status Bot"}
-              </p>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-gray-400">▎ STATUS</span>
-                  <div className="font-semibold">
-                    {config.status === 'online' ? '🟢' : config.status === 'maintenance' ? '🟡' : '🔴'} 
-                    {' '}{config.status === 'online' ? 'Online' : config.status === 'maintenance' ? 'Under Maintenance' : 'Offline'}
-                  </div>
-                </div>
-                <div>
-                  <span className="text-gray-400">▎ USERS ACTIVE</span>
-                  <div className="font-semibold">👥 {config.players}</div>
-                </div>
+            </div>
+
+            {/* Buttons Preview */}
+            <div className="flex gap-2 mt-3">
+              <div className="px-4 py-2 bg-[#4f545c] rounded text-sm font-medium flex items-center gap-2">
+                🌐 Visit Website
               </div>
-              <div className="mt-3">
-                <span className="text-gray-400 text-sm">▎ WEBSITE LINK</span>
-                <div className="p-2 bg-[#2f3136] rounded font-mono text-sm mt-1">
-                  {config.websiteUrl}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4 text-sm mt-3">
-                <div>
-                  <span className="text-gray-400">▎ NEXT RESTART</span>
-                  <div>⏰ {config.nextRestart}</div>
-                </div>
-                <div>
-                  <span className="text-gray-400">▎ UPTIME</span>
-                  <div>⏱️ {config.uptime}</div>
-                </div>
+              <div className="px-4 py-2 bg-[#4f545c] rounded text-sm font-medium flex items-center gap-2">
+                💬 Join Discord
               </div>
             </div>
           </div>
 
-          {/* Send Button */}
-          <Button
-            onClick={handleSendStatus}
-            disabled={isSending}
-            className="w-full gap-2"
-            size="lg"
-          >
-            {isSending ? (
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            {storedMessageId ? (
               <>
-                <RefreshCw className="w-5 h-5 animate-spin" />
-                Sending to Discord...
+                <Button
+                  onClick={handleUpdateExisting}
+                  disabled={isSending}
+                  className="flex-1 gap-2"
+                  size="lg"
+                >
+                  {isSending ? (
+                    <>
+                      <RefreshCw className="w-5 h-5 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-5 h-5" />
+                      Update Existing Message
+                    </>
+                  )}
+                </Button>
+                <Button
+                  onClick={handleSendNew}
+                  disabled={isSending}
+                  variant="outline"
+                  className="flex-1 gap-2"
+                  size="lg"
+                >
+                  <Send className="w-5 h-5" />
+                  Send New Message
+                </Button>
               </>
             ) : (
-              <>
-                <Send className="w-5 h-5" />
-                Send Status to Discord
-              </>
+              <Button
+                onClick={handleSendNew}
+                disabled={isSending}
+                className="w-full gap-2"
+                size="lg"
+              >
+                {isSending ? (
+                  <>
+                    <RefreshCw className="w-5 h-5 animate-spin" />
+                    Sending to Discord...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-5 h-5" />
+                    Send Status to Discord
+                  </>
+                )}
+              </Button>
             )}
-          </Button>
+          </div>
+
+          {autoUpdate && (
+            <p className="text-sm text-muted-foreground text-center flex items-center justify-center gap-2">
+              <Zap className="w-4 h-4 text-yellow-500" />
+              Auto-update enabled: Discord message will update automatically when status changes
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>

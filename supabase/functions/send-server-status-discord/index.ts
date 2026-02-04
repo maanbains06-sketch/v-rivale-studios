@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,28 +7,32 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-interface ServerStatusRequest {
+interface WebsiteStatusRequest {
   status: "online" | "maintenance" | "offline";
-  players?: number;
-  maxPlayers?: number;
-  connectCommand?: string;
-  nextRestart?: string;
+  usersActive?: number;
   uptime?: string;
   customMessage?: string;
   websiteUrl?: string;
   discordUrl?: string;
+  maintenanceCountdown?: {
+    hours: number;
+    minutes: number;
+    seconds: number;
+  } | null;
+  scheduledEndAt?: string | null;
+  messageId?: string | null; // For editing existing messages
 }
 
 function getStatusColor(status: string): number {
   switch (status) {
     case "online":
-      return 0x00ff00; // Green
+      return 0x22c55e; // Vibrant Green
     case "maintenance":
-      return 0xffff00; // Yellow
+      return 0xf59e0b; // Amber/Orange
     case "offline":
-      return 0xff0000; // Red
+      return 0xef4444; // Red
     default:
-      return 0x808080; // Gray
+      return 0x6b7280; // Gray
   }
 }
 
@@ -57,6 +62,15 @@ function getStatusText(status: string): string {
   }
 }
 
+function formatCountdown(countdown: { hours: number; minutes: number; seconds: number } | null): string {
+  if (!countdown) return "";
+  const parts = [];
+  if (countdown.hours > 0) parts.push(`${countdown.hours}h`);
+  if (countdown.minutes > 0) parts.push(`${countdown.minutes}m`);
+  if (countdown.seconds > 0 || parts.length === 0) parts.push(`${countdown.seconds}s`);
+  return parts.join(" ");
+}
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -66,6 +80,8 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const DISCORD_BOT_TOKEN = Deno.env.get("DISCORD_BOT_TOKEN");
     const DISCORD_STATUS_CHANNEL_ID = Deno.env.get("DISCORD_STATUS_CHANNEL_ID");
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
     if (!DISCORD_BOT_TOKEN) {
       console.error("Discord bot token not configured");
@@ -83,78 +99,106 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const body: ServerStatusRequest = await req.json();
+    const body: WebsiteStatusRequest = await req.json();
     const {
       status,
-      players = 0,
-      maxPlayers = 64,
-      connectCommand = "connect cfx.re/join/skylife",
-      nextRestart = "N/A",
+      usersActive = 0,
       uptime = "N/A",
       customMessage,
       websiteUrl = "https://skyliferoleplay.com",
-      discordUrl = "https://discord.gg/skyliferp"
+      discordUrl = "https://discord.gg/skyliferp",
+      maintenanceCountdown = null,
+      scheduledEndAt = null,
+      messageId = null
     } = body;
 
-    console.log("Sending server status to Discord:", { status, players, maxPlayers });
+    console.log("Processing website status for Discord:", { status, usersActive, uptime, messageId });
 
     const statusColor = getStatusColor(status);
     const statusEmoji = getStatusEmoji(status);
     const statusText = getStatusText(status);
     const timestamp = new Date().toISOString();
 
-    // Build the embed message like the reference image
+    // Build embed fields - all text in bold italic format
+    const fields = [
+      {
+        name: "╔══════════════════════════════╗",
+        value: "\u200B",
+        inline: false
+      },
+      {
+        name: "📊 ***STATUS***",
+        value: `${statusEmoji} ***${statusText}***`,
+        inline: true
+      },
+      {
+        name: "👥 ***USERS ACTIVE***",
+        value: `***${usersActive}*** *online now*`,
+        inline: true
+      },
+      {
+        name: "╠══════════════════════════════╣",
+        value: "\u200B",
+        inline: false
+      },
+      {
+        name: "🌐 ***WEBSITE***",
+        value: `[***Visit SkyLife Roleplay***](${websiteUrl})`,
+        inline: false
+      },
+      {
+        name: "⏱️ ***UPTIME***",
+        value: `***${uptime}***`,
+        inline: true
+      }
+    ];
+
+    // Add maintenance countdown section ONLY when under maintenance
+    if (status === "maintenance" && (maintenanceCountdown || scheduledEndAt)) {
+      const countdownText = maintenanceCountdown 
+        ? formatCountdown(maintenanceCountdown)
+        : "Calculating...";
+      
+      fields.push({
+        name: "⏳ ***MAINTENANCE COUNTDOWN***",
+        value: `🔄 ***${countdownText}*** *remaining*`,
+        inline: true
+      });
+    }
+
+    // Add decorative footer separator
+    fields.push({
+      name: "╚══════════════════════════════╝",
+      value: "\u200B",
+      inline: false
+    });
+
+    // Build the enhanced embed message
     const embed = {
       color: statusColor,
       author: {
-        name: "SkyLife Roleplay India",
+        name: "✨ SkyLife Roleplay India ✨",
         icon_url: "https://skyliferoleplay.com/images/slrp-logo.png"
       },
-      title: "🌐 SkyLife Roleplay Website Status",
-      description: customMessage || "Real-time website status update from SkyLife Status Bot",
-      fields: [
-        {
-          name: "▎ STATUS",
-          value: `${statusEmoji} **${statusText}**`,
-          inline: true
-        },
-        {
-          name: "▎ USERS ACTIVE",
-          value: `👥 **${players}**`,
-          inline: true
-        },
-        {
-          name: "━━━━━━━━━━━━━━━━━━━━━━━━━━",
-          value: "\u200B",
-          inline: false
-        },
-        {
-          name: "▎ WEBSITE LINK",
-          value: `\`\`\`${websiteUrl}\`\`\``,
-          inline: false
-        },
-        {
-          name: "▎ NEXT RESTART",
-          value: `⏰ ${nextRestart}`,
-          inline: true
-        },
-        {
-          name: "▎ UPTIME",
-          value: `⏱️ ${uptime}`,
-          inline: true
-        }
-      ],
+      title: "🌐 ***Website Status*** 🌐",
+      description: customMessage 
+        ? `*${customMessage}*` 
+        : `*Real-time status updates from SkyLife Roleplay*\n\n${status === "online" ? "✅ *All systems operational!*" : status === "maintenance" ? "🔧 *Scheduled maintenance in progress*" : "⚠️ *Website is currently unavailable*"}`,
+      fields,
+      thumbnail: {
+        url: "https://skyliferoleplay.com/images/slrp-logo.png"
+      },
       image: {
         url: "https://skyliferoleplay.com/images/social-card.jpg"
       },
       footer: {
-        text: "SkyLife Status Bot • Updated",
+        text: "🤖 SkyLife Status Bot • Live Updates",
         icon_url: "https://skyliferoleplay.com/images/slrp-logo.png"
       },
       timestamp
     };
 
-    // Create button components for Connect and Website
+    // Create button components
     const components = [
       {
         type: 1, // Action Row
@@ -162,34 +206,66 @@ const handler = async (req: Request): Promise<Response> => {
           {
             type: 2, // Button
             style: 5, // Link
-            label: "🌐 Website",
+            label: "🌐 Visit Website",
             url: websiteUrl
           },
           {
             type: 2,
             style: 5,
-            label: "💬 Discord",
+            label: "💬 Join Discord",
             url: discordUrl
           }
         ]
       }
     ];
 
-    // Send the message to Discord
-    const discordResponse = await fetch(
-      `https://discord.com/api/v10/channels/${DISCORD_STATUS_CHANNEL_ID}/messages`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bot ${DISCORD_BOT_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          embeds: [embed],
-          components
-        }),
+    let discordResponse: Response | null = null;
+    let isEdit = false;
+
+    // If we have a message ID, try to edit the existing message
+    if (messageId) {
+      console.log("Attempting to edit existing message:", messageId);
+      const editResponse = await fetch(
+        `https://discord.com/api/v10/channels/${DISCORD_STATUS_CHANNEL_ID}/messages/${messageId}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bot ${DISCORD_BOT_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            embeds: [embed],
+            components
+          }),
+        }
+      );
+      
+      if (editResponse.ok) {
+        discordResponse = editResponse;
+        isEdit = true;
+      } else {
+        console.log("Edit failed, creating new message");
       }
-    );
+    }
+
+    // Create new message if no messageId or edit failed
+    if (!discordResponse) {
+      discordResponse = await fetch(
+        `https://discord.com/api/v10/channels/${DISCORD_STATUS_CHANNEL_ID}/messages`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bot ${DISCORD_BOT_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            embeds: [embed],
+            components
+          }),
+        }
+      );
+      isEdit = false;
+    }
 
     if (!discordResponse.ok) {
       const errorText = await discordResponse.text();
@@ -204,13 +280,27 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const discordData = await discordResponse.json();
-    console.log("Server status message sent successfully:", discordData.id);
+    console.log(`Website status ${isEdit ? 'updated' : 'sent'} successfully:`, discordData.id);
+
+    // Store the message ID in the database for future edits
+    if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+      const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+      
+      await supabaseAdmin
+        .from('site_settings')
+        .upsert({ 
+          key: 'discord_status_message_id', 
+          value: discordData.id,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'key' });
+    }
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         messageId: discordData.id,
-        message: "Server status sent to Discord successfully"
+        isEdit,
+        message: `Website status ${isEdit ? 'updated' : 'sent'} to Discord successfully`
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
