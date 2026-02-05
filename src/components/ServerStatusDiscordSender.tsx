@@ -32,7 +32,7 @@ interface StatusConfig {
   customMessage: string;
   websiteUrl: string;
   discordUrl: string;
-  maintenanceCountdown: { hours: number; minutes: number; seconds: number } | null;
+  maintenanceCountdown: { days: number; hours: number; minutes: number; seconds: number } | null;
   scheduledEndAt: string | null;
 }
 
@@ -45,7 +45,7 @@ const ServerStatusDiscordSender = () => {
   const [visitorCount, setVisitorCount] = useState(1);
   const [maintenanceStartTime, setMaintenanceStartTime] = useState<Date | null>(null);
   const [maintenanceEndTime, setMaintenanceEndTime] = useState<Date | null>(null);
-  const [countdown, setCountdown] = useState<{ hours: number; minutes: number; seconds: number } | null>(null);
+  const [countdown, setCountdown] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
   
   const [config, setConfig] = useState<StatusConfig>({
     status: "online",
@@ -209,11 +209,12 @@ const ServerStatusDiscordSender = () => {
         return;
       }
 
-      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
       
-      const newCountdown = { hours, minutes, seconds };
+      const newCountdown = { days, hours, minutes, seconds };
       setCountdown(newCountdown);
       setConfig(prev => ({ 
         ...prev, 
@@ -301,9 +302,10 @@ const ServerStatusDiscordSender = () => {
     }
   };
 
-  const formatCountdownDisplay = (cd: { hours: number; minutes: number; seconds: number } | null) => {
+  const formatCountdownDisplay = (cd: { days: number; hours: number; minutes: number; seconds: number } | null) => {
     if (!cd) return "N/A";
     const parts = [];
+    if (cd.days > 0) parts.push(`${cd.days}d`);
     if (cd.hours > 0) parts.push(`${cd.hours}h`);
     if (cd.minutes > 0) parts.push(`${cd.minutes}m`);
     parts.push(`${cd.seconds}s`);
@@ -460,67 +462,73 @@ const ServerStatusDiscordSender = () => {
                       (e.target as HTMLImageElement).src = '/placeholder.svg';
                     }}
                   />
-                  <span className="text-sm text-gray-300">✨ ***SkyLife Roleplay India*** ✨</span>
+                  <span className="text-sm text-gray-300 font-semibold">✨ SkyLife Roleplay India ✨</span>
                 </div>
-                <h4 className="font-bold text-lg mb-2">🌐 ***Website Status*** 🌐</h4>
-                <p className="text-sm text-gray-400 italic">
+                <h4 className="font-bold text-lg mb-2">🌐 WEBSITE STATUS</h4>
+                <p className="text-sm text-gray-300 border-l-2 border-gray-600 pl-2">
                   {config.customMessage || (
                     config.status === "online" 
-                      ? "Real-time status updates from SkyLife Roleplay\n\n✅ All systems operational!"
+                      ? "✅ All systems operational!"
                       : config.status === "maintenance"
-                      ? "Real-time status updates from SkyLife Roleplay\n\n🔧 Scheduled maintenance in progress"
-                      : "Real-time status updates from SkyLife Roleplay\n\n⚠️ Website is currently unavailable"
+                      ? "🔧 Scheduled maintenance in progress..."
+                      : "⚠️ Website is currently unavailable."
                   )}
                 </p>
               </div>
 
-              {/* Decorative Separator */}
-              <div className="px-4 text-gray-600 text-xs font-mono">╔══════════════════════════════╗</div>
-
               {/* Status Fields */}
               <div className="p-4 grid grid-cols-2 gap-4">
                 <div>
-                  <div className="text-xs text-gray-400 mb-1">📊 ***STATUS***</div>
-                  <div className="font-bold italic">
+                  <div className="text-xs text-gray-400 mb-1 font-semibold">▎STATUS</div>
+                  <div className="font-bold">
                     {config.status === 'online' ? '🟢' : config.status === 'maintenance' ? '🟡' : '🔴'} 
-                    {' '}<em><strong>{config.status === 'online' ? 'Online' : config.status === 'maintenance' ? 'Under Maintenance' : 'Offline'}</strong></em>
+                    <span className="italic">{config.status === 'online' ? 'Online' : config.status === 'maintenance' ? 'Under Maintenance' : 'Offline'}</span>
                   </div>
                 </div>
                 <div>
-                  <div className="text-xs text-gray-400 mb-1">👥 ***USERS ACTIVE***</div>
-                  <div className="font-bold italic"><em><strong>{config.usersActive}</strong></em> <span className="text-gray-400 font-normal">online now</span></div>
+                  <div className="text-xs text-gray-400 mb-1 font-semibold">▎USERS ACTIVE</div>
+                  <div className="font-bold">👥 <span className="italic">{config.usersActive}</span></div>
                 </div>
               </div>
 
-              {/* Separator */}
-              <div className="px-4 text-gray-600 text-xs font-mono">╠══════════════════════════════╣</div>
-
               {/* Website Link */}
-              <div className="p-4">
-                <div className="text-xs text-gray-400 mb-1">🌐 ***WEBSITE***</div>
-                <a href={config.websiteUrl} className="text-blue-400 hover:underline font-bold italic">
-                  <em><strong>Visit SkyLife Roleplay</strong></em>
+              <div className="px-4 pb-2">
+                <div className="text-xs text-gray-400 mb-1 font-semibold">▎WEBSITE LINK</div>
+                <a href={config.websiteUrl} className="text-blue-400 hover:underline font-bold">
+                  🌐 <span className="italic">{config.websiteUrl.replace('https://', '')}</span>
                 </a>
               </div>
 
               {/* Uptime and Countdown */}
-              <div className="p-4 pt-0 grid grid-cols-2 gap-4">
+              <div className="px-4 pb-4 space-y-3">
                 <div>
-                  <div className="text-xs text-gray-400 mb-1">⏱️ ***UPTIME***</div>
-                  <div className="font-bold italic"><em><strong>{config.uptime}</strong></em></div>
+                  <div className="text-xs text-gray-400 mb-1 font-semibold">▎UPTIME</div>
+                  <div className="font-bold">⏱️ <span className="italic">{config.uptime}</span></div>
                 </div>
                 {config.status === "maintenance" && countdown && (
-                  <div className="p-2 rounded bg-yellow-500/10 border border-yellow-500/30">
-                    <div className="text-xs text-yellow-400 mb-1">⏳ ***MAINTENANCE COUNTDOWN***</div>
-                    <div className="font-bold text-yellow-400 italic">
-                      🔄 <em><strong>{formatCountdownDisplay(countdown)}</strong></em> <span className="font-normal">remaining</span>
+                  <div className="mt-3">
+                    <div className="text-xs text-gray-400 mb-2 font-semibold">⏳ MAINTENANCE COUNTDOWN</div>
+                    <div className="flex gap-2 flex-wrap">
+                      <div className="bg-yellow-500/20 border border-yellow-500/40 rounded-md px-3 py-2 text-center min-w-[55px]">
+                        <div className="text-lg font-bold text-yellow-400">{countdown.days.toString().padStart(2, '0')}</div>
+                        <div className="text-[10px] text-gray-400 uppercase">Days</div>
+                      </div>
+                      <div className="bg-yellow-500/20 border border-yellow-500/40 rounded-md px-3 py-2 text-center min-w-[55px]">
+                        <div className="text-lg font-bold text-yellow-400">{countdown.hours.toString().padStart(2, '0')}</div>
+                        <div className="text-[10px] text-gray-400 uppercase">Hrs</div>
+                      </div>
+                      <div className="bg-yellow-500/20 border border-yellow-500/40 rounded-md px-3 py-2 text-center min-w-[55px]">
+                        <div className="text-lg font-bold text-yellow-400">{countdown.minutes.toString().padStart(2, '0')}</div>
+                        <div className="text-[10px] text-gray-400 uppercase">Min</div>
+                      </div>
+                      <div className="bg-yellow-500/20 border border-yellow-500/40 rounded-md px-3 py-2 text-center min-w-[55px]">
+                        <div className="text-lg font-bold text-yellow-400">{countdown.seconds.toString().padStart(2, '0')}</div>
+                        <div className="text-[10px] text-gray-400 uppercase">Sec</div>
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
-
-              {/* Footer Separator */}
-              <div className="px-4 text-gray-600 text-xs font-mono">╚══════════════════════════════╝</div>
 
               {/* Image Preview */}
               <div className="p-4">
