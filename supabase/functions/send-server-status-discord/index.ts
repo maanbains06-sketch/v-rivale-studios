@@ -101,15 +101,12 @@ ${emoji} ${statusText}
 }
 
 function createUsersBox(count: number): string {
-  return `\`\`\`css
-[ 👥 ${count} ONLINE ]
-\`\`\``;
+  // Use diff block to create a more "glowing" highlighted background in Discord
+  return `\`\`\`diff\n+ 👥 ${count} ONLINE\n\`\`\``;
 }
 
 function createUptimeBox(uptime: string): string {
-  return `\`\`\`ini
-[ ⏱️ Uptime: ${uptime} ]
-\`\`\``;
+  return `\`\`\`ini\n[ ⏱️ Uptime: ${uptime} ]\n\`\`\``;
 }
 
 function createWebsiteLinkBox(url: string): string {
