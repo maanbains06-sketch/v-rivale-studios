@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,18 +9,18 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
-import { 
-  Send, 
-  Globe, 
-  Users, 
-  Wifi, 
-  WifiOff, 
+import {
+  Send,
+  Globe,
+  Users,
+  Wifi,
+  WifiOff,
   AlertTriangle,
   RefreshCw,
   Clock,
   MessageSquare,
   Zap,
-  Timer
+  Timer,
 } from "lucide-react";
 
 type WebsiteStatusType = "online" | "maintenance" | "offline";
@@ -36,6 +36,8 @@ interface StatusConfig {
   scheduledEndAt: string | null;
 }
 
+type SendMode = "manual" | "background";
+
 const ServerStatusDiscordSender = () => {
   const { toast } = useToast();
   const { settings: siteSettings } = useSiteSettings();
@@ -46,7 +48,7 @@ const ServerStatusDiscordSender = () => {
   const [maintenanceStartTime, setMaintenanceStartTime] = useState<Date | null>(null);
   const [maintenanceEndTime, setMaintenanceEndTime] = useState<Date | null>(null);
   const [countdown, setCountdown] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
-  
+
   const [config, setConfig] = useState<StatusConfig>({
     status: "online",
     usersActive: 0,
@@ -55,18 +57,37 @@ const ServerStatusDiscordSender = () => {
     websiteUrl: "https://skyliferoleplay.com",
     discordUrl: "https://discord.gg/skyliferp",
     maintenanceCountdown: null,
-    scheduledEndAt: null
+    scheduledEndAt: null,
   });
+
+  // Keep latest values accessible from interval callbacks (avoid stale closures)
+  const configRef = useRef(config);
+  const storedMessageIdRef = useRef<string | null>(storedMessageId);
+  const countdownRef = useRef(countdown);
+  useEffect(() => {
+    configRef.current = config;
+  }, [config]);
+  useEffect(() => {
+    storedMessageIdRef.current = storedMessageId;
+  }, [storedMessageId]);
+  useEffect(() => {
+    countdownRef.current = countdown;
+  }, [countdown]);
+
+  // Background sync guards (rate-limit + no overlapping requests)
+  const inFlightRef = useRef(false);
+  const lastEditAtRef = useRef(0);
+  const lastSentFingerprintRef = useRef<string | null>(null);
 
   // Fetch stored message ID
   useEffect(() => {
     const fetchMessageId = async () => {
       const { data } = await supabase
-        .from('site_settings')
-        .select('value')
-        .eq('key', 'discord_status_message_id')
+        .from("site_settings")
+        .select("value")
+        .eq("key", "discord_status_message_id")
         .maybeSingle();
-      
+
       if (data?.value) {
         setStoredMessageId(data.value);
       }
@@ -74,21 +95,25 @@ const ServerStatusDiscordSender = () => {
     fetchMessageId();
   }, []);
 
-  // Connect to website presence (live visitor counter)
+  // Connect to website presence (MUST use the SAME channel topic as the website counter)
   useEffect(() => {
     const sessionId = `status_sender_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
-    const channel = supabase.channel('website_presence_status', {
+
+    const channel = supabase.channel("website_presence", {
       config: { presence: { key: sessionId } },
     });
 
+    const updateCount = () => {
+      const count = Object.keys(channel.presenceState()).length;
+      setVisitorCount(count > 0 ? count : 1);
+    };
+
     channel
-      .on('presence', { event: 'sync' }, () => {
-        const count = Object.keys(channel.presenceState()).length;
-        setVisitorCount(count > 0 ? count : 1);
-      })
+      .on("presence", { event: "sync" }, updateCount)
+      .on("presence", { event: "join" }, updateCount)
+      .on("presence", { event: "leave" }, updateCount)
       .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
+        if (status === "SUBSCRIBED") {
           await channel.track({ online_at: new Date().toISOString() });
         }
       });
@@ -102,28 +127,28 @@ const ServerStatusDiscordSender = () => {
   useEffect(() => {
     const fetchMaintenanceEnd = async () => {
       const { data } = await supabase
-        .from('site_settings')
-        .select('value')
-        .eq('key', 'maintenance_scheduled_end')
+        .from("site_settings")
+        .select("value")
+        .eq("key", "maintenance_scheduled_end")
         .maybeSingle();
-      
+
       if (data?.value) {
         setMaintenanceEndTime(new Date(data.value));
       }
     };
-    
+
     fetchMaintenanceEnd();
 
     // Subscribe to maintenance changes
     const channel = supabase
-      .channel('maintenance_status_sender')
+      .channel("maintenance_status_sender")
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'site_settings',
-          filter: 'key=in.(maintenance_mode,maintenance_scheduled_end)',
+          event: "*",
+          schema: "public",
+          table: "site_settings",
+          filter: "key=in.(maintenance_mode,maintenance_scheduled_end)",
         },
         () => {
           fetchMaintenanceEnd();
@@ -139,50 +164,50 @@ const ServerStatusDiscordSender = () => {
   // Sync with website maintenance mode
   useEffect(() => {
     const newStatus: WebsiteStatusType = siteSettings.maintenance_mode ? "maintenance" : "online";
-    
-    if (newStatus === "maintenance" && config.status !== "maintenance") {
+
+    if (newStatus === "maintenance" && configRef.current.status !== "maintenance") {
       // Just entered maintenance - record start time
       setMaintenanceStartTime(new Date());
-    } else if (newStatus === "online" && config.status === "maintenance") {
+    } else if (newStatus === "online" && configRef.current.status === "maintenance") {
       // Just exited maintenance - update start time for uptime calculation
       setMaintenanceStartTime(new Date());
     }
-    
-    setConfig(prev => ({
+
+    setConfig((prev) => ({
       ...prev,
-      status: newStatus
+      status: newStatus,
     }));
   }, [siteSettings.maintenance_mode]);
 
   // Update users active count from live visitor counter
   useEffect(() => {
-    setConfig(prev => ({
+    setConfig((prev) => ({
       ...prev,
-      usersActive: visitorCount
+      usersActive: visitorCount,
     }));
   }, [visitorCount]);
 
   // Calculate uptime
   useEffect(() => {
     if (config.status !== "online") {
-      setConfig(prev => ({ ...prev, uptime: "N/A" }));
+      setConfig((prev) => ({ ...prev, uptime: "N/A" }));
       return;
     }
 
     const startTime = maintenanceStartTime || new Date();
-    
+
     const updateUptime = () => {
       const now = new Date();
       const diff = now.getTime() - startTime.getTime();
-      
+
       const hours = Math.floor(diff / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      
+
       let uptimeStr = "";
       if (hours > 0) uptimeStr += `${hours}h `;
       uptimeStr += `${minutes}m`;
-      
-      setConfig(prev => ({ ...prev, uptime: uptimeStr || "0m" }));
+
+      setConfig((prev) => ({ ...prev, uptime: uptimeStr || "0m" }));
     };
 
     updateUptime();
@@ -191,21 +216,21 @@ const ServerStatusDiscordSender = () => {
     return () => clearInterval(interval);
   }, [config.status, maintenanceStartTime]);
 
-  // Calculate maintenance countdown
+  // Calculate maintenance countdown (ticks every second)
   useEffect(() => {
     if (config.status !== "maintenance" || !maintenanceEndTime) {
       setCountdown(null);
-      setConfig(prev => ({ ...prev, maintenanceCountdown: null, scheduledEndAt: null }));
+      setConfig((prev) => ({ ...prev, maintenanceCountdown: null, scheduledEndAt: null }));
       return;
     }
 
     const updateCountdown = () => {
       const now = new Date();
       const diff = maintenanceEndTime.getTime() - now.getTime();
-      
+
       if (diff <= 0) {
         setCountdown(null);
-        setConfig(prev => ({ ...prev, maintenanceCountdown: null }));
+        setConfig((prev) => ({ ...prev, maintenanceCountdown: null }));
         return;
       }
 
@@ -213,13 +238,13 @@ const ServerStatusDiscordSender = () => {
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      
+
       const newCountdown = { days, hours, minutes, seconds };
       setCountdown(newCountdown);
-      setConfig(prev => ({ 
-        ...prev, 
+      setConfig((prev) => ({
+        ...prev,
         maintenanceCountdown: newCountdown,
-        scheduledEndAt: maintenanceEndTime.toISOString()
+        scheduledEndAt: maintenanceEndTime.toISOString(),
       }));
     };
 
@@ -229,92 +254,137 @@ const ServerStatusDiscordSender = () => {
     return () => clearInterval(interval);
   }, [config.status, maintenanceEndTime]);
 
-  // Auto-update Discord when status changes
-  const sendStatusToDiscord = useCallback(async (useStoredId = true) => {
-    setIsSending(true);
-    try {
-      const payload = {
-        ...config,
-        messageId: useStoredId ? storedMessageId : null
-      };
+  const sendStatusToDiscord = useCallback(
+    async (options: { useStoredId: boolean; mode: SendMode }) => {
+      const { useStoredId, mode } = options;
 
-      const { data, error } = await supabase.functions.invoke("send-server-status-discord", {
-        body: payload
-      });
+      // Prevent overlapping background edits (Discord rate-limits message edits)
+      if (mode === "background") {
+        if (inFlightRef.current) return;
 
-      if (error) throw error;
-
-      if (data?.messageId) {
-        setStoredMessageId(data.messageId);
+        const now = Date.now();
+        // Keep a small buffer vs Discord route rate limits
+        if (now - lastEditAtRef.current < 1100) return;
       }
 
-      toast({
-        title: data?.isEdit ? "Status Updated" : "Status Sent",
-        description: data?.isEdit 
-          ? "Discord message has been updated with latest status."
-          : "Website status has been posted to Discord.",
-      });
-    } catch (error: any) {
-      console.error("Error sending status:", error);
-      toast({
-        title: "Failed to Send Status",
-        description: error.message || "Could not send website status to Discord.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSending(false);
-    }
-  }, [config, storedMessageId, toast]);
+      if (mode === "manual") setIsSending(true);
+      inFlightRef.current = true;
 
-  // Track last sent values to avoid duplicate updates
-  const [lastSentConfig, setLastSentConfig] = useState<{
-    status: WebsiteStatusType;
-    usersActive: number;
-    countdownSeconds: number;
-  } | null>(null);
+      try {
+        const latestConfig = configRef.current;
+        const messageId = useStoredId ? storedMessageIdRef.current : null;
 
-  // Smart auto-update: sync to Discord when values actually change
-  useEffect(() => {
-    if (!autoUpdate || !storedMessageId) return;
+        const payload = {
+          ...latestConfig,
+          messageId,
+        };
 
-    // Calculate total countdown seconds for comparison
-    const currentCountdownSeconds = countdown 
-      ? countdown.days * 86400 + countdown.hours * 3600 + countdown.minutes * 60 + countdown.seconds
-      : 0;
+        // Fingerprint to avoid useless background edits
+        if (mode === "background") {
+          const cd = countdownRef.current;
+          const cdSeconds = cd ? cd.days * 86400 + cd.hours * 3600 + cd.minutes * 60 + cd.seconds : 0;
+          const fp = `${latestConfig.status}|${latestConfig.usersActive}|${latestConfig.uptime}|${cdSeconds}|${latestConfig.customMessage}`;
+          if (fp === lastSentFingerprintRef.current) return;
+          lastSentFingerprintRef.current = fp;
+        }
 
-    // Check if anything meaningful changed
-    const hasChanged = !lastSentConfig || 
-      lastSentConfig.status !== config.status ||
-      lastSentConfig.usersActive !== config.usersActive ||
-      Math.abs(lastSentConfig.countdownSeconds - currentCountdownSeconds) >= 5; // Update every 5 seconds for countdown
-
-    if (hasChanged) {
-      const syncTimer = setTimeout(async () => {
-        await sendStatusToDiscord(true);
-        setLastSentConfig({
-          status: config.status,
-          usersActive: config.usersActive,
-          countdownSeconds: currentCountdownSeconds
+        const { data, error } = await supabase.functions.invoke("send-server-status-discord", {
+          body: payload,
         });
-      }, 500); // Quick 500ms debounce
 
-      return () => clearTimeout(syncTimer);
-    }
-  }, [autoUpdate, config.status, config.usersActive, countdown, storedMessageId, lastSentConfig, sendStatusToDiscord]);
+        if (error) throw error;
 
-  // Periodic sync every 5 seconds when auto-update is enabled (for live countdown)
+        if (data?.messageId) {
+          setStoredMessageId(data.messageId);
+        }
+
+        // Avoid spamming toasts for background realtime updates
+        if (mode === "manual") {
+          toast({
+            title: data?.isEdit ? "Status Updated" : "Status Sent",
+            description: data?.isEdit
+              ? "Discord message has been updated with latest status."
+              : "Website status has been posted to Discord.",
+          });
+        }
+
+        lastEditAtRef.current = Date.now();
+      } catch (error: any) {
+        console.error("Error sending status:", error);
+        if (mode === "manual") {
+          toast({
+            title: "Failed to Send Status",
+            description: error.message || "Could not send website status to Discord.",
+            variant: "destructive",
+          });
+        }
+      } finally {
+        inFlightRef.current = false;
+        if (mode === "manual") setIsSending(false);
+      }
+    },
+    [toast]
+  );
+
+  // Single realtime scheduler:
+  // - If no stored message yet and auto-update is on, create it once.
+  // - Then edit the same message continuously (1s during maintenance to show ticking seconds).
   useEffect(() => {
-    if (!autoUpdate || !storedMessageId) return;
+    if (!autoUpdate) return;
 
-    const syncInterval = setInterval(() => {
-      sendStatusToDiscord(true);
-    }, 5000); // Sync every 5 seconds for live countdown
+    let cancelled = false;
 
-    return () => clearInterval(syncInterval);
-  }, [autoUpdate, storedMessageId, sendStatusToDiscord]);
+    const ensureMessageExists = async () => {
+      if (storedMessageIdRef.current) return;
+      await sendStatusToDiscord({ useStoredId: false, mode: "background" });
+    };
 
-  const handleSendNew = () => sendStatusToDiscord(false);
-  const handleUpdateExisting = () => sendStatusToDiscord(true);
+    const tick = async () => {
+      if (cancelled) return;
+
+      // Make sure we have a message to edit
+      await ensureMessageExists();
+
+      if (storedMessageIdRef.current) {
+        await sendStatusToDiscord({ useStoredId: true, mode: "background" });
+      }
+    };
+
+    // Run immediately, then on interval.
+    tick();
+
+    const intervalMs = () => (configRef.current.status === "maintenance" ? 1000 : 5000);
+    let interval = window.setInterval(tick, intervalMs());
+
+    // If status flips between maintenance/online, adjust interval automatically
+    const adjustInterval = () => {
+      clearInterval(interval);
+      interval = window.setInterval(tick, intervalMs());
+    };
+
+    // Lightweight watcher for status changes
+    const statusWatch = window.setInterval(() => {
+      // Recreate interval only when required
+      const desired = intervalMs();
+      // If current is incorrect, adjust (store on function property)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const current = (adjustInterval as any)._ms as number | undefined;
+      if (current !== desired) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (adjustInterval as any)._ms = desired;
+        adjustInterval();
+      }
+    }, 750);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      clearInterval(statusWatch);
+    };
+  }, [autoUpdate, sendStatusToDiscord]);
+
+  const handleSendNew = () => sendStatusToDiscord({ useStoredId: false, mode: "manual" });
+  const handleUpdateExisting = () => sendStatusToDiscord({ useStoredId: true, mode: "manual" });
 
   const getStatusIcon = (status: WebsiteStatusType) => {
     switch (status) {
