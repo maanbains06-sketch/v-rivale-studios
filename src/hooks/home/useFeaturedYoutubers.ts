@@ -138,10 +138,10 @@ export const useFeaturedYoutubers = () => {
         return;
       }
 
-      // Reduced de-dupe interval for faster updates
+      // Reduced de-dupe interval for faster updates - every 20 seconds
       const now = Date.now();
-      if (now - lastSyncAtRef.current < 30_000) {
-        timeoutId = setTimeout(tick, 15_000);
+      if (now - lastSyncAtRef.current < 20_000) {
+        timeoutId = setTimeout(tick, 10_000);
         return;
       }
 
@@ -155,8 +155,8 @@ export const useFeaturedYoutubers = () => {
         // silent: realtime + DB query already keep UI usable
       }
 
-      // Sync every 60 seconds instead of 3 minutes
-      timeoutId = setTimeout(tick, 60_000);
+      // Sync every 30 seconds for faster live status updates
+      timeoutId = setTimeout(tick, 30_000);
     };
 
     // Initial sync after 5 seconds

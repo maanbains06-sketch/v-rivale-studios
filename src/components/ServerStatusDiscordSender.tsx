@@ -266,16 +266,52 @@ const ServerStatusDiscordSender = () => {
     }
   }, [config, storedMessageId, toast]);
 
-  // Auto-update when enabled and status changes
-  useEffect(() => {
-    if (autoUpdate && storedMessageId) {
-      const debounceTimer = setTimeout(() => {
-        sendStatusToDiscord(true);
-      }, 2000); // Debounce 2 seconds
+  // Track last sent values to avoid duplicate updates
+  const [lastSentConfig, setLastSentConfig] = useState<{
+    status: WebsiteStatusType;
+    usersActive: number;
+    countdownSeconds: number;
+  } | null>(null);
 
-      return () => clearTimeout(debounceTimer);
+  // Smart auto-update: sync to Discord when values actually change
+  useEffect(() => {
+    if (!autoUpdate || !storedMessageId) return;
+
+    // Calculate total countdown seconds for comparison
+    const currentCountdownSeconds = countdown 
+      ? countdown.days * 86400 + countdown.hours * 3600 + countdown.minutes * 60 + countdown.seconds
+      : 0;
+
+    // Check if anything meaningful changed
+    const hasChanged = !lastSentConfig || 
+      lastSentConfig.status !== config.status ||
+      lastSentConfig.usersActive !== config.usersActive ||
+      Math.abs(lastSentConfig.countdownSeconds - currentCountdownSeconds) >= 5; // Update every 5 seconds for countdown
+
+    if (hasChanged) {
+      const syncTimer = setTimeout(async () => {
+        await sendStatusToDiscord(true);
+        setLastSentConfig({
+          status: config.status,
+          usersActive: config.usersActive,
+          countdownSeconds: currentCountdownSeconds
+        });
+      }, 500); // Quick 500ms debounce
+
+      return () => clearTimeout(syncTimer);
     }
-  }, [autoUpdate, config.status, config.usersActive, countdown, storedMessageId]);
+  }, [autoUpdate, config.status, config.usersActive, countdown, storedMessageId, lastSentConfig, sendStatusToDiscord]);
+
+  // Periodic sync every 5 seconds when auto-update is enabled (for live countdown)
+  useEffect(() => {
+    if (!autoUpdate || !storedMessageId) return;
+
+    const syncInterval = setInterval(() => {
+      sendStatusToDiscord(true);
+    }, 5000); // Sync every 5 seconds for live countdown
+
+    return () => clearInterval(syncInterval);
+  }, [autoUpdate, storedMessageId, sendStatusToDiscord]);
 
   const handleSendNew = () => sendStatusToDiscord(false);
   const handleUpdateExisting = () => sendStatusToDiscord(true);
