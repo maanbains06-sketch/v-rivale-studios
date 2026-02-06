@@ -24,7 +24,7 @@ const isPageActive = () => {
  * Featured YouTubers:
  * - Reads from DB
  * - Realtime updates keep UI instant
- * - Lightweight background sync triggers backend refresh only when page is active
+ * - Fast background sync triggers backend refresh for live status
  */
 export const useFeaturedYoutubers = () => {
   const queryClient = useQueryClient();
@@ -42,12 +42,13 @@ export const useFeaturedYoutubers = () => {
       if (error) return [];
       return data || [];
     },
-    staleTime: 1000 * 60 * 2,
+    staleTime: 1000 * 30, // 30 seconds - refresh more frequently
     gcTime: 1000 * 60 * 30,
     refetchOnMount: true,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true, // Refetch when user comes back to tab
     refetchOnReconnect: true,
-    retry: 1,
+    refetchInterval: 30000, // Refetch every 30 seconds for live updates
+    retry: 2,
   });
 
   const hasAny = useMemo(() => (query.data?.length ?? 0) > 0, [query.data]);
@@ -93,7 +94,6 @@ export const useFeaturedYoutubers = () => {
         .subscribe((status) => {
           if (cancelled) return;
           if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-            // Recreate channel (calling channel.subscribe() repeatedly can multiply work)
             try {
               supabase.removeChannel(channel);
             } catch {
@@ -122,7 +122,7 @@ export const useFeaturedYoutubers = () => {
     };
   }, [queryClient]);
 
-  // Lightweight background sync (only when it can actually help)
+  // Faster background sync for live status updates
   useEffect(() => {
     if (!hasAny) return;
 
@@ -132,16 +132,16 @@ export const useFeaturedYoutubers = () => {
     const tick = async () => {
       if (cancelled) return;
 
-      // Don’t sync when tab is hidden or offline (saves CPU + avoids perceived lag)
+      // Don't sync when tab is hidden or offline
       if (!isPageActive() || (typeof navigator !== "undefined" && !navigator.onLine)) {
-        timeoutId = setTimeout(tick, 30_000);
+        timeoutId = setTimeout(tick, 15_000);
         return;
       }
 
-      // De-dupe: avoid spamming sync if multiple hook instances ever mount
+      // Reduced de-dupe interval for faster updates
       const now = Date.now();
-      if (now - lastSyncAtRef.current < 60_000) {
-        timeoutId = setTimeout(tick, 30_000);
+      if (now - lastSyncAtRef.current < 30_000) {
+        timeoutId = setTimeout(tick, 15_000);
         return;
       }
 
@@ -149,21 +149,24 @@ export const useFeaturedYoutubers = () => {
 
       try {
         await supabase.functions.invoke("sync-youtube-live-status", { body: {} });
+        // Invalidate query to pick up any changes
+        queryClient.invalidateQueries({ queryKey: ["featured-youtubers"] });
       } catch {
         // silent: realtime + DB query already keep UI usable
       }
 
-      timeoutId = setTimeout(tick, 3 * 60_000);
+      // Sync every 60 seconds instead of 3 minutes
+      timeoutId = setTimeout(tick, 60_000);
     };
 
-    // Initial sync after a short delay so it never competes with first paint
-    timeoutId = setTimeout(tick, 10_000);
+    // Initial sync after 5 seconds
+    timeoutId = setTimeout(tick, 5_000);
 
     return () => {
       cancelled = true;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [hasAny]);
+  }, [hasAny, queryClient]);
 
   return query;
 };
