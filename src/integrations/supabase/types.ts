@@ -2970,6 +2970,7 @@ export type Database = {
         Args: { _discord_id: string }
         Returns: string[]
       }
+      get_user_discord_id: { Args: never; Returns: string }
       has_panel_access: {
         Args: { _panel_type: string; _user_id: string }
         Returns: boolean
