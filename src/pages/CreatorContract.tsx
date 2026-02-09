@@ -120,10 +120,54 @@ const CreatorContract = () => {
   const [creatorSignature, setCreatorSignature] = useState<string | null>(null);
   const [creatorSignedAt, setCreatorSignedAt] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [savedOwnerSignature, setSavedOwnerSignature] = useState<string | null>(null);
 
   useEffect(() => {
     checkOwnerAccess();
+    loadSavedOwnerSignature();
   }, []);
+
+  const loadSavedOwnerSignature = async () => {
+    try {
+      const { data } = await supabase
+        .from("site_settings")
+        .select("value")
+        .eq("key", "owner_contract_signature")
+        .maybeSingle();
+      if (data?.value) {
+        setSavedOwnerSignature(data.value);
+      }
+    } catch (error) {
+      console.error("Error loading saved signature:", error);
+    }
+  };
+
+  const saveOwnerSignatureToSettings = async (signature: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      await supabase.from("site_settings").upsert({
+        key: "owner_contract_signature",
+        value: signature,
+        description: "Saved owner signature for contracts (Party A)",
+        updated_by: user?.id || null,
+        updated_at: new Date().toISOString(),
+      });
+      setSavedOwnerSignature(signature);
+      toast({ title: "Signature saved permanently", description: "It will auto-apply to all new contracts." });
+    } catch (error) {
+      console.error("Error saving signature:", error);
+    }
+  };
+
+  const clearSavedOwnerSignature = async () => {
+    try {
+      await supabase.from("site_settings").delete().eq("key", "owner_contract_signature");
+      setSavedOwnerSignature(null);
+      toast({ title: "Saved signature cleared" });
+    } catch (error) {
+      console.error("Error clearing signature:", error);
+    }
+  };
 
   const checkOwnerAccess = async () => {
     try {
@@ -221,8 +265,14 @@ const CreatorContract = () => {
     setSelectedContractId(null);
     setContractData(defaultContractData);
     setContractStatus("draft");
-    setOwnerSignature(null);
-    setOwnerSignedAt(null);
+    // Auto-apply saved owner signature
+    if (savedOwnerSignature) {
+      setOwnerSignature(savedOwnerSignature);
+      setOwnerSignedAt(new Date().toISOString());
+    } else {
+      setOwnerSignature(null);
+      setOwnerSignedAt(null);
+    }
     setCreatorSignature(null);
     setCreatorSignedAt(null);
     setIsEditing(true);
@@ -326,7 +376,9 @@ const CreatorContract = () => {
   const handleOwnerSign = (signature: string) => {
     setOwnerSignature(signature);
     setOwnerSignedAt(new Date().toISOString());
-    toast({ title: "Owner signature recorded", description: "Remember to save the contract" });
+    // Also save permanently so it auto-applies to future contracts
+    saveOwnerSignatureToSettings(signature);
+    toast({ title: "Owner signature recorded & saved", description: "It will auto-apply to all future contracts." });
   };
 
   const handleCreatorSign = (signature: string) => {
@@ -1329,6 +1381,17 @@ const CreatorContract = () => {
                     <div className="grid md:grid-cols-2 gap-8">
                       {/* Party A Signature */}
                       <div className="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                        {savedOwnerSignature && !ownerSignature && (
+                          <div className="mb-3 p-2 bg-blue-50 rounded border border-blue-200 flex items-center justify-between">
+                            <p className="text-xs text-blue-700">
+                              <CheckCircle className="h-3 w-3 inline mr-1" />
+                              Saved signature available — will auto-apply on save
+                            </p>
+                            <Button variant="ghost" size="sm" className="h-6 text-xs text-red-500" onClick={() => { clearSavedOwnerSignature(); setOwnerSignature(null); setOwnerSignedAt(null); }}>
+                              Clear Saved
+                            </Button>
+                          </div>
+                        )}
                         <SignaturePad
                           label="Party A - Server Representative"
                           onSave={handleOwnerSign}
@@ -1343,6 +1406,16 @@ const CreatorContract = () => {
                             </p>
                             <p className="text-xs text-green-600">By: {contractData.serverOwner}</p>
                           </div>
+                        )}
+                        {ownerSignature && (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="mt-2 text-xs w-full"
+                            onClick={() => { setOwnerSignature(null); setOwnerSignedAt(null); }}
+                          >
+                            Re-sign
+                          </Button>
                         )}
                       </div>
 
