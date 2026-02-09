@@ -148,7 +148,7 @@ const News = () => {
             <h2 className="text-2xl font-bold text-foreground">No News Yet</h2>
             <p className="text-muted-foreground max-w-md">
               The City Chronicle is waiting for events from the streets of Los Santos.
-              Once your FiveM server starts sending events, AI-generated articles will appear here.
+              Once your FiveM server starts sending events, news articles will appear here.
             </p>
           </div>
         )}
