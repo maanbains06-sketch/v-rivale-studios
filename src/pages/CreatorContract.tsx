@@ -132,7 +132,7 @@ const CreatorContract = () => {
       const { data } = await supabase
         .from("site_settings")
         .select("value")
-        .eq("key", "owner_contract_signature")
+        .eq("key", "owner_contract_signature_url")
         .maybeSingle();
       if (data?.value) {
         setSavedOwnerSignature(data.value);
@@ -142,17 +142,52 @@ const CreatorContract = () => {
     }
   };
 
-  const saveOwnerSignatureToSettings = async (signature: string) => {
+  const saveOwnerSignatureToSettings = async (signatureDataUrl: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      await supabase.from("site_settings").upsert({
-        key: "owner_contract_signature",
-        value: signature,
-        description: "Saved owner signature for contracts (Party A)",
-        updated_by: user?.id || null,
-        updated_at: new Date().toISOString(),
-      });
-      setSavedOwnerSignature(signature);
+      if (!user) return;
+
+      // Convert base64 data URL to blob and upload to storage
+      const response = await fetch(signatureDataUrl);
+      const blob = await response.blob();
+      const fileName = `owner-signature-${user.id}.png`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("assets")
+        .upload(fileName, blob, { 
+          contentType: "image/png", 
+          upsert: true 
+        });
+
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("assets")
+        .getPublicUrl(fileName);
+
+      const publicUrl = urlData.publicUrl;
+
+      // Save only the URL in site_settings
+      const { error: settingsError } = await supabase.from("site_settings").upsert(
+        {
+          key: "owner_contract_signature_url",
+          value: publicUrl,
+          description: "Saved owner signature URL for contracts (Party A)",
+          updated_by: user.id,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "key" }
+      );
+
+      if (settingsError) {
+        console.error("Settings save error:", settingsError);
+        return;
+      }
+
+      setSavedOwnerSignature(publicUrl);
       toast({ title: "Signature saved permanently", description: "It will auto-apply to all new contracts." });
     } catch (error) {
       console.error("Error saving signature:", error);
@@ -161,7 +196,7 @@ const CreatorContract = () => {
 
   const clearSavedOwnerSignature = async () => {
     try {
-      await supabase.from("site_settings").delete().eq("key", "owner_contract_signature");
+      await supabase.from("site_settings").delete().eq("key", "owner_contract_signature_url");
       setSavedOwnerSignature(null);
       toast({ title: "Saved signature cleared" });
     } catch (error) {
