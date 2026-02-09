@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Lock, Search, Eye, CheckCircle, Clock, XCircle, Loader2, RefreshCw, Paperclip, FileIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useStaffNames } from "@/hooks/useStaffNames";
 
 interface ConfidentialTicket {
   id: string;
@@ -50,6 +51,7 @@ const ConfidentialTicketManagement = () => {
   const [adminNotes, setAdminNotes] = useState("");
   const [resolution, setResolution] = useState("");
   const [updating, setUpdating] = useState(false);
+  const { getStaffName } = useStaffNames();
 
   const fetchTickets = useCallback(async () => {
     setLoading(true);
@@ -193,8 +195,9 @@ const ConfidentialTicketManagement = () => {
                   <TableHead>Category</TableHead>
                   <TableHead>User</TableHead>
                   <TableHead>Priority</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
+                   <TableHead>Status</TableHead>
+                   <TableHead>Resolved By</TableHead>
+                   <TableHead>Date</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -216,8 +219,11 @@ const ConfidentialTicketManagement = () => {
                       </div>
                     </TableCell>
                     <TableCell>{getPriorityBadge(ticket.priority)}</TableCell>
-                    <TableCell>{getStatusBadge(ticket.status)}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{format(new Date(ticket.created_at), "PP")}</TableCell>
+                     <TableCell>{getStatusBadge(ticket.status)}</TableCell>
+                     <TableCell>
+                       <span className="text-sm font-medium">{getStaffName(ticket.resolved_by)}</span>
+                     </TableCell>
+                     <TableCell className="text-sm text-muted-foreground">{format(new Date(ticket.created_at), "PP")}</TableCell>
                     <TableCell>
                       <Button size="sm" variant="ghost" onClick={() => { setSelectedTicket(ticket); setAdminNotes(ticket.admin_notes || ""); setResolution(ticket.resolution || ""); }}>
                         <Eye className="w-4 h-4" />

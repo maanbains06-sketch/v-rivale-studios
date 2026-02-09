@@ -12,6 +12,7 @@ import { MessageSquare, Trash2, RefreshCw, Loader2, Clock, User, AlertTriangle }
 import { format } from "date-fns";
 import { useAllChatPresence } from "@/hooks/useChatPresence";
 import ActiveStaffIndicator from "@/components/ActiveStaffIndicator";
+import { useStaffNames } from "@/hooks/useStaffNames";
 
 interface SupportChat {
   id: string;
@@ -47,6 +48,7 @@ const OwnerLiveChatManager = () => {
   
   // Track staff presence in chats
   const { chatViewers } = useAllChatPresence();
+  const { getStaffName } = useStaffNames();
 
   const fetchChats = useCallback(async () => {
     setLoading(true);
@@ -327,7 +329,8 @@ const OwnerLiveChatManager = () => {
                     <TableHead>Subject</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Priority</TableHead>
-                    <TableHead>Staff Active</TableHead>
+                     <TableHead>Assigned To</TableHead>
+                     <TableHead>Staff Active</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead>Last Activity</TableHead>
                     <TableHead>Flags</TableHead>
@@ -348,7 +351,10 @@ const OwnerLiveChatManager = () => {
                       </TableCell>
                       <TableCell>{getStatusBadge(chat.status)}</TableCell>
                       <TableCell>{getPriorityBadge(chat.priority)}</TableCell>
-                      <TableCell>
+                       <TableCell>
+                        <span className="text-sm font-medium">{getStaffName(chat.assigned_to)}</span>
+                       </TableCell>
+                       <TableCell>
                         {chatViewers[chat.id] && chatViewers[chat.id].length > 0 ? (
                           <ActiveStaffIndicator viewers={chatViewers[chat.id]} type="chat" compact />
                         ) : (
