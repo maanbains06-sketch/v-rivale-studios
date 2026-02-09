@@ -109,39 +109,72 @@ export const LiveMemberJoins = () => {
         .limit(50);
 
       if (error) throw error;
-      setMemberJoins(data || []);
+      
+      const members = data || [];
 
       // Fetch roles for all users
-      const userIds = (data || []).map(m => m.user_id).filter(Boolean);
+      const userIds = members.map(m => m.user_id).filter(Boolean);
       fetchUserRoles(userIds);
 
-      // Fetch Discord data for ALL members with discord_id and update DB records
-      const membersToFetch = (data || []).filter(m =>
-        m.discord_id &&
-        /^\d{17,19}$/.test(m.discord_id)
+      // For members missing discord_id, look it up from profiles table
+      const membersWithoutDiscordId = members.filter(m => !m.discord_id || !/^\d{17,19}$/.test(m.discord_id));
+      if (membersWithoutDiscordId.length > 0) {
+        const missingUserIds = membersWithoutDiscordId.map(m => m.user_id);
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, discord_id, discord_username')
+          .in('id', missingUserIds);
+
+        if (profilesData) {
+          for (const profile of profilesData) {
+            if (profile.discord_id && /^\d{17,19}$/.test(profile.discord_id)) {
+              const memberIdx = members.findIndex(m => m.user_id === profile.id);
+              if (memberIdx !== -1) {
+                members[memberIdx] = {
+                  ...members[memberIdx],
+                  discord_id: profile.discord_id,
+                  discord_username: profile.discord_username || members[memberIdx].discord_username,
+                };
+                // Update the member_joins record in DB with discord_id from profile
+                supabase
+                  .from('member_joins')
+                  .update({
+                    discord_id: profile.discord_id,
+                    discord_username: profile.discord_username,
+                  })
+                  .eq('id', members[memberIdx].id)
+                  .then(({ error: updateErr }) => {
+                    if (updateErr) console.error('Failed to backfill discord_id:', updateErr);
+                  });
+              }
+            }
+          }
+        }
+      }
+
+      setMemberJoins(members);
+
+      // Now fetch Discord API data for all members that have a discord_id
+      const membersToFetch = members.filter(m =>
+        m.discord_id && /^\d{17,19}$/.test(m.discord_id)
       );
 
       const newDiscordData: Record<string, DiscordUserData> = {};
-      for (const member of membersToFetch.slice(0, 25)) {
-        // Skip if we already have cached data for this discord_id
-        if (discordData[member.discord_id!] && discordData[member.discord_id!].displayName !== 'Unknown') continue;
-        
+      for (const member of membersToFetch) {
         const userData = await fetchDiscordUserData(member.discord_id!);
         if (userData) {
           newDiscordData[member.discord_id!] = userData;
-          // Update the member_joins record in DB if name/avatar was missing or unknown
-          if (!member.discord_username || member.discord_username === 'Unknown User' || !member.discord_avatar) {
-            supabase
-              .from('member_joins')
-              .update({
-                discord_username: userData.displayName,
-                discord_avatar: userData.avatar,
-              })
-              .eq('id', member.id)
-              .then(({ error: updateErr }) => {
-                if (updateErr) console.error('Failed to update member join record:', updateErr);
-              });
-          }
+          // Update the member_joins record in DB with latest Discord data
+          supabase
+            .from('member_joins')
+            .update({
+              discord_username: userData.displayName,
+              discord_avatar: userData.avatar,
+            })
+            .eq('id', member.id)
+            .then(({ error: updateErr }) => {
+              if (updateErr) console.error('Failed to update member join record:', updateErr);
+            });
         }
         await new Promise(resolve => setTimeout(resolve, 150));
       }
@@ -244,16 +277,32 @@ export const LiveMemberJoins = () => {
       .channel('member-joins-realtime')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'member_joins' },
         async (payload) => {
-          const newMember = payload.new as MemberJoin;
+          let newMember = payload.new as MemberJoin;
+          
+          // If discord_id is missing, fetch from profiles
+          let discordId = newMember.discord_id;
+          if (!discordId || !/^\d{17,19}$/.test(discordId)) {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('discord_id, discord_username')
+              .eq('id', newMember.user_id)
+              .maybeSingle();
+            if (profile?.discord_id && /^\d{17,19}$/.test(profile.discord_id)) {
+              discordId = profile.discord_id;
+              newMember = { ...newMember, discord_id: discordId, discord_username: profile.discord_username };
+              // Backfill member_joins record
+              supabase.from('member_joins').update({ discord_id: discordId, discord_username: profile.discord_username }).eq('id', newMember.id).then(() => {});
+            }
+          }
+
           setMemberJoins(prev => [newMember, ...prev].slice(0, 50));
           setNewJoinAnimation(newMember.id);
           fetchUserRoles([newMember.user_id]);
 
-          if (newMember.discord_id && /^\d{17,19}$/.test(newMember.discord_id)) {
-            const userData = await fetchDiscordUserData(newMember.discord_id);
+          if (discordId && /^\d{17,19}$/.test(discordId)) {
+            const userData = await fetchDiscordUserData(discordId);
             if (userData) {
-              setDiscordData(prev => ({ ...prev, [newMember.discord_id!]: userData }));
-              // Also update the DB record with fetched Discord data
+              setDiscordData(prev => ({ ...prev, [discordId!]: userData }));
               supabase
                 .from('member_joins')
                 .update({
