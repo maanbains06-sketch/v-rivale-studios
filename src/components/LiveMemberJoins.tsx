@@ -64,7 +64,7 @@ export const LiveMemberJoins = () => {
       return {
         username: data.username || data.displayName || 'Unknown',
         displayName: data.displayName || data.globalName || data.username || 'Unknown',
-        avatar: data.avatar ? `https://cdn.discordapp.com/avatars/${discordId}/${data.avatar}.png?size=128` : null
+        avatar: data.avatar || null
       };
     } catch {
       return null;
@@ -115,20 +115,35 @@ export const LiveMemberJoins = () => {
       const userIds = (data || []).map(m => m.user_id).filter(Boolean);
       fetchUserRoles(userIds);
 
-      // Fetch Discord data for members with discord_id but no username
+      // Fetch Discord data for ALL members with discord_id and update DB records
       const membersToFetch = (data || []).filter(m =>
         m.discord_id &&
-        /^\d{17,19}$/.test(m.discord_id) &&
-        (!m.discord_username || m.discord_username === 'Unknown User')
+        /^\d{17,19}$/.test(m.discord_id)
       );
 
       const newDiscordData: Record<string, DiscordUserData> = {};
-      for (const member of membersToFetch.slice(0, 10)) {
+      for (const member of membersToFetch.slice(0, 25)) {
+        // Skip if we already have cached data for this discord_id
+        if (discordData[member.discord_id!] && discordData[member.discord_id!].displayName !== 'Unknown') continue;
+        
         const userData = await fetchDiscordUserData(member.discord_id!);
         if (userData) {
           newDiscordData[member.discord_id!] = userData;
+          // Update the member_joins record in DB if name/avatar was missing or unknown
+          if (!member.discord_username || member.discord_username === 'Unknown User' || !member.discord_avatar) {
+            supabase
+              .from('member_joins')
+              .update({
+                discord_username: userData.displayName,
+                discord_avatar: userData.avatar,
+              })
+              .eq('id', member.id)
+              .then(({ error: updateErr }) => {
+                if (updateErr) console.error('Failed to update member join record:', updateErr);
+              });
+          }
         }
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise(resolve => setTimeout(resolve, 150));
       }
       setDiscordData(prev => ({ ...prev, ...newDiscordData }));
     } catch (error) {
@@ -238,6 +253,17 @@ export const LiveMemberJoins = () => {
             const userData = await fetchDiscordUserData(newMember.discord_id);
             if (userData) {
               setDiscordData(prev => ({ ...prev, [newMember.discord_id!]: userData }));
+              // Also update the DB record with fetched Discord data
+              supabase
+                .from('member_joins')
+                .update({
+                  discord_username: userData.displayName,
+                  discord_avatar: userData.avatar,
+                })
+                .eq('id', newMember.id)
+                .then(({ error: updateErr }) => {
+                  if (updateErr) console.error('Failed to update new member join:', updateErr);
+                });
             }
           }
           setTimeout(() => setNewJoinAnimation(null), 3000);
