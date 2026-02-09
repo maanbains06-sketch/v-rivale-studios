@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import PageHeader from "@/components/PageHeader";
 import { useRpNews, type RpNewsArticle } from "@/hooks/useRpNews";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import LazyImage from "@/components/LazyImage";
 import {
   Newspaper, Skull, ShieldAlert, Crosshair, Scale, CarFront, CalendarDays, Clock, MapPin,
-  Play, Pause, Volume2, VolumeX, Maximize, Siren, Radio, Wifi,
+  Play, Pause, Volume2, VolumeX, Maximize, Siren, Radio, Wifi, ArrowLeft,
 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 
@@ -44,6 +45,7 @@ const EVENT_LABELS: Record<string, string> = {
 };
 
 const News = () => {
+  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState("all");
   const [expandedArticle, setExpandedArticle] = useState<string | null>(null);
   const { articles, loading, liveCount } = useRpNews(activeFilter);
@@ -63,6 +65,16 @@ const News = () => {
       />
 
       <div className="container mx-auto px-4 py-8">
+        {/* Back Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="mb-6 gap-2 text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </Button>
         {/* Live indicator */}
         <div className="flex items-center justify-center gap-3 mb-6">
           <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/5">
