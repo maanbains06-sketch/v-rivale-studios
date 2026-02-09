@@ -89,6 +89,51 @@ const TicketSupport = () => {
     checkAuthAndFetch();
   }, []);
 
+  // Real-time subscription for ticket updates
+  useEffect(() => {
+    const setupRealtimeSubscription = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const channel = supabase
+        .channel('user-tickets-realtime')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'support_tickets',
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            if (payload.eventType === 'INSERT') {
+              setTickets(prev => [payload.new as SupportTicket, ...prev]);
+            } else if (payload.eventType === 'UPDATE') {
+              setTickets(prev => prev.map(t => 
+                t.id === (payload.new as SupportTicket).id ? payload.new as SupportTicket : t
+              ));
+              // Update selected ticket if it's the one being updated
+              if (selectedTicket?.id === (payload.new as SupportTicket).id) {
+                setSelectedTicket(payload.new as SupportTicket);
+              }
+            } else if (payload.eventType === 'DELETE') {
+              setTickets(prev => prev.filter(t => t.id !== (payload.old as SupportTicket).id));
+              if (selectedTicket?.id === (payload.old as SupportTicket).id) {
+                setSelectedTicket(null);
+              }
+            }
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    };
+
+    setupRealtimeSubscription();
+  }, [selectedTicket]);
+
   const checkAuthAndFetch = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -109,6 +154,7 @@ const TicketSupport = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Users can only see their own tickets
       const { data, error } = await supabase
         .from("support_tickets")
         .select("*")
@@ -293,15 +339,42 @@ const TicketSupport = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "open":
-        return <Badge className="bg-blue-500/20 text-blue-500 border-blue-500/50">Open</Badge>;
+        return (
+          <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/50 shadow-[0_0_10px_rgba(59,130,246,0.3)] animate-pulse">
+            <span className="w-2 h-2 bg-blue-400 rounded-full mr-2 animate-pulse" />
+            Open
+          </Badge>
+        );
+      case "in_review":
       case "in_progress":
-        return <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/50">Working On It</Badge>;
+        return (
+          <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/50 shadow-[0_0_10px_rgba(234,179,8,0.3)]">
+            <span className="w-2 h-2 bg-yellow-400 rounded-full mr-2 animate-pulse" />
+            In Review
+          </Badge>
+        );
+      case "waiting":
       case "on_hold":
-        return <Badge className="bg-orange-500/20 text-orange-500 border-orange-500/50">On Hold</Badge>;
+        return (
+          <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/50 shadow-[0_0_10px_rgba(249,115,22,0.3)]">
+            <span className="w-2 h-2 bg-orange-400 rounded-full mr-2" />
+            Waiting
+          </Badge>
+        );
       case "resolved":
-        return <Badge className="bg-green-500/20 text-green-500 border-green-500/50">Resolved</Badge>;
+        return (
+          <Badge className="bg-green-500/20 text-green-400 border-green-500/50 shadow-[0_0_10px_rgba(34,197,94,0.3)]">
+            <span className="w-2 h-2 bg-green-400 rounded-full mr-2" />
+            Resolved
+          </Badge>
+        );
       case "closed":
-        return <Badge className="bg-gray-500/20 text-gray-500 border-gray-500/50">Closed</Badge>;
+        return (
+          <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/50">
+            <span className="w-2 h-2 bg-gray-400 rounded-full mr-2" />
+            Closed
+          </Badge>
+        );
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }

@@ -199,13 +199,42 @@ const OwnerLiveChatManager = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "open":
-        return <Badge className="bg-blue-500/20 text-blue-500 border-blue-500/50">Open</Badge>;
+        return (
+          <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/50 shadow-[0_0_10px_rgba(59,130,246,0.3)] animate-pulse">
+            <span className="w-2 h-2 bg-blue-400 rounded-full mr-2 animate-pulse" />
+            Open
+          </Badge>
+        );
+      case "in_review":
       case "in_progress":
-        return <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/50">In Progress</Badge>;
+        return (
+          <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/50 shadow-[0_0_10px_rgba(234,179,8,0.3)]">
+            <span className="w-2 h-2 bg-yellow-400 rounded-full mr-2 animate-pulse" />
+            In Review
+          </Badge>
+        );
+      case "waiting":
       case "pending":
-        return <Badge className="bg-orange-500/20 text-orange-500 border-orange-500/50">Pending</Badge>;
+        return (
+          <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/50 shadow-[0_0_10px_rgba(249,115,22,0.3)]">
+            <span className="w-2 h-2 bg-orange-400 rounded-full mr-2" />
+            Waiting
+          </Badge>
+        );
+      case "resolved":
+        return (
+          <Badge className="bg-green-500/20 text-green-400 border-green-500/50 shadow-[0_0_10px_rgba(34,197,94,0.3)]">
+            <span className="w-2 h-2 bg-green-400 rounded-full mr-2" />
+            Resolved
+          </Badge>
+        );
       case "closed":
-        return <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/50">Closed</Badge>;
+        return (
+          <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/50">
+            <span className="w-2 h-2 bg-gray-400 rounded-full mr-2" />
+            Closed
+          </Badge>
+        );
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }

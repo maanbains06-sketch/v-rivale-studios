@@ -48,10 +48,13 @@ const ticketCategories = [
 ];
 
 const statusOptions = [
-  { value: 'open', label: 'Open', icon: Clock, color: 'bg-blue-500/20 text-blue-500 border-blue-500/50' },
-  { value: 'in_progress', label: 'Working On It', icon: Wrench, color: 'bg-yellow-500/20 text-yellow-500 border-yellow-500/50' },
-  { value: 'on_hold', label: 'On Hold', icon: Pause, color: 'bg-orange-500/20 text-orange-500 border-orange-500/50' },
-  { value: 'resolved', label: 'Resolved', icon: CheckCircle, color: 'bg-green-500/20 text-green-500 border-green-500/50' },
+  { value: 'open', label: 'Open', icon: Clock, color: 'bg-blue-500/20 text-blue-400 border-blue-500/50 shadow-[0_0_10px_rgba(59,130,246,0.3)]', dotColor: 'bg-blue-400', glowing: true },
+  { value: 'in_review', label: 'In Review', icon: Wrench, color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50 shadow-[0_0_10px_rgba(234,179,8,0.3)]', dotColor: 'bg-yellow-400', glowing: true },
+  { value: 'in_progress', label: 'In Review', icon: Wrench, color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50 shadow-[0_0_10px_rgba(234,179,8,0.3)]', dotColor: 'bg-yellow-400', glowing: true },
+  { value: 'waiting', label: 'Waiting', icon: Pause, color: 'bg-orange-500/20 text-orange-400 border-orange-500/50 shadow-[0_0_10px_rgba(249,115,22,0.3)]', dotColor: 'bg-orange-400', glowing: false },
+  { value: 'on_hold', label: 'Waiting', icon: Pause, color: 'bg-orange-500/20 text-orange-400 border-orange-500/50 shadow-[0_0_10px_rgba(249,115,22,0.3)]', dotColor: 'bg-orange-400', glowing: false },
+  { value: 'resolved', label: 'Resolved', icon: CheckCircle, color: 'bg-green-500/20 text-green-400 border-green-500/50 shadow-[0_0_10px_rgba(34,197,94,0.3)]', dotColor: 'bg-green-400', glowing: false },
+  { value: 'closed', label: 'Closed', icon: CheckCircle, color: 'bg-gray-500/20 text-gray-400 border-gray-500/50', dotColor: 'bg-gray-400', glowing: false },
 ];
 
 const AdminTicketManagement = () => {
@@ -206,6 +209,7 @@ const AdminTicketManagement = () => {
     const Icon = statusOption.icon;
     return (
       <Badge className={statusOption.color}>
+        <span className={`w-2 h-2 rounded-full mr-1.5 ${statusOption.dotColor} ${statusOption.glowing ? 'animate-pulse' : ''}`} />
         <Icon className="w-3 h-3 mr-1" />
         {statusOption.label}
       </Badge>
