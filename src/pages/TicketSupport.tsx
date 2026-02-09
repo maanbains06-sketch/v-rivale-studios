@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Ticket, Send, Clock, CheckCircle, FileText, ArrowLeft, Upload, X, Image as ImageIcon, Video, Plus, AlertCircle } from "lucide-react";
+import { Ticket, Send, Clock, CheckCircle, FileText, ArrowLeft, Upload, X, Image as ImageIcon, Video, Plus, AlertCircle, Wrench, Pause, XCircle, MessageSquare } from "lucide-react";
 import { format } from "date-fns";
 import AnimatedSLRPLogo from "@/components/AnimatedSLRPLogo";
 
@@ -402,6 +402,114 @@ const TicketSupport = () => {
   const isImage = (url: string) => /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
   const isVideo = (url: string) => /\.(mp4|webm|mov)$/i.test(url);
 
+  const getStatusMessage = (status: string) => {
+    switch (status) {
+      case "open":
+        return (
+          <div className="p-4 rounded-xl bg-gradient-to-r from-blue-500/20 via-blue-500/10 to-blue-600/20 border border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.15)]">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-blue-500/30 flex items-center justify-center flex-shrink-0">
+                <Clock className="w-5 h-5 text-blue-400 animate-pulse" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-bold text-blue-400 text-lg flex items-center gap-2">
+                  Ticket Received
+                  <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
+                </h4>
+                <p className="text-blue-100/80 text-sm mt-1">
+                  Your ticket has been successfully submitted and is waiting to be assigned to a staff member. 
+                  Our team will review your request shortly. Thank you for your patience!
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      case "in_review":
+      case "in_progress":
+        return (
+          <div className="p-4 rounded-xl bg-gradient-to-r from-yellow-500/20 via-yellow-500/10 to-amber-500/20 border border-yellow-500/40 shadow-[0_0_20px_rgba(234,179,8,0.15)]">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-yellow-500/30 flex items-center justify-center flex-shrink-0">
+                <Wrench className="w-5 h-5 text-yellow-400 animate-pulse" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-bold text-yellow-400 text-lg flex items-center gap-2">
+                  Under Review
+                  <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
+                </h4>
+                <p className="text-yellow-100/80 text-sm mt-1">
+                  Great news! A staff member is actively working on your ticket. They are reviewing the details 
+                  and investigating your issue. You will receive an update soon with a resolution or follow-up questions.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      case "waiting":
+      case "on_hold":
+        return (
+          <div className="p-4 rounded-xl bg-gradient-to-r from-orange-500/20 via-orange-500/10 to-amber-600/20 border border-orange-500/40 shadow-[0_0_20px_rgba(249,115,22,0.15)]">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-orange-500/30 flex items-center justify-center flex-shrink-0">
+                <Pause className="w-5 h-5 text-orange-400" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-bold text-orange-400 text-lg flex items-center gap-2">
+                  Waiting for Your Response
+                  <MessageSquare className="w-4 h-4 text-orange-400" />
+                </h4>
+                <p className="text-orange-100/80 text-sm mt-1">
+                  We need additional information from you to proceed with your ticket. Please check the staff notes 
+                  below and provide the requested details. Your ticket will remain on hold until we receive your response.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      case "resolved":
+        return (
+          <div className="p-4 rounded-xl bg-gradient-to-r from-green-500/20 via-green-500/10 to-emerald-500/20 border border-green-500/40 shadow-[0_0_20px_rgba(34,197,94,0.15)]">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-green-500/30 flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-5 h-5 text-green-400" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-bold text-green-400 text-lg flex items-center gap-2">
+                  Issue Resolved ✓
+                </h4>
+                <p className="text-green-100/80 text-sm mt-1">
+                  Your ticket has been successfully resolved! The solution has been provided below. If you're satisfied 
+                  with the resolution, no further action is needed. If you have any follow-up questions, feel free to 
+                  submit a new ticket referencing this one.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      case "closed":
+        return (
+          <div className="p-4 rounded-xl bg-gradient-to-r from-gray-500/20 via-gray-500/10 to-slate-500/20 border border-gray-500/40">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-gray-500/30 flex items-center justify-center flex-shrink-0">
+                <XCircle className="w-5 h-5 text-gray-400" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-bold text-gray-400 text-lg">
+                  Ticket Closed
+                </h4>
+                <p className="text-gray-300/80 text-sm mt-1">
+                  This ticket has been closed and is now archived. If you still need assistance with a similar issue, 
+                  please submit a new ticket with updated details. We're always here to help!
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -491,6 +599,9 @@ const TicketSupport = () => {
                 </div>
               </CardHeader>
               <CardContent className="space-y-6 relative">
+                {/* Status Message Banner */}
+                {getStatusMessage(selectedTicket.status)}
+
                 <div className="grid md:grid-cols-3 gap-4">
                   <div className="p-3 rounded-lg bg-white/5 border border-white/10">
                     <Label className="text-muted-foreground text-xs uppercase tracking-wider">Category</Label>
