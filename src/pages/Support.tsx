@@ -5,7 +5,7 @@ import headerSupport from "@/assets/header-support.jpg";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail, Clock, Shield, Zap } from "lucide-react";
+import { Mail, Clock, Shield, Zap, Lock } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useNavigate, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -420,6 +420,18 @@ const Support = () => {
               <Link to="/ticket-support">
                 <FileText className="w-5 h-5 mr-2" />
                 Ticket Support
+              </Link>
+            </Button>
+
+            <Button 
+              size="lg"
+              variant="outline"
+              className="border-red-500 text-red-500 hover:bg-red-500/10"
+              asChild
+            >
+              <Link to="/confidential-support">
+                <Lock className="w-5 h-5 mr-2" />
+                Confidential Support
               </Link>
             </Button>
             
