@@ -190,7 +190,7 @@ const SupportChat = () => {
       .select("*")
       .order("last_message_at", { ascending: false });
 
-    // Regular users can only see their own chats
+    // Regular users can only see their own chats - this is the key restriction
     if (!canSeeAllChats) {
       query = query.eq("user_id", user.id);
     }
@@ -205,6 +205,50 @@ const SupportChat = () => {
     setChats(data || []);
     if (data && data.length > 0 && !selectedChat) {
       setSelectedChat(data[0]);
+    }
+  };
+
+  // Helper function for status badge styling
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "open":
+        return {
+          className: "bg-blue-500/20 text-blue-400 border-blue-500/50 shadow-[0_0_10px_rgba(59,130,246,0.3)]",
+          label: "Open",
+          glowing: true
+        };
+      case "in_review":
+      case "in_progress":
+        return {
+          className: "bg-yellow-500/20 text-yellow-400 border-yellow-500/50 shadow-[0_0_10px_rgba(234,179,8,0.3)]",
+          label: "In Review",
+          glowing: true
+        };
+      case "waiting":
+      case "pending":
+        return {
+          className: "bg-orange-500/20 text-orange-400 border-orange-500/50 shadow-[0_0_10px_rgba(249,115,22,0.3)]",
+          label: "Waiting",
+          glowing: false
+        };
+      case "resolved":
+        return {
+          className: "bg-green-500/20 text-green-400 border-green-500/50 shadow-[0_0_10px_rgba(34,197,94,0.3)]",
+          label: "Resolved",
+          glowing: false
+        };
+      case "closed":
+        return {
+          className: "bg-gray-500/20 text-gray-400 border-gray-500/50",
+          label: "Closed",
+          glowing: false
+        };
+      default:
+        return {
+          className: "bg-gray-500/20 text-gray-400 border-gray-500/50",
+          label: status,
+          glowing: false
+        };
     }
   };
 
@@ -1050,15 +1094,20 @@ const SupportChat = () => {
                                   {chat.subject}
                                 </p>
                               </div>
-                              <span className={`text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0 ml-2 ${
-                                chat.status === "open" 
-                                  ? "bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-500 border border-green-500/30" 
-                                  : chat.status === "closed" 
-                                    ? "bg-gray-500/20 text-gray-400 border border-gray-500/20" 
-                                    : "bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-500 border border-amber-500/30"
-                              }`}>
-                                {chat.status}
-                              </span>
+                              {(() => {
+                                const statusInfo = getStatusBadge(chat.status);
+                                return (
+                                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0 ml-2 flex items-center gap-1.5 border ${statusInfo.className}`}>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${
+                                      chat.status === 'open' ? 'bg-blue-400' :
+                                      chat.status === 'in_review' || chat.status === 'in_progress' ? 'bg-yellow-400' :
+                                      chat.status === 'waiting' || chat.status === 'pending' ? 'bg-orange-400' :
+                                      chat.status === 'resolved' ? 'bg-green-400' : 'bg-gray-400'
+                                    } ${statusInfo.glowing ? 'animate-pulse' : ''}`} />
+                                    {statusInfo.label}
+                                  </span>
+                                );
+                              })()}
                             </div>
                             <div className="flex items-center gap-2 flex-wrap">
                               {isRefund && (
