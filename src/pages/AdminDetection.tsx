@@ -273,31 +273,78 @@ const AdminDetection = () => {
                   ) : (
                     <ScrollArea className="max-h-[600px]">
                       <Table>
-                        <TableHeader>
+                         <TableHeader>
                           <TableRow>
                             <TableHead>Type</TableHead>
                             <TableHead>Account 1</TableHead>
                             <TableHead>Account 2</TableHead>
                             <TableHead>Confidence</TableHead>
                             <TableHead>Status</TableHead>
+                            <TableHead>Evidence</TableHead>
                             <TableHead>Date</TableHead>
                             <TableHead>Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {filteredDetections.map(d => (
-                            <TableRow key={d.id}>
+                          {filteredDetections.map(d => {
+                            const details = d.details || {};
+                            const isIp = d.detection_type === 'ip_match';
+                            return (
+                            <TableRow key={d.id} className="group">
                               <TableCell>
-                                {d.detection_type === 'ip_match' ? (
+                                {isIp ? (
                                   <div className="flex items-center gap-1"><Globe className="w-4 h-4 text-blue-500" />IP</div>
                                 ) : (
                                   <div className="flex items-center gap-1"><Fingerprint className="w-4 h-4 text-purple-500" />Device</div>
                                 )}
                               </TableCell>
-                              <TableCell className="font-medium">{d.details?.primary_username || 'Unknown'}</TableCell>
-                              <TableCell className="font-medium text-destructive">{d.details?.alt_username || 'Unknown'}</TableCell>
+                              <TableCell>
+                                <div className="font-medium">{details.primary_username || 'Unknown'}</div>
+                                {details.primary_discord_id && (
+                                  <span className="text-xs text-muted-foreground">ID: {details.primary_discord_id}</span>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <div className="font-medium text-destructive">{details.alt_username || 'Unknown'}</div>
+                                {details.alt_discord_id && (
+                                  <span className="text-xs text-muted-foreground">ID: {details.alt_discord_id}</span>
+                                )}
+                              </TableCell>
                               <TableCell>{getConfidenceBadge(d.confidence_score)}</TableCell>
                               <TableCell>{getStatusBadge(d.status)}</TableCell>
+                              <TableCell>
+                                <div className="space-y-1 text-xs">
+                                  {isIp && details.shared_ip && (
+                                    <div className="flex items-center gap-1 text-muted-foreground">
+                                      <Globe className="w-3 h-3" />
+                                      <span className="font-mono">{details.shared_ip}</span>
+                                    </div>
+                                  )}
+                                  {!isIp && details.shared_fingerprint && (
+                                    <div className="flex items-center gap-1 text-muted-foreground">
+                                      <Fingerprint className="w-3 h-3" />
+                                      <span className="font-mono">{details.shared_fingerprint.substring(0, 16)}...</span>
+                                    </div>
+                                  )}
+                                  {isIp && details.match_count && (
+                                    <div className="text-muted-foreground">
+                                      <span className="font-semibold text-foreground">{details.match_count}</span> shared login(s)
+                                    </div>
+                                  )}
+                                  {d.fingerprint_hash && !details.shared_fingerprint && (
+                                    <div className="flex items-center gap-1 text-muted-foreground">
+                                      <Fingerprint className="w-3 h-3" />
+                                      <span className="font-mono">{d.fingerprint_hash.substring(0, 16)}...</span>
+                                    </div>
+                                  )}
+                                  {d.ip_address && !details.shared_ip && (
+                                    <div className="flex items-center gap-1 text-muted-foreground">
+                                      <Globe className="w-3 h-3" />
+                                      <span className="font-mono">{d.ip_address}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </TableCell>
                               <TableCell className="text-sm text-muted-foreground">
                                 {new Date(d.created_at).toLocaleDateString()}
                               </TableCell>
@@ -321,7 +368,8 @@ const AdminDetection = () => {
                                 </div>
                               </TableCell>
                             </TableRow>
-                          ))}
+                            );
+                          })}
                         </TableBody>
                       </Table>
                     </ScrollArea>
