@@ -10,6 +10,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MessageSquare, Trash2, RefreshCw, Loader2, Clock, User, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
+import { useAllChatPresence } from "@/hooks/useChatPresence";
+import ActiveStaffIndicator from "@/components/ActiveStaffIndicator";
 
 interface SupportChat {
   id: string;
@@ -42,6 +44,9 @@ const OwnerLiveChatManager = () => {
   const [chatToDelete, setChatToDelete] = useState<string | null>(null);
   const [deleteAllConfirm, setDeleteAllConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Track staff presence in chats
+  const { chatViewers } = useAllChatPresence();
 
   const fetchChats = useCallback(async () => {
     setLoading(true);
@@ -322,6 +327,7 @@ const OwnerLiveChatManager = () => {
                     <TableHead>Subject</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Priority</TableHead>
+                    <TableHead>Staff Active</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead>Last Activity</TableHead>
                     <TableHead>Flags</TableHead>
@@ -342,6 +348,13 @@ const OwnerLiveChatManager = () => {
                       </TableCell>
                       <TableCell>{getStatusBadge(chat.status)}</TableCell>
                       <TableCell>{getPriorityBadge(chat.priority)}</TableCell>
+                      <TableCell>
+                        {chatViewers[chat.id] && chatViewers[chat.id].length > 0 ? (
+                          <ActiveStaffIndicator viewers={chatViewers[chat.id]} type="chat" compact />
+                        ) : (
+                          <span className="text-xs text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {format(new Date(chat.created_at), "PP")}
                       </TableCell>

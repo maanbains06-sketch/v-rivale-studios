@@ -14,6 +14,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Ticket, Clock, CheckCircle, Loader2, Trash2, Eye, RefreshCw, Pause, Wrench, Search, Image as ImageIcon, Video, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
+import { useTicketPresence, useAllTicketPresence } from "@/hooks/useTicketPresence";
+import ActiveStaffIndicator from "@/components/ActiveStaffIndicator";
 
 interface SupportTicket {
   id: string;
@@ -68,6 +70,10 @@ const AdminTicketManagement = () => {
   const [ticketToDelete, setTicketToDelete] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  
+  // Track presence for selected ticket and all tickets
+  const { activeViewers } = useTicketPresence(selectedTicket?.id || null);
+  const { ticketViewers } = useAllTicketPresence();
 
   const fetchTickets = useCallback(async () => {
     setLoading(true);
@@ -298,6 +304,7 @@ const AdminTicketManagement = () => {
                     <TableHead>Player</TableHead>
                     <TableHead>Priority</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Staff Active</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -325,6 +332,13 @@ const AdminTicketManagement = () => {
                       </TableCell>
                       <TableCell>{getPriorityBadge(ticket.priority)}</TableCell>
                       <TableCell>{getStatusBadge(ticket.status)}</TableCell>
+                      <TableCell>
+                        {ticketViewers[ticket.id] && ticketViewers[ticket.id].length > 0 ? (
+                          <ActiveStaffIndicator viewers={ticketViewers[ticket.id]} type="ticket" compact />
+                        ) : (
+                          <span className="text-xs text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {format(new Date(ticket.created_at), "PP")}
                       </TableCell>
@@ -366,10 +380,15 @@ const AdminTicketManagement = () => {
           {selectedTicket && (
             <>
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  <Ticket className="w-5 h-5 text-primary" />
-                  {selectedTicket.ticket_number}
-                </DialogTitle>
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <DialogTitle className="flex items-center gap-2">
+                    <Ticket className="w-5 h-5 text-primary" />
+                    {selectedTicket.ticket_number}
+                  </DialogTitle>
+                  {activeViewers.length > 0 && (
+                    <ActiveStaffIndicator viewers={activeViewers} type="ticket" />
+                  )}
+                </div>
                 <DialogDescription>
                   Submitted on {format(new Date(selectedTicket.created_at), "PPP 'at' p")}
                 </DialogDescription>
