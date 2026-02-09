@@ -260,8 +260,9 @@ async function sendDetectionAlert(detection: any) {
   const isIpMatch = detection.detection_type === 'ip_match';
   const confidence = detection.confidence_score || 0;
 
-  const bannerUrl = 'https://skyliferoleplay.com/images/alt-detection-alert.jpg';
-  const logoUrl = 'https://skyliferoleplay.com/images/slrp-logo.png';
+  const STORAGE_BASE = `${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/discord-assets`;
+  const bannerUrl = `${STORAGE_BASE}/alt-detection-alert.jpg`;
+  const logoUrl = `${STORAGE_BASE}/slrp-logo.png`;
 
   // Color based on confidence
   const embedColor = confidence >= 80 ? 0xED4245 : confidence >= 50 ? 0xFEE75C : 0x57F287;
@@ -388,7 +389,9 @@ async function sendBanAlert(userId: string, banReason: string, fingerprint?: str
 
   if (!DISCORD_BOT_TOKEN || !CHANNEL_ID) return;
 
-  const logoUrl = 'https://skyliferoleplay.com/images/slrp-logo.png';
+  const STORAGE_BASE = `${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/discord-assets`;
+  const logoUrl = `${STORAGE_BASE}/slrp-logo.png`;
+  const bannerUrl = `${STORAGE_BASE}/alt-detection-alert.jpg`;
 
   // Look up user profile
   const supabase = createClient(
@@ -437,6 +440,7 @@ async function sendBanAlert(userId: string, banReason: string, fingerprint?: str
         inline: false,
       },
     ],
+    image: { url: bannerUrl },
     footer: {
       text: 'SKYLIFE ROLEPLAY INDIA • Website Ban System',
       icon_url: logoUrl,
