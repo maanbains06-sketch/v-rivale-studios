@@ -94,6 +94,7 @@ const JobPanel = lazy(() => import("./pages/JobPanel"));
 const BusinessPanel = lazy(() => import("./pages/BusinessPanel"));
 const CreatorContract = lazy(() => import("./pages/CreatorContract"));
 const TicketSupport = lazy(() => import("./pages/TicketSupport"));
+const ConfidentialSupport = lazy(() => import("./pages/ConfidentialSupport"));
 const CreatorApplication = lazy(() => import("./pages/CreatorApplication"));
 const AdminDetection = lazy(() => import("./pages/AdminDetection"));
 
@@ -189,6 +190,7 @@ const AppRoutes = memo(() => {
           <Route path="/business-panel" element={<PageTransition><RequireAuth message="Login with Discord to access the Business Panel."><BusinessPanel /></RequireAuth></PageTransition>} />
           <Route path="/creator-contract" element={<PageTransition><RequireAuth message="Login with Discord to access contracts."><CreatorContract /></RequireAuth></PageTransition>} />
 <Route path="/ticket-support" element={<PageTransition><RequireAuth message="Login with Discord to submit tickets."><TicketSupport /></RequireAuth></PageTransition>} />
+<Route path="/confidential-support" element={<PageTransition><RequireAuth message="Login with Discord to access confidential support."><ConfidentialSupport /></RequireAuth></PageTransition>} />
           <Route path="/creator-application" element={<PageTransition><CreatorApplication /></PageTransition>} />
           <Route path="/admin/detection" element={<PageTransition><AdminDetection /></PageTransition>} />
           
