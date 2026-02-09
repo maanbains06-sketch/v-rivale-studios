@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 export interface RpNewsArticle {
   id: string;
@@ -19,6 +20,9 @@ export interface RpNewsArticle {
 export const useRpNews = (filterType?: string) => {
   const [articles, setArticles] = useState<RpNewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
+  const [liveCount, setLiveCount] = useState(0);
+  const { toast } = useToast();
+  const isInitialLoad = useRef(true);
 
   const loadArticles = useCallback(async () => {
     try {
@@ -39,28 +43,71 @@ export const useRpNews = (filterType?: string) => {
       console.error('Error loading news:', error);
     } finally {
       setLoading(false);
+      isInitialLoad.current = false;
     }
   }, [filterType]);
 
   useEffect(() => {
+    // Reset for filter changes
+    setLoading(true);
+    isInitialLoad.current = true;
     loadArticles();
 
+    // Listen to ALL events: INSERT, UPDATE, DELETE
     const channel = supabase
-      .channel('rp-news-realtime')
+      .channel(`rp-news-realtime-${filterType || 'all'}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'rp_news_articles',
       }, (payload) => {
         const newArticle = payload.new as RpNewsArticle;
-        if (!filterType || filterType === 'all' || newArticle.event_type === filterType) {
-          setArticles(prev => [newArticle, ...prev]);
+        const matchesFilter = !filterType || filterType === 'all' || newArticle.event_type === filterType;
+        
+        if (matchesFilter) {
+          setArticles(prev => {
+            // Prevent duplicates
+            if (prev.some(a => a.id === newArticle.id)) return prev;
+            return [newArticle, ...prev];
+          });
+          setLiveCount(prev => prev + 1);
+
+          // Show breaking news toast (skip during initial load)
+          if (!isInitialLoad.current) {
+            toast({
+              title: '🔴 BREAKING NEWS',
+              description: newArticle.headline,
+              duration: 8000,
+            });
+          }
         }
       })
-      .subscribe();
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'rp_news_articles',
+      }, (payload) => {
+        const updated = payload.new as RpNewsArticle;
+        setArticles(prev =>
+          prev.map(a => a.id === updated.id ? updated : a)
+        );
+      })
+      .on('postgres_changes', {
+        event: 'DELETE',
+        schema: 'public',
+        table: 'rp_news_articles',
+      }, (payload) => {
+        const deletedId = (payload.old as { id: string }).id;
+        setArticles(prev => prev.filter(a => a.id !== deletedId));
+      })
+      .subscribe((status) => {
+        console.log('[News Realtime] Channel status:', status);
+      });
 
-    return () => { supabase.removeChannel(channel); };
-  }, [loadArticles, filterType]);
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [loadArticles, filterType, toast]);
 
-  return { articles, loading, reload: loadArticles };
+  return { articles, loading, liveCount, reload: loadArticles };
 };
