@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, memo } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield, LogOut, Menu, UserCircle, Mail, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, ExternalLink, Crown, LayoutDashboard, Gift, Briefcase, Building2, FileText } from "lucide-react";
+import { Users, Shield, LogOut, Menu, UserCircle, Mail, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, ExternalLink, Crown, LayoutDashboard, Gift, Briefcase, Building2, FileText, Newspaper } from "lucide-react";
 import { Button } from "./ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
@@ -302,6 +302,14 @@ const Navigation = () => {
               <Gift className="w-4 h-4" />
               Giveaway
             </NavLink>
+            <NavLink 
+              to="/news" 
+              className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1"
+              activeClassName="text-primary"
+            >
+              <Newspaper className="w-4 h-4" />
+              News
+            </NavLink>
             <a
               href={TEBEX_STORE_URL}
               target="_blank"
@@ -487,6 +495,12 @@ const Navigation = () => {
                       <Link to="/giveaway" className="flex items-center">
                         <Gift className="w-4 h-4 mr-2" />
                         Giveaway
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/news" className="flex items-center">
+                        <Newspaper className="w-4 h-4 mr-2" />
+                        News
                       </Link>
                     </Button>
                     <Button variant="ghost" className="justify-start" asChild>
