@@ -325,6 +325,60 @@ export type Database = {
         }
         Relationships: []
       }
+      confidential_tickets: {
+        Row: {
+          admin_notes: string | null
+          category: string
+          created_at: string
+          description: string
+          discord_id: string
+          discord_username: string | null
+          id: string
+          priority: string
+          resolution: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          category: string
+          created_at?: string
+          description: string
+          discord_id: string
+          discord_username?: string | null
+          id?: string
+          priority?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          category?: string
+          created_at?: string
+          description?: string
+          discord_id?: string
+          discord_username?: string | null
+          id?: string
+          priority?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       contract_templates: {
         Row: {
           content: Json
