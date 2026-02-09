@@ -104,71 +104,81 @@ const AdminDetection = () => {
   }, [isAdmin, loadData]);
 
   const handleUpdateDetection = async (id: string, status: string) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    await supabase.from('alt_account_detections').update({
-      status,
-      reviewed_by: user?.id,
-      reviewed_at: new Date().toISOString(),
-    }).eq('id', id);
-    toast.success(`Detection marked as ${status}`);
-    loadData();
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('You must be logged in to perform this action');
+        return;
+      }
+      const { error } = await supabase.from('alt_account_detections').update({
+        status,
+        reviewed_by: user.id,
+        reviewed_at: new Date().toISOString(),
+      }).eq('id', id);
+      if (error) {
+        toast.error(`Failed to update detection: ${error.message}`);
+        return;
+      }
+      toast.success(`Detection marked as ${status}`);
+      loadData();
+    } catch (err: any) {
+      toast.error(`Error updating detection: ${err.message || 'Unknown error'}`);
+    }
   };
 
   const handleUnban = async () => {
     if (!unbanDialog.ban) return;
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    await supabase.from('website_bans').update({
-      is_active: false,
-      unbanned_by: user?.id,
-      unbanned_at: new Date().toISOString(),
-    }).eq('id', unbanDialog.ban.id);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error } = await supabase.from('website_bans').update({
+        is_active: false,
+        unbanned_by: user?.id,
+        unbanned_at: new Date().toISOString(),
+      }).eq('id', unbanDialog.ban.id);
+      if (error) { toast.error(`Failed to unban: ${error.message}`); return; }
 
-    // Unblock fingerprints
-    if (unbanDialog.ban.user_id) {
-      await supabase.from('device_fingerprints').update({ is_blocked: false }).eq('user_id', unbanDialog.ban.user_id);
+      if (unbanDialog.ban.user_id) {
+        await supabase.from('device_fingerprints').update({ is_blocked: false }).eq('user_id', unbanDialog.ban.user_id);
+      }
+      toast.success('User unbanned successfully');
+      setUnbanDialog({ open: false, ban: null });
+      loadData();
+    } catch (err: any) {
+      toast.error(`Error unbanning: ${err.message || 'Unknown error'}`);
     }
-
-    toast.success('User unbanned successfully');
-    setUnbanDialog({ open: false, ban: null });
-    loadData();
   };
 
   const handleManualBan = async () => {
-    if (!newBan.ban_reason) {
-      toast.error('Ban reason is required');
-      return;
+    if (!newBan.ban_reason) { toast.error('Ban reason is required'); return; }
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      let userId = null;
+      if (newBan.discord_id) {
+        const { data: profile } = await supabase.from('profiles').select('id').eq('discord_id', newBan.discord_id).maybeSingle();
+        userId = profile?.id;
+      }
+      const { error } = await supabase.from('website_bans').insert({
+        user_id: userId,
+        discord_id: newBan.discord_id || null,
+        discord_username: newBan.discord_username || null,
+        steam_id: newBan.steam_id || null,
+        ban_reason: newBan.ban_reason,
+        ban_source: 'website',
+        is_permanent: true,
+        banned_by: user?.email || 'Admin',
+      });
+      if (error) { toast.error(`Failed to ban: ${error.message}`); return; }
+
+      if (userId) {
+        await supabase.from('device_fingerprints').update({ is_blocked: true }).eq('user_id', userId);
+      }
+      toast.success('User banned from website');
+      setBanDialog(false);
+      setNewBan({ discord_id: '', discord_username: '', steam_id: '', ban_reason: '' });
+      loadData();
+    } catch (err: any) {
+      toast.error(`Error banning user: ${err.message || 'Unknown error'}`);
     }
-
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    // Find user_id by discord_id
-    let userId = null;
-    if (newBan.discord_id) {
-      const { data: profile } = await supabase.from('profiles').select('id').eq('discord_id', newBan.discord_id).maybeSingle();
-      userId = profile?.id;
-    }
-
-    await supabase.from('website_bans').insert({
-      user_id: userId,
-      discord_id: newBan.discord_id || null,
-      discord_username: newBan.discord_username || null,
-      steam_id: newBan.steam_id || null,
-      ban_reason: newBan.ban_reason,
-      ban_source: 'website',
-      is_permanent: true,
-      banned_by: user?.email || 'Admin',
-    });
-
-    // Block fingerprints if user found
-    if (userId) {
-      await supabase.from('device_fingerprints').update({ is_blocked: true }).eq('user_id', userId);
-    }
-
-    toast.success('User banned from website');
-    setBanDialog(false);
-    setNewBan({ discord_id: '', discord_username: '', steam_id: '', ban_reason: '' });
-    loadData();
   };
 
   const getConfidenceBadge = (score: number) => {
@@ -292,16 +302,23 @@ const AdminDetection = () => {
                                 {new Date(d.created_at).toLocaleDateString()}
                               </TableCell>
                               <TableCell>
-                                {d.status === 'flagged' && (
-                                  <div className="flex gap-1">
-                                    <Button size="sm" variant="destructive" onClick={() => handleUpdateDetection(d.id, 'confirmed')}>
+                                <div className="flex gap-1">
+                                  {d.status !== 'confirmed' && (
+                                    <Button size="sm" variant="destructive" onClick={() => handleUpdateDetection(d.id, 'confirmed')} title="Confirm Alt">
                                       <Check className="w-3 h-3" />
                                     </Button>
-                                    <Button size="sm" variant="outline" onClick={() => handleUpdateDetection(d.id, 'dismissed')}>
+                                  )}
+                                  {d.status !== 'dismissed' && (
+                                    <Button size="sm" variant="outline" onClick={() => handleUpdateDetection(d.id, 'dismissed')} title="Dismiss">
                                       <X className="w-3 h-3" />
                                     </Button>
-                                  </div>
-                                )}
+                                  )}
+                                  {d.status !== 'flagged' && (
+                                    <Button size="sm" variant="secondary" onClick={() => handleUpdateDetection(d.id, 'flagged')} title="Re-flag">
+                                      <AlertTriangle className="w-3 h-3" />
+                                    </Button>
+                                  )}
+                                </div>
                               </TableCell>
                             </TableRow>
                           ))}
