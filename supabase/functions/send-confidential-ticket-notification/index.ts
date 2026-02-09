@@ -32,18 +32,11 @@ serve(async (req) => {
       other_sensitive: "📋 Other Sensitive Matter",
     };
 
-    const priorityColors: Record<string, number> = {
-      critical: 0xFF0000,
-      high: 0xFF6600,
-      normal: 0xFFAA00,
-      low: 0x888888,
-    };
-
-    const priorityLabels: Record<string, string> = {
-      critical: "🔴 CRITICAL",
-      high: "🟠 High",
-      normal: "🟡 Normal",
-      low: "⚪ Low",
+    const priorityConfig: Record<string, { color: number; emoji: string; label: string; bar: string }> = {
+      critical: { color: 0xFF0000, emoji: "🔴", label: "CRITICAL", bar: "🟥🟥🟥🟥🟥" },
+      high: { color: 0xFF6600, emoji: "🟠", label: "HIGH", bar: "🟧🟧🟧🟧⬛" },
+      normal: { color: 0xFFAA00, emoji: "🟡", label: "NORMAL", bar: "🟨🟨🟨⬛⬛" },
+      low: { color: 0x888888, emoji: "⚪", label: "LOW", bar: "⬜⬜⬛⬛⬛" },
     };
 
     // Fetch user's Discord display name
@@ -59,32 +52,41 @@ serve(async (req) => {
     } catch { /* use fallback */ }
 
     const imageUrl = "https://obirpzwvnqveddyuulsb.supabase.co/storage/v1/object/public/assets/confidential-support.jpg";
+    const pConfig = priorityConfig[priority] || priorityConfig.critical;
 
     // Build mention tags
     let mentionContent = `<@${discordId}>`;
     if (ownerDiscordId) mentionContent += ` | <@${ownerDiscordId}>`;
     if (adminRoleId) mentionContent += ` | <@&${adminRoleId}>`;
 
-    const embed = {
-      title: "🔒 New Confidential Ticket",
-      description: `A new confidential support ticket has been submitted and requires private attention.`,
-      color: priorityColors[priority] || 0xFF0000,
-      fields: [
-        { name: "📝 Subject", value: subject || "No subject", inline: false },
-        { name: "📂 Category", value: categoryLabels[category] || category, inline: true },
-        { name: "⚡ Priority", value: priorityLabels[priority] || priority, inline: true },
-        { name: "👤 Submitted By", value: `<@${discordId}> (${displayName})`, inline: false },
-        { name: "🆔 Discord ID", value: discordId, inline: true },
-        { name: "🎫 Ticket ID", value: ticketId?.substring(0, 8) || "N/A", inline: true },
-      ],
+    const divider = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━";
+
+    const headerEmbed = {
+      color: pConfig.color,
+      description: `# 🔒 CONFIDENTIAL TICKET\n${divider}\n> *A new confidential support ticket has been submitted*\n> *and requires immediate private attention.*\n${divider}`,
       image: { url: imageUrl },
-      footer: { text: "SkyLife Confidential Support • Handle with care" },
+    };
+
+    const detailsEmbed = {
+      color: pConfig.color,
+      fields: [
+        { name: "📝 Subject", value: `> **${subject || "No subject"}**`, inline: false },
+        { name: "📂 Category", value: `> ${categoryLabels[category] || category}`, inline: true },
+        { name: "⚡ Priority Level", value: `> ${pConfig.emoji} **${pConfig.label}**\n> ${pConfig.bar}`, inline: true },
+        { name: "\u200b", value: divider, inline: false },
+        { name: "👤 Submitted By", value: `> <@${discordId}>\n> **${displayName}**`, inline: true },
+        { name: "🆔 Discord ID", value: `> \`${discordId}\``, inline: true },
+        { name: "🎫 Ticket Reference", value: `> \`#${ticketId?.substring(0, 8) || "N/A"}\``, inline: true },
+      ],
+      footer: { 
+        text: "🔐 Skylife Roleplay India • Confidential Support System",
+      },
       timestamp: new Date().toISOString(),
     };
 
     const payload = {
-      content: `🔒 **Confidential Ticket Alert** — ${mentionContent}`,
-      embeds: [embed],
+      content: `🔒 **CONFIDENTIAL TICKET ALERT**\n${mentionContent}`,
+      embeds: [headerEmbed, detailsEmbed],
     };
 
     const res = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, {
