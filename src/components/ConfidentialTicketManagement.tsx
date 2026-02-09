@@ -8,12 +8,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Lock, Search, Eye, CheckCircle, Clock, XCircle, Loader2, RefreshCw } from "lucide-react";
+import { Lock, Search, Eye, CheckCircle, Clock, XCircle, Loader2, RefreshCw, Paperclip, FileIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface ConfidentialTicket {
   id: string;
+  ticket_number: string;
   user_id: string;
   discord_id: string;
   discord_username: string | null;
@@ -24,6 +25,7 @@ interface ConfidentialTicket {
   status: string;
   admin_notes: string | null;
   resolution: string | null;
+  attachment_url: string | null;
   created_at: string;
   resolved_at: string | null;
   resolved_by: string | null;
@@ -133,6 +135,7 @@ const ConfidentialTicketManagement = () => {
 
   const filteredTickets = tickets.filter(t => {
     const matchesSearch = searchTerm === "" ||
+      (t.ticket_number && t.ticket_number.toLowerCase().includes(searchTerm.toLowerCase())) ||
       t.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
       t.discord_username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       t.discord_id.includes(searchTerm);
@@ -162,7 +165,7 @@ const ConfidentialTicketManagement = () => {
         <div className="flex flex-wrap gap-3 mb-4">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input placeholder="Search by subject, Discord name or ID..." className="pl-10" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+            <Input placeholder="Search by ticket number, subject, Discord name or ID..." className="pl-10" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
@@ -185,6 +188,7 @@ const ConfidentialTicketManagement = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Ticket #</TableHead>
                   <TableHead>Subject</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>User</TableHead>
@@ -197,7 +201,13 @@ const ConfidentialTicketManagement = () => {
               <TableBody>
                 {filteredTickets.map(ticket => (
                   <TableRow key={ticket.id} className="hover:bg-red-500/5">
-                    <TableCell className="font-medium max-w-[200px] truncate">{ticket.subject}</TableCell>
+                    <TableCell><Badge variant="outline" className="font-mono text-xs">{ticket.ticket_number}</Badge></TableCell>
+                    <TableCell className="font-medium max-w-[200px] truncate">
+                      <div className="flex items-center gap-1">
+                        {ticket.subject}
+                        {ticket.attachment_url && <Paperclip className="w-3 h-3 text-muted-foreground flex-shrink-0" />}
+                      </div>
+                    </TableCell>
                     <TableCell>{categoryLabels[ticket.category] || ticket.category}</TableCell>
                     <TableCell>
                       <div className="text-sm">
@@ -225,8 +235,9 @@ const ConfidentialTicketManagement = () => {
       <Dialog open={!!selectedTicket} onOpenChange={(open) => { if (!open) setSelectedTicket(null); }}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto border-red-500/30">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-400">
+            <DialogTitle className="flex items-center gap-2 text-red-400 flex-wrap">
               <Lock className="w-5 h-5" />
+              <Badge variant="outline" className="font-mono">{selectedTicket?.ticket_number}</Badge>
               {selectedTicket?.subject}
             </DialogTitle>
           </DialogHeader>
@@ -244,6 +255,19 @@ const ConfidentialTicketManagement = () => {
                 <p className="text-sm font-medium text-muted-foreground mb-1">Description</p>
                 <p className="whitespace-pre-wrap">{selectedTicket.description}</p>
               </div>
+
+              {selectedTicket.attachment_url && (
+                <div className="p-4 rounded-xl bg-muted/30 border border-border">
+                  <p className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2"><Paperclip className="w-4 h-4" /> Attachment</p>
+                  {selectedTicket.attachment_url.match(/\.(png|jpg|jpeg|gif|webp)/) ? (
+                    <img src={selectedTicket.attachment_url} alt="Attachment" className="max-w-full max-h-64 rounded-lg" />
+                  ) : (
+                    <a href={selectedTicket.attachment_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-red-400 hover:underline">
+                      <FileIcon className="w-4 h-4" /> View Attachment
+                    </a>
+                  )}
+                </div>
+              )}
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Staff Notes</label>

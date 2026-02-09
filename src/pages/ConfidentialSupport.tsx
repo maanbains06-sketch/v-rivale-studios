@@ -25,6 +25,7 @@ const confidentialCategories = [
 
 interface ConfidentialTicket {
   id: string;
+  ticket_number: string;
   category: string;
   subject: string;
   description: string;
@@ -435,7 +436,7 @@ const ConfidentialSupport = () => {
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <Lock className="w-4 h-4 text-red-400 flex-shrink-0" />
+                          <Badge variant="outline" className="font-mono text-xs">{ticket.ticket_number}</Badge>
                           <h3 className="font-semibold truncate">{ticket.subject}</h3>
                         </div>
                         <p className="text-sm text-muted-foreground">

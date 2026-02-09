@@ -341,6 +341,7 @@ export type Database = {
           resolved_by: string | null
           status: string
           subject: string
+          ticket_number: string
           updated_at: string
           user_id: string
         }
@@ -359,6 +360,7 @@ export type Database = {
           resolved_by?: string | null
           status?: string
           subject: string
+          ticket_number?: string
           updated_at?: string
           user_id: string
         }
@@ -377,6 +379,7 @@ export type Database = {
           resolved_by?: string | null
           status?: string
           subject?: string
+          ticket_number?: string
           updated_at?: string
           user_id?: string
         }
