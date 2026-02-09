@@ -4,7 +4,7 @@ import { decode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
@@ -14,6 +14,7 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
   court_case: "Court Case",
   impound: "Vehicle Impound",
   event: "City Event",
+  chase: "Police Chase",
 };
 
 serve(async (req) => {
@@ -29,20 +30,24 @@ serve(async (req) => {
 
     const body = await req.json();
     const {
-      event_type,       // death, arrest, shootout, court_case, impound, event
-      character_name,   // RP character name
-      location,         // In-game location
-      details,          // Additional details about the event
-      screenshot_base64, // Base64 encoded screenshot from FiveM
-      screenshot_url,   // OR a direct URL to screenshot
-      involved_parties, // Other characters involved
-      timestamp,        // When it happened in-game
-      weapon,           // Weapon used (for shootouts/deaths)
-      vehicle,          // Vehicle info (for impounds)
-      charges,          // Charges (for arrests/court cases)
-      officer_name,     // Arresting/responding officer
-      judge_name,       // Judge (for court cases)
-      verdict,          // Verdict (for court cases)
+      event_type,
+      character_name,
+      location,
+      details,
+      screenshot_base64,
+      screenshot_url,
+      video_base64,
+      video_url,
+      involved_parties,
+      timestamp,
+      weapon,
+      vehicle,
+      charges,
+      officer_name,
+      judge_name,
+      verdict,
+      chase_duration,
+      chase_end_reason,
     } = body;
 
     if (!event_type || !character_name) {
@@ -54,22 +59,14 @@ serve(async (req) => {
 
     // Handle image upload
     let imageUrl: string | null = null;
-
     if (screenshot_base64) {
       const imageData = decode(screenshot_base64);
       const fileName = `${event_type}/${Date.now()}-${crypto.randomUUID()}.jpg`;
-
       const { error: uploadError } = await supabase.storage
         .from("news-images")
-        .upload(fileName, imageData, {
-          contentType: "image/jpeg",
-          upsert: false,
-        });
-
+        .upload(fileName, imageData, { contentType: "image/jpeg", upsert: false });
       if (!uploadError) {
-        const { data: urlData } = supabase.storage
-          .from("news-images")
-          .getPublicUrl(fileName);
+        const { data: urlData } = supabase.storage.from("news-images").getPublicUrl(fileName);
         imageUrl = urlData.publicUrl;
       } else {
         console.error("Image upload error:", uploadError);
@@ -78,11 +75,36 @@ serve(async (req) => {
       imageUrl = screenshot_url;
     }
 
+    // Handle video upload
+    let videoUrl: string | null = null;
+    if (video_base64) {
+      const videoData = decode(video_base64);
+      const videoFileName = `${event_type}/${Date.now()}-${crypto.randomUUID()}.mp4`;
+      const { error: videoUploadError } = await supabase.storage
+        .from("news-videos")
+        .upload(videoFileName, videoData, { contentType: "video/mp4", upsert: false });
+      if (!videoUploadError) {
+        const { data: videoUrlData } = supabase.storage.from("news-videos").getPublicUrl(videoFileName);
+        videoUrl = videoUrlData.publicUrl;
+      } else {
+        console.error("Video upload error:", videoUploadError);
+      }
+    } else if (video_url) {
+      videoUrl = video_url;
+    }
+
+    // Determine media type
+    let mediaType = "none";
+    if (imageUrl && videoUrl) mediaType = "both";
+    else if (videoUrl) mediaType = "video";
+    else if (imageUrl) mediaType = "image";
+
     // Build context for AI article generation
     const eventContext = buildEventContext({
       event_type, character_name, location, details,
       involved_parties, timestamp, weapon, vehicle,
       charges, officer_name, judge_name, verdict,
+      chase_duration, chase_end_reason,
     });
 
     // Generate AI news article
@@ -91,7 +113,7 @@ serve(async (req) => {
 
     if (lovableApiKey) {
       try {
-        const aiResult = await generateNewsArticle(lovableApiKey, event_type, eventContext);
+        const aiResult = await generateNewsArticle(lovableApiKey, event_type, eventContext, !!videoUrl);
         if (aiResult) {
           headline = aiResult.headline;
           articleBody = aiResult.article;
@@ -111,9 +133,12 @@ serve(async (req) => {
         character_name,
         location: location || "Los Santos",
         image_url: imageUrl,
+        video_url: videoUrl,
+        media_type: mediaType,
         event_data: {
           involved_parties, timestamp, weapon, vehicle,
           charges, officer_name, judge_name, verdict, details,
+          chase_duration, chase_end_reason,
         },
       })
       .select()
@@ -148,14 +173,21 @@ function buildEventContext(data: Record<string, any>): string {
   if (data.officer_name) parts.push(`Responding Officer: ${data.officer_name}`);
   if (data.judge_name) parts.push(`Presiding Judge: ${data.judge_name}`);
   if (data.verdict) parts.push(`Verdict: ${data.verdict}`);
+  if (data.chase_duration) parts.push(`Chase Duration: ${data.chase_duration}`);
+  if (data.chase_end_reason) parts.push(`Chase Ended: ${data.chase_end_reason}`);
   return parts.join("\n");
 }
 
 async function generateNewsArticle(
   apiKey: string,
   eventType: string,
-  context: string
+  context: string,
+  hasVideo: boolean
 ): Promise<{ headline: string; article: string } | null> {
+  const videoNote = hasVideo
+    ? "\nNote: This article has accompanying video footage. Mention that footage/video is available when relevant (e.g., 'Security camera footage obtained by The City Chronicle shows...' or 'Dashcam footage from the pursuing unit reveals...')."
+    : "";
+
   const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -167,7 +199,7 @@ async function generateNewsArticle(
       messages: [
         {
           role: "system",
-          content: `You are a professional news journalist for "The City Chronicle", a newspaper in the city of Los Santos. You write realistic, immersive news articles based on roleplay events. 
+          content: `You are a professional news journalist for "The City Chronicle", a newspaper in the city of Los Santos. You write realistic, immersive news articles based on roleplay events.
 
 Rules:
 - Write in third person, professional journalist style
@@ -179,9 +211,7 @@ Rules:
 - Use proper journalism structure: lead, body, quotes (fabricated witness quotes are fine)
 - Never use real-world references outside the RP universe
 - Always refer to characters by their RP names
-
-Return your response in this exact JSON format:
-{"headline": "Your headline here", "article": "Your full article here"}`,
+- For police chases, describe the chase dramatically with route details and how it ended${videoNote}`,
         },
         {
           role: "user",
@@ -226,7 +256,6 @@ Return your response in this exact JSON format:
     }
   }
 
-  // Fallback: try parsing content as JSON
   const content = data.choices?.[0]?.message?.content;
   if (content) {
     try {

@@ -1952,8 +1952,10 @@ export type Database = {
           id: string
           image_url: string | null
           location: string | null
+          media_type: string | null
           published_at: string
           updated_at: string
+          video_url: string | null
         }
         Insert: {
           article_body: string
@@ -1965,8 +1967,10 @@ export type Database = {
           id?: string
           image_url?: string | null
           location?: string | null
+          media_type?: string | null
           published_at?: string
           updated_at?: string
+          video_url?: string | null
         }
         Update: {
           article_body?: string
@@ -1978,8 +1982,10 @@ export type Database = {
           id?: string
           image_url?: string | null
           location?: string | null
+          media_type?: string | null
           published_at?: string
           updated_at?: string
+          video_url?: string | null
         }
         Relationships: []
       }

@@ -9,6 +9,8 @@ export interface RpNewsArticle {
   character_name: string | null;
   location: string | null;
   image_url: string | null;
+  video_url: string | null;
+  media_type: string | null;
   event_data: Record<string, any>;
   published_at: string;
   created_at: string;

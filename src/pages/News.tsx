@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import PageHeader from "@/components/PageHeader";
-import { useRpNews } from "@/hooks/useRpNews";
+import { useRpNews, type RpNewsArticle } from "@/hooks/useRpNews";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import LazyImage from "@/components/LazyImage";
 import {
   Newspaper, Skull, ShieldAlert, Crosshair, Scale, CarFront, CalendarDays, Clock, MapPin,
+  Play, Pause, Volume2, VolumeX, Maximize, Siren,
 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 
@@ -16,6 +17,7 @@ const EVENT_CATEGORIES = [
   { key: "death", label: "Deaths", icon: Skull },
   { key: "arrest", label: "Arrests", icon: ShieldAlert },
   { key: "shootout", label: "Shootouts", icon: Crosshair },
+  { key: "chase", label: "Chases", icon: Siren },
   { key: "court_case", label: "Court Cases", icon: Scale },
   { key: "impound", label: "Impounds", icon: CarFront },
   { key: "event", label: "Events", icon: CalendarDays },
@@ -25,6 +27,7 @@ const EVENT_COLORS: Record<string, string> = {
   death: "bg-red-500/20 text-red-400 border-red-500/30",
   arrest: "bg-blue-500/20 text-blue-400 border-blue-500/30",
   shootout: "bg-orange-500/20 text-orange-400 border-orange-500/30",
+  chase: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
   court_case: "bg-purple-500/20 text-purple-400 border-purple-500/30",
   impound: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
   event: "bg-green-500/20 text-green-400 border-green-500/30",
@@ -34,6 +37,7 @@ const EVENT_LABELS: Record<string, string> = {
   death: "DEATH REPORT",
   arrest: "ARREST",
   shootout: "SHOOTOUT",
+  chase: "POLICE CHASE",
   court_case: "COURT CASE",
   impound: "VEHICLE IMPOUND",
   event: "CITY EVENT",
@@ -126,34 +130,155 @@ const News = () => {
   );
 };
 
+/* ── Video Player Component ── */
+function NewsVideoPlayer({ src, poster, className = "" }: { src: string; poster?: string | null; className?: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [muted, setMuted] = useState(true);
+  const [progress, setProgress] = useState(0);
+
+  const togglePlay = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!videoRef.current) return;
+    if (playing) {
+      videoRef.current.pause();
+    } else {
+      videoRef.current.play();
+    }
+    setPlaying(!playing);
+  };
+
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!videoRef.current) return;
+    videoRef.current.muted = !muted;
+    setMuted(!muted);
+  };
+
+  const goFullscreen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    videoRef.current?.requestFullscreen();
+  };
+
+  const handleTimeUpdate = () => {
+    if (!videoRef.current) return;
+    setProgress((videoRef.current.currentTime / videoRef.current.duration) * 100);
+  };
+
+  return (
+    <div className={`relative group ${className}`}>
+      <video
+        ref={videoRef}
+        src={src}
+        poster={poster || undefined}
+        muted={muted}
+        loop
+        playsInline
+        onTimeUpdate={handleTimeUpdate}
+        onEnded={() => setPlaying(false)}
+        className="w-full h-full object-cover"
+      />
+
+      {/* Play overlay */}
+      {!playing && (
+        <div
+          className="absolute inset-0 flex items-center justify-center bg-black/40 cursor-pointer"
+          onClick={togglePlay}
+        >
+          <div className="w-16 h-16 rounded-full bg-primary/90 flex items-center justify-center shadow-lg shadow-primary/30">
+            <Play className="w-8 h-8 text-primary-foreground ml-1" />
+          </div>
+          <Badge className="absolute top-3 right-3 bg-red-600 text-white border-none text-[10px] font-bold">
+            VIDEO
+          </Badge>
+        </div>
+      )}
+
+      {/* Controls overlay */}
+      {playing && (
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+          {/* Progress bar */}
+          <div className="w-full h-1 bg-white/20 rounded-full mb-2 cursor-pointer" onClick={(e) => {
+            e.stopPropagation();
+            if (!videoRef.current) return;
+            const rect = e.currentTarget.getBoundingClientRect();
+            const pct = (e.clientX - rect.left) / rect.width;
+            videoRef.current.currentTime = pct * videoRef.current.duration;
+          }}>
+            <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${progress}%` }} />
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={togglePlay} className="text-white hover:text-primary transition-colors">
+              <Pause className="w-4 h-4" />
+            </button>
+            <button onClick={toggleMute} className="text-white hover:text-primary transition-colors">
+              {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            </button>
+            <div className="flex-1" />
+            <button onClick={goFullscreen} className="text-white hover:text-primary transition-colors">
+              <Maximize className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Media renderer (image, video, or both) ── */
+function ArticleMedia({ article, className = "", height = "h-64" }: { article: RpNewsArticle; className?: string; height?: string }) {
+  const hasVideo = !!article.video_url;
+  const hasImage = !!article.image_url;
+
+  if (hasVideo) {
+    return (
+      <NewsVideoPlayer
+        src={article.video_url!}
+        poster={article.image_url}
+        className={`${height} ${className}`}
+      />
+    );
+  }
+
+  if (hasImage) {
+    return (
+      <div className={`relative ${height} bg-muted overflow-hidden ${className}`}>
+        <LazyImage
+          src={article.image_url!}
+          alt={article.headline}
+          className="w-full h-full object-cover"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className={`flex items-center justify-center ${height} bg-gradient-to-br from-primary/20 to-primary/5 ${className}`}>
+      <Newspaper className="w-16 h-16 text-primary/40" />
+    </div>
+  );
+}
+
 /* ── Featured (hero) article ── */
-function FeaturedArticle({ article }: { article: import("@/hooks/useRpNews").RpNewsArticle }) {
+function FeaturedArticle({ article }: { article: RpNewsArticle }) {
   return (
     <Card className="overflow-hidden border-primary/20 bg-card/80 backdrop-blur">
       <div className="grid md:grid-cols-2 gap-0">
-        {/* Image */}
-        <div className="relative h-64 md:h-auto min-h-[300px] bg-muted">
-          {article.image_url ? (
-            <LazyImage
-              src={article.image_url}
-              alt={article.headline}
-              className="w-full h-full object-cover absolute inset-0"
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full bg-gradient-to-br from-primary/20 to-primary/5">
-              <Newspaper className="w-16 h-16 text-primary/40" />
-            </div>
-          )}
-          <div className="absolute top-4 left-4">
+        {/* Media */}
+        <div className="relative min-h-[300px]">
+          <ArticleMedia article={article} height="h-full min-h-[300px]" />
+          <div className="absolute top-4 left-4 z-10">
             <Badge className={`${EVENT_COLORS[article.event_type] || ""} font-bold text-xs tracking-wider uppercase border`}>
               {EVENT_LABELS[article.event_type] || "BREAKING"}
             </Badge>
           </div>
-          <div className="absolute top-4 right-4">
-            <Badge variant="destructive" className="animate-pulse font-bold text-xs">
-              BREAKING
-            </Badge>
-          </div>
+          {!article.video_url && (
+            <div className="absolute top-4 right-4 z-10">
+              <Badge variant="destructive" className="animate-pulse font-bold text-xs">
+                BREAKING
+              </Badge>
+            </div>
+          )}
         </div>
 
         {/* Content */}
@@ -181,6 +306,11 @@ function FeaturedArticle({ article }: { article: import("@/hooks/useRpNews").RpN
               <Clock className="w-3 h-3" />{" "}
               {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
             </span>
+            {article.video_url && (
+              <Badge variant="outline" className="text-[10px] border-cyan-500/30 text-cyan-400">
+                📹 Video Available
+              </Badge>
+            )}
           </div>
         </CardContent>
       </div>
@@ -194,7 +324,7 @@ function ArticleCard({
   expanded,
   onToggle,
 }: {
-  article: import("@/hooks/useRpNews").RpNewsArticle;
+  article: RpNewsArticle;
   expanded: boolean;
   onToggle: () => void;
 }) {
@@ -203,20 +333,10 @@ function ArticleCard({
       className="overflow-hidden hover:border-primary/30 transition-all duration-300 cursor-pointer group"
       onClick={onToggle}
     >
-      {/* Image */}
-      <div className="relative h-48 bg-muted overflow-hidden">
-        {article.image_url ? (
-          <LazyImage
-            src={article.image_url}
-            alt={article.headline}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-        ) : (
-          <div className="flex items-center justify-center h-full bg-gradient-to-br from-muted to-muted/50">
-            <Newspaper className="w-10 h-10 text-muted-foreground/30" />
-          </div>
-        )}
-        <div className="absolute top-3 left-3">
+      {/* Media */}
+      <div className="relative h-48 overflow-hidden">
+        <ArticleMedia article={article} height="h-48" className="group-hover:scale-105 transition-transform duration-500" />
+        <div className="absolute top-3 left-3 z-10">
           <Badge className={`${EVENT_COLORS[article.event_type] || ""} font-bold text-[10px] tracking-wider uppercase border`}>
             {EVENT_LABELS[article.event_type] || "NEWS"}
           </Badge>
@@ -238,6 +358,11 @@ function ArticleCard({
               <span className="flex items-center gap-1">
                 <MapPin className="w-3 h-3" /> {article.location}
               </span>
+            )}
+            {article.video_url && (
+              <Badge variant="outline" className="text-[9px] border-cyan-500/30 text-cyan-400 px-1.5 py-0">
+                📹 Video
+              </Badge>
             )}
           </div>
           <span className="flex items-center gap-1">
