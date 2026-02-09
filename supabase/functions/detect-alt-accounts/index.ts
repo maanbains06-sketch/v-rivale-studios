@@ -17,7 +17,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { user_id, ip_address, fingerprint_hash, user_agent } = await req.json();
+    const { user_id, ip_address, fingerprint_hash, user_agent, screen_resolution, timezone, language, platform } = await req.json();
 
     if (!user_id) throw new Error('user_id required');
 
@@ -53,7 +53,7 @@ serve(async (req) => {
         }
         await supabase
           .from('device_fingerprints')
-          .update({ ip_address, user_agent, updated_at: new Date().toISOString() })
+          .update({ ip_address, user_agent, screen_resolution, timezone, language, platform, updated_at: new Date().toISOString() })
           .eq('id', existing.id);
       } else {
         // Check if this fingerprint belongs to a banned device
@@ -71,6 +71,10 @@ serve(async (req) => {
             fingerprint_hash,
             ip_address,
             user_agent,
+            screen_resolution,
+            timezone,
+            language,
+            platform,
             is_blocked: true,
           });
 
@@ -89,6 +93,10 @@ serve(async (req) => {
           fingerprint_hash,
           ip_address,
           user_agent,
+          screen_resolution,
+          timezone,
+          language,
+          platform,
         });
       }
     }

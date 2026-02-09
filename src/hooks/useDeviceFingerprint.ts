@@ -86,7 +86,10 @@ export function useDeviceFingerprint() {
             user_id: user.id,
             fingerprint_hash: fp,
             user_agent: navigator.userAgent,
-            // IP is detected server-side
+            screen_resolution: `${screen.width}x${screen.height}`,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            language: navigator.language,
+            platform: navigator.platform,
           },
         });
 
