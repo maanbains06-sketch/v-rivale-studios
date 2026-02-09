@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import PageHeader from "@/components/PageHeader";
 import { useRpNews, type RpNewsArticle } from "@/hooks/useRpNews";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import LazyImage from "@/components/LazyImage";
 import {
   Newspaper, Skull, ShieldAlert, Crosshair, Scale, CarFront, CalendarDays, Clock, MapPin,
-  Play, Pause, Volume2, VolumeX, Maximize, Siren,
+  Play, Pause, Volume2, VolumeX, Maximize, Siren, Radio, Wifi,
 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 
@@ -46,7 +46,14 @@ const EVENT_LABELS: Record<string, string> = {
 const News = () => {
   const [activeFilter, setActiveFilter] = useState("all");
   const [expandedArticle, setExpandedArticle] = useState<string | null>(null);
-  const { articles, loading } = useRpNews(activeFilter);
+  const { articles, loading, liveCount } = useRpNews(activeFilter);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Update relative timestamps every 30s without full page refresh
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 30_000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -56,6 +63,23 @@ const News = () => {
       />
 
       <div className="container mx-auto px-4 py-8">
+        {/* Live indicator */}
+        <div className="flex items-center justify-center gap-3 mb-6">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/5">
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+            </span>
+            <span className="text-sm font-semibold text-foreground">LIVE</span>
+            <Wifi className="w-4 h-4 text-primary" />
+          </div>
+          {liveCount > 0 && (
+            <Badge variant="outline" className="text-xs border-primary/30 text-primary animate-fade-in">
+              +{liveCount} new since you arrived
+            </Badge>
+          )}
+        </div>
+
         {/* Category Filter Bar */}
         <div className="flex flex-wrap gap-2 mb-8 justify-center">
           {EVENT_CATEGORIES.map(({ key, label, icon: Icon }) => (
