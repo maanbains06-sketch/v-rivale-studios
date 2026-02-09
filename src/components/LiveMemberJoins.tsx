@@ -160,6 +160,26 @@ export const LiveMemberJoins = () => {
 
       if (error) throw error;
 
+      // Block all device fingerprints for this user
+      await supabase
+        .from('device_fingerprints')
+        .update({ is_blocked: true })
+        .eq('user_id', banTarget.user_id);
+
+      // Send Discord ban notification
+      try {
+        await supabase.functions.invoke('send-ban-notification', {
+          body: {
+            discord_id: banTarget.discord_id,
+            discord_username: discordName,
+            ban_reason: banReason.trim(),
+            banned_by_user_id: user?.id,
+          },
+        });
+      } catch (discordErr) {
+        console.error('Discord notification failed:', discordErr);
+      }
+
       setBannedUserIds(prev => new Set([...prev, banTarget.user_id]));
       setBanDialogOpen(false);
       setBanTarget(null);
@@ -183,6 +203,13 @@ export const LiveMemberJoins = () => {
         .eq('is_active', true);
 
       if (error) throw error;
+
+      // Unblock device fingerprints
+      await supabase
+        .from('device_fingerprints')
+        .update({ is_blocked: false })
+        .eq('user_id', member.user_id);
+
       setBannedUserIds(prev => {
         const next = new Set(prev);
         next.delete(member.user_id);

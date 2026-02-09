@@ -143,3 +143,6 @@ verify_jwt = false
 
 [functions.test-discord-channels]
 verify_jwt = false
+
+[functions.send-ban-notification]
+verify_jwt = false
