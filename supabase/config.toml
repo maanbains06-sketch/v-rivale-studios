@@ -140,3 +140,6 @@ verify_jwt = false
 
 [functions.detect-alt-accounts]
 verify_jwt = false
+
+[functions.test-discord-channels]
+verify_jwt = false
