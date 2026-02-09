@@ -78,12 +78,17 @@ const AdminDetection = () => {
     setEvidenceDialog({ open: true, detection });
     setLoadingSpecs(true);
     try {
-      const [{ data: primaryDevices }, { data: altDevices }] = await Promise.all([
+      const [primaryRes, altRes] = await Promise.all([
         supabase.from('device_fingerprints').select('*').eq('user_id', detection.primary_user_id).order('updated_at', { ascending: false }).limit(5),
         supabase.from('device_fingerprints').select('*').eq('user_id', detection.alt_user_id).order('updated_at', { ascending: false }).limit(5),
       ]);
-      setDeviceSpecs({ primary: primaryDevices || [], alt: altDevices || [] });
-    } catch { setDeviceSpecs({ primary: [], alt: [] }); }
+      console.log('Device specs primary:', primaryRes.data, primaryRes.error);
+      console.log('Device specs alt:', altRes.data, altRes.error);
+      setDeviceSpecs({ primary: primaryRes.data || [], alt: altRes.data || [] });
+    } catch (err) {
+      console.error('Failed to load device specs:', err);
+      setDeviceSpecs({ primary: [], alt: [] });
+    }
     setLoadingSpecs(false);
   };
 
