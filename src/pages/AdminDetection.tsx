@@ -13,7 +13,8 @@ import { useStaffRole } from "@/hooks/useStaffRole";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Shield, ShieldAlert, Fingerprint, Globe, RefreshCw, 
-  Ban, Check, X, Eye, AlertTriangle, Users, Unlock, FileText, Copy 
+  Ban, Check, X, Eye, AlertTriangle, Users, Unlock, FileText, Copy,
+  Monitor, Smartphone, Tablet, Cpu, Clock, Languages
 } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -70,6 +71,21 @@ const AdminDetection = () => {
   const [newBan, setNewBan] = useState({ discord_id: '', discord_username: '', steam_id: '', ban_reason: '' });
   const [searchTerm, setSearchTerm] = useState('');
   const [evidenceDialog, setEvidenceDialog] = useState<{ open: boolean; detection: Detection | null }>({ open: false, detection: null });
+  const [deviceSpecs, setDeviceSpecs] = useState<{ primary: any[]; alt: any[] }>({ primary: [], alt: [] });
+  const [loadingSpecs, setLoadingSpecs] = useState(false);
+
+  const openEvidenceDialog = async (detection: Detection) => {
+    setEvidenceDialog({ open: true, detection });
+    setLoadingSpecs(true);
+    try {
+      const [{ data: primaryDevices }, { data: altDevices }] = await Promise.all([
+        supabase.from('device_fingerprints').select('*').eq('user_id', detection.primary_user_id).order('updated_at', { ascending: false }).limit(5),
+        supabase.from('device_fingerprints').select('*').eq('user_id', detection.alt_user_id).order('updated_at', { ascending: false }).limit(5),
+      ]);
+      setDeviceSpecs({ primary: primaryDevices || [], alt: altDevices || [] });
+    } catch { setDeviceSpecs({ primary: [], alt: [] }); }
+    setLoadingSpecs(false);
+  };
 
   useEffect(() => {
     if (!roleLoading && !isAdmin) {
@@ -318,7 +334,7 @@ const AdminDetection = () => {
                                   variant="ghost"
                                   size="sm"
                                   className="text-xs underline text-primary hover:text-primary/80 p-0 h-auto"
-                                  onClick={() => setEvidenceDialog({ open: true, detection: d })}
+                                  onClick={() => openEvidenceDialog(d)}
                                 >
                                   <FileText className="w-3 h-3 mr-1" />
                                   View Evidence
@@ -674,6 +690,76 @@ const AdminDetection = () => {
                       </>
                     )}
                   </ul>
+                </div>
+
+                {/* Device Specifications */}
+                <div className="p-4 rounded-lg border border-border space-y-3">
+                  <div className="font-semibold flex items-center gap-2"><Monitor className="w-4 h-4" /> Device Specifications</div>
+                  {loadingSpecs ? (
+                    <div className="text-xs text-muted-foreground">Loading device specs...</div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {[
+                        { label: `👤 ${det.primary_username || 'Primary'}`, devices: deviceSpecs.primary },
+                        { label: `⚠️ ${det.alt_username || 'Alt'}`, devices: deviceSpecs.alt },
+                      ].map(({ label, devices }) => (
+                        <div key={label} className="space-y-2">
+                          <div className="text-xs font-semibold text-muted-foreground">{label}</div>
+                          {devices.length === 0 ? (
+                            <div className="text-xs text-muted-foreground italic">No device data recorded</div>
+                          ) : devices.map((dev: any, i: number) => {
+                            const ua = dev.user_agent || '';
+                            const isMobile = /mobile|android|iphone|ipad/i.test(ua);
+                            const isTablet = /ipad|tablet/i.test(ua);
+                            const DeviceIcon = isTablet ? Tablet : isMobile ? Smartphone : Monitor;
+                            
+                            // Parse browser & OS from user agent
+                            let browser = 'Unknown Browser';
+                            let os = 'Unknown OS';
+                            if (/edg/i.test(ua)) browser = 'Microsoft Edge';
+                            else if (/chrome/i.test(ua)) browser = 'Google Chrome';
+                            else if (/firefox/i.test(ua)) browser = 'Mozilla Firefox';
+                            else if (/safari/i.test(ua)) browser = 'Safari';
+                            else if (/opera|opr/i.test(ua)) browser = 'Opera';
+
+                            if (/windows/i.test(ua)) os = 'Windows';
+                            else if (/mac os/i.test(ua)) os = 'macOS';
+                            else if (/android/i.test(ua)) os = 'Android';
+                            else if (/iphone|ipad|ios/i.test(ua)) os = 'iOS';
+                            else if (/linux/i.test(ua)) os = 'Linux';
+
+                            return (
+                              <div key={dev.id || i} className="p-2 rounded border border-border/50 bg-muted/30 text-xs space-y-1">
+                                <div className="flex items-center gap-1 font-medium">
+                                  <DeviceIcon className="w-3 h-3" />
+                                  {isTablet ? 'Tablet' : isMobile ? 'Mobile' : 'Desktop'} — {browser}
+                                </div>
+                                <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-muted-foreground">
+                                  <span className="flex items-center gap-1"><Cpu className="w-3 h-3" />OS:</span>
+                                  <span>{os}</span>
+                                  <span className="flex items-center gap-1"><Monitor className="w-3 h-3" />Screen:</span>
+                                  <span>{dev.screen_resolution || 'N/A'}</span>
+                                  <span className="flex items-center gap-1"><Languages className="w-3 h-3" />Language:</span>
+                                  <span>{dev.language || 'N/A'}</span>
+                                  <span className="flex items-center gap-1"><Clock className="w-3 h-3" />Timezone:</span>
+                                  <span>{dev.timezone || 'N/A'}</span>
+                                  <span>Platform:</span>
+                                  <span>{dev.platform || 'N/A'}</span>
+                                  <span>IP:</span>
+                                  <span className="font-mono">{dev.ip_address || 'N/A'}</span>
+                                  <span>Blocked:</span>
+                                  <span>{dev.is_blocked ? '🔴 Yes' : '🟢 No'}</span>
+                                </div>
+                                <div className="text-[10px] text-muted-foreground/60 truncate" title={ua}>
+                                  UA: {ua.substring(0, 80)}{ua.length > 80 ? '...' : ''}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Meta Info */}
