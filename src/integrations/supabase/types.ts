@@ -1941,6 +1941,48 @@ export type Database = {
         }
         Relationships: []
       }
+      rp_news_articles: {
+        Row: {
+          article_body: string
+          character_name: string | null
+          created_at: string
+          event_data: Json | null
+          event_type: string
+          headline: string
+          id: string
+          image_url: string | null
+          location: string | null
+          published_at: string
+          updated_at: string
+        }
+        Insert: {
+          article_body: string
+          character_name?: string | null
+          created_at?: string
+          event_data?: Json | null
+          event_type: string
+          headline: string
+          id?: string
+          image_url?: string | null
+          location?: string | null
+          published_at?: string
+          updated_at?: string
+        }
+        Update: {
+          article_body?: string
+          character_name?: string | null
+          created_at?: string
+          event_data?: Json | null
+          event_type?: string
+          headline?: string
+          id?: string
+          image_url?: string | null
+          location?: string | null
+          published_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       server_resource_snapshot: {
         Row: {
           created_at: string
