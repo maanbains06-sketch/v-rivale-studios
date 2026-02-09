@@ -8,13 +8,18 @@ export interface ScanResult {
   category: 'manipulation' | 'inappropriate' | 'language' | 'fake' | 'clean';
 }
 
+export interface FileResult {
+  url: string;
+  result: ScanResult;
+}
+
 export interface FilesScanResult {
   overallSuspicious: boolean;
   highestRisk: 'low' | 'medium' | 'high' | 'critical';
   primaryCategory: 'manipulation' | 'inappropriate' | 'language' | 'fake' | 'clean';
   totalFlags: number;
   allFlags: string[];
-  results: { url: string; result: ScanResult }[];
+  results: FileResult[];
 }
 
 export interface FraudAlertPayload {
@@ -27,6 +32,7 @@ export interface FraudAlertPayload {
   riskLevel: 'low' | 'medium' | 'high' | 'critical';
   primaryCategory?: 'manipulation' | 'inappropriate' | 'language' | 'fake' | 'clean';
   fileUrls: string[];
+  fileResults?: FileResult[];
   playerName?: string;
   playerId?: string;
   subject?: string;
@@ -76,6 +82,7 @@ export async function scanFilesForManipulation(
 
 /**
  * Sends a fraud alert to Discord if suspicious files or content are detected
+ * Now includes detailed file results for proof
  */
 export async function sendFraudAlertIfSuspicious(
   scanResult: FilesScanResult,
@@ -87,14 +94,15 @@ export async function sendFraudAlertIfSuspicious(
   }
 
   try {
-    // Include the primary category in the alert
-    const payloadWithCategory = {
+    // Include the primary category and file results for detailed proof
+    const payloadWithProof: FraudAlertPayload = {
       ...alertPayload,
-      primaryCategory: scanResult.primaryCategory
+      primaryCategory: scanResult.primaryCategory,
+      fileResults: scanResult.results // Include detailed file analysis results
     };
 
     const { data, error } = await supabase.functions.invoke('send-fraud-alert', {
-      body: payloadWithCategory
+      body: payloadWithProof
     });
 
     if (error) {
@@ -112,6 +120,7 @@ export async function sendFraudAlertIfSuspicious(
 
 /**
  * Complete scan and alert workflow for files and text content
+ * Now passes detailed file results for comprehensive proof
  */
 export async function scanAndAlertForSuspiciousFiles(
   fileUrls: string[],
@@ -163,6 +172,7 @@ export async function scanAndAlertForSuspiciousFiles(
       riskLevel: scanResult.highestRisk,
       primaryCategory: scanResult.primaryCategory,
       fileUrls,
+      fileResults: scanResult.results, // Include detailed results for proof
       playerName: additionalInfo?.playerName,
       playerId: additionalInfo?.playerId,
       subject: additionalInfo?.subject,

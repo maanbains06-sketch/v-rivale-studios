@@ -9,6 +9,17 @@ const FRAUD_ALERT_CHANNEL_ID = '1470356566980165674';
 const ADMIN_ROLE_ID = '1466267679320182949';
 const FRAUD_IMAGE_URL = 'https://skyliferoleplay.com/images/fraud-detection-alert.jpg';
 
+interface FileResult {
+  url: string;
+  result: {
+    isSuspicious: boolean;
+    flags: string[];
+    details: Record<string, any>;
+    riskLevel: string;
+    category: string;
+  };
+}
+
 interface FraudAlertPayload {
   submissionType: string;
   submissionId: string;
@@ -19,6 +30,7 @@ interface FraudAlertPayload {
   riskLevel: 'low' | 'medium' | 'high' | 'critical';
   primaryCategory?: 'manipulation' | 'inappropriate' | 'language' | 'fake' | 'clean';
   fileUrls: string[];
+  fileResults?: FileResult[];
   playerName?: string;
   playerId?: string;
   subject?: string;
@@ -119,6 +131,136 @@ function getActionRequired(category: string): string {
   }
 }
 
+function formatFileProof(fileResults: FileResult[]): string {
+  if (!fileResults || fileResults.length === 0) {
+    return '*No detailed file analysis available*';
+  }
+
+  const proofLines: string[] = [];
+  
+  for (const file of fileResults) {
+    if (!file.result.isSuspicious) continue;
+    
+    const fileName = file.url.split('/').pop() || 'Unknown File';
+    const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(file.url);
+    const isVideo = /\.(mp4|webm|mov|avi|mkv)$/i.test(file.url);
+    const fileType = isImage ? '🖼️ IMAGE' : isVideo ? '🎬 VIDEO' : '📄 FILE';
+    
+    proofLines.push(`\n**${fileType}: \`${fileName}\`**`);
+    proofLines.push(`└ Risk Level: **${file.result.riskLevel.toUpperCase()}**`);
+    
+    // Add specific proof details
+    const details = file.result.details;
+    
+    if (details.editingSoftware) {
+      proofLines.push(`└ 🔍 **Editing Software Found:** \`${details.editingSoftware.toUpperCase()}\``);
+    }
+    
+    if (details.encoder) {
+      proofLines.push(`└ 🔍 **Video Encoder Found:** \`${details.encoder.toUpperCase()}\``);
+    }
+    
+    if (details.reencoder) {
+      proofLines.push(`└ 🔍 **Re-encoding Marker:** \`${details.reencoder.toUpperCase()}\``);
+    }
+    
+    if (details.contentType) {
+      proofLines.push(`└ 📁 File Type: \`${details.contentType}\``);
+    }
+    
+    if (details.fileSize) {
+      const sizeKB = Math.round(details.fileSize / 1024);
+      const sizeMB = (details.fileSize / (1024 * 1024)).toFixed(2);
+      const sizeStr = sizeKB < 1024 ? `${sizeKB} KB` : `${sizeMB} MB`;
+      proofLines.push(`└ 📦 File Size: \`${sizeStr}\``);
+      
+      if (isImage && details.fileSize < 10000) {
+        proofLines.push(`└ ⚠️ **SUSPICIOUS:** File size too small - likely heavily cropped/compressed`);
+      }
+    }
+    
+    if (details.isScreenRecording) {
+      proofLines.push(`└ 🖥️ **Screen Recording Detected** - Not direct game capture`);
+    }
+    
+    // Add all flags as proof points
+    if (file.result.flags && file.result.flags.length > 0) {
+      proofLines.push(`└ 🚩 **Evidence of Manipulation:**`);
+      for (const flag of file.result.flags.slice(0, 5)) {
+        proofLines.push(`   • ${flag}`);
+      }
+      if (file.result.flags.length > 5) {
+        proofLines.push(`   • *...and ${file.result.flags.length - 5} more issues*`);
+      }
+    }
+  }
+  
+  return proofLines.length > 0 ? proofLines.join('\n') : '*No suspicious files detected*';
+}
+
+function buildTechnicalProofEmbed(fileResults: FileResult[]): any {
+  const suspiciousFiles = fileResults?.filter(f => f.result.isSuspicious) || [];
+  
+  if (suspiciousFiles.length === 0) {
+    return null;
+  }
+  
+  const proofDetails: string[] = [];
+  
+  for (const file of suspiciousFiles) {
+    const fileName = file.url.split('/').pop() || 'Unknown';
+    const details = file.result.details;
+    
+    proofDetails.push(`**📄 ${fileName}**`);
+    
+    // Technical metadata proof
+    if (details.editingSoftware) {
+      proofDetails.push(`• EXIF Software Tag: \`${details.editingSoftware}\``);
+      proofDetails.push(`  ↳ This software signature was found embedded in file metadata`);
+    }
+    
+    if (details.encoder) {
+      proofDetails.push(`• Encoder Signature: \`${details.encoder}\``);
+      proofDetails.push(`  ↳ Video was processed through this encoding software`);
+    }
+    
+    if (details.reencoder) {
+      proofDetails.push(`• Re-encode Marker: \`${details.reencoder}\``);
+      proofDetails.push(`  ↳ File shows signs of being re-processed/converted`);
+    }
+    
+    // File anomalies
+    if (details.fileSize && details.fileSize < 10000 && /\.(jpg|jpeg|png)$/i.test(file.url)) {
+      proofDetails.push(`• Anomaly: Extremely small image (${Math.round(details.fileSize / 1024)}KB)`);
+      proofDetails.push(`  ↳ Normal screenshots are typically 100KB-2MB`);
+    }
+    
+    proofDetails.push('');
+  }
+  
+  return {
+    title: '🔬 TECHNICAL PROOF OF MANIPULATION',
+    description: 'The following metadata signatures were extracted from the submitted files:',
+    color: 0x8B0000, // Dark red
+    fields: [
+      {
+        name: '📊 Metadata Analysis Results',
+        value: proofDetails.join('\n').slice(0, 1024) || 'Analysis data unavailable',
+        inline: false
+      },
+      {
+        name: '💡 What This Means',
+        value: '**Editing software signatures** in file metadata prove the file was opened and modified in an image/video editor before submission.\n\n**Re-encoding markers** indicate the original video was converted or processed, which is commonly done to hide editing artifacts.',
+        inline: false
+      }
+    ],
+    footer: {
+      text: '🛡️ Automated Metadata Forensics | SKYLIFE ROLEPLAY',
+      icon_url: 'https://skyliferoleplay.com/images/slrp-logo.png'
+    }
+  };
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -147,6 +289,7 @@ serve(async (req) => {
       riskLevel,
       primaryCategory = 'manipulation',
       fileUrls,
+      fileResults,
       playerName,
       playerId,
       subject,
@@ -160,18 +303,8 @@ serve(async (req) => {
     const categoryInfo = getCategoryInfo(primaryCategory);
     const actionRequired = getActionRequired(primaryCategory);
     
-    // Build the flags list with proper formatting (max 10 to avoid embed limits)
-    const flagsList = flags.slice(0, 10).map((flag) => `• ${flag}`).join('\n');
-    const extraFlags = flags.length > 10 ? `\n*... and ${flags.length - 10} more issues*` : '';
-    
-    // Build suspicious files preview
-    const filesPreview = fileUrls && fileUrls.length > 0 
-      ? fileUrls.slice(0, 3).map((url, i) => {
-          const fileName = url.split('/').pop() || `File ${i + 1}`;
-          return `[📎 ${fileName}](${url})`;
-        }).join('\n')
-      : '*No files attached*';
-    const extraFiles = fileUrls && fileUrls.length > 3 ? `\n*... and ${fileUrls.length - 3} more files*` : '';
+    // Format detailed file proof
+    const fileProofText = formatFileProof(fileResults || []);
     
     // Build message preview if available
     const messageField = messagePreview ? [{
@@ -180,8 +313,17 @@ serve(async (req) => {
       inline: false
     }] : [];
     
-    // Build the Discord embed
-    const embed = {
+    // Build suspicious files preview with links
+    const filesPreview = fileUrls && fileUrls.length > 0 
+      ? fileUrls.slice(0, 3).map((url, i) => {
+          const fileName = url.split('/').pop() || `File ${i + 1}`;
+          return `[📎 ${fileName}](${url})`;
+        }).join('\n')
+      : '*No files attached*';
+    const extraFiles = fileUrls && fileUrls.length > 3 ? `\n*... and ${fileUrls.length - 3} more files*` : '';
+    
+    // Main alert embed
+    const mainEmbed = {
       title: `${categoryInfo.emoji} ${categoryInfo.title}`,
       description: `**${riskEmoji} RISK LEVEL: ${riskLevel.toUpperCase()}**\n\n${categoryInfo.description}`,
       color: getRiskColor(riskLevel),
@@ -223,13 +365,8 @@ serve(async (req) => {
           inline: false
         }] : []),
         ...messageField,
-        {
-          name: '🚩 Issues Detected',
-          value: flagsList + extraFlags || '*Unknown issue detected*',
-          inline: false
-        },
         ...(fileUrls && fileUrls.length > 0 ? [{
-          name: '📎 Suspicious Files',
+          name: '📎 Flagged Files',
           value: filesPreview + extraFiles,
           inline: false
         }] : []),
@@ -245,6 +382,37 @@ serve(async (req) => {
       },
       timestamp: new Date().toISOString()
     };
+    
+    // Proof embed with detailed file analysis
+    const proofEmbed = {
+      title: '🔍 DETAILED PROOF & EVIDENCE',
+      description: 'The following issues were detected during automated file analysis:',
+      color: 0x2C2F33,
+      fields: [
+        {
+          name: '📂 File-by-File Analysis',
+          value: fileProofText.slice(0, 1024) || '*No file analysis available*',
+          inline: false
+        },
+        {
+          name: '🚩 Summary of Issues Detected',
+          value: flags.slice(0, 8).map((flag, i) => `${i + 1}. ${flag}`).join('\n').slice(0, 1024) || '*No issues listed*',
+          inline: false
+        }
+      ],
+      footer: {
+        text: 'This proof was extracted from file metadata and content analysis'
+      }
+    };
+    
+    // Build technical proof embed if we have file results
+    const technicalProofEmbed = buildTechnicalProofEmbed(fileResults || []);
+    
+    // Prepare embeds array
+    const embeds = [mainEmbed, proofEmbed];
+    if (technicalProofEmbed) {
+      embeds.push(technicalProofEmbed);
+    }
     
     // Build alert header based on category
     let alertHeader = '';
@@ -272,8 +440,8 @@ serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          content: `${alertHeader}\n\n**Risk Level: ${riskEmoji} ${riskLevel.toUpperCase()}**\n\nPlease review immediately.`,
-          embeds: [embed],
+          content: `${alertHeader}\n\n**Risk Level: ${riskEmoji} ${riskLevel.toUpperCase()}**\n\n> 📌 **Scroll down for detailed proof of manipulation**\n\nPlease review immediately.`,
+          embeds: embeds,
           allowed_mentions: {
             roles: [ADMIN_ROLE_ID],
             users: [discordId]
