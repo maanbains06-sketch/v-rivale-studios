@@ -61,13 +61,13 @@ const News = () => {
     <div className="min-h-screen bg-background">
       <PageHeader
         title="City Chronicle"
-        description=""
+        description="Breaking news from the streets of Los Santos"
       />
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6">
         {/* Subtitle with animated INDIA */}
-        <p className="text-center text-muted-foreground mb-6 -mt-2 text-sm md:text-base">
-          Breaking news from the streets of Los Santos — powered by Skylife Roleplay{" "}
+        <h2 className="text-center text-xl md:text-2xl lg:text-3xl font-semibold text-foreground mb-6">
+          Powered by Skylife Roleplay{" "}
           <span className="inline-flex font-bold italic" style={{ transform: "skewX(-6deg)" }}>
             {"INDIA".split("").map((letter, i) => (
               <span
@@ -78,13 +78,14 @@ const News = () => {
               </span>
             ))}
           </span>
-        </p>
+        </h2>
+
         {/* Back Button */}
         <Button
           variant="ghost"
           size="sm"
           onClick={() => navigate(-1)}
-          className="mb-6 gap-2 text-muted-foreground hover:text-foreground"
+          className="mb-4 gap-2 text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
