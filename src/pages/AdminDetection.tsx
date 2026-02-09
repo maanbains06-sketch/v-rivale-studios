@@ -13,7 +13,7 @@ import { useStaffRole } from "@/hooks/useStaffRole";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Shield, ShieldAlert, Fingerprint, Globe, RefreshCw, 
-  Ban, Check, X, Eye, AlertTriangle, Users, Unlock 
+  Ban, Check, X, Eye, AlertTriangle, Users, Unlock, FileText, Copy 
 } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -69,6 +69,7 @@ const AdminDetection = () => {
   const [banDialog, setBanDialog] = useState(false);
   const [newBan, setNewBan] = useState({ discord_id: '', discord_username: '', steam_id: '', ban_reason: '' });
   const [searchTerm, setSearchTerm] = useState('');
+  const [evidenceDialog, setEvidenceDialog] = useState<{ open: boolean; detection: Detection | null }>({ open: false, detection: null });
 
   useEffect(() => {
     if (!roleLoading && !isAdmin) {
@@ -313,37 +314,15 @@ const AdminDetection = () => {
                               <TableCell>{getConfidenceBadge(d.confidence_score)}</TableCell>
                               <TableCell>{getStatusBadge(d.status)}</TableCell>
                               <TableCell>
-                                <div className="space-y-1 text-xs">
-                                  {isIp && details.shared_ip && (
-                                    <div className="flex items-center gap-1 text-muted-foreground">
-                                      <Globe className="w-3 h-3" />
-                                      <span className="font-mono">{details.shared_ip}</span>
-                                    </div>
-                                  )}
-                                  {!isIp && details.shared_fingerprint && (
-                                    <div className="flex items-center gap-1 text-muted-foreground">
-                                      <Fingerprint className="w-3 h-3" />
-                                      <span className="font-mono">{details.shared_fingerprint.substring(0, 16)}...</span>
-                                    </div>
-                                  )}
-                                  {isIp && details.match_count && (
-                                    <div className="text-muted-foreground">
-                                      <span className="font-semibold text-foreground">{details.match_count}</span> shared login(s)
-                                    </div>
-                                  )}
-                                  {d.fingerprint_hash && !details.shared_fingerprint && (
-                                    <div className="flex items-center gap-1 text-muted-foreground">
-                                      <Fingerprint className="w-3 h-3" />
-                                      <span className="font-mono">{d.fingerprint_hash.substring(0, 16)}...</span>
-                                    </div>
-                                  )}
-                                  {d.ip_address && !details.shared_ip && (
-                                    <div className="flex items-center gap-1 text-muted-foreground">
-                                      <Globe className="w-3 h-3" />
-                                      <span className="font-mono">{d.ip_address}</span>
-                                    </div>
-                                  )}
-                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-xs underline text-primary hover:text-primary/80 p-0 h-auto"
+                                  onClick={() => setEvidenceDialog({ open: true, detection: d })}
+                                >
+                                  <FileText className="w-3 h-3 mr-1" />
+                                  View Evidence
+                                </Button>
                               </TableCell>
                               <TableCell className="text-sm text-muted-foreground">
                                 {new Date(d.created_at).toLocaleDateString()}
@@ -547,6 +526,134 @@ const AdminDetection = () => {
             <AlertDialogAction onClick={handleManualBan} className="bg-destructive hover:bg-destructive/90">
               <Ban className="w-4 h-4 mr-1" />Ban User
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Evidence Detail Dialog */}
+      <AlertDialog open={evidenceDialog.open} onOpenChange={(open) => !open && setEvidenceDialog({ open: false, detection: null })}>
+        <AlertDialogContent className="max-w-lg">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              Detection Evidence Report
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Full evidence details for this alt-account detection.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {evidenceDialog.detection && (() => {
+            const d = evidenceDialog.detection!;
+            const det = d.details || {};
+            const isIp = d.detection_type === 'ip_match';
+            const confidence = d.confidence_score;
+            const severityLabel = confidence >= 80 ? '🔴 HIGH RISK' : confidence >= 50 ? '🟡 MEDIUM RISK' : '🟢 LOW RISK';
+            const copyText = (text: string) => { navigator.clipboard.writeText(text); toast.success('Copied to clipboard'); };
+
+            return (
+              <div className="space-y-4 text-sm">
+                {/* Detection Type & Severity */}
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border">
+                  <div className="flex items-center gap-2">
+                    {isIp ? <Globe className="w-5 h-5 text-blue-500" /> : <Fingerprint className="w-5 h-5 text-purple-500" />}
+                    <span className="font-semibold">{isIp ? 'IP Address Match' : 'Device Fingerprint Match'}</span>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold">{confidence}% Confidence</div>
+                    <div className="text-xs">{severityLabel}</div>
+                  </div>
+                </div>
+
+                {/* Accounts */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 rounded-lg border border-border">
+                    <div className="text-xs text-muted-foreground mb-1">👤 Primary Account</div>
+                    <div className="font-semibold">{det.primary_username || 'Unknown'}</div>
+                    {det.primary_discord_id && (
+                      <button onClick={() => copyText(det.primary_discord_id)} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 mt-1">
+                        <Copy className="w-3 h-3" />ID: {det.primary_discord_id}
+                      </button>
+                    )}
+                  </div>
+                  <div className="p-3 rounded-lg border border-destructive/30 bg-destructive/5">
+                    <div className="text-xs text-muted-foreground mb-1">⚠️ Suspected Alt</div>
+                    <div className="font-semibold text-destructive">{det.alt_username || 'Unknown'}</div>
+                    {det.alt_discord_id && (
+                      <button onClick={() => copyText(det.alt_discord_id)} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 mt-1">
+                        <Copy className="w-3 h-3" />ID: {det.alt_discord_id}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Evidence Details */}
+                <div className="p-3 rounded-lg border border-border space-y-2">
+                  <div className="font-semibold flex items-center gap-1"><Eye className="w-4 h-4" /> Evidence Details</div>
+                  
+                  {(isIp && (det.shared_ip || d.ip_address)) && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Shared IP Address:</span>
+                      <button onClick={() => copyText(det.shared_ip || d.ip_address || '')} className="font-mono text-xs bg-muted px-2 py-1 rounded hover:bg-muted/80 flex items-center gap-1">
+                        <Copy className="w-3 h-3" />{det.shared_ip || d.ip_address}
+                      </button>
+                    </div>
+                  )}
+
+                  {(!isIp && (det.shared_fingerprint || d.fingerprint_hash)) && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Shared Fingerprint:</span>
+                      <button onClick={() => copyText(det.shared_fingerprint || d.fingerprint_hash || '')} className="font-mono text-xs bg-muted px-2 py-1 rounded hover:bg-muted/80 flex items-center gap-1">
+                        <Copy className="w-3 h-3" />{(det.shared_fingerprint || d.fingerprint_hash || '').substring(0, 24)}...
+                      </button>
+                    </div>
+                  )}
+
+                  {d.ip_address && !isIp && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">IP at detection:</span>
+                      <button onClick={() => copyText(d.ip_address!)} className="font-mono text-xs bg-muted px-2 py-1 rounded hover:bg-muted/80 flex items-center gap-1">
+                        <Copy className="w-3 h-3" />{d.ip_address}
+                      </button>
+                    </div>
+                  )}
+
+                  {isIp && det.match_count && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Shared Login Count:</span>
+                      <span className="font-bold">{det.match_count} login(s)</span>
+                    </div>
+                  )}
+
+                  {d.fingerprint_hash && isIp && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Fingerprint at detection:</span>
+                      <button onClick={() => copyText(d.fingerprint_hash!)} className="font-mono text-xs bg-muted px-2 py-1 rounded hover:bg-muted/80 flex items-center gap-1">
+                        <Copy className="w-3 h-3" />{d.fingerprint_hash.substring(0, 24)}...
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Timestamps */}
+                <div className="p-3 rounded-lg border border-border space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Detected At:</span>
+                    <span>{new Date(d.created_at).toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Status:</span>
+                    <span className="capitalize font-semibold">{d.status}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Discord Alert:</span>
+                    <span>{d.discord_alert_sent ? '✅ Sent' : '❌ Not sent'}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+          <AlertDialogFooter>
+            <AlertDialogCancel>Close</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
