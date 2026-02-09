@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Ticket, Send, Clock, CheckCircle, FileText, ArrowLeft, Upload, X, Image as ImageIcon, Video, Plus, AlertCircle, Wrench, Pause, XCircle, MessageSquare } from "lucide-react";
 import { format } from "date-fns";
 import AnimatedSLRPLogo from "@/components/AnimatedSLRPLogo";
+import { scanAndAlertForSuspiciousFiles } from "@/lib/fileMetadataScanner";
 
 interface SupportTicket {
   id: string;
@@ -319,6 +320,27 @@ const TicketSupport = () => {
         });
       } catch (notifyError) {
         console.error("Failed to send Discord notification:", notifyError);
+      }
+
+      // Scan files for manipulation and send fraud alert if suspicious
+      if (attachmentUrls.length > 0) {
+        try {
+          await scanAndAlertForSuspiciousFiles(
+            attachmentUrls,
+            'support_ticket',
+            data.id,
+            data.ticket_number,
+            discordId.trim(),
+            discordUsername || undefined,
+            {
+              playerName: playerName.trim(),
+              playerId: playerId.trim(),
+              subject: subject
+            }
+          );
+        } catch (scanError) {
+          console.error("Failed to scan files for manipulation:", scanError);
+        }
       }
 
       resetFormFields();

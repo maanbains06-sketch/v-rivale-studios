@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { FeatureDisabledAlert } from "@/components/FeatureDisabledAlert";
 import { useStaffRole } from "@/hooks/useStaffRole";
+import { scanAndAlertForSuspiciousFiles } from "@/lib/fileMetadataScanner";
 
 interface Message {
   id: string;
@@ -766,6 +767,28 @@ const SupportChat = () => {
         .from("support_chats")
         .update({ last_message_at: new Date().toISOString() })
         .eq("id", selectedChat.id);
+
+      // Scan attachment for manipulation if one was uploaded
+      if (attachmentData?.url) {
+        try {
+          const discordId = user.user_metadata?.discord_id || user.user_metadata?.provider_id || '';
+          const discordUsername = user.user_metadata?.full_name || user.user_metadata?.name || user.email || 'Anonymous';
+          
+          await scanAndAlertForSuspiciousFiles(
+            [attachmentData.url],
+            'live_chat',
+            selectedChat.id,
+            undefined,
+            discordId,
+            discordUsername,
+            {
+              subject: selectedChat.subject || 'Live Support Chat'
+            }
+          );
+        } catch (scanError) {
+          console.error("Failed to scan attachment for manipulation:", scanError);
+        }
+      }
 
       setNewMessage("");
       setAttachment(null);

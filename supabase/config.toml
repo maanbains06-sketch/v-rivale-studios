@@ -45,6 +45,9 @@ verify_jwt = false
 [functions.remove-discord-role]
 verify_jwt = false
 
+[functions.scan-file-metadata]
+verify_jwt = false
+
 [functions.send-application-notification]
 verify_jwt = false
 
@@ -58,6 +61,9 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.send-feedback-notification]
+verify_jwt = false
+
+[functions.send-fraud-alert]
 verify_jwt = false
 
 [functions.send-gallery-notification]
@@ -85,6 +91,9 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.send-rules-to-discord]
+verify_jwt = false
+
+[functions.send-server-status-discord]
 verify_jwt = false
 
 [functions.send-ticket-notification]
@@ -124,7 +133,4 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.verify-roster-access]
-verify_jwt = false
-
-[functions.send-server-status-discord]
 verify_jwt = false
