@@ -1,10 +1,17 @@
-import { Shield, Ban } from "lucide-react";
+import { Shield, Ban, LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DeviceBanScreenProps {
   reason: string;
 }
 
 const DeviceBanScreen = ({ reason }: DeviceBanScreenProps) => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/auth";
+  };
+
   return (
     <div className="fixed inset-0 z-[9999] bg-background flex items-center justify-center p-4">
       <div className="max-w-lg text-center space-y-6">
@@ -27,6 +34,14 @@ const DeviceBanScreen = ({ reason }: DeviceBanScreenProps) => {
             If you believe this is a mistake, please submit a ban appeal through our Discord server.
           </p>
         </div>
+        <Button
+          variant="outline"
+          onClick={handleLogout}
+          className="border-destructive/30 text-destructive hover:bg-destructive/10"
+        >
+          <LogOut className="w-4 h-4 mr-2" />
+          Logout
+        </Button>
         <div className="pt-4 border-t border-border">
           <p className="text-xs text-muted-foreground">
             SKYLIFE ROLEPLAY INDIA • Anti-Cheat System
