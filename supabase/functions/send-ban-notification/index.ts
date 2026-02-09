@@ -47,66 +47,57 @@ serve(async (req) => {
 
     const userMention = discord_id ? `<@${discord_id}>` : (discord_username || 'Unknown User');
     const userDisplay = discord_id
-      ? `<@${discord_id}>\n\`${discord_username || 'Unknown'}\``
-      : `\`${discord_username || 'Unknown'}\``;
+      ? `<@${discord_id}>\n**${discord_username || 'Unknown'}**`
+      : `**${discord_username || 'Unknown'}**`;
 
-    const timestamp = Math.floor(Date.now() / 1000);
-
-    const headerEmbed = {
-      color: 0xED4245,
+    const embed = {
       author: {
-        name: 'SKYLIFE ROLEPLAY INDIA',
+        name: 'SKYLIFE ROLEPLAY INDIA • Ban Enforcement',
         icon_url: logoUrl,
       },
-      title: '⛔ WEBSITE BAN ENFORCEMENT',
-      description: [
-        `> A user has been **permanently banned** from the`,
-        `> **Skylife Roleplay India** website by administration.`,
-        '',
-        `🔗 **Ban Reference:** BAN-${Date.now().toString(36).toUpperCase()}`,
-      ].join('\n'),
+      title: '🔨 WEBSITE BAN — User Has Been Banned',
+      description: `A user has been **permanently banned** from the Skylife Roleplay India website by the server administration.`,
+      color: 0xFF0000,
       thumbnail: { url: logoUrl },
-      color: 0xED4245,
-    };
-
-    const playerEmbed = {
-      color: 0xED4245,
       fields: [
         {
-          name: '👤 Banned Player',
+          name: '━━━━━ BANNED USER ━━━━━',
+          value: '\u200b',
+          inline: false,
+        },
+        {
+          name: '👤 Player',
           value: userDisplay,
           inline: true,
         },
         {
           name: '🆔 Discord ID',
-          value: discord_id ? discord_id : 'Not Linked',
+          value: discord_id ? `**${discord_id}**` : '**N/A**',
           inline: true,
+        },
+        {
+          name: '\u200b',
+          value: '\u200b',
+          inline: true,
+        },
+        {
+          name: '━━━━━ BAN DETAILS ━━━━━',
+          value: '\u200b',
+          inline: false,
+        },
+        {
+          name: '📝 Ban Reason',
+          value: `> **${ban_reason}**`,
+          inline: false,
         },
         {
           name: '🔨 Banned By',
-          value: bannedByName,
+          value: `**${bannedByName}**`,
           inline: true,
         },
-      ],
-    };
-
-    const reasonEmbed = {
-      color: 0xFF6347,
-      fields: [
-        {
-          name: '📋 Ban Reason',
-          value: `> ${ban_reason.split('\n').join('\n> ')}`,
-          inline: false,
-        },
-      ],
-    };
-
-    const detailsEmbed = {
-      color: 0xFFA500,
-      fields: [
         {
           name: '📅 Ban Date',
-          value: `<t:${timestamp}:F>`,
+          value: `<t:${Math.floor(Date.now() / 1000)}:F>`,
           inline: true,
         },
         {
@@ -115,23 +106,11 @@ serve(async (req) => {
           inline: true,
         },
         {
-          name: '⚖️ Status',
-          value: '🚫 **ACTIVE**',
-          inline: true,
+          name: '━━━━━ ACTIONS TAKEN ━━━━━',
+          value: '✅ Website access permanently blocked\n✅ Device fingerprints flagged\n✅ IP addresses recorded\n✅ Alt-account detection activated',
+          inline: false,
         },
       ],
-    };
-
-    const actionsEmbed = {
-      color: 0x57F287,
-      title: '🛡️ Enforcement Actions',
-      description: [
-        '✅ Website access permanently revoked',
-        '✅ Device fingerprints flagged & blocked',
-        '✅ IP addresses logged for monitoring',
-        '✅ Alt-account detection system activated',
-        '✅ All active sessions terminated',
-      ].join('\n'),
       image: { url: bannerUrl },
       footer: {
         text: '🇮🇳 SKYLIFE ROLEPLAY INDIA • Website Ban System',
@@ -147,8 +126,8 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        content: `@everyone\n\n⛔ **WEBSITE BAN** — ${userMention} has been **permanently banned** from the Skylife Roleplay India website.`,
-        embeds: [headerEmbed, playerEmbed, reasonEmbed, detailsEmbed, actionsEmbed],
+        content: `@everyone 🔨 **WEBSITE BAN** — ${userMention} has been **permanently banned** from the website.`,
+        embeds: [embed],
         allowed_mentions: { parse: ['everyone', 'users'] },
       }),
     });
