@@ -39,12 +39,13 @@ serve(async (req) => {
     { name: 'Rules', envKey: 'DISCORD_RULES_CHANNEL_ID' },
     { name: 'Server Status', envKey: 'DISCORD_STATUS_CHANNEL_ID' },
     { name: 'Alt Detection', envKey: 'DISCORD_DETECTION_CHANNEL_ID' },
-  ];
+    { name: 'Fraud Detection', envKey: '_HARDCODED_', hardcodedId: '1470356566980165674' },
+  ] as { name: string; envKey: string; hardcodedId?: string }[];
 
   const results: { channel: string; status: string; error?: string }[] = [];
 
   for (const ch of channels) {
-    const channelId = Deno.env.get(ch.envKey);
+    const channelId = ch.hardcodedId || Deno.env.get(ch.envKey);
     if (!channelId) {
       results.push({ channel: ch.name, status: 'skipped', error: `${ch.envKey} not configured` });
       continue;
