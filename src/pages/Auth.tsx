@@ -69,13 +69,17 @@ const Auth = () => {
   const [sendingResetEmail, setSendingResetEmail] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
 
-  // Load remembered email on mount
+  // Load remembered email and password on mount
   useEffect(() => {
     try {
-      const rememberedEmail = localStorage.getItem("slrp_remembered_email");
       const isRemembered = localStorage.getItem("slrp_remember_me") === "true";
-      if (rememberedEmail && isRemembered) {
-        setEmail(rememberedEmail);
+      if (isRemembered) {
+        const rememberedEmail = localStorage.getItem("slrp_remembered_email");
+        const rememberedPass = localStorage.getItem("slrp_remembered_pass");
+        if (rememberedEmail) setEmail(rememberedEmail);
+        if (rememberedPass) {
+          try { setPassword(atob(rememberedPass)); } catch { /* invalid base64 */ }
+        }
         setRememberMe(true);
       }
     } catch (e) {
@@ -170,13 +174,15 @@ const Auth = () => {
       return;
     }
 
-    // Handle Remember Me - save email to localStorage
+    // Handle Remember Me - save email and password to localStorage
     try {
       if (rememberMe) {
         localStorage.setItem("slrp_remembered_email", email);
+        localStorage.setItem("slrp_remembered_pass", btoa(password));
         localStorage.setItem("slrp_remember_me", "true");
       } else {
         localStorage.removeItem("slrp_remembered_email");
+        localStorage.removeItem("slrp_remembered_pass");
         localStorage.removeItem("slrp_remember_me");
       }
     } catch (e) {
@@ -348,6 +354,15 @@ const Auth = () => {
       setLoading(false);
       return;
     }
+
+    // Handle Remember Me on signup
+    try {
+      if (rememberMe) {
+        localStorage.setItem("slrp_remembered_email", email);
+        localStorage.setItem("slrp_remembered_pass", btoa(password));
+        localStorage.setItem("slrp_remember_me", "true");
+      }
+    } catch (e) { /* localStorage not available */ }
 
     toast({
       title: "Account Created!",
@@ -665,24 +680,22 @@ const Auth = () => {
                 </div>
               </motion.div>
 
-              {/* Remember Me - Login only */}
-              {!isSignup && (
-                <motion.div
-                  initial={{ y: 10, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.38 }}
-                  className="flex items-center justify-between"
-                >
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <Checkbox
-                      id="rememberMe"
-                      checked={rememberMe}
-                      onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                    />
-                    <span className="text-sm text-muted-foreground">Remember me</span>
-                  </label>
-                </motion.div>
-              )}
+              {/* Remember Me */}
+              <motion.div
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: isSignup ? 0.42 : 0.38 }}
+                className="flex items-center justify-between"
+              >
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <Checkbox
+                    id="rememberMe"
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                  />
+                  <span className="text-sm text-muted-foreground">Remember me</span>
+                </label>
+              </motion.div>
 
               {/* Confirm Password - Signup only */}
               {isSignup && (
