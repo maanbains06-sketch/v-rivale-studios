@@ -19,6 +19,7 @@ import { UnifiedApplicationsTable, ApplicationType } from "@/components/UnifiedA
 import { combineAllApplications, filterApplicationsByType } from "@/lib/applicationTransformer";
 import { sendDiscordNotification } from "@/lib/discordNotificationSender";
 import AdminTicketManagement from "@/components/AdminTicketManagement";
+import ConfidentialTicketManagement from "@/components/ConfidentialTicketManagement";
 import { 
   Loader2, 
   Shield, 
@@ -46,7 +47,8 @@ import {
   BarChart3,
   LayoutGrid,
   AlertTriangle,
-  Youtube
+  Youtube,
+  Lock
 } from "lucide-react";
 import headerAdminBg from "@/assets/header-staff.jpg";
 import {
@@ -1334,6 +1336,10 @@ const Admin = () => {
               <FileQuestion className="w-4 h-4" />
               <span className="hidden sm:inline">Tickets</span>
             </TabsTrigger>
+            <TabsTrigger value="confidential" className="flex items-center gap-1 text-xs sm:text-sm">
+              <Lock className="w-4 h-4" />
+              <span className="hidden sm:inline">Confidential</span>
+            </TabsTrigger>
             <TabsTrigger value="detection" className="flex items-center gap-1 text-xs sm:text-sm" onClick={() => navigate('/admin/detection')}>
               <AlertTriangle className="w-4 h-4" />
               <span className="hidden sm:inline">Detection</span>
@@ -2101,6 +2107,11 @@ const Admin = () => {
           {/* Tickets Tab */}
           <TabsContent value="tickets">
             <AdminTicketManagement />
+          </TabsContent>
+
+          {/* Confidential Tickets Tab */}
+          <TabsContent value="confidential">
+            <ConfidentialTicketManagement />
           </TabsContent>
 
           {/* Players Tab */}

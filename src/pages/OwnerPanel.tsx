@@ -34,6 +34,7 @@ import { OwnerGalleryManager } from "@/components/OwnerGalleryManager";
 import { LiveApplicationStats } from "@/components/LiveApplicationStats";
 import OwnerLiveChatManager from "@/components/OwnerLiveChatManager";
 import AdminTicketManagement from "@/components/AdminTicketManagement";
+import ConfidentialTicketManagement from "@/components/ConfidentialTicketManagement";
 import ServerStatusDiscordSender from "@/components/ServerStatusDiscordSender";
 import { combineAllApplications, filterApplicationsByType } from "@/lib/applicationTransformer";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -75,6 +76,7 @@ import {
   Store,
   Palette,
   Image,
+  Lock,
   
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -1701,6 +1703,10 @@ const OwnerPanel = () => {
                   <Ticket className="w-4 h-4" />
                   <span className="hidden sm:inline">Tickets</span>
                 </TabsTrigger>
+                <TabsTrigger value="confidential" className="flex items-center gap-2 whitespace-nowrap">
+                  <Lock className="w-4 h-4" />
+                  <span className="hidden sm:inline">Confidential</span>
+                </TabsTrigger>
                 <TabsTrigger value="live-chats" className="flex items-center gap-2 whitespace-nowrap">
                   <MessageSquare className="w-4 h-4" />
                   <span className="hidden sm:inline">Live Chats</span>
@@ -2668,6 +2674,11 @@ const OwnerPanel = () => {
           {/* Tickets Tab */}
           <TabsContent value="tickets">
             <AdminTicketManagement />
+          </TabsContent>
+
+          {/* Confidential Tickets Tab */}
+          <TabsContent value="confidential">
+            <ConfidentialTicketManagement />
           </TabsContent>
 
           {/* Live Chats Tab */}
