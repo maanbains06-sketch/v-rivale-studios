@@ -12,6 +12,7 @@ import { Loader2, Upload, X, CheckCircle, Lock } from "lucide-react";
 import { useStaffRole } from "@/hooks/useStaffRole";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { FeatureDisabledAlert } from "@/components/FeatureDisabledAlert";
+import { scanAndAlertForSuspiciousFiles } from "@/lib/fileMetadataScanner";
 
 interface GalleryUploadFormProps {
   onSuccess?: () => void;
@@ -168,6 +169,27 @@ const GalleryUploadForm = ({ onSuccess }: GalleryUploadFormProps) => {
         // If database insert fails, try to delete the uploaded file
         await supabase.storage.from('gallery').remove([fileName]);
         throw dbError;
+      }
+
+      // Scan the uploaded file for manipulation
+      try {
+        const { data: urlData } = supabase.storage.from('gallery').getPublicUrl(fileName);
+        const discordId = user.user_metadata?.discord_id || user.user_metadata?.provider_id || '';
+        const discordUsername = user.user_metadata?.full_name || user.user_metadata?.name || user.email || 'Anonymous';
+        
+        await scanAndAlertForSuspiciousFiles(
+          [urlData.publicUrl],
+          'gallery_submission',
+          user.id,
+          undefined,
+          discordId,
+          discordUsername,
+          {
+            subject: `Gallery Upload: ${title.trim()}`
+          }
+        );
+      } catch (scanError) {
+        console.error("Failed to scan file for manipulation:", scanError);
       }
 
       toast({

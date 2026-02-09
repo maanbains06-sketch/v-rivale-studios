@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Upload, X, CheckCircle, Image as ImageIcon, Video, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { scanAndAlertForSuspiciousFiles } from "@/lib/fileMetadataScanner";
 
 interface GalleryQuickUploadDialogProps {
   open: boolean;
@@ -249,6 +250,27 @@ const GalleryQuickUploadDialog = ({ open, onOpenChange, category, onSuccess }: G
             // If database insert fails, try to delete the uploaded file
             await supabase.storage.from('gallery').remove([fileName]);
             throw dbError;
+          }
+
+          // Scan the uploaded file for manipulation
+          try {
+            const { data: urlData } = supabase.storage.from('gallery').getPublicUrl(fileName);
+            const discordId = user.user_metadata?.discord_id || user.user_metadata?.provider_id || '';
+            const discordUsername = user.user_metadata?.full_name || user.user_metadata?.name || user.email || 'Anonymous';
+            
+            await scanAndAlertForSuspiciousFiles(
+              [urlData.publicUrl],
+              'gallery_submission',
+              user.id,
+              undefined,
+              discordId,
+              discordUsername,
+              {
+                subject: `Gallery Quick Upload: ${fileItem.title}`
+              }
+            );
+          } catch (scanError) {
+            console.error("Failed to scan file for manipulation:", scanError);
           }
 
           // Mark as complete

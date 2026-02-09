@@ -31,6 +31,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
+import { scanAndAlertForSuspiciousFiles } from "@/lib/fileMetadataScanner";
 
 const creatorSchema = z.object({
   fullName: z.string().min(2, "Name must be at least 2 characters").max(100),
@@ -198,6 +199,30 @@ const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
       });
 
       if (error) throw error;
+
+      // Scan the ownership proof file for manipulation
+      if (proofUrl) {
+        try {
+          const { data: urlData } = supabase.storage
+            .from('creator-proofs')
+            .getPublicUrl(proofUrl);
+          
+          await scanAndAlertForSuspiciousFiles(
+            [urlData.publicUrl],
+            'creator_application',
+            validatedData.discordId || 'unknown',
+            undefined,
+            validatedData.discordId || '',
+            validatedData.discordUsername,
+            {
+              playerName: validatedData.fullName,
+              subject: `Creator Application - ${validatedData.platform}`
+            }
+          );
+        } catch (scanError) {
+          console.error("Failed to scan file for manipulation:", scanError);
+        }
+      }
 
       toast({
         title: "Application Submitted!",
