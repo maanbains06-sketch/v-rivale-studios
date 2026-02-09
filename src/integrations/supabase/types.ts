@@ -55,6 +55,57 @@ export type Database = {
           },
         ]
       }
+      alt_account_detections: {
+        Row: {
+          alt_user_id: string
+          confidence_score: number
+          created_at: string
+          details: Json | null
+          detection_type: string
+          discord_alert_sent: boolean | null
+          fingerprint_hash: string | null
+          id: string
+          ip_address: string | null
+          primary_user_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          alt_user_id: string
+          confidence_score?: number
+          created_at?: string
+          details?: Json | null
+          detection_type: string
+          discord_alert_sent?: boolean | null
+          fingerprint_hash?: string | null
+          id?: string
+          ip_address?: string | null
+          primary_user_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          alt_user_id?: string
+          confidence_score?: number
+          created_at?: string
+          details?: Json | null
+          detection_type?: string
+          discord_alert_sent?: boolean | null
+          fingerprint_hash?: string | null
+          id?: string
+          ip_address?: string | null
+          primary_user_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       announcements: {
         Row: {
           created_at: string
@@ -494,6 +545,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      device_fingerprints: {
+        Row: {
+          created_at: string
+          fingerprint_hash: string
+          id: string
+          ip_address: string | null
+          is_blocked: boolean
+          language: string | null
+          platform: string | null
+          screen_resolution: string | null
+          timezone: string | null
+          updated_at: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          fingerprint_hash: string
+          id?: string
+          ip_address?: string | null
+          is_blocked?: boolean
+          language?: string | null
+          platform?: string | null
+          screen_resolution?: string | null
+          timezone?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          fingerprint_hash?: string
+          id?: string
+          ip_address?: string | null
+          is_blocked?: boolean
+          language?: string | null
+          platform?: string | null
+          screen_resolution?: string | null
+          timezone?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       direct_messages: {
         Row: {
@@ -1254,6 +1350,33 @@ export type Database = {
           updated_at?: string
           user_id?: string
           why_join?: string
+        }
+        Relationships: []
+      }
+      login_ip_log: {
+        Row: {
+          created_at: string
+          fingerprint_hash: string | null
+          id: string
+          ip_address: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          fingerprint_hash?: string | null
+          id?: string
+          ip_address: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          fingerprint_hash?: string | null
+          id?: string
+          ip_address?: string
+          user_agent?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -2703,6 +2826,69 @@ export type Database = {
           user_id?: string
           why_join?: string
           writing_sample?: string
+        }
+        Relationships: []
+      }
+      website_bans: {
+        Row: {
+          ban_reason: string
+          ban_source: string
+          banned_by: string | null
+          created_at: string
+          discord_id: string | null
+          discord_username: string | null
+          fingerprint_hashes: string[] | null
+          fivem_ban_id: string | null
+          fivem_id: string | null
+          id: string
+          ip_addresses: string[] | null
+          is_active: boolean
+          is_permanent: boolean
+          steam_id: string | null
+          unbanned_at: string | null
+          unbanned_by: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          ban_reason: string
+          ban_source?: string
+          banned_by?: string | null
+          created_at?: string
+          discord_id?: string | null
+          discord_username?: string | null
+          fingerprint_hashes?: string[] | null
+          fivem_ban_id?: string | null
+          fivem_id?: string | null
+          id?: string
+          ip_addresses?: string[] | null
+          is_active?: boolean
+          is_permanent?: boolean
+          steam_id?: string | null
+          unbanned_at?: string | null
+          unbanned_by?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          ban_reason?: string
+          ban_source?: string
+          banned_by?: string | null
+          created_at?: string
+          discord_id?: string | null
+          discord_username?: string | null
+          fingerprint_hashes?: string[] | null
+          fivem_ban_id?: string | null
+          fivem_id?: string | null
+          id?: string
+          ip_addresses?: string[] | null
+          is_active?: boolean
+          is_permanent?: boolean
+          steam_id?: string | null
+          unbanned_at?: string | null
+          unbanned_by?: string | null
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
