@@ -28,15 +28,36 @@ serve(async (req) => {
       throw new Error('Discord bot token or ban channel ID not configured');
     }
 
-    // Fetch banner who did the ban (owner)
+    // Fetch banner who did the ban (owner) - get their real Discord identity
     let bannedByName = 'Server Owner';
+    let bannedByDiscordId: string | null = null;
     if (banned_by_user_id) {
+      // First get discord_id from profiles
       const { data: bannerProfile } = await supabase
         .from('profiles')
         .select('discord_username, discord_id')
         .eq('id', banned_by_user_id)
         .maybeSingle();
-      if (bannerProfile?.discord_username) {
+      
+      if (bannerProfile?.discord_id) {
+        bannedByDiscordId = bannerProfile.discord_id;
+        // Fetch real Discord display name via Discord API
+        try {
+          const discordRes = await fetch(`https://discord.com/api/v10/users/${bannerProfile.discord_id}`, {
+            headers: { 'Authorization': `Bot ${DISCORD_BOT_TOKEN}` },
+          });
+          if (discordRes.ok) {
+            const discordUser = await discordRes.json();
+            bannedByName = discordUser.global_name || discordUser.username || bannerProfile.discord_username || 'Server Owner';
+          } else if (bannerProfile.discord_username) {
+            bannedByName = bannerProfile.discord_username;
+          }
+        } catch {
+          if (bannerProfile.discord_username) {
+            bannedByName = bannerProfile.discord_username;
+          }
+        }
+      } else if (bannerProfile?.discord_username) {
         bannedByName = bannerProfile.discord_username;
       }
     }
@@ -92,7 +113,7 @@ serve(async (req) => {
         },
         {
           name: '🔨 Banned By',
-          value: `**${bannedByName}**`,
+          value: bannedByDiscordId ? `<@${bannedByDiscordId}>\n**${bannedByName}**` : `**${bannedByName}**`,
           inline: true,
         },
         {
