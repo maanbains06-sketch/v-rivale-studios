@@ -30,7 +30,7 @@ import PanelAccessManager from "@/components/PanelAccessManager";
 import BusinessTypeManager from "@/components/BusinessTypeManager";
 import ThemeManager from "@/components/ThemeManager";
 import { OwnerGalleryManager } from "@/components/OwnerGalleryManager";
-import { OwnerNewsManager } from "@/components/OwnerNewsManager";
+
 import { LiveApplicationStats } from "@/components/LiveApplicationStats";
 import OwnerLiveChatManager from "@/components/OwnerLiveChatManager";
 import AdminTicketManagement from "@/components/AdminTicketManagement";
@@ -75,7 +75,7 @@ import {
   Store,
   Palette,
   Image,
-  Newspaper
+  
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StaffManagementDialog } from "@/components/StaffManagementDialog";
@@ -1709,10 +1709,6 @@ const OwnerPanel = () => {
                   <Radio className="w-4 h-4" />
                   <span className="hidden sm:inline">Server Status</span>
                 </TabsTrigger>
-                <TabsTrigger value="news" className="flex items-center gap-2 whitespace-nowrap">
-                  <Newspaper className="w-4 h-4" />
-                  <span className="hidden sm:inline">News</span>
-                </TabsTrigger>
                 <TabsTrigger value="detection" className="flex items-center gap-2 whitespace-nowrap" onClick={() => navigate('/admin/detection')}>
                   <AlertTriangle className="w-4 h-4" />
                   <span className="hidden sm:inline">Detection</span>
@@ -2684,10 +2680,6 @@ const OwnerPanel = () => {
             <ServerStatusDiscordSender />
           </TabsContent>
 
-          {/* News Management Tab */}
-          <TabsContent value="news">
-            <OwnerNewsManager />
-          </TabsContent>
         </Tabs>
       </div>
 
