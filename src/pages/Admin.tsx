@@ -1334,6 +1334,10 @@ const Admin = () => {
               <FileQuestion className="w-4 h-4" />
               <span className="hidden sm:inline">Tickets</span>
             </TabsTrigger>
+            <TabsTrigger value="detection" className="flex items-center gap-1 text-xs sm:text-sm" onClick={() => navigate('/admin/detection')}>
+              <AlertTriangle className="w-4 h-4" />
+              <span className="hidden sm:inline">Detection</span>
+            </TabsTrigger>
           </TabsList>
 
           {/* Organization Applications Tab - Unified View */}

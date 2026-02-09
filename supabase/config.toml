@@ -134,3 +134,9 @@ verify_jwt = false
 
 [functions.verify-roster-access]
 verify_jwt = false
+
+[functions.fivem-ban-webhook]
+verify_jwt = false
+
+[functions.detect-alt-accounts]
+verify_jwt = false

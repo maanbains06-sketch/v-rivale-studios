@@ -1707,6 +1707,10 @@ const OwnerPanel = () => {
                   <Radio className="w-4 h-4" />
                   <span className="hidden sm:inline">Server Status</span>
                 </TabsTrigger>
+                <TabsTrigger value="detection" className="flex items-center gap-2 whitespace-nowrap" onClick={() => navigate('/admin/detection')}>
+                  <AlertTriangle className="w-4 h-4" />
+                  <span className="hidden sm:inline">Detection</span>
+                </TabsTrigger>
               </TabsList>
             </div>
             {/* Fade indicators for scroll hint */}
