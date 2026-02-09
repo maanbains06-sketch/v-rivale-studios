@@ -16,6 +16,7 @@ import { Ticket, Clock, CheckCircle, Loader2, Trash2, Eye, RefreshCw, Pause, Wre
 import { format } from "date-fns";
 import { useTicketPresence, useAllTicketPresence } from "@/hooks/useTicketPresence";
 import ActiveStaffIndicator from "@/components/ActiveStaffIndicator";
+import { useStaffNames } from "@/hooks/useStaffNames";
 
 interface SupportTicket {
   id: string;
@@ -74,6 +75,7 @@ const AdminTicketManagement = () => {
   // Track presence for selected ticket and all tickets
   const { activeViewers } = useTicketPresence(selectedTicket?.id || null);
   const { ticketViewers } = useAllTicketPresence();
+  const { getStaffName } = useStaffNames();
 
   const fetchTickets = useCallback(async () => {
     setLoading(true);
@@ -304,8 +306,9 @@ const AdminTicketManagement = () => {
                     <TableHead>Player</TableHead>
                     <TableHead>Priority</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Staff Active</TableHead>
-                    <TableHead>Created</TableHead>
+                     <TableHead>Assigned To</TableHead>
+                     <TableHead>Staff Active</TableHead>
+                     <TableHead>Created</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -332,7 +335,10 @@ const AdminTicketManagement = () => {
                       </TableCell>
                       <TableCell>{getPriorityBadge(ticket.priority)}</TableCell>
                       <TableCell>{getStatusBadge(ticket.status)}</TableCell>
-                      <TableCell>
+                       <TableCell>
+                        <span className="text-sm font-medium">{getStaffName(ticket.assigned_to)}</span>
+                       </TableCell>
+                       <TableCell>
                         {ticketViewers[ticket.id] && ticketViewers[ticket.id].length > 0 ? (
                           <ActiveStaffIndicator viewers={ticketViewers[ticket.id]} type="ticket" compact />
                         ) : (
