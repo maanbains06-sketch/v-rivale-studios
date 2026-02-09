@@ -7,7 +7,7 @@ const corsHeaders = {
 
 const FRAUD_ALERT_CHANNEL_ID = '1470356566980165674';
 const ADMIN_ROLE_ID = '1466267679320182949';
-const FRAUD_IMAGE_URL = 'https://skyliferoleplay.com/images/fraud-detection-alert.jpg';
+const FRAUD_IMAGE_URL = 'https://obirpzwvnqveddyuulsb.supabase.co/storage/v1/object/public/discord-assets/fraud-detection-alert.jpg';
 
 interface FileResult {
   url: string;
