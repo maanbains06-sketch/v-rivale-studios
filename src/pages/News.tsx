@@ -61,10 +61,24 @@ const News = () => {
     <div className="min-h-screen bg-background">
       <PageHeader
         title="City Chronicle"
-        description="Breaking news from the streets of Los Santos — powered by AI journalism"
+        description=""
       />
 
       <div className="container mx-auto px-4 py-8">
+        {/* Subtitle with animated INDIA */}
+        <p className="text-center text-muted-foreground mb-6 -mt-2 text-sm md:text-base">
+          Breaking news from the streets of Los Santos — powered by Skylife Roleplay{" "}
+          <span className="inline-flex font-bold italic" style={{ transform: "skewX(-6deg)" }}>
+            {"INDIA".split("").map((letter, i) => (
+              <span
+                key={i}
+                className={`india-letter-${i + 1}`}
+              >
+                {letter}
+              </span>
+            ))}
+          </span>
+        </p>
         {/* Back Button */}
         <Button
           variant="ghost"
