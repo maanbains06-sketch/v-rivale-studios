@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Shield, Lock, Send, AlertTriangle, Clock, CheckCircle, Eye, Wrench, XCircle } from "lucide-react";
+import { ArrowLeft, Shield, Lock, Send, AlertTriangle, Clock, CheckCircle, Eye, Wrench, XCircle, Paperclip, X, FileIcon } from "lucide-react";
 import { format } from "date-fns";
 import AnimatedSLRPLogo from "@/components/AnimatedSLRPLogo";
 
@@ -32,9 +32,13 @@ interface ConfidentialTicket {
   status: string;
   admin_notes: string | null;
   resolution: string | null;
+  attachment_url: string | null;
   created_at: string;
   resolved_at: string | null;
 }
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp", "application/pdf", "video/mp4"];
 
 const ConfidentialSupport = () => {
   const navigate = useNavigate();
@@ -51,6 +55,7 @@ const ConfidentialSupport = () => {
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("normal");
   const [discordId, setDiscordId] = useState("");
+  const [attachment, setAttachment] = useState<File | null>(null);
 
   useEffect(() => {
     checkAuthAndFetch();
@@ -87,6 +92,20 @@ const ConfidentialSupport = () => {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      toast({ title: "Invalid File Type", description: "Allowed: PNG, JPG, GIF, WEBP, PDF, MP4", variant: "destructive" });
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      toast({ title: "File Too Large", description: "Maximum file size is 10MB.", variant: "destructive" });
+      return;
+    }
+    setAttachment(file);
+  };
+
   const submitTicket = async () => {
     if (!category || !subject.trim() || !description.trim() || !discordId.trim()) {
       toast({ title: "Missing Information", description: "Please fill in all required fields.", variant: "destructive" });
@@ -105,6 +124,22 @@ const ConfidentialSupport = () => {
 
       const discordUsername = user.user_metadata?.full_name || user.user_metadata?.name || null;
 
+      // Upload attachment if provided
+      let attachmentUrl: string | null = null;
+      if (attachment) {
+        const fileExt = attachment.name.split('.').pop();
+        const filePath = `${user.id}/${Date.now()}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage
+          .from("confidential-attachments")
+          .upload(filePath, attachment);
+        if (uploadError) throw new Error("Failed to upload attachment: " + uploadError.message);
+        
+        const { data: urlData } = supabase.storage
+          .from("confidential-attachments")
+          .getPublicUrl(filePath);
+        attachmentUrl = urlData.publicUrl;
+      }
+
       const { data, error } = await supabase
         .from("confidential_tickets")
         .insert({
@@ -115,6 +150,7 @@ const ConfidentialSupport = () => {
           subject,
           description,
           priority,
+          attachment_url: attachmentUrl,
         })
         .select()
         .single();
@@ -144,6 +180,7 @@ const ConfidentialSupport = () => {
       setDescription("");
       setPriority("normal");
       setDiscordId("");
+      setAttachment(null);
       setShowForm(false);
       fetchTickets();
     } catch (error: any) {
@@ -198,6 +235,18 @@ const ConfidentialSupport = () => {
                 <Label className="text-muted-foreground">Description</Label>
                 <p className="mt-1 text-foreground whitespace-pre-wrap">{selectedTicket.description}</p>
               </div>
+              {selectedTicket.attachment_url && (
+                <div className="p-4 rounded-xl bg-muted/30 border border-border/40">
+                  <Label className="text-muted-foreground flex items-center gap-2 mb-2"><Paperclip className="w-4 h-4" /> Attachment</Label>
+                  {selectedTicket.attachment_url.match(/\.(png|jpg|jpeg|gif|webp)/) ? (
+                    <img src={selectedTicket.attachment_url} alt="Attachment" className="max-w-full max-h-64 rounded-lg" />
+                  ) : (
+                    <a href={selectedTicket.attachment_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-red-400 hover:underline">
+                      <FileIcon className="w-4 h-4" /> View Attachment
+                    </a>
+                  )}
+                </div>
+              )}
               {selectedTicket.admin_notes && (
                 <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30">
                   <Label className="text-red-400 flex items-center gap-2"><Eye className="w-4 h-4" /> Staff Response</Label>
@@ -327,6 +376,26 @@ const ConfidentialSupport = () => {
                 <Label>Detailed Description <span className="text-red-400">*</span></Label>
                 <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={6} className="border-red-500/20 focus:border-red-500/50" maxLength={3000} />
                 <p className="text-xs text-muted-foreground">Provide as much detail as possible. Include names, dates, and any relevant context.</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Attachment <span className="text-muted-foreground text-xs">(Optional)</span></Label>
+                {!attachment ? (
+                  <label className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-red-500/20 rounded-xl cursor-pointer hover:border-red-500/40 hover:bg-red-500/5 transition-all">
+                    <Paperclip className="w-5 h-5 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Click to attach a file (PNG, JPG, PDF, MP4 — max 10MB)</span>
+                    <input type="file" className="hidden" accept=".png,.jpg,.jpeg,.gif,.webp,.pdf,.mp4" onChange={handleFileChange} />
+                  </label>
+                ) : (
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-red-500/10 border border-red-500/30">
+                    <FileIcon className="w-5 h-5 text-red-400 flex-shrink-0" />
+                    <span className="text-sm text-foreground truncate flex-1">{attachment.name}</span>
+                    <span className="text-xs text-muted-foreground">{(attachment.size / 1024 / 1024).toFixed(1)}MB</span>
+                    <Button variant="ghost" size="sm" onClick={() => setAttachment(null)} className="h-7 w-7 p-0">
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
 
               <Button onClick={submitTicket} disabled={submitting} className="w-full bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white">
