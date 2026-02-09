@@ -5,11 +5,13 @@ export interface ScanResult {
   flags: string[];
   details: Record<string, any>;
   riskLevel: 'low' | 'medium' | 'high' | 'critical';
+  category: 'manipulation' | 'inappropriate' | 'language' | 'fake' | 'clean';
 }
 
 export interface FilesScanResult {
   overallSuspicious: boolean;
   highestRisk: 'low' | 'medium' | 'high' | 'critical';
+  primaryCategory: 'manipulation' | 'inappropriate' | 'language' | 'fake' | 'clean';
   totalFlags: number;
   allFlags: string[];
   results: { url: string; result: ScanResult }[];
@@ -23,34 +25,40 @@ export interface FraudAlertPayload {
   discordUsername?: string;
   flags: string[];
   riskLevel: 'low' | 'medium' | 'high' | 'critical';
+  primaryCategory?: 'manipulation' | 'inappropriate' | 'language' | 'fake' | 'clean';
   fileUrls: string[];
   playerName?: string;
   playerId?: string;
   subject?: string;
+  messagePreview?: string;
 }
 
 /**
- * Scans files for metadata that indicates editing or manipulation
+ * Scans files and text content for metadata that indicates editing, manipulation,
+ * inappropriate content, or bad language
  */
 export async function scanFilesForManipulation(
   fileUrls: string[],
   submissionType: string,
   submissionId: string,
   discordId: string,
-  discordUsername?: string
+  discordUsername?: string,
+  textContent?: string
 ): Promise<FilesScanResult | null> {
-  if (!fileUrls || fileUrls.length === 0) {
+  // Allow scanning even without files if text content is provided
+  if ((!fileUrls || fileUrls.length === 0) && !textContent) {
     return null;
   }
 
   try {
     const { data, error } = await supabase.functions.invoke('scan-file-metadata', {
       body: {
-        fileUrls,
+        fileUrls: fileUrls || [],
         submissionType,
         submissionId,
         discordId,
-        discordUsername
+        discordUsername,
+        textContent
       }
     });
 
@@ -67,7 +75,7 @@ export async function scanFilesForManipulation(
 }
 
 /**
- * Sends a fraud alert to Discord if suspicious files are detected
+ * Sends a fraud alert to Discord if suspicious files or content are detected
  */
 export async function sendFraudAlertIfSuspicious(
   scanResult: FilesScanResult,
@@ -79,8 +87,14 @@ export async function sendFraudAlertIfSuspicious(
   }
 
   try {
+    // Include the primary category in the alert
+    const payloadWithCategory = {
+      ...alertPayload,
+      primaryCategory: scanResult.primaryCategory
+    };
+
     const { data, error } = await supabase.functions.invoke('send-fraud-alert', {
-      body: alertPayload
+      body: payloadWithCategory
     });
 
     if (error) {
@@ -97,7 +111,7 @@ export async function sendFraudAlertIfSuspicious(
 }
 
 /**
- * Complete scan and alert workflow
+ * Complete scan and alert workflow for files and text content
  */
 export async function scanAndAlertForSuspiciousFiles(
   fileUrls: string[],
@@ -110,6 +124,8 @@ export async function scanAndAlertForSuspiciousFiles(
     playerName?: string;
     playerId?: string;
     subject?: string;
+    messagePreview?: string;
+    textContent?: string;
   }
 ): Promise<{ scanned: boolean; suspicious: boolean; alertSent: boolean }> {
   const result = {
@@ -118,13 +134,14 @@ export async function scanAndAlertForSuspiciousFiles(
     alertSent: false
   };
 
-  // Scan files
+  // Scan files and text content
   const scanResult = await scanFilesForManipulation(
     fileUrls,
     submissionType,
     submissionId,
     discordId,
-    discordUsername
+    discordUsername,
+    additionalInfo?.textContent
   );
 
   if (!scanResult) {
@@ -144,12 +161,37 @@ export async function scanAndAlertForSuspiciousFiles(
       discordUsername,
       flags: scanResult.allFlags,
       riskLevel: scanResult.highestRisk,
+      primaryCategory: scanResult.primaryCategory,
       fileUrls,
-      ...additionalInfo
+      playerName: additionalInfo?.playerName,
+      playerId: additionalInfo?.playerId,
+      subject: additionalInfo?.subject,
+      messagePreview: additionalInfo?.messagePreview
     };
 
     result.alertSent = await sendFraudAlertIfSuspicious(scanResult, alertPayload);
   }
 
   return result;
+}
+
+/**
+ * Quick scan for text content only (no files)
+ * Useful for checking messages before submission
+ */
+export async function scanTextForViolations(
+  textContent: string,
+  submissionType: string,
+  submissionId: string,
+  discordId: string,
+  discordUsername?: string
+): Promise<FilesScanResult | null> {
+  return scanFilesForManipulation(
+    [],
+    submissionType,
+    submissionId,
+    discordId,
+    discordUsername,
+    textContent
+  );
 }
