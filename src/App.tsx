@@ -95,6 +95,7 @@ const BusinessPanel = lazy(() => import("./pages/BusinessPanel"));
 const CreatorContract = lazy(() => import("./pages/CreatorContract"));
 const TicketSupport = lazy(() => import("./pages/TicketSupport"));
 const CreatorApplication = lazy(() => import("./pages/CreatorApplication"));
+const AdminDetection = lazy(() => import("./pages/AdminDetection"));
 
 const DirectMessage = lazy(() => import("./pages/DirectMessage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -188,6 +189,7 @@ const AppRoutes = memo(() => {
           <Route path="/creator-contract" element={<PageTransition><RequireAuth message="Login with Discord to access contracts."><CreatorContract /></RequireAuth></PageTransition>} />
 <Route path="/ticket-support" element={<PageTransition><RequireAuth message="Login with Discord to submit tickets."><TicketSupport /></RequireAuth></PageTransition>} />
           <Route path="/creator-application" element={<PageTransition><CreatorApplication /></PageTransition>} />
+          <Route path="/admin/detection" element={<PageTransition><AdminDetection /></PageTransition>} />
           
           <Route path="/direct-message" element={<PageTransition><RequireAuth message="Login with Discord to send direct messages."><DirectMessage /></RequireAuth></PageTransition>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
@@ -199,27 +201,51 @@ const AppRoutes = memo(() => {
 });
 AppRoutes.displayName = "AppRoutes";
 
+const DeviceBanScreen = lazy(() => import("@/components/DeviceBanScreen"));
+
 const AppContent = memo(() => {
   const { isOnline } = useNetworkStatus();
   const { settings, loading: settingsLoading } = useSiteSettings();
   const { hasAccess, isStaffOrOwner, loading: accessLoading, checkAccess } = useMaintenanceAccess();
+  const [deviceBlocked, setDeviceBlocked] = useState(false);
+  const [blockReason, setBlockReason] = useState('');
   
   // Auto-verify whitelist role on signup
   useWhitelistAutoVerification();
 
+  // Device fingerprint check
+  useEffect(() => {
+    const checkDevice = async () => {
+      try {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { useDeviceFingerprint } = await import('@/hooks/useDeviceFingerprint');
+        // We handle this via the hook in individual pages, but also do a quick ban check
+        const { data: ban } = await supabase
+          .from('website_bans')
+          .select('ban_reason')
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .limit(1);
+        
+        if (ban && ban.length > 0) {
+          setDeviceBlocked(true);
+          setBlockReason(ban[0].ban_reason || 'You are banned from this website.');
+        }
+      } catch { /* ignore */ }
+    };
+    checkDevice();
+  }, []);
+
   // Wait for both settings and access to be loaded before making a decision
   const isFullyLoaded = !settingsLoading && !accessLoading;
   
-  // Show maintenance page if:
-  // 1. Both checks are complete (or settings loaded but access still checking - show loading)
-  // 2. Maintenance mode is enabled
-  // 3. User does NOT have access (not staff/owner)
   const maintenanceEnabled = settings.maintenance_mode === true;
   const userHasAccess = hasAccess === true && isStaffOrOwner === true;
   const showMaintenance = isFullyLoaded && maintenanceEnabled && !userHasAccess;
 
-  // While loading AND maintenance might be on, show loading spinner
-  // This prevents unauthorized users from seeing content flash
   if (!isFullyLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -228,6 +254,14 @@ const AppContent = memo(() => {
           <p className="text-sm text-muted-foreground">Loading...</p>
         </div>
       </div>
+    );
+  }
+
+  if (deviceBlocked) {
+    return (
+      <Suspense fallback={null}>
+        <DeviceBanScreen reason={blockReason} />
+      </Suspense>
     );
   }
 
