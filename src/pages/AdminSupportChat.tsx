@@ -16,6 +16,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { StaffAvailabilityToggle } from "@/components/StaffAvailabilityToggle";
 import { StaffWorkloadDashboard } from "@/components/StaffWorkloadDashboard";
 import { ManualChatAssignment } from "@/components/ManualChatAssignment";
+import { useChatPresence, useAllChatPresence } from "@/hooks/useChatPresence";
+import ActiveStaffIndicator from "@/components/ActiveStaffIndicator";
 
 interface Message {
   id: string;
@@ -66,6 +68,10 @@ const AdminSupportChat = () => {
   const [initialChatId, setInitialChatId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Track presence for selected chat and all chats
+  const { activeViewers } = useChatPresence(selectedChat?.id || null, true);
+  const { chatViewers } = useAllChatPresence();
 
   // Get chat ID from URL params for staff redirect
   useEffect(() => {
@@ -492,9 +498,14 @@ const AdminSupportChat = () => {
                             </Badge>
                           </div>
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                          {format(new Date(chat.last_message_at), "PPp")}
-                        </p>
+                        <div className="flex items-center justify-between mt-1">
+                          <p className="text-xs text-muted-foreground">
+                            {format(new Date(chat.last_message_at), "PPp")}
+                          </p>
+                          {chatViewers[chat.id] && chatViewers[chat.id].length > 0 && (
+                            <ActiveStaffIndicator viewers={chatViewers[chat.id]} type="chat" compact />
+                          )}
+                        </div>
                       </button>
                     ))}
                   </div>
@@ -508,7 +519,7 @@ const AdminSupportChat = () => {
             {selectedChat ? (
               <>
                 <CardHeader className="border-b border-border/20">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between flex-wrap gap-3">
                     <div className="flex items-center gap-2 flex-1 min-w-0">
                       <CardTitle className="text-lg truncate">{selectedChat.subject}</CardTitle>
                       {selectedChat.sentiment === 'frustrated' && (
@@ -526,26 +537,31 @@ const AdminSupportChat = () => {
                         </Badge>
                       )}
                     </div>
-                    <div className="flex gap-2 shrink-0">
-                      {selectedChat.status === "open" && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => updateChatStatus(selectedChat.id, "in_progress")}
-                        >
-                          Start Working
-                        </Button>
+                    <div className="flex items-center gap-3 shrink-0">
+                      {activeViewers.length > 0 && (
+                        <ActiveStaffIndicator viewers={activeViewers} type="chat" />
                       )}
-                      {selectedChat.status !== "closed" && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => updateChatStatus(selectedChat.id, "closed")}
-                        >
-                          <Check className="h-4 w-4 mr-2" />
-                          Close
-                        </Button>
-                      )}
+                      <div className="flex gap-2">
+                        {selectedChat.status === "open" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => updateChatStatus(selectedChat.id, "in_progress")}
+                          >
+                            Start Working
+                          </Button>
+                        )}
+                        {selectedChat.status !== "closed" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => updateChatStatus(selectedChat.id, "closed")}
+                          >
+                            <Check className="h-4 w-4 mr-2" />
+                            Close
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </CardHeader>
