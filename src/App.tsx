@@ -96,6 +96,7 @@ const CreatorContract = lazy(() => import("./pages/CreatorContract"));
 const TicketSupport = lazy(() => import("./pages/TicketSupport"));
 const CreatorApplication = lazy(() => import("./pages/CreatorApplication"));
 const AdminDetection = lazy(() => import("./pages/AdminDetection"));
+const News = lazy(() => import("./pages/News"));
 
 const DirectMessage = lazy(() => import("./pages/DirectMessage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -190,6 +191,7 @@ const AppRoutes = memo(() => {
 <Route path="/ticket-support" element={<PageTransition><RequireAuth message="Login with Discord to submit tickets."><TicketSupport /></RequireAuth></PageTransition>} />
           <Route path="/creator-application" element={<PageTransition><CreatorApplication /></PageTransition>} />
           <Route path="/admin/detection" element={<PageTransition><AdminDetection /></PageTransition>} />
+          <Route path="/news" element={<PageTransition><PageMaintenanceBlock pageKey="news"><News /></PageMaintenanceBlock></PageTransition>} />
           
           <Route path="/direct-message" element={<PageTransition><RequireAuth message="Login with Discord to send direct messages."><DirectMessage /></RequireAuth></PageTransition>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
