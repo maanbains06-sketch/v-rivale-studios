@@ -484,23 +484,26 @@ const SpinWheel = () => {
 
           {/* === LED Dots on chrome frame === */}
           {ledDots.map((dot, i) => {
-            const idlePhase = i * 0.2;
-            // During spin: fast sequential chase. After stop: dramatic on/off flash. Idle: gentle pulse.
-            const isActive = isSpinning || lightsFlashing;
+            // Alternating group: even LEDs blink opposite to odd LEDs for on/off effect
+            const groupA = i % 2 === 0;
+            const idleDelay = groupA ? "0s" : "0.7s";
             return (
               <g key={`led-${i}`}>
                 {/* Outer glow halo */}
-                <circle cx={dot.x} cy={dot.y} r={isActive ? "10" : "6"} fill={lightsFlashing ? "#ffaa00" : "#3070cc"} opacity="0.08">
+                <circle cx={dot.x} cy={dot.y} r={isSpinning || lightsFlashing ? "10" : "8"} fill={lightsFlashing ? "#ffaa00" : "#3070cc"} opacity="0.05">
                   {isSpinning && (
                     <animate attributeName="opacity" values="0.02;0.25;0.02" dur={`${0.1 + (i % 5) * 0.04}s`} repeatCount="indefinite" />
                   )}
                   {lightsFlashing && (
                     <animate attributeName="opacity" values="0;0.35;0" dur="0.6s" repeatCount="indefinite" begin={`${(i % 4) * 0.15}s`} />
                   )}
+                  {!isSpinning && !lightsFlashing && (
+                    <animate attributeName="opacity" values="0.02;0.2;0.02" dur="1.4s" repeatCount="indefinite" begin={idleDelay} />
+                  )}
                 </circle>
                 {/* Main LED dot */}
                 <circle cx={dot.x} cy={dot.y} r="2.8"
-                  fill={isSpinning ? (i % 2 === 0 ? "#4488dd" : "#3366aa") : lightsFlashing ? "#ffcc33" : (i % 2 === 0 ? "#4488dd" : "#3366aa")}
+                  fill={isSpinning ? (groupA ? "#4488dd" : "#3366aa") : lightsFlashing ? "#ffcc33" : (groupA ? "#4488dd" : "#3366aa")}
                   opacity="0.85"
                 >
                   {isSpinning && (
@@ -510,7 +513,7 @@ const SpinWheel = () => {
                     <animate attributeName="opacity" values="0.15;1;0.15" dur="0.6s" repeatCount="indefinite" begin={`${(i % 4) * 0.15}s`} />
                   )}
                   {!isSpinning && !lightsFlashing && (
-                    <animate attributeName="opacity" values="0.5;0.9;0.5" dur={`${2 + (i % 3) * 0.7}s`} repeatCount="indefinite" begin={`${idlePhase}s`} />
+                    <animate attributeName="opacity" values="0.15;1;0.15" dur="1.4s" repeatCount="indefinite" begin={idleDelay} />
                   )}
                 </circle>
                 {/* Bright inner core */}
@@ -520,6 +523,9 @@ const SpinWheel = () => {
                   )}
                   {lightsFlashing && (
                     <animate attributeName="opacity" values="0;1;0" dur="0.6s" repeatCount="indefinite" begin={`${(i % 4) * 0.15}s`} />
+                  )}
+                  {!isSpinning && !lightsFlashing && (
+                    <animate attributeName="opacity" values="0;0.8;0" dur="1.4s" repeatCount="indefinite" begin={idleDelay} />
                   )}
                 </circle>
               </g>
