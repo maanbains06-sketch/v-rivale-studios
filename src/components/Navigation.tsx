@@ -302,6 +302,13 @@ const Navigation = () => {
               <Gift className="w-4 h-4" />
               Giveaway
             </NavLink>
+            <NavLink 
+              to="/spin" 
+              className="text-foreground/80 hover:text-primary transition-colors"
+              activeClassName="text-primary"
+            >
+              Spin
+            </NavLink>
             <a
               href={TEBEX_STORE_URL}
               target="_blank"
@@ -487,6 +494,11 @@ const Navigation = () => {
                       <Link to="/giveaway" className="flex items-center">
                         <Gift className="w-4 h-4 mr-2" />
                         Giveaway
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/spin" className="flex items-center">
+                        Spin
                       </Link>
                     </Button>
                     <Button variant="ghost" className="justify-start" asChild>
