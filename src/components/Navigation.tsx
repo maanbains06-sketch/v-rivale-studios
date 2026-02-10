@@ -69,6 +69,7 @@ const Navigation = () => {
   // 2. Settings have loaded AND business_header_hidden is false
   // During loading, hide the link to prevent flicker (it will show once loaded if appropriate)
   const showBusinessLink = isOwner || (!siteSettingsLoading && !siteSettings.business_header_hidden);
+  const showSpinLink = isOwner || (!siteSettingsLoading && !siteSettings.spin_header_hidden);
 
   // Track staff presence when logged in with Discord ID
   useWebsitePresence({ 
@@ -302,13 +303,15 @@ const Navigation = () => {
               <Gift className="w-4 h-4" />
               Giveaway
             </NavLink>
-            <NavLink 
-              to="/spin" 
-              className="text-foreground/80 hover:text-primary transition-colors"
-              activeClassName="text-primary"
-            >
-              Spin
-            </NavLink>
+            {showSpinLink && (
+              <NavLink 
+                to="/spin" 
+                className="text-foreground/80 hover:text-primary transition-colors"
+                activeClassName="text-primary"
+              >
+                Spin
+              </NavLink>
+            )}
             <a
               href={TEBEX_STORE_URL}
               target="_blank"
@@ -496,11 +499,13 @@ const Navigation = () => {
                         Giveaway
                       </Link>
                     </Button>
-                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
-                      <Link to="/spin" className="flex items-center">
-                        Spin
-                      </Link>
-                    </Button>
+                    {showSpinLink && (
+                      <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                        <Link to="/spin" className="flex items-center">
+                          Spin
+                        </Link>
+                      </Button>
+                    )}
                     <Button variant="ghost" className="justify-start" asChild>
                       <a href={TEBEX_STORE_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
                         Store <ExternalLink className="w-3 h-3" />
