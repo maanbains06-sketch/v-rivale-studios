@@ -5,7 +5,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const STORAGE_BASE = "https://obirpzwvnqveddyuulsb.supabase.co/storage/v1/object/public/discord-assets/spin-prizes";
+const STORAGE_BASE = "https://obirpzwvnqveddyuulsb.supabase.co/storage/v1/object/public/discord-assets";
+const PRIZE_IMAGE_BASE = `${STORAGE_BASE}/spin-prizes`;
+const LOGO_URL = `${STORAGE_BASE}/slrp-logo.png`;
 
 interface PrizeConfig {
   color: number;
@@ -13,141 +15,141 @@ interface PrizeConfig {
   image: string;
   title: string;
   description: string;
-  footer: string;
   rarity: string;
   rarityEmoji: string;
+  claimMethod: string;
 }
 
 const PRIZE_CONFIGS: Record<string, PrizeConfig> = {
   free_queue: {
     color: 0xFFD700,
     emoji: "🎫",
-    image: `${STORAGE_BASE}/free-queue.png`,
-    title: "FREE QUEUE ENTRY WON!",
+    image: `${PRIZE_IMAGE_BASE}/free-queue.png`,
+    title: "FREE QUEUE ENTRY",
     description: "Skip the line and jump straight into the city!",
-    footer: "⭐ RARE PRIZE • Skylife Roleplay India",
     rarity: "⭐ RARE",
     rarityEmoji: "🌟",
+    claimMethod: "Automatically applied on next login",
   },
   cash_10k: {
     color: 0x2ECC71,
     emoji: "💰",
-    image: `${STORAGE_BASE}/cash.png`,
-    title: "$10,000 CASH WON!",
-    description: "Money bags incoming!",
-    footer: "💸 Skylife Roleplay India • Spin & Win",
+    image: `${PRIZE_IMAGE_BASE}/cash.png`,
+    title: "$10,000 CASH",
+    description: "Money bags incoming! 💵",
     rarity: "Common",
     rarityEmoji: "🎰",
+    claimMethod: "Delivered in-city automatically",
   },
   cash_5k: {
     color: 0x2ECC71,
     emoji: "💵",
-    image: `${STORAGE_BASE}/cash.png`,
-    title: "$5,000 CASH WON!",
-    description: "Every dollar counts!",
-    footer: "💸 Skylife Roleplay India • Spin & Win",
+    image: `${PRIZE_IMAGE_BASE}/cash.png`,
+    title: "$5,000 CASH",
+    description: "Every dollar counts! 🤑",
     rarity: "Common",
     rarityEmoji: "🎰",
+    claimMethod: "Delivered in-city automatically",
   },
   cash_20k: {
     color: 0xFFD700,
     emoji: "🤑",
-    image: `${STORAGE_BASE}/cash.png`,
-    title: "$20,000 CASH WON!",
-    description: "A massive jackpot! The city is theirs!",
-    footer: "⭐ RARE PRIZE • Skylife Roleplay India",
+    image: `${PRIZE_IMAGE_BASE}/cash.png`,
+    title: "$20,000 CASH",
+    description: "A massive jackpot! The city is theirs! 🎰💰",
     rarity: "⭐ RARE",
     rarityEmoji: "🌟",
+    claimMethod: "Delivered in-city automatically",
   },
   vehicle: {
     color: 0xFFD700,
     emoji: "🚗",
-    image: `${STORAGE_BASE}/vehicle.png`,
-    title: "RANDOM VEHICLE WON!",
-    description: "A brand new ride is waiting in the garage!",
-    footer: "⭐ RARE PRIZE • Skylife Roleplay India",
+    image: `${PRIZE_IMAGE_BASE}/vehicle.png`,
+    title: "RANDOM VEHICLE",
+    description: "A brand new ride is waiting in the garage! 🏎️✨",
     rarity: "⭐ RARE",
     rarityEmoji: "🌟",
+    claimMethod: "Contact a staff member to claim",
   },
   mystery_box: {
     color: 0x9B59B6,
     emoji: "📦",
-    image: `${STORAGE_BASE}/mystery-box.png`,
-    title: "MYSTERY BOX WON!",
-    description: "What's inside? Only fate knows...",
-    footer: "⭐ RARE PRIZE • Skylife Roleplay India",
+    image: `${PRIZE_IMAGE_BASE}/mystery-box.png`,
+    title: "MYSTERY BOX",
+    description: "What's inside? Only fate knows... 🔮✨",
     rarity: "⭐ RARE",
     rarityEmoji: "🌟",
+    claimMethod: "Contact a staff member to reveal",
   },
   discount: {
     color: 0xF39C12,
     emoji: "🏷️",
-    image: `${STORAGE_BASE}/discount.png`,
-    title: "DISCOUNT COUPON WON!",
-    description: "Save big on your next purchase! A staff member will deliver it manually.",
-    footer: "⭐ RARE PRIZE • Skylife Roleplay India",
+    image: `${PRIZE_IMAGE_BASE}/discount.png`,
+    title: "DISCOUNT COUPON",
+    description: "Save big on your next purchase! 🎁",
     rarity: "⭐ RARE",
     rarityEmoji: "🌟",
+    claimMethod: "A staff member will deliver it manually",
   },
   clothing_1: {
     color: 0xE91E63,
     emoji: "👕",
-    image: `${STORAGE_BASE}/clothing.png`,
-    title: "CLOTHING REWARD WON!",
-    description: "Fresh drip incoming! Time to style up in the city!",
-    footer: "⭐ RARE PRIZE • Skylife Roleplay India",
+    image: `${PRIZE_IMAGE_BASE}/clothing.png`,
+    title: "CLOTHING REWARD",
+    description: "Fresh drip incoming! Time to style up in the city! 👗✨",
     rarity: "⭐ RARE",
     rarityEmoji: "🌟",
+    claimMethod: "Delivered in-city automatically",
   },
   clothing_2: {
     color: 0xE91E63,
     emoji: "👕",
-    image: `${STORAGE_BASE}/clothing.png`,
-    title: "CLOTHING REWARD WON!",
-    description: "New threads for the streets! Looking fresh!",
-    footer: "⭐ RARE PRIZE • Skylife Roleplay India",
+    image: `${PRIZE_IMAGE_BASE}/clothing.png`,
+    title: "CLOTHING REWARD",
+    description: "New threads for the streets! Looking fresh! 👔✨",
     rarity: "⭐ RARE",
     rarityEmoji: "🌟",
+    claimMethod: "Delivered in-city automatically",
   },
   name_change: {
     color: 0x3498DB,
     emoji: "🪪",
-    image: `${STORAGE_BASE}/name-change.png`,
-    title: "FREE NAME CHANGE WON!",
-    description: "Time for a fresh identity!",
-    footer: "⭐ RARE PRIZE • Skylife Roleplay India",
+    image: `${PRIZE_IMAGE_BASE}/name-change.png`,
+    title: "FREE NAME CHANGE",
+    description: "Time for a fresh identity! 📝",
     rarity: "⭐ RARE",
     rarityEmoji: "🌟",
+    claimMethod: "Contact a staff member to apply",
   },
   mission_skip: {
     color: 0xE67E22,
     emoji: "⏭️",
-    image: `${STORAGE_BASE}/mission-skip.png`,
-    title: "MISSION SKIP WON!",
-    description: "Skip the grind, keep the rewards!",
-    footer: "⚡ Skylife Roleplay India • Spin & Win",
+    image: `${PRIZE_IMAGE_BASE}/mission-skip.png`,
+    title: "MISSION SKIP",
+    description: "Skip the grind, keep the rewards! ⚡",
     rarity: "Common",
     rarityEmoji: "🎰",
+    claimMethod: "Automatically applied",
   },
   better_luck_1: {
     color: 0x95A5A6,
     emoji: "😢",
-    image: `${STORAGE_BASE}/better-luck.png`,
-    title: "Better Luck Next Time...",
-    description: "Luck wasn't on their side this time...",
-    footer: "😔 Skylife Roleplay India • Better luck next spin!",
+    image: `${PRIZE_IMAGE_BASE}/better-luck.png`,
+    title: "BETTER LUCK NEXT TIME",
+    description: "Luck wasn't on their side this time... 💔",
     rarity: "—",
     rarityEmoji: "💔",
+    claimMethod: "",
   },
   better_luck_2: {
     color: 0x95A5A6,
     emoji: "😢",
-    image: `${STORAGE_BASE}/better-luck.png`,
-    title: "Better Luck Next Time...",
+    image: `${PRIZE_IMAGE_BASE}/better-luck.png`,
+    title: "BETTER LUCK NEXT TIME",
     description: "The wheel said no... but the next spin could be the big one!",
-    footer: "😔 Skylife Roleplay India • Don't lose hope!",
     rarity: "—",
     rarityEmoji: "💔",
+    claimMethod: "",
   },
 };
 
@@ -174,73 +176,171 @@ serve(async (req) => {
     const userMention = discord_id ? `<@${discord_id}>` : null;
     const displayName = discord_username || "Unknown Player";
     const isBetterLuck = prize_key === "better_luck_1" || prize_key === "better_luck_2";
+    const isRare = config.rarity.includes("RARE");
+    const timestamp = `<t:${Math.floor(Date.now() / 1000)}:F>`;
 
-    // Build the rich embed
-    const embed: Record<string, unknown> = {
-      title: `${config.emoji} ${config.title}`,
-      color: config.color,
-      image: { url: config.image },
-      footer: {
-        text: config.footer,
-        icon_url: "https://obirpzwvnqveddyuulsb.supabase.co/storage/v1/object/public/discord-assets/spin-prizes/free-queue.png",
-      },
-      timestamp: new Date().toISOString(),
-    };
+    const userDisplay = discord_id
+      ? `<@${discord_id}>\n**${displayName}**`
+      : `**${displayName}**`;
+
+    // Build embed matching the professional style of other notifications
+    let embed: Record<string, unknown>;
 
     if (isBetterLuck) {
-      embed.description = [
-        `${config.emoji} ${userMention ? `${userMention} (${displayName})` : `**${displayName}**`} ${config.description}`,
-        "",
-        "> 💔 Don't give up! Your luck could change next time!",
-      ].join("\n");
-
-      embed.fields = [
-        {
-          name: "⏰ Next Chance",
-          value: "Spin again after the **48-hour** cooldown!",
-          inline: true,
+      embed = {
+        author: {
+          name: "SKYLIFE ROLEPLAY INDIA • Spin & Win",
+          icon_url: LOGO_URL,
         },
-        {
-          name: "💡 Tip",
-          value: "Stay active in the city for bonus spins!",
-          inline: true,
+        title: `😢 ${config.title}`,
+        description: `A player tried their luck on the **Skylife Spin & Win** wheel, but fortune wasn't smiling today...`,
+        color: config.color,
+        thumbnail: { url: LOGO_URL },
+        fields: [
+          {
+            name: "━━━━━ PLAYER ━━━━━",
+            value: "\u200b",
+            inline: false,
+          },
+          {
+            name: "👤 Player",
+            value: userDisplay,
+            inline: true,
+          },
+          {
+            name: "🆔 Discord ID",
+            value: discord_id ? `**${discord_id}**` : "**N/A**",
+            inline: true,
+          },
+          {
+            name: "\u200b",
+            value: "\u200b",
+            inline: true,
+          },
+          {
+            name: "━━━━━ RESULT ━━━━━",
+            value: "\u200b",
+            inline: false,
+          },
+          {
+            name: "🎰 Outcome",
+            value: `> **${config.description}**`,
+            inline: false,
+          },
+          {
+            name: "⏰ Next Chance",
+            value: "Spin again after the **48-hour** cooldown!",
+            inline: true,
+          },
+          {
+            name: "💡 Tip",
+            value: "Stay active in the city for bonus spins!",
+            inline: true,
+          },
+          {
+            name: "📅 Spin Date",
+            value: timestamp,
+            inline: true,
+          },
+        ],
+        image: { url: config.image },
+        footer: {
+          text: "😔 SKYLIFE ROLEPLAY INDIA • Better luck next spin!",
+          icon_url: LOGO_URL,
         },
-      ];
+        timestamp: new Date().toISOString(),
+      };
     } else {
-      embed.description = [
-        `🎉 **CONGRATULATIONS!**`,
-        "",
-        `${config.emoji} ${userMention ? `${userMention} (${displayName})` : `**${displayName}**`} ${config.description}`,
-        "",
-        `> ${config.rarityEmoji} **Prize:** ${config.title.replace(" WON!", "")}`,
-        `> 🏆 **Rarity:** ${config.rarity}`,
-      ].join("\n");
-
-      embed.fields = [
-        {
-          name: "🎰 How to Claim",
-          value: "Visit the **Spin & Win** page on our website or contact a staff member!",
-          inline: false,
+      embed = {
+        author: {
+          name: "SKYLIFE ROLEPLAY INDIA • Spin & Win",
+          icon_url: LOGO_URL,
         },
-      ];
+        title: `${config.emoji} ${config.title} WON!`,
+        description: isRare
+          ? `🌟 **A RARE PRIZE has been won!** 🌟\nThe Lucky Wheel has blessed a player with an incredible reward!`
+          : `🎉 **CONGRATULATIONS!**\nThe Lucky Wheel has chosen a winner!`,
+        color: config.color,
+        thumbnail: { url: LOGO_URL },
+        fields: [
+          {
+            name: "━━━━━ WINNER ━━━━━",
+            value: "\u200b",
+            inline: false,
+          },
+          {
+            name: "👤 Player",
+            value: userDisplay,
+            inline: true,
+          },
+          {
+            name: "🆔 Discord ID",
+            value: discord_id ? `**${discord_id}**` : "**N/A**",
+            inline: true,
+          },
+          {
+            name: "\u200b",
+            value: "\u200b",
+            inline: true,
+          },
+          {
+            name: "━━━━━ PRIZE DETAILS ━━━━━",
+            value: "\u200b",
+            inline: false,
+          },
+          {
+            name: `${config.emoji} Prize`,
+            value: `> **${config.title}**`,
+            inline: true,
+          },
+          {
+            name: "🏆 Rarity",
+            value: `> **${config.rarity}**`,
+            inline: true,
+          },
+          {
+            name: "📝 Description",
+            value: `> ${config.description}`,
+            inline: false,
+          },
+          {
+            name: "━━━━━ CLAIM INFO ━━━━━",
+            value: "\u200b",
+            inline: false,
+          },
+          {
+            name: "📦 How to Claim",
+            value: `> **${config.claimMethod}**`,
+            inline: true,
+          },
+          {
+            name: "📅 Won On",
+            value: timestamp,
+            inline: true,
+          },
+        ],
+        image: { url: config.image },
+        footer: {
+          text: isRare
+            ? "🌟 RARE PRIZE • SKYLIFE ROLEPLAY INDIA • Spin & Win"
+            : "🎰 SKYLIFE ROLEPLAY INDIA • Spin & Win",
+          icon_url: LOGO_URL,
+        },
+        timestamp: new Date().toISOString(),
+      };
     }
 
-    // Build content with proper tagging
+    // Build content message with proper tagging
     let content: string;
     if (isBetterLuck) {
       content = userMention
         ? `${userMention} tried the **Skylife Spin & Win** wheel... 😢`
         : `**${displayName}** tried the **Skylife Spin & Win** wheel... 😢`;
     } else {
-      content = [
-        `@everyone`,
-        "",
-        `🎰 **━━━━━━ SKYLIFE SPIN & WIN ━━━━━━** 🎰`,
-        "",
-        userMention
-          ? `${userMention} just won from the Lucky Wheel! 🎉🎉`
-          : `**${displayName}** just won from the Lucky Wheel! 🎉🎉`,
-      ].join("\n");
+      const winnerTag = userMention || `**${displayName}**`;
+      content = isRare
+        ? `@everyone\n\n🌟🎰 **━━━━━━ RARE PRIZE WON! ━━━━━━** 🎰🌟\n\n${winnerTag} just won a **${config.title}** from the Lucky Wheel! 🎉🎉`
+        : `@everyone\n\n🎰 **━━━━━━ SKYLIFE SPIN & WIN ━━━━━━** 🎰\n\n${winnerTag} just won from the Lucky Wheel! 🎉`;
     }
 
     const response = await fetch(
