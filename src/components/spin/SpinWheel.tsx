@@ -356,7 +356,7 @@ const SpinWheel = () => {
       )}
 
       {/* ── Wheel Container ── */}
-      <div className="relative select-none z-10" style={{ width: "min(92vw, 640px)", height: "min(92vw, 640px)" }}>
+      <div className="relative select-none z-10" style={{ width: "min(94vw, 740px)", height: "min(94vw, 740px)" }}>
 
         {/* Realistic floor shadow */}
         <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-[85%] h-16 rounded-[50%] pointer-events-none"
