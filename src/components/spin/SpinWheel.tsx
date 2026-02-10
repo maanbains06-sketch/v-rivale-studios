@@ -40,10 +40,10 @@ const SEGMENTS: Segment[] = [
 
 const TOTAL_SEGMENTS = SEGMENTS.length;
 const SEGMENT_ANGLE = 360 / TOTAL_SEGMENTS;
-const COOLDOWN_MS = 2 * 24 * 60 * 60 * 1000; // 48 hours
+const COOLDOWN_MS = 2 * 24 * 60 * 60 * 1000;
 
 // ── SVG Helpers ─────────────────────────────────────────────────
-const CX = 300, CY = 300, OUTER_R = 270, INNER_R = 75;
+const CX = 300, CY = 300, OUTER_R = 260, INNER_R = 80;
 
 const toRad = (deg: number) => (deg * Math.PI) / 180;
 
@@ -52,7 +52,6 @@ const getSegmentPath = (index: number) => {
   const endDeg = startDeg + SEGMENT_ANGLE;
   const s = toRad(startDeg);
   const e = toRad(endDeg);
-
   const x1o = CX + OUTER_R * Math.cos(s);
   const y1o = CY + OUTER_R * Math.sin(s);
   const x2o = CX + OUTER_R * Math.cos(e);
@@ -61,7 +60,6 @@ const getSegmentPath = (index: number) => {
   const y1i = CY + INNER_R * Math.sin(s);
   const x2i = CX + INNER_R * Math.cos(e);
   const y2i = CY + INNER_R * Math.sin(e);
-
   return `M${x1i},${y1i} L${x1o},${y1o} A${OUTER_R},${OUTER_R} 0 0,1 ${x2o},${y2o} L${x2i},${y2i} A${INNER_R},${INNER_R} 0 0,0 ${x1i},${y1i} Z`;
 };
 
@@ -69,25 +67,17 @@ const getTextPosition = (index: number) => {
   const midDeg = index * SEGMENT_ANGLE + SEGMENT_ANGLE / 2 - 90;
   const r = (OUTER_R + INNER_R) / 2 + 30;
   const rad = toRad(midDeg);
-  return {
-    x: CX + r * Math.cos(rad),
-    y: CY + r * Math.sin(rad),
-    rotation: midDeg + 90,
-  };
+  return { x: CX + r * Math.cos(rad), y: CY + r * Math.sin(rad), rotation: midDeg + 90 };
 };
 
 const getIconPosition = (index: number) => {
   const midDeg = index * SEGMENT_ANGLE + SEGMENT_ANGLE / 2 - 90;
-  const r = INNER_R + 32;
+  const r = INNER_R + 35;
   const rad = toRad(midDeg);
-  return {
-    x: CX + r * Math.cos(rad),
-    y: CY + r * Math.sin(rad),
-    rotation: midDeg + 90,
-  };
+  return { x: CX + r * Math.cos(rad), y: CY + r * Math.sin(rad), rotation: midDeg + 90 };
 };
 
-// ── Weighted Random Selection ───────────────────────────────────
+// ── Weighted Random ─────────────────────────────────────────────
 const selectPrize = (): number => {
   const totalWeight = SEGMENTS.reduce((s, seg) => s + seg.weight, 0);
   let rand = Math.random() * totalWeight;
@@ -98,7 +88,6 @@ const selectPrize = (): number => {
   return SEGMENTS.length - 1;
 };
 
-// ── Cooldown Timer ──────────────────────────────────────────────
 const formatCountdown = (ms: number) => {
   if (ms <= 0) return null;
   const totalSec = Math.floor(ms / 1000);
@@ -114,7 +103,6 @@ const formatCountdown = (ms: number) => {
   return parts.join(" : ");
 };
 
-// ── Send Discord Notification ───────────────────────────────────
 const sendSpinNotification = async (prizeKey: string, discordId: string | null, discordUsername: string | null) => {
   try {
     const response = await fetch(
@@ -126,16 +114,10 @@ const sendSpinNotification = async (prizeKey: string, discordId: string | null, 
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({
-          prize_key: prizeKey,
-          discord_id: discordId,
-          discord_username: discordUsername,
-        }),
+        body: JSON.stringify({ prize_key: prizeKey, discord_id: discordId, discord_username: discordUsername }),
       }
     );
-    if (!response.ok) {
-      console.error("Failed to send spin notification:", await response.text());
-    }
+    if (!response.ok) console.error("Failed to send spin notification:", await response.text());
   } catch (err) {
     console.error("Error sending spin notification:", err);
   }
@@ -156,7 +138,6 @@ const SpinWheel = () => {
   const [loading, setLoading] = useState(true);
   const wheelRef = useRef<SVGGElement>(null);
 
-  // ── Auth + Cooldown Check ──
   useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -164,84 +145,52 @@ const SpinWheel = () => {
       setUserId(user.id);
       setDiscordId(user.user_metadata?.discord_id || user.user_metadata?.provider_id || null);
       setDiscordUsername(user.user_metadata?.display_name || user.user_metadata?.username || user.user_metadata?.discord_username || null);
-
       const { data: lastSpin } = await supabase
-        .from("spin_results")
-        .select("created_at")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(1);
-
+        .from("spin_results").select("created_at").eq("user_id", user.id)
+        .order("created_at", { ascending: false }).limit(1);
       if (lastSpin && lastSpin.length > 0) {
-        const lastTime = new Date(lastSpin[0].created_at).getTime();
-        const endTime = lastTime + COOLDOWN_MS;
-        if (endTime > Date.now()) {
-          setCooldownEnd(endTime);
-        }
+        const endTime = new Date(lastSpin[0].created_at).getTime() + COOLDOWN_MS;
+        if (endTime > Date.now()) setCooldownEnd(endTime);
       }
       setLoading(false);
     };
     init();
   }, []);
 
-  // ── Cooldown Ticker ──
   useEffect(() => {
     if (!cooldownEnd) { setCooldownText(null); return; }
     const tick = () => {
       const remaining = cooldownEnd - Date.now();
-      if (remaining <= 0) {
-        setCooldownEnd(null);
-        setCooldownText(null);
-      } else {
-        setCooldownText(formatCountdown(remaining));
-      }
+      if (remaining <= 0) { setCooldownEnd(null); setCooldownText(null); }
+      else setCooldownText(formatCountdown(remaining));
     };
     tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
   }, [cooldownEnd]);
 
-  // ── Spin Logic ──
   const handleSpin = useCallback(async () => {
     if (isSpinning || cooldownEnd || !userId) return;
-
     const prizeIndex = selectPrize();
     const prize = SEGMENTS[prizeIndex];
-
-    // Calculate target rotation
     const segCenter = prizeIndex * SEGMENT_ANGLE + SEGMENT_ANGLE / 2;
     const minNewRotation = rotation + 360 * 5;
     const remainder = minNewRotation % 360;
     let targetRotation = minNewRotation + (segCenter - remainder);
     if (targetRotation < minNewRotation) targetRotation += 360;
     targetRotation += (Math.random() - 0.5) * SEGMENT_ANGLE * 0.6;
-
     setIsSpinning(true);
     setRotation(targetRotation);
-
     setTimeout(async () => {
       setWonPrize(prize);
       setShowPrizeDialog(true);
       setIsSpinning(false);
-
-      // Save to DB
       const { error } = await supabase.from("spin_results").insert({
-        user_id: userId,
-        prize_key: prize.id,
-        prize_label: prize.label,
-        is_rare: prize.rare,
+        user_id: userId, prize_key: prize.id, prize_label: prize.label, is_rare: prize.rare,
       });
-
-      if (error) {
-        console.error("Failed to save spin result:", error);
-      }
-
-      // Send Discord notification
+      if (error) console.error("Failed to save spin result:", error);
       sendSpinNotification(prize.id, discordId, discordUsername);
-
-      // Set cooldown
-      const endTime = Date.now() + COOLDOWN_MS;
-      setCooldownEnd(endTime);
+      setCooldownEnd(Date.now() + COOLDOWN_MS);
     }, 4500);
   }, [isSpinning, cooldownEnd, userId, rotation, discordId, discordUsername]);
 
@@ -255,33 +204,46 @@ const SpinWheel = () => {
     );
   }
 
-  // ── LED Dots ──
-  const ledDots = Array.from({ length: 32 }, (_, i) => {
-    const angle = toRad((i * 360) / 32 - 90);
-    const r = OUTER_R + 12;
-    return { x: CX + r * Math.cos(angle), y: CY + r * Math.sin(angle) };
+  // Peg positions at segment boundaries on the outer rim
+  const pegs = Array.from({ length: TOTAL_SEGMENTS }, (_, i) => {
+    const deg = i * SEGMENT_ANGLE - 90;
+    const rad = toRad(deg);
+    const r = OUTER_R + 2;
+    return { x: CX + r * Math.cos(rad), y: CY + r * Math.sin(rad) };
+  });
+
+  // LED dots between pegs
+  const ledCount = TOTAL_SEGMENTS * 2;
+  const ledDots = Array.from({ length: ledCount }, (_, i) => {
+    const deg = (i * 360) / ledCount - 90;
+    const rad = toRad(deg);
+    const r = OUTER_R + 18;
+    return { x: CX + r * Math.cos(rad), y: CY + r * Math.sin(rad) };
   });
 
   return (
     <div className="flex flex-col items-center gap-10 py-8 px-4">
-      {/* Ambient background glow */}
+      {/* Ambient glow */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-20"
-          style={{ background: "radial-gradient(circle, rgba(0,229,255,0.15) 0%, rgba(0,100,200,0.05) 40%, transparent 70%)" }}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full opacity-25"
+          style={{ background: "radial-gradient(circle, rgba(100,160,255,0.12) 0%, rgba(40,80,160,0.05) 40%, transparent 65%)" }}
         />
       </div>
 
-      {/* ── Cooldown Timer ── */}
+      {/* Cooldown Timer */}
       {isCoolingDown && cooldownText && (
         <div className="relative w-full max-w-lg z-10">
-          <div className="relative overflow-hidden bg-gradient-to-r from-[#0a1628] via-[#132d4a] to-[#0a1628] border border-cyan-500/30 rounded-2xl px-8 py-5 text-center shadow-[0_0_60px_rgba(0,200,255,0.15)]">
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-500/5 to-transparent animate-pulse" />
-            <div className="relative flex items-center justify-center gap-2 mb-3">
+          <div className="relative overflow-hidden border border-cyan-500/30 rounded-2xl px-8 py-5 text-center"
+            style={{
+              background: "linear-gradient(135deg, #080e1a 0%, #0f2040 50%, #080e1a 100%)",
+              boxShadow: "0 0 60px rgba(0,150,255,0.1), inset 0 1px 0 rgba(255,255,255,0.05)",
+            }}>
+            <div className="flex items-center justify-center gap-2 mb-3">
               <Clock className="w-5 h-5 text-cyan-400 animate-pulse" />
               <span className="text-xs uppercase tracking-[0.25em] text-cyan-400 font-semibold">Next Spin Available In</span>
             </div>
-            <div className="relative text-3xl md:text-4xl font-bold text-white font-mono tracking-wider"
-              style={{ textShadow: "0 0 20px rgba(0,229,255,0.5)" }}>
+            <div className="text-3xl md:text-4xl font-bold text-white font-mono tracking-wider"
+              style={{ textShadow: "0 0 20px rgba(100,180,255,0.5)" }}>
               {cooldownText}
             </div>
           </div>
@@ -291,124 +253,153 @@ const SpinWheel = () => {
       {/* ── Wheel Container ── */}
       <div className="relative select-none z-10" style={{ width: "min(92vw, 640px)", height: "min(92vw, 640px)" }}>
 
-        {/* Outer Pulsing Aura */}
-        <div className="absolute inset-[-60px] rounded-full pointer-events-none"
-          style={{
-            background: "radial-gradient(circle, transparent 35%, rgba(0,229,255,0.08) 45%, rgba(0,150,255,0.04) 55%, transparent 65%)",
-            animation: isSpinning ? "pulse 1s ease-in-out infinite" : "pulse 3s ease-in-out infinite",
-          }}
+        {/* Realistic floor shadow */}
+        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-[85%] h-16 rounded-[50%] pointer-events-none"
+          style={{ background: "radial-gradient(ellipse, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 40%, transparent 70%)", filter: "blur(8px)" }}
         />
-        <div className="absolute inset-[-40px] rounded-full pointer-events-none"
+
+        {/* Top-down light cone */}
+        <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[120%] h-[60%] pointer-events-none"
           style={{
-            background: "radial-gradient(circle, transparent 40%, rgba(255,215,0,0.04) 50%, transparent 60%)",
-            animation: "pulse 4s ease-in-out infinite reverse",
+            background: "conic-gradient(from 0deg at 50% 0%, transparent 30%, rgba(180,210,255,0.04) 45%, rgba(200,220,255,0.07) 50%, rgba(180,210,255,0.04) 55%, transparent 70%)",
           }}
         />
 
-        {/* Pointer / Ticker at top */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 z-20">
-          <div className="relative">
-            <svg width="48" height="52" viewBox="0 0 48 52">
-              <defs>
-                <linearGradient id="pointerGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#FFD700" />
-                  <stop offset="40%" stopColor="#FFA500" />
-                  <stop offset="100%" stopColor="#FF6B35" />
-                </linearGradient>
-                <filter id="pointerGlow">
-                  <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="#FFD700" floodOpacity="0.6" />
-                  <feDropShadow dx="0" dy="4" stdDeviation="8" floodColor="#FF6B35" floodOpacity="0.3" />
-                </filter>
-              </defs>
-              <polygon points="24,48 6,4 42,4" fill="url(#pointerGrad)" filter="url(#pointerGlow)" />
-              <polygon points="24,42 12,8 36,8" fill="url(#pointerGrad)" opacity="0.6" />
-              {/* Diamond gem at base */}
-              <circle cx="24" cy="12" r="5" fill="#FFD700" opacity="0.9" />
-              <circle cx="24" cy="12" r="3" fill="#FFF8DC" opacity="0.8" />
-            </svg>
-          </div>
+        {/* Pointer / Ticker */}
+        <div className="absolute top-[-18px] left-1/2 -translate-x-1/2 z-30">
+          <svg width="44" height="56" viewBox="0 0 44 56">
+            <defs>
+              <linearGradient id="tickerChrome" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#e0e8f0" />
+                <stop offset="30%" stopColor="#b0c0d0" />
+                <stop offset="50%" stopColor="#f0f4f8" />
+                <stop offset="70%" stopColor="#8898a8" />
+                <stop offset="100%" stopColor="#c0ccd8" />
+              </linearGradient>
+              <filter id="tickerShadow">
+                <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="#000" floodOpacity="0.6" />
+              </filter>
+            </defs>
+            {/* Main ticker body */}
+            <polygon points="22,52 4,6 40,6" fill="url(#tickerChrome)" filter="url(#tickerShadow)" stroke="#6080a0" strokeWidth="1" />
+            {/* Highlight edge */}
+            <polygon points="22,48 10,10 22,6" fill="rgba(255,255,255,0.2)" />
+            {/* Top gem */}
+            <circle cx="22" cy="10" r="5" fill="#4488cc" stroke="#a0c0e0" strokeWidth="1.5" />
+            <circle cx="22" cy="10" r="2.5" fill="#88bbee" opacity="0.8" />
+            <circle cx="20.5" cy="8.5" r="1" fill="rgba(255,255,255,0.7)" />
+          </svg>
         </div>
 
         {/* SVG Wheel */}
-        <svg viewBox="0 0 600 600" className="w-full h-full" style={{ filter: "drop-shadow(0 10px 40px rgba(0,0,0,0.5))" }}>
+        <svg viewBox="0 0 600 600" className="w-full h-full">
           <defs>
-            <radialGradient id="centerGrad3d" cx="50%" cy="40%" r="55%">
-              <stop offset="0%" stopColor="#1e3a5f" />
-              <stop offset="60%" stopColor="#0f2744" />
-              <stop offset="100%" stopColor="#060e1a" />
+            {/* Chrome rim gradient */}
+            <linearGradient id="chromeRim" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#7a8ea0" />
+              <stop offset="15%" stopColor="#d0dce8" />
+              <stop offset="30%" stopColor="#f0f4f8" />
+              <stop offset="45%" stopColor="#8898a8" />
+              <stop offset="60%" stopColor="#c8d4e0" />
+              <stop offset="75%" stopColor="#f0f4f8" />
+              <stop offset="90%" stopColor="#8898a8" />
+              <stop offset="100%" stopColor="#b0c0d0" />
+            </linearGradient>
+            <linearGradient id="chromeRim2" x1="100%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#b0c0d0" />
+              <stop offset="25%" stopColor="#e8eff4" />
+              <stop offset="50%" stopColor="#90a0b0" />
+              <stop offset="75%" stopColor="#d0dce8" />
+              <stop offset="100%" stopColor="#a0b0c0" />
+            </linearGradient>
+            {/* Center hub gradients */}
+            <radialGradient id="hubGrad" cx="45%" cy="40%" r="55%">
+              <stop offset="0%" stopColor="#1a2a40" />
+              <stop offset="60%" stopColor="#0d1828" />
+              <stop offset="100%" stopColor="#060c16" />
             </radialGradient>
-            <radialGradient id="centerShine" cx="35%" cy="30%" r="60%">
-              <stop offset="0%" stopColor="rgba(255,255,255,0.15)" />
+            <radialGradient id="hubShine" cx="35%" cy="30%" r="50%">
+              <stop offset="0%" stopColor="rgba(180,210,255,0.12)" />
               <stop offset="100%" stopColor="rgba(255,255,255,0)" />
             </radialGradient>
-            <linearGradient id="goldRing" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#B8860B" />
-              <stop offset="20%" stopColor="#FFD700" />
-              <stop offset="40%" stopColor="#DAA520" />
-              <stop offset="60%" stopColor="#FFD700" />
-              <stop offset="80%" stopColor="#B8860B" />
-              <stop offset="100%" stopColor="#DAA520" />
+            {/* Segment lighting - top-left light source */}
+            <linearGradient id="segTopLight" x1="30%" y1="0%" x2="70%" y2="100%">
+              <stop offset="0%" stopColor="rgba(160,200,255,0.1)" />
+              <stop offset="50%" stopColor="rgba(100,150,220,0.03)" />
+              <stop offset="100%" stopColor="rgba(0,0,0,0.08)" />
             </linearGradient>
-            <linearGradient id="silverRing" x1="100%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#C0C0C0" />
-              <stop offset="30%" stopColor="#F0F0F0" />
-              <stop offset="50%" stopColor="#A0A0A0" />
-              <stop offset="70%" stopColor="#E8E8E8" />
-              <stop offset="100%" stopColor="#B0B0B0" />
-            </linearGradient>
-            <linearGradient id="segLight" x1="50%" y1="0%" x2="50%" y2="100%">
-              <stop offset="0%" stopColor="rgba(255,255,255,0.12)" />
-              <stop offset="100%" stopColor="rgba(255,255,255,0)" />
-            </linearGradient>
-            <filter id="wheelShadow3d">
-              <feDropShadow dx="0" dy="6" stdDeviation="12" floodColor="#000" floodOpacity="0.5" />
+            {/* Metallic peg gradient */}
+            <radialGradient id="pegGrad" cx="35%" cy="30%" r="60%">
+              <stop offset="0%" stopColor="#e8f0f8" />
+              <stop offset="40%" stopColor="#b0c0d0" />
+              <stop offset="100%" stopColor="#607080" />
+            </radialGradient>
+            {/* Drop shadow for whole wheel */}
+            <filter id="wheelDrop">
+              <feDropShadow dx="4" dy="8" stdDeviation="16" floodColor="#000" floodOpacity="0.55" />
             </filter>
-            <filter id="innerGlow">
-              <feGaussianBlur in="SourceAlpha" stdDeviation="6" />
+            {/* Inner shadow for depth */}
+            <filter id="innerDepth">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="8" />
               <feOffset dx="0" dy="0" />
               <feComposite in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" />
-              <feFlood floodColor="#00e5ff" floodOpacity="0.3" />
+              <feFlood floodColor="#000020" floodOpacity="0.4" />
               <feComposite in2="SourceGraphic" operator="in" />
               <feMerge>
                 <feMergeNode />
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
+            {/* Subtle bevel for segments */}
+            <filter id="segBevel">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="1" result="blur" />
+              <feSpecularLighting in="blur" surfaceScale="3" specularConstant="0.5" specularExponent="20" result="spec">
+                <fePointLight x="200" y="100" z="200" />
+              </feSpecularLighting>
+              <feComposite in="spec" in2="SourceAlpha" operator="in" result="specOut" />
+              <feMerge>
+                <feMergeNode in="SourceGraphic" />
+                <feMergeNode in="specOut" />
+              </feMerge>
+            </filter>
           </defs>
 
-          {/* === Outer Decorative Rings === */}
-          {/* Gold ring - outermost */}
-          <circle cx={CX} cy={CY} r={OUTER_R + 22} fill="none" stroke="url(#goldRing)" strokeWidth="6" opacity="0.9" />
-          {/* Silver ring */}
-          <circle cx={CX} cy={CY} r={OUTER_R + 14} fill="none" stroke="url(#silverRing)" strokeWidth="3" opacity="0.7" />
-          {/* Cyan glow ring */}
-          <circle cx={CX} cy={CY} r={OUTER_R + 9} fill="none" stroke="#00e5ff" strokeWidth="1.5" opacity={isSpinning ? "0.8" : "0.4"}>
-            <animate attributeName="opacity" values={isSpinning ? "0.4;1;0.4" : "0.3;0.5;0.3"} dur={isSpinning ? "0.5s" : "3s"} repeatCount="indefinite" />
-          </circle>
+          {/* === Outer Chrome Frame (non-rotating) === */}
+          {/* Thick chrome bezel - multiple rings for realism */}
+          <circle cx={CX} cy={CY} r={OUTER_R + 28} fill="none" stroke="url(#chromeRim)" strokeWidth="14" filter="url(#wheelDrop)" />
+          <circle cx={CX} cy={CY} r={OUTER_R + 20} fill="none" stroke="url(#chromeRim2)" strokeWidth="5" opacity="0.8" />
+          {/* Inner chrome lip */}
+          <circle cx={CX} cy={CY} r={OUTER_R + 13} fill="none" stroke="#4a6070" strokeWidth="1" opacity="0.6" />
+          {/* Outer highlight ring */}
+          <circle cx={CX} cy={CY} r={OUTER_R + 35} fill="none" stroke="rgba(180,210,255,0.08)" strokeWidth="1" />
 
-          {/* === LED Dots with glow === */}
+          {/* === LED Dots on chrome frame === */}
           {ledDots.map((dot, i) => {
-            const isActive = isSpinning ? i % 2 === 0 : true;
+            const phase = isSpinning ? (i * 0.12) : (i * 0.2);
             return (
               <g key={`led-${i}`}>
-                {/* Glow halo */}
-                <circle cx={dot.x} cy={dot.y} r="8" fill={isActive ? "#00e5ff" : "#004455"} opacity="0.15">
-                  {isSpinning && <animate attributeName="opacity" values="0.05;0.25;0.05" dur={`${0.15 + (i % 5) * 0.06}s`} repeatCount="indefinite" />}
+                {/* Glow */}
+                <circle cx={dot.x} cy={dot.y} r="6" fill="#3070cc" opacity="0.12">
+                  {isSpinning && <animate attributeName="opacity" values="0.05;0.2;0.05" dur={`${0.15 + (i % 5) * 0.05}s`} repeatCount="indefinite" />}
                 </circle>
-                {/* Main dot */}
-                <circle cx={dot.x} cy={dot.y} r="4.5" fill={isActive ? "#00e5ff" : "#003344"} opacity={isSpinning ? 0.95 : 0.75}>
-                  {isSpinning && <animate attributeName="fill" values="#00e5ff;#FFD700;#00e5ff" dur={`${0.2 + (i % 4) * 0.08}s`} repeatCount="indefinite" />}
-                  {!isSpinning && <animate attributeName="opacity" values="0.5;0.85;0.5" dur={`${2 + (i % 3) * 0.5}s`} repeatCount="indefinite" />}
+                {/* Dot */}
+                <circle cx={dot.x} cy={dot.y} r="2.8" fill={i % 2 === 0 ? "#4488dd" : "#3366aa"} opacity="0.85">
+                  {isSpinning && (
+                    <animate attributeName="fill" values="#4488dd;#88bbff;#4488dd" dur={`${0.2 + (i % 4) * 0.06}s`} repeatCount="indefinite" />
+                  )}
+                  {!isSpinning && (
+                    <animate attributeName="opacity" values="0.5;0.9;0.5" dur={`${2 + (i % 3) * 0.7}s`} repeatCount="indefinite" begin={`${phase}s`} />
+                  )}
                 </circle>
-                {/* Bright center */}
-                <circle cx={dot.x} cy={dot.y} r="2" fill="#ffffff" opacity={isActive ? 0.6 : 0.1}>
-                  {isSpinning && <animate attributeName="opacity" values="0.2;0.8;0.2" dur={`${0.15 + (i % 4) * 0.08}s`} repeatCount="indefinite" />}
+                {/* Bright core */}
+                <circle cx={dot.x} cy={dot.y} r="1.2" fill="#aaccff" opacity="0.5">
+                  {isSpinning && <animate attributeName="opacity" values="0.3;0.9;0.3" dur={`${0.15 + (i % 4) * 0.06}s`} repeatCount="indefinite" />}
                 </circle>
               </g>
             );
           })}
 
-          {/* === Spinning Group === */}
+          {/* === Spinning Wheel Group === */}
           <g
             ref={wheelRef}
             style={{
@@ -416,30 +407,30 @@ const SpinWheel = () => {
               transform: `rotate(${rotation}deg)`,
               transition: isSpinning ? "transform 4.5s cubic-bezier(0.17, 0.67, 0.12, 0.99)" : "none",
             }}
-            filter="url(#wheelShadow3d)"
           >
+            {/* Background disc */}
+            <circle cx={CX} cy={CY} r={OUTER_R + 2} fill="#0a1525" />
+
             {/* Segments */}
             {SEGMENTS.map((seg, i) => {
               const path = getSegmentPath(i);
               const textPos = getTextPosition(i);
               const iconPos = getIconPosition(i);
               const isEven = i % 2 === 0;
+              // Alternating dark blue tones like the reference
+              const baseFill = isEven ? "#0e2040" : "#132a4a";
+              const hoverFill = seg.rare ? "rgba(255,215,0,0.04)" : "transparent";
 
               return (
                 <g key={seg.id + i}>
-                  {/* Base segment with 3D gradient */}
-                  <path d={path} fill={isEven ? "#0c1f38" : "#142e4e"} stroke="#1e5a8a" strokeWidth="0.5" />
-                  {/* Top highlight for 3D depth */}
-                  <path d={path} fill="url(#segLight)" />
-                  {/* Rare golden shimmer */}
-                  {seg.rare && (
-                    <>
-                      <path d={path} fill="rgba(255,215,0,0.06)" />
-                      <path d={path} fill="rgba(255,215,0,0.03)" style={{ animation: "pulse 2s ease-in-out infinite" }} />
-                    </>
-                  )}
+                  {/* Base segment */}
+                  <path d={path} fill={baseFill} />
+                  {/* Top-left lighting overlay */}
+                  <path d={path} fill="url(#segTopLight)" />
+                  {/* Rare subtle gold tint */}
+                  {seg.rare && <path d={path} fill={hoverFill} />}
 
-                  {/* Divider line with glow */}
+                  {/* Metallic divider line */}
                   {(() => {
                     const startDeg = i * SEGMENT_ANGLE - 90;
                     const rad = toRad(startDeg);
@@ -449,47 +440,43 @@ const SpinWheel = () => {
                     const y2 = CY + OUTER_R * Math.sin(rad);
                     return (
                       <>
-                        <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#00bcd4" strokeWidth="2" opacity="0.15" />
-                        <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#4a90c2" strokeWidth="1" opacity="0.5" />
+                        {/* Shadow line */}
+                        <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(0,0,0,0.5)" strokeWidth="2.5" />
+                        {/* Metallic line */}
+                        <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#5a7a98" strokeWidth="1.5" opacity="0.7" />
+                        {/* Highlight edge */}
+                        <line x1={x1 + 0.5} y1={y1 + 0.5} x2={x2 + 0.5} y2={y2 + 0.5} stroke="rgba(180,210,255,0.15)" strokeWidth="0.5" />
                       </>
                     );
                   })()}
 
-                  {/* Icon with glow background */}
+                  {/* Icon */}
                   <foreignObject
-                    x={iconPos.x - 14}
-                    y={iconPos.y - 14}
-                    width="28"
-                    height="28"
+                    x={iconPos.x - 14} y={iconPos.y - 14} width="28" height="28"
                     style={{ overflow: "visible" }}
                     transform={`rotate(${iconPos.rotation}, ${iconPos.x}, ${iconPos.y})`}
                   >
-                    <div className="flex items-center justify-center rounded-full"
-                      style={{
-                        width: 28, height: 28,
-                        color: seg.rare ? "#FFD700" : "rgba(255,255,255,0.9)",
-                        filter: seg.rare ? "drop-shadow(0 0 4px rgba(255,215,0,0.5))" : "drop-shadow(0 0 2px rgba(0,229,255,0.3))",
-                      }}>
+                    <div className="flex items-center justify-center" style={{
+                      width: 28, height: 28,
+                      color: seg.rare ? "#FFD700" : "rgba(255,255,255,0.92)",
+                      filter: seg.rare
+                        ? "drop-shadow(0 0 4px rgba(255,215,0,0.4)) drop-shadow(0 1px 2px rgba(0,0,0,0.8))"
+                        : "drop-shadow(0 0 3px rgba(100,180,255,0.25)) drop-shadow(0 1px 2px rgba(0,0,0,0.8))",
+                    }}>
                       {seg.icon}
                     </div>
                   </foreignObject>
 
-                  {/* Text with better styling */}
+                  {/* Text */}
                   <text
-                    x={textPos.x}
-                    y={textPos.y}
+                    x={textPos.x} y={textPos.y}
                     transform={`rotate(${textPos.rotation}, ${textPos.x}, ${textPos.y})`}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fill={seg.rare ? "#FFD700" : "white"}
-                    fontSize="11.5"
-                    fontWeight="800"
-                    letterSpacing="0.8"
-                    style={{
-                      textShadow: seg.rare
-                        ? "0 0 8px rgba(255,215,0,0.6), 0 2px 4px rgba(0,0,0,0.9)"
-                        : "0 2px 4px rgba(0,0,0,0.9)",
-                    }}
+                    textAnchor="middle" dominantBaseline="middle"
+                    fill={seg.rare ? "#FFD700" : "#e0e8f0"}
+                    fontSize="11" fontWeight="800" letterSpacing="0.6"
+                    style={{ textShadow: seg.rare
+                      ? "0 0 6px rgba(255,215,0,0.4), 0 1px 3px rgba(0,0,0,0.9)"
+                      : "0 1px 3px rgba(0,0,0,0.9), 0 0 4px rgba(100,160,255,0.15)" }}
                   >
                     {seg.shortLabel}
                   </text>
@@ -497,34 +484,51 @@ const SpinWheel = () => {
               );
             })}
 
-            {/* === Center Hub - 3D Layered === */}
-            {/* Outer ring glow */}
-            <circle cx={CX} cy={CY} r={INNER_R + 4} fill="none" stroke="#00e5ff" strokeWidth="1" opacity="0.3" />
-            {/* Main hub */}
-            <circle cx={CX} cy={CY} r={INNER_R} fill="url(#centerGrad3d)" stroke="url(#goldRing)" strokeWidth="3" />
-            {/* Inner ring */}
-            <circle cx={CX} cy={CY} r={INNER_R - 6} fill="none" stroke="url(#silverRing)" strokeWidth="1.5" opacity="0.4" />
-            {/* Shine overlay */}
-            <circle cx={CX} cy={CY} r={INNER_R - 2} fill="url(#centerShine)" />
-            {/* Innermost glow ring */}
-            <circle cx={CX} cy={CY} r={INNER_R - 12} fill="none" stroke="#00e5ff" strokeWidth="0.5" opacity="0.3">
-              <animate attributeName="opacity" values="0.2;0.4;0.2" dur="2s" repeatCount="indefinite" />
-            </circle>
+            {/* Metallic pegs at segment boundaries */}
+            {pegs.map((peg, i) => (
+              <g key={`peg-${i}`}>
+                {/* Peg shadow */}
+                <circle cx={peg.x + 1} cy={peg.y + 1.5} r="5" fill="rgba(0,0,0,0.5)" />
+                {/* Main peg body */}
+                <circle cx={peg.x} cy={peg.y} r="4.5" fill="url(#pegGrad)" stroke="#506878" strokeWidth="0.5" />
+                {/* Highlight */}
+                <circle cx={peg.x - 1} cy={peg.y - 1.5} r="1.8" fill="rgba(255,255,255,0.35)" />
+              </g>
+            ))}
+
+            {/* === Center Hub === */}
+            {/* Shadow ring */}
+            <circle cx={CX} cy={CY} r={INNER_R + 6} fill="none" stroke="rgba(0,0,0,0.4)" strokeWidth="8" />
+            {/* Chrome ring */}
+            <circle cx={CX} cy={CY} r={INNER_R + 2} fill="none" stroke="url(#chromeRim)" strokeWidth="5" />
+            {/* Dark hub */}
+            <circle cx={CX} cy={CY} r={INNER_R} fill="url(#hubGrad)" />
+            {/* Inner chrome trim */}
+            <circle cx={CX} cy={CY} r={INNER_R - 3} fill="none" stroke="url(#chromeRim2)" strokeWidth="1.5" opacity="0.4" />
+            {/* Light shine */}
+            <circle cx={CX} cy={CY} r={INNER_R - 1} fill="url(#hubShine)" />
 
             {/* Center Text */}
-            <text x={CX} y={CY - 18} textAnchor="middle" dominantBaseline="middle" fill="#FFD700" fontSize="15" fontWeight="900" fontStyle="italic" letterSpacing="2"
-              style={{ textShadow: "0 0 10px rgba(255,215,0,0.4), 0 2px 4px rgba(0,0,0,0.8)" }}>
-              SKYLIFE
+            <text x={CX} y={CY - 20} textAnchor="middle" dominantBaseline="middle"
+              fill="#c0c8d0" fontSize="11" fontWeight="400" letterSpacing="3" fontFamily="serif"
+              style={{ textShadow: "0 1px 4px rgba(0,0,0,0.8)" }}>
+              THE
             </text>
-            <text x={CX} y={CY + 2} textAnchor="middle" dominantBaseline="middle" fill="#E8E8E8" fontSize="11" fontWeight="900" fontStyle="italic" letterSpacing="1.5"
-              style={{ textShadow: "0 2px 4px rgba(0,0,0,0.8)" }}>
-              ROLEPLAY
+            <text x={CX} y={CY + 2} textAnchor="middle" dominantBaseline="middle"
+              fill="#e8eff4" fontSize="18" fontWeight="700" fontStyle="italic" letterSpacing="1.5" fontFamily="serif"
+              style={{ textShadow: "0 0 8px rgba(100,160,255,0.2), 0 2px 4px rgba(0,0,0,0.9)" }}>
+              Skylife
             </text>
-            <text x={CX} y={CY + 20} textAnchor="middle" dominantBaseline="middle" fill="#00e5ff" fontSize="10" fontWeight="700" fontStyle="italic" letterSpacing="3"
-              style={{ textShadow: "0 0 8px rgba(0,229,255,0.5)" }}>
-              INDIA
+            <text x={CX} y={CY + 22} textAnchor="middle" dominantBaseline="middle"
+              fill="#8098b0" fontSize="8" fontWeight="600" letterSpacing="4" textDecoration="none"
+              style={{ textShadow: "0 1px 3px rgba(0,0,0,0.8)" }}>
+              ROLEPLAY INDIA
             </text>
           </g>
+
+          {/* === Specular highlight overlay (non-rotating) === */}
+          <ellipse cx={CX - 40} cy={CY - 60} rx="160" ry="120" fill="rgba(180,210,255,0.025)"
+            style={{ pointerEvents: "none" }} />
         </svg>
       </div>
 
@@ -535,54 +539,56 @@ const SpinWheel = () => {
         className="relative group disabled:cursor-not-allowed z-10"
         style={{ perspective: "800px" }}
       >
-        {/* Button glow backdrop */}
+        {/* Button ground shadow */}
+        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[80%] h-4 rounded-[50%] pointer-events-none"
+          style={{ background: "radial-gradient(ellipse, rgba(0,0,0,0.4) 0%, transparent 70%)", filter: "blur(4px)" }}
+        />
+
+        {/* Hover glow */}
         {!isSpinning && !isCoolingDown && userId && (
-          <div className="absolute -inset-4 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-            style={{
-              background: "radial-gradient(ellipse at center, rgba(255,107,53,0.3) 0%, transparent 70%)",
-              filter: "blur(15px)",
-            }}
+          <div className="absolute -inset-6 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+            style={{ background: "radial-gradient(ellipse, rgba(100,160,255,0.15) 0%, transparent 70%)", filter: "blur(12px)" }}
           />
         )}
 
         <div
-          className="relative overflow-hidden px-20 py-6 text-3xl font-black tracking-[0.4em] uppercase text-white rounded-2xl transition-all duration-200 active:translate-y-1 disabled:opacity-40"
+          className="relative overflow-hidden px-20 py-6 text-3xl font-black tracking-[0.4em] uppercase rounded-2xl transition-all duration-150 active:translate-y-1 disabled:opacity-40"
           style={{
+            color: isSpinning ? "#556" : "#e8eff4",
             background: isSpinning
-              ? "linear-gradient(180deg, #3a3a3a 0%, #222 100%)"
-              : "linear-gradient(180deg, #FF8C42 0%, #E63946 35%, #C0392B 70%, #8B1A1A 100%)",
+              ? "linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%)"
+              : "linear-gradient(180deg, #3a5a7a 0%, #1e3a5a 30%, #0f2540 70%, #081828 100%)",
             boxShadow: isSpinning
-              ? "0 4px 0 #111, 0 6px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)"
+              ? "0 3px 0 #111, 0 5px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.03)"
               : [
-                  "0 8px 0 #6B0F0F",
-                  "0 10px 0 #4a0a0a",
-                  "0 12px 40px rgba(230,57,70,0.5)",
-                  "0 4px 60px rgba(255,107,53,0.3)",
-                  "inset 0 2px 0 rgba(255,255,255,0.25)",
-                  "inset 0 -2px 4px rgba(0,0,0,0.2)",
+                  "0 6px 0 #0a1a28",
+                  "0 8px 0 #050e18",
+                  "0 10px 30px rgba(0,30,60,0.6)",
+                  "0 2px 40px rgba(60,120,200,0.12)",
+                  "inset 0 2px 0 rgba(200,220,255,0.15)",
+                  "inset 0 -2px 4px rgba(0,0,0,0.3)",
                 ].join(", "),
-            textShadow: "0 3px 6px rgba(0,0,0,0.6), 0 0 20px rgba(255,107,53,0.3)",
-            transform: isSpinning ? "translateY(4px)" : "translateY(-4px)",
-            border: isSpinning ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(255,200,150,0.3)",
+            textShadow: isSpinning ? "none" : "0 2px 4px rgba(0,0,0,0.6), 0 0 12px rgba(100,160,255,0.2)",
+            transform: isSpinning ? "translateY(3px)" : "translateY(-3px)",
+            border: isSpinning ? "1px solid rgba(255,255,255,0.03)" : "1px solid rgba(150,190,230,0.2)",
           }}
         >
-          {/* Shine sweep animation */}
+          {/* Chrome shine sweep */}
           {!isSpinning && (
             <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
               <div className="absolute -inset-full"
                 style={{
-                  background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0.15) 55%, transparent 60%)",
+                  background: "linear-gradient(105deg, transparent 40%, rgba(180,210,255,0.1) 45%, rgba(220,240,255,0.18) 50%, rgba(180,210,255,0.1) 55%, transparent 60%)",
                   animation: "shimmerSweep 3s ease-in-out infinite",
                 }}
               />
             </div>
           )}
-          {/* Spinning dots animation */}
           {isSpinning && (
-            <span className="inline-flex gap-1 ml-2">
-              <span className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: "0s" }} />
-              <span className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: "0.15s" }} />
-              <span className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: "0.3s" }} />
+            <span className="inline-flex gap-1 mr-2">
+              <span className="w-2 h-2 bg-white/30 rounded-full animate-bounce" style={{ animationDelay: "0s" }} />
+              <span className="w-2 h-2 bg-white/30 rounded-full animate-bounce" style={{ animationDelay: "0.15s" }} />
+              <span className="w-2 h-2 bg-white/30 rounded-full animate-bounce" style={{ animationDelay: "0.3s" }} />
             </span>
           )}
           <span className="relative z-10">{isSpinning ? "SPINNING" : "SPIN"}</span>
@@ -593,9 +599,13 @@ const SpinWheel = () => {
         <p className="text-sm text-muted-foreground z-10">Login with Discord to spin the wheel</p>
       )}
 
-      {/* ── Prize Result Dialog ── */}
+      {/* Prize Dialog */}
       <Dialog open={showPrizeDialog} onOpenChange={setShowPrizeDialog}>
-        <DialogContent className="sm:max-w-md border-cyan-500/20 bg-gradient-to-b from-[#060e1a] via-[#0c1f38] to-[#132d4a] shadow-[0_0_80px_rgba(0,200,255,0.1)]">
+        <DialogContent className="sm:max-w-md border-cyan-500/20"
+          style={{
+            background: "linear-gradient(135deg, #060e1a 0%, #0c1f38 50%, #132d4a 100%)",
+            boxShadow: "0 0 80px rgba(0,100,200,0.1)",
+          }}>
           <DialogHeader>
             <DialogTitle className="text-center text-2xl font-black text-white">
               {wonPrize?.rare ? (
@@ -605,7 +615,7 @@ const SpinWheel = () => {
                   <Star className="w-6 h-6 text-yellow-400 fill-yellow-400" style={{ filter: "drop-shadow(0 0 6px rgba(255,215,0,0.6))" }} />
                 </span>
               ) : (
-                <span style={{ textShadow: "0 0 10px rgba(0,229,255,0.3)" }}>🎉 You Won!</span>
+                <span style={{ textShadow: "0 0 10px rgba(100,160,255,0.3)" }}>🎉 You Won!</span>
               )}
             </DialogTitle>
             <DialogDescription className="text-center text-lg pt-4">
@@ -619,7 +629,7 @@ const SpinWheel = () => {
                   style={{
                     boxShadow: wonPrize?.rare
                       ? "0 0 30px rgba(255,215,0,0.1), inset 0 0 20px rgba(255,215,0,0.05)"
-                      : "0 0 30px rgba(0,229,255,0.1), inset 0 0 20px rgba(0,229,255,0.05)",
+                      : "0 0 30px rgba(0,150,255,0.1), inset 0 0 20px rgba(0,150,255,0.05)",
                   }}
                 >
                   {wonPrize?.icon}
@@ -638,7 +648,6 @@ const SpinWheel = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Shimmer keyframes */}
       <style>{`
         @keyframes shimmerSweep {
           0% { transform: translateX(-100%); }
