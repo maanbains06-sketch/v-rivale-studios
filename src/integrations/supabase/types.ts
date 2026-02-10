@@ -2160,6 +2160,39 @@ export type Database = {
         }
         Relationships: []
       }
+      spin_results: {
+        Row: {
+          claimed_via: string | null
+          created_at: string
+          id: string
+          is_claimed: boolean | null
+          is_rare: boolean | null
+          prize_key: string
+          prize_label: string
+          user_id: string
+        }
+        Insert: {
+          claimed_via?: string | null
+          created_at?: string
+          id?: string
+          is_claimed?: boolean | null
+          is_rare?: boolean | null
+          prize_key: string
+          prize_label: string
+          user_id: string
+        }
+        Update: {
+          claimed_via?: string | null
+          created_at?: string
+          id?: string
+          is_claimed?: boolean | null
+          is_rare?: boolean | null
+          prize_key?: string
+          prize_label?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       staff_activity_log: {
         Row: {
           action_description: string

@@ -186,7 +186,7 @@ const AppRoutes = memo(() => {
           <Route path="/business" element={<PageTransition><PageMaintenanceBlock pageKey="business"><Business /></PageMaintenanceBlock></PageTransition>} />
           <Route path="/feedback" element={<PageTransition><PageMaintenanceBlock pageKey="feedback"><Feedback /></PageMaintenanceBlock></PageTransition>} />
           <Route path="/giveaway" element={<PageTransition><PageMaintenanceBlock pageKey="giveaway"><Giveaway /></PageMaintenanceBlock></PageTransition>} />
-          <Route path="/spin" element={<PageTransition><Spin /></PageTransition>} />
+          <Route path="/spin" element={<PageTransition><RequireAuth message="Login with Discord to spin the wheel."><Spin /></RequireAuth></PageTransition>} />
           <Route path="/roster" element={<PageTransition><PageMaintenanceBlock pageKey="roster"><Roster /></PageMaintenanceBlock></PageTransition>} />
           <Route path="/job-panel" element={<PageTransition><RequireAuth message="Login with Discord to access the Job Panel."><JobPanel /></RequireAuth></PageTransition>} />
           <Route path="/business-panel" element={<PageTransition><RequireAuth message="Login with Discord to access the Business Panel."><BusinessPanel /></RequireAuth></PageTransition>} />
