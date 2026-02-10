@@ -1,5 +1,6 @@
 import Navigation from "@/components/Navigation";
 import PageHeader from "@/components/PageHeader";
+import SpinWheel from "@/components/spin/SpinWheel";
 
 const Spin = () => {
   return (
@@ -13,8 +14,8 @@ const Spin = () => {
       />
       
       <main className="pb-16">
-        <div className="container mx-auto px-4">
-          {/* Content coming soon */}
+        <div className="container mx-auto px-4 flex flex-col items-center">
+          <SpinWheel />
         </div>
       </main>
     </div>
