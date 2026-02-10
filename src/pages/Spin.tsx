@@ -32,8 +32,8 @@ const REGULATIONS = [
   },
   {
     icon: <Clock className="w-5 h-5 text-amber-400 shrink-0" />,
-    title: "48-Hour Cooldown",
-    description: "Each player can spin once every 48 hours. The cooldown timer will show your next available spin.",
+    title: "24-Hour Cooldown",
+    description: "Each player can spin once every 24 hours. The cooldown timer will show your next available spin.",
   },
   {
     icon: <Shield className="w-5 h-5 text-violet-400 shrink-0" />,
@@ -103,8 +103,10 @@ const Spin = () => {
             </div>
           ) : (
             <>
+              <SpinWheel />
+
               {/* Regulations Banner */}
-              <div className="w-full max-w-3xl mb-10">
+              <div className="w-full max-w-3xl mt-14">
                 <div
                   className="relative overflow-hidden rounded-2xl border border-cyan-500/20"
                   style={{
@@ -146,8 +148,6 @@ const Spin = () => {
                   <div className="h-px w-full bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
                 </div>
               </div>
-
-              <SpinWheel />
             </>
           )}
         </div>
