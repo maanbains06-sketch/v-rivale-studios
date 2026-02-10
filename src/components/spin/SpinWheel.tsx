@@ -40,7 +40,7 @@ const SEGMENTS: Segment[] = [
 
 const TOTAL_SEGMENTS = SEGMENTS.length;
 const SEGMENT_ANGLE = 360 / TOTAL_SEGMENTS;
-const COOLDOWN_MS = 2 * 24 * 60 * 60 * 1000;
+const COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 // ── SVG Helpers ─────────────────────────────────────────────────
 const CX = 300, CY = 300, OUTER_R = 260, INNER_R = 80;
@@ -88,19 +88,23 @@ const selectPrize = (): number => {
   return SEGMENTS.length - 1;
 };
 
-const formatCountdown = (ms: number) => {
+interface CountdownParts {
+  hours: string;
+  mins: string;
+  secs: string;
+}
+
+const formatCountdown = (ms: number): CountdownParts | null => {
   if (ms <= 0) return null;
   const totalSec = Math.floor(ms / 1000);
-  const days = Math.floor(totalSec / 86400);
-  const hours = Math.floor((totalSec % 86400) / 3600);
+  const hours = Math.floor(totalSec / 3600);
   const mins = Math.floor((totalSec % 3600) / 60);
   const secs = totalSec % 60;
-  const parts: string[] = [];
-  if (days > 0) parts.push(`${days}d`);
-  parts.push(`${String(hours).padStart(2, "0")}h`);
-  parts.push(`${String(mins).padStart(2, "0")}m`);
-  parts.push(`${String(secs).padStart(2, "0")}s`);
-  return parts.join(" : ");
+  return {
+    hours: String(hours).padStart(2, "0"),
+    mins: String(mins).padStart(2, "0"),
+    secs: String(secs).padStart(2, "0"),
+  };
 };
 
 const sendSpinNotification = async (prizeKey: string, discordId: string | null, discordUsername: string | null) => {
@@ -131,7 +135,7 @@ const SpinWheel = () => {
   const [wonPrize, setWonPrize] = useState<Segment | null>(null);
   const [showPrizeDialog, setShowPrizeDialog] = useState(false);
   const [cooldownEnd, setCooldownEnd] = useState<number | null>(null);
-  const [cooldownText, setCooldownText] = useState<string | null>(null);
+  const [cooldownText, setCooldownText] = useState<CountdownParts | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [discordId, setDiscordId] = useState<string | null>(null);
   const [discordUsername, setDiscordUsername] = useState<string | null>(null);
@@ -230,22 +234,123 @@ const SpinWheel = () => {
         />
       </div>
 
-      {/* Cooldown Timer */}
+      {/* 3D Cooldown Timer */}
       {isCoolingDown && cooldownText && (
-        <div className="relative w-full max-w-lg z-10">
-          <div className="relative overflow-hidden border border-cyan-500/30 rounded-2xl px-8 py-5 text-center"
+        <div className="relative w-full max-w-xl z-10">
+          <div className="relative overflow-hidden rounded-2xl"
             style={{
-              background: "linear-gradient(135deg, #080e1a 0%, #0f2040 50%, #080e1a 100%)",
-              boxShadow: "0 0 60px rgba(0,150,255,0.1), inset 0 1px 0 rgba(255,255,255,0.05)",
+              background: "linear-gradient(180deg, #0c1a2e 0%, #081428 40%, #060e1c 100%)",
+              boxShadow: "0 8px 0 #040a14, 0 10px 0 #020610, 0 12px 40px rgba(0,30,80,0.5), inset 0 1px 0 rgba(150,200,255,0.08), inset 0 -2px 6px rgba(0,0,0,0.4)",
+              border: "1px solid rgba(80,130,200,0.15)",
             }}>
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <Clock className="w-5 h-5 text-cyan-400 animate-pulse" />
-              <span className="text-xs uppercase tracking-[0.25em] text-cyan-400 font-semibold">Next Spin Available In</span>
+            {/* Top chrome strip */}
+            <div className="h-[3px]" style={{ background: "linear-gradient(90deg, transparent 5%, rgba(120,170,230,0.3) 20%, rgba(200,220,255,0.5) 50%, rgba(120,170,230,0.3) 80%, transparent 95%)" }} />
+            
+            <div className="px-6 py-5 sm:px-10 sm:py-6">
+              {/* Label */}
+              <div className="flex items-center justify-center gap-2.5 mb-5">
+                <Clock className="w-5 h-5 text-cyan-400" style={{ filter: "drop-shadow(0 0 6px rgba(0,200,255,0.4))" }} />
+                <span className="text-xs uppercase tracking-[0.3em] font-bold"
+                  style={{ color: "#6aafdc", textShadow: "0 0 8px rgba(80,180,255,0.3)" }}>
+                  Next Spin Available In
+                </span>
+              </div>
+
+              {/* 3D Digit Blocks */}
+              <div className="flex items-center justify-center gap-3 sm:gap-5">
+                {/* Hours */}
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="flex gap-1.5">
+                    {cooldownText.hours.split("").map((d, i) => (
+                      <div key={`h-${i}`} className="relative" style={{
+                        width: 48, height: 64,
+                        background: "linear-gradient(180deg, #14253a 0%, #0c1a2c 45%, #0a1524 55%, #081220 100%)",
+                        borderRadius: 10,
+                        boxShadow: "0 4px 0 #050c18, 0 5px 0 #030810, 0 6px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(140,190,240,0.1), inset 0 -1px 0 rgba(0,0,0,0.3)",
+                        border: "1px solid rgba(60,110,180,0.15)",
+                      }}>
+                        {/* Center fold line */}
+                        <div className="absolute top-1/2 left-0 right-0 h-[1px] -translate-y-[0.5px]"
+                          style={{ background: "linear-gradient(90deg, transparent, rgba(0,0,0,0.5) 20%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.5) 80%, transparent)" }} />
+                        <div className="absolute top-1/2 left-0 right-0 h-[1px] translate-y-[0.5px]"
+                          style={{ background: "linear-gradient(90deg, transparent, rgba(100,160,230,0.06) 30%, rgba(100,160,230,0.08) 50%, rgba(100,160,230,0.06) 70%, transparent)" }} />
+                        {/* Digit */}
+                        <span className="absolute inset-0 flex items-center justify-center text-3xl font-black font-mono"
+                          style={{ color: "#c8ddf0", textShadow: "0 0 10px rgba(100,180,255,0.4), 0 2px 4px rgba(0,0,0,0.8)" }}>
+                          {d}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <span className="text-[10px] uppercase tracking-[0.2em] font-semibold" style={{ color: "#4a7aa0" }}>Hours</span>
+                </div>
+
+                {/* Colon separator */}
+                <div className="flex flex-col gap-2.5 pb-5">
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#4a8ac0", boxShadow: "0 0 8px rgba(60,140,220,0.5), 0 2px 3px rgba(0,0,0,0.5)" }} />
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#4a8ac0", boxShadow: "0 0 8px rgba(60,140,220,0.5), 0 2px 3px rgba(0,0,0,0.5)" }} />
+                </div>
+
+                {/* Minutes */}
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="flex gap-1.5">
+                    {cooldownText.mins.split("").map((d, i) => (
+                      <div key={`m-${i}`} className="relative" style={{
+                        width: 48, height: 64,
+                        background: "linear-gradient(180deg, #14253a 0%, #0c1a2c 45%, #0a1524 55%, #081220 100%)",
+                        borderRadius: 10,
+                        boxShadow: "0 4px 0 #050c18, 0 5px 0 #030810, 0 6px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(140,190,240,0.1), inset 0 -1px 0 rgba(0,0,0,0.3)",
+                        border: "1px solid rgba(60,110,180,0.15)",
+                      }}>
+                        <div className="absolute top-1/2 left-0 right-0 h-[1px] -translate-y-[0.5px]"
+                          style={{ background: "linear-gradient(90deg, transparent, rgba(0,0,0,0.5) 20%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.5) 80%, transparent)" }} />
+                        <div className="absolute top-1/2 left-0 right-0 h-[1px] translate-y-[0.5px]"
+                          style={{ background: "linear-gradient(90deg, transparent, rgba(100,160,230,0.06) 30%, rgba(100,160,230,0.08) 50%, rgba(100,160,230,0.06) 70%, transparent)" }} />
+                        <span className="absolute inset-0 flex items-center justify-center text-3xl font-black font-mono"
+                          style={{ color: "#c8ddf0", textShadow: "0 0 10px rgba(100,180,255,0.4), 0 2px 4px rgba(0,0,0,0.8)" }}>
+                          {d}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <span className="text-[10px] uppercase tracking-[0.2em] font-semibold" style={{ color: "#4a7aa0" }}>Minutes</span>
+                </div>
+
+                {/* Colon separator */}
+                <div className="flex flex-col gap-2.5 pb-5">
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#4a8ac0", boxShadow: "0 0 8px rgba(60,140,220,0.5), 0 2px 3px rgba(0,0,0,0.5)" }} />
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#4a8ac0", boxShadow: "0 0 8px rgba(60,140,220,0.5), 0 2px 3px rgba(0,0,0,0.5)" }} />
+                </div>
+
+                {/* Seconds */}
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="flex gap-1.5">
+                    {cooldownText.secs.split("").map((d, i) => (
+                      <div key={`s-${i}`} className="relative" style={{
+                        width: 48, height: 64,
+                        background: "linear-gradient(180deg, #14253a 0%, #0c1a2c 45%, #0a1524 55%, #081220 100%)",
+                        borderRadius: 10,
+                        boxShadow: "0 4px 0 #050c18, 0 5px 0 #030810, 0 6px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(140,190,240,0.1), inset 0 -1px 0 rgba(0,0,0,0.3)",
+                        border: "1px solid rgba(60,110,180,0.15)",
+                      }}>
+                        <div className="absolute top-1/2 left-0 right-0 h-[1px] -translate-y-[0.5px]"
+                          style={{ background: "linear-gradient(90deg, transparent, rgba(0,0,0,0.5) 20%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.5) 80%, transparent)" }} />
+                        <div className="absolute top-1/2 left-0 right-0 h-[1px] translate-y-[0.5px]"
+                          style={{ background: "linear-gradient(90deg, transparent, rgba(100,160,230,0.06) 30%, rgba(100,160,230,0.08) 50%, rgba(100,160,230,0.06) 70%, transparent)" }} />
+                        <span className="absolute inset-0 flex items-center justify-center text-3xl font-black font-mono"
+                          style={{ color: "#c8ddf0", textShadow: "0 0 10px rgba(100,180,255,0.4), 0 2px 4px rgba(0,0,0,0.8)" }}>
+                          {d}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <span className="text-[10px] uppercase tracking-[0.2em] font-semibold" style={{ color: "#4a7aa0" }}>Seconds</span>
+                </div>
+              </div>
             </div>
-            <div className="text-3xl md:text-4xl font-bold text-white font-mono tracking-wider"
-              style={{ textShadow: "0 0 20px rgba(100,180,255,0.5)" }}>
-              {cooldownText}
-            </div>
+
+            {/* Bottom chrome strip */}
+            <div className="h-[2px]" style={{ background: "linear-gradient(90deg, transparent 10%, rgba(80,130,200,0.12) 30%, rgba(100,160,230,0.2) 50%, rgba(80,130,200,0.12) 70%, transparent 90%)" }} />
           </div>
         </div>
       )}

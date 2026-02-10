@@ -229,7 +229,7 @@ serve(async (req) => {
           },
           {
             name: "⏰ Next Chance",
-            value: "Spin again after the **48-hour** cooldown!",
+            value: "Spin again after the **24-hour** cooldown!",
             inline: true,
           },
           {
