@@ -263,16 +263,25 @@ const SpinWheel = () => {
   });
 
   return (
-    <div className="flex flex-col items-center gap-8 py-8 px-4">
+    <div className="flex flex-col items-center gap-10 py-8 px-4">
+      {/* Ambient background glow */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-20"
+          style={{ background: "radial-gradient(circle, rgba(0,229,255,0.15) 0%, rgba(0,100,200,0.05) 40%, transparent 70%)" }}
+        />
+      </div>
+
       {/* ── Cooldown Timer ── */}
       {isCoolingDown && cooldownText && (
-        <div className="relative w-full max-w-lg">
-          <div className="bg-gradient-to-r from-[#0a1628] via-[#132d4a] to-[#0a1628] border border-[#1e4d6e]/60 rounded-2xl px-8 py-5 text-center shadow-[0_0_40px_rgba(30,77,110,0.4)]">
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <Clock className="w-5 h-5 text-cyan-400" />
+        <div className="relative w-full max-w-lg z-10">
+          <div className="relative overflow-hidden bg-gradient-to-r from-[#0a1628] via-[#132d4a] to-[#0a1628] border border-cyan-500/30 rounded-2xl px-8 py-5 text-center shadow-[0_0_60px_rgba(0,200,255,0.15)]">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-500/5 to-transparent animate-pulse" />
+            <div className="relative flex items-center justify-center gap-2 mb-3">
+              <Clock className="w-5 h-5 text-cyan-400 animate-pulse" />
               <span className="text-xs uppercase tracking-[0.25em] text-cyan-400 font-semibold">Next Spin Available In</span>
             </div>
-            <div className="text-3xl md:text-4xl font-bold text-white font-mono tracking-wider">
+            <div className="relative text-3xl md:text-4xl font-bold text-white font-mono tracking-wider"
+              style={{ textShadow: "0 0 20px rgba(0,229,255,0.5)" }}>
               {cooldownText}
             </div>
           </div>
@@ -280,114 +289,157 @@ const SpinWheel = () => {
       )}
 
       {/* ── Wheel Container ── */}
-      <div className="relative select-none" style={{ width: "min(92vw, 640px)", height: "min(92vw, 640px)" }}>
-        {/* Pointer / Ticker at top */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 z-20">
-          <div className="relative">
-            <div
-              className="w-0 h-0"
-              style={{
-                borderLeft: "18px solid transparent",
-                borderRight: "18px solid transparent",
-                borderTop: "38px solid #e8e8e8",
-                filter: "drop-shadow(0 3px 8px rgba(0,0,0,0.6))",
-              }}
-            />
-            <div
-              className="absolute top-[2px] left-1/2 -translate-x-1/2 w-0 h-0"
-              style={{
-                borderLeft: "14px solid transparent",
-                borderRight: "14px solid transparent",
-                borderTop: "30px solid #c0c0c0",
-              }}
-            />
-          </div>
-        </div>
+      <div className="relative select-none z-10" style={{ width: "min(92vw, 640px)", height: "min(92vw, 640px)" }}>
 
-        {/* Outer Glow Ring */}
-        <div
-          className="absolute inset-[-20px] rounded-full pointer-events-none"
+        {/* Outer Pulsing Aura */}
+        <div className="absolute inset-[-60px] rounded-full pointer-events-none"
           style={{
-            background: "radial-gradient(circle, transparent 40%, rgba(30,77,110,0.2) 55%, transparent 65%)",
+            background: "radial-gradient(circle, transparent 35%, rgba(0,229,255,0.08) 45%, rgba(0,150,255,0.04) 55%, transparent 65%)",
+            animation: isSpinning ? "pulse 1s ease-in-out infinite" : "pulse 3s ease-in-out infinite",
+          }}
+        />
+        <div className="absolute inset-[-40px] rounded-full pointer-events-none"
+          style={{
+            background: "radial-gradient(circle, transparent 40%, rgba(255,215,0,0.04) 50%, transparent 60%)",
+            animation: "pulse 4s ease-in-out infinite reverse",
           }}
         />
 
+        {/* Pointer / Ticker at top */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 z-20">
+          <div className="relative">
+            <svg width="48" height="52" viewBox="0 0 48 52">
+              <defs>
+                <linearGradient id="pointerGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#FFD700" />
+                  <stop offset="40%" stopColor="#FFA500" />
+                  <stop offset="100%" stopColor="#FF6B35" />
+                </linearGradient>
+                <filter id="pointerGlow">
+                  <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="#FFD700" floodOpacity="0.6" />
+                  <feDropShadow dx="0" dy="4" stdDeviation="8" floodColor="#FF6B35" floodOpacity="0.3" />
+                </filter>
+              </defs>
+              <polygon points="24,48 6,4 42,4" fill="url(#pointerGrad)" filter="url(#pointerGlow)" />
+              <polygon points="24,42 12,8 36,8" fill="url(#pointerGrad)" opacity="0.6" />
+              {/* Diamond gem at base */}
+              <circle cx="24" cy="12" r="5" fill="#FFD700" opacity="0.9" />
+              <circle cx="24" cy="12" r="3" fill="#FFF8DC" opacity="0.8" />
+            </svg>
+          </div>
+        </div>
+
         {/* SVG Wheel */}
-        <svg viewBox="0 0 600 600" className="w-full h-full">
+        <svg viewBox="0 0 600 600" className="w-full h-full" style={{ filter: "drop-shadow(0 10px 40px rgba(0,0,0,0.5))" }}>
           <defs>
-            <radialGradient id="centerGrad" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#1a2a3a" />
-              <stop offset="100%" stopColor="#0a1420" />
+            <radialGradient id="centerGrad3d" cx="50%" cy="40%" r="55%">
+              <stop offset="0%" stopColor="#1e3a5f" />
+              <stop offset="60%" stopColor="#0f2744" />
+              <stop offset="100%" stopColor="#060e1a" />
             </radialGradient>
-            <filter id="wheelShadow">
-              <feDropShadow dx="0" dy="4" stdDeviation="10" floodColor="#000" floodOpacity="0.6" />
+            <radialGradient id="centerShine" cx="35%" cy="30%" r="60%">
+              <stop offset="0%" stopColor="rgba(255,255,255,0.15)" />
+              <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+            </radialGradient>
+            <linearGradient id="goldRing" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#B8860B" />
+              <stop offset="20%" stopColor="#FFD700" />
+              <stop offset="40%" stopColor="#DAA520" />
+              <stop offset="60%" stopColor="#FFD700" />
+              <stop offset="80%" stopColor="#B8860B" />
+              <stop offset="100%" stopColor="#DAA520" />
+            </linearGradient>
+            <linearGradient id="silverRing" x1="100%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#C0C0C0" />
+              <stop offset="30%" stopColor="#F0F0F0" />
+              <stop offset="50%" stopColor="#A0A0A0" />
+              <stop offset="70%" stopColor="#E8E8E8" />
+              <stop offset="100%" stopColor="#B0B0B0" />
+            </linearGradient>
+            <linearGradient id="segLight" x1="50%" y1="0%" x2="50%" y2="100%">
+              <stop offset="0%" stopColor="rgba(255,255,255,0.12)" />
+              <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+            </linearGradient>
+            <filter id="wheelShadow3d">
+              <feDropShadow dx="0" dy="6" stdDeviation="12" floodColor="#000" floodOpacity="0.5" />
             </filter>
-            <linearGradient id="chromeRing" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#b0b0b0" />
-              <stop offset="25%" stopColor="#e8e8e8" />
-              <stop offset="50%" stopColor="#909090" />
-              <stop offset="75%" stopColor="#e0e0e0" />
-              <stop offset="100%" stopColor="#a0a0a0" />
-            </linearGradient>
-            <linearGradient id="chromeRing2" x1="100%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#c8c8c8" />
-              <stop offset="50%" stopColor="#f0f0f0" />
-              <stop offset="100%" stopColor="#b8b8b8" />
-            </linearGradient>
+            <filter id="innerGlow">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="6" />
+              <feOffset dx="0" dy="0" />
+              <feComposite in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" />
+              <feFlood floodColor="#00e5ff" floodOpacity="0.3" />
+              <feComposite in2="SourceGraphic" operator="in" />
+              <feMerge>
+                <feMergeNode />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
           </defs>
 
-          {/* Outer Chrome Ring - Double layer for depth */}
-          <circle cx={CX} cy={CY} r={OUTER_R + 18} fill="none" stroke="url(#chromeRing)" strokeWidth="8" />
-          <circle cx={CX} cy={CY} r={OUTER_R + 10} fill="none" stroke="url(#chromeRing2)" strokeWidth="3" opacity="0.6" />
+          {/* === Outer Decorative Rings === */}
+          {/* Gold ring - outermost */}
+          <circle cx={CX} cy={CY} r={OUTER_R + 22} fill="none" stroke="url(#goldRing)" strokeWidth="6" opacity="0.9" />
+          {/* Silver ring */}
+          <circle cx={CX} cy={CY} r={OUTER_R + 14} fill="none" stroke="url(#silverRing)" strokeWidth="3" opacity="0.7" />
+          {/* Cyan glow ring */}
+          <circle cx={CX} cy={CY} r={OUTER_R + 9} fill="none" stroke="#00e5ff" strokeWidth="1.5" opacity={isSpinning ? "0.8" : "0.4"}>
+            <animate attributeName="opacity" values={isSpinning ? "0.4;1;0.4" : "0.3;0.5;0.3"} dur={isSpinning ? "0.5s" : "3s"} repeatCount="indefinite" />
+          </circle>
 
-          {/* LED Dots */}
-          {ledDots.map((dot, i) => (
-            <circle
-              key={`led-${i}`}
-              cx={dot.x}
-              cy={dot.y}
-              r="4"
-              fill={isSpinning ? (i % 2 === 0 ? "#00e5ff" : "#005f7f") : "#00bcd4"}
-              opacity={isSpinning ? 0.95 : 0.7}
-            >
-              {isSpinning && (
-                <animate
-                  attributeName="opacity"
-                  values="0.3;1;0.3"
-                  dur={`${0.2 + (i % 4) * 0.08}s`}
-                  repeatCount="indefinite"
-                />
-              )}
-            </circle>
-          ))}
+          {/* === LED Dots with glow === */}
+          {ledDots.map((dot, i) => {
+            const isActive = isSpinning ? i % 2 === 0 : true;
+            return (
+              <g key={`led-${i}`}>
+                {/* Glow halo */}
+                <circle cx={dot.x} cy={dot.y} r="8" fill={isActive ? "#00e5ff" : "#004455"} opacity="0.15">
+                  {isSpinning && <animate attributeName="opacity" values="0.05;0.25;0.05" dur={`${0.15 + (i % 5) * 0.06}s`} repeatCount="indefinite" />}
+                </circle>
+                {/* Main dot */}
+                <circle cx={dot.x} cy={dot.y} r="4.5" fill={isActive ? "#00e5ff" : "#003344"} opacity={isSpinning ? 0.95 : 0.75}>
+                  {isSpinning && <animate attributeName="fill" values="#00e5ff;#FFD700;#00e5ff" dur={`${0.2 + (i % 4) * 0.08}s`} repeatCount="indefinite" />}
+                  {!isSpinning && <animate attributeName="opacity" values="0.5;0.85;0.5" dur={`${2 + (i % 3) * 0.5}s`} repeatCount="indefinite" />}
+                </circle>
+                {/* Bright center */}
+                <circle cx={dot.x} cy={dot.y} r="2" fill="#ffffff" opacity={isActive ? 0.6 : 0.1}>
+                  {isSpinning && <animate attributeName="opacity" values="0.2;0.8;0.2" dur={`${0.15 + (i % 4) * 0.08}s`} repeatCount="indefinite" />}
+                </circle>
+              </g>
+            );
+          })}
 
-          {/* Spinning Group */}
+          {/* === Spinning Group === */}
           <g
             ref={wheelRef}
             style={{
               transformOrigin: `${CX}px ${CY}px`,
               transform: `rotate(${rotation}deg)`,
-              transition: isSpinning
-                ? "transform 4.5s cubic-bezier(0.17, 0.67, 0.12, 0.99)"
-                : "none",
+              transition: isSpinning ? "transform 4.5s cubic-bezier(0.17, 0.67, 0.12, 0.99)" : "none",
             }}
-            filter="url(#wheelShadow)"
+            filter="url(#wheelShadow3d)"
           >
             {/* Segments */}
             {SEGMENTS.map((seg, i) => {
               const path = getSegmentPath(i);
               const textPos = getTextPosition(i);
               const iconPos = getIconPosition(i);
-              const fillColor = i % 2 === 0 ? "#0f2744" : "#163d5c";
+              const isEven = i % 2 === 0;
 
               return (
                 <g key={seg.id + i}>
-                  {/* Segment fill */}
-                  <path d={path} fill={fillColor} stroke="#2a6090" strokeWidth="0.5" />
-                  {/* Rare shimmer */}
-                  {seg.rare && <path d={path} fill="rgba(255,215,0,0.06)" />}
+                  {/* Base segment with 3D gradient */}
+                  <path d={path} fill={isEven ? "#0c1f38" : "#142e4e"} stroke="#1e5a8a" strokeWidth="0.5" />
+                  {/* Top highlight for 3D depth */}
+                  <path d={path} fill="url(#segLight)" />
+                  {/* Rare golden shimmer */}
+                  {seg.rare && (
+                    <>
+                      <path d={path} fill="rgba(255,215,0,0.06)" />
+                      <path d={path} fill="rgba(255,215,0,0.03)" style={{ animation: "pulse 2s ease-in-out infinite" }} />
+                    </>
+                  )}
 
-                  {/* Divider line */}
+                  {/* Divider line with glow */}
                   {(() => {
                     const startDeg = i * SEGMENT_ANGLE - 90;
                     const rad = toRad(startDeg);
@@ -395,35 +447,49 @@ const SpinWheel = () => {
                     const y1 = CY + INNER_R * Math.sin(rad);
                     const x2 = CX + OUTER_R * Math.cos(rad);
                     const y2 = CY + OUTER_R * Math.sin(rad);
-                    return <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#4a90c2" strokeWidth="1.5" opacity="0.6" />;
+                    return (
+                      <>
+                        <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#00bcd4" strokeWidth="2" opacity="0.15" />
+                        <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#4a90c2" strokeWidth="1" opacity="0.5" />
+                      </>
+                    );
                   })()}
 
-                  {/* Icon */}
+                  {/* Icon with glow background */}
                   <foreignObject
-                    x={iconPos.x - 12}
-                    y={iconPos.y - 12}
-                    width="24"
-                    height="24"
+                    x={iconPos.x - 14}
+                    y={iconPos.y - 14}
+                    width="28"
+                    height="28"
                     style={{ overflow: "visible" }}
                     transform={`rotate(${iconPos.rotation}, ${iconPos.x}, ${iconPos.y})`}
                   >
-                    <div className="flex items-center justify-center text-white/90" style={{ width: 24, height: 24 }}>
+                    <div className="flex items-center justify-center rounded-full"
+                      style={{
+                        width: 28, height: 28,
+                        color: seg.rare ? "#FFD700" : "rgba(255,255,255,0.9)",
+                        filter: seg.rare ? "drop-shadow(0 0 4px rgba(255,215,0,0.5))" : "drop-shadow(0 0 2px rgba(0,229,255,0.3))",
+                      }}>
                       {seg.icon}
                     </div>
                   </foreignObject>
 
-                  {/* Text */}
+                  {/* Text with better styling */}
                   <text
                     x={textPos.x}
                     y={textPos.y}
                     transform={`rotate(${textPos.rotation}, ${textPos.x}, ${textPos.y})`}
                     textAnchor="middle"
                     dominantBaseline="middle"
-                    fill="white"
-                    fontSize="11"
+                    fill={seg.rare ? "#FFD700" : "white"}
+                    fontSize="11.5"
                     fontWeight="800"
                     letterSpacing="0.8"
-                    style={{ textShadow: "0 2px 4px rgba(0,0,0,0.9)" }}
+                    style={{
+                      textShadow: seg.rare
+                        ? "0 0 8px rgba(255,215,0,0.6), 0 2px 4px rgba(0,0,0,0.9)"
+                        : "0 2px 4px rgba(0,0,0,0.9)",
+                    }}
                   >
                     {seg.shortLabel}
                   </text>
@@ -431,83 +497,130 @@ const SpinWheel = () => {
               );
             })}
 
-            {/* Center Circle */}
-            <circle cx={CX} cy={CY} r={INNER_R} fill="url(#centerGrad)" stroke="#3a7cb8" strokeWidth="3" />
-            <circle cx={CX} cy={CY} r={INNER_R - 5} fill="none" stroke="#2a5a80" strokeWidth="1.5" opacity="0.5" />
+            {/* === Center Hub - 3D Layered === */}
+            {/* Outer ring glow */}
+            <circle cx={CX} cy={CY} r={INNER_R + 4} fill="none" stroke="#00e5ff" strokeWidth="1" opacity="0.3" />
+            {/* Main hub */}
+            <circle cx={CX} cy={CY} r={INNER_R} fill="url(#centerGrad3d)" stroke="url(#goldRing)" strokeWidth="3" />
+            {/* Inner ring */}
+            <circle cx={CX} cy={CY} r={INNER_R - 6} fill="none" stroke="url(#silverRing)" strokeWidth="1.5" opacity="0.4" />
+            {/* Shine overlay */}
+            <circle cx={CX} cy={CY} r={INNER_R - 2} fill="url(#centerShine)" />
+            {/* Innermost glow ring */}
+            <circle cx={CX} cy={CY} r={INNER_R - 12} fill="none" stroke="#00e5ff" strokeWidth="0.5" opacity="0.3">
+              <animate attributeName="opacity" values="0.2;0.4;0.2" dur="2s" repeatCount="indefinite" />
+            </circle>
 
             {/* Center Text */}
-            <text x={CX} y={CY - 16} textAnchor="middle" dominantBaseline="middle" fill="white" fontSize="13" fontWeight="900" fontStyle="italic" letterSpacing="1.5">
+            <text x={CX} y={CY - 18} textAnchor="middle" dominantBaseline="middle" fill="#FFD700" fontSize="15" fontWeight="900" fontStyle="italic" letterSpacing="2"
+              style={{ textShadow: "0 0 10px rgba(255,215,0,0.4), 0 2px 4px rgba(0,0,0,0.8)" }}>
               SKYLIFE
             </text>
-            <text x={CX} y={CY + 2} textAnchor="middle" dominantBaseline="middle" fill="white" fontSize="10" fontWeight="900" fontStyle="italic" letterSpacing="1">
+            <text x={CX} y={CY + 2} textAnchor="middle" dominantBaseline="middle" fill="#E8E8E8" fontSize="11" fontWeight="900" fontStyle="italic" letterSpacing="1.5"
+              style={{ textShadow: "0 2px 4px rgba(0,0,0,0.8)" }}>
               ROLEPLAY
             </text>
-            <text x={CX} y={CY + 18} textAnchor="middle" dominantBaseline="middle" fill="#4a90c2" fontSize="9" fontWeight="700" fontStyle="italic" letterSpacing="2.5">
+            <text x={CX} y={CY + 20} textAnchor="middle" dominantBaseline="middle" fill="#00e5ff" fontSize="10" fontWeight="700" fontStyle="italic" letterSpacing="3"
+              style={{ textShadow: "0 0 8px rgba(0,229,255,0.5)" }}>
               INDIA
             </text>
           </g>
         </svg>
       </div>
 
-      {/* ── 3D SPIN Button ── */}
+      {/* ── Premium 3D SPIN Button ── */}
       <button
         onClick={handleSpin}
         disabled={isSpinning || isCoolingDown || !userId}
-        className="relative group disabled:opacity-50 disabled:cursor-not-allowed"
-        style={{ perspective: "600px" }}
+        className="relative group disabled:cursor-not-allowed z-10"
+        style={{ perspective: "800px" }}
       >
-        <div
-          className="relative px-16 py-5 text-3xl font-black tracking-[0.35em] uppercase text-white rounded-xl transition-all duration-150 active:translate-y-1"
-          style={{
-            background: isSpinning
-              ? "linear-gradient(180deg, #555, #333)"
-              : "linear-gradient(180deg, #ff6b35 0%, #e63946 50%, #c0392b 100%)",
-            boxShadow: isSpinning
-              ? "0 4px 0 #222, 0 6px 15px rgba(0,0,0,0.3)"
-              : "0 8px 0 #8b1a1a, 0 10px 30px rgba(230,57,70,0.5), inset 0 2px 0 rgba(255,255,255,0.25)",
-            textShadow: "0 3px 6px rgba(0,0,0,0.6)",
-            transform: "translateY(-3px)",
-          }}
-        >
-          {isSpinning ? "SPINNING..." : "SPIN"}
-        </div>
+        {/* Button glow backdrop */}
         {!isSpinning && !isCoolingDown && userId && (
-          <div
-            className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+          <div className="absolute -inset-4 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
             style={{
-              boxShadow: "0 0 40px rgba(230,57,70,0.6), 0 0 80px rgba(255,107,53,0.3)",
+              background: "radial-gradient(ellipse at center, rgba(255,107,53,0.3) 0%, transparent 70%)",
+              filter: "blur(15px)",
             }}
           />
         )}
+
+        <div
+          className="relative overflow-hidden px-20 py-6 text-3xl font-black tracking-[0.4em] uppercase text-white rounded-2xl transition-all duration-200 active:translate-y-1 disabled:opacity-40"
+          style={{
+            background: isSpinning
+              ? "linear-gradient(180deg, #3a3a3a 0%, #222 100%)"
+              : "linear-gradient(180deg, #FF8C42 0%, #E63946 35%, #C0392B 70%, #8B1A1A 100%)",
+            boxShadow: isSpinning
+              ? "0 4px 0 #111, 0 6px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)"
+              : [
+                  "0 8px 0 #6B0F0F",
+                  "0 10px 0 #4a0a0a",
+                  "0 12px 40px rgba(230,57,70,0.5)",
+                  "0 4px 60px rgba(255,107,53,0.3)",
+                  "inset 0 2px 0 rgba(255,255,255,0.25)",
+                  "inset 0 -2px 4px rgba(0,0,0,0.2)",
+                ].join(", "),
+            textShadow: "0 3px 6px rgba(0,0,0,0.6), 0 0 20px rgba(255,107,53,0.3)",
+            transform: isSpinning ? "translateY(4px)" : "translateY(-4px)",
+            border: isSpinning ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(255,200,150,0.3)",
+          }}
+        >
+          {/* Shine sweep animation */}
+          {!isSpinning && (
+            <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+              <div className="absolute -inset-full"
+                style={{
+                  background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0.15) 55%, transparent 60%)",
+                  animation: "shimmerSweep 3s ease-in-out infinite",
+                }}
+              />
+            </div>
+          )}
+          {/* Spinning dots animation */}
+          {isSpinning && (
+            <span className="inline-flex gap-1 ml-2">
+              <span className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: "0s" }} />
+              <span className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: "0.15s" }} />
+              <span className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: "0.3s" }} />
+            </span>
+          )}
+          <span className="relative z-10">{isSpinning ? "SPINNING" : "SPIN"}</span>
+        </div>
       </button>
 
       {!userId && (
-        <p className="text-sm text-muted-foreground">Login with Discord to spin the wheel</p>
+        <p className="text-sm text-muted-foreground z-10">Login with Discord to spin the wheel</p>
       )}
 
       {/* ── Prize Result Dialog ── */}
       <Dialog open={showPrizeDialog} onOpenChange={setShowPrizeDialog}>
-        <DialogContent className="sm:max-w-md border-[#1e4d6e]/60 bg-gradient-to-b from-[#0a1628] to-[#132d4a]">
+        <DialogContent className="sm:max-w-md border-cyan-500/20 bg-gradient-to-b from-[#060e1a] via-[#0c1f38] to-[#132d4a] shadow-[0_0_80px_rgba(0,200,255,0.1)]">
           <DialogHeader>
             <DialogTitle className="text-center text-2xl font-black text-white">
               {wonPrize?.rare ? (
                 <span className="flex items-center justify-center gap-2">
-                  <Star className="w-6 h-6 text-yellow-400 fill-yellow-400" />
-                  RARE PRIZE!
-                  <Star className="w-6 h-6 text-yellow-400 fill-yellow-400" />
+                  <Star className="w-6 h-6 text-yellow-400 fill-yellow-400" style={{ filter: "drop-shadow(0 0 6px rgba(255,215,0,0.6))" }} />
+                  <span style={{ color: "#FFD700", textShadow: "0 0 12px rgba(255,215,0,0.4)" }}>RARE PRIZE!</span>
+                  <Star className="w-6 h-6 text-yellow-400 fill-yellow-400" style={{ filter: "drop-shadow(0 0 6px rgba(255,215,0,0.6))" }} />
                 </span>
               ) : (
-                "🎉 You Won!"
+                <span style={{ textShadow: "0 0 10px rgba(0,229,255,0.3)" }}>🎉 You Won!</span>
               )}
             </DialogTitle>
             <DialogDescription className="text-center text-lg pt-4">
               <span className="flex flex-col items-center gap-4">
                 <span
-                  className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl text-xl font-bold ${
+                  className={`inline-flex items-center gap-3 px-8 py-4 rounded-xl text-xl font-bold ${
                     wonPrize?.rare
-                      ? "bg-yellow-500/20 text-yellow-300 border border-yellow-500/30"
-                      : "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30"
+                      ? "bg-yellow-500/10 text-yellow-300 border border-yellow-500/30"
+                      : "bg-cyan-500/10 text-cyan-300 border border-cyan-500/30"
                   }`}
+                  style={{
+                    boxShadow: wonPrize?.rare
+                      ? "0 0 30px rgba(255,215,0,0.1), inset 0 0 20px rgba(255,215,0,0.05)"
+                      : "0 0 30px rgba(0,229,255,0.1), inset 0 0 20px rgba(0,229,255,0.05)",
+                  }}
                 >
                   {wonPrize?.icon}
                   {wonPrize?.label}
@@ -524,6 +637,14 @@ const SpinWheel = () => {
           </DialogHeader>
         </DialogContent>
       </Dialog>
+
+      {/* Shimmer keyframes */}
+      <style>{`
+        @keyframes shimmerSweep {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(200%); }
+        }
+      `}</style>
     </div>
   );
 };
