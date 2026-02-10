@@ -140,6 +140,7 @@ const SpinWheel = () => {
   const [discordId, setDiscordId] = useState<string | null>(null);
   const [discordUsername, setDiscordUsername] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [lightsFlashing, setLightsFlashing] = useState(false);
   const wheelRef = useRef<SVGGElement>(null);
 
   useEffect(() => {
@@ -189,6 +190,9 @@ const SpinWheel = () => {
       setWonPrize(prize);
       setShowPrizeDialog(true);
       setIsSpinning(false);
+      setLightsFlashing(true);
+      // Stop flashing after 5 seconds
+      setTimeout(() => setLightsFlashing(false), 5000);
       const { error } = await supabase.from("spin_results").insert({
         user_id: userId, prize_key: prize.id, prize_label: prize.label, is_rare: prize.rare,
       });
@@ -480,25 +484,43 @@ const SpinWheel = () => {
 
           {/* === LED Dots on chrome frame === */}
           {ledDots.map((dot, i) => {
-            const phase = isSpinning ? (i * 0.12) : (i * 0.2);
+            const idlePhase = i * 0.2;
+            // During spin: fast sequential chase. After stop: dramatic on/off flash. Idle: gentle pulse.
+            const isActive = isSpinning || lightsFlashing;
             return (
               <g key={`led-${i}`}>
-                {/* Glow */}
-                <circle cx={dot.x} cy={dot.y} r="6" fill="#3070cc" opacity="0.12">
-                  {isSpinning && <animate attributeName="opacity" values="0.05;0.2;0.05" dur={`${0.15 + (i % 5) * 0.05}s`} repeatCount="indefinite" />}
-                </circle>
-                {/* Dot */}
-                <circle cx={dot.x} cy={dot.y} r="2.8" fill={i % 2 === 0 ? "#4488dd" : "#3366aa"} opacity="0.85">
+                {/* Outer glow halo */}
+                <circle cx={dot.x} cy={dot.y} r={isActive ? "10" : "6"} fill={lightsFlashing ? "#ffaa00" : "#3070cc"} opacity="0.08">
                   {isSpinning && (
-                    <animate attributeName="fill" values="#4488dd;#88bbff;#4488dd" dur={`${0.2 + (i % 4) * 0.06}s`} repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0.02;0.25;0.02" dur={`${0.1 + (i % 5) * 0.04}s`} repeatCount="indefinite" />
                   )}
-                  {!isSpinning && (
-                    <animate attributeName="opacity" values="0.5;0.9;0.5" dur={`${2 + (i % 3) * 0.7}s`} repeatCount="indefinite" begin={`${phase}s`} />
+                  {lightsFlashing && (
+                    <animate attributeName="opacity" values="0;0.35;0" dur="0.6s" repeatCount="indefinite" begin={`${(i % 4) * 0.15}s`} />
                   )}
                 </circle>
-                {/* Bright core */}
-                <circle cx={dot.x} cy={dot.y} r="1.2" fill="#aaccff" opacity="0.5">
-                  {isSpinning && <animate attributeName="opacity" values="0.3;0.9;0.3" dur={`${0.15 + (i % 4) * 0.06}s`} repeatCount="indefinite" />}
+                {/* Main LED dot */}
+                <circle cx={dot.x} cy={dot.y} r="2.8"
+                  fill={isSpinning ? (i % 2 === 0 ? "#4488dd" : "#3366aa") : lightsFlashing ? "#ffcc33" : (i % 2 === 0 ? "#4488dd" : "#3366aa")}
+                  opacity="0.85"
+                >
+                  {isSpinning && (
+                    <animate attributeName="fill" values="#2255aa;#66ccff;#ffffff;#66ccff;#2255aa" dur={`${0.12 + (i % 6) * 0.03}s`} repeatCount="indefinite" />
+                  )}
+                  {lightsFlashing && (
+                    <animate attributeName="opacity" values="0.15;1;0.15" dur="0.6s" repeatCount="indefinite" begin={`${(i % 4) * 0.15}s`} />
+                  )}
+                  {!isSpinning && !lightsFlashing && (
+                    <animate attributeName="opacity" values="0.5;0.9;0.5" dur={`${2 + (i % 3) * 0.7}s`} repeatCount="indefinite" begin={`${idlePhase}s`} />
+                  )}
+                </circle>
+                {/* Bright inner core */}
+                <circle cx={dot.x} cy={dot.y} r="1.2" fill={lightsFlashing ? "#ffffff" : "#aaccff"} opacity="0.5">
+                  {isSpinning && (
+                    <animate attributeName="opacity" values="0.2;1;0.2" dur={`${0.1 + (i % 4) * 0.04}s`} repeatCount="indefinite" />
+                  )}
+                  {lightsFlashing && (
+                    <animate attributeName="opacity" values="0;1;0" dur="0.6s" repeatCount="indefinite" begin={`${(i % 4) * 0.15}s`} />
+                  )}
                 </circle>
               </g>
             );
