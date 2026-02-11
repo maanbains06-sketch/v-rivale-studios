@@ -111,6 +111,16 @@ const PRIZE_CONFIGS: Record<string, PrizeConfig> = {
     rarityEmoji: "🌟",
     claimMethod: "Delivered in-city automatically",
   },
+  protein_shake: {
+    color: 0x00FF88,
+    emoji: "🥤",
+    image: `${PRIZE_IMAGE_BASE}/protein-shake.png`,
+    title: "PROTEIN SHAKE",
+    description: "Get swole! 2x XP boost in the gym! 💪🔥",
+    rarity: "⭐ RARE",
+    rarityEmoji: "🌟",
+    claimMethod: "Automatically applied — lasts 24 hours",
+  },
   name_change: {
     color: 0x3498DB,
     emoji: "🪪",
@@ -183,7 +193,6 @@ serve(async (req) => {
       ? `<@${discord_id}>\n**${displayName}**`
       : `**${displayName}**`;
 
-    // Build embed matching the professional style of other notifications
     let embed: Record<string, unknown>;
 
     if (isBetterLuck) {
@@ -197,60 +206,22 @@ serve(async (req) => {
         color: config.color,
         thumbnail: { url: LOGO_URL },
         fields: [
-          {
-            name: "━━━━━ PLAYER ━━━━━",
-            value: "\u200b",
-            inline: false,
-          },
-          {
-            name: "👤 Player",
-            value: userDisplay,
-            inline: true,
-          },
-          {
-            name: "🆔 Discord ID",
-            value: discord_id ? `**${discord_id}**` : "**N/A**",
-            inline: true,
-          },
-          {
-            name: "\u200b",
-            value: "\u200b",
-            inline: true,
-          },
-          {
-            name: "━━━━━ RESULT ━━━━━",
-            value: "\u200b",
-            inline: false,
-          },
-          {
-            name: "🎰 Outcome",
-            value: `> **${config.description}**`,
-            inline: false,
-          },
-          {
-            name: "⏰ Next Chance",
-            value: "Spin again after the **24-hour** cooldown!",
-            inline: true,
-          },
-          {
-            name: "💡 Tip",
-            value: "Stay active in the city for bonus spins!",
-            inline: true,
-          },
-          {
-            name: "📅 Spin Date",
-            value: timestamp,
-            inline: true,
-          },
+          { name: "━━━━━ PLAYER ━━━━━", value: "\u200b", inline: false },
+          { name: "👤 Player", value: userDisplay, inline: true },
+          { name: "🆔 Discord ID", value: discord_id ? `**${discord_id}**` : "**N/A**", inline: true },
+          { name: "\u200b", value: "\u200b", inline: true },
+          { name: "━━━━━ RESULT ━━━━━", value: "\u200b", inline: false },
+          { name: "🎰 Outcome", value: `> **${config.description}**`, inline: false },
+          { name: "⏰ Next Chance", value: "Spin again after the **24-hour** cooldown!", inline: true },
+          { name: "💡 Tip", value: "Stay active in the city for bonus spins!", inline: true },
+          { name: "📅 Spin Date", value: timestamp, inline: true },
         ],
         image: { url: config.image },
-        footer: {
-          text: "😔 SKYLIFE ROLEPLAY INDIA • Better luck next spin!",
-          icon_url: LOGO_URL,
-        },
+        footer: { text: "😔 SKYLIFE ROLEPLAY INDIA • Better luck next spin!", icon_url: LOGO_URL },
         timestamp: new Date().toISOString(),
       };
     } else {
+      // NOTE: Prize descriptions shown in Discord are short/generic — detailed descriptions are only in the web UI
       embed = {
         author: {
           name: "SKYLIFE ROLEPLAY INDIA • Spin & Win",
@@ -263,61 +234,17 @@ serve(async (req) => {
         color: config.color,
         thumbnail: { url: LOGO_URL },
         fields: [
-          {
-            name: "━━━━━ WINNER ━━━━━",
-            value: "\u200b",
-            inline: false,
-          },
-          {
-            name: "👤 Player",
-            value: userDisplay,
-            inline: true,
-          },
-          {
-            name: "🆔 Discord ID",
-            value: discord_id ? `**${discord_id}**` : "**N/A**",
-            inline: true,
-          },
-          {
-            name: "\u200b",
-            value: "\u200b",
-            inline: true,
-          },
-          {
-            name: "━━━━━ PRIZE DETAILS ━━━━━",
-            value: "\u200b",
-            inline: false,
-          },
-          {
-            name: `${config.emoji} Prize`,
-            value: `> **${config.title}**`,
-            inline: true,
-          },
-          {
-            name: "🏆 Rarity",
-            value: `> **${config.rarity}**`,
-            inline: true,
-          },
-          {
-            name: "📝 Description",
-            value: `> ${config.description}`,
-            inline: false,
-          },
-          {
-            name: "━━━━━ CLAIM INFO ━━━━━",
-            value: "\u200b",
-            inline: false,
-          },
-          {
-            name: "📦 How to Claim",
-            value: `> **${config.claimMethod}**`,
-            inline: true,
-          },
-          {
-            name: "📅 Won On",
-            value: timestamp,
-            inline: true,
-          },
+          { name: "━━━━━ WINNER ━━━━━", value: "\u200b", inline: false },
+          { name: "👤 Player", value: userDisplay, inline: true },
+          { name: "🆔 Discord ID", value: discord_id ? `**${discord_id}**` : "**N/A**", inline: true },
+          { name: "\u200b", value: "\u200b", inline: true },
+          { name: "━━━━━ PRIZE DETAILS ━━━━━", value: "\u200b", inline: false },
+          { name: `${config.emoji} Prize`, value: `> **${config.title}**`, inline: true },
+          { name: "🏆 Rarity", value: `> **${config.rarity}**`, inline: true },
+          { name: "📝 Description", value: `> ${config.description}`, inline: false },
+          { name: "━━━━━ CLAIM INFO ━━━━━", value: "\u200b", inline: false },
+          { name: "📦 How to Claim", value: `> **${config.claimMethod}**`, inline: true },
+          { name: "📅 Won On", value: timestamp, inline: true },
         ],
         image: { url: config.image },
         footer: {
@@ -330,7 +257,6 @@ serve(async (req) => {
       };
     }
 
-    // Build content message with proper tagging
     let content: string;
     if (isBetterLuck) {
       content = userMention
