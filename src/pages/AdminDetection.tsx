@@ -14,7 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Shield, ShieldAlert, Fingerprint, Globe, RefreshCw, 
   Ban, Check, X, Eye, AlertTriangle, Users, Unlock, FileText, Copy,
-  Monitor, Smartphone, Tablet, Cpu, Clock, Languages
+  Monitor, Smartphone, Tablet, Cpu, Clock, Languages, ArrowLeft, Download
 } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -25,6 +25,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import headerStaffBg from "@/assets/header-staff.jpg";
+import jsPDF from 'jspdf';
 
 interface Detection {
   id: string;
@@ -90,6 +91,21 @@ const AdminDetection = () => {
       setDeviceSpecs({ primary: [], alt: [] });
     }
     setLoadingSpecs(false);
+
+    // Subscribe to realtime device fingerprint changes
+    const fpChannel = supabase
+      .channel(`device-fp-${detection.primary_user_id}-${detection.alt_user_id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'device_fingerprints', filter: `user_id=eq.${detection.primary_user_id}` }, async () => {
+        const { data } = await supabase.from('device_fingerprints').select('*').eq('user_id', detection.primary_user_id).order('updated_at', { ascending: false }).limit(5);
+        setDeviceSpecs(prev => ({ ...prev, primary: data || [] }));
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'device_fingerprints', filter: `user_id=eq.${detection.alt_user_id}` }, async () => {
+        const { data } = await supabase.from('device_fingerprints').select('*').eq('user_id', detection.alt_user_id).order('updated_at', { ascending: false }).limit(5);
+        setDeviceSpecs(prev => ({ ...prev, alt: data || [] }));
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(fpChannel); };
   };
 
   useEffect(() => {
@@ -238,6 +254,10 @@ const AdminDetection = () => {
 
       <div className="px-4 pb-16 -mt-8 relative z-10">
         <div className="container mx-auto">
+          <Button variant="outline" size="sm" className="mb-4" onClick={() => navigate(-1)}>
+            <ArrowLeft className="w-4 h-4 mr-1" />
+            Back
+          </Button>
           <Tabs defaultValue="detections" className="space-y-6">
             <TabsList className="flex flex-wrap gap-1 h-auto p-1 bg-muted/50">
               <TabsTrigger value="detections" className="flex items-center gap-1">
@@ -792,6 +812,98 @@ const AdminDetection = () => {
             );
           })()}
           <AlertDialogFooter>
+            <Button variant="outline" size="sm" onClick={() => {
+              if (!evidenceDialog.detection) return;
+              const d = evidenceDialog.detection;
+              const det = d.details || {};
+              const isIp = d.detection_type === 'ip_match';
+              const doc = new jsPDF();
+              doc.setFontSize(20);
+              doc.setFont('helvetica', 'bold');
+              doc.text('SKYLIFE ROLEPLAY INDIA', 105, 20, { align: 'center' });
+              doc.setFontSize(14);
+              doc.text('Alt-Account Detection Evidence Report', 105, 30, { align: 'center' });
+              doc.setDrawColor(59, 130, 246);
+              doc.line(15, 35, 195, 35);
+              let y = 45;
+              const addLine = (label: string, value: string) => {
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(10);
+                doc.text(label, 20, y);
+                doc.setFont('helvetica', 'normal');
+                doc.text(value, 75, y);
+                y += 7;
+              };
+              addLine('Detection Type:', isIp ? 'IP Address Match' : 'Device Fingerprint Match');
+              addLine('Confidence:', `${d.confidence_score}%`);
+              addLine('Status:', d.status);
+              addLine('Detected At:', new Date(d.created_at).toLocaleString());
+              addLine('Detection ID:', d.id);
+              y += 5;
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(12);
+              doc.text('Primary Account', 20, y); y += 7;
+              doc.setFontSize(10);
+              addLine('Username:', det.primary_username || 'Unknown');
+              addLine('Discord ID:', det.primary_discord_id || 'N/A');
+              addLine('User ID:', d.primary_user_id);
+              y += 5;
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(12);
+              doc.text('Suspected Alt Account', 20, y); y += 7;
+              doc.setFontSize(10);
+              addLine('Username:', det.alt_username || 'Unknown');
+              addLine('Discord ID:', det.alt_discord_id || 'N/A');
+              addLine('User ID:', d.alt_user_id);
+              y += 5;
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(12);
+              doc.text('Technical Evidence', 20, y); y += 7;
+              doc.setFontSize(10);
+              if (det.shared_ip || d.ip_address) addLine('IP Address:', det.shared_ip || d.ip_address);
+              if (det.shared_fingerprint || d.fingerprint_hash) addLine('Fingerprint:', det.shared_fingerprint || d.fingerprint_hash || '');
+              if (det.match_count) addLine('Match Count:', `${det.match_count} shared login(s)`);
+              y += 5;
+              // Device specs
+              const addDeviceSpecs = (label: string, devices: any[]) => {
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(11);
+                doc.text(label, 20, y); y += 7;
+                doc.setFontSize(9);
+                if (devices.length === 0) { addLine('', 'No device data recorded'); return; }
+                devices.forEach((dev: any) => {
+                  const ua = dev.user_agent || '';
+                  let browser = 'Unknown';
+                  if (/edg/i.test(ua)) browser = 'Edge';
+                  else if (/chrome/i.test(ua)) browser = 'Chrome';
+                  else if (/firefox/i.test(ua)) browser = 'Firefox';
+                  else if (/safari/i.test(ua)) browser = 'Safari';
+                  let os = 'Unknown';
+                  if (/windows/i.test(ua)) os = 'Windows';
+                  else if (/mac os/i.test(ua)) os = 'macOS';
+                  else if (/android/i.test(ua)) os = 'Android';
+                  else if (/iphone|ipad/i.test(ua)) os = 'iOS';
+                  else if (/linux/i.test(ua)) os = 'Linux';
+                  if (y > 260) { doc.addPage(); y = 20; }
+                  addLine('Browser:', browser);
+                  addLine('OS:', os);
+                  addLine('Screen:', dev.screen_resolution || 'N/A');
+                  addLine('Language:', dev.language || 'N/A');
+                  addLine('Timezone:', dev.timezone || 'N/A');
+                  addLine('Platform:', dev.platform || 'N/A');
+                  addLine('IP:', dev.ip_address || 'N/A');
+                  addLine('Blocked:', dev.is_blocked ? 'Yes' : 'No');
+                  y += 3;
+                });
+              };
+              addDeviceSpecs(`Primary (${det.primary_username || 'Unknown'})`, deviceSpecs.primary);
+              addDeviceSpecs(`Alt (${det.alt_username || 'Unknown'})`, deviceSpecs.alt);
+              doc.save(`Evidence-${d.id.substring(0, 8)}.pdf`);
+              toast.success('Evidence PDF downloaded');
+            }}>
+              <Download className="w-4 h-4 mr-1" />
+              Download Evidence PDF
+            </Button>
             <AlertDialogCancel>Close</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Car, Shirt, Gift, Tag, Ticket, IdCard, SkipForward, X, DollarSign, Package, Clock, Star
+  Car, Shirt, Gift, Tag, Ticket, IdCard, SkipForward, X, DollarSign, Package, Clock, Star, Dumbbell
 } from "lucide-react";
 import {
   Dialog,
@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import proteinShakeImg from "@/assets/spin-protein-shake.png";
 
 // ── Prize Segments ──────────────────────────────────────────────
 interface Segment {
@@ -20,22 +21,26 @@ interface Segment {
   icon: React.ReactNode;
   rare: boolean;
   weight: number;
+  /** Shown only in the win dialog, NOT sent to Discord */
+  winDescription?: string;
+  /** Image for prize dialog */
+  prizeImage?: string;
 }
 
 const SEGMENTS: Segment[] = [
-  { id: "free_queue", label: "1 Time Free Queue Entry", shortLabel: "Free Queue", icon: <Ticket size={18} />, rare: true, weight: 0.8 },
-  { id: "cash_10k", label: "$10,000 Cash", shortLabel: "$10,000", icon: <DollarSign size={18} />, rare: false, weight: 16 },
-  { id: "better_luck_1", label: "Better Luck Next Time", shortLabel: "Better Luck!", icon: <X size={18} />, rare: false, weight: 18 },
-  { id: "cash_20k", label: "$20,000 Cash", shortLabel: "$20,000", icon: <DollarSign size={18} />, rare: true, weight: 0.8 },
-  { id: "mission_skip", label: "1 Daily Mission Skip", shortLabel: "Mission Skip", icon: <SkipForward size={18} />, rare: false, weight: 14 },
-  { id: "vehicle", label: "Random Vehicle", shortLabel: "Vehicle", icon: <Car size={18} />, rare: true, weight: 0.8 },
-  { id: "cash_5k", label: "$5,000 Cash", shortLabel: "$5,000", icon: <DollarSign size={18} />, rare: false, weight: 18 },
-  { id: "mystery_box", label: "Mystery Box", shortLabel: "Mystery Box", icon: <Package size={18} />, rare: true, weight: 0.8 },
-  { id: "better_luck_2", label: "Better Luck Next Time", shortLabel: "Better Luck!", icon: <X size={18} />, rare: false, weight: 18 },
-  { id: "clothing_1", label: "Clothing Reward", shortLabel: "Clothing", icon: <Shirt size={18} />, rare: true, weight: 0.8 },
-  { id: "discount", label: "Discount Coupon", shortLabel: "Discount", icon: <Tag size={18} />, rare: true, weight: 0.8 },
-  { id: "clothing_2", label: "Clothing Reward", shortLabel: "Clothing", icon: <Shirt size={18} />, rare: true, weight: 0.8 },
-  { id: "name_change", label: "Free Name Change Approval", shortLabel: "Name Change", icon: <IdCard size={18} />, rare: true, weight: 0.8 },
+  { id: "free_queue", label: "1 Time Free Queue Entry", shortLabel: "Free Queue", icon: <Ticket size={18} />, rare: true, weight: 0.8, winDescription: "Skip the line and jump straight into the city! This entry is automatically applied on your next login." },
+  { id: "cash_10k", label: "$10,000 Cash", shortLabel: "$10,000", icon: <DollarSign size={18} />, rare: false, weight: 16, winDescription: "💰 In-game money — $10,000 will be credited directly to your in-game bank account automatically!" },
+  { id: "better_luck_1", label: "Better Luck Next Time", shortLabel: "Better Luck!", icon: <X size={18} />, rare: false, weight: 16, winDescription: "Luck wasn't on your side this time... Come back after the cooldown for another shot!" },
+  { id: "cash_20k", label: "$20,000 Cash", shortLabel: "$20,000", icon: <DollarSign size={18} />, rare: true, weight: 0.8, winDescription: "💰 In-game money — A massive $20,000 jackpot will be credited to your in-game bank account automatically!" },
+  { id: "mission_skip", label: "1 Daily Mission Skip", shortLabel: "Mission Skip", icon: <SkipForward size={18} />, rare: false, weight: 14, winDescription: "Skip the grind, keep the rewards! Your next daily mission will be auto-completed. Applied automatically." },
+  { id: "vehicle", label: "Random Vehicle", shortLabel: "Vehicle", icon: <Car size={18} />, rare: true, weight: 0.8, winDescription: "🚗 Random vehicle in-game — depends on luck! You could get anything from a sedan to a supercar. Contact staff to claim your ride!" },
+  { id: "cash_5k", label: "$5,000 Cash", shortLabel: "$5,000", icon: <DollarSign size={18} />, rare: false, weight: 16, winDescription: "💰 In-game money — $5,000 will be credited directly to your in-game bank account automatically!" },
+  { id: "mystery_box", label: "Mystery Box", shortLabel: "Mystery Box", icon: <Package size={18} />, rare: true, weight: 0.8, winDescription: "📦 What's inside? Only fate knows! Could contain rare items, exclusive clothing, or big cash. Contact staff to reveal your mystery prize!" },
+  { id: "protein_shake", label: "Protein Shake", shortLabel: "Protein", icon: <Dumbbell size={18} />, rare: true, weight: 1.5, winDescription: "🥤 Protein Shake — After drinking this shake, you will get 2x XP in gym for 24 hours! Get swole faster and dominate the gym!", prizeImage: proteinShakeImg },
+  { id: "clothing_1", label: "Clothing Reward", shortLabel: "Clothing", icon: <Shirt size={18} />, rare: true, weight: 0.8, winDescription: "👕 Fresh drip incoming! A random exclusive clothing item will be delivered to your in-game wardrobe automatically!" },
+  { id: "discount", label: "Discount Coupon", shortLabel: "Discount", icon: <Tag size={18} />, rare: true, weight: 0.8, winDescription: "🏷️ Save big on your next store purchase! A staff member will deliver your coupon manually. Contact support to claim." },
+  { id: "better_luck_2", label: "Better Luck Next Time", shortLabel: "Better Luck!", icon: <X size={18} />, rare: false, weight: 16, winDescription: "The wheel said no... but the next spin could be the big one! Try again after cooldown." },
+  { id: "name_change", label: "Free Name Change Approval", shortLabel: "Name Change", icon: <IdCard size={18} />, rare: true, weight: 0.8, winDescription: "🪪 Time for a fresh identity! Contact a staff member to apply your free name change." },
 ];
 
 const TOTAL_SEGMENTS = SEGMENTS.length;
@@ -191,7 +196,6 @@ const SpinWheel = () => {
       setShowPrizeDialog(true);
       setIsSpinning(false);
       setLightsFlashing(true);
-      // Stop flashing after 5 seconds
       setTimeout(() => setLightsFlashing(false), 5000);
       const { error } = await supabase.from("spin_results").insert({
         user_id: userId, prize_key: prize.id, prize_label: prize.label, is_rare: prize.rare,
@@ -247,11 +251,9 @@ const SpinWheel = () => {
               boxShadow: "0 8px 0 #040a14, 0 10px 0 #020610, 0 12px 40px rgba(0,30,80,0.5), inset 0 1px 0 rgba(150,200,255,0.08), inset 0 -2px 6px rgba(0,0,0,0.4)",
               border: "1px solid rgba(80,130,200,0.15)",
             }}>
-            {/* Top chrome strip */}
             <div className="h-[3px]" style={{ background: "linear-gradient(90deg, transparent 5%, rgba(120,170,230,0.3) 20%, rgba(200,220,255,0.5) 50%, rgba(120,170,230,0.3) 80%, transparent 95%)" }} />
             
             <div className="px-6 py-5 sm:px-10 sm:py-6">
-              {/* Label */}
               <div className="flex items-center justify-center gap-2.5 mb-5">
                 <Clock className="w-5 h-5 text-cyan-400" style={{ filter: "drop-shadow(0 0 6px rgba(0,200,255,0.4))" }} />
                 <span className="text-xs uppercase tracking-[0.3em] font-bold"
@@ -260,7 +262,6 @@ const SpinWheel = () => {
                 </span>
               </div>
 
-              {/* 3D Digit Blocks */}
               <div className="flex items-center justify-center gap-3 sm:gap-5">
                 {/* Hours */}
                 <div className="flex flex-col items-center gap-1.5">
@@ -273,12 +274,10 @@ const SpinWheel = () => {
                         boxShadow: "0 4px 0 #050c18, 0 5px 0 #030810, 0 6px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(140,190,240,0.1), inset 0 -1px 0 rgba(0,0,0,0.3)",
                         border: "1px solid rgba(60,110,180,0.15)",
                       }}>
-                        {/* Center fold line */}
                         <div className="absolute top-1/2 left-0 right-0 h-[1px] -translate-y-[0.5px]"
                           style={{ background: "linear-gradient(90deg, transparent, rgba(0,0,0,0.5) 20%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.5) 80%, transparent)" }} />
                         <div className="absolute top-1/2 left-0 right-0 h-[1px] translate-y-[0.5px]"
                           style={{ background: "linear-gradient(90deg, transparent, rgba(100,160,230,0.06) 30%, rgba(100,160,230,0.08) 50%, rgba(100,160,230,0.06) 70%, transparent)" }} />
-                        {/* Digit */}
                         <span className="absolute inset-0 flex items-center justify-center text-3xl font-black font-mono"
                           style={{ color: "#c8ddf0", textShadow: "0 0 10px rgba(100,180,255,0.4), 0 2px 4px rgba(0,0,0,0.8)" }}>
                           {d}
@@ -289,7 +288,6 @@ const SpinWheel = () => {
                   <span className="text-[10px] uppercase tracking-[0.2em] font-semibold" style={{ color: "#4a7aa0" }}>Hours</span>
                 </div>
 
-                {/* Colon separator */}
                 <div className="flex flex-col gap-2.5 pb-5">
                   <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#4a8ac0", boxShadow: "0 0 8px rgba(60,140,220,0.5), 0 2px 3px rgba(0,0,0,0.5)" }} />
                   <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#4a8ac0", boxShadow: "0 0 8px rgba(60,140,220,0.5), 0 2px 3px rgba(0,0,0,0.5)" }} />
@@ -320,7 +318,6 @@ const SpinWheel = () => {
                   <span className="text-[10px] uppercase tracking-[0.2em] font-semibold" style={{ color: "#4a7aa0" }}>Minutes</span>
                 </div>
 
-                {/* Colon separator */}
                 <div className="flex flex-col gap-2.5 pb-5">
                   <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#4a8ac0", boxShadow: "0 0 8px rgba(60,140,220,0.5), 0 2px 3px rgba(0,0,0,0.5)" }} />
                   <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#4a8ac0", boxShadow: "0 0 8px rgba(60,140,220,0.5), 0 2px 3px rgba(0,0,0,0.5)" }} />
@@ -353,7 +350,6 @@ const SpinWheel = () => {
               </div>
             </div>
 
-            {/* Bottom chrome strip */}
             <div className="h-[2px]" style={{ background: "linear-gradient(90deg, transparent 10%, rgba(80,130,200,0.12) 30%, rgba(100,160,230,0.2) 50%, rgba(80,130,200,0.12) 70%, transparent 90%)" }} />
           </div>
         </div>
@@ -389,11 +385,8 @@ const SpinWheel = () => {
                 <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="#000" floodOpacity="0.6" />
               </filter>
             </defs>
-            {/* Main ticker body */}
             <polygon points="22,52 4,6 40,6" fill="url(#tickerChrome)" filter="url(#tickerShadow)" stroke="#6080a0" strokeWidth="1" />
-            {/* Highlight edge */}
             <polygon points="22,48 10,10 22,6" fill="rgba(255,255,255,0.2)" />
-            {/* Top gem */}
             <circle cx="22" cy="10" r="5" fill="#4488cc" stroke="#a0c0e0" strokeWidth="1.5" />
             <circle cx="22" cy="10" r="2.5" fill="#88bbee" opacity="0.8" />
             <circle cx="20.5" cy="8.5" r="1" fill="rgba(255,255,255,0.7)" />
@@ -403,7 +396,6 @@ const SpinWheel = () => {
         {/* SVG Wheel */}
         <svg viewBox="0 0 600 600" className="w-full h-full">
           <defs>
-            {/* Chrome rim gradient */}
             <linearGradient id="chromeRim" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#7a8ea0" />
               <stop offset="15%" stopColor="#d0dce8" />
@@ -421,7 +413,6 @@ const SpinWheel = () => {
               <stop offset="75%" stopColor="#d0dce8" />
               <stop offset="100%" stopColor="#a0b0c0" />
             </linearGradient>
-            {/* Center hub gradients */}
             <radialGradient id="hubGrad" cx="45%" cy="40%" r="55%">
               <stop offset="0%" stopColor="#1a2a40" />
               <stop offset="60%" stopColor="#0d1828" />
@@ -431,23 +422,19 @@ const SpinWheel = () => {
               <stop offset="0%" stopColor="rgba(180,210,255,0.12)" />
               <stop offset="100%" stopColor="rgba(255,255,255,0)" />
             </radialGradient>
-            {/* Segment lighting - top-left light source */}
             <linearGradient id="segTopLight" x1="30%" y1="0%" x2="70%" y2="100%">
               <stop offset="0%" stopColor="rgba(160,200,255,0.1)" />
               <stop offset="50%" stopColor="rgba(100,150,220,0.03)" />
               <stop offset="100%" stopColor="rgba(0,0,0,0.08)" />
             </linearGradient>
-            {/* Metallic peg gradient */}
             <radialGradient id="pegGrad" cx="35%" cy="30%" r="60%">
               <stop offset="0%" stopColor="#e8f0f8" />
               <stop offset="40%" stopColor="#b0c0d0" />
               <stop offset="100%" stopColor="#607080" />
             </radialGradient>
-            {/* Drop shadow for whole wheel */}
             <filter id="wheelDrop">
               <feDropShadow dx="4" dy="8" stdDeviation="16" floodColor="#000" floodOpacity="0.55" />
             </filter>
-            {/* Inner shadow for depth */}
             <filter id="innerDepth">
               <feGaussianBlur in="SourceAlpha" stdDeviation="8" />
               <feOffset dx="0" dy="0" />
@@ -459,7 +446,6 @@ const SpinWheel = () => {
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
-            {/* Subtle bevel for segments */}
             <filter id="segBevel">
               <feGaussianBlur in="SourceAlpha" stdDeviation="1" result="blur" />
               <feSpecularLighting in="blur" surfaceScale="3" specularConstant="0.5" specularExponent="20" result="spec">
@@ -474,22 +460,17 @@ const SpinWheel = () => {
           </defs>
 
           {/* === Outer Chrome Frame (non-rotating) === */}
-          {/* Thick chrome bezel - multiple rings for realism */}
           <circle cx={CX} cy={CY} r={OUTER_R + 28} fill="none" stroke="url(#chromeRim)" strokeWidth="14" filter="url(#wheelDrop)" />
           <circle cx={CX} cy={CY} r={OUTER_R + 20} fill="none" stroke="url(#chromeRim2)" strokeWidth="5" opacity="0.8" />
-          {/* Inner chrome lip */}
           <circle cx={CX} cy={CY} r={OUTER_R + 13} fill="none" stroke="#4a6070" strokeWidth="1" opacity="0.6" />
-          {/* Outer highlight ring */}
           <circle cx={CX} cy={CY} r={OUTER_R + 35} fill="none" stroke="rgba(180,210,255,0.08)" strokeWidth="1" />
 
           {/* === LED Dots on chrome frame === */}
           {ledDots.map((dot, i) => {
-            // Alternating group: even LEDs blink opposite to odd LEDs for on/off effect
             const groupA = i % 2 === 0;
             const idleDelay = groupA ? "0s" : "0.7s";
             return (
               <g key={`led-${i}`}>
-                {/* Outer glow halo */}
                 <circle cx={dot.x} cy={dot.y} r={isSpinning || lightsFlashing ? "10" : "8"} fill={lightsFlashing ? "#ffaa00" : "#3070cc"} opacity="0.05">
                   {isSpinning && (
                     <animate attributeName="opacity" values="0.02;0.25;0.02" dur={`${0.1 + (i % 5) * 0.04}s`} repeatCount="indefinite" />
@@ -501,7 +482,6 @@ const SpinWheel = () => {
                     <animate attributeName="opacity" values="0.02;0.2;0.02" dur="1.4s" repeatCount="indefinite" begin={idleDelay} />
                   )}
                 </circle>
-                {/* Main LED dot */}
                 <circle cx={dot.x} cy={dot.y} r="2.8"
                   fill={isSpinning ? (groupA ? "#4488dd" : "#3366aa") : lightsFlashing ? "#ffcc33" : (groupA ? "#4488dd" : "#3366aa")}
                   opacity="0.85"
@@ -516,7 +496,6 @@ const SpinWheel = () => {
                     <animate attributeName="opacity" values="0.15;1;0.15" dur="1.4s" repeatCount="indefinite" begin={idleDelay} />
                   )}
                 </circle>
-                {/* Bright inner core */}
                 <circle cx={dot.x} cy={dot.y} r="1.2" fill={lightsFlashing ? "#ffffff" : "#aaccff"} opacity="0.5">
                   {isSpinning && (
                     <animate attributeName="opacity" values="0.2;1;0.2" dur={`${0.1 + (i % 4) * 0.04}s`} repeatCount="indefinite" />
@@ -541,7 +520,6 @@ const SpinWheel = () => {
               transition: isSpinning ? "transform 4.5s cubic-bezier(0.17, 0.67, 0.12, 0.99)" : "none",
             }}
           >
-            {/* Background disc */}
             <circle cx={CX} cy={CY} r={OUTER_R + 2} fill="#0a1525" />
 
             {/* Segments */}
@@ -550,20 +528,15 @@ const SpinWheel = () => {
               const textPos = getTextPosition(i);
               const iconPos = getIconPosition(i);
               const isEven = i % 2 === 0;
-              // Alternating dark blue tones like the reference
               const baseFill = isEven ? "#0e2040" : "#132a4a";
               const hoverFill = seg.rare ? "rgba(255,215,0,0.04)" : "transparent";
 
               return (
                 <g key={seg.id + i}>
-                  {/* Base segment */}
                   <path d={path} fill={baseFill} />
-                  {/* Top-left lighting overlay */}
                   <path d={path} fill="url(#segTopLight)" />
-                  {/* Rare subtle gold tint */}
                   {seg.rare && <path d={path} fill={hoverFill} />}
 
-                  {/* Metallic divider line */}
                   {(() => {
                     const startDeg = i * SEGMENT_ANGLE - 90;
                     const rad = toRad(startDeg);
@@ -573,17 +546,13 @@ const SpinWheel = () => {
                     const y2 = CY + OUTER_R * Math.sin(rad);
                     return (
                       <>
-                        {/* Shadow line */}
                         <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(0,0,0,0.5)" strokeWidth="2.5" />
-                        {/* Metallic line */}
                         <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#5a7a98" strokeWidth="1.5" opacity="0.7" />
-                        {/* Highlight edge */}
                         <line x1={x1 + 0.5} y1={y1 + 0.5} x2={x2 + 0.5} y2={y2 + 0.5} stroke="rgba(180,210,255,0.15)" strokeWidth="0.5" />
                       </>
                     );
                   })()}
 
-                  {/* Icon */}
                   <foreignObject
                     x={iconPos.x - 14} y={iconPos.y - 14} width="28" height="28"
                     style={{ overflow: "visible" }}
@@ -600,13 +569,12 @@ const SpinWheel = () => {
                     </div>
                   </foreignObject>
 
-                  {/* Text */}
                   <text
                     x={textPos.x} y={textPos.y}
                     transform={`rotate(${textPos.rotation}, ${textPos.x}, ${textPos.y})`}
                     textAnchor="middle" dominantBaseline="middle"
                     fill={seg.rare ? "#FFD700" : "#e0e8f0"}
-                    fontSize="11" fontWeight="800" letterSpacing="0.6"
+                    fontSize="10" fontWeight="800" letterSpacing="0.5"
                     style={{ textShadow: seg.rare
                       ? "0 0 6px rgba(255,215,0,0.4), 0 1px 3px rgba(0,0,0,0.9)"
                       : "0 1px 3px rgba(0,0,0,0.9), 0 0 4px rgba(100,160,255,0.15)" }}
@@ -617,31 +585,22 @@ const SpinWheel = () => {
               );
             })}
 
-            {/* Metallic pegs at segment boundaries */}
+            {/* Metallic pegs */}
             {pegs.map((peg, i) => (
               <g key={`peg-${i}`}>
-                {/* Peg shadow */}
                 <circle cx={peg.x + 1} cy={peg.y + 1.5} r="5" fill="rgba(0,0,0,0.5)" />
-                {/* Main peg body */}
                 <circle cx={peg.x} cy={peg.y} r="4.5" fill="url(#pegGrad)" stroke="#506878" strokeWidth="0.5" />
-                {/* Highlight */}
                 <circle cx={peg.x - 1} cy={peg.y - 1.5} r="1.8" fill="rgba(255,255,255,0.35)" />
               </g>
             ))}
 
             {/* === Center Hub === */}
-            {/* Shadow ring */}
             <circle cx={CX} cy={CY} r={INNER_R + 6} fill="none" stroke="rgba(0,0,0,0.4)" strokeWidth="8" />
-            {/* Chrome ring */}
             <circle cx={CX} cy={CY} r={INNER_R + 2} fill="none" stroke="url(#chromeRim)" strokeWidth="5" />
-            {/* Dark hub */}
             <circle cx={CX} cy={CY} r={INNER_R} fill="url(#hubGrad)" />
-            {/* Inner chrome trim */}
             <circle cx={CX} cy={CY} r={INNER_R - 3} fill="none" stroke="url(#chromeRim2)" strokeWidth="1.5" opacity="0.4" />
-            {/* Light shine */}
             <circle cx={CX} cy={CY} r={INNER_R - 1} fill="url(#hubShine)" />
 
-            {/* Center Text */}
             <text x={CX} y={CY - 20} textAnchor="middle" dominantBaseline="middle"
               fill="#c0c8d0" fontSize="11" fontWeight="400" letterSpacing="3" fontFamily="serif"
               style={{ textShadow: "0 1px 4px rgba(0,0,0,0.8)" }}>
@@ -659,7 +618,6 @@ const SpinWheel = () => {
             </text>
           </g>
 
-          {/* === Specular highlight overlay (non-rotating) === */}
           <ellipse cx={CX - 40} cy={CY - 60} rx="160" ry="120" fill="rgba(180,210,255,0.025)"
             style={{ pointerEvents: "none" }} />
         </svg>
@@ -672,12 +630,10 @@ const SpinWheel = () => {
         className="relative group disabled:cursor-not-allowed z-10"
         style={{ perspective: "800px" }}
       >
-        {/* Button ground shadow */}
         <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[80%] h-4 rounded-[50%] pointer-events-none"
           style={{ background: "radial-gradient(ellipse, rgba(0,0,0,0.4) 0%, transparent 70%)", filter: "blur(4px)" }}
         />
 
-        {/* Hover glow */}
         {!isSpinning && !isCoolingDown && userId && (
           <div className="absolute -inset-6 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
             style={{ background: "radial-gradient(ellipse, rgba(100,160,255,0.15) 0%, transparent 70%)", filter: "blur(12px)" }}
@@ -706,7 +662,6 @@ const SpinWheel = () => {
             border: isSpinning ? "1px solid rgba(255,255,255,0.03)" : "1px solid rgba(150,190,230,0.2)",
           }}
         >
-          {/* Chrome shine sweep */}
           {!isSpinning && (
             <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
               <div className="absolute -inset-full"
@@ -732,7 +687,7 @@ const SpinWheel = () => {
         <p className="text-sm text-muted-foreground z-10">Login with Discord to spin the wheel</p>
       )}
 
-      {/* Prize Dialog */}
+      {/* Prize Dialog with detailed descriptions */}
       <Dialog open={showPrizeDialog} onOpenChange={setShowPrizeDialog}>
         <DialogContent className="sm:max-w-md border-cyan-500/20"
           style={{
@@ -753,8 +708,17 @@ const SpinWheel = () => {
             </DialogTitle>
             <DialogDescription className="text-center text-lg pt-4">
               <span className="flex flex-col items-center gap-4">
+                {/* Prize image if available */}
+                {wonPrize?.prizeImage && (
+                  <img 
+                    src={wonPrize.prizeImage} 
+                    alt={wonPrize.label}
+                    className="w-24 h-24 sm:w-32 sm:h-32 object-contain rounded-xl"
+                    style={{ filter: "drop-shadow(0 0 16px rgba(100,255,100,0.3))" }}
+                  />
+                )}
                 <span
-                  className={`inline-flex items-center gap-3 px-8 py-4 rounded-xl text-xl font-bold ${
+                  className={`inline-flex items-center gap-3 px-6 sm:px-8 py-4 rounded-xl text-lg sm:text-xl font-bold ${
                     wonPrize?.rare
                       ? "bg-yellow-500/10 text-yellow-300 border border-yellow-500/30"
                       : "bg-cyan-500/10 text-cyan-300 border border-cyan-500/30"
@@ -768,12 +732,11 @@ const SpinWheel = () => {
                   {wonPrize?.icon}
                   {wonPrize?.label}
                 </span>
-                {wonPrize?.id === "better_luck_1" || wonPrize?.id === "better_luck_2" ? (
-                  <span className="text-sm text-muted-foreground">Try again after the cooldown!</span>
-                ) : wonPrize?.id === "discount" ? (
-                  <span className="text-sm text-muted-foreground">A staff member will deliver your coupon manually.</span>
-                ) : (
-                  <span className="text-sm text-muted-foreground">Your prize will be delivered in-city automatically!</span>
+                {/* Detailed prize description - only shown in dialog, not Discord */}
+                {wonPrize?.winDescription && (
+                  <span className="text-sm text-muted-foreground leading-relaxed max-w-sm px-2">
+                    {wonPrize.winDescription}
+                  </span>
                 )}
               </span>
             </DialogDescription>

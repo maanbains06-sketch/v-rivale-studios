@@ -5,12 +5,13 @@ import { Shield, Gift, Headphones, Clock, AlertTriangle, Info, ExternalLink, Loc
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import spinPageBg from "@/assets/spin-page-bg.jpg";
 
 const REGULATIONS = [
   {
     icon: <Gift className="w-5 h-5 text-emerald-400 shrink-0" />,
     title: "Automatic Delivery",
-    description: "Most prizes (Cash, Clothing, Mission Skip) are automatically credited to your in-game account. No action needed!",
+    description: "Most prizes (Cash, Clothing, Mission Skip, Protein Shake) are automatically credited to your in-game account. No action needed!",
   },
   {
     icon: <Headphones className="w-5 h-5 text-cyan-400 shrink-0" />,
@@ -75,83 +76,98 @@ const Spin = () => {
   const showContent = !isHidden || isOwner;
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      
-      <PageHeader 
-        title="Spin & Win"
-        description="Try your luck and win amazing rewards"
-        pageKey="spin"
+    <div className="min-h-screen bg-background relative">
+      {/* Full-page background image */}
+      <div 
+        className="fixed inset-0 z-0"
+        style={{
+          backgroundImage: `url(${spinPageBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
       />
-      
-      <main className="pb-16">
-        <div className="container mx-auto px-4 flex flex-col items-center">
-          
-          {(settingsLoading || checkingOwner) ? (
-            <div className="flex items-center justify-center py-20">
-              <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
-            </div>
-          ) : !showContent ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-              <div className="w-16 h-16 rounded-full bg-muted/30 border border-border/50 flex items-center justify-center">
-                <Lock className="w-8 h-8 text-muted-foreground" />
-              </div>
-              <h2 className="text-xl font-bold text-foreground">Spin & Win is Currently Unavailable</h2>
-              <p className="text-muted-foreground max-w-md">
-                The Spin & Win feature is temporarily disabled. Please check back later!
-              </p>
-            </div>
-          ) : (
-            <>
-              <SpinWheel />
+      {/* Dark overlay for readability */}
+      <div className="fixed inset-0 z-0 bg-black/60 backdrop-blur-[2px]" />
 
-              {/* Regulations Banner */}
-              <div className="w-full max-w-3xl mt-14">
-                <div
-                  className="relative overflow-hidden rounded-2xl border border-cyan-500/20"
-                  style={{
-                    background: "linear-gradient(135deg, rgba(6,14,26,0.95) 0%, rgba(12,31,56,0.9) 50%, rgba(6,14,26,0.95) 100%)",
-                    boxShadow: "0 0 40px rgba(0,200,255,0.06), inset 0 1px 0 rgba(255,255,255,0.05)",
-                  }}
-                >
-                  <div className="h-1 w-full bg-gradient-to-r from-transparent via-cyan-500/60 to-transparent" />
-                  <div className="px-6 py-5">
-                    <div className="flex items-center gap-3 mb-5">
-                      <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
-                        <Shield className="w-5 h-5 text-cyan-400" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-bold text-white tracking-wide" style={{ textShadow: "0 0 12px rgba(0,229,255,0.3)" }}>
-                          Spin & Win Regulations
-                        </h3>
-                        <p className="text-xs text-muted-foreground">Please read before spinning</p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {REGULATIONS.map((reg, i) => (
-                        <div
-                          key={i}
-                          className="flex gap-3 p-3.5 rounded-xl border border-white/5 transition-colors hover:border-cyan-500/15"
-                          style={{
-                            background: "linear-gradient(135deg, rgba(255,255,255,0.02) 0%, rgba(0,229,255,0.02) 100%)",
-                          }}
-                        >
-                          <div className="mt-0.5">{reg.icon}</div>
-                          <div className="min-w-0">
-                            <p className="text-sm font-semibold text-white/90 mb-0.5">{reg.title}</p>
-                            <p className="text-xs text-muted-foreground leading-relaxed">{reg.description}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="h-px w-full bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
-                </div>
+      <div className="relative z-10">
+        <Navigation />
+        
+        <PageHeader 
+          title="Spin & Win"
+          description="Try your luck and win amazing rewards"
+          pageKey="spin"
+        />
+        
+        <main className="pb-16">
+          <div className="container mx-auto px-4 flex flex-col items-center">
+            
+            {(settingsLoading || checkingOwner) ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
               </div>
-            </>
-          )}
-        </div>
-      </main>
+            ) : !showContent ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+                <div className="w-16 h-16 rounded-full bg-muted/30 border border-border/50 flex items-center justify-center">
+                  <Lock className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <h2 className="text-xl font-bold text-foreground">Spin & Win is Currently Unavailable</h2>
+                <p className="text-muted-foreground max-w-md">
+                  The Spin & Win feature is temporarily disabled. Please check back later!
+                </p>
+              </div>
+            ) : (
+              <>
+                <SpinWheel />
+
+                {/* Regulations Banner */}
+                <div className="w-full max-w-3xl mt-14">
+                  <div
+                    className="relative overflow-hidden rounded-2xl border border-cyan-500/20"
+                    style={{
+                      background: "linear-gradient(135deg, rgba(6,14,26,0.95) 0%, rgba(12,31,56,0.9) 50%, rgba(6,14,26,0.95) 100%)",
+                      boxShadow: "0 0 40px rgba(0,200,255,0.06), inset 0 1px 0 rgba(255,255,255,0.05)",
+                    }}
+                  >
+                    <div className="h-1 w-full bg-gradient-to-r from-transparent via-cyan-500/60 to-transparent" />
+                    <div className="px-6 py-5">
+                      <div className="flex items-center gap-3 mb-5">
+                        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
+                          <Shield className="w-5 h-5 text-cyan-400" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-bold text-white tracking-wide" style={{ textShadow: "0 0 12px rgba(0,229,255,0.3)" }}>
+                            Spin & Win Regulations
+                          </h3>
+                          <p className="text-xs text-muted-foreground">Please read before spinning</p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {REGULATIONS.map((reg, i) => (
+                          <div
+                            key={i}
+                            className="flex gap-3 p-3.5 rounded-xl border border-white/5 transition-colors hover:border-cyan-500/15"
+                            style={{
+                              background: "linear-gradient(135deg, rgba(255,255,255,0.02) 0%, rgba(0,229,255,0.02) 100%)",
+                            }}
+                          >
+                            <div className="mt-0.5">{reg.icon}</div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-white/90 mb-0.5">{reg.title}</p>
+                              <p className="text-xs text-muted-foreground leading-relaxed">{reg.description}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="h-px w-full bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </main>
+      </div>
     </div>
   );
 };
