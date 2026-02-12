@@ -184,9 +184,10 @@ const SpinWheel = () => {
     const prizeIndex = selectPrize();
     const prize = SEGMENTS[prizeIndex];
     const segCenter = prizeIndex * SEGMENT_ANGLE + SEGMENT_ANGLE / 2;
+    const targetAngle = 360 - segCenter; // Align winning segment with top pointer
     const minNewRotation = rotation + 360 * 5;
     const remainder = minNewRotation % 360;
-    let targetRotation = minNewRotation + (segCenter - remainder);
+    let targetRotation = minNewRotation + (targetAngle - remainder);
     if (targetRotation < minNewRotation) targetRotation += 360;
     targetRotation += (Math.random() - 0.5) * SEGMENT_ANGLE * 0.6;
     setIsSpinning(true);
