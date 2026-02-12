@@ -82,12 +82,24 @@ const getIconPosition = (index: number) => {
   return { x: CX + r * Math.cos(rad), y: CY + r * Math.sin(rad), rotation: midDeg + 90 };
 };
 
+// ── Ultra-rare prize IDs (vehicle & clothing) ──────────────────
+const ULTRA_RARE_IDS = new Set(["vehicle", "clothing_1"]);
+const ULTRA_RARE_SPIN_THRESHOLD = 60; // Available once every 60-70 spins
+
 // ── Weighted Random ─────────────────────────────────────────────
-const selectPrize = (): number => {
-  const totalWeight = SEGMENTS.reduce((s, seg) => s + seg.weight, 0);
+const selectPrize = (spinsSinceLastUltraRare: number): number => {
+  // Only allow vehicle/clothing if user has done 60+ spins since last winning one
+  const isUltraRareEligible = spinsSinceLastUltraRare >= ULTRA_RARE_SPIN_THRESHOLD;
+  
+  const adjustedSegments = SEGMENTS.map((seg) => ({
+    ...seg,
+    weight: ULTRA_RARE_IDS.has(seg.id) && !isUltraRareEligible ? 0 : seg.weight,
+  }));
+
+  const totalWeight = adjustedSegments.reduce((s, seg) => s + seg.weight, 0);
   let rand = Math.random() * totalWeight;
-  for (let i = 0; i < SEGMENTS.length; i++) {
-    rand -= SEGMENTS[i].weight;
+  for (let i = 0; i < adjustedSegments.length; i++) {
+    rand -= adjustedSegments[i].weight;
     if (rand <= 0) return i;
   }
   return SEGMENTS.length - 1;
@@ -146,6 +158,7 @@ const SpinWheel = () => {
   const [discordUsername, setDiscordUsername] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [lightsFlashing, setLightsFlashing] = useState(false);
+  const [spinsSinceUltraRare, setSpinsSinceUltraRare] = useState(0);
   const wheelRef = useRef<SVGGElement>(null);
 
   useEffect(() => {
@@ -155,12 +168,23 @@ const SpinWheel = () => {
       setUserId(user.id);
       setDiscordId(user.user_metadata?.discord_id || user.user_metadata?.provider_id || null);
       setDiscordUsername(user.user_metadata?.display_name || user.user_metadata?.username || user.user_metadata?.discord_username || null);
-      const { data: lastSpin } = await supabase
-        .from("spin_results").select("created_at").eq("user_id", user.id)
-        .order("created_at", { ascending: false }).limit(1);
-      if (lastSpin && lastSpin.length > 0) {
-        const endTime = new Date(lastSpin[0].created_at).getTime() + COOLDOWN_MS;
+      // Fetch spin count since last ultra-rare win
+      const { data: allSpins } = await supabase
+        .from("spin_results").select("prize_key, created_at").eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+      
+      if (allSpins && allSpins.length > 0) {
+        // Cooldown from last spin
+        const endTime = new Date(allSpins[0].created_at).getTime() + COOLDOWN_MS;
         if (endTime > Date.now()) setCooldownEnd(endTime);
+        
+        // Count spins since last vehicle/clothing win
+        let count = 0;
+        for (const spin of allSpins) {
+          if (ULTRA_RARE_IDS.has(spin.prize_key)) break;
+          count++;
+        }
+        setSpinsSinceUltraRare(count);
       }
       setLoading(false);
     };
@@ -181,7 +205,7 @@ const SpinWheel = () => {
 
   const handleSpin = useCallback(async () => {
     if (isSpinning || cooldownEnd || !userId) return;
-    const prizeIndex = selectPrize();
+    const prizeIndex = selectPrize(spinsSinceUltraRare);
     const prize = SEGMENTS[prizeIndex];
     const segCenter = prizeIndex * SEGMENT_ANGLE + SEGMENT_ANGLE / 2;
     const targetAngle = 360 - segCenter; // Align winning segment with top pointer
@@ -204,8 +228,14 @@ const SpinWheel = () => {
       if (error) console.error("Failed to save spin result:", error);
       sendSpinNotification(prize.id, discordId, discordUsername);
       setCooldownEnd(Date.now() + COOLDOWN_MS);
+      // Update ultra-rare spin counter
+      if (ULTRA_RARE_IDS.has(prize.id)) {
+        setSpinsSinceUltraRare(0);
+      } else {
+        setSpinsSinceUltraRare(prev => prev + 1);
+      }
     }, 4500);
-  }, [isSpinning, cooldownEnd, userId, rotation, discordId, discordUsername]);
+  }, [isSpinning, cooldownEnd, userId, rotation, discordId, discordUsername, spinsSinceUltraRare]);
 
   const isCoolingDown = !!cooldownEnd;
 
