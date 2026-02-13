@@ -1199,6 +1199,33 @@ export type Database = {
         }
         Relationships: []
       }
+      gifted_spins: {
+        Row: {
+          created_at: string
+          discord_id: string
+          gifted_by: string
+          id: string
+          spins_remaining: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discord_id: string
+          gifted_by: string
+          id?: string
+          spins_remaining?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discord_id?: string
+          gifted_by?: string
+          id?: string
+          spins_remaining?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       giveaway_entries: {
         Row: {
           created_at: string
