@@ -159,6 +159,8 @@ const SpinWheel = () => {
   const [loading, setLoading] = useState(true);
   const [lightsFlashing, setLightsFlashing] = useState(false);
   const [spinsSinceUltraRare, setSpinsSinceUltraRare] = useState(0);
+  const [giftedSpins, setGiftedSpins] = useState(0);
+  const [giftedSpinId, setGiftedSpinId] = useState<string | null>(null);
   const wheelRef = useRef<SVGGElement>(null);
 
   useEffect(() => {
@@ -166,15 +168,31 @@ const SpinWheel = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
       setUserId(user.id);
-      setDiscordId(user.user_metadata?.discord_id || user.user_metadata?.provider_id || null);
+      const userDiscordId = user.user_metadata?.discord_id || user.user_metadata?.provider_id || null;
+      setDiscordId(userDiscordId);
       setDiscordUsername(user.user_metadata?.display_name || user.user_metadata?.username || user.user_metadata?.discord_username || null);
+      
+      // Fetch gifted spins for this user
+      if (userDiscordId) {
+        const { data: giftData } = await supabase
+          .from("gifted_spins")
+          .select("id, spins_remaining")
+          .eq("discord_id", userDiscordId)
+          .gt("spins_remaining", 0)
+          .maybeSingle();
+        if (giftData) {
+          setGiftedSpins(giftData.spins_remaining);
+          setGiftedSpinId(giftData.id);
+        }
+      }
+      
       // Fetch spin count since last ultra-rare win
       const { data: allSpins } = await supabase
         .from("spin_results").select("prize_key, created_at").eq("user_id", user.id)
         .order("created_at", { ascending: false });
       
       if (allSpins && allSpins.length > 0) {
-        // Cooldown from last spin
+        // Cooldown from last spin - only if no gifted spins
         const endTime = new Date(allSpins[0].created_at).getTime() + COOLDOWN_MS;
         if (endTime > Date.now()) setCooldownEnd(endTime);
         
@@ -203,8 +221,14 @@ const SpinWheel = () => {
     return () => clearInterval(interval);
   }, [cooldownEnd]);
 
+  // User can spin if they have gifted spins (bypasses cooldown) or no cooldown
+  const canSpin = !isSpinning && userId && (giftedSpins > 0 || !cooldownEnd);
+
   const handleSpin = useCallback(async () => {
-    if (isSpinning || cooldownEnd || !userId) return;
+    if (isSpinning || !userId) return;
+    // Check if user can spin: gifted spins bypass cooldown
+    const usingGiftedSpin = giftedSpins > 0;
+    if (!usingGiftedSpin && cooldownEnd) return;
     const prizeIndex = selectPrize(spinsSinceUltraRare);
     const prize = SEGMENTS[prizeIndex];
     const segCenter = prizeIndex * SEGMENT_ANGLE + SEGMENT_ANGLE / 2;
@@ -227,7 +251,20 @@ const SpinWheel = () => {
       });
       if (error) console.error("Failed to save spin result:", error);
       sendSpinNotification(prize.id, discordId, discordUsername);
-      setCooldownEnd(Date.now() + COOLDOWN_MS);
+      
+      // If using gifted spin, decrement; otherwise set cooldown
+      if (usingGiftedSpin && giftedSpinId) {
+        const newCount = giftedSpins - 1;
+        setGiftedSpins(newCount);
+        await supabase
+          .from("gifted_spins")
+          .update({ spins_remaining: newCount })
+          .eq("id", giftedSpinId);
+        // No cooldown for gifted spins
+      } else {
+        setCooldownEnd(Date.now() + COOLDOWN_MS);
+      }
+      
       // Update ultra-rare spin counter
       if (ULTRA_RARE_IDS.has(prize.id)) {
         setSpinsSinceUltraRare(0);
@@ -235,7 +272,7 @@ const SpinWheel = () => {
         setSpinsSinceUltraRare(prev => prev + 1);
       }
     }, 4500);
-  }, [isSpinning, cooldownEnd, userId, rotation, discordId, discordUsername, spinsSinceUltraRare]);
+  }, [isSpinning, cooldownEnd, userId, rotation, discordId, discordUsername, spinsSinceUltraRare, giftedSpins, giftedSpinId]);
 
   const isCoolingDown = !!cooldownEnd;
 
@@ -266,6 +303,14 @@ const SpinWheel = () => {
 
   return (
     <div className="flex flex-col items-center gap-10 py-8 px-4">
+      {/* Gifted Spins Indicator */}
+      {giftedSpins > 0 && (
+        <div className="relative z-10 flex items-center gap-2 px-4 py-2 rounded-full border border-primary/40 bg-primary/10 backdrop-blur-md shadow-lg shadow-primary/10 animate-pulse">
+          <Gift className="w-4 h-4 text-primary" />
+          <span className="text-sm font-bold text-primary">{giftedSpins} Free Spin{giftedSpins > 1 ? 's' : ''} Available!</span>
+        </div>
+      )}
+
       {/* Ambient glow */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full opacity-25"

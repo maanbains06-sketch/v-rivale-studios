@@ -30,6 +30,7 @@ import PanelAccessManager from "@/components/PanelAccessManager";
 import BusinessTypeManager from "@/components/BusinessTypeManager";
 import ThemeManager from "@/components/ThemeManager";
 import { OwnerGalleryManager } from "@/components/OwnerGalleryManager";
+import GiftSpinManager from "@/components/GiftSpinManager";
 
 import { LiveApplicationStats } from "@/components/LiveApplicationStats";
 import OwnerLiveChatManager from "@/components/OwnerLiveChatManager";
@@ -1719,6 +1720,10 @@ const OwnerPanel = () => {
                   <AlertTriangle className="w-4 h-4" />
                   <span className="hidden sm:inline">Detection</span>
                 </TabsTrigger>
+                <TabsTrigger value="gift-spin" className="flex items-center gap-2 whitespace-nowrap">
+                  <Gift className="w-4 h-4" />
+                  <span className="hidden sm:inline">Gift Spin</span>
+                </TabsTrigger>
               </TabsList>
             </div>
             {/* Fade indicators for scroll hint */}
@@ -1777,6 +1782,11 @@ const OwnerPanel = () => {
           {/* Gallery Tab */}
           <TabsContent value="gallery">
             <OwnerGalleryManager />
+          </TabsContent>
+
+          {/* Gift Spin Tab */}
+          <TabsContent value="gift-spin">
+            <GiftSpinManager />
           </TabsContent>
 
           {/* Application Stats Tab */}

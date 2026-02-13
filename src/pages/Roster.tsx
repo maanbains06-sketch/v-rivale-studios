@@ -60,11 +60,12 @@ interface RosterMember {
   name: string;
   rank: string;
   badge_number?: string;
-  status: 'active' | 'inactive' | 'on_leave' | 'on_training';
+  status: 'active' | 'inactive' | 'on_leave' | 'on_training' | 'fired' | 'suspended';
   division?: string;
   discord_avatar?: string;
   strikes?: string;
   call_sign?: string;
+  action?: string;
 }
 
 interface DepartmentRoster {
@@ -107,6 +108,8 @@ const statusOptions = [
   { value: 'inactive', label: 'Inactive' },
   { value: 'on_leave', label: 'On Leave' },
   { value: 'on_training', label: 'On Training' },
+  { value: 'fired', label: 'Fired' },
+  { value: 'suspended', label: 'Suspended' },
 ];
 
 // Department-specific division options
@@ -119,6 +122,7 @@ const divisionOptionsByDept: Record<string, { value: string; label: string }[]> 
     { value: 'Training', label: 'Training' },
     { value: 'SWAT', label: 'SWAT' },
     { value: 'K-9 Unit', label: 'K-9 Unit' },
+    { value: 'Dispatch', label: 'Dispatch' },
   ],
   ems: [
     { value: 'Administration', label: 'Administration' },
@@ -179,16 +183,10 @@ const divisionOptionsByDept: Record<string, { value: string; label: string }[]> 
 // Department-specific unit options
 const unitOptionsByDept: Record<string, { value: string; label: string }[]> = {
   police: [
-    { value: 'ADAM', label: 'ADAM' },
-    { value: 'BRAVO', label: 'BRAVO' },
-    { value: 'CHARLIE', label: 'CHARLIE' },
-    { value: 'DELTA', label: 'DELTA' },
-    { value: 'ECHO', label: 'ECHO' },
-    { value: 'FOXTROT', label: 'FOXTROT' },
-    { value: 'GOLF', label: 'GOLF' },
-    { value: 'HOTEL', label: 'HOTEL' },
-    { value: 'AIR-1', label: 'AIR-1' },
-    { value: 'K9-1', label: 'K9-1' },
+    { value: 'LSPD', label: 'LSPD' },
+    { value: 'BCSO', label: 'BCSO' },
+    { value: 'SASP', label: 'SASP' },
+    { value: 'PBPD', label: 'PBPD' },
   ],
   ems: [
     { value: 'MEDIC-1', label: 'MEDIC-1' },
@@ -416,7 +414,7 @@ const Roster = () => {
       icon: <Siren className="w-4 h-4" />,
       accentColor: "blue",
       members: getDepartmentMembers('police', ['police', 'pd', 'lspd']),
-      ranks: ['Police Commissioner', 'Police Chief', 'Police Asst. Chief', 'Captain', 'Lieutenant', 'Head Sergeant', 'Sergeant', 'Corporal', 'Senior Officer', 'Officer', 'Solo Cadet', 'Cadet'],
+      ranks: ['Police Commissioner', 'Police Chief', 'Police Asst. Chief', 'Captain', 'Lieutenant', 'Head Sergeant', 'Sergeant', 'Corporal', 'Senior Officer', 'Officer', 'Solo Cadet', 'Cadet', 'Dispatcher'],
     },
     {
       department: "EMS Department",
@@ -556,13 +554,15 @@ const Roster = () => {
     let errorCount = 0;
 
     for (const member of updates) {
+      // If action field was set to fired/suspended, update status accordingly
+      const finalStatus = member.action === 'fired' ? 'fired' : member.action === 'suspended' ? 'suspended' : member.status;
       const { error } = await supabase
         .from('staff_members')
         .update({
           role: member.rank,
           badge_number: member.badge_number,
-          status: member.status,
-          is_active: member.status === 'active' || member.status === 'on_training',
+          status: finalStatus,
+          is_active: finalStatus === 'active' || finalStatus === 'on_training',
           division: member.division,
           call_sign: member.call_sign,
           strikes: member.strikes,
@@ -864,7 +864,7 @@ const Roster = () => {
                                 {canEditThisDept && <div className="text-center">Actions</div>}
                               </div>
                             ) : (
-                              <div className={`grid ${canEditThisDept ? 'grid-cols-8' : 'grid-cols-7'} px-5 py-3 bg-muted/30 border-b border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground`}>
+                              <div className={`grid ${canEditThisDept ? 'grid-cols-9' : 'grid-cols-8'} px-5 py-3 bg-muted/30 border-b border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground`}>
                                 <div className="flex items-center gap-2">
                                   <span className="w-8" />
                                   <span>Officer</span>
@@ -874,7 +874,8 @@ const Roster = () => {
                                 <div className="text-center">Strikes</div>
                                 <div className="text-center">Status</div>
                                 <div className="text-center">Division</div>
-                                <div className="text-center">Unit</div>
+                                <div className="text-center">{shortKey === 'police' ? 'Department' : 'Unit'}</div>
+                                <div className="text-center">Action</div>
                                 {canEditThisDept && <div className="text-center">Actions</div>}
                               </div>
                             )}
@@ -1071,7 +1072,7 @@ const Roster = () => {
                                   /* Standard row layout for all other ranks */
                                   <div 
                                     key={member.id}
-                                    className={`grid ${canEditThisDept ? 'grid-cols-8' : 'grid-cols-7'} px-5 py-3 items-center transition-colors hover:bg-muted/30
+                                    className={`grid ${canEditThisDept ? 'grid-cols-9' : 'grid-cols-8'} px-5 py-3 items-center transition-colors hover:bg-muted/30
                                       ${idx % 2 === 0 ? 'bg-transparent' : 'bg-muted/10'}`}
                                   >
                                     {/* Officer */}
@@ -1184,6 +1185,16 @@ const Roster = () => {
                                               <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
                                               On Training
                                             </span>
+                                          ) : member.status === 'fired' ? (
+                                            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-800/20 border border-red-800/40 text-red-400 text-xs font-medium">
+                                              <span className="w-1.5 h-1.5 rounded-full bg-red-800" />
+                                              Fired
+                                            </span>
+                                          ) : member.status === 'suspended' ? (
+                                            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-500/15 border border-orange-500/30 text-orange-400 text-xs font-medium">
+                                              <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                                              Suspended
+                                            </span>
                                           ) : (
                                             <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/15 border border-red-500/30 text-red-500 text-xs font-medium">
                                               <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
@@ -1219,7 +1230,7 @@ const Roster = () => {
                                       )}
                                     </div>
 
-                                    {/* Unit */}
+                                    {/* Department/Unit */}
                                     <div className="flex justify-center">
                                       {isEditing ? (
                                         <Select
@@ -1227,7 +1238,7 @@ const Roster = () => {
                                           onValueChange={(value) => updateMemberField(deptKey, member.id, 'call_sign', value)}
                                         >
                                           <SelectTrigger className="h-8 w-28 text-xs">
-                                            <SelectValue placeholder="Unit" />
+                                            <SelectValue placeholder={shortKey === 'police' ? 'Dept' : 'Unit'} />
                                           </SelectTrigger>
                                           <SelectContent className="bg-popover border border-border z-50">
                                             {deptUnitOptions.map(opt => (
@@ -1239,6 +1250,33 @@ const Roster = () => {
                                         </Select>
                                       ) : (
                                         <span className="text-muted-foreground text-sm">{member.call_sign || '-'}</span>
+                                      )}
+                                    </div>
+
+                                    {/* Action */}
+                                    <div className="flex justify-center">
+                                      {isEditing ? (
+                                        <Select
+                                          value={getMemberValue(deptKey, member, 'action') || ''}
+                                          onValueChange={(value) => updateMemberField(deptKey, member.id, 'action', value)}
+                                        >
+                                          <SelectTrigger className="h-8 w-28 text-xs">
+                                            <SelectValue placeholder="Action" />
+                                          </SelectTrigger>
+                                          <SelectContent className="bg-popover border border-border z-50">
+                                            <SelectItem value="none">None</SelectItem>
+                                            <SelectItem value="fired">Fired</SelectItem>
+                                            <SelectItem value="suspended">Suspended</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                      ) : (
+                                        <span className="text-muted-foreground text-sm">
+                                          {member.status === 'fired' ? (
+                                            <span className="text-red-400 font-medium">Fired</span>
+                                          ) : member.status === 'suspended' ? (
+                                            <span className="text-orange-400 font-medium">Suspended</span>
+                                          ) : '-'}
+                                        </span>
                                       )}
                                     </div>
 

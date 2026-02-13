@@ -218,16 +218,16 @@ const AddStaffManualDialog = ({
             </div>
           )}
 
-          {/* Unit Dropdown */}
+          {/* Department/Unit Dropdown */}
           {unitOptions.length > 0 && (
             <div className="space-y-2">
-              <Label htmlFor="unit" className="text-sm font-medium">Unit</Label>
+              <Label htmlFor="unit" className="text-sm font-medium">{departmentKey === 'police' ? 'Department' : 'Unit'}</Label>
               <Select
                 value={formData.call_sign}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, call_sign: value }))}
               >
                 <SelectTrigger className="h-10">
-                  <SelectValue placeholder="Select unit" />
+                  <SelectValue placeholder={departmentKey === 'police' ? 'Select department' : 'Select unit'} />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border border-border z-50">
                   {unitOptions.map(opt => (
@@ -239,6 +239,27 @@ const AddStaffManualDialog = ({
               </Select>
             </div>
           )}
+
+          {/* Action */}
+          <div className="space-y-2">
+            <Label htmlFor="action" className="text-sm font-medium">Action</Label>
+            <Select
+              value={formData.status}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}
+            >
+              <SelectTrigger className="h-10">
+                <SelectValue placeholder="Select action" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover border border-border z-50">
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="on_leave">On Leave</SelectItem>
+                <SelectItem value="on_training">On Training</SelectItem>
+                <SelectItem value="fired">Fired</SelectItem>
+                <SelectItem value="suspended">Suspended</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Strikes */}
           <div className="space-y-2">
