@@ -864,7 +864,7 @@ const Roster = () => {
                                 {canEditThisDept && <div className="text-center">Actions</div>}
                               </div>
                             ) : (
-                              <div className={`grid ${canEditThisDept ? 'grid-cols-9' : 'grid-cols-8'} px-5 py-3 bg-muted/30 border-b border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground`}>
+                              <div className={`grid ${canEditThisDept ? 'grid-cols-8' : 'grid-cols-7'} px-5 py-3 bg-muted/30 border-b border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground`}>
                                 <div className="flex items-center gap-2">
                                   <span className="w-8" />
                                   <span>Officer</span>
@@ -875,7 +875,6 @@ const Roster = () => {
                                 <div className="text-center">Status</div>
                                 <div className="text-center">Division</div>
                                 <div className="text-center">{shortKey === 'police' ? 'Department' : 'Unit'}</div>
-                                <div className="text-center">Action</div>
                                 {canEditThisDept && <div className="text-center">Actions</div>}
                               </div>
                             )}
@@ -1072,7 +1071,7 @@ const Roster = () => {
                                   /* Standard row layout for all other ranks */
                                   <div 
                                     key={member.id}
-                                    className={`grid ${canEditThisDept ? 'grid-cols-9' : 'grid-cols-8'} px-5 py-3 items-center transition-colors hover:bg-muted/30
+                                    className={`grid ${canEditThisDept ? 'grid-cols-8' : 'grid-cols-7'} px-5 py-3 items-center transition-colors hover:bg-muted/30
                                       ${idx % 2 === 0 ? 'bg-transparent' : 'bg-muted/10'}`}
                                   >
                                     {/* Officer */}
@@ -1250,33 +1249,6 @@ const Roster = () => {
                                         </Select>
                                       ) : (
                                         <span className="text-muted-foreground text-sm">{member.call_sign || '-'}</span>
-                                      )}
-                                    </div>
-
-                                    {/* Action */}
-                                    <div className="flex justify-center">
-                                      {isEditing ? (
-                                        <Select
-                                          value={getMemberValue(deptKey, member, 'action') || ''}
-                                          onValueChange={(value) => updateMemberField(deptKey, member.id, 'action', value)}
-                                        >
-                                          <SelectTrigger className="h-8 w-28 text-xs">
-                                            <SelectValue placeholder="Action" />
-                                          </SelectTrigger>
-                                          <SelectContent className="bg-popover border border-border z-50">
-                                            <SelectItem value="none">None</SelectItem>
-                                            <SelectItem value="fired">Fired</SelectItem>
-                                            <SelectItem value="suspended">Suspended</SelectItem>
-                                          </SelectContent>
-                                        </Select>
-                                      ) : (
-                                        <span className="text-muted-foreground text-sm">
-                                          {member.status === 'fired' ? (
-                                            <span className="text-red-400 font-medium">Fired</span>
-                                          ) : member.status === 'suspended' ? (
-                                            <span className="text-orange-400 font-medium">Suspended</span>
-                                          ) : '-'}
-                                        </span>
                                       )}
                                     </div>
 

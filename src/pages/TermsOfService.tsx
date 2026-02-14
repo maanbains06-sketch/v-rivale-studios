@@ -292,7 +292,7 @@ const TermsOfService = () => {
                 <ul className="space-y-2">
                   <li>• Through our <a href="/support" className="text-primary hover:underline">Support System</a></li>
                   <li>• Via Discord support tickets</li>
-                  <li>• By email at legal@slrp.com</li>
+                  <li>• By email at skyliferoleplay0@gmail.com</li>
                 </ul>
               </div>
             </div>

@@ -263,9 +263,9 @@ const Staff = () => {
   const developerStaff = getStaffByDepartment("development");
   const administrationStaff = getStaffByDepartment("administration");
   
-  // Combined Staff Team - includes both moderation and general staff, excludes administration and leadership department members
+  // Combined Staff Team - general staff only, excludes moderation
   const combinedStaffTeam = staffMembers.filter(
-    (m) => (m.department === "moderation" || m.department === "staff" || m.role_type === "moderator") && m.department !== "administration" && m.department !== "leadership"
+    (m) => m.department === "staff"
   );
 
   // Support team (display_order 40-42)
