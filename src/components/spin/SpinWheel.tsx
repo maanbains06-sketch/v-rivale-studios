@@ -183,6 +183,8 @@ const SpinWheel = () => {
         if (giftData) {
           setGiftedSpins(giftData.spins_remaining);
           setGiftedSpinId(giftData.id);
+          // If user has gifted spins, clear any existing cooldown
+          setCooldownEnd(null);
         }
       }
       
@@ -194,7 +196,7 @@ const SpinWheel = () => {
       if (allSpins && allSpins.length > 0) {
         // Cooldown from last spin - only if no gifted spins
         const endTime = new Date(allSpins[0].created_at).getTime() + COOLDOWN_MS;
-        if (endTime > Date.now()) setCooldownEnd(endTime);
+        if (endTime > Date.now() && !giftedSpins) setCooldownEnd(endTime);
         
         // Count spins since last vehicle/clothing win
         let count = 0;
@@ -208,6 +210,45 @@ const SpinWheel = () => {
     };
     init();
   }, []);
+
+  // Realtime subscription for gifted spins - updates without page refresh
+  useEffect(() => {
+    if (!discordId) return;
+    
+    const channel = supabase
+      .channel('gifted-spins-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'gifted_spins',
+          filter: `discord_id=eq.${discordId}`,
+        },
+        (payload) => {
+          if (payload.eventType === 'DELETE') {
+            setGiftedSpins(0);
+            setGiftedSpinId(null);
+            return;
+          }
+          const newData = payload.new as any;
+          if (newData && newData.spins_remaining > 0) {
+            setGiftedSpins(newData.spins_remaining);
+            setGiftedSpinId(newData.id);
+            // Auto-clear cooldown when spins are received
+            setCooldownEnd(null);
+          } else {
+            setGiftedSpins(0);
+            setGiftedSpinId(null);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [discordId]);
 
   useEffect(() => {
     if (!cooldownEnd) { setCooldownText(null); return; }
@@ -260,7 +301,12 @@ const SpinWheel = () => {
           .from("gifted_spins")
           .update({ spins_remaining: newCount })
           .eq("id", giftedSpinId);
-        // No cooldown for gifted spins
+        // If all gifted spins are used up, set cooldown
+        if (newCount <= 0) {
+          setCooldownEnd(Date.now() + COOLDOWN_MS);
+          setGiftedSpinId(null);
+        }
+        // No cooldown while gifted spins remain
       } else {
         setCooldownEnd(Date.now() + COOLDOWN_MS);
       }
@@ -274,7 +320,7 @@ const SpinWheel = () => {
     }, 4500);
   }, [isSpinning, cooldownEnd, userId, rotation, discordId, discordUsername, spinsSinceUltraRare, giftedSpins, giftedSpinId]);
 
-  const isCoolingDown = !!cooldownEnd;
+  const isCoolingDown = !!cooldownEnd && giftedSpins <= 0;
 
   if (loading) {
     return (

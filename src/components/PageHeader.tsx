@@ -15,7 +15,7 @@ const PageHeader = ({
   description, 
   badge, 
   backgroundImage, 
-  backgroundPosition = 'center 25%', 
+  backgroundPosition = 'center center', 
   minHeight = '40vh',
   pageKey 
 }: PageHeaderProps) => {
