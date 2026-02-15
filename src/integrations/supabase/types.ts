@@ -1866,6 +1866,42 @@ export type Database = {
         }
         Relationships: []
       }
+      pending_rewards: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          delivered_at: string | null
+          discord_id: string
+          id: string
+          prize_key: string
+          prize_type: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string | null
+          delivered_at?: string | null
+          discord_id: string
+          id?: string
+          prize_key: string
+          prize_type: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string | null
+          delivered_at?: string | null
+          discord_id?: string
+          id?: string
+          prize_key?: string
+          prize_type?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: number | null
