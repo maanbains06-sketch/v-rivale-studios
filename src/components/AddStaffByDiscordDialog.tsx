@@ -197,6 +197,22 @@ const AddStaffByDiscordDialog = ({
         toast.success(`${discordInfo.display_name || discordInfo.username} added successfully!`);
       }
 
+      // Send Discord welcome message
+      try {
+        await supabase.functions.invoke('send-staff-welcome', {
+          body: {
+            staffName: discordInfo.display_name || discordInfo.username,
+            staffDiscordId: discordInfo.id,
+            department: departmentKey,
+            rank: formData.rank,
+            avatarUrl: discordInfo.avatar_url || null,
+          }
+        });
+        toast.success('Discord welcome message sent!');
+      } catch (welcomeErr) {
+        console.error('Failed to send welcome message:', welcomeErr);
+      }
+
       // Reset form
       setDiscordId('');
       setDiscordInfo(null);
