@@ -144,6 +144,36 @@ const sendSpinNotification = async (prizeKey: string, discordId: string | null, 
   }
 };
 
+const deliverPrizeToFiveM = async (prizeKey: string, discordId: string | null, discordUsername: string | null) => {
+  if (!discordId) return;
+  // Manual prizes skip FiveM delivery
+  const manualPrizes = ["vehicle", "mystery_box", "discount", "name_change", "better_luck_1", "better_luck_2"];
+  if (manualPrizes.includes(prizeKey)) return;
+  
+  try {
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/deliver-spin-prize`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ prize_key: prizeKey, discord_id: discordId, discord_username: discordUsername }),
+      }
+    );
+    const result = await response.json();
+    if (result.queued) {
+      console.log("Prize queued for delivery when player joins server");
+    } else if (result.delivered) {
+      console.log("Prize delivered to FiveM server successfully");
+    }
+  } catch (err) {
+    console.error("Error delivering prize to FiveM:", err);
+  }
+};
+
 // ── Main Component ──────────────────────────────────────────────
 const SpinWheel = () => {
   const { toast } = useToast();
@@ -292,6 +322,7 @@ const SpinWheel = () => {
       });
       if (error) console.error("Failed to save spin result:", error);
       sendSpinNotification(prize.id, discordId, discordUsername);
+      deliverPrizeToFiveM(prize.id, discordId, discordUsername);
       
       // If using gifted spin, decrement; otherwise set cooldown
       if (usingGiftedSpin && giftedSpinId) {
