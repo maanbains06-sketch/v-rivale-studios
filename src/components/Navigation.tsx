@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, memo } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield, LogOut, Menu, UserCircle, Mail, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, ExternalLink, Crown, LayoutDashboard, Gift, Briefcase, Building2, FileText, Newspaper } from "lucide-react";
+import { Users, Shield, LogOut, Menu, UserCircle, Mail, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, ExternalLink, Crown, LayoutDashboard, Gift, Briefcase, Building2, FileText, Newspaper, Trophy } from "lucide-react";
 import { Button } from "./ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
@@ -520,6 +520,12 @@ const Navigation = () => {
                     <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
                       <Link to="/refund-policy">Refund Policy</Link>
                     </Button>
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/awards" className="flex items-center">
+                        <Trophy className="w-4 h-4 mr-2 text-yellow-500" />
+                        Awards
+                      </Link>
+                    </Button>
                   </div>
 
                   {/* Quick Admin Links - Only visible to staff */}
@@ -572,6 +578,17 @@ const Navigation = () => {
                       </Button>
                     </div>
                   )}
+                  <Button 
+                    variant="outline"
+                    className="justify-start glass-effect border-yellow-500/30"
+                    asChild
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Link to="/awards" className="flex items-center">
+                      <Trophy className="w-4 h-4 mr-2 text-yellow-500" />
+                      Awards
+                    </Link>
+                  </Button>
                   <Button 
                     variant="outline"
                     className="justify-start glass-effect"

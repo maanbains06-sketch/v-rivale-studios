@@ -133,6 +133,112 @@ export type Database = {
         }
         Relationships: []
       }
+      award_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      award_nominations: {
+        Row: {
+          category_id: string
+          created_at: string
+          id: string
+          nominated_by: string
+          nominee_name: string
+          reason: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          id?: string
+          nominated_by: string
+          nominee_name: string
+          reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          id?: string
+          nominated_by?: string
+          nominee_name?: string
+          reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "award_nominations_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "award_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      award_votes: {
+        Row: {
+          created_at: string
+          id: string
+          nomination_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nomination_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nomination_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "award_votes_nomination_id_fkey"
+            columns: ["nomination_id"]
+            isOneToOne: false
+            referencedRelation: "award_nominations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ban_appeals: {
         Row: {
           additional_info: string | null
