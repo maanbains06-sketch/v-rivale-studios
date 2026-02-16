@@ -108,22 +108,6 @@ const AddStaffManualDialog = ({
       console.log('Roster member added:', data);
       toast.success(`${formData.name} added to ${departmentLabel} successfully!`);
 
-      // Send Discord welcome message
-      try {
-        await supabase.functions.invoke('send-staff-welcome', {
-          body: {
-            staffName: formData.name.trim(),
-            staffDiscordId: null, // Manual entries don't have Discord ID
-            department: departmentKey,
-            rank: formData.rank,
-            avatarUrl: null,
-          }
-        });
-        toast.success('Discord welcome message sent!');
-      } catch (welcomeErr) {
-        console.error('Failed to send welcome message:', welcomeErr);
-      }
-
       handleReset();
       onSuccess();
       onOpenChange(false);
