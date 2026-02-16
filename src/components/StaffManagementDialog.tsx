@@ -226,6 +226,27 @@ export const StaffManagementDialog = ({ open, onOpenChange, staffMember, onSucce
         });
       }
 
+      // Send Discord welcome message only for NEW staff members
+      if (!staffMember?.id) {
+        try {
+          await supabase.functions.invoke('send-staff-welcome', {
+            body: {
+              staffName: submitData.name?.trim(),
+              staffDiscordId: submitData.discord_id?.startsWith('MANUAL-') ? null : submitData.discord_id,
+              department: submitData.department,
+              rank: submitData.role,
+              avatarUrl: submitData.discord_avatar || null,
+            }
+          });
+          toast({
+            title: "Discord Welcome Sent",
+            description: "Welcome message posted to Discord!",
+          });
+        } catch (welcomeErr) {
+          console.error('Failed to send welcome message:', welcomeErr);
+        }
+      }
+
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
