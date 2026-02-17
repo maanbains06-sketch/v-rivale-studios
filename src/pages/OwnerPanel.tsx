@@ -31,6 +31,7 @@ import BusinessTypeManager from "@/components/BusinessTypeManager";
 import ThemeManager from "@/components/ThemeManager";
 import { OwnerGalleryManager } from "@/components/OwnerGalleryManager";
 import GiftSpinManager from "@/components/GiftSpinManager";
+import OwnerAwardsManager from "@/components/OwnerAwardsManager";
 
 import { LiveApplicationStats } from "@/components/LiveApplicationStats";
 import OwnerLiveChatManager from "@/components/OwnerLiveChatManager";
@@ -78,7 +79,7 @@ import {
   Palette,
   Image,
   Lock,
-  
+  Trophy,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StaffManagementDialog } from "@/components/StaffManagementDialog";
@@ -1724,6 +1725,10 @@ const OwnerPanel = () => {
                   <Gift className="w-4 h-4" />
                   <span className="hidden sm:inline">Gift Spin</span>
                 </TabsTrigger>
+                <TabsTrigger value="awards" className="flex items-center gap-2 whitespace-nowrap">
+                  <Trophy className="w-4 h-4" />
+                  <span className="hidden sm:inline">Awards</span>
+                </TabsTrigger>
               </TabsList>
             </div>
             {/* Fade indicators for scroll hint */}
@@ -1787,6 +1792,11 @@ const OwnerPanel = () => {
           {/* Gift Spin Tab */}
           <TabsContent value="gift-spin">
             <GiftSpinManager />
+          </TabsContent>
+
+          {/* Awards Tab */}
+          <TabsContent value="awards">
+            <OwnerAwardsManager />
           </TabsContent>
 
           {/* Application Stats Tab */}
