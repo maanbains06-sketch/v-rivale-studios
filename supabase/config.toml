@@ -155,3 +155,6 @@ verify_jwt = false
 
 [functions.send-staff-welcome]
 verify_jwt = false
+
+[functions.send-award-winner]
+verify_jwt = false

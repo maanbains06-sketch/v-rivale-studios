@@ -169,6 +169,53 @@ export type Database = {
         }
         Relationships: []
       }
+      award_hall_of_fame: {
+        Row: {
+          category_name: string
+          created_at: string
+          id: string
+          poll_id: string | null
+          prize: string | null
+          total_votes: number | null
+          vote_count: number | null
+          week_label: string | null
+          winner_image_url: string | null
+          winner_name: string
+        }
+        Insert: {
+          category_name: string
+          created_at?: string
+          id?: string
+          poll_id?: string | null
+          prize?: string | null
+          total_votes?: number | null
+          vote_count?: number | null
+          week_label?: string | null
+          winner_image_url?: string | null
+          winner_name: string
+        }
+        Update: {
+          category_name?: string
+          created_at?: string
+          id?: string
+          poll_id?: string | null
+          prize?: string | null
+          total_votes?: number | null
+          vote_count?: number | null
+          week_label?: string | null
+          winner_image_url?: string | null
+          winner_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "award_hall_of_fame_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "award_polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       award_nominations: {
         Row: {
           category_id: string
@@ -206,6 +253,162 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "award_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      award_poll_nominees: {
+        Row: {
+          created_at: string
+          display_order: number | null
+          id: string
+          nomination_id: string | null
+          nominee_description: string | null
+          nominee_image_url: string | null
+          nominee_name: string
+          poll_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          nomination_id?: string | null
+          nominee_description?: string | null
+          nominee_image_url?: string | null
+          nominee_name: string
+          poll_id: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          nomination_id?: string | null
+          nominee_description?: string | null
+          nominee_image_url?: string | null
+          nominee_name?: string
+          poll_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "award_poll_nominees_nomination_id_fkey"
+            columns: ["nomination_id"]
+            isOneToOne: false
+            referencedRelation: "award_nominations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "award_poll_nominees_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "award_polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      award_poll_votes: {
+        Row: {
+          created_at: string
+          id: string
+          poll_id: string
+          poll_nominee_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          poll_id: string
+          poll_nominee_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          poll_id?: string
+          poll_nominee_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "award_poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "award_polls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "award_poll_votes_poll_nominee_id_fkey"
+            columns: ["poll_nominee_id"]
+            isOneToOne: false
+            referencedRelation: "award_poll_nominees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      award_polls: {
+        Row: {
+          category_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          ends_at: string
+          id: string
+          prize: string | null
+          prize_image_url: string | null
+          starts_at: string
+          status: string
+          title: string
+          updated_at: string
+          winner_announced_at: string | null
+          winner_discord_message_id: string | null
+          winner_nomination_id: string | null
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at: string
+          id?: string
+          prize?: string | null
+          prize_image_url?: string | null
+          starts_at?: string
+          status?: string
+          title: string
+          updated_at?: string
+          winner_announced_at?: string | null
+          winner_discord_message_id?: string | null
+          winner_nomination_id?: string | null
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at?: string
+          id?: string
+          prize?: string | null
+          prize_image_url?: string | null
+          starts_at?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          winner_announced_at?: string | null
+          winner_discord_message_id?: string | null
+          winner_nomination_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "award_polls_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "award_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "award_polls_winner_nomination_id_fkey"
+            columns: ["winner_nomination_id"]
+            isOneToOne: false
+            referencedRelation: "award_nominations"
             referencedColumns: ["id"]
           },
         ]
