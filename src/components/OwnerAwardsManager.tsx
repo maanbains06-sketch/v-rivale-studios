@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Trophy, Plus, Trash2, Eye, EyeOff, Crown, Send, Loader2, Calendar, Gift, Users, Award } from "lucide-react";
+import { Trophy, Plus, Trash2, Eye, EyeOff, Crown, Send, Loader2, Calendar, Gift, Users, Award, Search, CheckCircle2, AlertCircle } from "lucide-react";
 
 interface Poll {
   id: string;
@@ -28,13 +28,16 @@ interface Poll {
   category?: { name: string; slug: string; icon: string };
 }
 
-interface PollNominee {
-  id: string;
-  poll_id: string;
-  nominee_name: string;
-  nominee_image_url: string | null;
-  nominee_description: string | null;
-  vote_count?: number;
+interface NomineeForm {
+  name: string;
+  image_url: string;
+  description: string;
+  discord_id: string;
+  discord_username: string;
+  server_name: string;
+  fetchingDiscord: boolean;
+  discordFetched: boolean;
+  discordError: string;
 }
 
 interface Category {
@@ -44,6 +47,18 @@ interface Category {
   icon: string | null;
   is_active: boolean;
 }
+
+const defaultNominee = (): NomineeForm => ({
+  name: "",
+  image_url: "",
+  description: "",
+  discord_id: "",
+  discord_username: "",
+  server_name: "",
+  fetchingDiscord: false,
+  discordFetched: false,
+  discordError: "",
+});
 
 const OwnerAwardsManager = () => {
   const { toast } = useToast();
@@ -57,14 +72,13 @@ const OwnerAwardsManager = () => {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [purging, setPurging] = useState(false);
 
-  // Create poll form
   const [form, setForm] = useState({
     category_id: "",
     title: "",
     description: "",
     prize: "",
     ends_at: "",
-    nominees: [{ name: "", image_url: "", description: "" }],
+    nominees: [defaultNominee()],
   });
 
   const loadData = useCallback(async () => {
@@ -80,17 +94,15 @@ const OwnerAwardsManager = () => {
     if (settingRes.data) setAwardsHidden(settingRes.data.value === "true");
 
     if (pollsRes.data && catsRes.data) {
-      // Enrich polls with category info
       const enriched = pollsRes.data.map((p: any) => ({
         ...p,
         category: catsRes.data?.find((c: any) => c.id === p.category_id),
       }));
 
-      // Get vote counts for each poll
       for (const poll of enriched) {
         const { data: nominees } = await supabase
           .from("award_poll_nominees")
-          .select("id, nominee_name")
+          .select("id, nominee_name, discord_id, discord_username, server_name")
           .eq("poll_id", poll.id);
 
         if (nominees) {
@@ -117,13 +129,61 @@ const OwnerAwardsManager = () => {
   const toggleVisibility = async () => {
     setTogglingVisibility(true);
     const newVal = !awardsHidden;
-    await supabase
-      .from("site_settings")
-      .update({ value: String(newVal) })
-      .eq("key", "awards_hidden");
+    await supabase.from("site_settings").update({ value: String(newVal) }).eq("key", "awards_hidden");
     setAwardsHidden(newVal);
-    toast({ title: newVal ? "Awards Hidden" : "Awards Visible", description: newVal ? "Awards are now hidden from users" : "Awards are now visible to everyone" });
+    toast({ title: newVal ? "Awards Hidden" : "Awards Visible", description: newVal ? "Hidden from all users" : "Visible to everyone" });
     setTogglingVisibility(false);
+  };
+
+  const fetchDiscordUser = async (idx: number) => {
+    const discordId = form.nominees[idx].discord_id.trim();
+    if (!discordId || !/^\d{17,19}$/.test(discordId)) {
+      setForm(f => {
+        const nominees = [...f.nominees];
+        nominees[idx] = { ...nominees[idx], discordError: "Enter a valid Discord ID (17-19 digits)", discordFetched: false };
+        return { ...f, nominees };
+      });
+      return;
+    }
+
+    setForm(f => {
+      const nominees = [...f.nominees];
+      nominees[idx] = { ...nominees[idx], fetchingDiscord: true, discordError: "", discordFetched: false };
+      return { ...f, nominees };
+    });
+
+    try {
+      const { data, error } = await supabase.functions.invoke("fetch-discord-user", {
+        body: { discordId },
+      });
+
+      if (error || !data) throw new Error(error?.message || "Failed to fetch");
+
+      const displayName = data.displayName || data.globalName || data.username || discordId;
+      const avatar = data.avatar || null;
+
+      setForm(f => {
+        const nominees = [...f.nominees];
+        nominees[idx] = {
+          ...nominees[idx],
+          discord_username: displayName,
+          name: nominees[idx].name || displayName,
+          image_url: nominees[idx].image_url || avatar || "",
+          fetchingDiscord: false,
+          discordFetched: true,
+          discordError: "",
+        };
+        return { ...f, nominees };
+      });
+
+      toast({ title: "✅ Discord user fetched", description: `Found: ${displayName}` });
+    } catch (err: any) {
+      setForm(f => {
+        const nominees = [...f.nominees];
+        nominees[idx] = { ...nominees[idx], fetchingDiscord: false, discordFetched: false, discordError: "Could not fetch Discord user" };
+        return { ...f, nominees };
+      });
+    }
   };
 
   const createPoll = async () => {
@@ -148,7 +208,6 @@ const OwnerAwardsManager = () => {
       return;
     }
 
-    // Add nominees
     const nomineesData = form.nominees
       .filter(n => n.name.trim())
       .map((n, i) => ({
@@ -156,6 +215,9 @@ const OwnerAwardsManager = () => {
         nominee_name: n.name.trim(),
         nominee_image_url: n.image_url.trim() || null,
         nominee_description: n.description.trim() || null,
+        discord_id: n.discord_id.trim() || null,
+        discord_username: n.discord_username.trim() || null,
+        server_name: n.server_name.trim() || null,
         display_order: i,
       }));
 
@@ -163,23 +225,15 @@ const OwnerAwardsManager = () => {
 
     toast({ title: "🏆 Poll Created!", description: `"${form.title}" is now live!` });
     setCreateDialog(false);
-    setForm({ category_id: "", title: "", description: "", prize: "", ends_at: "", nominees: [{ name: "", image_url: "", description: "" }] });
+    setForm({ category_id: "", title: "", description: "", prize: "", ends_at: "", nominees: [defaultNominee()] });
     loadData();
   };
 
   const announceWinner = async (poll: Poll) => {
     setAnnouncing(poll.id);
     try {
-      // Get nominees with votes
-      const { data: nominees } = await supabase
-        .from("award_poll_nominees")
-        .select("*")
-        .eq("poll_id", poll.id);
-
-      const { data: votes } = await supabase
-        .from("award_poll_votes")
-        .select("poll_nominee_id")
-        .eq("poll_id", poll.id);
+      const { data: nominees } = await supabase.from("award_poll_nominees").select("*").eq("poll_id", poll.id);
+      const { data: votes } = await supabase.from("award_poll_votes").select("poll_nominee_id").eq("poll_id", poll.id);
 
       if (!nominees || nominees.length === 0) {
         toast({ title: "No nominees", variant: "destructive" });
@@ -187,22 +241,20 @@ const OwnerAwardsManager = () => {
         return;
       }
 
-      const nomineesWithVotes = nominees.map(n => ({
+      const nomineesWithVotes = nominees.map((n: any) => ({
         ...n,
-        vote_count: votes?.filter(v => v.poll_nominee_id === n.id).length || 0,
+        vote_count: votes?.filter((v: any) => v.poll_nominee_id === n.id).length || 0,
       }));
 
-      const winner = nomineesWithVotes.sort((a, b) => b.vote_count - a.vote_count)[0];
+      const winner = nomineesWithVotes.sort((a: any, b: any) => b.vote_count - a.vote_count)[0];
       const totalVotes = votes?.length || 0;
 
-      // Update poll
       await supabase.from("award_polls").update({
         status: "ended",
         winner_nomination_id: winner.nomination_id,
         winner_announced_at: new Date().toISOString(),
       }).eq("id", poll.id);
 
-      // Add to Hall of Fame
       await supabase.from("award_hall_of_fame").insert({
         poll_id: poll.id,
         category_name: poll.category?.name || "Unknown",
@@ -212,12 +264,18 @@ const OwnerAwardsManager = () => {
         vote_count: winner.vote_count,
         total_votes: totalVotes,
         week_label: `Week of ${new Date(poll.starts_at).toLocaleDateString()}`,
+        winner_discord_id: winner.discord_id || null,
+        winner_server_name: winner.server_name || null,
       });
 
-      // Send Discord announcement
+      // Send Discord announcement with discord_id for @mention
       await supabase.functions.invoke("send-award-winner", {
         body: {
           winnerName: winner.nominee_name,
+          winnerDiscordId: winner.discord_id || null,
+          winnerServerName: winner.server_name || null,
+          winnerDiscordUsername: winner.discord_username || null,
+          winnerImageUrl: winner.nominee_image_url || null,
           categoryName: poll.category?.name || poll.title,
           prize: poll.prize,
           voteCount: winner.vote_count,
@@ -258,13 +316,19 @@ const OwnerAwardsManager = () => {
   };
 
   const addNomineeField = () => {
-    setForm(f => ({ ...f, nominees: [...f.nominees, { name: "", image_url: "", description: "" }] }));
+    setForm(f => ({ ...f, nominees: [...f.nominees, defaultNominee()] }));
   };
 
   const updateNominee = (idx: number, field: string, value: string) => {
     setForm(f => {
       const nominees = [...f.nominees];
       (nominees[idx] as any)[field] = value;
+      // Reset discord fetch state if discord_id changes
+      if (field === "discord_id") {
+        nominees[idx].discordFetched = false;
+        nominees[idx].discordError = "";
+        nominees[idx].discord_username = "";
+      }
       return { ...f, nominees };
     });
   };
@@ -283,38 +347,29 @@ const OwnerAwardsManager = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header with controls */}
+      {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <Trophy className="w-6 h-6 text-primary" />
             Weekly Awards Management
           </h2>
-          <p className="text-sm text-muted-foreground mt-1">Create polls, manage nominees, announce winners</p>
+          <p className="text-sm text-muted-foreground mt-1">Create polls, manage nominees, announce winners via Discord</p>
         </div>
         <div className="flex items-center gap-3">
           {/* Visibility Toggle */}
           <div className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border/30 bg-card">
             {awardsHidden ? <EyeOff className="w-4 h-4 text-destructive" /> : <Eye className="w-4 h-4 text-green-500" />}
-            <Label className="text-sm cursor-pointer">
-              {awardsHidden ? "Hidden" : "Visible"}
-            </Label>
-            <Switch
-              checked={!awardsHidden}
-              onCheckedChange={toggleVisibility}
-              disabled={togglingVisibility}
-            />
+            <Label className="text-sm cursor-pointer">{awardsHidden ? "Hidden" : "Visible"}</Label>
+            <Switch checked={!awardsHidden} onCheckedChange={toggleVisibility} disabled={togglingVisibility} />
           </div>
 
           {/* Create Poll */}
           <Dialog open={createDialog} onOpenChange={setCreateDialog}>
             <DialogTrigger asChild>
-              <Button className="gap-2">
-                <Plus className="w-4 h-4" />
-                Create Poll
-              </Button>
+              <Button className="gap-2"><Plus className="w-4 h-4" />Create Poll</Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
                   <Trophy className="w-5 h-5 text-primary" />
@@ -329,9 +384,7 @@ const OwnerAwardsManager = () => {
                       <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
                       <SelectContent>
                         {categories.map(c => (
-                          <SelectItem key={c.id} value={c.id}>
-                            {c.icon} {c.name}
-                          </SelectItem>
+                          <SelectItem key={c.id} value={c.id}>{c.icon} {c.name}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -354,20 +407,103 @@ const OwnerAwardsManager = () => {
                   <Input placeholder="e.g. ₹50,000 in-game cash + Custom Vehicle" value={form.prize} onChange={e => setForm(f => ({ ...f, prize: e.target.value }))} />
                 </div>
 
-                {/* Nominees */}
+                {/* Nominees with Discord ID fetch */}
                 <div>
                   <Label className="flex items-center gap-2 mb-3"><Users className="w-4 h-4" /> Nominees * (min 2)</Label>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {form.nominees.map((nom, idx) => (
-                      <Card key={idx} className="p-3">
+                      <Card key={idx} className="p-4 border-border/40">
                         <div className="flex items-start gap-2">
-                          <div className="flex-1 space-y-2">
-                            <Input placeholder={`Nominee ${idx + 1} name *`} value={nom.name} onChange={e => updateNominee(idx, "name", e.target.value)} />
-                            <Input placeholder="Image URL (optional)" value={nom.image_url} onChange={e => updateNominee(idx, "image_url", e.target.value)} />
-                            <Input placeholder="Short description (optional)" value={nom.description} onChange={e => updateNominee(idx, "description", e.target.value)} />
+                          <div className="flex-1 space-y-3">
+                            {/* Discord ID row with fetch */}
+                            <div className="flex gap-2">
+                              <div className="flex-1">
+                                <Label className="text-xs text-muted-foreground mb-1 block">Discord ID</Label>
+                                <div className="flex gap-2">
+                                  <Input
+                                    placeholder="17-19 digit Discord ID"
+                                    value={nom.discord_id}
+                                    onChange={e => updateNominee(idx, "discord_id", e.target.value)}
+                                    className="font-mono text-sm"
+                                  />
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => fetchDiscordUser(idx)}
+                                    disabled={nom.fetchingDiscord || !nom.discord_id}
+                                    className="shrink-0 gap-1.5"
+                                  >
+                                    {nom.fetchingDiscord ? (
+                                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    ) : nom.discordFetched ? (
+                                      <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+                                    ) : (
+                                      <Search className="w-3.5 h-3.5" />
+                                    )}
+                                    Fetch
+                                  </Button>
+                                </div>
+                                {nom.discordError && (
+                                  <p className="text-xs text-destructive mt-1 flex items-center gap-1">
+                                    <AlertCircle className="w-3 h-3" /> {nom.discordError}
+                                  </p>
+                                )}
+                                {nom.discordFetched && nom.discord_username && (
+                                  <p className="text-xs text-green-500 mt-1 flex items-center gap-1">
+                                    <CheckCircle2 className="w-3 h-3" /> Fetched: @{nom.discord_username}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Name auto-filled from Discord */}
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <Label className="text-xs text-muted-foreground mb-1 block">Display Name *</Label>
+                                <Input
+                                  placeholder="Nominee name"
+                                  value={nom.name}
+                                  onChange={e => updateNominee(idx, "name", e.target.value)}
+                                />
+                              </div>
+                              <div>
+                                <Label className="text-xs text-muted-foreground mb-1 block">Server Name (e.g. satan)</Label>
+                                <Input
+                                  placeholder="RP/server nickname"
+                                  value={nom.server_name}
+                                  onChange={e => updateNominee(idx, "server_name", e.target.value)}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Preview tag */}
+                            {(nom.discord_username || nom.name) && (
+                              <div className="px-2 py-1.5 rounded bg-muted/40 border border-border/20 text-xs text-muted-foreground">
+                                Discord tag: <span className="text-primary font-mono">
+                                  @{nom.discord_username || nom.name}{nom.server_name ? `/${nom.server_name}` : ""}
+                                </span>
+                              </div>
+                            )}
+
+                            <div>
+                              <Label className="text-xs text-muted-foreground mb-1 block">Profile Image URL</Label>
+                              <Input
+                                placeholder="https://... (auto-filled from Discord avatar)"
+                                value={nom.image_url}
+                                onChange={e => updateNominee(idx, "image_url", e.target.value)}
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-xs text-muted-foreground mb-1 block">Short Description</Label>
+                              <Input
+                                placeholder="Why this nominee deserves to win"
+                                value={nom.description}
+                                onChange={e => updateNominee(idx, "description", e.target.value)}
+                              />
+                            </div>
                           </div>
                           {form.nominees.length > 1 && (
-                            <Button variant="ghost" size="icon" onClick={() => removeNominee(idx)}>
+                            <Button variant="ghost" size="icon" onClick={() => removeNominee(idx)} className="mt-6">
                               <Trash2 className="w-4 h-4 text-destructive" />
                             </Button>
                           )}
@@ -404,7 +540,7 @@ const OwnerAwardsManager = () => {
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction onClick={purgeAllAwards} disabled={purging} className="bg-destructive text-destructive-foreground">
-                  {purging ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Deleting...</> : "Delete Everything"}
+                  {purging ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Deleting...</> : "Delete Everything"}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -473,7 +609,17 @@ const OwnerAwardsManager = () => {
                       return (
                         <div key={nom.id} className={`flex items-center gap-3 p-2 rounded-lg ${isLeading ? "bg-primary/10 border border-primary/20" : "bg-muted/30"}`}>
                           <span className="w-6 text-center font-bold text-sm text-muted-foreground">{idx + 1}</span>
-                          <span className="flex-1 font-medium text-sm">{nom.nominee_name}</span>
+                          {nom.nominee_image_url && (
+                            <img src={nom.nominee_image_url} alt={nom.nominee_name} className="w-7 h-7 rounded-full object-cover border border-border/30" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <span className="font-medium text-sm block truncate">{nom.nominee_name}</span>
+                            {(nom.discord_id || nom.server_name) && (
+                              <span className="text-[10px] text-muted-foreground font-mono">
+                                {nom.discord_id && `@${nom.discord_username || nom.discord_id}`}{nom.server_name && `/${nom.server_name}`}
+                              </span>
+                            )}
+                          </div>
                           <div className="w-32 h-2 bg-muted rounded-full overflow-hidden">
                             <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} />
                           </div>
@@ -489,7 +635,7 @@ const OwnerAwardsManager = () => {
         </div>
       )}
 
-      {/* Categories Management */}
+      {/* Categories */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">

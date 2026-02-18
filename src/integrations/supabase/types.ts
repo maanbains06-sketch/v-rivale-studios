@@ -179,8 +179,10 @@ export type Database = {
           total_votes: number | null
           vote_count: number | null
           week_label: string | null
+          winner_discord_id: string | null
           winner_image_url: string | null
           winner_name: string
+          winner_server_name: string | null
         }
         Insert: {
           category_name: string
@@ -191,8 +193,10 @@ export type Database = {
           total_votes?: number | null
           vote_count?: number | null
           week_label?: string | null
+          winner_discord_id?: string | null
           winner_image_url?: string | null
           winner_name: string
+          winner_server_name?: string | null
         }
         Update: {
           category_name?: string
@@ -203,8 +207,10 @@ export type Database = {
           total_votes?: number | null
           vote_count?: number | null
           week_label?: string | null
+          winner_discord_id?: string | null
           winner_image_url?: string | null
           winner_name?: string
+          winner_server_name?: string | null
         }
         Relationships: [
           {
@@ -260,6 +266,8 @@ export type Database = {
       award_poll_nominees: {
         Row: {
           created_at: string
+          discord_id: string | null
+          discord_username: string | null
           display_order: number | null
           id: string
           nomination_id: string | null
@@ -267,9 +275,12 @@ export type Database = {
           nominee_image_url: string | null
           nominee_name: string
           poll_id: string
+          server_name: string | null
         }
         Insert: {
           created_at?: string
+          discord_id?: string | null
+          discord_username?: string | null
           display_order?: number | null
           id?: string
           nomination_id?: string | null
@@ -277,9 +288,12 @@ export type Database = {
           nominee_image_url?: string | null
           nominee_name: string
           poll_id: string
+          server_name?: string | null
         }
         Update: {
           created_at?: string
+          discord_id?: string | null
+          discord_username?: string | null
           display_order?: number | null
           id?: string
           nomination_id?: string | null
@@ -287,6 +301,7 @@ export type Database = {
           nominee_image_url?: string | null
           nominee_name?: string
           poll_id?: string
+          server_name?: string | null
         }
         Relationships: [
           {

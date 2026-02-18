@@ -11,22 +11,44 @@ serve(async (req) => {
   }
 
   try {
-    const { winnerName, categoryName, prize, voteCount, totalVotes, pollTitle } = await req.json();
+    const {
+      winnerName,
+      winnerDiscordId,
+      winnerServerName,
+      winnerDiscordUsername,
+      winnerImageUrl,
+      categoryName,
+      prize,
+      voteCount,
+      totalVotes,
+      pollTitle,
+    } = await req.json();
 
     const botToken = Deno.env.get('DISCORD_BOT_TOKEN');
     const channelId = Deno.env.get('DISCORD_AWARD_CHANNEL_ID');
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
     if (!botToken || !channelId) {
       throw new Error('Missing DISCORD_BOT_TOKEN or DISCORD_AWARD_CHANNEL_ID');
     }
 
-    let winnerImageUrl: string | null = null;
+    // ── Build Discord tag ──────────────────────────────────────────────────
+    // Format: @mention/serverName or @username/serverName
+    const discordMention = winnerDiscordId ? `<@${winnerDiscordId}>` : null;
+    const usernameTag = winnerDiscordUsername ? `@${winnerDiscordUsername}` : winnerName;
+    const serverTag = winnerServerName ? `/${winnerServerName}` : "";
+    const fullTag = discordMention
+      ? `${discordMention} (${usernameTag}${serverTag})`
+      : `${usernameTag}${serverTag}`;
 
-    // Generate winner image using Lovable AI
+    // ── Generate winner image using Lovable AI ─────────────────────────────
+    let generatedImageUrl: string | null = null;
+
     if (lovableApiKey) {
       try {
-        const imagePrompt = `Create a premium award winner announcement banner image. Golden trophy with glowing effects in the center. Text "SKYLIFE ROLEPLAY INDIA" at the top in bold golden letters. Text "WEEKLY AWARD WINNER" below it. The winner name "${winnerName}" displayed prominently. Category "${categoryName}" shown. Dark luxury background with golden particles and light rays. Professional esports award ceremony style. 16:9 aspect ratio. Ultra high resolution.`;
+        const imagePrompt = `Create a stunning premium award winner announcement banner image. Style: dark luxury background with deep navy and black tones. Golden trophy in the center with glowing particles and light rays emanating from it. Text "SKYLIFE ROLEPLAY INDIA" prominently at the top in bold golden metallic letters with a subtle glow effect. Below it: "🏆 WEEKLY AWARD WINNER 🏆". The winner name "${winnerName}" displayed in large white bold text in the center. Category label "${categoryName}" in golden italic text below the name. Add decorative golden stars, confetti, and sparkle effects around the trophy. Professional esports/gaming award ceremony aesthetic. 16:9 widescreen aspect ratio. Ultra high resolution photorealistic render.`;
 
         const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
@@ -46,14 +68,10 @@ serve(async (req) => {
           const imageData = aiData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
           if (imageData) {
-            // Upload to Supabase storage
-            const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-            const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
             const base64Data = imageData.replace(/^data:image\/\w+;base64,/, '');
             const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
-
             const fileName = `award-winner-${Date.now()}.png`;
+
             const uploadRes = await fetch(`${supabaseUrl}/storage/v1/object/assets/${fileName}`, {
               method: 'POST',
               headers: {
@@ -64,56 +82,73 @@ serve(async (req) => {
             });
 
             if (uploadRes.ok) {
-              winnerImageUrl = `${supabaseUrl}/storage/v1/object/public/assets/${fileName}`;
+              generatedImageUrl = `${supabaseUrl}/storage/v1/object/public/assets/${fileName}`;
+              console.log('Winner image generated and uploaded:', generatedImageUrl);
             }
           }
         }
       } catch (imgErr) {
-        console.error('Image generation failed, continuing without image:', imgErr);
+        console.error('Image generation failed, continuing without generated image:', imgErr);
       }
     }
 
     const votePercentage = totalVotes > 0 ? Math.round((voteCount / totalVotes) * 100) : 0;
     const timestamp = new Date().toISOString();
 
+    // Use generated image first, fallback to nominee's own image URL
+    const finalImageUrl = generatedImageUrl || winnerImageUrl;
+
+    // ── Build Discord embed ────────────────────────────────────────────────
     const embed: any = {
-      title: `🏆 WEEKLY AWARD WINNER 🏆`,
+      title: `🏆 WEEKLY AWARD WINNER — ${categoryName.toUpperCase()} 🏆`,
       description: [
-        `# 🎉 ${winnerName}`,
+        `## 🎊 Congratulations ${discordMention || winnerName}!`,
         ``,
-        `> Has been crowned the **${categoryName}** of the week!`,
+        `> **${winnerName}${serverTag}** has been crowned the **${categoryName}** of the week!`,
         ``,
-        `━━━━━━━━━━━━━━━━━━━━━━`,
+        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
         ``,
         `📊 **Poll:** ${pollTitle}`,
-        `🗳️ **Votes:** ${voteCount} out of ${totalVotes} (${votePercentage}%)`,
+        `🗳️ **Votes:** ${voteCount} out of ${totalVotes} total (${votePercentage}%)`,
         prize ? `🎁 **Prize:** ${prize}` : null,
+        winnerDiscordId ? `🔖 **Discord Tag:** ${fullTag}` : null,
         ``,
-        `━━━━━━━━━━━━━━━━━━━━━━`,
+        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
         ``,
         `> *Congratulations from the entire Skylife Roleplay India community!*`,
-        `> *Keep up the amazing roleplay! 🌟*`,
+        `> *Keep up the amazing roleplay and keep shining! 🌟*`,
       ].filter(Boolean).join('\n'),
       color: 0xFFD700,
+      thumbnail: winnerImageUrl ? { url: winnerImageUrl } : undefined,
       footer: {
-        text: '🏆 Skylife Roleplay India • Weekly Awards',
+        text: '🏆 Skylife Roleplay India • Weekly Awards System',
+        icon_url: 'https://cdn.discordapp.com/embed/avatars/0.png',
       },
       timestamp,
     };
 
-    if (winnerImageUrl) {
-      embed.image = { url: winnerImageUrl };
+    // Attach the generated AI image as main image (big banner)
+    if (finalImageUrl) {
+      embed.image = { url: finalImageUrl };
     }
 
+    // ── Build message content ──────────────────────────────────────────────
+    // Use @everyone + @mention winner if we have discord ID
+    const mentionContent = winnerDiscordId
+      ? `@everyone\n\n🏆 **WEEKLY AWARD WINNER ANNOUNCEMENT** 🏆\n\nCongratulations to ${discordMention} — **${winnerName}${serverTag}** for winning **${categoryName}** of the week! 🎉`
+      : `@everyone\n\n🏆 **WEEKLY AWARD WINNER ANNOUNCEMENT** 🏆\n\nCongratulations to **${winnerName}${serverTag}** for winning **${categoryName}** of the week! 🎉`;
+
     const messagePayload = {
-      content: `@everyone\n\n🏆 **WEEKLY AWARD WINNER ANNOUNCEMENT** 🏆\n\nThe votes are in! Congratulations to our winner! 🎉`,
+      content: mentionContent,
       embeds: [embed],
       allowed_mentions: {
-        parse: ['everyone', 'users'],
+        parse: ['everyone'],
+        users: winnerDiscordId ? [winnerDiscordId] : [],
       },
     };
 
     console.log('Sending award winner announcement to channel:', channelId);
+    console.log('Winner discord ID for mention:', winnerDiscordId);
 
     const discordRes = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, {
       method: 'POST',
@@ -131,10 +166,10 @@ serve(async (req) => {
     }
 
     const result = await discordRes.json();
-    console.log('Award winner announcement sent:', result.id);
+    console.log('Award winner announcement sent, message ID:', result.id);
 
     return new Response(
-      JSON.stringify({ success: true, messageId: result.id, imageUrl: winnerImageUrl }),
+      JSON.stringify({ success: true, messageId: result.id, imageUrl: finalImageUrl }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error: any) {
