@@ -158,3 +158,6 @@ verify_jwt = false
 
 [functions.send-award-winner]
 verify_jwt = false
+
+[functions.send-debate-notification]
+verify_jwt = false

@@ -25,6 +25,16 @@ interface SiteSettings {
   featured_positions_hidden: boolean;
   // Spin header visibility
   spin_header_hidden: boolean;
+  // Nav item hide toggles
+  debate_hidden: boolean;
+  awards_hidden: boolean;
+  gallery_hidden: boolean;
+  giveaway_hidden: boolean;
+  gang_rp_hidden: boolean;
+  support_hidden: boolean;
+  events_hidden: boolean;
+  news_hidden: boolean;
+  guides_hidden: boolean;
 }
 
 interface UseSiteSettingsReturn {
@@ -57,6 +67,16 @@ const defaultSettings: SiteSettings = {
   featured_positions_hidden: false,
   // Spin header - default to visible (false = not hidden)
   spin_header_hidden: false,
+  // Nav item hide toggles
+  debate_hidden: false,
+  awards_hidden: false,
+  gallery_hidden: false,
+  giveaway_hidden: false,
+  gang_rp_hidden: false,
+  support_hidden: false,
+  events_hidden: false,
+  news_hidden: false,
+  guides_hidden: false,
 };
 
 // Cache settings in localStorage for instant loading
@@ -113,6 +133,15 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
           'business_jobs_hidden',
           'featured_positions_hidden',
           'spin_header_hidden',
+          'debate_hidden',
+          'awards_hidden',
+          'gallery_hidden',
+          'giveaway_hidden',
+          'gang_rp_hidden',
+          'support_hidden',
+          'events_hidden',
+          'news_hidden',
+          'guides_hidden',
         ]);
 
       if (error) {
@@ -146,6 +175,15 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
           business_jobs_hidden: settingsMap.business_jobs_hidden === 'true',
           featured_positions_hidden: settingsMap.featured_positions_hidden === 'true',
           spin_header_hidden: settingsMap.spin_header_hidden === 'true',
+          debate_hidden: settingsMap.debate_hidden === 'true',
+          awards_hidden: settingsMap.awards_hidden === 'true',
+          gallery_hidden: settingsMap.gallery_hidden === 'true',
+          giveaway_hidden: settingsMap.giveaway_hidden === 'true',
+          gang_rp_hidden: settingsMap.gang_rp_hidden === 'true',
+          support_hidden: settingsMap.support_hidden === 'true',
+          events_hidden: settingsMap.events_hidden === 'true',
+          news_hidden: settingsMap.news_hidden === 'true',
+          guides_hidden: settingsMap.guides_hidden === 'true',
         };
 
         setSettings(newSettings);
