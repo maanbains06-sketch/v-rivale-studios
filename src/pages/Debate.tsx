@@ -12,7 +12,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Mic, MicOff, Headphones, Send, Users, Clock, MessageSquare, 
-  Radio, Zap, Volume2, ChevronRight, Crown, Eye, Monitor, MonitorOff, Square
+  Radio, Zap, Volume2, ChevronRight, Crown, Eye, Monitor, MonitorOff, Square,
+  Hand, UserCheck, UserMinus, ArrowUpCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, differenceInSeconds } from "date-fns";
@@ -199,6 +200,7 @@ const DebatePage = () => {
   const [isOwner, setIsOwner] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [debateEnded, setDebateEnded] = useState(false);
+  const [speakRequests, setSpeakRequests] = useState<Participant[]>([]);
   const screenVideoRef = useRef<HTMLVideoElement>(null);
   const screenStreamRef = useRef<MediaStream | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -249,7 +251,9 @@ const DebatePage = () => {
       .select("*")
       .eq("debate_id", debateId)
       .order("joined_at", { ascending: true });
-    setParticipants(data || []);
+    const allParts = data || [];
+    setParticipants(allParts);
+    setSpeakRequests(allParts.filter(p => p.role === "requesting"));
   }, []);
 
   const loadMessages = useCallback(async (debateId: string) => {
@@ -495,6 +499,83 @@ const DebatePage = () => {
     });
 
     if (!error) setNewMessage("");
+  };
+
+  // Request to speak (user action)
+  const requestToSpeak = async () => {
+    if (!user || !activeDebate || !isJoined) return;
+    const myParticipant = participants.find(p => p.user_id === user.id);
+    if (!myParticipant) return;
+    if (myParticipant.role === "speaker" || myParticipant.role === "requesting") {
+      toast({ title: "Already requested", description: "You've already requested or are speaking." });
+      return;
+    }
+
+    await supabase
+      .from("debate_participants")
+      .update({ role: "requesting" })
+      .eq("id", myParticipant.id);
+
+    const discordUsername = user.user_metadata?.username || user.user_metadata?.display_name || "User";
+
+    // Send system message visible to everyone
+    await supabase.from("debate_messages").insert({
+      debate_id: activeDebate.id,
+      user_id: user.id,
+      discord_id: user.user_metadata?.discord_id || null,
+      discord_username: discordUsername,
+      message: `🖐️ @${discordUsername} is requesting to speak`,
+      message_type: "speak_request",
+    });
+
+    toast({ title: "Request Sent", description: "Your request to speak has been sent to the host." });
+  };
+
+  // Owner: promote user to speaker
+  const promoteToSpeaker = async (participantId: string, participantName: string) => {
+    if (!isOwner || !activeDebate) return;
+    await supabase
+      .from("debate_participants")
+      .update({ role: "speaker" })
+      .eq("id", participantId);
+
+    await supabase.from("debate_messages").insert({
+      debate_id: activeDebate.id,
+      user_id: user.id,
+      message: `🎤 @${participantName} has been promoted to speaker by the host`,
+      message_type: "system",
+    });
+
+    toast({ title: "Promoted", description: `${participantName} is now a speaker.` });
+  };
+
+  // Owner: demote user back to listener
+  const demoteToListener = async (participantId: string, participantName: string) => {
+    if (!isOwner || !activeDebate) return;
+    await supabase
+      .from("debate_participants")
+      .update({ role: "listener" })
+      .eq("id", participantId);
+
+    await supabase.from("debate_messages").insert({
+      debate_id: activeDebate.id,
+      user_id: user.id,
+      message: `🔇 @${participantName} has been moved back to listener`,
+      message_type: "system",
+    });
+
+    toast({ title: "Demoted", description: `${participantName} is now a listener.` });
+  };
+
+  // Owner: deny speak request
+  const denyRequest = async (participantId: string, participantName: string) => {
+    if (!isOwner || !activeDebate) return;
+    await supabase
+      .from("debate_participants")
+      .update({ role: "listener" })
+      .eq("id", participantId);
+
+    toast({ title: "Denied", description: `${participantName}'s request was denied.` });
   };
 
   // Screen share
@@ -773,6 +854,26 @@ const DebatePage = () => {
                               <Headphones className="w-4 h-4 mr-1" />
                               Listening
                             </Button>
+                            {/* Request to Speak button - only show for listeners */}
+                            {activeDebate.status === "live" && (() => {
+                              const myP = participants.find(p => p.user_id === user?.id);
+                              if (myP?.role === "listener") return (
+                                <Button variant="outline" size="sm" onClick={requestToSpeak} className="border-yellow-500/30 text-yellow-400">
+                                  <Hand className="w-4 h-4 mr-1" /> Request to Speak
+                                </Button>
+                              );
+                              if (myP?.role === "requesting") return (
+                                <Badge variant="outline" className="border-yellow-500/50 text-yellow-400 text-xs py-1 px-2">
+                                  <Hand className="w-3 h-3 mr-1 animate-pulse" /> Request Pending
+                                </Badge>
+                              );
+                              if (myP?.role === "speaker") return (
+                                <Badge variant="outline" className="border-primary/50 text-primary text-xs py-1 px-2">
+                                  <Mic className="w-3 h-3 mr-1" /> Speaker
+                                </Badge>
+                              );
+                              return null;
+                            })()}
                             <Button variant="destructive" size="sm" onClick={leaveDebate}>
                               Leave
                             </Button>
@@ -828,6 +929,45 @@ const DebatePage = () => {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Speak Requests Banner (Owner Only) */}
+                {isOwner && speakRequests.length > 0 && activeDebate.status === "live" && (
+                  <Card className="border-yellow-500/30 bg-yellow-500/5">
+                    <CardContent className="py-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Hand className="w-4 h-4 text-yellow-400" />
+                        <span className="text-sm font-medium text-yellow-400">
+                          Speak Requests ({speakRequests.length})
+                        </span>
+                      </div>
+                      <div className="space-y-2">
+                        {speakRequests.map(req => {
+                          const name = resolvedName(req.discord_id, req.discord_username);
+                          return (
+                            <motion.div
+                              key={req.id}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              className="flex items-center gap-2 p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20"
+                            >
+                              <Avatar className="w-7 h-7">
+                                <AvatarImage src={resolvedAvatar(req.discord_id, req.discord_avatar)} />
+                                <AvatarFallback className="text-[9px] bg-yellow-500/20">{name[0]}</AvatarFallback>
+                              </Avatar>
+                              <span className="text-sm font-medium flex-1 truncate">{name}</span>
+                              <Button size="sm" variant="outline" className="h-7 px-2 border-green-500/40 text-green-400 text-xs" onClick={() => promoteToSpeaker(req.id, name)}>
+                                <UserCheck className="w-3 h-3 mr-1" /> Accept
+                              </Button>
+                              <Button size="sm" variant="outline" className="h-7 px-2 border-destructive/40 text-destructive text-xs" onClick={() => denyRequest(req.id, name)}>
+                                <UserMinus className="w-3 h-3 mr-1" /> Deny
+                              </Button>
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Screen Share Preview */}
                 {isScreenSharing && (
@@ -975,15 +1115,39 @@ const DebatePage = () => {
                                 {resolvedName(p.discord_id, p.discord_username)}
                               </p>
                               <div className="flex items-center gap-1">
-                                <Badge variant="outline" className="text-[9px] h-4">
+                                <Badge variant="outline" className={`text-[9px] h-4 ${
+                                  p.role === "requesting" ? "border-yellow-500/50 text-yellow-400" : ""
+                                }`}>
                                   {p.role === "speaker" ? (
                                     <><Mic className="w-2 h-2 mr-0.5" /> Speaker</>
+                                  ) : p.role === "requesting" ? (
+                                    <><Hand className="w-2 h-2 mr-0.5 animate-pulse" /> Requesting</>
                                   ) : (
                                     <><Headphones className="w-2 h-2 mr-0.5" /> Listener</>
                                   )}
                                 </Badge>
                               </div>
                             </div>
+                            {/* Owner controls */}
+                            {isOwner && activeDebate.status === "live" && (
+                              <div className="flex items-center gap-1 shrink-0">
+                                {p.role === "requesting" && (
+                                  <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-green-400" onClick={() => promoteToSpeaker(p.id, resolvedName(p.discord_id, p.discord_username))} title="Accept">
+                                    <UserCheck className="w-3 h-3" />
+                                  </Button>
+                                )}
+                                {(p.role === "listener" || p.role === "requesting") && (
+                                  <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-primary" onClick={() => promoteToSpeaker(p.id, resolvedName(p.discord_id, p.discord_username))} title="Make Speaker">
+                                    <ArrowUpCircle className="w-3 h-3" />
+                                  </Button>
+                                )}
+                                {p.role === "speaker" && (
+                                  <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground" onClick={() => demoteToListener(p.id, resolvedName(p.discord_id, p.discord_username))} title="Move to Listener">
+                                    <UserMinus className="w-3 h-3" />
+                                  </Button>
+                                )}
+                              </div>
+                            )}
                           </motion.div>
                         ))}
                         {participants.length === 0 && (
