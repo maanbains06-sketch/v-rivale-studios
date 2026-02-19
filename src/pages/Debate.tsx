@@ -661,25 +661,78 @@ const DebatePage = () => {
 
         {/* Debate Ended Banner */}
         {debateEnded && activeDebate && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="max-w-2xl mx-auto mb-8"
-          >
-            <Card className="border-primary/30 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10">
-              <CardContent className="py-8 text-center">
-                <div className="text-4xl mb-3">🏁</div>
-                <h3 className="text-2xl font-bold text-foreground mb-2">Debate Has Ended</h3>
-                <p className="text-muted-foreground mb-1">{activeDebate.title}</p>
-                <p className="text-sm text-muted-foreground">
-                  Thank you for joining! Stay tuned for the next debate.
-                </p>
-                <Badge variant="outline" className="mt-4 border-primary/50 text-primary">
-                  Ended • {format(new Date(activeDebate.ends_at), "PPp")}
-                </Badge>
-              </CardContent>
-            </Card>
-          </motion.div>
+          <div className="max-w-4xl mx-auto mb-8 space-y-8">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+            >
+              <Card className="border-primary/30 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10">
+                <CardContent className="py-8 text-center">
+                  <div className="text-4xl mb-3">🏁</div>
+                  <h3 className="text-2xl font-bold text-foreground mb-2">Debate Has Ended</h3>
+                  <p className="text-muted-foreground mb-1">{activeDebate.title}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Thank you for joining! Stay tuned for the next debate.
+                  </p>
+                  <Badge variant="outline" className="mt-4 border-primary/50 text-primary">
+                    Ended • {format(new Date(activeDebate.ends_at), "PPp")}
+                  </Badge>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Previous Debates */}
+            {debates.filter(d => d.status === "ended").length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+                  <Radio className="w-5 h-5 text-primary" />
+                  Previous Debates
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {debates.filter(d => d.status === "ended").map((debate, i) => (
+                    <motion.div
+                      key={debate.id}
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 * i }}
+                    >
+                      <Card className="glass-effect border-border/20 overflow-hidden hover:border-primary/30 transition-all">
+                        {debate.image_url && (
+                          <div className="relative h-36 overflow-hidden">
+                            <img src={debate.image_url} alt={debate.title} className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+                            <Badge variant="outline" className="absolute top-2 right-2 border-muted-foreground/40 bg-background/60 backdrop-blur-sm text-[10px]">
+                              Ended
+                            </Badge>
+                          </div>
+                        )}
+                        <CardContent className={debate.image_url ? "pt-3 pb-4" : "py-4"}>
+                          {!debate.image_url && (
+                            <Badge variant="outline" className="border-muted-foreground/40 text-[10px] mb-2">
+                              Ended
+                            </Badge>
+                          )}
+                          <h4 className="font-bold text-foreground truncate">{debate.title}</h4>
+                          <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{debate.topic}</p>
+                          {debate.description && (
+                            <p className="text-xs text-muted-foreground/70 mt-1 line-clamp-2">{debate.description}</p>
+                          )}
+                          <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
+                            <Clock className="w-3 h-3" />
+                            <span>{format(new Date(debate.starts_at), "PP")} — {format(new Date(debate.ends_at), "PP")}</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </div>
         )}
 
         {!activeDebate ? (
