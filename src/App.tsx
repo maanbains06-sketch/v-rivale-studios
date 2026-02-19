@@ -99,6 +99,7 @@ const ConfidentialSupport = lazy(() => import("./pages/ConfidentialSupport"));
 const CreatorApplication = lazy(() => import("./pages/CreatorApplication"));
 const AdminDetection = lazy(() => import("./pages/AdminDetection"));
 const Awards = lazy(() => import("./pages/Awards"));
+const Debate = lazy(() => import("./pages/Debate"));
 
 
 const DirectMessage = lazy(() => import("./pages/DirectMessage"));
@@ -197,6 +198,7 @@ const AppRoutes = memo(() => {
           <Route path="/creator-application" element={<PageTransition><CreatorApplication /></PageTransition>} />
           <Route path="/admin/detection" element={<PageTransition><AdminDetection /></PageTransition>} />
           <Route path="/awards" element={<PageTransition><PageMaintenanceBlock pageKey="awards"><Awards /></PageMaintenanceBlock></PageTransition>} />
+          <Route path="/debate" element={<PageTransition><RequireAuth message="Login with Discord to join debates."><Debate /></RequireAuth></PageTransition>} />
           
           
           <Route path="/direct-message" element={<PageTransition><RequireAuth message="Login with Discord to send direct messages."><DirectMessage /></RequireAuth></PageTransition>} />

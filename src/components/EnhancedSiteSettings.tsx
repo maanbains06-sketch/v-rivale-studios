@@ -631,6 +631,70 @@ export const EnhancedSiteSettings = ({ settings, onSettingsChange }: EnhancedSit
 
             <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
               <div className="space-y-0.5">
+                <Label className="text-base">Hide Debate Arena</Label>
+                <p className="text-sm text-muted-foreground">Hide Debate page from all users (owner only)</p>
+              </div>
+              <Switch 
+                checked={getValue("debate_hidden") === "true"}
+                onCheckedChange={() => toggleSetting("debate_hidden")}
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
+              <div className="space-y-0.5">
+                <Label className="text-base">Hide Awards</Label>
+                <p className="text-sm text-muted-foreground">Hide Awards page from all users (owner only)</p>
+              </div>
+              <Switch 
+                checked={getValue("awards_hidden") === "true"}
+                onCheckedChange={() => toggleSetting("awards_hidden")}
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
+              <div className="space-y-0.5">
+                <Label className="text-base">Hide Gallery</Label>
+                <p className="text-sm text-muted-foreground">Hide Gallery page from all users (owner only)</p>
+              </div>
+              <Switch 
+                checked={getValue("gallery_hidden") === "true"}
+                onCheckedChange={() => toggleSetting("gallery_hidden")}
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
+              <div className="space-y-0.5">
+                <Label className="text-base">Hide Giveaway</Label>
+                <p className="text-sm text-muted-foreground">Hide Giveaway page from all users (owner only)</p>
+              </div>
+              <Switch 
+                checked={getValue("giveaway_hidden") === "true"}
+                onCheckedChange={() => toggleSetting("giveaway_hidden")}
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
+              <div className="space-y-0.5">
+                <Label className="text-base">Hide Gang RP</Label>
+                <p className="text-sm text-muted-foreground">Hide Gang RP page from all users (owner only)</p>
+              </div>
+              <Switch 
+                checked={getValue("gang_rp_hidden") === "true"}
+                onCheckedChange={() => toggleSetting("gang_rp_hidden")}
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
+              <div className="space-y-0.5">
+                <Label className="text-base">Hide Guides</Label>
+                <p className="text-sm text-muted-foreground">Hide Guides page from all users (owner only)</p>
+              </div>
+              <Switch 
+                checked={getValue("guides_hidden") === "true"}
+                onCheckedChange={() => toggleSetting("guides_hidden")}
+              />
+            </div>
+              <div className="space-y-0.5">
                 <Label className="text-base">Giveaways Enabled</Label>
                 <p className="text-sm text-muted-foreground">Enable giveaway system</p>
               </div>

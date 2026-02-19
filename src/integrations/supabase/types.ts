@@ -930,6 +930,139 @@ export type Database = {
           },
         ]
       }
+      debate_messages: {
+        Row: {
+          created_at: string
+          debate_id: string
+          discord_avatar: string | null
+          discord_id: string | null
+          discord_username: string | null
+          id: string
+          message: string
+          message_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          debate_id: string
+          discord_avatar?: string | null
+          discord_id?: string | null
+          discord_username?: string | null
+          id?: string
+          message: string
+          message_type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          debate_id?: string
+          discord_avatar?: string | null
+          discord_id?: string | null
+          discord_username?: string | null
+          id?: string
+          message?: string
+          message_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "debate_messages_debate_id_fkey"
+            columns: ["debate_id"]
+            isOneToOne: false
+            referencedRelation: "debates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      debate_participants: {
+        Row: {
+          debate_id: string
+          discord_avatar: string | null
+          discord_id: string | null
+          discord_username: string | null
+          id: string
+          joined_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          debate_id: string
+          discord_avatar?: string | null
+          discord_id?: string | null
+          discord_username?: string | null
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          debate_id?: string
+          discord_avatar?: string | null
+          discord_id?: string | null
+          discord_username?: string | null
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "debate_participants_debate_id_fkey"
+            columns: ["debate_id"]
+            isOneToOne: false
+            referencedRelation: "debates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      debates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          discord_message_id: string | null
+          ends_at: string
+          id: string
+          image_url: string | null
+          max_participants: number | null
+          starts_at: string
+          status: string
+          title: string
+          topic: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          discord_message_id?: string | null
+          ends_at: string
+          id?: string
+          image_url?: string | null
+          max_participants?: number | null
+          starts_at: string
+          status?: string
+          title: string
+          topic: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          discord_message_id?: string | null
+          ends_at?: string
+          id?: string
+          image_url?: string | null
+          max_participants?: number | null
+          starts_at?: string
+          status?: string
+          title?: string
+          topic?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       device_fingerprints: {
         Row: {
           created_at: string

@@ -32,6 +32,7 @@ import ThemeManager from "@/components/ThemeManager";
 import { OwnerGalleryManager } from "@/components/OwnerGalleryManager";
 import GiftSpinManager from "@/components/GiftSpinManager";
 import OwnerAwardsManager from "@/components/OwnerAwardsManager";
+import OwnerDebateManager from "@/components/OwnerDebateManager";
 
 import { LiveApplicationStats } from "@/components/LiveApplicationStats";
 import OwnerLiveChatManager from "@/components/OwnerLiveChatManager";
@@ -1729,6 +1730,10 @@ const OwnerPanel = () => {
                   <Trophy className="w-4 h-4" />
                   <span className="hidden sm:inline">Awards</span>
                 </TabsTrigger>
+                <TabsTrigger value="debates" className="flex items-center gap-2 whitespace-nowrap">
+                  <Radio className="w-4 h-4" />
+                  <span className="hidden sm:inline">Debates</span>
+                </TabsTrigger>
               </TabsList>
             </div>
             {/* Fade indicators for scroll hint */}
@@ -1797,6 +1802,11 @@ const OwnerPanel = () => {
           {/* Awards Tab */}
           <TabsContent value="awards">
             <OwnerAwardsManager />
+          </TabsContent>
+
+          {/* Debates Tab */}
+          <TabsContent value="debates">
+            <OwnerDebateManager />
           </TabsContent>
 
           {/* Application Stats Tab */}
