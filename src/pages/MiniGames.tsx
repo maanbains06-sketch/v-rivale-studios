@@ -10,7 +10,7 @@ import {
   Gamepad2, Trophy, Clock, ArrowLeft, Brain, Zap, BookOpen,
   Shuffle, Target, Lock, Search, Eye, CheckCircle, XCircle, Star,
   Crosshair, Keyboard, Palette, Grid3X3, Calculator, DoorOpen,
-  Lightbulb, Key, Flame, Bomb, Skull, Volume2, Shield
+  Lightbulb, Key, Flame, Bomb, Skull, Volume2, Shield, Box
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -28,7 +28,7 @@ interface LeaderboardEntry {
 type GameType =
   | "escape_room" | "memory_match" | "reaction_test" | "trivia_quiz" | "word_scramble"
   | "speed_typer" | "color_match" | "pattern_memory" | "math_blitz" | "aim_trainer"
-  | "bomb_defusal" | "snake_runner";
+  | "bomb_defusal" | "snake_runner" | "block_puzzle";
 
 interface GameDef {
   id: GameType;
@@ -52,6 +52,7 @@ const GAMES: GameDef[] = [
   { id: "aim_trainer", title: "Aim Trainer", description: "Click the targets as fast and accurately as you can!", icon: <Crosshair className="w-8 h-8" />, gradient: "from-lime-500 via-green-500 to-emerald-500", glow: "shadow-lime-500/40" },
   { id: "bomb_defusal", title: "Bomb Defusal", description: "Cut the right wires before the bomb explodes!", icon: <Bomb className="w-8 h-8" />, gradient: "from-red-700 via-orange-600 to-yellow-500", glow: "shadow-red-600/40" },
   { id: "snake_runner", title: "Snake Runner", description: "Classic snake — eat food, grow longer, don't hit walls!", icon: <Flame className="w-8 h-8" />, gradient: "from-emerald-600 via-green-500 to-lime-400", glow: "shadow-emerald-500/40" },
+  { id: "block_puzzle", title: "Block Puzzle", description: "Slide numbered blocks to solve the 15-puzzle before time runs out!", icon: <Box className="w-8 h-8" />, gradient: "from-violet-600 via-purple-500 to-fuchsia-500", glow: "shadow-violet-500/40" },
 ];
 
 // ─── 3D Card Wrapper ─────────────────────────────────────
@@ -327,7 +328,7 @@ const ROOM_OBJECTS = [
 ];
 
 const EscapeRoomGame = ({ onBack }: { onBack: () => void }) => {
-  const [timeLeft, setTimeLeft] = useState(600);
+  const [timeLeft, setTimeLeft] = useState(480);
   const [started, setStarted] = useState(false);
   const [completed, setCompleted] = useState<Set<string>>(new Set());
   const [gameOver, setGameOver] = useState(false);
@@ -336,6 +337,7 @@ const EscapeRoomGame = ({ onBack }: { onBack: () => void }) => {
   const [codeInput, setCodeInput] = useState("");
   const [riddleAnswer, setRiddleAnswer] = useState("");
   const [decryptInput, setDecryptInput] = useState("");
+  const [cipherInput, setCipherInput] = useState("");
   const [foundKey, setFoundKey] = useState(false);
   const [foundClue, setFoundClue] = useState(false);
   const submitScore = useSubmitScore();
@@ -354,29 +356,30 @@ const EscapeRoomGame = ({ onBack }: { onBack: () => void }) => {
   }, [started, gameOver]);
 
   const completePuzzle = (id: string) => setCompleted(prev => new Set(prev).add(id));
-  const canEscape = completed.has("code") && completed.has("riddle") && completed.has("decrypt") && foundKey;
+  const canEscape = completed.has("code") && completed.has("riddle") && completed.has("decrypt") && completed.has("cipher") && foundKey;
 
   const handleEscape = () => {
     if (!canEscape) return;
     setWon(true); setGameOver(true); clearInterval(intervalRef.current);
-    const elapsed = 600 - timeLeft;
-    submitScore("escape_room", Math.max(100, 1000 - elapsed * 2), elapsed);
+    const elapsed = 480 - timeLeft;
+    submitScore("escape_room", Math.max(100, 1200 - elapsed * 3), elapsed);
   };
 
   const reset = () => {
-    setStarted(false); setTimeLeft(600); setCompleted(new Set());
+    setStarted(false); setTimeLeft(480); setCompleted(new Set());
     setGameOver(false); setWon(false); setActiveObject(null);
-    setCodeInput(""); setRiddleAnswer(""); setDecryptInput("");
+    setCodeInput(""); setRiddleAnswer(""); setDecryptInput(""); setCipherInput("");
     setFoundKey(false); setFoundClue(false);
   };
 
   if (!started) return <StartScreen title={game.title} description={game.description} icon={<Lock className="w-14 h-14" />} gradient={game.gradient} glow={game.glow} onStart={() => setStarted(true)} onBack={onBack} gameType="escape_room" />;
-  if (gameOver) return <EndScreen won={won} title={won ? "You Escaped! 🎉" : "Time's Up!"} subtitle={won ? `Escaped in ${Math.floor((600 - timeLeft) / 60)}m ${(600 - timeLeft) % 60}s` : "You didn't escape in time."} onReplay={reset} onBack={onBack} gameType="escape_room" />;
+  if (gameOver) return <EndScreen won={won} title={won ? "You Escaped! 🎉" : "Time's Up!"} subtitle={won ? `Escaped in ${Math.floor((480 - timeLeft) / 60)}m ${(480 - timeLeft) % 60}s` : "You didn't escape in time."} onReplay={reset} onBack={onBack} gameType="escape_room" />;
 
   const tasks = [
     { label: "Find 4-Digit Code", done: completed.has("code"), icon: "🔢" },
     { label: "Decrypt Message", done: completed.has("decrypt"), icon: "🔐" },
     { label: "Solve Riddle", done: completed.has("riddle"), icon: "💡" },
+    { label: "Break Caesar Cipher", done: completed.has("cipher"), icon: "🧩" },
     { label: "Locate Secret Key", done: foundKey, icon: "🔑" },
     { label: "Escape Room", done: won, icon: "🚪" },
   ];
@@ -551,6 +554,17 @@ const EscapeRoomGame = ({ onBack }: { onBack: () => void }) => {
                     </Button>
                   ) : <p className="text-green-400 text-sm flex items-center gap-2 font-mono"><CheckCircle className="w-4 h-4" /> Key obtained! 🔑</p>}
                 </>
+              ) : activeObject === "window" ? (
+                <>
+                  <div className="flex items-center gap-2 text-sm text-cyan-400/80 font-mono"><Eye className="w-4 h-4" /> Moonlight reveals scratched letters: "HVFDSH" — Caesar cipher, shift 3 backwards.</div>
+                  {!completed.has("cipher") ? (
+                    <div className="flex gap-2">
+                      <input value={cipherInput} onChange={e => setCipherInput(e.target.value)} placeholder="Decoded word..."
+                        className="flex-1 bg-black/40 border border-cyan-500/30 rounded-xl px-4 py-2.5 text-sm font-mono text-cyan-300 focus:border-cyan-400 outline-none" />
+                      <Button onClick={() => { if (cipherInput.toLowerCase().trim() === "escape") completePuzzle("cipher"); }} className="bg-cyan-600 hover:bg-cyan-500 border-0">Decode</Button>
+                    </div>
+                  ) : <p className="text-green-400 text-sm flex items-center gap-2 font-mono"><CheckCircle className="w-4 h-4" /> Decoded: ESCAPE</p>}
+                </>
               ) : activeObject === "door" ? (
                 <>
                   <div className="flex items-center gap-2 text-sm text-cyan-400/80 font-mono"><DoorOpen className="w-4 h-4" /> {canEscape ? "All puzzles solved — ESCAPE NOW!" : "Solve all puzzles to unlock."}</div>
@@ -572,7 +586,7 @@ const EscapeRoomGame = ({ onBack }: { onBack: () => void }) => {
 // ════════════════════════════════════════════════════════
 // GAME 2: MEMORY MATCH
 // ════════════════════════════════════════════════════════
-const MEMORY_EMOJIS = ["🚗", "🔫", "💰", "🏠", "👮", "🚑", "⚖️", "🎭"];
+const MEMORY_EMOJIS = ["🚗", "🔫", "💰", "🏠", "👮", "🚑", "⚖️", "🎭", "🏦", "💊"];
 
 const MemoryMatchGame = ({ onBack }: { onBack: () => void }) => {
   const [cards, setCards] = useState<{ id: number; emoji: string; flipped: boolean; matched: boolean }[]>([]);
@@ -630,7 +644,7 @@ const MemoryMatchGame = ({ onBack }: { onBack: () => void }) => {
   return (
     <GameShell onBack={onBack} title="Memory Match" icon={<Brain className="w-5 h-5 text-foreground" />} gradient={game.gradient}
       badges={<><Badge variant="outline" className="border-purple-500/30">Moves: {moves}</Badge><Badge className="bg-purple-900/40 text-purple-300 border-purple-500/30"><Clock className="w-3 h-3 mr-1" />{elapsed}s</Badge></>}>
-      <div className="grid grid-cols-4 gap-3 max-w-lg mx-auto" style={{ perspective: "800px" }}>
+      <div className="grid grid-cols-5 gap-3 max-w-xl mx-auto" style={{ perspective: "800px" }}>
         {cards.map(card => (
           <div key={card.id} className="aspect-square cursor-pointer" style={{ perspective: "400px" }} onClick={() => handleClick(card.id)}>
             <motion.div className="w-full h-full relative" style={{ transformStyle: "preserve-3d" }}
@@ -768,7 +782,7 @@ const TriviaQuizGame = ({ onBack }: { onBack: () => void }) => {
   const initGame = () => {
     setQuestions([...TRIVIA_QUESTIONS].sort(() => Math.random() - 0.5).slice(0, 10));
     setCurrent(0); setScore(0); setSelected(null); setGameOver(false);
-    setStarted(true); setTimeLeft(120); setStartTime(Date.now());
+    setStarted(true); setTimeLeft(90); setStartTime(Date.now());
   };
 
   useEffect(() => {
@@ -859,7 +873,7 @@ const WordScrambleGame = ({ onBack }: { onBack: () => void }) => {
   const initGame = () => {
     const shuffled = [...WORDS].sort(() => Math.random() - 0.5).slice(0, 8);
     setWords(shuffled); setCurrent(0); setScore(0); setGameOver(false);
-    setStarted(true); setTimeLeft(90); setStartTime(Date.now()); setGuess(""); setFeedback(null);
+    setStarted(true); setTimeLeft(70); setStartTime(Date.now()); setGuess(""); setFeedback(null);
     setScrambled(scramble(shuffled[0].word));
   };
 
@@ -940,7 +954,7 @@ const SpeedTyperGame = ({ onBack }: { onBack: () => void }) => {
   const initGame = () => {
     const shuffled = [...TYPING_WORDS].sort(() => Math.random() - 0.5);
     setWords(shuffled); setCurrent(0); setInput(""); setScore(0);
-    setGameOver(false); setStarted(true); setTimeLeft(60); setStartTime(Date.now()); setCorrect(null);
+    setGameOver(false); setStarted(true); setTimeLeft(45); setStartTime(Date.now()); setCorrect(null);
   };
 
   useEffect(() => {
@@ -1164,18 +1178,19 @@ const MathBlitzGame = ({ onBack }: { onBack: () => void }) => {
   const game = GAMES[8];
 
   const generateProblem = () => {
-    const ops = ["+", "-", "×"];
+    const ops = ["+", "-", "×", "÷"];
     const op = ops[Math.floor(Math.random() * ops.length)];
     let a: number, b: number, answer: number;
-    if (op === "+") { a = Math.floor(Math.random() * 50) + 1; b = Math.floor(Math.random() * 50) + 1; answer = a + b; }
-    else if (op === "-") { a = Math.floor(Math.random() * 50) + 20; b = Math.floor(Math.random() * 20) + 1; answer = a - b; }
-    else { a = Math.floor(Math.random() * 12) + 2; b = Math.floor(Math.random() * 12) + 2; answer = a * b; }
+    if (op === "+") { a = Math.floor(Math.random() * 80) + 10; b = Math.floor(Math.random() * 80) + 10; answer = a + b; }
+    else if (op === "-") { a = Math.floor(Math.random() * 80) + 30; b = Math.floor(Math.random() * 30) + 1; answer = a - b; }
+    else if (op === "÷") { b = Math.floor(Math.random() * 10) + 2; answer = Math.floor(Math.random() * 12) + 2; a = b * answer; }
+    else { a = Math.floor(Math.random() * 15) + 2; b = Math.floor(Math.random() * 15) + 2; answer = a * b; }
     const opts = [answer];
     while (opts.length < 4) { const wrong = answer + (Math.floor(Math.random() * 20) - 10); if (wrong !== answer && !opts.includes(wrong) && wrong >= 0) opts.push(wrong); }
     setProblem({ question: `${a} ${op} ${b}`, answer }); setOptions(opts.sort(() => Math.random() - 0.5)); setFeedback(null);
   };
 
-  const initGame = () => { setScore(0); setRound(0); setGameOver(false); setStarted(true); setTimeLeft(60); generateProblem(); };
+  const initGame = () => { setScore(0); setRound(0); setGameOver(false); setStarted(true); setTimeLeft(45); generateProblem(); };
 
   useEffect(() => {
     if (!started || gameOver) return;
@@ -1247,11 +1262,11 @@ const AimTrainerGame = ({ onBack }: { onBack: () => void }) => {
 
   const spawnTarget = () => {
     const id = nextId.current++;
-    const size = 30 + Math.random() * 30;
-    const x = Math.random() * 80 + 5;
-    const y = Math.random() * 75 + 5;
-    setTargets(prev => [...prev.slice(-8), { id, x, y, size }]);
-    setTimeout(() => setTargets(prev => { if (prev.find(t => t.id === id)) { setMisses(m => m + 1); return prev.filter(t => t.id !== id); } return prev; }), 2000);
+    const size = 22 + Math.random() * 28;
+    const x = Math.random() * 85 + 5;
+    const y = Math.random() * 80 + 5;
+    setTargets(prev => [...prev.slice(-10), { id, x, y, size }]);
+    setTimeout(() => setTargets(prev => { if (prev.find(t => t.id === id)) { setMisses(m => m + 1); return prev.filter(t => t.id !== id); } return prev; }), 1400);
   };
 
   const initGame = () => { setHits(0); setMisses(0); setTargets([]); setGameOver(false); setStarted(true); setTimeLeft(30); setStartTime(Date.now()); nextId.current = 0; };
@@ -1264,7 +1279,7 @@ const AimTrainerGame = ({ onBack }: { onBack: () => void }) => {
         return prev - 1;
       });
     }, 1000);
-    spawnRef.current = setInterval(spawnTarget, 700);
+    spawnRef.current = setInterval(spawnTarget, 500);
     return () => { clearInterval(intervalRef.current); clearInterval(spawnRef.current); };
   }, [started, gameOver, hits, misses, startTime, submitScore]);
 
@@ -1322,7 +1337,7 @@ const BombDefusalGame = ({ onBack }: { onBack: () => void }) => {
   const [cutWires, setCutWires] = useState<string[]>([]);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(60);
-  const totalRounds = 5;
+  const totalRounds = 7;
   const submitScore = useSubmitScore();
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
   const game = GAMES[10];
@@ -1486,7 +1501,7 @@ const SnakeRunnerGame = ({ onBack }: { onBack: () => void }) => {
         } else { newSnake.pop(); }
         return newSnake;
       });
-    }, 120);
+    }, 100);
     return () => clearInterval(gameLoopRef.current);
   }, [started, gameOver, food, submitScore]);
 
@@ -1531,6 +1546,157 @@ const SnakeRunnerGame = ({ onBack }: { onBack: () => void }) => {
 };
 
 // ════════════════════════════════════════════════════════
+// GAME 13: BLOCK PUZZLE (15-puzzle) 🧩
+// ════════════════════════════════════════════════════════
+const BlockPuzzleGame = ({ onBack }: { onBack: () => void }) => {
+  const [started, setStarted] = useState(false);
+  const [gameOver, setGameOver] = useState(false);
+  const [tiles, setTiles] = useState<number[]>([]);
+  const [moves, setMoves] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(180);
+  const [startTime, setStartTime] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
+  const submitScore = useSubmitScore();
+  const intervalRef = useRef<ReturnType<typeof setInterval>>();
+  const game = GAMES[12];
+  const SIZE = 4;
+
+  const isSolvable = (arr: number[]): boolean => {
+    let inversions = 0;
+    const filtered = arr.filter(n => n !== 0);
+    for (let i = 0; i < filtered.length; i++) {
+      for (let j = i + 1; j < filtered.length; j++) {
+        if (filtered[i] > filtered[j]) inversions++;
+      }
+    }
+    const blankRow = Math.floor(arr.indexOf(0) / SIZE);
+    if (SIZE % 2 === 0) {
+      return (inversions + blankRow) % 2 === 1;
+    }
+    return inversions % 2 === 0;
+  };
+
+  const shuffle = (): number[] => {
+    let arr: number[];
+    do {
+      arr = Array.from({ length: SIZE * SIZE }, (_, i) => i);
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    } while (!isSolvable(arr) || isSolved(arr));
+    return arr;
+  };
+
+  const isSolved = (arr: number[]): boolean => {
+    for (let i = 0; i < arr.length - 1; i++) {
+      if (arr[i] !== i + 1) return false;
+    }
+    return arr[arr.length - 1] === 0;
+  };
+
+  const initGame = () => {
+    setTiles(shuffle()); setMoves(0); setGameOver(false);
+    setStarted(true); setTimeLeft(180); setStartTime(Date.now()); setElapsed(0);
+  };
+
+  useEffect(() => {
+    if (!started || gameOver) return;
+    intervalRef.current = setInterval(() => {
+      const el = Math.floor((Date.now() - startTime) / 1000);
+      setElapsed(el);
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(intervalRef.current); setGameOver(true);
+          submitScore("block_puzzle", Math.max(10, 500 - moves * 2), el);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(intervalRef.current);
+  }, [started, gameOver, startTime, moves, submitScore]);
+
+  const handleTileClick = (index: number) => {
+    if (gameOver) return;
+    const blankIndex = tiles.indexOf(0);
+    const row = Math.floor(index / SIZE);
+    const col = index % SIZE;
+    const blankRow = Math.floor(blankIndex / SIZE);
+    const blankCol = blankIndex % SIZE;
+    const isAdjacent = (Math.abs(row - blankRow) + Math.abs(col - blankCol)) === 1;
+    if (!isAdjacent) return;
+
+    const newTiles = [...tiles];
+    [newTiles[index], newTiles[blankIndex]] = [newTiles[blankIndex], newTiles[index]];
+    setTiles(newTiles);
+    setMoves(m => m + 1);
+
+    if (isSolved(newTiles)) {
+      setGameOver(true); clearInterval(intervalRef.current);
+      const finalTime = Math.floor((Date.now() - startTime) / 1000);
+      setElapsed(finalTime);
+      submitScore("block_puzzle", Math.max(100, 2000 - (moves + 1) * 5 - finalTime * 3), finalTime);
+    }
+  };
+
+  const won = gameOver && isSolved(tiles);
+
+  if (!started) return <StartScreen title={game.title} description={game.description} icon={<Box className="w-14 h-14" />} gradient={game.gradient} glow={game.glow} onStart={initGame} onBack={onBack} gameType="block_puzzle" />;
+  if (gameOver) return <EndScreen won={won} title={won ? `Solved in ${moves} moves!` : "Time's Up!"} subtitle={won ? `Time: ${elapsed}s — Score: ${Math.max(100, 2000 - moves * 5 - elapsed * 3)}` : `Made ${moves} moves`} onReplay={initGame} onBack={onBack} gameType="block_puzzle" />;
+
+  const tileColors = [
+    "", // 0 = blank
+    "from-violet-600 to-purple-500", "from-fuchsia-600 to-pink-500", "from-purple-600 to-indigo-500", "from-indigo-600 to-blue-500",
+    "from-blue-600 to-cyan-500", "from-cyan-600 to-teal-500", "from-teal-600 to-emerald-500", "from-emerald-600 to-green-500",
+    "from-green-600 to-lime-500", "from-lime-600 to-yellow-500", "from-yellow-600 to-amber-500", "from-amber-600 to-orange-500",
+    "from-orange-600 to-red-500", "from-red-600 to-rose-500", "from-rose-600 to-pink-500",
+  ];
+
+  return (
+    <GameShell onBack={onBack} title="Block Puzzle" icon={<Box className="w-5 h-5 text-foreground" />} gradient={game.gradient}
+      timer={<TimerBadge seconds={timeLeft} danger={30} />}
+      badges={<Badge variant="outline" className="border-violet-500/30 font-mono">Moves: {moves}</Badge>}>
+      <Card3D>
+        <Card className="border-violet-500/20 bg-gradient-to-b from-[hsl(220,20%,10%)] to-[hsl(220,20%,6%)]">
+          <CardContent className="p-6 md:p-8">
+            <div className="grid grid-cols-4 gap-2 max-w-xs mx-auto" style={{ perspective: "600px" }}>
+              {tiles.map((tile, index) => (
+                <motion.button
+                  key={`${index}-${tile}`}
+                  layout
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  className={`aspect-square rounded-xl border-2 text-xl md:text-2xl font-black font-mono transition-all ${
+                    tile === 0
+                      ? "bg-transparent border-dashed border-white/[0.06]"
+                      : `bg-gradient-to-br ${tileColors[tile]} border-white/20 shadow-lg hover:shadow-xl hover:scale-105 cursor-pointer active:scale-95`
+                  }`}
+                  style={tile !== 0 ? {
+                    textShadow: "0 2px 4px rgba(0,0,0,0.5)",
+                    boxShadow: "0 4px 15px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2)",
+                    transform: "perspective(400px) translateZ(0px)",
+                  } : {}}
+                  onClick={() => handleTileClick(index)}
+                  disabled={tile === 0}
+                  whileHover={tile !== 0 ? { scale: 1.08, z: 10 } : {}}
+                  whileTap={tile !== 0 ? { scale: 0.92 } : {}}
+                >
+                  {tile !== 0 && <span className="text-white drop-shadow-md">{tile}</span>}
+                </motion.button>
+              ))}
+            </div>
+            <p className="text-center text-xs text-muted-foreground mt-4 font-mono">
+              Arrange tiles 1-15 in order. Click a tile next to the blank space to slide it.
+            </p>
+          </CardContent>
+        </Card>
+      </Card3D>
+      <Leaderboard gameType="block_puzzle" />
+    </GameShell>
+  );
+};
+
+// ════════════════════════════════════════════════════════
 // MAIN HUB
 // ════════════════════════════════════════════════════════
 const MiniGames = () => {
@@ -1551,6 +1717,7 @@ const MiniGames = () => {
       case "aim_trainer": return <AimTrainerGame onBack={onBack} />;
       case "bomb_defusal": return <BombDefusalGame onBack={onBack} />;
       case "snake_runner": return <SnakeRunnerGame onBack={onBack} />;
+      case "block_puzzle": return <BlockPuzzleGame onBack={onBack} />;
       default: return null;
     }
   };
@@ -1578,7 +1745,7 @@ const MiniGames = () => {
                   WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
                 }}>Mini Games Arena</h1>
                 <p className="text-muted-foreground max-w-lg mx-auto text-lg">
-                  12 unique games with live leaderboards. Compete for the top spot!
+                  13 unique games with live leaderboards. Compete for the top spot!
                 </p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 max-w-7xl mx-auto">
