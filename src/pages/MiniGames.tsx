@@ -89,6 +89,8 @@ const NeonTimer = ({ seconds, danger = 60 }: { seconds: number; danger?: number 
 // ─── Realtime Leaderboard Component ──────────────────────
 const Leaderboard = memo(({ gameType }: { gameType: GameType }) => {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+  const [resolvedAvatars, setResolvedAvatars] = useState<Record<string, { username: string; avatar: string | null }>>({});
+  const resolvedRef = useRef<Set<string>>(new Set());
 
   const fetchScores = useCallback(async () => {
     const { data } = await supabase
@@ -97,8 +99,47 @@ const Leaderboard = memo(({ gameType }: { gameType: GameType }) => {
       .eq("game_type", gameType)
       .order("score", { ascending: false })
       .order("time_seconds", { ascending: true })
-      .limit(10);
-    if (data) setEntries(data as LeaderboardEntry[]);
+      .limit(100);
+    if (!data) return;
+
+    // Deduplicate: keep only each user's best score (highest score, then lowest time)
+    const bestByUser = new Map<string, LeaderboardEntry>();
+    for (const row of data as LeaderboardEntry[]) {
+      const key = row.discord_id || row.id;
+      const existing = bestByUser.get(key);
+      if (!existing || row.score > existing.score || (row.score === existing.score && (row.time_seconds ?? Infinity) < (existing.time_seconds ?? Infinity))) {
+        bestByUser.set(key, row);
+      }
+    }
+    const top10 = Array.from(bestByUser.values())
+      .sort((a, b) => b.score - a.score || (a.time_seconds ?? Infinity) - (b.time_seconds ?? Infinity))
+      .slice(0, 10);
+    setEntries(top10);
+
+    // Resolve Discord identities for entries missing proper names
+    for (const entry of top10) {
+      const discordId = entry.discord_id;
+      if (!discordId || !/^\d{17,19}$/.test(discordId)) continue;
+      if (resolvedRef.current.has(discordId)) continue;
+      // Skip if already has a proper username (not "Player" or empty)
+      if (entry.discord_username && entry.discord_username !== "Player" && entry.discord_username !== "Anonymous") continue;
+      resolvedRef.current.add(discordId);
+      // Fire and forget – updates state when done
+      supabase.functions.invoke('fetch-discord-user', { body: { discordId } }).then(({ data: userData }) => {
+        if (userData) {
+          const resolved = {
+            username: userData.displayName || userData.globalName || userData.username || "Unknown",
+            avatar: userData.avatar || null,
+          };
+          setResolvedAvatars(prev => ({ ...prev, [discordId]: resolved }));
+          // Also update the score rows in DB so future fetches are correct
+          supabase.from("mini_game_scores").update({
+            discord_username: resolved.username,
+            discord_avatar: resolved.avatar,
+          }).eq("discord_id", discordId).eq("game_type", gameType).then(() => {});
+        }
+      });
+    }
   }, [gameType]);
 
   useEffect(() => {
@@ -112,6 +153,21 @@ const Leaderboard = memo(({ gameType }: { gameType: GameType }) => {
 
   const medals = ["🥇", "🥈", "🥉"];
 
+  const getDisplayName = (e: LeaderboardEntry) => {
+    const resolved = e.discord_id ? resolvedAvatars[e.discord_id] : null;
+    const name = resolved?.username || e.discord_username;
+    return (name && name !== "Player") ? name : "Anonymous";
+  };
+
+  const getAvatarUrl = (e: LeaderboardEntry) => {
+    const resolved = e.discord_id ? resolvedAvatars[e.discord_id] : null;
+    const avatar = resolved?.avatar || e.discord_avatar;
+    if (!avatar) return null;
+    if (avatar.startsWith("http")) return avatar;
+    if (e.discord_id) return `https://cdn.discordapp.com/avatars/${e.discord_id}/${avatar}.png?size=64`;
+    return null;
+  };
+
   return (
     <div className="mt-6">
       <div className="relative rounded-2xl border border-yellow-500/20 bg-gradient-to-b from-[hsl(220,20%,8%)] to-[hsl(220,20%,5%)] overflow-hidden">
@@ -124,25 +180,29 @@ const Leaderboard = memo(({ gameType }: { gameType: GameType }) => {
         </div>
         <div className="p-3 space-y-1.5">
           {entries.length === 0 && <p className="text-muted-foreground text-sm text-center py-6 font-mono">No scores yet. Be the first! 🚀</p>}
-          {entries.map((e, i) => (
-            <motion.div key={e.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}
-              className={`flex items-center gap-3 p-2.5 rounded-xl transition-all ${
-                i === 0 ? "bg-gradient-to-r from-yellow-500/15 to-amber-500/8 border border-yellow-500/25 shadow-lg shadow-yellow-500/10" :
-                i === 1 ? "bg-gradient-to-r from-gray-400/10 to-slate-500/5 border border-gray-400/15" :
-                i === 2 ? "bg-gradient-to-r from-amber-700/10 to-orange-700/5 border border-amber-700/15" :
-                "bg-white/[0.02] border border-white/[0.04]"
-              }`}>
-              <span className="font-bold w-7 text-center text-lg">{i < 3 ? medals[i] : <span className="text-muted-foreground text-sm font-mono">#{i + 1}</span>}</span>
-              {e.discord_avatar ? (
-                <img src={e.discord_avatar.startsWith("http") ? e.discord_avatar : `https://cdn.discordapp.com/avatars/${e.discord_id}/${e.discord_avatar}.png?size=32`} className="w-7 h-7 rounded-full ring-2 ring-yellow-500/20" alt="" />
-              ) : (
-                <div className="w-7 h-7 rounded-full bg-muted/30 flex items-center justify-center text-xs font-bold text-muted-foreground">{(e.discord_username || "?")[0].toUpperCase()}</div>
-              )}
-              <span className="flex-1 truncate text-sm font-medium">{e.discord_username || "Anonymous"}</span>
-              <span className="text-xs font-mono font-bold text-yellow-400">{e.score}</span>
-              {e.time_seconds != null && <span className="text-[10px] text-muted-foreground font-mono">{e.time_seconds}s</span>}
-            </motion.div>
-          ))}
+          {entries.map((e, i) => {
+            const displayName = getDisplayName(e);
+            const avatarUrl = getAvatarUrl(e);
+            return (
+              <motion.div key={e.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}
+                className={`flex items-center gap-3 p-2.5 rounded-xl transition-all ${
+                  i === 0 ? "bg-gradient-to-r from-yellow-500/15 to-amber-500/8 border border-yellow-500/25 shadow-lg shadow-yellow-500/10" :
+                  i === 1 ? "bg-gradient-to-r from-gray-400/10 to-slate-500/5 border border-gray-400/15" :
+                  i === 2 ? "bg-gradient-to-r from-amber-700/10 to-orange-700/5 border border-amber-700/15" :
+                  "bg-white/[0.02] border border-white/[0.04]"
+                }`}>
+                <span className="font-bold w-7 text-center text-lg">{i < 3 ? medals[i] : <span className="text-muted-foreground text-sm font-mono">#{i + 1}</span>}</span>
+                {avatarUrl ? (
+                  <img src={avatarUrl} className="w-7 h-7 rounded-full ring-2 ring-yellow-500/20 object-cover" alt={displayName} onError={(ev) => { (ev.target as HTMLImageElement).style.display = 'none'; }} />
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-muted/30 flex items-center justify-center text-xs font-bold text-muted-foreground">{displayName[0].toUpperCase()}</div>
+                )}
+                <span className="flex-1 truncate text-sm font-medium">{displayName}</span>
+                <span className="text-xs font-mono font-bold text-yellow-400">{e.score} pts</span>
+                {e.time_seconds != null && <span className="text-[10px] text-muted-foreground font-mono">{e.time_seconds}s</span>}
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </div>
