@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, memo } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield, LogOut, Menu, UserCircle, Mail, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, ExternalLink, Crown, LayoutDashboard, Gift, Briefcase, Building2, FileText, Newspaper, Trophy, Radio } from "lucide-react";
+import { Users, Shield, LogOut, Menu, UserCircle, Mail, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, ExternalLink, Crown, LayoutDashboard, Gift, Briefcase, Building2, FileText, Newspaper, Trophy, Radio, Gamepad2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
@@ -76,6 +76,7 @@ const Navigation = () => {
   const showGiveawayLink = isOwner || (!siteSettingsLoading && !siteSettings.giveaway_hidden);
   const showGangRpLink = isOwner || (!siteSettingsLoading && !siteSettings.gang_rp_hidden);
   const showGuidesLink = isOwner || (!siteSettingsLoading && !siteSettings.guides_hidden);
+  const showMiniGamesLink = isOwner || (!siteSettingsLoading && !siteSettings.mini_games_hidden);
 
   // Track staff presence when logged in with Discord ID
   useWebsitePresence({ 
@@ -594,6 +595,19 @@ const Navigation = () => {
                       <Link to="/debate" className="flex items-center">
                         <Radio className="w-4 h-4 mr-2 text-cyan-400" />
                         Debate Arena
+                      </Link>
+                    </Button>
+                  )}
+                  {showMiniGamesLink && (
+                    <Button 
+                      variant="outline"
+                      className="justify-start glass-effect border-purple-500/30"
+                      asChild
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Link to="/mini-games" className="flex items-center">
+                        <Gamepad2 className="w-4 h-4 mr-2 text-purple-400" />
+                        Mini Games
                       </Link>
                     </Button>
                   )}
