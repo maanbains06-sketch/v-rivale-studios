@@ -52,7 +52,7 @@ const GAMES: GameDef[] = [
   { id: "aim_trainer", title: "Aim Trainer", description: "Click the targets as fast and accurately as you can!", icon: <Crosshair className="w-8 h-8" />, gradient: "from-lime-500 via-green-500 to-emerald-500", glow: "shadow-lime-500/40" },
   { id: "bomb_defusal", title: "Bomb Defusal", description: "Cut the right wires before the bomb explodes!", icon: <Bomb className="w-8 h-8" />, gradient: "from-red-700 via-orange-600 to-yellow-500", glow: "shadow-red-600/40" },
   { id: "snake_runner", title: "Snake Runner", description: "Classic snake — eat food, grow longer, don't hit walls!", icon: <Flame className="w-8 h-8" />, gradient: "from-emerald-600 via-green-500 to-lime-400", glow: "shadow-emerald-500/40" },
-  { id: "block_puzzle", title: "Block Puzzle", description: "Slide numbered blocks to solve the 15-puzzle before time runs out!", icon: <Box className="w-8 h-8" />, gradient: "from-violet-600 via-purple-500 to-fuchsia-500", glow: "shadow-violet-500/40" },
+  { id: "block_puzzle", title: "Block Blast", description: "Place colorful blocks on the grid — clear rows & columns to score!", icon: <Box className="w-8 h-8" />, gradient: "from-blue-500 via-cyan-400 to-blue-600", glow: "shadow-blue-500/40" },
 ];
 
 // ─── 3D Card Wrapper ─────────────────────────────────────
@@ -1667,151 +1667,272 @@ const SnakeRunnerGame = ({ onBack }: { onBack: () => void }) => {
 };
 
 // ════════════════════════════════════════════════════════
-// GAME 13: BLOCK PUZZLE (15-puzzle) 🧩
+// GAME 13: BLOCK BLAST — Place blocks, clear rows & columns!
 // ════════════════════════════════════════════════════════
+const GRID = 8;
+const BLOCK_COLORS = [
+  { bg: "hsl(200,85%,55%)", light: "hsl(200,85%,70%)", dark: "hsl(200,85%,40%)", shadow: "hsl(200,85%,30%)" }, // cyan
+  { bg: "hsl(0,75%,55%)", light: "hsl(0,75%,70%)", dark: "hsl(0,75%,40%)", shadow: "hsl(0,75%,30%)" }, // red
+  { bg: "hsl(120,60%,45%)", light: "hsl(120,60%,60%)", dark: "hsl(120,60%,32%)", shadow: "hsl(120,60%,22%)" }, // green
+  { bg: "hsl(50,90%,55%)", light: "hsl(50,90%,70%)", dark: "hsl(50,90%,40%)", shadow: "hsl(50,90%,30%)" }, // yellow
+  { bg: "hsl(275,70%,55%)", light: "hsl(275,70%,70%)", dark: "hsl(275,70%,40%)", shadow: "hsl(275,70%,30%)" }, // purple
+  { bg: "hsl(25,90%,55%)", light: "hsl(25,90%,70%)", dark: "hsl(25,90%,40%)", shadow: "hsl(25,90%,30%)" }, // orange
+];
+
+type Piece = { shape: number[][]; colorIdx: number };
+
+const PIECE_SHAPES: number[][][] = [
+  [[1]], [[1,1]], [[1],[1]], [[1,1],[1,1]], [[1,1,1]], [[1],[1],[1]],
+  [[1,1],[1,0]], [[1,0],[1,1]], [[0,1],[1,1]], [[1,1],[0,1]],
+  [[1,1,1],[1,0,0]], [[1,1,1],[0,0,1]], [[1,0,0],[1,1,1]], [[0,0,1],[1,1,1]],
+  [[1,1,1,1]], [[1],[1],[1],[1]],
+  [[1,1,1],[0,1,0]], [[0,1],[1,1],[0,1]],
+  [[1,1,1,1,1]], [[1],[1],[1],[1],[1]],
+];
+
+const randomPiece = (): Piece => ({
+  shape: PIECE_SHAPES[Math.floor(Math.random() * PIECE_SHAPES.length)],
+  colorIdx: Math.floor(Math.random() * BLOCK_COLORS.length),
+});
+
 const BlockPuzzleGame = ({ onBack }: { onBack: () => void }) => {
   const [started, setStarted] = useState(false);
   const [gameOver, setGameOver] = useState(false);
-  const [tiles, setTiles] = useState<number[]>([]);
-  const [moves, setMoves] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(180);
-  const [startTime, setStartTime] = useState(0);
-  const [elapsed, setElapsed] = useState(0);
+  const [grid, setGrid] = useState<(number | null)[][]>([]);
+  const [pieces, setPieces] = useState<(Piece | null)[]>([]);
+  const [score, setScore] = useState(0);
+  const [combo, setCombo] = useState(0);
+  const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
+  const [hoverPos, setHoverPos] = useState<{ r: number; c: number } | null>(null);
+  const [clearingLines, setClearingLines] = useState<{ rows: number[]; cols: number[] }>({ rows: [], cols: [] });
   const submitScore = useSubmitScore();
-  const intervalRef = useRef<ReturnType<typeof setInterval>>();
   const game = GAMES[12];
-  const SIZE = 4;
 
-  const isSolvable = (arr: number[]): boolean => {
-    let inversions = 0;
-    const filtered = arr.filter(n => n !== 0);
-    for (let i = 0; i < filtered.length; i++) {
-      for (let j = i + 1; j < filtered.length; j++) {
-        if (filtered[i] > filtered[j]) inversions++;
-      }
-    }
-    const blankRow = Math.floor(arr.indexOf(0) / SIZE);
-    if (SIZE % 2 === 0) {
-      return (inversions + blankRow) % 2 === 1;
-    }
-    return inversions % 2 === 0;
-  };
+  const emptyGrid = (): (number | null)[][] => Array.from({ length: GRID }, () => Array(GRID).fill(null));
 
-  const shuffle = (): number[] => {
-    let arr: number[];
-    do {
-      arr = Array.from({ length: SIZE * SIZE }, (_, i) => i);
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-    } while (!isSolvable(arr) || isSolved(arr));
-    return arr;
-  };
-
-  const isSolved = (arr: number[]): boolean => {
-    for (let i = 0; i < arr.length - 1; i++) {
-      if (arr[i] !== i + 1) return false;
-    }
-    return arr[arr.length - 1] === 0;
-  };
+  const genPieces = (): (Piece | null)[] => [randomPiece(), randomPiece(), randomPiece()];
 
   const initGame = () => {
-    setTiles(shuffle()); setMoves(0); setGameOver(false);
-    setStarted(true); setTimeLeft(180); setStartTime(Date.now()); setElapsed(0);
+    setGrid(emptyGrid()); setPieces(genPieces()); setScore(0); setCombo(0);
+    setGameOver(false); setStarted(true); setSelectedPiece(null); setHoverPos(null);
+    setClearingLines({ rows: [], cols: [] });
   };
 
-  useEffect(() => {
-    if (!started || gameOver) return;
-    intervalRef.current = setInterval(() => {
-      const el = Math.floor((Date.now() - startTime) / 1000);
-      setElapsed(el);
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          clearInterval(intervalRef.current); setGameOver(true);
-          submitScore("block_puzzle", Math.max(10, 500 - moves * 2), el);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(intervalRef.current);
-  }, [started, gameOver, startTime, moves, submitScore]);
-
-  const handleTileClick = (index: number) => {
-    if (gameOver) return;
-    const blankIndex = tiles.indexOf(0);
-    const row = Math.floor(index / SIZE);
-    const col = index % SIZE;
-    const blankRow = Math.floor(blankIndex / SIZE);
-    const blankCol = blankIndex % SIZE;
-    const isAdjacent = (Math.abs(row - blankRow) + Math.abs(col - blankCol)) === 1;
-    if (!isAdjacent) return;
-
-    const newTiles = [...tiles];
-    [newTiles[index], newTiles[blankIndex]] = [newTiles[blankIndex], newTiles[index]];
-    setTiles(newTiles);
-    setMoves(m => m + 1);
-
-    if (isSolved(newTiles)) {
-      setGameOver(true); clearInterval(intervalRef.current);
-      const finalTime = Math.floor((Date.now() - startTime) / 1000);
-      setElapsed(finalTime);
-      submitScore("block_puzzle", Math.max(100, 2000 - (moves + 1) * 5 - finalTime * 3), finalTime);
+  const canPlace = (g: (number | null)[][], piece: Piece, r: number, c: number): boolean => {
+    for (let pr = 0; pr < piece.shape.length; pr++) {
+      for (let pc = 0; pc < piece.shape[pr].length; pc++) {
+        if (piece.shape[pr][pc] === 0) continue;
+        const gr = r + pr, gc = c + pc;
+        if (gr < 0 || gr >= GRID || gc < 0 || gc >= GRID || g[gr][gc] !== null) return false;
+      }
     }
+    return true;
   };
 
-  const won = gameOver && isSolved(tiles);
+  const canPlaceAnywhere = (g: (number | null)[][], piece: Piece): boolean => {
+    for (let r = 0; r < GRID; r++) {
+      for (let c = 0; c < GRID; c++) {
+        if (canPlace(g, piece, r, c)) return true;
+      }
+    }
+    return false;
+  };
 
-  if (!started) return <StartScreen title={game.title} description={game.description} icon={<Box className="w-14 h-14" />} gradient={game.gradient} glow={game.glow} onStart={initGame} onBack={onBack} gameType="block_puzzle" />;
-  if (gameOver) return <EndScreen won={won} title={won ? `Solved in ${moves} moves!` : "Time's Up!"} subtitle={won ? `Time: ${elapsed}s — Score: ${Math.max(100, 2000 - moves * 5 - elapsed * 3)}` : `Made ${moves} moves`} onReplay={initGame} onBack={onBack} gameType="block_puzzle" />;
+  const placePiece = (r: number, c: number) => {
+    if (selectedPiece === null || !pieces[selectedPiece]) return;
+    const piece = pieces[selectedPiece]!;
+    if (!canPlace(grid, piece, r, c)) return;
 
-  const tileColors = [
-    "", // 0 = blank
-    "from-violet-600 to-purple-500", "from-fuchsia-600 to-pink-500", "from-purple-600 to-indigo-500", "from-indigo-600 to-blue-500",
-    "from-blue-600 to-cyan-500", "from-cyan-600 to-teal-500", "from-teal-600 to-emerald-500", "from-emerald-600 to-green-500",
-    "from-green-600 to-lime-500", "from-lime-600 to-yellow-500", "from-yellow-600 to-amber-500", "from-amber-600 to-orange-500",
-    "from-orange-600 to-red-500", "from-red-600 to-rose-500", "from-rose-600 to-pink-500",
-  ];
+    const newGrid = grid.map(row => [...row]);
+    for (let pr = 0; pr < piece.shape.length; pr++) {
+      for (let pc = 0; pc < piece.shape[pr].length; pc++) {
+        if (piece.shape[pr][pc] === 1) {
+          newGrid[r + pr][c + pc] = piece.colorIdx;
+        }
+      }
+    }
+
+    // Check for full rows and columns
+    const fullRows: number[] = [];
+    const fullCols: number[] = [];
+    for (let i = 0; i < GRID; i++) {
+      if (newGrid[i].every(cell => cell !== null)) fullRows.push(i);
+      if (newGrid.every(row => row[i] !== null)) fullCols.push(i);
+    }
+
+    const linesCleared = fullRows.length + fullCols.length;
+    let newCombo = linesCleared > 0 ? combo + 1 : 0;
+    const lineScore = linesCleared * 100 * (1 + (newCombo - 1) * 0.5);
+    const blockScore = piece.shape.flat().filter(v => v === 1).length * 5;
+    const newScore = score + Math.round(lineScore) + blockScore;
+
+    if (linesCleared > 0) {
+      setClearingLines({ rows: fullRows, cols: fullCols });
+      setTimeout(() => {
+        const clearedGrid = newGrid.map(row => [...row]);
+        fullRows.forEach(r => { for (let c = 0; c < GRID; c++) clearedGrid[r][c] = null; });
+        fullCols.forEach(c => { for (let r = 0; r < GRID; r++) clearedGrid[r][c] = null; });
+        setGrid(clearedGrid);
+        setClearingLines({ rows: [], cols: [] });
+
+        // Update pieces
+        const newPieces = [...pieces];
+        newPieces[selectedPiece] = null;
+        if (newPieces.every(p => p === null)) {
+          newPieces.splice(0, 3, ...genPieces());
+        }
+        setPieces(newPieces);
+        setSelectedPiece(null);
+        setCombo(newCombo);
+
+        // Check game over
+        const remaining = (newPieces as (Piece | null)[]).filter(p => p !== null) as Piece[];
+        if (remaining.length > 0 && remaining.every(p => !canPlaceAnywhere(clearedGrid, p))) {
+          setGameOver(true);
+          submitScore("block_puzzle", newScore);
+        }
+      }, 300);
+    } else {
+      setGrid(newGrid);
+      const newPieces = [...pieces];
+      newPieces[selectedPiece] = null;
+      if (newPieces.every(p => p === null)) {
+        newPieces.splice(0, 3, ...genPieces());
+      }
+      setPieces(newPieces);
+      setSelectedPiece(null);
+      setCombo(newCombo);
+
+      const remaining = (newPieces as (Piece | null)[]).filter(p => p !== null) as Piece[];
+      if (remaining.length > 0 && remaining.every(p => !canPlaceAnywhere(newGrid, p))) {
+        setGameOver(true);
+        submitScore("block_puzzle", newScore);
+      }
+    }
+
+    setScore(newScore);
+    setHoverPos(null);
+  };
+
+  // Ghost preview cells
+  const ghostCells = new Set<string>();
+  let ghostValid = false;
+  if (selectedPiece !== null && pieces[selectedPiece] && hoverPos) {
+    const piece = pieces[selectedPiece]!;
+    ghostValid = canPlace(grid, piece, hoverPos.r, hoverPos.c);
+    if (ghostValid) {
+      for (let pr = 0; pr < piece.shape.length; pr++) {
+        for (let pc = 0; pc < piece.shape[pr].length; pc++) {
+          if (piece.shape[pr][pc] === 1) ghostCells.add(`${hoverPos.r + pr},${hoverPos.c + pc}`);
+        }
+      }
+    }
+  }
+
+  const CELL = 42;
+
+  if (!started) return <StartScreen title="Block Blast" description="Place colorful blocks on the grid — clear rows & columns to score big!" icon={<Box className="w-14 h-14" />} gradient={game.gradient} glow={game.glow} onStart={initGame} onBack={onBack} gameType="block_puzzle" />;
+  if (gameOver) return <EndScreen won={score >= 500} title={`Score: ${score}!`} subtitle={score >= 500 ? "Block Blast master! 🧱" : "No more moves!"} onReplay={initGame} onBack={onBack} gameType="block_puzzle" />;
 
   return (
-    <GameShell onBack={onBack} title="Block Puzzle" icon={<Box className="w-5 h-5 text-foreground" />} gradient={game.gradient}
-      timer={<TimerBadge seconds={timeLeft} danger={30} />}
-      badges={<Badge variant="outline" className="border-violet-500/30 font-mono">Moves: {moves}</Badge>}>
-      <Card3D>
-        <Card className="border-violet-500/20 bg-gradient-to-b from-[hsl(220,20%,10%)] to-[hsl(220,20%,6%)]">
-          <CardContent className="p-6 md:p-8">
-            <div className="grid grid-cols-4 gap-2 max-w-xs mx-auto" style={{ perspective: "600px" }}>
-              {tiles.map((tile, index) => (
-                <motion.button
-                  key={`${index}-${tile}`}
-                  layout
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  className={`aspect-square rounded-xl border-2 text-xl md:text-2xl font-black font-mono transition-all ${
-                    tile === 0
-                      ? "bg-transparent border-dashed border-white/[0.06]"
-                      : `bg-gradient-to-br ${tileColors[tile]} border-white/20 shadow-lg hover:shadow-xl hover:scale-105 cursor-pointer active:scale-95`
-                  }`}
-                  style={tile !== 0 ? {
-                    textShadow: "0 2px 4px rgba(0,0,0,0.5)",
-                    boxShadow: "0 4px 15px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2)",
-                    transform: "perspective(400px) translateZ(0px)",
-                  } : {}}
-                  onClick={() => handleTileClick(index)}
-                  disabled={tile === 0}
-                  whileHover={tile !== 0 ? { scale: 1.08, z: 10 } : {}}
-                  whileTap={tile !== 0 ? { scale: 0.92 } : {}}
-                >
-                  {tile !== 0 && <span className="text-white drop-shadow-md">{tile}</span>}
-                </motion.button>
-              ))}
-            </div>
-            <p className="text-center text-xs text-muted-foreground mt-4 font-mono">
-              Arrange tiles 1-15 in order. Click a tile next to the blank space to slide it.
-            </p>
-          </CardContent>
-        </Card>
-      </Card3D>
+    <GameShell onBack={onBack} title="Block Blast" icon={<Box className="w-5 h-5 text-foreground" />} gradient={game.gradient}
+      badges={<><Badge className="bg-blue-900/40 text-blue-300 border-blue-500/30 font-mono text-base">{score} pts</Badge>{combo > 1 && <Badge className="bg-yellow-900/40 text-yellow-300 border-yellow-500/30 animate-pulse">🔥 x{combo}</Badge>}</>}>
+      <div className="flex flex-col items-center gap-6">
+        {/* Grid */}
+        <div className="relative rounded-2xl p-3" style={{ background: "linear-gradient(135deg, hsl(225,50%,30%), hsl(225,50%,20%))", boxShadow: "0 8px 40px hsl(225 50% 15% / 0.8), inset 0 1px 0 hsl(225 40% 45% / 0.3)" }}>
+          <div className="grid gap-[2px]" style={{ gridTemplateColumns: `repeat(${GRID}, ${CELL}px)` }}>
+            {grid.map((row, r) =>
+              row.map((cell, c) => {
+                const isGhost = ghostCells.has(`${r},${c}`);
+                const isClearing = clearingLines.rows.includes(r) || clearingLines.cols.includes(c);
+                const color = cell !== null ? BLOCK_COLORS[cell] : null;
+                const ghostColor = selectedPiece !== null && pieces[selectedPiece] ? BLOCK_COLORS[pieces[selectedPiece]!.colorIdx] : null;
+
+                return (
+                  <motion.div
+                    key={`${r}-${c}`}
+                    className="cursor-pointer select-none"
+                    style={{ width: CELL, height: CELL }}
+                    animate={isClearing && cell !== null ? { scale: [1, 1.15, 0], opacity: [1, 1, 0] } : {}}
+                    transition={{ duration: 0.3 }}
+                    onClick={() => placePiece(r, c)}
+                    onMouseEnter={() => setHoverPos({ r, c })}
+                    onMouseLeave={() => setHoverPos(null)}
+                  >
+                    {cell !== null ? (
+                      <div className="w-full h-full rounded-md relative overflow-hidden" style={{
+                        background: `linear-gradient(135deg, ${color!.light} 0%, ${color!.bg} 40%, ${color!.dark} 100%)`,
+                        boxShadow: `0 3px 6px ${color!.shadow}, inset 0 1px 0 ${color!.light}80, inset 0 -2px 0 ${color!.dark}80`,
+                      }}>
+                        <div className="absolute inset-0 rounded-md" style={{
+                          background: "linear-gradient(135deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.1) 40%, transparent 60%)",
+                        }} />
+                        <div className="absolute bottom-0 left-0 right-0 h-[3px] rounded-b-md" style={{ background: color!.shadow }} />
+                      </div>
+                    ) : isGhost && ghostColor ? (
+                      <div className="w-full h-full rounded-md" style={{
+                        background: ghostValid ? `${ghostColor.bg}40` : "hsl(0,70%,50%,0.2)",
+                        border: `2px dashed ${ghostValid ? ghostColor.bg : "hsl(0,70%,50%)"}`,
+                      }} />
+                    ) : (
+                      <div className="w-full h-full rounded-md" style={{
+                        background: "hsl(225,40%,18%)",
+                        boxShadow: "inset 0 1px 3px hsl(225 40% 12%)",
+                        border: "1px solid hsl(225,40%,22%)",
+                      }} />
+                    )}
+                  </motion.div>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        {/* Pieces tray */}
+        <div className="flex gap-4 items-end justify-center flex-wrap p-4 rounded-2xl" style={{
+          background: "linear-gradient(135deg, hsl(225,40%,16%), hsl(225,40%,12%))",
+          boxShadow: "0 4px 20px hsl(225 40% 8% / 0.6)",
+        }}>
+          {pieces.map((piece, idx) => {
+            if (!piece) return <div key={idx} className="w-20 h-20" />;
+            const color = BLOCK_COLORS[piece.colorIdx];
+            const miniCell = 20;
+            const isSelected = selectedPiece === idx;
+            return (
+              <motion.button
+                key={idx}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setSelectedPiece(isSelected ? null : idx)}
+                className={`p-2 rounded-xl border-2 transition-all ${
+                  isSelected ? "border-white/60 shadow-[0_0_20px_hsl(200_80%_60%/0.4)] bg-white/10" : "border-white/10 hover:border-white/30 bg-white/[0.03]"
+                }`}
+              >
+                <div className="grid gap-[2px]" style={{ gridTemplateColumns: `repeat(${piece.shape[0].length}, ${miniCell}px)` }}>
+                  {piece.shape.flat().map((cell, i) => (
+                    <div key={i} style={{ width: miniCell, height: miniCell }}>
+                      {cell === 1 ? (
+                        <div className="w-full h-full rounded-sm relative overflow-hidden" style={{
+                          background: `linear-gradient(135deg, ${color.light} 0%, ${color.bg} 40%, ${color.dark} 100%)`,
+                          boxShadow: `0 2px 3px ${color.shadow}, inset 0 1px 0 ${color.light}80`,
+                        }}>
+                          <div className="absolute inset-0" style={{
+                            background: "linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 50%)",
+                          }} />
+                        </div>
+                      ) : <div className="w-full h-full" />}
+                    </div>
+                  ))}
+                </div>
+              </motion.button>
+            );
+          })}
+        </div>
+
+        <p className="text-xs text-muted-foreground font-mono text-center">
+          Select a piece below, then click on the grid to place it. Clear full rows or columns!
+        </p>
+      </div>
       <Leaderboard gameType="block_puzzle" />
     </GameShell>
   );
