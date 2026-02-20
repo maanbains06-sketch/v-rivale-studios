@@ -1337,26 +1337,50 @@ const BombDefusalGame = ({ onBack }: { onBack: () => void }) => {
   const [cutWires, setCutWires] = useState<string[]>([]);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(60);
+  const [scanAngle, setScanAngle] = useState(0);
+  const [flashWire, setFlashWire] = useState<string | null>(null);
   const totalRounds = 7;
   const submitScore = useSubmitScore();
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
+  const scanRef = useRef<ReturnType<typeof requestAnimationFrame>>();
   const game = GAMES[10];
+
+  const RING_COLORS: Record<string, { stroke: string; fill: string; glow: string }> = {
+    red: { stroke: "hsl(0,75%,55%)", fill: "hsl(0,75%,55%)", glow: "0 0 12px hsl(0 75% 55% / 0.6)" },
+    blue: { stroke: "hsl(210,80%,55%)", fill: "hsl(210,80%,55%)", glow: "0 0 12px hsl(210 80% 55% / 0.6)" },
+    green: { stroke: "hsl(140,70%,45%)", fill: "hsl(140,70%,45%)", glow: "0 0 12px hsl(140 70% 45% / 0.6)" },
+    yellow: { stroke: "hsl(50,90%,55%)", fill: "hsl(50,90%,55%)", glow: "0 0 12px hsl(50 90% 55% / 0.6)" },
+    white: { stroke: "hsl(0,0%,80%)", fill: "hsl(0,0%,80%)", glow: "0 0 12px hsl(0 0% 80% / 0.6)" },
+  };
 
   const generateRound = () => {
     const count = 3 + Math.floor(Math.random() * 3);
     const available = [...WIRE_COLORS].sort(() => Math.random() - 0.5).slice(0, count);
     const correct = available[Math.floor(Math.random() * available.length)];
     const clues = [
-      `The manual says: "Cut the ${correct} wire"`,
-      `Warning label reads: "${correct.toUpperCase()} = SAFE"`,
-      `Instructions: "Only the ${correct} wire disarms the device"`,
-      `Decoded message: "${correct} is the answer"`,
+      `Cut the ${correct} wire`,
+      `"${correct.toUpperCase()} = SAFE"`,
+      `Only ${correct} disarms`,
+      `Decoded: "${correct}"`,
     ];
     setWires(available); setCorrectWire(correct);
     setClue(clues[Math.floor(Math.random() * clues.length)]); setCutWires([]);
   };
 
-  const initGame = () => { setRound(0); setScore(0); setGameOver(false); setWon(false); setStarted(true); setTimeLeft(60); generateRound(); };
+  const initGame = () => { setRound(0); setScore(0); setGameOver(false); setWon(false); setStarted(true); setTimeLeft(60); setScanAngle(0); setFlashWire(null); generateRound(); };
+
+  // Scan line animation
+  useEffect(() => {
+    if (!started || gameOver) return;
+    let last = performance.now();
+    const tick = (now: number) => {
+      const dt = now - last; last = now;
+      setScanAngle(a => (a + dt * 0.04) % 360);
+      scanRef.current = requestAnimationFrame(tick);
+    };
+    scanRef.current = requestAnimationFrame(tick);
+    return () => { if (scanRef.current) cancelAnimationFrame(scanRef.current); };
+  }, [started, gameOver]);
 
   useEffect(() => {
     if (!started || gameOver) return;
@@ -1369,6 +1393,8 @@ const BombDefusalGame = ({ onBack }: { onBack: () => void }) => {
   const cutWire = (color: string) => {
     if (cutWires.includes(color) || gameOver) return;
     setCutWires(prev => [...prev, color]);
+    setFlashWire(color);
+    setTimeout(() => setFlashWire(null), 400);
     if (color === correctWire) {
       const newScore = score + 1; setScore(newScore);
       if (round + 1 >= totalRounds) {
@@ -1384,55 +1410,150 @@ const BombDefusalGame = ({ onBack }: { onBack: () => void }) => {
   if (!started) return <StartScreen title={game.title} description={game.description} icon={<Bomb className="w-14 h-14" />} gradient={game.gradient} glow={game.glow} onStart={initGame} onBack={onBack} gameType="bomb_defusal" />;
   if (gameOver) return <EndScreen won={won} title={won ? "Bomb Defused! 💣✅" : "BOOM! 💥"} subtitle={won ? `${score}/${totalRounds} bombs defused!` : `Made it to round ${round + 1}`} onReplay={initGame} onBack={onBack} gameType="bomb_defusal" />;
 
+  const cx = 200, cy = 200, maxR = 180;
+  const isDanger = timeLeft <= 15;
+
   return (
     <GameShell onBack={onBack} title="Bomb Defusal" icon={<Bomb className="w-5 h-5 text-foreground" />} gradient={game.gradient}
       timer={<TimerBadge seconds={timeLeft} danger={15} />}
       badges={<><Badge variant="outline" className="border-red-500/30">Bomb {round + 1}/{totalRounds}</Badge><Badge className="bg-red-900/40 text-red-300 border-red-500/30">{score} defused</Badge></>}>
-      <Card3D>
-        <Card className="border-red-500/20 bg-gradient-to-b from-[hsl(220,20%,10%)] to-[hsl(220,20%,5%)] overflow-hidden relative">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(0_80%_30%/0.05),transparent)] pointer-events-none" />
-          <CardContent className="p-8 space-y-6 relative z-10">
-            {/* Bomb visual */}
-            <div className="flex justify-center">
-              <motion.div animate={{ scale: [1, 1.03, 1] }} transition={{ repeat: Infinity, duration: 0.8 }}
-                className="w-28 h-28 rounded-full flex items-center justify-center border-4 border-red-500/40"
-                style={{ background: "radial-gradient(circle at 40% 40%, hsl(0 10% 25%), hsl(0 10% 10%))", boxShadow: "0 0 40px hsl(0 80% 40% / 0.3), inset 0 -8px 20px hsl(0 0% 0% / 0.5)" }}>
-                <div className="text-center">
-                  <Bomb className="w-8 h-8 text-red-400 mx-auto mb-1" />
-                  <span className="text-red-400 font-mono text-xs font-bold">{timeLeft}s</span>
-                </div>
-              </motion.div>
-            </div>
+      
+      <div className="flex flex-col items-center gap-4">
+        {/* Radar display */}
+        <div className="relative" style={{ width: 400, height: 400 }}>
+          <svg viewBox="0 0 400 400" className="w-full h-full" style={{ filter: "drop-shadow(0 0 30px hsl(180 60% 30% / 0.3))" }}>
+            {/* Background */}
+            <defs>
+              <radialGradient id="radarBg" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="hsl(180,30%,12%)" />
+                <stop offset="100%" stopColor="hsl(220,30%,5%)" />
+              </radialGradient>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+              </filter>
+            </defs>
+            <circle cx={cx} cy={cy} r={maxR} fill="url(#radarBg)" stroke="hsl(180,40%,25%)" strokeWidth="2" />
 
-            {/* Clue */}
-            <div className="bg-black/40 rounded-xl border border-amber-500/20 p-3 text-center">
-              <p className="text-amber-300/80 text-sm font-mono">📋 {clue}</p>
-            </div>
+            {/* Concentric grid rings */}
+            {[0.25, 0.5, 0.75, 1].map(f => (
+              <circle key={f} cx={cx} cy={cy} r={maxR * f} fill="none" stroke="hsl(180,40%,20%)" strokeWidth="0.5" strokeDasharray="4 4" />
+            ))}
 
-            {/* Wires */}
-            <div className="flex flex-col gap-3 max-w-md mx-auto">
-              {wires.map(color => {
-                const isCut = cutWires.includes(color);
-                return (
-                  <motion.button key={color} whileHover={{ scale: isCut ? 1 : 1.02 }} whileTap={{ scale: 0.97 }}
-                    disabled={isCut}
-                    className={`relative h-14 rounded-xl border-2 transition-all overflow-hidden ${isCut ? "opacity-30" : "cursor-pointer hover:shadow-lg"}`}
-                    onClick={() => cutWire(color)}>
-                    <div className={`absolute inset-0 bg-gradient-to-r ${WIRE_STYLES[color]}`} />
-                    <div className="relative z-10 flex items-center justify-between px-4 h-full">
-                      <span className="font-bold uppercase tracking-wider text-sm text-white/90 drop-shadow-md">{color} Wire</span>
-                      {isCut ? <span className="text-xs font-mono">✂️ CUT</span> : <span className="text-xs text-white/50">Click to cut</span>}
-                    </div>
-                    {isCut && <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                      <span className="text-lg">{color === correctWire ? "✅" : "💥"}</span>
-                    </div>}
-                  </motion.button>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      </Card3D>
+            {/* Cross-hair lines */}
+            {[0, 45, 90, 135].map(deg => (
+              <line key={deg} x1={cx + maxR * Math.cos(deg * Math.PI / 180)} y1={cy + maxR * Math.sin(deg * Math.PI / 180)}
+                x2={cx - maxR * Math.cos(deg * Math.PI / 180)} y2={cy - maxR * Math.sin(deg * Math.PI / 180)}
+                stroke="hsl(180,40%,18%)" strokeWidth="0.5" />
+            ))}
+
+            {/* Scan line (rotating) */}
+            <line x1={cx} y1={cy}
+              x2={cx + maxR * Math.cos(scanAngle * Math.PI / 180)}
+              y2={cy + maxR * Math.sin(scanAngle * Math.PI / 180)}
+              stroke={isDanger ? "hsl(0,80%,50%)" : "hsl(160,90%,50%)"} strokeWidth="2" opacity="0.7" filter="url(#glow)" />
+            {/* Scan sweep trail */}
+            <path d={`M${cx},${cy} L${cx + maxR * Math.cos(scanAngle * Math.PI / 180)},${cy + maxR * Math.sin(scanAngle * Math.PI / 180)} A${maxR},${maxR} 0 0,0 ${cx + maxR * Math.cos((scanAngle - 30) * Math.PI / 180)},${cy + maxR * Math.sin((scanAngle - 30) * Math.PI / 180)} Z`}
+              fill={isDanger ? "hsl(0,80%,50%)" : "hsl(160,90%,50%)"} opacity="0.08" />
+
+            {/* Wire ring segments — each wire is an arc segment */}
+            {wires.map((color, i) => {
+              const isCut = cutWires.includes(color);
+              const ringR = maxR * 0.45 + i * (maxR * 0.45 / wires.length);
+              const arcLen = 320 / wires.length;
+              const startAngle = (i * (360 / wires.length) + 10) * Math.PI / 180;
+              const endAngle = startAngle + (arcLen * Math.PI / 180);
+              const x1 = cx + ringR * Math.cos(startAngle);
+              const y1 = cy + ringR * Math.sin(startAngle);
+              const x2 = cx + ringR * Math.cos(endAngle);
+              const y2 = cy + ringR * Math.sin(endAngle);
+              const largeArc = arcLen > 180 ? 1 : 0;
+              const rc = RING_COLORS[color] || RING_COLORS.white;
+              const isFlash = flashWire === color;
+
+              return (
+                <g key={color} onClick={() => cutWire(color)} style={{ cursor: isCut ? "default" : "pointer" }}>
+                  {/* Glow behind */}
+                  {!isCut && (
+                    <path d={`M${x1},${y1} A${ringR},${ringR} 0 ${largeArc},1 ${x2},${y2}`}
+                      fill="none" stroke={rc.stroke} strokeWidth="12" opacity="0.15" filter="url(#glow)" />
+                  )}
+                  {/* Main arc */}
+                  <path d={`M${x1},${y1} A${ringR},${ringR} 0 ${largeArc},1 ${x2},${y2}`}
+                    fill="none" stroke={isCut ? "hsl(0,0%,25%)" : rc.stroke}
+                    strokeWidth={isFlash ? "8" : "5"} strokeLinecap="round"
+                    opacity={isCut ? 0.3 : 1} style={{ transition: "all 0.2s" }} />
+                  {/* Label */}
+                  {(() => {
+                    const midAngle = (startAngle + endAngle) / 2;
+                    const lx = cx + (ringR + 16) * Math.cos(midAngle);
+                    const ly = cy + (ringR + 16) * Math.sin(midAngle);
+                    return (
+                      <text x={lx} y={ly} textAnchor="middle" dominantBaseline="middle"
+                        fill={isCut ? "hsl(0,0%,40%)" : rc.fill} fontSize="10" fontWeight="bold"
+                        style={{ textTransform: "uppercase", pointerEvents: "none" }}>
+                        {isCut ? "✂" : color}
+                      </text>
+                    );
+                  })()}
+                  {/* Flash effect on cut */}
+                  {isFlash && (
+                    <circle cx={cx} cy={cy} r={ringR}
+                      fill="none" stroke={color === correctWire ? "hsl(140,80%,50%)" : "hsl(0,80%,50%)"}
+                      strokeWidth="2" opacity="0.5">
+                      <animate attributeName="r" from={String(ringR)} to={String(ringR + 30)} dur="0.4s" fill="freeze" />
+                      <animate attributeName="opacity" from="0.5" to="0" dur="0.4s" fill="freeze" />
+                    </circle>
+                  )}
+                </g>
+              );
+            })}
+
+            {/* Center core */}
+            <circle cx={cx} cy={cy} r="28" fill="hsl(220,20%,10%)" stroke={isDanger ? "hsl(0,80%,50%)" : "hsl(180,60%,40%)"} strokeWidth="2" />
+            <circle cx={cx} cy={cy} r="18" fill={isDanger ? "hsl(0,50%,20%)" : "hsl(180,30%,15%)"}>
+              {isDanger && <animate attributeName="fill" values="hsl(0,50%,20%);hsl(0,70%,35%);hsl(0,50%,20%)" dur="0.8s" repeatCount="indefinite" />}
+            </circle>
+            <text x={cx} y={cy - 4} textAnchor="middle" fill={isDanger ? "hsl(0,80%,60%)" : "hsl(180,80%,70%)"} fontSize="14" fontWeight="bold" fontFamily="monospace">{timeLeft}s</text>
+            <text x={cx} y={cy + 10} textAnchor="middle" fill="hsl(0,0%,50%)" fontSize="7" fontFamily="monospace">DEFUSE</text>
+
+            {/* Outer ticks */}
+            {Array.from({ length: 36 }).map((_, i) => {
+              const a = (i * 10) * Math.PI / 180;
+              const r1 = maxR - 6, r2 = maxR;
+              return <line key={i} x1={cx + r1 * Math.cos(a)} y1={cy + r1 * Math.sin(a)} x2={cx + r2 * Math.cos(a)} y2={cy + r2 * Math.sin(a)} stroke="hsl(180,40%,30%)" strokeWidth="1" />;
+            })}
+          </svg>
+
+          {/* Level badge */}
+          <div className="absolute bottom-2 right-2 bg-black/70 border border-cyan-500/30 rounded px-2 py-1">
+            <span className="text-[10px] text-cyan-400 font-mono">Level {round + 1}</span>
+          </div>
+        </div>
+
+        {/* Clue bar */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={clue}
+          className="bg-black/60 border border-amber-500/30 rounded-lg px-4 py-2 max-w-md w-full text-center">
+          <p className="text-amber-300/90 text-sm font-mono tracking-wide">📋 {clue}</p>
+        </motion.div>
+
+        {/* Wire legend — clickable pills below radar */}
+        <div className="flex flex-wrap gap-2 justify-center">
+          {wires.map(color => {
+            const isCut = cutWires.includes(color);
+            const rc = RING_COLORS[color] || RING_COLORS.white;
+            return (
+              <motion.button key={color} whileHover={{ scale: isCut ? 1 : 1.08 }} whileTap={{ scale: 0.95 }}
+                disabled={isCut} onClick={() => cutWire(color)}
+                className={`px-4 py-2 rounded-full border-2 text-xs font-bold uppercase tracking-wider transition-all ${isCut ? "opacity-30 border-muted" : "cursor-pointer"}`}
+                style={{ borderColor: isCut ? undefined : rc.stroke, color: isCut ? "hsl(0,0%,40%)" : rc.fill, boxShadow: isCut ? "none" : rc.glow, background: "hsl(220,20%,8%)" }}>
+                {isCut ? `✂ ${color}` : `⚡ ${color}`}
+              </motion.button>
+            );
+          })}
+        </div>
+      </div>
+
       <Leaderboard gameType="bomb_defusal" />
     </GameShell>
   );
