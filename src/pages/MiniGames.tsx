@@ -124,10 +124,10 @@ const Leaderboard = memo(({ gameType }: { gameType: GameType }) => {
                   "bg-muted/15 border border-transparent"
                 }`}>
                 <span className="font-bold w-7 text-center text-lg">{i < 3 ? medals[i] : `#${i + 1}`}</span>
-                {e.discord_id && e.discord_avatar ? (
-                  <img src={`https://cdn.discordapp.com/avatars/${e.discord_id}/${e.discord_avatar}.png?size=32`} className="w-7 h-7 rounded-full ring-2 ring-border/40" alt="" />
+                {e.discord_avatar ? (
+                  <img src={e.discord_avatar.startsWith("http") ? e.discord_avatar : `https://cdn.discordapp.com/avatars/${e.discord_id}/${e.discord_avatar}.png?size=32`} className="w-7 h-7 rounded-full ring-2 ring-border/40" alt="" />
                 ) : (
-                  <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-xs">?</div>
+                  <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-xs font-bold">{(e.discord_username || "?")[0].toUpperCase()}</div>
                 )}
                 <span className="flex-1 truncate text-sm font-medium">{e.discord_username || "Anonymous"}</span>
                 <Badge className="bg-primary/20 text-primary border-primary/30 text-xs">{e.score} pts</Badge>
@@ -148,15 +148,26 @@ const useSubmitScore = () => {
   return useCallback(async (gameType: GameType, score: number, timeSeconds?: number) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { toast({ title: "Login required", variant: "destructive" }); return; }
-    const meta = user.user_metadata || {};
+    
+    // Fetch Discord info from profiles table (synced from Discord)
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("discord_username, discord_id, discord_avatar")
+      .eq("id", user.id)
+      .single();
+    
+    const discordUsername = profile?.discord_username || user.user_metadata?.discord_username || "Player";
+    const discordId = profile?.discord_id || user.user_metadata?.discord_id || null;
+    const discordAvatar = profile?.discord_avatar || null;
+    
     await supabase.from("mini_game_scores").insert({
       user_id: user.id,
       game_type: gameType,
       score,
       time_seconds: timeSeconds ?? null,
-      discord_username: meta.discord_username || meta.full_name || "Player",
-      discord_id: meta.discord_id || null,
-      discord_avatar: meta.avatar || null,
+      discord_username: discordUsername,
+      discord_id: discordId,
+      discord_avatar: discordAvatar,
     });
     toast({ title: "Score submitted! 🎉" });
   }, [toast]);
