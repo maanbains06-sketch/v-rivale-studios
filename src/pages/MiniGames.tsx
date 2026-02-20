@@ -10,15 +10,8 @@ import {
   Gamepad2, Trophy, Clock, ArrowLeft, Brain, Zap, BookOpen,
   Shuffle, Target, Lock, Search, Eye, CheckCircle, XCircle, Star,
   Crosshair, Keyboard, Palette, Grid3X3, Calculator, DoorOpen,
-  Lightbulb, Key, Flame, Bomb, Skull, Volume2, Shield, Box,
-  Users, Car, DollarSign, Map, Radio, Heart, Swords
+  Lightbulb, Key, Flame, Bomb, Skull, Box
 } from "lucide-react";
-import {
-  HeistPlannerGame, AudioGuessGame, MysteryBoxGame, LockpickGame,
-  InterrogationGame, StreetRacingGame, MoneyLaunderingGame, SmugglerRouteGame,
-  ClipGuessGame, RadioDecodeGame, Survival24hGame, DoubleAgentGame,
-  EgoMeterGame, ChaosMeterGame, CityControlGame, KarmaWheelGame,
-} from "@/components/mini-games/NewGames";
 import { motion, AnimatePresence } from "framer-motion";
 
 // ─── Types ───────────────────────────────────────────────
@@ -35,11 +28,7 @@ interface LeaderboardEntry {
 type GameType =
   | "escape_room" | "memory_match" | "reaction_test" | "trivia_quiz" | "word_scramble"
   | "speed_typer" | "color_match" | "pattern_memory" | "math_blitz" | "aim_trainer"
-  | "bomb_defusal" | "snake_runner" | "block_puzzle"
-  | "heist_planner" | "audio_guess" | "mystery_box" | "lockpick"
-  | "interrogation" | "street_racing" | "money_laundering" | "smuggler_route"
-  | "clip_guess" | "radio_decode" | "survival_24h" | "double_agent"
-  | "ego_meter" | "chaos_meter" | "city_control" | "karma_wheel";
+  | "bomb_defusal" | "snake_runner" | "block_puzzle";
 
 interface GameDef {
   id: GameType;
@@ -63,23 +52,7 @@ const GAMES: GameDef[] = [
   { id: "aim_trainer", title: "Aim Trainer", description: "Click the targets as fast and accurately as you can!", icon: <Crosshair className="w-8 h-8" />, gradient: "from-lime-500 via-green-500 to-emerald-500", glow: "shadow-lime-500/40" },
   { id: "bomb_defusal", title: "Bomb Defusal", description: "Cut the right wires before the bomb explodes!", icon: <Bomb className="w-8 h-8" />, gradient: "from-red-700 via-orange-600 to-yellow-500", glow: "shadow-red-600/40" },
   { id: "snake_runner", title: "Snake Runner", description: "Classic snake — eat food, grow longer, don't hit walls!", icon: <Flame className="w-8 h-8" />, gradient: "from-emerald-600 via-green-500 to-lime-400", glow: "shadow-emerald-500/40" },
-  { id: "block_puzzle", title: "Block Blast", description: "Place colorful blocks on the grid — clear rows & columns to score!", icon: <Box className="w-8 h-8" />, gradient: "from-blue-500 via-cyan-400 to-blue-600", glow: "shadow-blue-500/40" },
-  { id: "heist_planner", title: "Heist Planner", description: "Plan crew, weapons, entry & escape — execute the perfect heist!", icon: <Shield className="w-8 h-8" />, gradient: "from-amber-600 via-orange-500 to-red-500", glow: "shadow-amber-500/40" },
-  { id: "audio_guess", title: "Audio Guess", description: "Read the sound description and guess what it is!", icon: <Volume2 className="w-8 h-8" />, gradient: "from-violet-600 via-purple-500 to-fuchsia-500", glow: "shadow-violet-500/40" },
-  { id: "mystery_box", title: "Mystery Box", description: "Pick 1 of 9 boxes — only one has the jackpot!", icon: <Box className="w-8 h-8" />, gradient: "from-emerald-600 via-green-500 to-teal-500", glow: "shadow-emerald-500/40" },
-  { id: "lockpick", title: "Lockpick", description: "Time your click in the green zone to pick the lock!", icon: <Lock className="w-8 h-8" />, gradient: "from-yellow-600 via-amber-500 to-orange-500", glow: "shadow-yellow-500/40" },
-  { id: "interrogation", title: "Interrogation", description: "Interrogate a suspect — use tactics to get a confession!", icon: <Eye className="w-8 h-8" />, gradient: "from-slate-600 via-gray-500 to-zinc-600", glow: "shadow-slate-500/40" },
-  { id: "street_racing", title: "Street Racing", description: "Bet on which car wins the race — pure RNG adrenaline!", icon: <Car className="w-8 h-8" />, gradient: "from-red-600 via-orange-500 to-yellow-500", glow: "shadow-red-500/40" },
-  { id: "money_laundering", title: "Money Laundering", description: "Split dirty money across channels — don't get caught!", icon: <DollarSign className="w-8 h-8" />, gradient: "from-green-600 via-emerald-500 to-teal-500", glow: "shadow-green-500/40" },
-  { id: "smuggler_route", title: "Smuggler Route", description: "Choose the best route — balance risk, time & reward!", icon: <Map className="w-8 h-8" />, gradient: "from-amber-700 via-yellow-600 to-orange-600", glow: "shadow-amber-600/40" },
-  { id: "clip_guess", title: "RP Clip Guess", description: "Read the scenario and predict what happens next!", icon: <Eye className="w-8 h-8" />, gradient: "from-indigo-600 via-blue-500 to-cyan-500", glow: "shadow-indigo-500/40" },
-  { id: "radio_decode", title: "Radio Decode", description: "Decode scrambled radio transmissions!", icon: <Radio className="w-8 h-8" />, gradient: "from-cyan-600 via-teal-500 to-green-500", glow: "shadow-cyan-500/40" },
-  { id: "survival_24h", title: "24h Survival", description: "Survive 24 virtual hours — every decision counts!", icon: <Heart className="w-8 h-8" />, gradient: "from-rose-600 via-red-500 to-orange-500", glow: "shadow-rose-500/40" },
-  { id: "double_agent", title: "Double Agent", description: "Analyze profiles to find the undercover agent!", icon: <Crosshair className="w-8 h-8" />, gradient: "from-slate-700 via-gray-600 to-zinc-600", glow: "shadow-slate-600/40" },
-  { id: "ego_meter", title: "Ego Meter", description: "Answer moral dilemmas — discover your RP personality!", icon: <Star className="w-8 h-8" />, gradient: "from-fuchsia-600 via-pink-500 to-rose-500", glow: "shadow-fuchsia-500/40" },
-  { id: "chaos_meter", title: "Chaos Meter", description: "Click to increase global chaos — unlock rewards at 100%!", icon: <Flame className="w-8 h-8" />, gradient: "from-red-700 via-orange-600 to-yellow-500", glow: "shadow-red-600/40" },
-  { id: "city_control", title: "City Control", description: "Support your faction in a tug-of-war for city control!", icon: <Users className="w-8 h-8" />, gradient: "from-purple-700 via-violet-600 to-indigo-600", glow: "shadow-purple-600/40" },
-  { id: "karma_wheel", title: "Karma Wheel", description: "Spin the wheel — multiply your karma or lose it all!", icon: <Zap className="w-8 h-8" />, gradient: "from-yellow-600 via-amber-500 to-orange-500", glow: "shadow-yellow-500/40" },
+  { id: "block_puzzle", title: "Block Blast", description: "Tetris-style falling blocks — place them to clear lines & score!", icon: <Box className="w-8 h-8" />, gradient: "from-blue-500 via-cyan-400 to-blue-600", glow: "shadow-blue-500/40" },
 ];
 
 // ─── 3D Card Wrapper ─────────────────────────────────────
@@ -506,7 +479,7 @@ const EscapeRoomGame = ({ onBack }: { onBack: () => void }) => {
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/40 to-transparent" />
             <div className="p-3 border-b border-cyan-500/10">
               <h3 className="text-sm font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-2" style={{ textShadow: "0 0 10px hsl(190 80% 55% / 0.4)" }}>
-                <Shield className="w-4 h-4" /> Task Checklist
+                <Lock className="w-4 h-4" /> Task Checklist
               </h3>
             </div>
             <div className="p-3 space-y-2">
@@ -1694,218 +1667,306 @@ const SnakeRunnerGame = ({ onBack }: { onBack: () => void }) => {
 };
 
 // ════════════════════════════════════════════════════════
-// GAME 13: BLOCK BLAST — Place blocks, clear rows & columns!
+// GAME 13: BLOCK BLAST — Tetris-style falling blocks!
 // ════════════════════════════════════════════════════════
-const GRID = 8;
+const BG_COLS = 10;
+const BG_ROWS = 20;
 const BLOCK_COLORS = [
-  { bg: "hsl(200,85%,55%)", light: "hsl(200,85%,70%)", dark: "hsl(200,85%,40%)", shadow: "hsl(200,85%,30%)" }, // cyan
-  { bg: "hsl(0,75%,55%)", light: "hsl(0,75%,70%)", dark: "hsl(0,75%,40%)", shadow: "hsl(0,75%,30%)" }, // red
-  { bg: "hsl(120,60%,45%)", light: "hsl(120,60%,60%)", dark: "hsl(120,60%,32%)", shadow: "hsl(120,60%,22%)" }, // green
-  { bg: "hsl(50,90%,55%)", light: "hsl(50,90%,70%)", dark: "hsl(50,90%,40%)", shadow: "hsl(50,90%,30%)" }, // yellow
-  { bg: "hsl(275,70%,55%)", light: "hsl(275,70%,70%)", dark: "hsl(275,70%,40%)", shadow: "hsl(275,70%,30%)" }, // purple
-  { bg: "hsl(25,90%,55%)", light: "hsl(25,90%,70%)", dark: "hsl(25,90%,40%)", shadow: "hsl(25,90%,30%)" }, // orange
+  { bg: "hsl(200,85%,55%)", light: "hsl(200,85%,70%)", dark: "hsl(200,85%,40%)", shadow: "hsl(200,85%,30%)" },
+  { bg: "hsl(0,75%,55%)", light: "hsl(0,75%,70%)", dark: "hsl(0,75%,40%)", shadow: "hsl(0,75%,30%)" },
+  { bg: "hsl(120,60%,45%)", light: "hsl(120,60%,60%)", dark: "hsl(120,60%,32%)", shadow: "hsl(120,60%,22%)" },
+  { bg: "hsl(50,90%,55%)", light: "hsl(50,90%,70%)", dark: "hsl(50,90%,40%)", shadow: "hsl(50,90%,30%)" },
+  { bg: "hsl(275,70%,55%)", light: "hsl(275,70%,70%)", dark: "hsl(275,70%,40%)", shadow: "hsl(275,70%,30%)" },
+  { bg: "hsl(25,90%,55%)", light: "hsl(25,90%,70%)", dark: "hsl(25,90%,40%)", shadow: "hsl(25,90%,30%)" },
+  { bg: "hsl(180,70%,50%)", light: "hsl(180,70%,65%)", dark: "hsl(180,70%,35%)", shadow: "hsl(180,70%,25%)" },
 ];
 
-type Piece = { shape: number[][]; colorIdx: number };
-
-const PIECE_SHAPES: number[][][] = [
-  [[1]], [[1,1]], [[1],[1]], [[1,1],[1,1]], [[1,1,1]], [[1],[1],[1]],
-  [[1,1],[1,0]], [[1,0],[1,1]], [[0,1],[1,1]], [[1,1],[0,1]],
-  [[1,1,1],[1,0,0]], [[1,1,1],[0,0,1]], [[1,0,0],[1,1,1]], [[0,0,1],[1,1,1]],
-  [[1,1,1,1]], [[1],[1],[1],[1]],
-  [[1,1,1],[0,1,0]], [[0,1],[1,1],[0,1]],
-  [[1,1,1,1,1]], [[1],[1],[1],[1],[1]],
+const TETROMINOS: { shape: number[][]; color: number }[] = [
+  { shape: [[1,1,1,1]], color: 0 },                         // I
+  { shape: [[1,1],[1,1]], color: 3 },                        // O
+  { shape: [[0,1,0],[1,1,1]], color: 4 },                    // T
+  { shape: [[1,0],[1,0],[1,1]], color: 5 },                  // L
+  { shape: [[0,1],[0,1],[1,1]], color: 1 },                  // J
+  { shape: [[0,1,1],[1,1,0]], color: 2 },                    // S
+  { shape: [[1,1,0],[0,1,1]], color: 6 },                    // Z
 ];
 
-const randomPiece = (): Piece => ({
-  shape: PIECE_SHAPES[Math.floor(Math.random() * PIECE_SHAPES.length)],
-  colorIdx: Math.floor(Math.random() * BLOCK_COLORS.length),
-});
+const rotateCW = (shape: number[][]): number[][] => {
+  const rows = shape.length, cols = shape[0].length;
+  const rotated: number[][] = Array.from({ length: cols }, () => Array(rows).fill(0));
+  for (let r = 0; r < rows; r++)
+    for (let c = 0; c < cols; c++)
+      rotated[c][rows - 1 - r] = shape[r][c];
+  return rotated;
+};
+
+type FallingPiece = { shape: number[][]; color: number; row: number; col: number };
 
 const BlockPuzzleGame = ({ onBack }: { onBack: () => void }) => {
   const [started, setStarted] = useState(false);
   const [gameOver, setGameOver] = useState(false);
-  const [grid, setGrid] = useState<(number | null)[][]>([]);
-  const [pieces, setPieces] = useState<(Piece | null)[]>([]);
+  const [board, setBoard] = useState<(number | null)[][]>([]);
   const [score, setScore] = useState(0);
+  const [level, setLevel] = useState(1);
+  const [linesCleared, setLinesCleared] = useState(0);
   const [combo, setCombo] = useState(0);
-  const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
-  const [hoverPos, setHoverPos] = useState<{ r: number; c: number } | null>(null);
-  const [clearingLines, setClearingLines] = useState<{ rows: number[]; cols: number[] }>({ rows: [], cols: [] });
+  const [current, setCurrent] = useState<FallingPiece | null>(null);
+  const [next, setNext] = useState<FallingPiece | null>(null);
+  const [flashRows, setFlashRows] = useState<number[]>([]);
   const submitScore = useSubmitScore();
   const game = GAMES[12];
+  const intervalRef = useRef<ReturnType<typeof setInterval>>();
+  const boardRef = useRef(board);
+  const currentRef = useRef(current);
+  const scoreRef = useRef(score);
+  const levelRef = useRef(level);
+  const linesClearedRef = useRef(linesCleared);
+  const comboRef = useRef(combo);
+  const gameOverRef = useRef(gameOver);
 
-  const emptyGrid = (): (number | null)[][] => Array.from({ length: GRID }, () => Array(GRID).fill(null));
+  boardRef.current = board;
+  currentRef.current = current;
+  scoreRef.current = score;
+  levelRef.current = level;
+  linesClearedRef.current = linesCleared;
+  comboRef.current = combo;
+  gameOverRef.current = gameOver;
 
-  const genPieces = (): (Piece | null)[] => [randomPiece(), randomPiece(), randomPiece()];
+  const emptyBoard = (): (number | null)[][] => Array.from({ length: BG_ROWS }, () => Array(BG_COLS).fill(null));
 
-  const initGame = () => {
-    setGrid(emptyGrid()); setPieces(genPieces()); setScore(0); setCombo(0);
-    setGameOver(false); setStarted(true); setSelectedPiece(null); setHoverPos(null);
-    setClearingLines({ rows: [], cols: [] });
-  };
+  const spawnPiece = useCallback((): FallingPiece => {
+    const t = TETROMINOS[Math.floor(Math.random() * TETROMINOS.length)];
+    return { shape: t.shape, color: t.color, row: 0, col: Math.floor((BG_COLS - t.shape[0].length) / 2) };
+  }, []);
 
-  const canPlace = (g: (number | null)[][], piece: Piece, r: number, c: number): boolean => {
-    for (let pr = 0; pr < piece.shape.length; pr++) {
-      for (let pc = 0; pc < piece.shape[pr].length; pc++) {
-        if (piece.shape[pr][pc] === 0) continue;
-        const gr = r + pr, gc = c + pc;
-        if (gr < 0 || gr >= GRID || gc < 0 || gc >= GRID || g[gr][gc] !== null) return false;
-      }
-    }
-    return true;
-  };
-
-  const canPlaceAnywhere = (g: (number | null)[][], piece: Piece): boolean => {
-    for (let r = 0; r < GRID; r++) {
-      for (let c = 0; c < GRID; c++) {
-        if (canPlace(g, piece, r, c)) return true;
+  const collides = useCallback((b: (number | null)[][], piece: FallingPiece): boolean => {
+    for (let r = 0; r < piece.shape.length; r++) {
+      for (let c = 0; c < piece.shape[r].length; c++) {
+        if (piece.shape[r][c] === 0) continue;
+        const br = piece.row + r, bc = piece.col + c;
+        if (br < 0 || br >= BG_ROWS || bc < 0 || bc >= BG_COLS) return true;
+        if (b[br][bc] !== null) return true;
       }
     }
     return false;
-  };
+  }, []);
 
-  const placePiece = (r: number, c: number) => {
-    if (selectedPiece === null || !pieces[selectedPiece]) return;
-    const piece = pieces[selectedPiece]!;
-    if (!canPlace(grid, piece, r, c)) return;
-
-    const newGrid = grid.map(row => [...row]);
-    for (let pr = 0; pr < piece.shape.length; pr++) {
-      for (let pc = 0; pc < piece.shape[pr].length; pc++) {
-        if (piece.shape[pr][pc] === 1) {
-          newGrid[r + pr][c + pc] = piece.colorIdx;
+  const lockPiece = useCallback((b: (number | null)[][], piece: FallingPiece): (number | null)[][] => {
+    const nb = b.map(row => [...row]);
+    for (let r = 0; r < piece.shape.length; r++) {
+      for (let c = 0; c < piece.shape[r].length; c++) {
+        if (piece.shape[r][c] === 1) {
+          nb[piece.row + r][piece.col + c] = piece.color;
         }
       }
     }
+    return nb;
+  }, []);
 
-    // Check for full rows and columns
-    const fullRows: number[] = [];
-    const fullCols: number[] = [];
-    for (let i = 0; i < GRID; i++) {
-      if (newGrid[i].every(cell => cell !== null)) fullRows.push(i);
-      if (newGrid.every(row => row[i] !== null)) fullCols.push(i);
+  const clearLines = useCallback((b: (number | null)[][]): { newBoard: (number | null)[][]; cleared: number; clearedRows: number[] } => {
+    const clearedRows: number[] = [];
+    for (let r = 0; r < BG_ROWS; r++) {
+      if (b[r].every(cell => cell !== null)) clearedRows.push(r);
     }
+    if (clearedRows.length === 0) return { newBoard: b, cleared: 0, clearedRows: [] };
+    const remaining = b.filter((_, i) => !clearedRows.includes(i));
+    const emptyRows = Array.from({ length: clearedRows.length }, () => Array(BG_COLS).fill(null) as (number | null)[]);
+    return { newBoard: [...emptyRows, ...remaining], cleared: clearedRows.length, clearedRows };
+  }, []);
 
-    const linesCleared = fullRows.length + fullCols.length;
-    let newCombo = linesCleared > 0 ? combo + 1 : 0;
-    const lineScore = linesCleared * 100 * (1 + (newCombo - 1) * 0.5);
-    const blockScore = piece.shape.flat().filter(v => v === 1).length * 5;
-    const newScore = score + Math.round(lineScore) + blockScore;
+  const getGhostRow = useCallback((b: (number | null)[][], piece: FallingPiece): number => {
+    let ghostRow = piece.row;
+    while (!collides(b, { ...piece, row: ghostRow + 1 })) ghostRow++;
+    return ghostRow;
+  }, [collides]);
 
-    if (linesCleared > 0) {
-      setClearingLines({ rows: fullRows, cols: fullCols });
-      setTimeout(() => {
-        const clearedGrid = newGrid.map(row => [...row]);
-        fullRows.forEach(r => { for (let c = 0; c < GRID; c++) clearedGrid[r][c] = null; });
-        fullCols.forEach(c => { for (let r = 0; r < GRID; r++) clearedGrid[r][c] = null; });
-        setGrid(clearedGrid);
-        setClearingLines({ rows: [], cols: [] });
+  const tick = useCallback(() => {
+    if (gameOverRef.current) return;
+    const b = boardRef.current;
+    const piece = currentRef.current;
+    if (!piece) return;
 
-        // Update pieces
-        const newPieces = [...pieces];
-        newPieces[selectedPiece] = null;
-        if (newPieces.every(p => p === null)) {
-          newPieces.splice(0, 3, ...genPieces());
-        }
-        setPieces(newPieces);
-        setSelectedPiece(null);
-        setCombo(newCombo);
-
-        // Check game over
-        const remaining = (newPieces as (Piece | null)[]).filter(p => p !== null) as Piece[];
-        if (remaining.length > 0 && remaining.every(p => !canPlaceAnywhere(clearedGrid, p))) {
-          setGameOver(true);
-          submitScore("block_puzzle", newScore);
-        }
-      }, 300);
+    const moved = { ...piece, row: piece.row + 1 };
+    if (!collides(b, moved)) {
+      setCurrent(moved);
     } else {
-      setGrid(newGrid);
-      const newPieces = [...pieces];
-      newPieces[selectedPiece] = null;
-      if (newPieces.every(p => p === null)) {
-        newPieces.splice(0, 3, ...genPieces());
-      }
-      setPieces(newPieces);
-      setSelectedPiece(null);
-      setCombo(newCombo);
-
-      const remaining = (newPieces as (Piece | null)[]).filter(p => p !== null) as Piece[];
-      if (remaining.length > 0 && remaining.every(p => !canPlaceAnywhere(newGrid, p))) {
+      // Lock piece
+      const locked = lockPiece(b, piece);
+      // Check if game over (piece locked at row 0 or above)
+      if (piece.row <= 0) {
         setGameOver(true);
-        submitScore("block_puzzle", newScore);
+        gameOverRef.current = true;
+        clearInterval(intervalRef.current);
+        submitScore("block_puzzle", scoreRef.current);
+        return;
+      }
+      const { newBoard, cleared, clearedRows } = clearLines(locked);
+      if (cleared > 0) {
+        setFlashRows(clearedRows);
+        setTimeout(() => setFlashRows([]), 300);
+        const points = [0, 100, 300, 500, 800][Math.min(cleared, 4)] * levelRef.current;
+        const newCombo = comboRef.current + 1;
+        const comboBonus = newCombo > 1 ? 50 * newCombo : 0;
+        setScore(s => s + points + comboBonus);
+        setCombo(newCombo);
+        const newLines = linesClearedRef.current + cleared;
+        setLinesCleared(newLines);
+        const newLevel = Math.floor(newLines / 10) + 1;
+        setLevel(newLevel);
+      } else {
+        setCombo(0);
+      }
+      setBoard(newBoard);
+      // Spawn next
+      const nextPiece = next || spawnPiece();
+      if (collides(newBoard, nextPiece)) {
+        setGameOver(true);
+        gameOverRef.current = true;
+        clearInterval(intervalRef.current);
+        submitScore("block_puzzle", scoreRef.current + (cleared > 0 ? [0,100,300,500,800][Math.min(cleared,4)] * levelRef.current : 0));
+        return;
+      }
+      setCurrent(nextPiece);
+      setNext(spawnPiece());
+    }
+  }, [collides, lockPiece, clearLines, next, spawnPiece, submitScore]);
+
+  const initGame = useCallback(() => {
+    const b = emptyBoard();
+    setBoard(b);
+    setScore(0); setLevel(1); setLinesCleared(0); setCombo(0);
+    setGameOver(false); setFlashRows([]);
+    gameOverRef.current = false;
+    const p = spawnPiece();
+    setCurrent(p);
+    setNext(spawnPiece());
+    setStarted(true);
+  }, [spawnPiece]);
+
+  // Game loop
+  useEffect(() => {
+    if (!started || gameOver) return;
+    clearInterval(intervalRef.current);
+    const speed = Math.max(100, 800 - (level - 1) * 70);
+    intervalRef.current = setInterval(tick, speed);
+    return () => clearInterval(intervalRef.current);
+  }, [started, gameOver, level, tick]);
+
+  // Keyboard controls
+  useEffect(() => {
+    if (!started || gameOver) return;
+    const handler = (e: KeyboardEvent) => {
+      const piece = currentRef.current;
+      const b = boardRef.current;
+      if (!piece) return;
+      if (e.key === "ArrowLeft" || e.key === "a") {
+        e.preventDefault();
+        const moved = { ...piece, col: piece.col - 1 };
+        if (!collides(b, moved)) setCurrent(moved);
+      } else if (e.key === "ArrowRight" || e.key === "d") {
+        e.preventDefault();
+        const moved = { ...piece, col: piece.col + 1 };
+        if (!collides(b, moved)) setCurrent(moved);
+      } else if (e.key === "ArrowDown" || e.key === "s") {
+        e.preventDefault();
+        const moved = { ...piece, row: piece.row + 1 };
+        if (!collides(b, moved)) { setCurrent(moved); setScore(s => s + 1); }
+      } else if (e.key === "ArrowUp" || e.key === "w") {
+        e.preventDefault();
+        const rotated = { ...piece, shape: rotateCW(piece.shape) };
+        // Wall kick: try 0, -1, +1, -2, +2
+        for (const offset of [0, -1, 1, -2, 2]) {
+          const kicked = { ...rotated, col: rotated.col + offset };
+          if (!collides(b, kicked)) { setCurrent(kicked); break; }
+        }
+      } else if (e.key === " ") {
+        e.preventDefault();
+        // Hard drop
+        let dropRow = piece.row;
+        while (!collides(b, { ...piece, row: dropRow + 1 })) dropRow++;
+        const dropped = dropRow - piece.row;
+        setScore(s => s + dropped * 2);
+        setCurrent({ ...piece, row: dropRow });
+        // Force immediate lock on next tick
+        setTimeout(tick, 0);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [started, gameOver, collides, tick]);
+
+  const CELL = 30;
+
+  if (!started) return <StartScreen title="Block Blast" description="Tetris-style falling blocks! Rotate & place pieces to clear lines. Speed increases with each level!" icon={<Box className="w-14 h-14" />} gradient={game.gradient} glow={game.glow} onStart={initGame} onBack={onBack} gameType="block_puzzle" />;
+  if (gameOver) return <EndScreen won={score >= 1000} title={`Score: ${score}!`} subtitle={`Level ${level} — ${linesCleared} lines cleared`} onReplay={initGame} onBack={onBack} gameType="block_puzzle" />;
+
+  // Build display board with current piece and ghost
+  const displayBoard = board.map(row => [...row]);
+  const ghostBoard: boolean[][] = Array.from({ length: BG_ROWS }, () => Array(BG_COLS).fill(false));
+  if (current) {
+    const ghostRow = getGhostRow(board, current);
+    // Draw ghost
+    for (let r = 0; r < current.shape.length; r++) {
+      for (let c = 0; c < current.shape[r].length; c++) {
+        if (current.shape[r][c] === 1) {
+          const gr = ghostRow + r, gc = current.col + c;
+          if (gr >= 0 && gr < BG_ROWS && gc >= 0 && gc < BG_COLS) ghostBoard[gr][gc] = true;
+        }
       }
     }
-
-    setScore(newScore);
-    setHoverPos(null);
-  };
-
-  // Ghost preview cells
-  const ghostCells = new Set<string>();
-  let ghostValid = false;
-  if (selectedPiece !== null && pieces[selectedPiece] && hoverPos) {
-    const piece = pieces[selectedPiece]!;
-    ghostValid = canPlace(grid, piece, hoverPos.r, hoverPos.c);
-    if (ghostValid) {
-      for (let pr = 0; pr < piece.shape.length; pr++) {
-        for (let pc = 0; pc < piece.shape[pr].length; pc++) {
-          if (piece.shape[pr][pc] === 1) ghostCells.add(`${hoverPos.r + pr},${hoverPos.c + pc}`);
+    // Draw current piece
+    for (let r = 0; r < current.shape.length; r++) {
+      for (let c = 0; c < current.shape[r].length; c++) {
+        if (current.shape[r][c] === 1) {
+          const br = current.row + r, bc = current.col + c;
+          if (br >= 0 && br < BG_ROWS && bc >= 0 && bc < BG_COLS) displayBoard[br][bc] = current.color;
         }
       }
     }
   }
 
-  const CELL = 42;
-
-  if (!started) return <StartScreen title="Block Blast" description="Place colorful blocks on the grid — clear rows & columns to score big!" icon={<Box className="w-14 h-14" />} gradient={game.gradient} glow={game.glow} onStart={initGame} onBack={onBack} gameType="block_puzzle" />;
-  if (gameOver) return <EndScreen won={score >= 500} title={`Score: ${score}!`} subtitle={score >= 500 ? "Block Blast master! 🧱" : "No more moves!"} onReplay={initGame} onBack={onBack} gameType="block_puzzle" />;
-
   return (
     <GameShell onBack={onBack} title="Block Blast" icon={<Box className="w-5 h-5 text-foreground" />} gradient={game.gradient}
-      badges={<><Badge className="bg-blue-900/40 text-blue-300 border-blue-500/30 font-mono text-base">{score} pts</Badge>{combo > 1 && <Badge className="bg-yellow-900/40 text-yellow-300 border-yellow-500/30 animate-pulse">🔥 x{combo}</Badge>}</>}>
-      <div className="flex flex-col items-center gap-6">
-        {/* Grid */}
-        <div className="relative rounded-2xl p-3" style={{ background: "linear-gradient(135deg, hsl(225,50%,30%), hsl(225,50%,20%))", boxShadow: "0 8px 40px hsl(225 50% 15% / 0.8), inset 0 1px 0 hsl(225 40% 45% / 0.3)" }}>
-          <div className="grid gap-[2px]" style={{ gridTemplateColumns: `repeat(${GRID}, ${CELL}px)` }}>
-            {grid.map((row, r) =>
+      badges={<>
+        <Badge className="bg-blue-900/40 text-blue-300 border-blue-500/30 font-mono text-base">{score} pts</Badge>
+        <Badge className="bg-purple-900/40 text-purple-300 border-purple-500/30">Lv.{level}</Badge>
+        {combo > 1 && <Badge className="bg-yellow-900/40 text-yellow-300 border-yellow-500/30 animate-pulse">🔥 x{combo}</Badge>}
+      </>}>
+      <div className="flex flex-col lg:flex-row items-start justify-center gap-6">
+        {/* Game Board */}
+        <div className="relative rounded-2xl p-2" style={{ background: "linear-gradient(135deg, hsl(225,50%,25%), hsl(225,50%,15%))", boxShadow: "0 8px 40px hsl(225 50% 10% / 0.8), inset 0 1px 0 hsl(225 40% 40% / 0.3)" }}>
+          <div className="grid" style={{ gridTemplateColumns: `repeat(${BG_COLS}, ${CELL}px)`, gap: "1px" }}>
+            {displayBoard.map((row, r) =>
               row.map((cell, c) => {
-                const isGhost = ghostCells.has(`${r},${c}`);
-                const isClearing = clearingLines.rows.includes(r) || clearingLines.cols.includes(c);
+                const isFlash = flashRows.includes(r);
+                const isGhost = ghostBoard[r][c] && cell === null;
                 const color = cell !== null ? BLOCK_COLORS[cell] : null;
-                const ghostColor = selectedPiece !== null && pieces[selectedPiece] ? BLOCK_COLORS[pieces[selectedPiece]!.colorIdx] : null;
 
                 return (
                   <motion.div
                     key={`${r}-${c}`}
-                    className="cursor-pointer select-none"
                     style={{ width: CELL, height: CELL }}
-                    animate={isClearing && cell !== null ? { scale: [1, 1.15, 0], opacity: [1, 1, 0] } : {}}
+                    animate={isFlash ? { opacity: [1, 0.3, 1], scale: [1, 1.05, 0.95] } : {}}
                     transition={{ duration: 0.3 }}
-                    onClick={() => placePiece(r, c)}
-                    onMouseEnter={() => setHoverPos({ r, c })}
-                    onMouseLeave={() => setHoverPos(null)}
                   >
                     {cell !== null ? (
-                      <div className="w-full h-full rounded-md relative overflow-hidden" style={{
+                      <div className="w-full h-full rounded-[3px] relative overflow-hidden" style={{
                         background: `linear-gradient(135deg, ${color!.light} 0%, ${color!.bg} 40%, ${color!.dark} 100%)`,
-                        boxShadow: `0 3px 6px ${color!.shadow}, inset 0 1px 0 ${color!.light}80, inset 0 -2px 0 ${color!.dark}80`,
+                        boxShadow: `0 2px 4px ${color!.shadow}, inset 0 1px 0 ${color!.light}80, inset 0 -1px 0 ${color!.dark}80`,
                       }}>
-                        <div className="absolute inset-0 rounded-md" style={{
+                        <div className="absolute inset-0" style={{
                           background: "linear-gradient(135deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.1) 40%, transparent 60%)",
                         }} />
-                        <div className="absolute bottom-0 left-0 right-0 h-[3px] rounded-b-md" style={{ background: color!.shadow }} />
                       </div>
-                    ) : isGhost && ghostColor ? (
-                      <div className="w-full h-full rounded-md" style={{
-                        background: ghostValid ? `${ghostColor.bg}40` : "hsl(0,70%,50%,0.2)",
-                        border: `2px dashed ${ghostValid ? ghostColor.bg : "hsl(0,70%,50%)"}`,
+                    ) : isGhost ? (
+                      <div className="w-full h-full rounded-[3px]" style={{
+                        background: current ? `${BLOCK_COLORS[current.color].bg}20` : "transparent",
+                        border: `1px dashed ${current ? BLOCK_COLORS[current.color].bg + "60" : "transparent"}`,
                       }} />
                     ) : (
-                      <div className="w-full h-full rounded-md" style={{
-                        background: "hsl(225,40%,18%)",
-                        boxShadow: "inset 0 1px 3px hsl(225 40% 12%)",
-                        border: "1px solid hsl(225,40%,22%)",
+                      <div className="w-full h-full rounded-[3px]" style={{
+                        background: "hsl(225,40%,14%)",
+                        border: "1px solid hsl(225,40%,18%)",
                       }} />
                     )}
                   </motion.div>
@@ -1915,50 +1976,95 @@ const BlockPuzzleGame = ({ onBack }: { onBack: () => void }) => {
           </div>
         </div>
 
-        {/* Pieces tray */}
-        <div className="flex gap-4 items-end justify-center flex-wrap p-4 rounded-2xl" style={{
-          background: "linear-gradient(135deg, hsl(225,40%,16%), hsl(225,40%,12%))",
-          boxShadow: "0 4px 20px hsl(225 40% 8% / 0.6)",
-        }}>
-          {pieces.map((piece, idx) => {
-            if (!piece) return <div key={idx} className="w-20 h-20" />;
-            const color = BLOCK_COLORS[piece.colorIdx];
-            const miniCell = 20;
-            const isSelected = selectedPiece === idx;
-            return (
-              <motion.button
-                key={idx}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setSelectedPiece(isSelected ? null : idx)}
-                className={`p-2 rounded-xl border-2 transition-all ${
-                  isSelected ? "border-white/60 shadow-[0_0_20px_hsl(200_80%_60%/0.4)] bg-white/10" : "border-white/10 hover:border-white/30 bg-white/[0.03]"
-                }`}
-              >
-                <div className="grid gap-[2px]" style={{ gridTemplateColumns: `repeat(${piece.shape[0].length}, ${miniCell}px)` }}>
-                  {piece.shape.flat().map((cell, i) => (
-                    <div key={i} style={{ width: miniCell, height: miniCell }}>
+        {/* Side Panel */}
+        <div className="flex flex-col gap-4 min-w-[140px]">
+          {/* Next Piece Preview */}
+          <div className="rounded-xl p-3 text-center" style={{ background: "linear-gradient(135deg, hsl(225,40%,16%), hsl(225,40%,10%))", border: "1px solid hsl(225,40%,22%)" }}>
+            <p className="text-xs text-muted-foreground font-mono mb-2 uppercase tracking-wider">Next</p>
+            {next && (
+              <div className="inline-grid gap-[2px]" style={{ gridTemplateColumns: `repeat(${next.shape[0].length}, 22px)` }}>
+                {next.shape.flat().map((cell, i) => {
+                  const color = BLOCK_COLORS[next.color];
+                  return (
+                    <div key={i} style={{ width: 22, height: 22 }}>
                       {cell === 1 ? (
                         <div className="w-full h-full rounded-sm relative overflow-hidden" style={{
                           background: `linear-gradient(135deg, ${color.light} 0%, ${color.bg} 40%, ${color.dark} 100%)`,
-                          boxShadow: `0 2px 3px ${color.shadow}, inset 0 1px 0 ${color.light}80`,
+                          boxShadow: `0 1px 2px ${color.shadow}`,
                         }}>
-                          <div className="absolute inset-0" style={{
-                            background: "linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 50%)",
-                          }} />
+                          <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 50%)" }} />
                         </div>
                       ) : <div className="w-full h-full" />}
                     </div>
-                  ))}
-                </div>
-              </motion.button>
-            );
-          })}
-        </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
-        <p className="text-xs text-muted-foreground font-mono text-center">
-          Select a piece below, then click on the grid to place it. Clear full rows or columns!
-        </p>
+          {/* Stats */}
+          <div className="rounded-xl p-3 space-y-3" style={{ background: "linear-gradient(135deg, hsl(225,40%,16%), hsl(225,40%,10%))", border: "1px solid hsl(225,40%,22%)" }}>
+            <div>
+              <p className="text-[10px] text-muted-foreground font-mono uppercase">Score</p>
+              <p className="text-xl font-bold font-mono text-cyan-400">{score}</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-muted-foreground font-mono uppercase">Level</p>
+              <p className="text-xl font-bold font-mono text-purple-400">{level}</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-muted-foreground font-mono uppercase">Lines</p>
+              <p className="text-xl font-bold font-mono text-green-400">{linesCleared}</p>
+            </div>
+          </div>
+
+          {/* Controls help */}
+          <div className="rounded-xl p-3 text-[10px] text-muted-foreground font-mono space-y-1" style={{ background: "linear-gradient(135deg, hsl(225,40%,16%), hsl(225,40%,10%))", border: "1px solid hsl(225,40%,22%)" }}>
+            <p>← → Move</p>
+            <p>↑ Rotate</p>
+            <p>↓ Soft Drop</p>
+            <p>Space Hard Drop</p>
+          </div>
+
+          {/* Mobile controls */}
+          <div className="grid grid-cols-3 gap-1.5 lg:hidden">
+            <div />
+            <Button size="sm" variant="outline" className="border-blue-500/30 h-10" onClick={() => {
+              if (!current) return;
+              const rotated = { ...current, shape: rotateCW(current.shape) };
+              for (const offset of [0, -1, 1, -2, 2]) {
+                const kicked = { ...rotated, col: rotated.col + offset };
+                if (!collides(board, kicked)) { setCurrent(kicked); break; }
+              }
+            }}>↻</Button>
+            <div />
+            <Button size="sm" variant="outline" className="border-blue-500/30 h-10" onClick={() => {
+              if (!current) return;
+              const moved = { ...current, col: current.col - 1 };
+              if (!collides(board, moved)) setCurrent(moved);
+            }}>←</Button>
+            <Button size="sm" variant="outline" className="border-blue-500/30 h-10" onClick={() => {
+              if (!current) return;
+              const moved = { ...current, row: current.row + 1 };
+              if (!collides(board, moved)) { setCurrent(moved); setScore(s => s + 1); }
+            }}>↓</Button>
+            <Button size="sm" variant="outline" className="border-blue-500/30 h-10" onClick={() => {
+              if (!current) return;
+              const moved = { ...current, col: current.col + 1 };
+              if (!collides(board, moved)) setCurrent(moved);
+            }}>→</Button>
+            <div />
+            <Button size="sm" variant="outline" className="border-yellow-500/30 h-10 col-span-1" onClick={() => {
+              if (!current) return;
+              let dropRow = current.row;
+              while (!collides(board, { ...current, row: dropRow + 1 })) dropRow++;
+              setScore(s => s + (dropRow - current.row) * 2);
+              setCurrent({ ...current, row: dropRow });
+              setTimeout(tick, 0);
+            }}>⬇</Button>
+            <div />
+          </div>
+        </div>
       </div>
       <Leaderboard gameType="block_puzzle" />
     </GameShell>
@@ -1987,22 +2093,6 @@ const MiniGames = () => {
       case "bomb_defusal": return <BombDefusalGame onBack={onBack} />;
       case "snake_runner": return <SnakeRunnerGame onBack={onBack} />;
       case "block_puzzle": return <BlockPuzzleGame onBack={onBack} />;
-      case "heist_planner": return <HeistPlannerGame onBack={onBack} />;
-      case "audio_guess": return <AudioGuessGame onBack={onBack} />;
-      case "mystery_box": return <MysteryBoxGame onBack={onBack} />;
-      case "lockpick": return <LockpickGame onBack={onBack} />;
-      case "interrogation": return <InterrogationGame onBack={onBack} />;
-      case "street_racing": return <StreetRacingGame onBack={onBack} />;
-      case "money_laundering": return <MoneyLaunderingGame onBack={onBack} />;
-      case "smuggler_route": return <SmugglerRouteGame onBack={onBack} />;
-      case "clip_guess": return <ClipGuessGame onBack={onBack} />;
-      case "radio_decode": return <RadioDecodeGame onBack={onBack} />;
-      case "survival_24h": return <Survival24hGame onBack={onBack} />;
-      case "double_agent": return <DoubleAgentGame onBack={onBack} />;
-      case "ego_meter": return <EgoMeterGame onBack={onBack} />;
-      case "chaos_meter": return <ChaosMeterGame onBack={onBack} />;
-      case "city_control": return <CityControlGame onBack={onBack} />;
-      case "karma_wheel": return <KarmaWheelGame onBack={onBack} />;
       default: return null;
     }
   };
@@ -2030,7 +2120,7 @@ const MiniGames = () => {
                   WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
                 }}>Mini Games Arena</h1>
                 <p className="text-muted-foreground max-w-lg mx-auto text-lg">
-                  29 unique games with live leaderboards. Compete for the top spot!
+                  13 unique games with live leaderboards. Compete for the top spot!
                 </p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 max-w-7xl mx-auto">
