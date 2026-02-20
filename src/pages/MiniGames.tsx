@@ -10,8 +10,15 @@ import {
   Gamepad2, Trophy, Clock, ArrowLeft, Brain, Zap, BookOpen,
   Shuffle, Target, Lock, Search, Eye, CheckCircle, XCircle, Star,
   Crosshair, Keyboard, Palette, Grid3X3, Calculator, DoorOpen,
-  Lightbulb, Key, Flame, Bomb, Skull, Volume2, Shield, Box
+  Lightbulb, Key, Flame, Bomb, Skull, Volume2, Shield, Box,
+  Users, Car, DollarSign, Map, Radio, Heart, Swords
 } from "lucide-react";
+import {
+  HeistPlannerGame, AudioGuessGame, MysteryBoxGame, LockpickGame,
+  InterrogationGame, StreetRacingGame, MoneyLaunderingGame, SmugglerRouteGame,
+  ClipGuessGame, RadioDecodeGame, Survival24hGame, DoubleAgentGame,
+  EgoMeterGame, ChaosMeterGame, CityControlGame, KarmaWheelGame,
+} from "@/components/mini-games/NewGames";
 import { motion, AnimatePresence } from "framer-motion";
 
 // ─── Types ───────────────────────────────────────────────
@@ -28,7 +35,11 @@ interface LeaderboardEntry {
 type GameType =
   | "escape_room" | "memory_match" | "reaction_test" | "trivia_quiz" | "word_scramble"
   | "speed_typer" | "color_match" | "pattern_memory" | "math_blitz" | "aim_trainer"
-  | "bomb_defusal" | "snake_runner" | "block_puzzle";
+  | "bomb_defusal" | "snake_runner" | "block_puzzle"
+  | "heist_planner" | "audio_guess" | "mystery_box" | "lockpick"
+  | "interrogation" | "street_racing" | "money_laundering" | "smuggler_route"
+  | "clip_guess" | "radio_decode" | "survival_24h" | "double_agent"
+  | "ego_meter" | "chaos_meter" | "city_control" | "karma_wheel";
 
 interface GameDef {
   id: GameType;
@@ -53,6 +64,22 @@ const GAMES: GameDef[] = [
   { id: "bomb_defusal", title: "Bomb Defusal", description: "Cut the right wires before the bomb explodes!", icon: <Bomb className="w-8 h-8" />, gradient: "from-red-700 via-orange-600 to-yellow-500", glow: "shadow-red-600/40" },
   { id: "snake_runner", title: "Snake Runner", description: "Classic snake — eat food, grow longer, don't hit walls!", icon: <Flame className="w-8 h-8" />, gradient: "from-emerald-600 via-green-500 to-lime-400", glow: "shadow-emerald-500/40" },
   { id: "block_puzzle", title: "Block Blast", description: "Place colorful blocks on the grid — clear rows & columns to score!", icon: <Box className="w-8 h-8" />, gradient: "from-blue-500 via-cyan-400 to-blue-600", glow: "shadow-blue-500/40" },
+  { id: "heist_planner", title: "Heist Planner", description: "Plan crew, weapons, entry & escape — execute the perfect heist!", icon: <Shield className="w-8 h-8" />, gradient: "from-amber-600 via-orange-500 to-red-500", glow: "shadow-amber-500/40" },
+  { id: "audio_guess", title: "Audio Guess", description: "Read the sound description and guess what it is!", icon: <Volume2 className="w-8 h-8" />, gradient: "from-violet-600 via-purple-500 to-fuchsia-500", glow: "shadow-violet-500/40" },
+  { id: "mystery_box", title: "Mystery Box", description: "Pick 1 of 9 boxes — only one has the jackpot!", icon: <Box className="w-8 h-8" />, gradient: "from-emerald-600 via-green-500 to-teal-500", glow: "shadow-emerald-500/40" },
+  { id: "lockpick", title: "Lockpick", description: "Time your click in the green zone to pick the lock!", icon: <Lock className="w-8 h-8" />, gradient: "from-yellow-600 via-amber-500 to-orange-500", glow: "shadow-yellow-500/40" },
+  { id: "interrogation", title: "Interrogation", description: "Interrogate a suspect — use tactics to get a confession!", icon: <Eye className="w-8 h-8" />, gradient: "from-slate-600 via-gray-500 to-zinc-600", glow: "shadow-slate-500/40" },
+  { id: "street_racing", title: "Street Racing", description: "Bet on which car wins the race — pure RNG adrenaline!", icon: <Car className="w-8 h-8" />, gradient: "from-red-600 via-orange-500 to-yellow-500", glow: "shadow-red-500/40" },
+  { id: "money_laundering", title: "Money Laundering", description: "Split dirty money across channels — don't get caught!", icon: <DollarSign className="w-8 h-8" />, gradient: "from-green-600 via-emerald-500 to-teal-500", glow: "shadow-green-500/40" },
+  { id: "smuggler_route", title: "Smuggler Route", description: "Choose the best route — balance risk, time & reward!", icon: <Map className="w-8 h-8" />, gradient: "from-amber-700 via-yellow-600 to-orange-600", glow: "shadow-amber-600/40" },
+  { id: "clip_guess", title: "RP Clip Guess", description: "Read the scenario and predict what happens next!", icon: <Eye className="w-8 h-8" />, gradient: "from-indigo-600 via-blue-500 to-cyan-500", glow: "shadow-indigo-500/40" },
+  { id: "radio_decode", title: "Radio Decode", description: "Decode scrambled radio transmissions!", icon: <Radio className="w-8 h-8" />, gradient: "from-cyan-600 via-teal-500 to-green-500", glow: "shadow-cyan-500/40" },
+  { id: "survival_24h", title: "24h Survival", description: "Survive 24 virtual hours — every decision counts!", icon: <Heart className="w-8 h-8" />, gradient: "from-rose-600 via-red-500 to-orange-500", glow: "shadow-rose-500/40" },
+  { id: "double_agent", title: "Double Agent", description: "Analyze profiles to find the undercover agent!", icon: <Crosshair className="w-8 h-8" />, gradient: "from-slate-700 via-gray-600 to-zinc-600", glow: "shadow-slate-600/40" },
+  { id: "ego_meter", title: "Ego Meter", description: "Answer moral dilemmas — discover your RP personality!", icon: <Star className="w-8 h-8" />, gradient: "from-fuchsia-600 via-pink-500 to-rose-500", glow: "shadow-fuchsia-500/40" },
+  { id: "chaos_meter", title: "Chaos Meter", description: "Click to increase global chaos — unlock rewards at 100%!", icon: <Flame className="w-8 h-8" />, gradient: "from-red-700 via-orange-600 to-yellow-500", glow: "shadow-red-600/40" },
+  { id: "city_control", title: "City Control", description: "Support your faction in a tug-of-war for city control!", icon: <Users className="w-8 h-8" />, gradient: "from-purple-700 via-violet-600 to-indigo-600", glow: "shadow-purple-600/40" },
+  { id: "karma_wheel", title: "Karma Wheel", description: "Spin the wheel — multiply your karma or lose it all!", icon: <Zap className="w-8 h-8" />, gradient: "from-yellow-600 via-amber-500 to-orange-500", glow: "shadow-yellow-500/40" },
 ];
 
 // ─── 3D Card Wrapper ─────────────────────────────────────
@@ -1960,6 +1987,22 @@ const MiniGames = () => {
       case "bomb_defusal": return <BombDefusalGame onBack={onBack} />;
       case "snake_runner": return <SnakeRunnerGame onBack={onBack} />;
       case "block_puzzle": return <BlockPuzzleGame onBack={onBack} />;
+      case "heist_planner": return <HeistPlannerGame onBack={onBack} />;
+      case "audio_guess": return <AudioGuessGame onBack={onBack} />;
+      case "mystery_box": return <MysteryBoxGame onBack={onBack} />;
+      case "lockpick": return <LockpickGame onBack={onBack} />;
+      case "interrogation": return <InterrogationGame onBack={onBack} />;
+      case "street_racing": return <StreetRacingGame onBack={onBack} />;
+      case "money_laundering": return <MoneyLaunderingGame onBack={onBack} />;
+      case "smuggler_route": return <SmugglerRouteGame onBack={onBack} />;
+      case "clip_guess": return <ClipGuessGame onBack={onBack} />;
+      case "radio_decode": return <RadioDecodeGame onBack={onBack} />;
+      case "survival_24h": return <Survival24hGame onBack={onBack} />;
+      case "double_agent": return <DoubleAgentGame onBack={onBack} />;
+      case "ego_meter": return <EgoMeterGame onBack={onBack} />;
+      case "chaos_meter": return <ChaosMeterGame onBack={onBack} />;
+      case "city_control": return <CityControlGame onBack={onBack} />;
+      case "karma_wheel": return <KarmaWheelGame onBack={onBack} />;
       default: return null;
     }
   };
@@ -1987,7 +2030,7 @@ const MiniGames = () => {
                   WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
                 }}>Mini Games Arena</h1>
                 <p className="text-muted-foreground max-w-lg mx-auto text-lg">
-                  13 unique games with live leaderboards. Compete for the top spot!
+                  29 unique games with live leaderboards. Compete for the top spot!
                 </p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 max-w-7xl mx-auto">
