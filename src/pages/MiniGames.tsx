@@ -248,13 +248,13 @@ const GameShell = ({ children, onBack, title, icon, gradient, timer, badges }: {
   badges?: React.ReactNode;
 }) => (
   <div className="space-y-5">
-    <div className="flex items-center justify-between flex-wrap gap-3">
+    <div className="flex items-center justify-between flex-wrap gap-3 relative z-[60]">
       <Button variant="ghost" onClick={onBack} className="gap-2 text-muted-foreground hover:text-foreground"><ArrowLeft className="w-4 h-4" /> Back</Button>
       <div className="flex items-center gap-2">
         <div className={`p-1.5 rounded-lg bg-gradient-to-r ${gradient}`}>{icon}</div>
         <h2 className="text-xl font-bold">{title}</h2>
       </div>
-      <div className="flex items-center gap-2">{badges}{timer}</div>
+      <div className="flex items-center gap-2 flex-wrap">{badges}{timer}</div>
     </div>
     {children}
   </div>
@@ -931,11 +931,12 @@ const WordScrambleGame = ({ onBack }: { onBack: () => void }) => {
 };
 
 // ════════════════════════════════════════════════════════
-// GAME 6: SPEED TYPER
+// GAME 6: SPEED TYPER — 30 second word blitz
 // ════════════════════════════════════════════════════════
 const TYPING_WORDS = ["police", "suspect", "arrest", "vehicle", "pursuit", "warrant", "evidence", "robbery",
   "mechanic", "hospital", "dispatch", "smuggle", "corrupt", "gangster", "hostage", "criminal",
-  "detective", "undercover", "blackmarket", "courthouse"];
+  "detective", "undercover", "blackmarket", "courthouse", "interrogation", "surveillance", "jurisdiction",
+  "contraband", "conspiracy", "accomplice", "prosecution", "extortion", "trafficking", "testimony"];
 
 const SpeedTyperGame = ({ onBack }: { onBack: () => void }) => {
   const [started, setStarted] = useState(false);
@@ -944,8 +945,7 @@ const SpeedTyperGame = ({ onBack }: { onBack: () => void }) => {
   const [current, setCurrent] = useState(0);
   const [input, setInput] = useState("");
   const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(60);
-  const [startTime, setStartTime] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(30);
   const [correct, setCorrect] = useState<boolean | null>(null);
   const submitScore = useSubmitScore();
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
@@ -954,51 +954,62 @@ const SpeedTyperGame = ({ onBack }: { onBack: () => void }) => {
   const initGame = () => {
     const shuffled = [...TYPING_WORDS].sort(() => Math.random() - 0.5);
     setWords(shuffled); setCurrent(0); setInput(""); setScore(0);
-    setGameOver(false); setStarted(true); setTimeLeft(45); setStartTime(Date.now()); setCorrect(null);
+    setGameOver(false); setStarted(true); setTimeLeft(30); setCorrect(null);
   };
 
   useEffect(() => {
     if (!started || gameOver) return;
     intervalRef.current = setInterval(() => {
       setTimeLeft(prev => {
-        if (prev <= 1) { clearInterval(intervalRef.current); setGameOver(true); submitScore("speed_typer", score * 50, Math.floor((Date.now() - startTime) / 1000)); return 0; }
+        if (prev <= 1) {
+          clearInterval(intervalRef.current);
+          setGameOver(true);
+          submitScore("speed_typer", score * 50, 30);
+          return 0;
+        }
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(intervalRef.current);
-  }, [started, gameOver, startTime, score, submitScore]);
+  }, [started, gameOver, score, submitScore]);
 
   const handleInput = (val: string) => {
     setInput(val);
     if (val.toLowerCase().trim() === words[current]) {
-      setCorrect(true); setScore(s => s + 1);
+      setCorrect(true); const newScore = score + 1; setScore(newScore);
       setTimeout(() => {
-        if (current + 1 >= words.length) { setGameOver(true); clearInterval(intervalRef.current); submitScore("speed_typer", (score + 1) * 50, Math.floor((Date.now() - startTime) / 1000)); }
-        else { setCurrent(c => c + 1); setInput(""); setCorrect(null); }
-      }, 200);
+        if (current + 1 >= words.length) {
+          setGameOver(true); clearInterval(intervalRef.current);
+          submitScore("speed_typer", newScore * 50, 30 - timeLeft);
+        } else { setCurrent(c => c + 1); setInput(""); setCorrect(null); }
+      }, 150);
     }
   };
 
-  if (!started) return <StartScreen title={game.title} description={game.description} icon={<Keyboard className="w-14 h-14" />} gradient={game.gradient} glow={game.glow} onStart={initGame} onBack={onBack} gameType="speed_typer" />;
-  if (gameOver) return <EndScreen won={score >= 10} title={`${score} Words Typed!`} subtitle={`Score: ${score * 50} pts`} onReplay={initGame} onBack={onBack} gameType="speed_typer" />;
+  if (!started) return <StartScreen title={game.title} description="Type as many words as possible in 30 seconds! More words = more points!" icon={<Keyboard className="w-14 h-14" />} gradient={game.gradient} glow={game.glow} onStart={initGame} onBack={onBack} gameType="speed_typer" />;
+  if (gameOver) return <EndScreen won={score >= 8} title={`${score} Words in 30s!`} subtitle={`Score: ${score * 50} pts`} onReplay={initGame} onBack={onBack} gameType="speed_typer" />;
 
   return (
     <GameShell onBack={onBack} title="Speed Typer" icon={<Keyboard className="w-5 h-5 text-foreground" />} gradient={game.gradient}
-      timer={<TimerBadge seconds={timeLeft} />} badges={<Badge className="bg-indigo-900/40 text-indigo-300 border-indigo-500/30">{score} typed</Badge>}>
+      timer={<TimerBadge seconds={timeLeft} danger={10} />} badges={<Badge className="bg-indigo-900/40 text-indigo-300 border-indigo-500/30">{score} words</Badge>}>
       <Card3D>
         <Card className="border-indigo-500/20 bg-gradient-to-b from-[hsl(220,20%,10%)] to-[hsl(220,20%,6%)]">
           <CardContent className="p-10 text-center space-y-8">
-            <div className="text-sm text-muted-foreground font-mono">Type the word:</div>
+            <div className="text-sm text-muted-foreground font-mono">Type the word as fast as you can:</div>
             <motion.div key={current} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
               className="text-5xl font-bold font-mono tracking-wider text-indigo-300"
               style={{ textShadow: "0 0 30px hsl(240 80% 60% / 0.4)" }}>
               {words[current]}
             </motion.div>
+            <div className="text-6xl font-black font-mono text-center" style={{
+              color: timeLeft <= 10 ? "hsl(0,80%,55%)" : "hsl(190,80%,55%)",
+              textShadow: timeLeft <= 10 ? "0 0 30px hsl(0 80% 55% / 0.5)" : "0 0 30px hsl(190 80% 55% / 0.5)",
+            }}>{timeLeft}s</div>
             <input value={input} onChange={e => handleInput(e.target.value)} autoFocus
               className={`w-full max-w-md mx-auto bg-black/40 border-2 rounded-xl px-6 py-3 text-center font-mono text-xl tracking-widest transition-colors outline-none ${
                 correct ? "border-green-500 text-green-300" : "border-indigo-500/30 text-indigo-200 focus:border-indigo-400"
               }`} />
-            <Progress value={(score / words.length) * 100} className="max-w-md mx-auto h-2" />
+            <Progress value={(score / 20) * 100} className="max-w-md mx-auto h-2" />
           </CardContent>
         </Card>
       </Card3D>
@@ -1161,7 +1172,7 @@ const PatternMemoryGame = ({ onBack }: { onBack: () => void }) => {
 };
 
 // ════════════════════════════════════════════════════════
-// GAME 9: MATH BLITZ
+// GAME 9: MATH BLITZ — Per-question countdown timer
 // ════════════════════════════════════════════════════════
 const MathBlitzGame = ({ onBack }: { onBack: () => void }) => {
   const [started, setStarted] = useState(false);
@@ -1170,52 +1181,83 @@ const MathBlitzGame = ({ onBack }: { onBack: () => void }) => {
   const [options, setOptions] = useState<number[]>([]);
   const [score, setScore] = useState(0);
   const [round, setRound] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(60);
+  const [questionTime, setQuestionTime] = useState(8);
   const [feedback, setFeedback] = useState<boolean | null>(null);
+  const [streak, setStreak] = useState(0);
   const totalRounds = 20;
   const submitScore = useSubmitScore();
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
   const game = GAMES[8];
 
-  const generateProblem = () => {
+  const generateProblem = (rd: number) => {
+    const difficulty = Math.min(Math.floor(rd / 5), 3);
     const ops = ["+", "-", "×", "÷"];
     const op = ops[Math.floor(Math.random() * ops.length)];
     let a: number, b: number, answer: number;
-    if (op === "+") { a = Math.floor(Math.random() * 80) + 10; b = Math.floor(Math.random() * 80) + 10; answer = a + b; }
-    else if (op === "-") { a = Math.floor(Math.random() * 80) + 30; b = Math.floor(Math.random() * 30) + 1; answer = a - b; }
-    else if (op === "÷") { b = Math.floor(Math.random() * 10) + 2; answer = Math.floor(Math.random() * 12) + 2; a = b * answer; }
-    else { a = Math.floor(Math.random() * 15) + 2; b = Math.floor(Math.random() * 15) + 2; answer = a * b; }
+    const range = 30 + difficulty * 40;
+    if (op === "+") { a = Math.floor(Math.random() * range) + 10 + difficulty * 10; b = Math.floor(Math.random() * range) + 10; answer = a + b; }
+    else if (op === "-") { a = Math.floor(Math.random() * range) + 30 + difficulty * 15; b = Math.floor(Math.random() * (a - 5)) + 1; answer = a - b; }
+    else if (op === "÷") { b = Math.floor(Math.random() * (8 + difficulty * 3)) + 2; answer = Math.floor(Math.random() * (8 + difficulty * 4)) + 2; a = b * answer; }
+    else { a = Math.floor(Math.random() * (12 + difficulty * 5)) + 2; b = Math.floor(Math.random() * (12 + difficulty * 5)) + 2; answer = a * b; }
     const opts = [answer];
-    while (opts.length < 4) { const wrong = answer + (Math.floor(Math.random() * 20) - 10); if (wrong !== answer && !opts.includes(wrong) && wrong >= 0) opts.push(wrong); }
-    setProblem({ question: `${a} ${op} ${b}`, answer }); setOptions(opts.sort(() => Math.random() - 0.5)); setFeedback(null);
+    while (opts.length < 4) {
+      const spread = Math.max(5, Math.floor(answer * 0.3));
+      const wrong = answer + (Math.floor(Math.random() * spread * 2) - spread);
+      if (wrong !== answer && !opts.includes(wrong) && wrong >= 0) opts.push(wrong);
+    }
+    setProblem({ question: `${a} ${op} ${b}`, answer });
+    setOptions(opts.sort(() => Math.random() - 0.5));
+    setFeedback(null);
+    // Harder timer as rounds progress
+    setQuestionTime(Math.max(4, 8 - Math.floor(rd / 5)));
   };
 
-  const initGame = () => { setScore(0); setRound(0); setGameOver(false); setStarted(true); setTimeLeft(45); generateProblem(); };
+  const initGame = () => { setScore(0); setRound(0); setGameOver(false); setStarted(true); setStreak(0); generateProblem(0); };
 
+  // Per-question countdown
   useEffect(() => {
-    if (!started || gameOver) return;
+    if (!started || gameOver || feedback !== null) return;
     intervalRef.current = setInterval(() => {
-      setTimeLeft(prev => { if (prev <= 1) { clearInterval(intervalRef.current); setGameOver(true); submitScore("math_blitz", score * 50); return 0; } return prev - 1; });
+      setQuestionTime(prev => {
+        if (prev <= 1) {
+          clearInterval(intervalRef.current);
+          // Time ran out on this question — treat as wrong
+          setFeedback(false);
+          setStreak(0);
+          setTimeout(() => {
+            if (round + 1 >= totalRounds) { setGameOver(true); submitScore("math_blitz", score * 50); }
+            else { setRound(r => r + 1); generateProblem(round + 1); }
+          }, 600);
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
     return () => clearInterval(intervalRef.current);
-  }, [started, gameOver, score, submitScore]);
+  }, [started, gameOver, feedback, round, score, submitScore]);
 
   const handleAnswer = (val: number) => {
     if (feedback !== null) return;
-    const correct = val === problem.answer; setFeedback(correct); if (correct) setScore(s => s + 1);
+    clearInterval(intervalRef.current);
+    const correct = val === problem.answer;
+    setFeedback(correct);
+    if (correct) { setScore(s => s + 1); setStreak(s => s + 1); }
+    else setStreak(0);
     setTimeout(() => {
-      if (round + 1 >= totalRounds) { setGameOver(true); clearInterval(intervalRef.current); submitScore("math_blitz", (correct ? score + 1 : score) * 50); }
-      else { setRound(r => r + 1); generateProblem(); }
-    }, 400);
+      if (round + 1 >= totalRounds) { setGameOver(true); submitScore("math_blitz", (correct ? score + 1 : score) * 50); }
+      else { setRound(r => r + 1); generateProblem(round + 1); }
+    }, 500);
   };
 
-  if (!started) return <StartScreen title={game.title} description={game.description} icon={<Calculator className="w-14 h-14" />} gradient={game.gradient} glow={game.glow} onStart={initGame} onBack={onBack} gameType="math_blitz" />;
+  if (!started) return <StartScreen title={game.title} description="Solve 20 math problems with a per-question countdown! Gets harder as you progress." icon={<Calculator className="w-14 h-14" />} gradient={game.gradient} glow={game.glow} onStart={initGame} onBack={onBack} gameType="math_blitz" />;
   if (gameOver) return <EndScreen won={score >= 12} title={`${score}/${totalRounds} Correct!`} subtitle={`Score: ${score * 50} pts`} onReplay={initGame} onBack={onBack} gameType="math_blitz" />;
 
   return (
     <GameShell onBack={onBack} title="Math Blitz" icon={<Calculator className="w-5 h-5 text-foreground" />} gradient={game.gradient}
-      timer={<TimerBadge seconds={timeLeft} danger={15} />}
-      badges={<><Badge variant="outline" className="border-orange-500/30">Q{round + 1}/{totalRounds}</Badge><Badge className="bg-orange-900/40 text-orange-300 border-orange-500/30">{score} ✓</Badge></>}>
+      timer={<Badge className={`font-mono text-lg px-3 py-1.5 ${questionTime <= 3 ? "bg-red-600/80 text-red-100 animate-pulse border-red-500/50" : "bg-orange-950/60 text-orange-300 border-orange-500/30"}`}>
+        <Clock className="w-3.5 h-3.5 mr-1.5" />{questionTime}s
+      </Badge>}
+      badges={<><Badge variant="outline" className="border-orange-500/30">Q{round + 1}/{totalRounds}</Badge><Badge className="bg-orange-900/40 text-orange-300 border-orange-500/30">{score} ✓</Badge>{streak >= 3 && <Badge className="bg-yellow-900/40 text-yellow-300 border-yellow-500/30 animate-pulse">🔥 {streak} streak</Badge>}</>}>
       <Card3D>
         <Card className="border-orange-500/20 bg-gradient-to-b from-[hsl(220,20%,10%)] to-[hsl(220,20%,6%)]">
           <CardContent className="p-10 text-center space-y-8">
@@ -1223,6 +1265,10 @@ const MathBlitzGame = ({ onBack }: { onBack: () => void }) => {
               className="text-6xl font-bold font-mono text-orange-300" style={{ textShadow: "0 0 30px hsl(25 90% 55% / 0.4)" }}>
               {problem.question} = ?
             </motion.div>
+            {/* Progress bar for per-question timer */}
+            <div className="max-w-sm mx-auto">
+              <Progress value={(questionTime / Math.max(4, 8 - Math.floor(round / 5))) * 100} className="h-2" />
+            </div>
             <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto">
               {options.map((opt, i) => (
                 <motion.button key={i} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
@@ -1353,21 +1399,35 @@ const BombDefusalGame = ({ onBack }: { onBack: () => void }) => {
     white: { stroke: "hsl(0,0%,80%)", fill: "hsl(0,0%,80%)", glow: "0 0 12px hsl(0 0% 80% / 0.6)" },
   };
 
-  const generateRound = () => {
-    const count = 3 + Math.floor(Math.random() * 3);
+  const generateRound = (roundNum: number) => {
+    const count = Math.min(3 + Math.floor(roundNum / 2), 5);
     const available = [...WIRE_COLORS].sort(() => Math.random() - 0.5).slice(0, count);
     const correct = available[Math.floor(Math.random() * available.length)];
-    const clues = [
-      `Cut the ${correct} wire`,
-      `"${correct.toUpperCase()} = SAFE"`,
-      `Only ${correct} disarms`,
-      `Decoded: "${correct}"`,
+    
+    // Cryptic clues that require deduction — never just say the color
+    const otherWires = available.filter(w => w !== correct);
+    const decoyColor = otherWires[Math.floor(Math.random() * otherWires.length)] || "none";
+    const cluePool = [
+      // Elimination clues
+      `NOT ${otherWires.slice(0, 2).join(", NOT ")}`,
+      `Avoid ${decoyColor} at all costs. Think opposite.`,
+      `Signal freq matches ${correct.charAt(0).toUpperCase()}${correct.slice(1).split("").reverse().join("")}`,
+      // Riddle clues
+      ...(correct === "red" ? ["The color of danger", "Blood runs through this wire", "🚨 Emergency frequency"] : []),
+      ...(correct === "blue" ? ["Color of the sky at noon", "Ocean depth sensor", "🌊 Maritime channel"] : []),
+      ...(correct === "green" ? ["Color of money", "Forest camouflage line", "🌿 Organic signal"] : []),
+      ...(correct === "yellow" ? ["Caution tape color", "Solar frequency wire", "⚡ High voltage line"] : []),
+      ...(correct === "white" ? ["Color of surrender", "Ghost frequency", "❄️ Arctic channel"] : []),
+      // Math/logic clues
+      `Wire #${available.indexOf(correct) + 1} from left is safe`,
+      `ASCII ${correct.charCodeAt(0)}: decode the first letter`,
+      `${available.length} wires total. Safe = position ${available.indexOf(correct) + 1}`,
     ];
     setWires(available); setCorrectWire(correct);
-    setClue(clues[Math.floor(Math.random() * clues.length)]); setCutWires([]);
+    setClue(cluePool[Math.floor(Math.random() * cluePool.length)]); setCutWires([]);
   };
 
-  const initGame = () => { setRound(0); setScore(0); setGameOver(false); setWon(false); setStarted(true); setTimeLeft(60); setScanAngle(0); setFlashWire(null); generateRound(); };
+  const initGame = () => { setRound(0); setScore(0); setGameOver(false); setWon(false); setStarted(true); setTimeLeft(60); setScanAngle(0); setFlashWire(null); generateRound(0); };
 
   // Scan line animation
   useEffect(() => {
@@ -1400,7 +1460,7 @@ const BombDefusalGame = ({ onBack }: { onBack: () => void }) => {
       if (round + 1 >= totalRounds) {
         setWon(true); setGameOver(true); clearInterval(intervalRef.current);
         submitScore("bomb_defusal", newScore * 200, 60 - timeLeft);
-      } else { setTimeout(() => { setRound(r => r + 1); generateRound(); }, 800); }
+      } else { setTimeout(() => { setRound(r => { generateRound(r + 1); return r + 1; }); }, 800); }
     } else {
       setGameOver(true); clearInterval(intervalRef.current);
       submitScore("bomb_defusal", score * 200, 60 - timeLeft);
@@ -2071,6 +2131,55 @@ const BlockPuzzleGame = ({ onBack }: { onBack: () => void }) => {
   );
 };
 
+// ─── Weekly Top Players ──────────────────────────────────
+const WeeklyTopPlayers = memo(() => {
+  const [players, setPlayers] = useState<{ discord_username: string; discord_avatar: string | null; discord_id: string | null; total_score: number }[]>([]);
+  useEffect(() => {
+    const fetchWeekly = async () => {
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { data } = await supabase.from("mini_game_scores").select("discord_username, discord_avatar, discord_id, score").gte("created_at", weekAgo);
+      if (!data) return;
+      const map = new Map<string, { discord_username: string; discord_avatar: string | null; discord_id: string | null; total_score: number }>();
+      for (const row of data) {
+        const key = row.discord_id || row.discord_username || "anon";
+        const existing = map.get(key);
+        if (existing) { existing.total_score += row.score; }
+        else { map.set(key, { discord_username: row.discord_username || "Anonymous", discord_avatar: row.discord_avatar, discord_id: row.discord_id, total_score: row.score }); }
+      }
+      setPlayers(Array.from(map.values()).sort((a, b) => b.total_score - a.total_score).slice(0, 10));
+    };
+    fetchWeekly();
+  }, []);
+  const medals = ["🥇", "🥈", "🥉"];
+  if (players.length === 0) return null;
+  return (
+    <div className="max-w-2xl mx-auto mb-10">
+      <div className="rounded-2xl border border-yellow-500/20 bg-gradient-to-b from-[hsl(220,20%,8%)] to-[hsl(220,20%,5%)] overflow-hidden">
+        <div className="p-4 flex items-center gap-2 border-b border-yellow-500/10">
+          <Trophy className="w-5 h-5 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]" />
+          <span className="font-bold text-yellow-400 uppercase tracking-wider text-sm" style={{ textShadow: "0 0 10px hsl(50 90% 55% / 0.4)" }}>Weekly Top Players</span>
+          <span className="ml-auto text-[10px] text-cyan-400/60 font-mono">All Games Combined</span>
+        </div>
+        <div className="p-3 space-y-1.5">
+          {players.map((p, i) => {
+            const avatarUrl = p.discord_id && p.discord_avatar ? (p.discord_avatar.startsWith("http") ? p.discord_avatar : `https://cdn.discordapp.com/avatars/${p.discord_id}/${p.discord_avatar}.png?size=64`) : null;
+            return (
+              <motion.div key={i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
+                className={`flex items-center gap-3 p-2.5 rounded-xl ${i === 0 ? "bg-gradient-to-r from-yellow-500/15 to-amber-500/8 border border-yellow-500/25" : i < 3 ? "bg-white/[0.03] border border-white/[0.06]" : "bg-white/[0.01] border border-white/[0.03]"}`}>
+                <span className="font-bold w-7 text-center text-lg">{i < 3 ? medals[i] : <span className="text-muted-foreground text-sm font-mono">#{i+1}</span>}</span>
+                {avatarUrl ? <img src={avatarUrl} className="w-7 h-7 rounded-full ring-2 ring-yellow-500/20 object-cover" alt="" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} /> : <div className="w-7 h-7 rounded-full bg-muted/30 flex items-center justify-center text-xs font-bold">{(p.discord_username || "A")[0].toUpperCase()}</div>}
+                <span className="flex-1 truncate text-sm font-medium">{p.discord_username || "Anonymous"}</span>
+                <span className="text-xs font-mono font-bold text-yellow-400">{p.total_score} pts</span>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+});
+WeeklyTopPlayers.displayName = "WeeklyTopPlayers";
+
 // ════════════════════════════════════════════════════════
 // MAIN HUB
 // ════════════════════════════════════════════════════════
@@ -2123,6 +2232,10 @@ const MiniGames = () => {
                   13 unique games with live leaderboards. Compete for the top spot!
                 </p>
               </div>
+
+              {/* Weekly Top Players */}
+              <WeeklyTopPlayers />
+
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 max-w-7xl mx-auto">
                 {GAMES.map((game, i) => (
                   <motion.div key={game.id} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
