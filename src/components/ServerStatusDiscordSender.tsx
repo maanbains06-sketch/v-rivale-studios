@@ -161,23 +161,52 @@ const ServerStatusDiscordSender = () => {
     };
   }, []);
 
-  // Sync with website maintenance mode
+  // Listen for lockdown mode
+  const [lockdownActive, setLockdownActive] = useState(false);
   useEffect(() => {
+    const fetchLockdown = async () => {
+      const { data } = await supabase.from("site_settings").select("value").eq("key", "lockdown_mode").maybeSingle();
+      setLockdownActive(data?.value === "true");
+    };
+    fetchLockdown();
+    const channel = supabase
+      .channel("status-sender-lockdown")
+      .on("postgres_changes", { event: "*", schema: "public", table: "site_settings", filter: "key=eq.lockdown_mode" }, (payload: any) => {
+        setLockdownActive(payload.new?.value === "true");
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
+  // Sync with website maintenance mode AND lockdown
+  useEffect(() => {
+    // Lockdown takes priority → offline, no countdown
+    if (lockdownActive) {
+      setConfig((prev) => ({
+        ...prev,
+        status: "offline" as WebsiteStatusType,
+        customMessage: "🔒 EMERGENCY LOCKDOWN — Website access restricted to owner only.",
+        maintenanceCountdown: null,
+        scheduledEndAt: null,
+        uptime: "N/A",
+      }));
+      return;
+    }
+
     const newStatus: WebsiteStatusType = siteSettings.maintenance_mode ? "maintenance" : "online";
 
     if (newStatus === "maintenance" && configRef.current.status !== "maintenance") {
-      // Just entered maintenance - record start time
       setMaintenanceStartTime(new Date());
     } else if (newStatus === "online" && configRef.current.status === "maintenance") {
-      // Just exited maintenance - update start time for uptime calculation
       setMaintenanceStartTime(new Date());
     }
 
     setConfig((prev) => ({
       ...prev,
       status: newStatus,
+      customMessage: prev.status === "offline" && !lockdownActive ? "" : prev.customMessage,
     }));
-  }, [siteSettings.maintenance_mode]);
+  }, [siteSettings.maintenance_mode, lockdownActive]);
 
   // Update users active count from live visitor counter
   useEffect(() => {
