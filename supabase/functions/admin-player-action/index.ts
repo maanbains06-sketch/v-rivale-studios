@@ -38,7 +38,7 @@ serve(async (req) => {
       throw new Error('Not authorized');
     }
 
-    const { playerId, action, reason } = await req.json();
+    const { playerId, playerName, action, reason, banDuration } = await req.json();
 
     if (!playerId || !action || !['kick', 'ban'].includes(action)) {
       throw new Error('Invalid request parameters');
@@ -46,40 +46,79 @@ serve(async (req) => {
 
     const serverIp = Deno.env.get('FIVEM_SERVER_IP');
     const serverPort = Deno.env.get('FIVEM_SERVER_PORT');
-    const adminKey = Deno.env.get('FIVEM_ADMIN_KEY');
 
     if (!serverIp || !serverPort) {
       throw new Error('FiveM server not configured');
     }
 
+    // Calculate ban expiry if timed ban
+    let expiresAt: string | null = null;
+    let banType = 'permanent';
+    let banDurationValue: number | null = null;
+
+    if (action === 'ban' && banDuration) {
+      banType = banDuration.type || 'permanent';
+      banDurationValue = banDuration.value || null;
+
+      if (banType === 'hours' && banDurationValue) {
+        const expiry = new Date();
+        expiry.setHours(expiry.getHours() + banDurationValue);
+        expiresAt = expiry.toISOString();
+      } else if (banType === 'days' && banDurationValue) {
+        const expiry = new Date();
+        expiry.setDate(expiry.getDate() + banDurationValue);
+        expiresAt = expiry.toISOString();
+      }
+      // permanent: expiresAt stays null
+    }
+
+    // Store ban in database using service role client
+    if (action === 'ban') {
+      const serviceClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+
+      // Deactivate any existing active bans for this player
+      await serviceClient
+        .from('player_bans')
+        .update({ is_active: false })
+        .eq('player_id', playerId.toString())
+        .eq('is_active', true);
+
+      // Insert new ban
+      await serviceClient.from('player_bans').insert({
+        player_id: playerId.toString(),
+        player_name: playerName || `Player ${playerId}`,
+        reason: reason || 'No reason provided',
+        ban_type: banType,
+        ban_duration_value: banDurationValue,
+        expires_at: expiresAt,
+        banned_by: user.id,
+        is_active: true,
+      });
+    }
+
     // Log the action in staff activity
+    const durationText = banType === 'permanent'
+      ? 'permanently'
+      : `for ${banDurationValue} ${banType}`;
+
     await supabase.from('staff_activity_log').insert({
       staff_user_id: user.id,
       action_type: action,
-      action_description: `${action === 'kick' ? 'Kicked' : 'Banned'} player ${playerId}`,
+      action_description: `${action === 'kick' ? 'Kicked' : `Banned (${durationText})`} player ${playerName || playerId}`,
       related_type: 'player',
       related_id: playerId.toString(),
-      metadata: { reason, playerId },
+      metadata: { reason, playerId, banType, banDurationValue, expiresAt },
     });
 
     // Execute FiveM command
-    // Note: This is a placeholder. The actual implementation depends on your FiveM server setup
-    // You might need to use txAdmin API, RCON, or custom resource endpoints
     const command = action === 'kick' 
       ? `kick ${playerId} ${reason}`
       : `ban ${playerId} ${reason}`;
 
     console.log(`Executing command: ${command}`);
-    
-    // If you have a custom admin API endpoint on your FiveM server:
-    // const response = await fetch(`http://${serverIp}:${serverPort}/admin`, {
-    //   method: 'POST',
-    //   headers: {
-    //     'Authorization': `Bearer ${adminKey}`,
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({ command, playerId, reason }),
-    // });
 
     return new Response(
       JSON.stringify({
@@ -88,6 +127,9 @@ serve(async (req) => {
         action,
         playerId,
         reason,
+        banType,
+        banDurationValue,
+        expiresAt,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
