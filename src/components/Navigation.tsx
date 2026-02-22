@@ -77,6 +77,7 @@ const Navigation = () => {
   const showGangRpLink = isOwner || (!siteSettingsLoading && !siteSettings.gang_rp_hidden);
   const showGuidesLink = isOwner || (!siteSettingsLoading && !siteSettings.guides_hidden);
   const showMiniGamesLink = isOwner || (!siteSettingsLoading && !siteSettings.mini_games_hidden);
+  const showProfileCustomizationLink = isOwner || (!siteSettingsLoading && !siteSettings.profile_customization_hidden);
 
   // Track staff presence when logged in with Discord ID
   useWebsitePresence({ 
@@ -611,7 +612,7 @@ const Navigation = () => {
                       </Link>
                     </Button>
                   )}
-                  {user && (
+                  {user && showProfileCustomizationLink && (
                     <Button 
                       variant="outline"
                       className="justify-start glass-effect border-amber-500/30 bg-gradient-to-r from-amber-500/5 to-purple-500/5"
