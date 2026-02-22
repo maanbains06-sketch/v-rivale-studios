@@ -229,7 +229,23 @@ const useSubmitScore = () => {
       user_id: user.id, game_type: gameType, score, time_seconds: timeSeconds ?? null,
       discord_username: discordUsername, discord_id: discordId, discord_avatar: discordAvatar,
     });
-    toast({ title: "Score submitted! 🎉" });
+    // Award SLRP tokens for mini-game win
+    if (score > 0) {
+      try {
+        const { data: tokenData } = await supabase.functions.invoke('token-economy', {
+          body: { action: 'earn_mini_game', gameType, score }
+        });
+        if (tokenData?.success) {
+          toast({ title: `Score submitted! +${tokenData.amount} SLRP 🎉`, description: `Balance: ${tokenData.newBalance} tokens` });
+        } else {
+          toast({ title: "Score submitted! 🎉", description: tokenData?.error || undefined });
+        }
+      } catch {
+        toast({ title: "Score submitted! 🎉" });
+      }
+    } else {
+      toast({ title: "Score submitted! 🎉" });
+    }
   }, [toast]);
 };
 
