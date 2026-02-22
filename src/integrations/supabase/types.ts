@@ -2458,6 +2458,51 @@ export type Database = {
         }
         Relationships: []
       }
+      player_bans: {
+        Row: {
+          ban_duration_value: number | null
+          ban_type: string
+          banned_at: string
+          banned_by: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          player_id: string
+          player_name: string | null
+          reason: string
+          updated_at: string
+        }
+        Insert: {
+          ban_duration_value?: number | null
+          ban_type?: string
+          banned_at?: string
+          banned_by?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          player_id: string
+          player_name?: string | null
+          reason?: string
+          updated_at?: string
+        }
+        Update: {
+          ban_duration_value?: number | null
+          ban_type?: string
+          banned_at?: string
+          banned_by?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          player_id?: string
+          player_name?: string | null
+          reason?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: number | null

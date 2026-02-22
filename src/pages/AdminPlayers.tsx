@@ -27,12 +27,21 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import BanDurationPicker, { type BanDuration } from "@/components/admin/BanDurationPicker";
+import BanCountdown from "@/components/admin/BanCountdown";
 
 interface Player {
   id: number;
   name: string;
   identifiers?: string[];
   ping?: number;
+}
+
+interface ActiveBan {
+  player_id: string;
+  expires_at: string | null;
+  reason: string;
+  ban_type: string;
 }
 
 const AdminPlayers = () => {
@@ -47,6 +56,8 @@ const AdminPlayers = () => {
     player: Player | null;
   }>({ open: false, type: null, player: null });
   const [actionReason, setActionReason] = useState("");
+  const [banDuration, setBanDuration] = useState<BanDuration>({ type: "permanent" });
+  const [activeBans, setActiveBans] = useState<ActiveBan[]>([]);
 
   useEffect(() => {
     if (!roleLoading && !isAdmin) {
@@ -56,6 +67,14 @@ const AdminPlayers = () => {
       navigate('/');
     }
   }, [isAdmin, roleLoading, navigate]);
+
+  const fetchActiveBans = async () => {
+    const { data } = await supabase
+      .from('player_bans')
+      .select('player_id, expires_at, reason, ban_type')
+      .eq('is_active', true);
+    if (data) setActiveBans(data);
+  };
 
   const fetchPlayers = async () => {
     setIsLoading(true);
@@ -71,7 +90,6 @@ const AdminPlayers = () => {
 
       setServerStatus(data.status);
       
-      // Set players from the playerList returned by the edge function
       if (data.status === 'online' && data.playerList) {
         setPlayers(data.playerList);
       } else {
@@ -86,30 +104,45 @@ const AdminPlayers = () => {
     }
   };
 
+  const getPlayerBan = (playerId: number): ActiveBan | undefined => {
+    return activeBans.find(b => b.player_id === playerId.toString());
+  };
+
   const handleAction = async () => {
     if (!actionDialog.player || !actionDialog.type) return;
 
     try {
-      const { error } = await supabase.functions.invoke('admin-player-action', {
-        body: {
-          playerId: actionDialog.player.id,
-          action: actionDialog.type,
-          reason: actionReason || 'No reason provided',
-        },
-      });
+      const body: Record<string, unknown> = {
+        playerId: actionDialog.player.id,
+        playerName: actionDialog.player.name,
+        action: actionDialog.type,
+        reason: actionReason || 'No reason provided',
+      };
+
+      if (actionDialog.type === 'ban') {
+        body.banDuration = banDuration;
+      }
+
+      const { error } = await supabase.functions.invoke('admin-player-action', { body });
 
       if (error) throw error;
 
+      const durationText = actionDialog.type === 'ban'
+        ? banDuration.type === 'permanent'
+          ? ' permanently'
+          : ` for ${banDuration.value} ${banDuration.type}`
+        : '';
+
       toast.success(
-        `Player ${actionDialog.player.name} has been ${actionDialog.type}ed`,
-        {
-          description: actionReason || 'No reason provided',
-        }
+        `Player ${actionDialog.player.name} has been ${actionDialog.type}ed${durationText}`,
+        { description: actionReason || 'No reason provided' }
       );
 
       setActionDialog({ open: false, type: null, player: null });
       setActionReason("");
+      setBanDuration({ type: "permanent" });
       fetchPlayers();
+      fetchActiveBans();
     } catch (error) {
       console.error('Error performing action:', error);
       toast.error(`Failed to ${actionDialog.type} player`);
@@ -119,7 +152,8 @@ const AdminPlayers = () => {
   useEffect(() => {
     if (isAdmin) {
       fetchPlayers();
-      const interval = setInterval(fetchPlayers, 10000); // Refresh every 10 seconds
+      fetchActiveBans();
+      const interval = setInterval(fetchPlayers, 10000);
       return () => clearInterval(interval);
     }
   }, [isAdmin]);
@@ -137,9 +171,7 @@ const AdminPlayers = () => {
     );
   }
 
-  if (!isAdmin) {
-    return null;
-  }
+  if (!isAdmin) return null;
 
   return (
     <div className="min-h-screen">
@@ -203,60 +235,76 @@ const AdminPlayers = () => {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {players.map((player) => (
-                    <Card key={player.id} className="bg-background/50 border-border/40">
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                              <User className="w-5 h-5 text-primary" />
-                            </div>
-                            <div>
-                              <div className="font-medium">{player.name}</div>
-                              <div className="text-sm text-muted-foreground flex items-center gap-1">
-                                <Hash className="w-3 h-3" />
-                                ID: {player.id}
+                  {players.map((player) => {
+                    const ban = getPlayerBan(player.id);
+                    return (
+                      <Card key={player.id} className="bg-background/50 border-border/40">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                                <User className="w-5 h-5 text-primary" />
+                              </div>
+                              <div>
+                                <div className="font-medium">{player.name}</div>
+                                <div className="text-sm text-muted-foreground flex items-center gap-1">
+                                  <Hash className="w-3 h-3" />
+                                  ID: {player.id}
+                                </div>
                               </div>
                             </div>
+                            <div className="flex items-center gap-2">
+                              {ban && ban.expires_at && (
+                                <BanCountdown
+                                  expiresAt={ban.expires_at}
+                                  playerName={player.name}
+                                />
+                              )}
+                              {ban && !ban.expires_at && (
+                                <Badge variant="destructive" className="text-xs">
+                                  <Ban className="w-3 h-3 mr-1" />
+                                  Permanent
+                                </Badge>
+                              )}
+                              {player.ping !== undefined && (
+                                <Badge variant="outline">
+                                  {player.ping}ms
+                                </Badge>
+                              )}
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon">
+                                    <MoreVertical className="w-4 h-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    onClick={() =>
+                                      setActionDialog({ open: true, type: 'kick', player })
+                                    }
+                                    className="text-orange-600"
+                                  >
+                                    <UserX className="w-4 h-4 mr-2" />
+                                    Kick Player
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setBanDuration({ type: "permanent" });
+                                      setActionDialog({ open: true, type: 'ban', player });
+                                    }}
+                                    className="text-destructive"
+                                  >
+                                    <Ban className="w-4 h-4 mr-2" />
+                                    Ban Player
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            {player.ping !== undefined && (
-                              <Badge variant="outline">
-                                {player.ping}ms
-                              </Badge>
-                            )}
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                  <MoreVertical className="w-4 h-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem
-                                  onClick={() =>
-                                    setActionDialog({ open: true, type: 'kick', player })
-                                  }
-                                  className="text-orange-600"
-                                >
-                                  <UserX className="w-4 h-4 mr-2" />
-                                  Kick Player
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() =>
-                                    setActionDialog({ open: true, type: 'ban', player })
-                                  }
-                                  className="text-destructive"
-                                >
-                                  <Ban className="w-4 h-4 mr-2" />
-                                  Ban Player
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               )}
             </CardContent>
@@ -283,18 +331,24 @@ const AdminPlayers = () => {
         if (!open) {
           setActionDialog({ open: false, type: null, player: null });
           setActionReason("");
+          setBanDuration({ type: "permanent" });
         }
       }}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-h-[90vh] overflow-y-auto">
           <AlertDialogHeader>
             <AlertDialogTitle>
               {actionDialog.type === 'kick' ? 'Kick Player' : 'Ban Player'}
             </AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to {actionDialog.type} {actionDialog.player?.name}?
-              {actionDialog.type === 'ban' && ' This action will permanently ban the player from the server.'}
+              {actionDialog.type === 'ban' && ' Select the ban duration below.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
+
+          {actionDialog.type === 'ban' && (
+            <BanDurationPicker value={banDuration} onChange={setBanDuration} />
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="reason">Reason</Label>
             <Textarea
@@ -302,7 +356,7 @@ const AdminPlayers = () => {
               placeholder="Enter reason for this action..."
               value={actionReason}
               onChange={(e) => setActionReason(e.target.value)}
-              className="min-h-[100px]"
+              className="min-h-[80px]"
             />
           </div>
           <AlertDialogFooter>
