@@ -539,20 +539,71 @@ Deno.serve(async (req) => {
 
       case 'get_leaderboard': {
         const { type = 'richest' } = params
-        
+        const discordBotToken = Deno.env.get('DISCORD_BOT_TOKEN')
+
+        // Helper: enrich entries with Discord info, fetching from API if profile is incomplete
+        const enrichWithDiscord = async (entries: any[]) => {
+          return Promise.all(entries.map(async (entry) => {
+            const { data: profile } = await supabase.from('profiles')
+              .select('discord_username, discord_id, discord_avatar')
+              .eq('id', entry.user_id).maybeSingle()
+
+            let discord_username = profile?.discord_username || null
+            let discord_id = profile?.discord_id || null
+            let discord_avatar = profile?.discord_avatar || null
+
+            // If missing username or avatar, try fetching from Discord API
+            if (discord_id && (!discord_username || !discord_avatar) && discordBotToken) {
+              try {
+                const res = await fetch(`https://discord.com/api/v10/users/${discord_id}`, {
+                  headers: { Authorization: `Bot ${discordBotToken}` }
+                })
+                if (res.ok) {
+                  const d = await res.json()
+                  discord_username = d.global_name || d.username || discord_username
+                  discord_avatar = d.avatar || discord_avatar
+                  // Sync back to profiles
+                  await supabase.from('profiles').update({
+                    discord_username: discord_username,
+                    discord_avatar: discord_avatar,
+                    updated_at: new Date().toISOString()
+                  }).eq('id', entry.user_id)
+                }
+              } catch { /* ignore API errors */ }
+            }
+
+            // If still no discord_id, try auth metadata
+            if (!discord_id) {
+              const { data: authData } = await supabase.auth.admin.getUserById(entry.user_id)
+              if (authData?.user) {
+                const meta = authData.user.user_metadata
+                discord_id = meta?.discord_id || meta?.provider_id || meta?.sub || null
+                discord_username = discord_username || meta?.discord_username || meta?.username || meta?.full_name || null
+                discord_avatar = discord_avatar || meta?.discord_avatar || meta?.avatar_url || null
+                // Sync to profiles if we got new info
+                if (discord_id) {
+                  await supabase.from('profiles').update({
+                    discord_id, discord_username, discord_avatar,
+                    updated_at: new Date().toISOString()
+                  }).eq('id', entry.user_id)
+                }
+              }
+            }
+
+            // Build full avatar URL
+            const avatar_url = discord_id && discord_avatar
+              ? `https://cdn.discordapp.com/avatars/${discord_id}/${discord_avatar}.png?size=128`
+              : null
+
+            return { ...entry, discord_username, discord_id, discord_avatar, avatar_url }
+          }))
+        }
+
         if (type === 'richest') {
           const { data } = await supabase.from('user_wallets')
             .select('user_id, balance, lifetime_earned')
             .order('balance', { ascending: false }).limit(10)
-          
-          // Fetch discord info for each user
-          const enriched = await Promise.all((data || []).map(async (w) => {
-            const { data: profile } = await supabase.from('profiles')
-              .select('discord_username, discord_id, discord_avatar')
-              .eq('id', w.user_id).maybeSingle()
-            return { ...w, ...profile }
-          }))
-
+          const enriched = await enrichWithDiscord(data || [])
           return new Response(JSON.stringify({ leaderboard: enriched }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
@@ -568,13 +619,8 @@ Deno.serve(async (req) => {
           const earners: Record<string, number> = {}
           data?.forEach(t => { earners[t.user_id] = (earners[t.user_id] || 0) + t.amount })
           const sorted = Object.entries(earners).sort((a, b) => b[1] - a[1]).slice(0, 10)
-
-          const enriched = await Promise.all(sorted.map(async ([userId, total]) => {
-            const { data: profile } = await supabase.from('profiles')
-              .select('discord_username, discord_id, discord_avatar').eq('id', userId).maybeSingle()
-            return { user_id: userId, total_earned: total, ...profile }
-          }))
-
+          const entries = sorted.map(([userId, total]) => ({ user_id: userId, total_earned: total }))
+          const enriched = await enrichWithDiscord(entries)
           return new Response(JSON.stringify({ leaderboard: enriched }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
@@ -584,13 +630,7 @@ Deno.serve(async (req) => {
           const { data } = await supabase.from('user_wallets')
             .select('user_id, lifetime_spent')
             .order('lifetime_spent', { ascending: false }).limit(10)
-
-          const enriched = await Promise.all((data || []).map(async (w) => {
-            const { data: profile } = await supabase.from('profiles')
-              .select('discord_username, discord_id, discord_avatar').eq('id', w.user_id).maybeSingle()
-            return { ...w, ...profile }
-          }))
-
+          const enriched = await enrichWithDiscord(data || [])
           return new Response(JSON.stringify({ leaderboard: enriched }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
@@ -600,13 +640,7 @@ Deno.serve(async (req) => {
           const { data } = await supabase.from('daily_login_streaks')
             .select('user_id, longest_streak, current_streak')
             .order('longest_streak', { ascending: false }).limit(10)
-
-          const enriched = await Promise.all((data || []).map(async (s) => {
-            const { data: profile } = await supabase.from('profiles')
-              .select('discord_username, discord_id, discord_avatar').eq('id', s.user_id).maybeSingle()
-            return { ...s, ...profile }
-          }))
-
+          const enriched = await enrichWithDiscord(data || [])
           return new Response(JSON.stringify({ leaderboard: enriched }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
