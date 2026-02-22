@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import SlrpToken from "@/components/SlrpToken";
+import ShopItemPreview from "@/components/ShopItemPreview";
 
 interface ShopItem {
   id: string;
@@ -162,7 +163,7 @@ const StyleEmporium = () => {
             <div>
               <h1 className="text-3xl md:text-4xl font-black tracking-tight">
                 <span className="bg-gradient-to-r from-primary via-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                  STYLE EMPORIUM
+                  PROFILE CUSTOMIZATION
                 </span>
               </h1>
               <p className="text-muted-foreground mt-1">Customize your profile with SLRP Tokens</p>
@@ -318,24 +319,8 @@ const StyleEmporium = () => {
                       <motion.div key={item.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                         <Card className={`overflow-hidden transition-all hover:border-primary/50 ${owned ? "border-green-500/30" : ""} ${item.is_limited ? "border-red-500/30" : ""}`}>
                           {/* Item Preview */}
-                          <div className="h-32 bg-gradient-to-br from-primary/5 to-purple-500/5 flex items-center justify-center relative">
-                            {item.item_type === "color" && (
-                              <div className="w-16 h-16 rounded-xl" style={{ backgroundColor: item.item_data?.color || "#fff" }} />
-                            )}
-                            {item.item_type === "badge" && (
-                              <div className="text-4xl">{item.item_data?.emoji || "🏅"}</div>
-                            )}
-                            {item.item_type === "frame" && (
-                              <div className="w-16 h-16 border-4 rounded-xl" style={{ borderColor: item.item_data?.color || "#8b5cf6" }} />
-                            )}
-                            {item.item_type === "effect" && (
-                              <Sparkles className="w-12 h-12 text-purple-400 animate-pulse" />
-                            )}
-                            {item.item_type === "animated_badge" && (
-                              <motion.div animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 2 }} className="text-4xl">
-                                {item.item_data?.emoji || "⚡"}
-                              </motion.div>
-                            )}
+                          <div className="h-36 bg-gradient-to-br from-card/80 to-card/40 border-b border-border/30 flex items-center justify-center relative overflow-hidden">
+                            <ShopItemPreview itemType={item.item_type} itemData={item.item_data} category={item.category} />
                             {item.is_limited && (
                               <Badge className="absolute top-2 right-2 bg-red-500/90 text-white text-[10px]">
                                 LIMITED {item.max_quantity ? `${item.sold_count}/${item.max_quantity}` : ""}
