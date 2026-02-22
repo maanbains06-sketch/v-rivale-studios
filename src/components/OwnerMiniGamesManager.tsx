@@ -23,7 +23,7 @@ const ALL_GAMES = [
   { id: "snake_runner", title: "Snake Runner" },
   { id: "block_puzzle", title: "Block Blast" },
   { id: "bubble_shooter", title: "Bubble Shooter" },
-  { id: "space_invaders", title: "Space Invaders" },
+  { id: "brick_breaker", title: "Brick Breaker" },
 ];
 
 const OwnerMiniGamesManager = () => {
