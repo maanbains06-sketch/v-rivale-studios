@@ -19,6 +19,7 @@ import {
   Coins, TrendingUp, Users, BarChart3, Sparkles, Plus, Pencil, Trash2,
   ArrowUpDown, Loader2, RefreshCw, Zap, Flame, Calendar
 } from "lucide-react";
+import SlrpToken from "@/components/SlrpToken";
 
 interface EconomyStats {
   totalCirculation: number;
@@ -167,7 +168,7 @@ const OwnerCurrencyManager = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-amber-500/30">
               <CardContent className="p-4 text-center">
-                <Coins className="w-6 h-6 text-amber-400 mx-auto mb-1" />
+                <SlrpToken size="lg" className="mx-auto mb-1" />
                 <p className="text-2xl font-black text-amber-300">{stats?.totalCirculation?.toLocaleString() || 0}</p>
                 <p className="text-xs text-muted-foreground">In Circulation</p>
               </CardContent>
