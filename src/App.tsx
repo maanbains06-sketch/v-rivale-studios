@@ -212,6 +212,7 @@ const AppRoutes = memo(() => {
 AppRoutes.displayName = "AppRoutes";
 
 const DeviceBanScreen = lazy(() => import("@/components/DeviceBanScreen"));
+const LockdownScreen = lazy(() => import("@/components/LockdownScreen"));
 
 const AppContent = memo(() => {
   const { isOnline } = useNetworkStatus();
@@ -219,10 +220,48 @@ const AppContent = memo(() => {
   const { hasAccess, isStaffOrOwner, loading: accessLoading, checkAccess } = useMaintenanceAccess();
   const [deviceBlocked, setDeviceBlocked] = useState(false);
   const [blockReason, setBlockReason] = useState('');
+  const [lockdownActive, setLockdownActive] = useState(false);
+  const [isOwnerUser, setIsOwnerUser] = useState(false);
   
   // Auto-verify whitelist role on signup
   useWhitelistAutoVerification();
 
+  // Lockdown mode check
+  useEffect(() => {
+    const checkLockdown = async () => {
+      try {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const { data } = await supabase.from('site_settings').select('value').eq('key', 'lockdown_mode').maybeSingle();
+        const locked = data?.value === 'true';
+        setLockdownActive(locked);
+        if (locked) {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            const { data: ownerResult } = await supabase.rpc('is_owner', { _user_id: user.id });
+            setIsOwnerUser(!!ownerResult);
+          }
+        }
+      } catch { /* ignore */ }
+    };
+    checkLockdown();
+
+    // Listen for realtime lockdown changes
+    const setupChannel = async () => {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const channel = supabase
+        .channel('lockdown-app-check')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'site_settings', filter: 'key=eq.lockdown_mode' }, (payload: any) => {
+          const newVal = payload.new?.value === 'true';
+          setLockdownActive(newVal);
+          if (!newVal) setIsOwnerUser(false);
+          else checkLockdown();
+        })
+        .subscribe();
+      return () => { supabase.removeChannel(channel); };
+    };
+    const cleanup = setupChannel();
+    return () => { cleanup.then(fn => fn?.()); };
+  }, []);
   // Device fingerprint check
   useEffect(() => {
     const checkDevice = async () => {
@@ -264,6 +303,14 @@ const AppContent = memo(() => {
           <p className="text-sm text-muted-foreground">Loading...</p>
         </div>
       </div>
+    );
+  }
+
+  if (lockdownActive && !isOwnerUser) {
+    return (
+      <Suspense fallback={null}>
+        <LockdownScreen />
+      </Suspense>
     );
   }
 

@@ -34,6 +34,8 @@ import GiftSpinManager from "@/components/GiftSpinManager";
 import OwnerAwardsManager from "@/components/OwnerAwardsManager";
 import OwnerDebateManager from "@/components/OwnerDebateManager";
 import OwnerMiniGamesManager from "@/components/OwnerMiniGamesManager";
+import OwnerKillSwitch from "@/components/OwnerKillSwitch";
+import OwnerSecurityDashboard from "@/components/OwnerSecurityDashboard";
 
 import { LiveApplicationStats } from "@/components/LiveApplicationStats";
 import OwnerLiveChatManager from "@/components/OwnerLiveChatManager";
@@ -1740,6 +1742,10 @@ const OwnerPanel = () => {
                   <Gamepad2 className="w-4 h-4" />
                   <span className="hidden sm:inline">Games</span>
                 </TabsTrigger>
+                <TabsTrigger value="security" className="flex items-center gap-2 whitespace-nowrap">
+                  <Shield className="w-4 h-4" />
+                  <span className="hidden sm:inline">Security</span>
+                </TabsTrigger>
               </TabsList>
             </div>
             {/* Fade indicators for scroll hint */}
@@ -1818,6 +1824,14 @@ const OwnerPanel = () => {
           {/* Mini Games Management Tab */}
           <TabsContent value="mini-games">
             <OwnerMiniGamesManager />
+          </TabsContent>
+
+          {/* Security Tab */}
+          <TabsContent value="security">
+            <div className="space-y-6">
+              <OwnerKillSwitch />
+              <OwnerSecurityDashboard />
+            </div>
           </TabsContent>
 
           {/* Application Stats Tab */}

@@ -2605,6 +2605,39 @@ export type Database = {
         }
         Relationships: []
       }
+      security_events: {
+        Row: {
+          created_at: string
+          details: Json | null
+          discord_id: string | null
+          event_type: string
+          id: string
+          ip_address: string | null
+          severity: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          details?: Json | null
+          discord_id?: string | null
+          event_type: string
+          id?: string
+          ip_address?: string | null
+          severity?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          details?: Json | null
+          discord_id?: string | null
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          severity?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       server_resource_snapshot: {
         Row: {
           created_at: string
