@@ -36,6 +36,7 @@ interface SiteSettings {
   news_hidden: boolean;
   guides_hidden: boolean;
   mini_games_hidden: boolean;
+  profile_customization_hidden: boolean;
 }
 
 interface UseSiteSettingsReturn {
@@ -79,6 +80,7 @@ const defaultSettings: SiteSettings = {
   news_hidden: false,
   guides_hidden: false,
   mini_games_hidden: false,
+  profile_customization_hidden: false,
 };
 
 // Cache settings in localStorage for instant loading
@@ -145,6 +147,7 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
           'news_hidden',
           'guides_hidden',
           'mini_games_hidden',
+          'profile_customization_hidden',
         ]);
 
       if (error) {
@@ -188,6 +191,7 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
           news_hidden: settingsMap.news_hidden === 'true',
           guides_hidden: settingsMap.guides_hidden === 'true',
           mini_games_hidden: settingsMap.mini_games_hidden === 'true',
+          profile_customization_hidden: settingsMap.profile_customization_hidden === 'true',
         };
 
         setSettings(newSettings);
