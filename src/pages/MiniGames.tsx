@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import BubbleShooterGame from "@/components/mini-games/BubbleShooterGame";
-import SpaceInvadersGame from "@/components/mini-games/SpaceInvadersGame";
+import BrickBreakerGame from "@/components/mini-games/BrickBreakerGame";
 
 // ─── Types ───────────────────────────────────────────────
 interface LeaderboardEntry {
@@ -30,7 +30,7 @@ interface LeaderboardEntry {
 type GameType =
   | "escape_room" | "memory_match" | "reaction_test" | "trivia_quiz" | "word_scramble"
   | "speed_typer" | "color_match" | "pattern_memory" | "math_blitz" | "aim_trainer"
-  | "bomb_defusal" | "snake_runner" | "block_puzzle" | "bubble_shooter" | "space_invaders";
+  | "bomb_defusal" | "snake_runner" | "block_puzzle" | "bubble_shooter" | "brick_breaker";
 
 interface GameDef {
   id: GameType;
@@ -56,7 +56,7 @@ const GAMES: GameDef[] = [
   { id: "snake_runner", title: "Snake Runner", description: "Classic snake — eat food, grow longer, don't hit walls!", icon: <Flame className="w-8 h-8" />, gradient: "from-emerald-600 via-green-500 to-lime-400", glow: "shadow-emerald-500/40" },
   { id: "block_puzzle", title: "Block Blast", description: "Tetris-style falling blocks — place them to clear lines & score!", icon: <Box className="w-8 h-8" />, gradient: "from-blue-500 via-cyan-400 to-blue-600", glow: "shadow-blue-500/40" },
   { id: "bubble_shooter", title: "Bubble Shooter", description: "Aim & pop colorful bubbles — match 3+ to clear the board!", icon: <Target className="w-8 h-8" />, gradient: "from-pink-500 via-fuchsia-500 to-purple-500", glow: "shadow-pink-500/40" },
-  { id: "space_invaders", title: "Space Invaders", description: "Defend Earth from waves of alien invaders — shoot them all!", icon: <Skull className="w-8 h-8" />, gradient: "from-green-500 via-emerald-400 to-cyan-500", glow: "shadow-green-500/40" },
+  { id: "brick_breaker", title: "Brick Breaker", description: "Smash colorful bricks with your paddle — collect power-ups & clear levels!", icon: <Skull className="w-8 h-8" />, gradient: "from-cyan-500 via-blue-500 to-indigo-500", glow: "shadow-cyan-500/40" },
 ];
 
 // ─── 3D Card Wrapper ─────────────────────────────────────
@@ -2257,9 +2257,9 @@ const BubbleShooterWrapper = ({ onBack }: { onBack: () => void }) => {
   return <BubbleShooterGame onBack={onBack} submitScore={submitScore} GameShell={GameShell} StartScreen={StartScreen} EndScreen={EndScreen} Leaderboard={Leaderboard} game={GAMES[13]} />;
 };
 
-const SpaceInvadersWrapper = ({ onBack }: { onBack: () => void }) => {
+const BrickBreakerWrapper = ({ onBack }: { onBack: () => void }) => {
   const submitScore = useSubmitScore();
-  return <SpaceInvadersGame onBack={onBack} submitScore={submitScore} GameShell={GameShell} StartScreen={StartScreen} EndScreen={EndScreen} Leaderboard={Leaderboard} game={GAMES[14]} />;
+  return <BrickBreakerGame onBack={onBack} submitScore={submitScore} GameShell={GameShell} StartScreen={StartScreen} EndScreen={EndScreen} Leaderboard={Leaderboard} game={GAMES[14]} />;
 };
 
 // ════════════════════════════════════════════════════════
@@ -2285,7 +2285,7 @@ const MiniGames = () => {
       case "snake_runner": return <SnakeRunnerGame onBack={onBack} />;
       case "block_puzzle": return <BlockPuzzleGame onBack={onBack} />;
       case "bubble_shooter": return <BubbleShooterWrapper onBack={onBack} />;
-      case "space_invaders": return <SpaceInvadersWrapper onBack={onBack} />;
+      case "brick_breaker": return <BrickBreakerWrapper onBack={onBack} />;
       default: return null;
     }
   };
