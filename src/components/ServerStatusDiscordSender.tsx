@@ -42,7 +42,8 @@ const ServerStatusDiscordSender = () => {
   const { toast } = useToast();
   const { settings: siteSettings } = useSiteSettings();
   const [isSending, setIsSending] = useState(false);
-  const [autoUpdate, setAutoUpdate] = useState(false);
+  const [autoUpdate, setAutoUpdateState] = useState(false);
+  const [autoUpdateLoaded, setAutoUpdateLoaded] = useState(false);
   const [storedMessageId, setStoredMessageId] = useState<string | null>(null);
   const [visitorCount, setVisitorCount] = useState(1);
   const [maintenanceStartTime, setMaintenanceStartTime] = useState<Date | null>(null);
@@ -79,20 +80,35 @@ const ServerStatusDiscordSender = () => {
   const lastEditAtRef = useRef(0);
   const lastSentFingerprintRef = useRef<string | null>(null);
 
-  // Fetch stored message ID
-  useEffect(() => {
-    const fetchMessageId = async () => {
-      const { data } = await supabase
-        .from("site_settings")
-        .select("value")
-        .eq("key", "discord_status_message_id")
-        .maybeSingle();
+  // Persist auto-update toggle to DB
+  const setAutoUpdate = useCallback(async (val: boolean) => {
+    setAutoUpdateState(val);
+    // Patch local cache immediately
+    const cache = JSON.parse(localStorage.getItem("slrp_site_settings") || "{}");
+    cache["discord_auto_update"] = val ? "true" : "false";
+    localStorage.setItem("slrp_site_settings", JSON.stringify(cache));
+    await supabase.from("site_settings").upsert({ key: "discord_auto_update", value: val ? "true" : "false", description: "Auto-update Discord status message" }, { onConflict: "key" });
+  }, []);
 
-      if (data?.value) {
-        setStoredMessageId(data.value);
-      }
+  // Fetch stored message ID + auto-update preference
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      const [msgRes, autoRes] = await Promise.all([
+        supabase.from("site_settings").select("value").eq("key", "discord_status_message_id").maybeSingle(),
+        supabase.from("site_settings").select("value").eq("key", "discord_auto_update").maybeSingle(),
+      ]);
+
+      if (msgRes.data?.value) setStoredMessageId(msgRes.data.value);
+
+      // Seed from cache first for instant state
+      const cache = JSON.parse(localStorage.getItem("slrp_site_settings") || "{}");
+      const cachedVal = cache["discord_auto_update"];
+      const dbVal = autoRes.data?.value;
+      const resolved = dbVal ?? cachedVal;
+      if (resolved === "true") setAutoUpdateState(true);
+      setAutoUpdateLoaded(true);
     };
-    fetchMessageId();
+    fetchInitialData();
   }, []);
 
   // Connect to website presence (MUST use the SAME channel topic as the website counter)
@@ -465,7 +481,7 @@ const ServerStatusDiscordSender = () => {
               <div className="flex items-center gap-2">
                 <Switch
                   checked={autoUpdate}
-                  onCheckedChange={setAutoUpdate}
+                  onCheckedChange={(val) => setAutoUpdate(val)}
                   id="auto-update"
                 />
                 <Label htmlFor="auto-update" className="text-sm flex items-center gap-1">
