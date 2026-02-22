@@ -334,7 +334,7 @@ const AdminPlayers = () => {
           setBanDuration({ type: "permanent" });
         }
       }}>
-        <AlertDialogContent className="max-h-[90vh] overflow-y-auto">
+        <AlertDialogContent className="max-h-[90vh] overflow-y-auto z-[100]">
           <AlertDialogHeader>
             <AlertDialogTitle>
               {actionDialog.type === 'kick' ? 'Kick Player' : 'Ban Player'}
