@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, memo } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield, LogOut, Menu, UserCircle, Mail, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, ExternalLink, Crown, LayoutDashboard, Gift, Briefcase, Building2, FileText, Newspaper, Trophy, Radio, Gamepad2 } from "lucide-react";
+import { Users, Shield, LogOut, Menu, UserCircle, Mail, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, ExternalLink, Crown, LayoutDashboard, Gift, Briefcase, Building2, FileText, Newspaper, Trophy, Radio, Gamepad2, Sparkles } from "lucide-react";
 import { Button } from "./ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
@@ -608,6 +608,19 @@ const Navigation = () => {
                       <Link to="/mini-games" className="flex items-center">
                         <Gamepad2 className="w-4 h-4 mr-2 text-purple-400" />
                         Mini Games
+                      </Link>
+                    </Button>
+                  )}
+                  {user && (
+                    <Button 
+                      variant="outline"
+                      className="justify-start glass-effect border-amber-500/30 bg-gradient-to-r from-amber-500/5 to-purple-500/5"
+                      asChild
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Link to="/style-emporium" className="flex items-center">
+                        <Sparkles className="w-4 h-4 mr-2 text-amber-400" />
+                        Style Emporium
                       </Link>
                     </Button>
                   )}
