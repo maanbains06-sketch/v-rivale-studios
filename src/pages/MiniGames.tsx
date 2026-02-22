@@ -1622,13 +1622,13 @@ const BombDefusalGame = ({ onBack }: { onBack: () => void }) => {
 // ════════════════════════════════════════════════════════
 // GAME 12: SNAKE RUNNER 🐍
 // ════════════════════════════════════════════════════════
-const GRID_SIZE = 20;
-const CELL_SIZE = 18;
+const GRID_SIZE = 25;
+const CELL_SIZE = 16;
 
 const SnakeRunnerGame = ({ onBack }: { onBack: () => void }) => {
   const [started, setStarted] = useState(false);
   const [gameOver, setGameOver] = useState(false);
-  const [snake, setSnake] = useState<{ x: number; y: number }[]>([{ x: 10, y: 10 }]);
+  const [snake, setSnake] = useState<{ x: number; y: number }[]>([{ x: 12, y: 12 }]);
   const [food, setFood] = useState({ x: 15, y: 10 });
   const [direction, setDirection] = useState<"up" | "down" | "left" | "right">("right");
   const [score, setScore] = useState(0);
@@ -1645,7 +1645,7 @@ const SnakeRunnerGame = ({ onBack }: { onBack: () => void }) => {
   };
 
   const initGame = () => {
-    const initial = [{ x: 10, y: 10 }];
+    const initial = [{ x: 12, y: 12 }];
     setSnake(initial); setFood(spawnFood(initial)); setDirection("right"); dirRef.current = "right";
     setScore(0); setGameOver(false); setStarted(true);
   };
@@ -1702,13 +1702,49 @@ const SnakeRunnerGame = ({ onBack }: { onBack: () => void }) => {
           <motion.div className="absolute rounded-full" animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.8 }}
             style={{ left: food.x * CELL_SIZE + 1, top: food.y * CELL_SIZE + 1, width: CELL_SIZE - 2, height: CELL_SIZE - 2,
               background: "radial-gradient(circle, hsl(0 80% 60%), hsl(0 70% 40%))", boxShadow: "0 0 10px hsl(0 80% 55% / 0.6)" }} />
-          {/* Snake */}
-          {snake.map((seg, i) => (
-            <div key={i} className="absolute rounded-sm transition-all duration-75"
-              style={{ left: seg.x * CELL_SIZE + 1, top: seg.y * CELL_SIZE + 1, width: CELL_SIZE - 2, height: CELL_SIZE - 2,
-                background: i === 0 ? "linear-gradient(135deg, hsl(140 70% 55%), hsl(160 70% 40%))" : `hsl(140 ${60 - i}% ${50 - i * 2}%)`,
-                boxShadow: i === 0 ? "0 0 8px hsl(140 70% 55% / 0.5)" : "none" }} />
-          ))}
+          {/* Snake - Golden/Brown scaled design */}
+          {snake.map((seg, i) => {
+            const isHead = i === 0;
+            const pct = Math.min(i / Math.max(snake.length - 1, 1), 1);
+            const hue = 35 - pct * 10; // golden 35 → brown 25
+            const sat = 75 - pct * 15;
+            const light = 55 - pct * 15;
+            const segSize = CELL_SIZE - 2;
+            return (
+              <div key={i} className="absolute transition-all duration-75" style={{
+                left: seg.x * CELL_SIZE + 1, top: seg.y * CELL_SIZE + 1,
+                width: segSize, height: segSize,
+                borderRadius: isHead ? '40%' : i % 2 === 0 ? '25%' : '35%',
+                background: isHead
+                  ? 'linear-gradient(135deg, hsl(40 80% 55%), hsl(30 70% 40%))'
+                  : `linear-gradient(${135 + i * 15}deg, hsl(${hue} ${sat}% ${light}%), hsl(${hue - 5} ${sat - 10}% ${light - 8}%))`,
+                boxShadow: isHead
+                  ? '0 0 10px hsl(40 80% 50% / 0.6), inset 0 1px 2px hsl(50 90% 70% / 0.3)'
+                  : `inset 0 1px 1px hsl(${hue} ${sat}% ${light + 15}% / 0.3), inset 0 -1px 1px hsl(${hue} ${sat}% ${light - 10}% / 0.4)`,
+                border: isHead ? '1px solid hsl(40 60% 65% / 0.5)' : `1px solid hsl(${hue} ${sat - 20}% ${light - 5}% / 0.25)`,
+              }}>
+                {/* Scale pattern on body segments */}
+                {!isHead && (
+                  <div className="absolute inset-[2px] rounded-[inherit] opacity-30" style={{
+                    background: `radial-gradient(circle at 30% 30%, hsl(${hue} ${sat}% ${light + 20}%) 0%, transparent 50%)`
+                  }} />
+                )}
+                {/* Eyes on head */}
+                {isHead && <>
+                  <div className="absolute rounded-full" style={{
+                    width: 4, height: 4, top: 2, left: 2,
+                    background: 'radial-gradient(circle, hsl(15 90% 45%), hsl(0 80% 25%))',
+                    boxShadow: '0 0 3px hsl(15 90% 50% / 0.8)'
+                  }} />
+                  <div className="absolute rounded-full" style={{
+                    width: 4, height: 4, top: 2, right: 2,
+                    background: 'radial-gradient(circle, hsl(15 90% 45%), hsl(0 80% 25%))',
+                    boxShadow: '0 0 3px hsl(15 90% 50% / 0.8)'
+                  }} />
+                </>}
+              </div>
+            );
+          })}
         </div>
         {/* Mobile controls */}
         <div className="grid grid-cols-3 gap-1.5 w-32 md:hidden">
