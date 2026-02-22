@@ -201,7 +201,7 @@ const AppRoutes = memo(() => {
           <Route path="/awards" element={<PageTransition><PageMaintenanceBlock pageKey="awards"><Awards /></PageMaintenanceBlock></PageTransition>} />
           <Route path="/debate" element={<PageTransition><RequireAuth message="Login with Discord to join debates."><Debate /></RequireAuth></PageTransition>} />
           <Route path="/mini-games" element={<PageTransition><RequireAuth message="Login with Discord to play mini games."><MiniGames /></RequireAuth></PageTransition>} />
-          <Route path="/style-emporium" element={<PageTransition><RequireAuth message="Login with Discord to access the Style Emporium."><StyleEmporium /></RequireAuth></PageTransition>} />
+          <Route path="/style-emporium" element={<PageTransition><RequireAuth message="Login with Discord to customize your profile."><StyleEmporium /></RequireAuth></PageTransition>} />
           
           <Route path="/direct-message" element={<PageTransition><RequireAuth message="Login with Discord to send direct messages."><DirectMessage /></RequireAuth></PageTransition>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

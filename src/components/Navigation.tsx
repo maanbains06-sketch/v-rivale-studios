@@ -620,7 +620,7 @@ const Navigation = () => {
                     >
                       <Link to="/style-emporium" className="flex items-center">
                         <Sparkles className="w-4 h-4 mr-2 text-amber-400" />
-                        Style Emporium
+                        Profile Customization
                       </Link>
                     </Button>
                   )}
