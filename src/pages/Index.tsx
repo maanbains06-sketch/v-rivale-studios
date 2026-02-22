@@ -30,6 +30,7 @@ import Navigation from "@/components/Navigation";
 import AnimatedLogo from "@/components/AnimatedLogo";
 import LaunchingSoonButton from "@/components/LaunchingSoonButton";
 import CreatorProgramSection from "@/components/CreatorProgramSection";
+const WealthLeaderboard = lazy(() => import("@/components/WealthLeaderboard"));
 
 import { MessageSquarePlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -861,6 +862,14 @@ const Index = () => {
         </div>
       </motion.section>
 
+      {/* Wealth Leaderboard Section */}
+      <section className="py-12 md:py-16 relative">
+        <div className="container mx-auto px-4 max-w-lg">
+          <Suspense fallback={null}>
+            <WealthLeaderboard />
+          </Suspense>
+        </div>
+      </section>
 
       {/* Featured Streamers Section - Only show if there are YouTubers */}
       {featuredYoutubers.length > 0 && (

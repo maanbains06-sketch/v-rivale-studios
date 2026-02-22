@@ -164,6 +164,15 @@ const AdminGallery = () => {
 
       if (error) throw error;
 
+      // Award SLRP tokens to the submitter
+      try {
+        await supabase.functions.invoke("token-economy", {
+          body: { action: "earn_gallery", submissionUserId: submission.user_id }
+        });
+      } catch (tokenError) {
+        console.error("Failed to award gallery tokens:", tokenError);
+      }
+
       // Send notification email
       try {
         await supabase.functions.invoke("send-gallery-notification", {

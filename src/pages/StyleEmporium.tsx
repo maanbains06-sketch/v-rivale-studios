@@ -265,9 +265,10 @@ const StyleEmporium = () => {
 
         {/* Main Tabs */}
         <Tabs value={mainTab} onValueChange={setMainTab}>
-          <TabsList className="mb-6">
+          <TabsList className="mb-6 flex-wrap">
             <TabsTrigger value="shop" className="gap-2"><Palette className="w-4 h-4" /> Shop</TabsTrigger>
             <TabsTrigger value="inventory" className="gap-2"><Star className="w-4 h-4" /> My Items</TabsTrigger>
+            <TabsTrigger value="economy" className="gap-2"><TrendingUp className="w-4 h-4" /> Economy</TabsTrigger>
             <TabsTrigger value="leaderboard" className="gap-2"><Trophy className="w-4 h-4" /> Leaderboard</TabsTrigger>
             <TabsTrigger value="history" className="gap-2"><Clock className="w-4 h-4" /> History</TabsTrigger>
           </TabsList>
@@ -400,6 +401,89 @@ const StyleEmporium = () => {
                   </Card>
                 );
               })}
+            </div>
+          </TabsContent>
+
+          {/* Economy Dashboard Tab */}
+          <TabsContent value="economy">
+            <div className="space-y-6">
+              {/* Earning Methods */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Zap className="w-5 h-5 text-amber-400" /> How to Earn SLRP Tokens
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    {[
+                      { icon: "🎁", label: "Daily Login", desc: "+25 base (+ streak bonuses)", color: "border-green-500/30" },
+                      { icon: "🔥", label: "7-Day Streak", desc: "+100 bonus tokens", color: "border-orange-500/30" },
+                      { icon: "📅", label: "Monthly (28d)", desc: "+500 bonus tokens", color: "border-purple-500/30" },
+                      { icon: "🎮", label: "Mini Games", desc: "+50 per win", color: "border-cyan-500/30" },
+                      { icon: "🖼️", label: "Gallery Approved", desc: "+20 per post", color: "border-pink-500/30" },
+                      { icon: "💸", label: "Transfers", desc: "5% tax per transfer", color: "border-yellow-500/30" },
+                      { icon: "🛡️", label: "Daily Cap", desc: "Max 250/day earning", color: "border-red-500/30" },
+                      { icon: "⏰", label: "Cooldowns", desc: "60s between game rewards", color: "border-blue-500/30" },
+                    ].map(item => (
+                      <Card key={item.label} className={`${item.color} bg-card/50`}>
+                        <CardContent className="p-3 text-center">
+                          <span className="text-2xl">{item.icon}</span>
+                          <p className="text-sm font-semibold mt-1">{item.label}</p>
+                          <p className="text-xs text-muted-foreground">{item.desc}</p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Wallet Summary */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card className="bg-gradient-to-br from-green-500/10 to-green-600/5 border-green-500/20">
+                  <CardContent className="p-4 text-center">
+                    <TrendingUp className="w-8 h-8 text-green-400 mx-auto mb-2" />
+                    <p className="text-2xl font-black text-green-400">{wallet.lifetime_earned.toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Total Lifetime Earned</p>
+                  </CardContent>
+                </Card>
+                <Card className="bg-gradient-to-br from-red-500/10 to-red-600/5 border-red-500/20">
+                  <CardContent className="p-4 text-center">
+                    <Coins className="w-8 h-8 text-red-400 mx-auto mb-2" />
+                    <p className="text-2xl font-black text-red-400">{wallet.lifetime_spent.toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Total Lifetime Spent</p>
+                  </CardContent>
+                </Card>
+                <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-amber-500/20">
+                  <CardContent className="p-4 text-center">
+                    <Flame className="w-8 h-8 text-amber-400 mx-auto mb-2" />
+                    <div className="flex items-center justify-center gap-2">
+                      <p className="text-2xl font-black text-amber-400">{streak.current_streak}</p>
+                      <p className="text-sm text-muted-foreground">/ best: {streak.longest_streak}</p>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">Login Streak (Current / Best)</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Daily Progress */}
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium">Daily Earning Progress</span>
+                    <span className="text-sm font-bold text-amber-400">{dailyEarned} / {dailyCap}</span>
+                  </div>
+                  <div className="w-full h-3 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-400 transition-all"
+                      style={{ width: `${Math.min(100, (dailyEarned / dailyCap) * 100)}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {dailyCap - dailyEarned > 0 ? `${dailyCap - dailyEarned} tokens remaining today` : "Daily cap reached! Come back tomorrow."}
+                  </p>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
 
