@@ -862,14 +862,6 @@ const Index = () => {
         </div>
       </motion.section>
 
-      {/* Wealth Leaderboard Section */}
-      <section className="py-12 md:py-16 relative">
-        <div className="container mx-auto px-4 max-w-lg">
-          <Suspense fallback={null}>
-            <WealthLeaderboard />
-          </Suspense>
-        </div>
-      </section>
 
       {/* Featured Streamers Section - Only show if there are YouTubers */}
       {featuredYoutubers.length > 0 && (
