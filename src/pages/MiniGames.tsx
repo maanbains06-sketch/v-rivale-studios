@@ -13,6 +13,8 @@ import {
   Lightbulb, Key, Flame, Bomb, Skull, Box
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import CricketGame from "@/components/mini-games/CricketGame";
+import RickshawRaceGame from "@/components/mini-games/RickshawRaceGame";
 
 // ─── Types ───────────────────────────────────────────────
 interface LeaderboardEntry {
@@ -28,7 +30,7 @@ interface LeaderboardEntry {
 type GameType =
   | "escape_room" | "memory_match" | "reaction_test" | "trivia_quiz" | "word_scramble"
   | "speed_typer" | "color_match" | "pattern_memory" | "math_blitz" | "aim_trainer"
-  | "bomb_defusal" | "snake_runner" | "block_puzzle";
+  | "bomb_defusal" | "snake_runner" | "block_puzzle" | "cricket" | "rickshaw_race";
 
 interface GameDef {
   id: GameType;
@@ -53,6 +55,8 @@ const GAMES: GameDef[] = [
   { id: "bomb_defusal", title: "Bomb Defusal", description: "Cut the right wires before the bomb explodes!", icon: <Bomb className="w-8 h-8" />, gradient: "from-red-700 via-orange-600 to-yellow-500", glow: "shadow-red-600/40" },
   { id: "snake_runner", title: "Snake Runner", description: "Classic snake — eat food, grow longer, don't hit walls!", icon: <Flame className="w-8 h-8" />, gradient: "from-emerald-600 via-green-500 to-lime-400", glow: "shadow-emerald-500/40" },
   { id: "block_puzzle", title: "Block Blast", description: "Tetris-style falling blocks — place them to clear lines & score!", icon: <Box className="w-8 h-8" />, gradient: "from-blue-500 via-cyan-400 to-blue-600", glow: "shadow-blue-500/40" },
+  { id: "cricket", title: "Cricket", description: "Face 5 overs of bowling — time your shots to score big runs!", icon: <Target className="w-8 h-8" />, gradient: "from-green-600 via-emerald-500 to-lime-500", glow: "shadow-green-500/40" },
+  { id: "rickshaw_race", title: "Auto Rickshaw Race", description: "Dodge traffic and collect coins in a wild rickshaw ride!", icon: <Zap className="w-8 h-8" />, gradient: "from-amber-500 via-yellow-500 to-orange-500", glow: "shadow-amber-500/40" },
 ];
 
 // ─── 3D Card Wrapper ─────────────────────────────────────
@@ -2247,6 +2251,17 @@ const WeeklyTopPlayers = memo(() => {
 });
 WeeklyTopPlayers.displayName = "WeeklyTopPlayers";
 
+// ─── External Game Wrappers ──────────────────────────────
+const CricketGameWrapper = ({ onBack }: { onBack: () => void }) => {
+  const submitScore = useSubmitScore();
+  return <CricketGame onBack={onBack} submitScore={submitScore} GameShell={GameShell} StartScreen={StartScreen} EndScreen={EndScreen} Leaderboard={Leaderboard} game={GAMES[13]} />;
+};
+
+const RickshawRaceWrapper = ({ onBack }: { onBack: () => void }) => {
+  const submitScore = useSubmitScore();
+  return <RickshawRaceGame onBack={onBack} submitScore={submitScore} GameShell={GameShell} StartScreen={StartScreen} EndScreen={EndScreen} Leaderboard={Leaderboard} game={GAMES[14]} />;
+};
+
 // ════════════════════════════════════════════════════════
 // MAIN HUB
 // ════════════════════════════════════════════════════════
@@ -2269,6 +2284,8 @@ const MiniGames = () => {
       case "bomb_defusal": return <BombDefusalGame onBack={onBack} />;
       case "snake_runner": return <SnakeRunnerGame onBack={onBack} />;
       case "block_puzzle": return <BlockPuzzleGame onBack={onBack} />;
+      case "cricket": return <CricketGameWrapper onBack={onBack} />;
+      case "rickshaw_race": return <RickshawRaceWrapper onBack={onBack} />;
       default: return null;
     }
   };
@@ -2296,7 +2313,7 @@ const MiniGames = () => {
                   WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
                 }}>Mini Games Arena</h1>
                 <p className="text-muted-foreground max-w-lg mx-auto text-lg">
-                  13 unique games with live leaderboards. Compete for the top spot!
+                  15 unique games with live leaderboards. Compete for the top spot!
                 </p>
               </div>
 

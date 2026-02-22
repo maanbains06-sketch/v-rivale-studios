@@ -22,6 +22,8 @@ const ALL_GAMES = [
   { id: "bomb_defusal", title: "Bomb Defusal" },
   { id: "snake_runner", title: "Snake Runner" },
   { id: "block_puzzle", title: "Block Blast" },
+  { id: "cricket", title: "Cricket" },
+  { id: "rickshaw_race", title: "Auto Rickshaw Race" },
 ];
 
 const OwnerMiniGamesManager = () => {
