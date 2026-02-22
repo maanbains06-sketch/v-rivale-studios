@@ -53,6 +53,7 @@ interface LeaderboardEntry {
   discord_username?: string;
   discord_id?: string;
   discord_avatar?: string;
+  avatar_url?: string;
 }
 
 const CATEGORIES = [
@@ -495,12 +496,12 @@ const StyleEmporium = () => {
                         <span className={`text-lg font-black w-8 ${idx === 0 ? "text-amber-400" : idx === 1 ? "text-gray-400" : idx === 2 ? "text-amber-700" : "text-muted-foreground"}`}>
                           #{idx + 1}
                         </span>
-                        <Avatar className="w-8 h-8">
-                          <AvatarImage src={getAvatarUrl(entry.discord_id, entry.discord_avatar) || undefined} />
-                          <AvatarFallback className="text-xs">{(entry.discord_username || "?")[0]}</AvatarFallback>
+                        <Avatar className="w-9 h-9 ring-2 ring-border/50">
+                          <AvatarImage src={entry.avatar_url || getAvatarUrl(entry.discord_id, entry.discord_avatar) || undefined} />
+                          <AvatarFallback className="text-xs bg-muted">{(entry.discord_username || "?")[0].toUpperCase()}</AvatarFallback>
                         </Avatar>
-                        <span className="flex-1 font-medium text-sm truncate">{entry.discord_username || "Unknown"}</span>
-                        <span className="font-bold text-amber-400">
+                        <span className="flex-1 font-medium text-sm truncate">{entry.discord_username || "Unknown User"}</span>
+                        <span className="font-bold text-amber-400 tabular-nums">
                           {(entry.balance ?? entry.total_earned ?? entry.lifetime_spent ?? entry.longest_streak ?? 0).toLocaleString()}
                           {leaderboardType === "highest_streak" ? " 🔥" : " SLRP"}
                         </span>
