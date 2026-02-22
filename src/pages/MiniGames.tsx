@@ -13,8 +13,8 @@ import {
   Lightbulb, Key, Flame, Bomb, Skull, Box
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import CricketGame from "@/components/mini-games/CricketGame";
-import RickshawRaceGame from "@/components/mini-games/RickshawRaceGame";
+import BubbleShooterGame from "@/components/mini-games/BubbleShooterGame";
+import SpaceInvadersGame from "@/components/mini-games/SpaceInvadersGame";
 
 // ─── Types ───────────────────────────────────────────────
 interface LeaderboardEntry {
@@ -30,7 +30,7 @@ interface LeaderboardEntry {
 type GameType =
   | "escape_room" | "memory_match" | "reaction_test" | "trivia_quiz" | "word_scramble"
   | "speed_typer" | "color_match" | "pattern_memory" | "math_blitz" | "aim_trainer"
-  | "bomb_defusal" | "snake_runner" | "block_puzzle" | "cricket" | "rickshaw_race";
+  | "bomb_defusal" | "snake_runner" | "block_puzzle" | "bubble_shooter" | "space_invaders";
 
 interface GameDef {
   id: GameType;
@@ -55,8 +55,8 @@ const GAMES: GameDef[] = [
   { id: "bomb_defusal", title: "Bomb Defusal", description: "Cut the right wires before the bomb explodes!", icon: <Bomb className="w-8 h-8" />, gradient: "from-red-700 via-orange-600 to-yellow-500", glow: "shadow-red-600/40" },
   { id: "snake_runner", title: "Snake Runner", description: "Classic snake — eat food, grow longer, don't hit walls!", icon: <Flame className="w-8 h-8" />, gradient: "from-emerald-600 via-green-500 to-lime-400", glow: "shadow-emerald-500/40" },
   { id: "block_puzzle", title: "Block Blast", description: "Tetris-style falling blocks — place them to clear lines & score!", icon: <Box className="w-8 h-8" />, gradient: "from-blue-500 via-cyan-400 to-blue-600", glow: "shadow-blue-500/40" },
-  { id: "cricket", title: "Cricket", description: "Face 5 overs of bowling — time your shots to score big runs!", icon: <Target className="w-8 h-8" />, gradient: "from-green-600 via-emerald-500 to-lime-500", glow: "shadow-green-500/40" },
-  { id: "rickshaw_race", title: "Auto Rickshaw Race", description: "Dodge traffic and collect coins in a wild rickshaw ride!", icon: <Zap className="w-8 h-8" />, gradient: "from-amber-500 via-yellow-500 to-orange-500", glow: "shadow-amber-500/40" },
+  { id: "bubble_shooter", title: "Bubble Shooter", description: "Aim & pop colorful bubbles — match 3+ to clear the board!", icon: <Target className="w-8 h-8" />, gradient: "from-pink-500 via-fuchsia-500 to-purple-500", glow: "shadow-pink-500/40" },
+  { id: "space_invaders", title: "Space Invaders", description: "Defend Earth from waves of alien invaders — shoot them all!", icon: <Skull className="w-8 h-8" />, gradient: "from-green-500 via-emerald-400 to-cyan-500", glow: "shadow-green-500/40" },
 ];
 
 // ─── 3D Card Wrapper ─────────────────────────────────────
@@ -2252,14 +2252,14 @@ const WeeklyTopPlayers = memo(() => {
 WeeklyTopPlayers.displayName = "WeeklyTopPlayers";
 
 // ─── External Game Wrappers ──────────────────────────────
-const CricketGameWrapper = ({ onBack }: { onBack: () => void }) => {
+const BubbleShooterWrapper = ({ onBack }: { onBack: () => void }) => {
   const submitScore = useSubmitScore();
-  return <CricketGame onBack={onBack} submitScore={submitScore} GameShell={GameShell} StartScreen={StartScreen} EndScreen={EndScreen} Leaderboard={Leaderboard} game={GAMES[13]} />;
+  return <BubbleShooterGame onBack={onBack} submitScore={submitScore} GameShell={GameShell} StartScreen={StartScreen} EndScreen={EndScreen} Leaderboard={Leaderboard} game={GAMES[13]} />;
 };
 
-const RickshawRaceWrapper = ({ onBack }: { onBack: () => void }) => {
+const SpaceInvadersWrapper = ({ onBack }: { onBack: () => void }) => {
   const submitScore = useSubmitScore();
-  return <RickshawRaceGame onBack={onBack} submitScore={submitScore} GameShell={GameShell} StartScreen={StartScreen} EndScreen={EndScreen} Leaderboard={Leaderboard} game={GAMES[14]} />;
+  return <SpaceInvadersGame onBack={onBack} submitScore={submitScore} GameShell={GameShell} StartScreen={StartScreen} EndScreen={EndScreen} Leaderboard={Leaderboard} game={GAMES[14]} />;
 };
 
 // ════════════════════════════════════════════════════════
@@ -2284,8 +2284,8 @@ const MiniGames = () => {
       case "bomb_defusal": return <BombDefusalGame onBack={onBack} />;
       case "snake_runner": return <SnakeRunnerGame onBack={onBack} />;
       case "block_puzzle": return <BlockPuzzleGame onBack={onBack} />;
-      case "cricket": return <CricketGameWrapper onBack={onBack} />;
-      case "rickshaw_race": return <RickshawRaceWrapper onBack={onBack} />;
+      case "bubble_shooter": return <BubbleShooterWrapper onBack={onBack} />;
+      case "space_invaders": return <SpaceInvadersWrapper onBack={onBack} />;
       default: return null;
     }
   };
