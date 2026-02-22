@@ -930,6 +930,69 @@ export type Database = {
           },
         ]
       }
+      daily_earning_caps: {
+        Row: {
+          created_at: string
+          earn_date: string
+          id: string
+          total_earned: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          earn_date?: string
+          id?: string
+          total_earned?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          earn_date?: string
+          id?: string
+          total_earned?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      daily_login_streaks: {
+        Row: {
+          created_at: string
+          current_streak: number
+          id: string
+          last_claim_date: string | null
+          longest_streak: number
+          monthly_claims: number
+          monthly_reset_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_claim_date?: string | null
+          longest_streak?: number
+          monthly_claims?: number
+          monthly_reset_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_claim_date?: string | null
+          longest_streak?: number
+          monthly_claims?: number
+          monthly_reset_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       debate_messages: {
         Row: {
           created_at: string
@@ -2605,6 +2668,45 @@ export type Database = {
         }
         Relationships: []
       }
+      seasonal_currencies: {
+        Row: {
+          activated_at: string | null
+          created_at: string
+          deactivated_at: string | null
+          icon: string | null
+          id: string
+          is_active: boolean
+          multiplier: number
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          activated_at?: string | null
+          created_at?: string
+          deactivated_at?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          multiplier?: number
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          activated_at?: string | null
+          created_at?: string
+          deactivated_at?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          multiplier?: number
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       security_events: {
         Row: {
           created_at: string
@@ -2689,6 +2791,57 @@ export type Database = {
           resource_name?: string | null
           title?: string
           update_type?: string
+        }
+        Relationships: []
+      }
+      shop_items: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          is_active: boolean
+          is_limited: boolean
+          item_data: Json
+          item_type: string
+          max_quantity: number | null
+          name: string
+          price: number
+          sold_count: number
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          is_limited?: boolean
+          item_data?: Json
+          item_type: string
+          max_quantity?: number | null
+          name: string
+          price?: number
+          sold_count?: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          is_limited?: boolean
+          item_data?: Json
+          item_type?: string
+          max_quantity?: number | null
+          name?: string
+          price?: number
+          sold_count?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -3445,6 +3598,101 @@ export type Database = {
         }
         Relationships: []
       }
+      token_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          reference_id: string | null
+          source: string
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          source: string
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          source?: string
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      token_transfers: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          receiver_id: string
+          sender_id: string
+          status: string
+          tax_amount: number
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          receiver_id: string
+          sender_id: string
+          status?: string
+          tax_amount?: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          receiver_id?: string
+          sender_id?: string
+          status?: string
+          tax_amount?: number
+        }
+        Relationships: []
+      }
+      user_inventory: {
+        Row: {
+          id: string
+          is_equipped: boolean
+          item_id: string
+          purchased_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          is_equipped?: boolean
+          item_id: string
+          purchased_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          is_equipped?: boolean
+          item_id?: string
+          purchased_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_inventory_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "shop_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_package_favorites: {
         Row: {
           created_at: string
@@ -3466,6 +3714,57 @@ export type Database = {
         }
         Relationships: []
       }
+      user_profile_customization: {
+        Row: {
+          created_at: string
+          custom_bio: string | null
+          equipped_badge_id: string | null
+          equipped_bio_effect: string | null
+          equipped_frame_id: string | null
+          id: string
+          updated_at: string
+          user_id: string
+          username_color: string | null
+        }
+        Insert: {
+          created_at?: string
+          custom_bio?: string | null
+          equipped_badge_id?: string | null
+          equipped_bio_effect?: string | null
+          equipped_frame_id?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+          username_color?: string | null
+        }
+        Update: {
+          created_at?: string
+          custom_bio?: string | null
+          equipped_badge_id?: string | null
+          equipped_bio_effect?: string | null
+          equipped_frame_id?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+          username_color?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_profile_customization_equipped_badge_id_fkey"
+            columns: ["equipped_badge_id"]
+            isOneToOne: false
+            referencedRelation: "shop_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_profile_customization_equipped_frame_id_fkey"
+            columns: ["equipped_frame_id"]
+            isOneToOne: false
+            referencedRelation: "shop_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -3483,6 +3782,71 @@ export type Database = {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_seasonal_balances: {
+        Row: {
+          balance: number
+          created_at: string
+          currency_id: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          currency_id: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          currency_id?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_seasonal_balances_currency_id_fkey"
+            columns: ["currency_id"]
+            isOneToOne: false
+            referencedRelation: "seasonal_currencies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_wallets: {
+        Row: {
+          balance: number
+          created_at: string
+          id: string
+          lifetime_earned: number
+          lifetime_spent: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          id?: string
+          lifetime_earned?: number
+          lifetime_spent?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          id?: string
+          lifetime_earned?: number
+          lifetime_spent?: number
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
