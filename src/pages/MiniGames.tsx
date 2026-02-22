@@ -2134,6 +2134,9 @@ const BlockPuzzleGame = ({ onBack }: { onBack: () => void }) => {
 // ─── Weekly Top Players ──────────────────────────────────
 const WeeklyTopPlayers = memo(() => {
   const [players, setPlayers] = useState<{ discord_username: string; discord_avatar: string | null; discord_id: string | null; total_score: number }[]>([]);
+  const [resolvedAvatars, setResolvedAvatars] = useState<Record<string, { username: string; avatar: string | null }>>({});
+  const resolvedRef = useRef<Set<string>>(new Set());
+
   useEffect(() => {
     const fetchWeekly = async () => {
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -2146,12 +2149,31 @@ const WeeklyTopPlayers = memo(() => {
         if (existing) { existing.total_score += row.score; }
         else { map.set(key, { discord_username: row.discord_username || "Anonymous", discord_avatar: row.discord_avatar, discord_id: row.discord_id, total_score: row.score }); }
       }
-      setPlayers(Array.from(map.values()).sort((a, b) => b.total_score - a.total_score).slice(0, 10));
+      const top10 = Array.from(map.values()).sort((a, b) => b.total_score - a.total_score).slice(0, 10);
+      setPlayers(top10);
+
+      // Resolve Discord identities
+      for (const p of top10) {
+        if (!p.discord_id || !/^\d{17,19}$/.test(p.discord_id)) continue;
+        if (resolvedRef.current.has(p.discord_id)) continue;
+        if (p.discord_username && p.discord_username !== "Player" && p.discord_username !== "Anonymous") continue;
+        resolvedRef.current.add(p.discord_id);
+        supabase.functions.invoke('fetch-discord-user', { body: { discordId: p.discord_id } }).then(({ data: userData }) => {
+          if (userData) {
+            setResolvedAvatars(prev => ({ ...prev, [p.discord_id!]: {
+              username: userData.displayName || userData.globalName || userData.username || "Unknown",
+              avatar: userData.avatar || null,
+            }}));
+          }
+        });
+      }
     };
     fetchWeekly();
   }, []);
+
   const medals = ["🥇", "🥈", "🥉"];
   if (players.length === 0) return null;
+
   return (
     <div className="max-w-2xl mx-auto mb-10">
       <div className="rounded-2xl border border-yellow-500/20 bg-gradient-to-b from-[hsl(220,20%,8%)] to-[hsl(220,20%,5%)] overflow-hidden">
@@ -2162,13 +2184,22 @@ const WeeklyTopPlayers = memo(() => {
         </div>
         <div className="p-3 space-y-1.5">
           {players.map((p, i) => {
-            const avatarUrl = p.discord_id && p.discord_avatar ? (p.discord_avatar.startsWith("http") ? p.discord_avatar : `https://cdn.discordapp.com/avatars/${p.discord_id}/${p.discord_avatar}.png?size=64`) : null;
+            const resolved = p.discord_id ? resolvedAvatars[p.discord_id] : null;
+            const displayName = resolved?.username || p.discord_username || "Anonymous";
+            const avatarHash = resolved?.avatar || p.discord_avatar;
+            const avatarUrl = avatarHash
+              ? (avatarHash.startsWith("http") ? avatarHash : (p.discord_id ? `https://cdn.discordapp.com/avatars/${p.discord_id}/${avatarHash}.png?size=64` : null))
+              : null;
             return (
               <motion.div key={i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
                 className={`flex items-center gap-3 p-2.5 rounded-xl ${i === 0 ? "bg-gradient-to-r from-yellow-500/15 to-amber-500/8 border border-yellow-500/25" : i < 3 ? "bg-white/[0.03] border border-white/[0.06]" : "bg-white/[0.01] border border-white/[0.03]"}`}>
                 <span className="font-bold w-7 text-center text-lg">{i < 3 ? medals[i] : <span className="text-muted-foreground text-sm font-mono">#{i+1}</span>}</span>
-                {avatarUrl ? <img src={avatarUrl} className="w-7 h-7 rounded-full ring-2 ring-yellow-500/20 object-cover" alt="" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} /> : <div className="w-7 h-7 rounded-full bg-muted/30 flex items-center justify-center text-xs font-bold">{(p.discord_username || "A")[0].toUpperCase()}</div>}
-                <span className="flex-1 truncate text-sm font-medium">{p.discord_username || "Anonymous"}</span>
+                {avatarUrl ? (
+                  <img src={avatarUrl} className="w-7 h-7 rounded-full ring-2 ring-yellow-500/20 object-cover" alt={displayName} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-muted/30 flex items-center justify-center text-xs font-bold">{displayName[0].toUpperCase()}</div>
+                )}
+                <span className="flex-1 truncate text-sm font-medium">{displayName}</span>
                 <span className="text-xs font-mono font-bold text-yellow-400">{p.total_score} pts</span>
               </motion.div>
             );
