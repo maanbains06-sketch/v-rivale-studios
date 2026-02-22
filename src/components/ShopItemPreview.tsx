@@ -47,15 +47,17 @@ const ShopItemPreview = memo(({ itemType, itemData, category }: ShopItemPreviewP
             animation === "flicker" ? { opacity: [1, 0.6, 1, 0.8, 1] } :
             animation === "shimmer" ? { filter: [`drop-shadow(0 0 4px ${color}40)`, `drop-shadow(0 0 12px ${color}90)`, `drop-shadow(0 0 4px ${color}40)`] } :
             animation === "rainbow" ? { filter: ["hue-rotate(0deg)", "hue-rotate(360deg)"] } :
-            animation === "drip" ? { y: [0, 2, 0] } :
+            animation === "drip" ? { y: [0, 2, 0], scaleY: [1, 1.04, 1] } :
             animation === "frost" ? { scale: [1, 1.02, 1], opacity: [0.9, 1, 0.9] } :
             animation === "lava" ? { scale: [1, 1.03, 0.98, 1] } :
             animation === "phantom" ? { opacity: [1, 0.3, 0.7, 1] } :
             animation === "dragonfire" ? { scale: [1, 1.06, 1], filter: [`drop-shadow(0 0 6px ${color}60)`, `drop-shadow(0 0 16px ${color}ff)`, `drop-shadow(0 0 6px ${color}60)`] } :
             animation === "void" ? { scale: [1, 0.97, 1.03, 1], opacity: [1, 0.7, 1] } :
+            animation === "glitch" ? { x: [0, -3, 3, -1, 1, 0], skewX: [0, -2, 2, 0], opacity: [1, 0.7, 1, 0.85, 1] } :
+            animation === "supernova_text" ? { scale: [1, 1.08, 0.95, 1.05, 1], filter: [`drop-shadow(0 0 6px ${color}60)`, `drop-shadow(0 0 20px ${color}ff)`, `drop-shadow(0 0 6px ${color}60)`] } :
             { scale: [1, 1.03, 1] }
           }
-          transition={{ duration: animation === "rainbow" ? 3 : 2, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: animation === "rainbow" ? 3 : animation === "glitch" ? 0.5 : animation === "supernova_text" ? 2 : 2, repeat: Infinity, ease: "easeInOut" }}
         >
           Username
         </motion.span>
@@ -190,11 +192,12 @@ const ShopItemPreview = memo(({ itemType, itemData, category }: ShopItemPreviewP
               style={{
                 width: size,
                 height: size,
-                background: effect === "rainbow"
+                background: effect === "rainbow" || effect === "aurora" || effect === "stardust"
                   ? `hsl(${(i / particleCount) * 360}, 80%, 60%)`
                   : effectColor,
-                filter: `blur(${effect === "glow" ? 2 : 0}px)`,
+                filter: `blur(${effect === "glow" || effect === "smoke" ? 2 : 0}px)`,
                 boxShadow: `0 0 ${size * 2}px ${effectColor}80`,
+                borderRadius: effect === "cherry" ? "50% 0 50% 50%" : "50%",
               }}
               animate={
                 effect === "sparkle" ? { x: [Math.cos(angle * Math.PI / 180) * radius, Math.cos((angle + 30) * Math.PI / 180) * radius], y: [Math.sin(angle * Math.PI / 180) * radius, Math.sin((angle + 30) * Math.PI / 180) * radius], opacity: [0, 1, 0], scale: [0, 1.5, 0] } :
@@ -204,10 +207,21 @@ const ShopItemPreview = memo(({ itemType, itemData, category }: ShopItemPreviewP
                 effect === "glow" ? { scale: [0.8, 1.5, 0.8], opacity: [0.3, 0.8, 0.3] } :
                 effect === "meteor" ? { x: [50, -50], y: [-30, 30], opacity: [1, 0] } :
                 effect === "supernova" ? { scale: [0, 2, 0], opacity: [0, 1, 0], x: [0, Math.cos(angle * Math.PI / 180) * 50], y: [0, Math.sin(angle * Math.PI / 180) * 50] } :
+                effect === "cherry" ? { y: [-30, 40], x: [Math.random() * 30 - 15, Math.random() * 30 - 15], opacity: [0, 1, 0.3], rotate: [0, 360] } :
+                effect === "lightning" ? { opacity: [0, 1, 0, 1, 0], scale: [0.5, 1.8, 0.5], x: [Math.random() * 40 - 20, Math.random() * 40 - 20] } :
+                effect === "smoke" ? { y: [20, -20], opacity: [0, 0.5, 0], scale: [0.5, 2, 2.5], x: [0, Math.random() * 20 - 10] } :
+                effect === "bubbles" ? { y: [30, -30], opacity: [0, 0.8, 0], scale: [0.3, 1, 0.6] } :
+                effect === "stardust" ? { x: [Math.cos(angle * Math.PI / 180) * 15, Math.cos(angle * Math.PI / 180) * radius], y: [Math.sin(angle * Math.PI / 180) * 15, Math.sin(angle * Math.PI / 180) * radius], opacity: [0, 1, 0], scale: [0, 1.2, 0] } :
+                effect === "drip_effect" ? { y: [0, 40], opacity: [1, 0], scaleY: [1, 1.5] } :
+                effect === "aurora" ? { x: [Math.cos(angle * Math.PI / 180) * 20, Math.cos((angle + 60) * Math.PI / 180) * radius], y: [Math.sin(angle * Math.PI / 180) * 20, Math.sin((angle + 60) * Math.PI / 180) * radius], opacity: [0, 0.7, 0], scale: [1, 2, 1] } :
+                effect === "plasma" ? { x: [Math.cos(angle * Math.PI / 180) * 10, Math.cos(angle * Math.PI / 180) * radius * 1.2], y: [Math.sin(angle * Math.PI / 180) * 10, Math.sin(angle * Math.PI / 180) * radius * 1.2], opacity: [0.8, 0, 0.8], scale: [1, 0.3, 1] } :
+                effect === "void_collapse" ? { x: [Math.cos(angle * Math.PI / 180) * 50, 0], y: [Math.sin(angle * Math.PI / 180) * 50, 0], opacity: [0, 1, 0], scale: [1.5, 0, 1.5] } :
+                effect === "black_hole" ? { x: [Math.cos(angle * Math.PI / 180) * 45, 0], y: [Math.sin(angle * Math.PI / 180) * 45, 0], opacity: [1, 0], scale: [1, 0] } :
+                effect === "phoenix" ? { y: [30, -40], x: [Math.random() * 30 - 15, Math.random() * 20 - 10], opacity: [0, 1, 0], scale: [0.5, 1.5, 0] } :
                 { opacity: [0, 1, 0], scale: [0.5, 1.2, 0.5] }
               }
               transition={{
-                duration: effect === "fire" ? 1 : effect === "meteor" ? 0.8 : effect === "supernova" ? 1.5 : 2,
+                duration: effect === "fire" || effect === "phoenix" ? 1 : effect === "meteor" ? 0.8 : effect === "supernova" ? 1.5 : effect === "lightning" ? 0.4 : effect === "smoke" ? 3 : effect === "black_hole" || effect === "void_collapse" ? 2.5 : effect === "aurora" ? 4 : 2,
                 repeat: Infinity,
                 delay: i * 0.15,
                 ease: "easeOut",
