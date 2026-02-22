@@ -1,7 +1,8 @@
 import { useState, useEffect, memo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Crown, Coins } from "lucide-react";
+import { Crown } from "lucide-react";
+import SlrpToken from "./SlrpToken";
 import StyledUsername from "./StyledUsername";
 import StyledAvatar from "./StyledAvatar";
 import { motion } from "framer-motion";
@@ -52,7 +53,7 @@ const WealthLeaderboard = memo(() => {
             <span className="bg-gradient-to-r from-amber-400 to-amber-200 bg-clip-text text-transparent font-black">
               RICHEST PLAYERS
             </span>
-            <Coins className="w-4 h-4 text-amber-400/60" />
+            <SlrpToken size="sm" animate={false} />
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
@@ -80,9 +81,7 @@ const WealthLeaderboard = memo(() => {
                   username={user.discord_username || "Unknown"}
                   className="flex-1 text-sm font-medium truncate"
                 />
-                <span className="text-amber-400 font-bold text-sm tabular-nums">
-                  {user.balance.toLocaleString()}
-                </span>
+                <SlrpToken size="sm" amount={user.balance} animate={false} />
               </motion.div>
             ))}
           </div>

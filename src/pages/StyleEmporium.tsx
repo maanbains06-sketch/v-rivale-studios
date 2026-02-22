@@ -18,6 +18,7 @@ import {
   TrendingUp, Medal, Clock
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import SlrpToken from "@/components/SlrpToken";
 
 interface ShopItem {
   id: string;
@@ -169,7 +170,7 @@ const StyleEmporium = () => {
             <div className="flex items-center gap-3">
               <Card className="bg-gradient-to-r from-amber-500/10 to-amber-600/5 border-amber-500/30">
                 <CardContent className="p-3 flex items-center gap-2">
-                  <Coins className="w-5 h-5 text-amber-400" />
+                  <SlrpToken size="md" />
                   <span className="text-xl font-bold text-amber-300">{wallet.balance.toLocaleString()}</span>
                   <span className="text-xs text-amber-400/70">SLRP</span>
                 </CardContent>
@@ -349,8 +350,7 @@ const StyleEmporium = () => {
                             {item.description && <p className="text-xs text-muted-foreground truncate">{item.description}</p>}
                             <div className="flex items-center justify-between mt-2">
                               <div className="flex items-center gap-1">
-                                <Coins className="w-3 h-3 text-amber-400" />
-                                <span className="text-sm font-bold text-amber-400">{item.price.toLocaleString()}</span>
+                                <SlrpToken size="sm" amount={item.price} animate={false} />
                               </div>
                               {owned ? (
                                 <Button size="sm" variant={equipped ? "default" : "outline"} onClick={() => handleEquip(item.id, item.category)} className="text-xs h-7">
