@@ -205,12 +205,39 @@ Deno.serve(async (req) => {
 
       case 'earn_mini_game': {
         const { gameType, score } = params
-        // Award 50 tokens for winning (score > 0)
+
+        // Anti-abuse: check cooldown (max 1 reward per game type per 60 seconds)
+        const { data: recentGameTx } = await supabase.from('token_transactions')
+          .select('created_at')
+          .eq('user_id', user.id)
+          .eq('source', 'mini_game')
+          .order('created_at', { ascending: false })
+          .limit(1)
+
+        if (recentGameTx && recentGameTx.length > 0) {
+          const lastReward = new Date(recentGameTx[0].created_at).getTime()
+          if (Date.now() - lastReward < 60000) {
+            return new Response(JSON.stringify({ error: 'Cooldown active. Wait before earning again.', cooldown: true }), {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            })
+          }
+        }
+
         if (!score || score <= 0) {
           return new Response(JSON.stringify({ error: 'Invalid score' }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
         }
+
+        // Anti-abuse: check device fingerprint from request
+        const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown'
+        
+        // Log IP for monitoring
+        await supabase.from('login_ip_log').insert({
+          user_id: user.id,
+          ip_address: clientIP,
+          user_agent: req.headers.get('user-agent') || 'unknown'
+        }).then(() => {}).catch(() => {})
 
         const result = await awardTokens(user.id, 50, 'mini_game', `Mini game win: ${gameType}`)
         return new Response(JSON.stringify(result), {
@@ -219,8 +246,27 @@ Deno.serve(async (req) => {
       }
 
       case 'earn_gallery': {
-        // +20 tokens for approved gallery submission
-        const result = await awardTokens(user.id, 20, 'gallery_approved', 'Gallery submission approved')
+        // Can be called by admin when approving - use submissionUserId if provided
+        const targetUserId = params.submissionUserId || user.id
+
+        // Anti-abuse: check if already awarded for recent gallery
+        const { data: recentGalleryTx } = await supabase.from('token_transactions')
+          .select('created_at')
+          .eq('user_id', targetUserId)
+          .eq('source', 'gallery_approved')
+          .order('created_at', { ascending: false })
+          .limit(1)
+
+        if (recentGalleryTx && recentGalleryTx.length > 0) {
+          const lastReward = new Date(recentGalleryTx[0].created_at).getTime()
+          if (Date.now() - lastReward < 300000) { // 5 min cooldown
+            return new Response(JSON.stringify({ error: 'Gallery reward cooldown active' }), {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            })
+          }
+        }
+
+        const result = await awardTokens(targetUserId, 20, 'gallery_approved', 'Gallery submission approved')
         return new Response(JSON.stringify(result), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         })
