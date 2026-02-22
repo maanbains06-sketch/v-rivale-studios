@@ -52,6 +52,23 @@ const OwnerKillSwitch = () => {
           body: { type: "lockdown_activated", message: "🔒 **EMERGENCY LOCKDOWN ACTIVATED** - Website is now in lockdown mode. Only the owner can access the site." }
         });
       } catch (e) { console.error("Discord notification failed:", e); }
+      // Update Discord status message to offline (lockdown)
+      try {
+        const { data: msgIdData } = await supabase.from("site_settings").select("value").eq("key", "discord_status_message_id").maybeSingle();
+        await supabase.functions.invoke("send-server-status-discord", {
+          body: {
+            status: "offline",
+            usersActive: 0,
+            uptime: "N/A",
+            customMessage: "🔒 EMERGENCY LOCKDOWN — Website access restricted to owner only.",
+            websiteUrl: "https://skyliferoleplay.com",
+            discordUrl: "https://discord.gg/skyliferp",
+            maintenanceCountdown: null,
+            scheduledEndAt: null,
+            messageId: msgIdData?.value || null,
+          }
+        });
+      } catch (e) { console.error("Discord status update failed:", e); }
     }
     setToggling(false);
     setConfirmActivate(false);
@@ -72,6 +89,23 @@ const OwnerKillSwitch = () => {
           body: { type: "lockdown_deactivated", message: "🔓 **LOCKDOWN DEACTIVATED** - Website is back online and accessible to all users." }
         });
       } catch (e) { console.error("Discord notification failed:", e); }
+      // Update Discord status message back to online
+      try {
+        const { data: msgIdData } = await supabase.from("site_settings").select("value").eq("key", "discord_status_message_id").maybeSingle();
+        await supabase.functions.invoke("send-server-status-discord", {
+          body: {
+            status: "online",
+            usersActive: 1,
+            uptime: "0m",
+            customMessage: "🔓 Lockdown lifted — Website is back online!",
+            websiteUrl: "https://skyliferoleplay.com",
+            discordUrl: "https://discord.gg/skyliferp",
+            maintenanceCountdown: null,
+            scheduledEndAt: null,
+            messageId: msgIdData?.value || null,
+          }
+        });
+      } catch (e) { console.error("Discord status update failed:", e); }
     }
     setToggling(false);
     setConfirmDeactivate(false);
