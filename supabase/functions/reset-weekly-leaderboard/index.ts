@@ -16,16 +16,15 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-
+    // Delete ALL mini game scores — full reset of every leaderboard
     const { error, count } = await supabase
       .from("mini_game_scores")
       .delete({ count: "exact" })
-      .gte("created_at", weekAgo);
+      .neq("id", "00000000-0000-0000-0000-000000000000");
 
     if (error) throw error;
 
-    console.log(`Weekly leaderboard reset: deleted ${count} scores`);
+    console.log(`Weekly full leaderboard reset: deleted ${count} scores across all games`);
 
     return new Response(JSON.stringify({ success: true, deleted: count }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
