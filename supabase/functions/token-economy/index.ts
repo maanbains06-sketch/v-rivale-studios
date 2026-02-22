@@ -660,30 +660,75 @@ Deno.serve(async (req) => {
           })
         }
 
+        const discordBotTokenStats = Deno.env.get('DISCORD_BOT_TOKEN')
+
         const { data: allWallets } = await supabase.from('user_wallets').select('balance, lifetime_earned, lifetime_spent')
         const totalCirculation = allWallets?.reduce((sum, w) => sum + w.balance, 0) || 0
         const totalEarned = allWallets?.reduce((sum, w) => sum + w.lifetime_earned, 0) || 0
         const totalSpent = allWallets?.reduce((sum, w) => sum + w.lifetime_spent, 0) || 0
 
         const { data: recentTx } = await supabase.from('token_transactions')
-          .select('*, profiles!token_transactions_user_id_fkey(discord_username, discord_id, discord_avatar)')
+          .select('*')
           .order('created_at', { ascending: false }).limit(50)
 
-        // If the join didn't work, fetch profiles separately
-        let enrichedTx = recentTx || []
-        if (recentTx && recentTx.length > 0 && !recentTx[0].profiles) {
-          const userIds = [...new Set(recentTx.map(t => t.user_id))]
-          const { data: profiles } = await supabase.from('profiles')
-            .select('id, discord_username, discord_id, discord_avatar')
-            .in('id', userIds)
-          const profileMap = new Map(profiles?.map(p => [p.id, p]) || [])
-          enrichedTx = recentTx.map(t => ({
-            ...t,
-            discord_username: profileMap.get(t.user_id)?.discord_username,
-            discord_id: profileMap.get(t.user_id)?.discord_id,
-            discord_avatar: profileMap.get(t.user_id)?.discord_avatar
-          }))
-        }
+        // Enrich all transactions with Discord identity
+        const txEntries = recentTx || []
+        const uniqueUserIds = [...new Set(txEntries.map(t => t.user_id))]
+        
+        // Batch fetch profiles
+        const { data: txProfiles } = await supabase.from('profiles')
+          .select('id, discord_username, discord_id, discord_avatar')
+          .in('id', uniqueUserIds)
+        const profileMap = new Map((txProfiles || []).map(p => [p.id, p]))
+
+        // Enrich each transaction
+        const enrichedTx = await Promise.all(txEntries.map(async (tx) => {
+          let profile = profileMap.get(tx.user_id)
+          let discord_username = profile?.discord_username || null
+          let discord_id = profile?.discord_id || null
+          let discord_avatar = profile?.discord_avatar || null
+
+          // If missing, try Discord API
+          if (discord_id && (!discord_username || !discord_avatar) && discordBotTokenStats) {
+            try {
+              const res = await fetch(`https://discord.com/api/v10/users/${discord_id}`, {
+                headers: { Authorization: `Bot ${discordBotTokenStats}` }
+              })
+              if (res.ok) {
+                const d = await res.json()
+                discord_username = d.global_name || d.username || discord_username
+                discord_avatar = d.avatar || discord_avatar
+                await supabase.from('profiles').update({
+                  discord_username, discord_avatar, updated_at: new Date().toISOString()
+                }).eq('id', tx.user_id)
+              }
+            } catch { /* ignore */ }
+          }
+
+          // Fallback to auth metadata
+          if (!discord_id) {
+            try {
+              const { data: authData } = await supabase.auth.admin.getUserById(tx.user_id)
+              if (authData?.user) {
+                const meta = authData.user.user_metadata
+                discord_id = meta?.discord_id || meta?.provider_id || meta?.sub || null
+                discord_username = discord_username || meta?.discord_username || meta?.username || meta?.full_name || null
+                discord_avatar = discord_avatar || meta?.discord_avatar || meta?.avatar_url || null
+                if (discord_id) {
+                  await supabase.from('profiles').update({
+                    discord_id, discord_username, discord_avatar, updated_at: new Date().toISOString()
+                  }).eq('id', tx.user_id)
+                }
+              }
+            } catch { /* ignore */ }
+          }
+
+          const avatar_url = discord_id && discord_avatar
+            ? `https://cdn.discordapp.com/avatars/${discord_id}/${discord_avatar}.png?size=64`
+            : null
+
+          return { ...tx, discord_username, discord_id, discord_avatar, avatar_url }
+        }))
 
         return new Response(JSON.stringify({
           totalCirculation,

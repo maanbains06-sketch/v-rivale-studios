@@ -282,30 +282,72 @@ const OwnerCurrencyManager = () => {
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">Live Transaction Feed</CardTitle>
-                <Badge variant="outline" className="animate-pulse">🔴 Live</Badge>
+                <div className="flex items-center gap-2">
+                  <Button onClick={loadStats} variant="outline" size="sm" className="gap-1">
+                    <RefreshCw className="w-3 h-3" /> Refresh
+                  </Button>
+                  <Badge variant="outline" className="animate-pulse">🔴 Live</Badge>
+                </div>
               </div>
+              <CardDescription>All token earnings, spending, purchases and claims across users</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2 max-h-[500px] overflow-y-auto">
-                {(stats?.recentTransactions || []).map((tx: any) => (
-                  <div key={tx.id} className="flex items-center gap-3 p-3 rounded-lg bg-card/50 border border-border/20">
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src={getAvatarUrl(tx.discord_id, tx.discord_avatar) || undefined} />
-                      <AvatarFallback className="text-xs">{(tx.discord_username || "?")[0]}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{tx.discord_username || "Unknown"}</p>
-                      <p className="text-xs text-muted-foreground truncate">{tx.description || tx.source}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className={`font-bold text-sm ${tx.amount > 0 ? "text-green-400" : "text-red-400"}`}>
-                        {tx.amount > 0 ? "+" : ""}{tx.amount}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground">{new Date(tx.created_at).toLocaleTimeString()}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {(!stats?.recentTransactions || stats.recentTransactions.length === 0) ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <ArrowUpDown className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                  <p className="text-sm">No transactions yet</p>
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
+                  {stats.recentTransactions.map((tx: any) => {
+                    const isEarning = tx.amount > 0;
+                    const avatarUrl = tx.avatar_url || (tx.discord_id && tx.discord_avatar ? `https://cdn.discordapp.com/avatars/${tx.discord_id}/${tx.discord_avatar}.png?size=64` : null);
+                    const displayName = tx.discord_username || 'Unknown User';
+                    const txType = tx.transaction_type || tx.source || 'unknown';
+                    const typeLabel = txType === 'daily_login' ? '📅 Daily Login' :
+                      txType === 'purchase' ? '🛒 Purchase' :
+                      txType === 'spend' ? '💸 Spent' :
+                      txType === 'shop_purchase' ? '🛍️ Shop Buy' :
+                      txType === 'referral_bonus' ? '🔗 Referral' :
+                      txType === 'admin_grant' ? '👑 Admin Grant' :
+                      txType === 'admin_deduct' ? '⚠️ Admin Deduct' :
+                      txType === 'spin_reward' ? '🎰 Spin Reward' :
+                      txType === 'game_reward' ? '🎮 Game Reward' :
+                      txType === 'streak_bonus' ? '🔥 Streak Bonus' :
+                      txType === 'seasonal_bonus' ? '🎄 Seasonal' :
+                      txType === 'achievement' ? '🏆 Achievement' :
+                      txType === 'transfer_sent' ? '📤 Transfer Out' :
+                      txType === 'transfer_received' ? '📥 Transfer In' :
+                      `📋 ${txType}`;
+
+                    return (
+                      <div key={tx.id} className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${isEarning ? 'bg-green-500/5 border-green-500/20' : 'bg-red-500/5 border-red-500/20'}`}>
+                        <Avatar className={`w-9 h-9 ring-2 ring-offset-1 ring-offset-background ${isEarning ? 'ring-green-500/40' : 'ring-red-500/40'}`}>
+                          <AvatarImage src={avatarUrl || undefined} />
+                          <AvatarFallback className="text-xs font-bold bg-muted">{displayName[0]?.toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold truncate">{displayName}</p>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs">{typeLabel}</span>
+                            {tx.description && tx.description !== tx.source && (
+                              <span className="text-[10px] text-muted-foreground truncate max-w-[180px]">• {tx.description}</span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className={`font-black text-sm ${isEarning ? "text-green-400" : "text-red-400"}`}>
+                            {isEarning ? "+" : ""}{tx.amount?.toLocaleString()}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {new Date(tx.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} {new Date(tx.created_at).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
