@@ -470,336 +470,403 @@ const Auth = () => {
       </div>
 
       {/* Right Panel - Form */}
-      <div className="w-full lg:w-1/2 xl:w-[55%] flex items-center justify-center p-6 md:p-12 bg-card/50 backdrop-blur-sm">
+      <div className="w-full lg:w-1/2 xl:w-[55%] flex items-center justify-center p-4 md:p-8 relative overflow-hidden"
+        style={{
+          background: "linear-gradient(160deg, hsl(220 20% 6% / 0.95) 0%, hsl(260 30% 12% / 0.9) 40%, hsl(330 40% 15% / 0.85) 70%, hsl(220 20% 8% / 0.95) 100%)",
+        }}
+      >
+        {/* Ambient background glow effects */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-20"
+            style={{ background: "radial-gradient(circle, hsl(var(--primary) / 0.4) 0%, transparent 70%)", filter: "blur(80px)" }}
+          />
+          <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full opacity-15"
+            style={{ background: "radial-gradient(circle, hsl(var(--neon-purple) / 0.4) 0%, transparent 70%)", filter: "blur(60px)" }}
+          />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-10"
+            style={{ background: "radial-gradient(circle, hsl(var(--neon-pink) / 0.3) 0%, transparent 60%)", filter: "blur(100px)" }}
+          />
+        </div>
+
         <AnimatePresence mode="wait">
           <motion.div
             key={isSignup ? "signup" : "login"}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
-            className="w-full max-w-md"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4 }}
+            className="w-full max-w-lg relative z-10"
           >
-            {/* Header */}
-            <div className="text-center mb-8">
-              <motion.h1
-                className="text-3xl md:text-4xl font-bold mb-2"
-                initial={{ y: -10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.1 }}
+            {/* Glass Card Container */}
+            <div className="relative rounded-2xl overflow-hidden">
+              {/* Neon border glow */}
+              <div className="absolute -inset-[1px] rounded-2xl"
+                style={{
+                  background: "linear-gradient(135deg, hsl(var(--primary) / 0.6) 0%, hsl(var(--neon-purple) / 0.4) 30%, hsl(var(--neon-pink) / 0.3) 60%, hsl(var(--primary) / 0.5) 100%)",
+                }}
+              />
+              
+              {/* Inner card */}
+              <div className="relative rounded-2xl p-6 md:p-8"
+                style={{
+                  background: "linear-gradient(145deg, hsl(220 20% 8% / 0.95) 0%, hsl(220 18% 10% / 0.9) 50%, hsl(220 20% 8% / 0.95) 100%)",
+                  backdropFilter: "blur(20px)",
+                }}
               >
-                {isSignup ? "Welcome to Skylife" : "Welcome back"}
-              </motion.h1>
-              <motion.p
-                className="text-muted-foreground"
-                initial={{ y: -10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.15 }}
-              >
-                {isSignup 
-                  ? "We're excited to have you! Let's create your account." 
-                  : "Sign in to Skylife Roleplay India"}
-              </motion.p>
-            </div>
-
-            {/* Registration Disabled Alert */}
-            {isSignup && !settings.registration_enabled && !settingsLoading && (
-              <motion.div
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.18 }}
-                className="mb-6"
-              >
-                <FeatureDisabledAlert feature="registration" />
-              </motion.div>
-            )}
-            <motion.div
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="mb-6"
-            >
-              <Button
-                type="button"
-                onClick={handleDiscordJoin}
-                className="w-full h-12 bg-[#5865F2] hover:bg-[#4752C4] text-white font-semibold rounded-lg flex items-center justify-center gap-2"
-              >
-                <MessageCircle className="w-5 h-5" />
-                Join Discord Server
-                <ExternalLink className="w-4 h-4 ml-1" />
-              </Button>
-              <p className="text-xs text-center text-muted-foreground mt-2">
-                Joining our Discord is required to access all features
-              </p>
-            </motion.div>
-
-            {/* Divider */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.25 }}
-              className="relative my-6"
-            >
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border/50" />
-              </div>
-              <div className="relative flex justify-center">
-                <span className="bg-card/50 backdrop-blur-sm px-4 text-xs text-muted-foreground uppercase tracking-wider">
-                  {isSignup ? "Create account with" : "Or continue with"}
-                </span>
-              </div>
-            </motion.div>
-
-            {/* Form */}
-            <form onSubmit={isSignup ? handleSignup : handleLogin} className="space-y-5">
-              {/* Username - Signup only */}
-              {isSignup && (
-                <motion.div
-                  initial={{ y: 10, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                  className="space-y-2"
-                >
-                  <Label htmlFor="username" className="text-sm font-medium">
-                    Username
-                  </Label>
-                  <Input
-                    id="username"
-                    type="text"
-                    placeholder="Provide your desired username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="h-12 bg-background/80 border-border/50 rounded-lg focus:border-primary"
-                    required
-                  />
-                </motion.div>
-              )}
-
-              {/* Discord ID - Signup only */}
-              {isSignup && (
-                <motion.div
-                  initial={{ y: 10, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.32 }}
-                  className="space-y-2"
-                >
-                  <Label htmlFor="discordId" className="text-sm font-medium">
-                    Discord User ID <span className="text-muted-foreground font-normal">(not username)</span>
-                  </Label>
-                  <Input
-                    id="discordId"
-                    type="text"
-                    placeholder="e.g., 833680146510381097"
-                    value={discordId}
-                    onChange={(e) => {
-                      // Only allow digits
-                      const value = e.target.value.replace(/\D/g, '');
-                      setDiscordId(value);
+                {/* Header */}
+                <div className="text-center mb-6">
+                  <motion.h1
+                    className="text-2xl md:text-3xl font-black tracking-wide uppercase mb-1"
+                    initial={{ y: -10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.1 }}
+                    style={{
+                      background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--neon-cyan)) 50%, hsl(var(--primary)) 100%)",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
                     }}
-                    className={`h-12 bg-background/80 border-border/50 rounded-lg focus:border-primary ${
-                      discordId && !/^\d{17,19}$/.test(discordId) ? 'border-destructive' : ''
-                    }`}
-                    required
-                    maxLength={19}
+                  >
+                    {isSignup ? "Create Account" : "Welcome Back"}
+                  </motion.h1>
+                  <motion.div
+                    className="mx-auto h-[2px] w-32 mb-3"
+                    initial={{ width: 0 }}
+                    animate={{ width: "8rem" }}
+                    transition={{ delay: 0.2, duration: 0.5 }}
+                    style={{
+                      background: "linear-gradient(90deg, transparent, hsl(var(--primary)), hsl(var(--neon-purple)), hsl(var(--primary)), transparent)",
+                    }}
                   />
-                  {discordId && !/^\d{17,19}$/.test(discordId) && (
-                    <p className="text-xs text-destructive">
-                      Discord ID must be 17-19 digits (numbers only)
-                    </p>
-                  )}
-                  <div className="text-xs text-muted-foreground space-y-1">
-                    <p className="font-medium">How to find your Discord User ID:</p>
-                    <ol className="list-decimal list-inside space-y-0.5 pl-1">
-                      <li>Open Discord Settings → App Settings → Advanced</li>
-                      <li>Enable "Developer Mode"</li>
-                      <li>Right-click your profile picture → "Copy User ID"</li>
-                    </ol>
+                  <motion.p
+                    className="text-muted-foreground text-sm tracking-wider uppercase"
+                    initial={{ y: -10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.15 }}
+                  >
+                    {isSignup 
+                      ? "Join Skylife Roleplay India" 
+                      : "Sign in to continue"}
+                  </motion.p>
+                </div>
+
+                {/* Registration Disabled Alert */}
+                {isSignup && !settings.registration_enabled && !settingsLoading && (
+                  <motion.div
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.18 }}
+                    className="mb-4"
+                  >
+                    <FeatureDisabledAlert feature="registration" />
+                  </motion.div>
+                )}
+
+                {/* Discord Button */}
+                <motion.div
+                  initial={{ y: 10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                  className="mb-4"
+                >
+                  <Button
+                    type="button"
+                    onClick={handleDiscordJoin}
+                    className="w-full h-11 font-bold rounded-lg flex items-center justify-center gap-2 uppercase tracking-wider text-sm border-0"
+                    style={{
+                      background: "linear-gradient(135deg, #5865F2, #7B68EE)",
+                      boxShadow: "0 0 20px rgba(88, 101, 242, 0.3), inset 0 1px 0 rgba(255,255,255,0.1)",
+                    }}
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                    Join Discord Server
+                    <ExternalLink className="w-4 h-4 ml-1" />
+                  </Button>
+                  <p className="text-xs text-center text-muted-foreground/60 mt-1.5">
+                    Joining our Discord is required to access all features
+                  </p>
+                </motion.div>
+
+                {/* Divider */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.25 }}
+                  className="relative my-5"
+                >
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full h-[1px]" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--border)), transparent)" }} />
+                  </div>
+                  <div className="relative flex justify-center">
+                    <span className="px-4 text-xs text-muted-foreground/60 uppercase tracking-[0.2em]"
+                      style={{ background: "hsl(220 20% 8%)" }}
+                    >
+                      {isSignup ? "Create account" : "Or continue with"}
+                    </span>
                   </div>
                 </motion.div>
-              )}
 
-              {/* Email */}
-              <motion.div
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: isSignup ? 0.35 : 0.3 }}
-                className="space-y-2"
-              >
-                <Label htmlFor="email" className="text-sm font-medium">
-                  Email
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder={isSignup ? "Enter an email" : "name@example.com"}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="h-12 bg-background/80 border-border/50 rounded-lg focus:border-primary"
-                  required
-                />
-              </motion.div>
-
-              {/* Password */}
-              <motion.div
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: isSignup ? 0.4 : 0.35 }}
-                className="space-y-2"
-              >
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-sm font-medium">
-                    Password
-                  </Label>
-                  {!isSignup && (
-                    <button
-                      type="button"
-                      onClick={() => setShowForgotPassword(true)}
-                      className="text-xs text-primary hover:underline"
+                {/* Form */}
+                <form onSubmit={isSignup ? handleSignup : handleLogin} className="space-y-4">
+                  {/* Username - Signup only */}
+                  {isSignup && (
+                    <motion.div
+                      initial={{ y: 10, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.3 }}
+                      className="space-y-1.5"
                     >
-                      Forgot password?
-                    </button>
+                      <Label htmlFor="username" className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
+                        Username
+                      </Label>
+                      <Input
+                        id="username"
+                        type="text"
+                        placeholder="Provide your desired username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        className="h-11 bg-background/60 border-border/40 rounded-lg focus:border-primary/80 text-sm placeholder:text-muted-foreground/40"
+                        style={{ boxShadow: "inset 0 1px 4px hsl(220 20% 4% / 0.5)" }}
+                        required
+                      />
+                    </motion.div>
                   )}
-                </div>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder={isSignup ? "Enter a good password" : "••••••••"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="h-12 bg-background/80 border-border/50 rounded-lg focus:border-primary pr-12"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+
+                  {/* Discord ID - Signup only */}
+                  {isSignup && (
+                    <motion.div
+                      initial={{ y: 10, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.32 }}
+                      className="space-y-1.5"
+                    >
+                      <Label htmlFor="discordId" className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
+                        Discord User ID <span className="text-muted-foreground/50 font-normal normal-case">(not username)</span>
+                      </Label>
+                      <Input
+                        id="discordId"
+                        type="text"
+                        placeholder="e.g., 833680146510381097"
+                        value={discordId}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, '');
+                          setDiscordId(value);
+                        }}
+                        className={`h-11 bg-background/60 border-border/40 rounded-lg focus:border-primary/80 text-sm placeholder:text-muted-foreground/40 ${
+                          discordId && !/^\d{17,19}$/.test(discordId) ? 'border-destructive' : ''
+                        }`}
+                        style={{ boxShadow: "inset 0 1px 4px hsl(220 20% 4% / 0.5)" }}
+                        required
+                        maxLength={19}
+                      />
+                      {discordId && !/^\d{17,19}$/.test(discordId) && (
+                        <p className="text-xs text-destructive">
+                          Discord ID must be 17-19 digits (numbers only)
+                        </p>
+                      )}
+                      <div className="text-xs text-muted-foreground/50 space-y-0.5">
+                        <p className="font-medium text-muted-foreground/70">How to find your Discord User ID:</p>
+                        <ol className="list-decimal list-inside space-y-0.5 pl-1">
+                          <li>Open Discord Settings → Advanced</li>
+                          <li>Enable "Developer Mode"</li>
+                          <li>Right-click your profile → "Copy User ID"</li>
+                        </ol>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Email */}
+                  <motion.div
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: isSignup ? 0.35 : 0.3 }}
+                    className="space-y-1.5"
                   >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-              </motion.div>
-
-              {/* Remember Me */}
-              <motion.div
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: isSignup ? 0.42 : 0.38 }}
-                className="flex items-center justify-between"
-              >
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <Checkbox
-                    id="rememberMe"
-                    checked={rememberMe}
-                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                  />
-                  <span className="text-sm text-muted-foreground">Remember me</span>
-                </label>
-              </motion.div>
-
-              {/* Confirm Password - Signup only */}
-              {isSignup && (
-                <motion.div
-                  initial={{ y: 10, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.45 }}
-                  className="space-y-2"
-                >
-                  <Label htmlFor="confirmPassword" className="text-sm font-medium">
-                    Confirm Password
-                  </Label>
-                  <div className="relative">
+                    <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
+                      Email
+                    </Label>
                     <Input
-                      id="confirmPassword"
-                      type={showConfirmPassword ? "text" : "password"}
-                      placeholder="Confirm your password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="h-12 bg-background/80 border-border/50 rounded-lg focus:border-primary pr-12"
+                      id="email"
+                      type="email"
+                      placeholder={isSignup ? "Enter an email" : "name@example.com"}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="h-11 bg-background/60 border-border/40 rounded-lg focus:border-primary/80 text-sm placeholder:text-muted-foreground/40"
+                      style={{ boxShadow: "inset 0 1px 4px hsl(220 20% 4% / 0.5)" }}
                       required
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-                </motion.div>
-              )}
+                  </motion.div>
 
-              {/* Submit Button */}
-              <motion.div
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: isSignup ? 0.5 : 0.4 }}
-              >
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      {verifyingDiscord ? "Verifying Discord..." : isSignup ? "Creating Account..." : "Signing in..."}
-                    </>
-                  ) : (
-                    isSignup ? "Create Account" : "Sign in with Email"
-                  )}
-                </Button>
-              </motion.div>
-
-              {/* Switch Mode */}
-              <motion.div
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: isSignup ? 0.55 : 0.45 }}
-                className="text-center pt-2"
-              >
-                <p className="text-sm text-muted-foreground">
-                  {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
-                  <button
-                    type="button"
-                    onClick={() => setIsSignup(!isSignup)}
-                    className="text-primary font-semibold hover:underline"
+                  {/* Password */}
+                  <motion.div
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: isSignup ? 0.4 : 0.35 }}
+                    className="space-y-1.5"
                   >
-                    {isSignup ? "Sign In" : "Sign up"}
-                  </button>
-                </p>
-              </motion.div>
-            </form>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
+                        Password
+                      </Label>
+                      {!isSignup && (
+                        <button
+                          type="button"
+                          onClick={() => setShowForgotPassword(true)}
+                          className="text-xs text-primary/80 hover:text-primary hover:underline transition-colors"
+                        >
+                          Forgot password?
+                        </button>
+                      )}
+                    </div>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder={isSignup ? "Enter a good password" : "••••••••"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="h-11 bg-background/60 border-border/40 rounded-lg focus:border-primary/80 pr-12 text-sm placeholder:text-muted-foreground/40"
+                        style={{ boxShadow: "inset 0 1px 4px hsl(220 20% 4% / 0.5)" }}
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-foreground transition-colors"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </motion.div>
 
-            {/* Terms - Signup only */}
-            {isSignup && (
-              <motion.div
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.6 }}
-                className="mt-6"
-              >
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <Checkbox
-                    id="terms"
-                    checked={agreeToTerms}
-                    onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
-                    className="mt-0.5"
-                  />
-                  <span className="text-xs text-muted-foreground">
-                    By creating account, you agree to our{" "}
-                    <Link to="/terms" className="text-primary hover:underline">
-                      Terms of Service
-                    </Link>{" "}
-                    and{" "}
-                    <Link to="/privacy" className="text-primary hover:underline">
-                      Privacy Policy
-                    </Link>
-                    .
-                  </span>
-                </label>
-              </motion.div>
-            )}
+                  {/* Remember Me */}
+                  <motion.div
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: isSignup ? 0.42 : 0.38 }}
+                    className="flex items-center justify-between"
+                  >
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        id="rememberMe"
+                        checked={rememberMe}
+                        onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                      />
+                      <span className="text-xs text-muted-foreground/60">Remember me</span>
+                    </label>
+                  </motion.div>
+
+                  {/* Confirm Password - Signup only */}
+                  {isSignup && (
+                    <motion.div
+                      initial={{ y: 10, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.45 }}
+                      className="space-y-1.5"
+                    >
+                      <Label htmlFor="confirmPassword" className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
+                        Confirm Password
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          id="confirmPassword"
+                          type={showConfirmPassword ? "text" : "password"}
+                          placeholder="Confirm your password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          className="h-11 bg-background/60 border-border/40 rounded-lg focus:border-primary/80 pr-12 text-sm placeholder:text-muted-foreground/40"
+                          style={{ boxShadow: "inset 0 1px 4px hsl(220 20% 4% / 0.5)" }}
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-foreground transition-colors"
+                        >
+                          {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Submit Button */}
+                  <motion.div
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: isSignup ? 0.5 : 0.4 }}
+                    className="pt-2"
+                  >
+                    <Button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full h-12 font-black text-sm uppercase tracking-wider rounded-lg border-0 relative overflow-hidden"
+                      style={{
+                        background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--neon-purple)) 50%, hsl(var(--neon-pink)) 100%)",
+                        boxShadow: "0 0 25px hsl(var(--primary) / 0.3), 0 0 50px hsl(var(--neon-purple) / 0.15)",
+                      }}
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          {verifyingDiscord ? "Verifying Discord..." : isSignup ? "Creating Account..." : "Signing in..."}
+                        </>
+                      ) : (
+                        isSignup ? "Submit Application" : "Sign In"
+                      )}
+                    </Button>
+                  </motion.div>
+
+                  {/* Switch Mode */}
+                  <motion.div
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: isSignup ? 0.55 : 0.45 }}
+                    className="text-center pt-1"
+                  >
+                    <p className="text-xs text-muted-foreground/60">
+                      {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
+                      <button
+                        type="button"
+                        onClick={() => setIsSignup(!isSignup)}
+                        className="font-bold uppercase tracking-wider hover:underline transition-colors"
+                        style={{ color: "hsl(var(--primary))" }}
+                      >
+                        {isSignup ? "Sign In" : "Sign up"}
+                      </button>
+                    </p>
+                  </motion.div>
+                </form>
+
+                {/* Terms - Signup only */}
+                {isSignup && (
+                  <motion.div
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.6 }}
+                    className="mt-4"
+                  >
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <Checkbox
+                        id="terms"
+                        checked={agreeToTerms}
+                        onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
+                        className="mt-0.5"
+                      />
+                      <span className="text-xs text-muted-foreground/50">
+                        By creating account, you agree to our{" "}
+                        <Link to="/terms" className="text-primary/80 hover:text-primary hover:underline">
+                          Terms of Service
+                        </Link>{" "}
+                        and{" "}
+                        <Link to="/privacy" className="text-primary/80 hover:text-primary hover:underline">
+                          Privacy Policy
+                        </Link>
+                        .
+                      </span>
+                    </label>
+                  </motion.div>
+                )}
+              </div>
+            </div>
           </motion.div>
         </AnimatePresence>
       </div>
