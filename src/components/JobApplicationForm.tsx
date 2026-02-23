@@ -15,6 +15,9 @@ import { ApplicationCooldownTimer } from "@/components/ApplicationCooldownTimer"
 import { PendingApplicationAlert } from "@/components/PendingApplicationAlert";
 import { ApprovedApplicationAlert } from "@/components/ApprovedApplicationAlert";
 import { OnHoldApplicationAlert } from "@/components/OnHoldApplicationAlert";
+import CyberpunkFormWrapper from "@/components/CyberpunkFormWrapper";
+import CyberpunkFieldset from "@/components/CyberpunkFieldset";
+
 const jobApplicationSchema = z.object({
   character_name: z.string()
     .trim()
@@ -206,21 +209,21 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
   const getJobIcon = () => {
     switch (jobType) {
       case "Police Department":
-        return <Shield className="w-6 h-6 text-primary" />;
+        return <Shield className="w-6 h-6" />;
       case "EMS":
-        return <Heart className="w-6 h-6 text-primary" />;
+        return <Heart className="w-6 h-6" />;
       case "Mechanic":
-        return <Wrench className="w-6 h-6 text-primary" />;
+        return <Wrench className="w-6 h-6" />;
     }
   };
 
   if (loading) {
     return (
-      <Card className="glass-effect border-border/20">
-        <CardContent className="flex justify-center items-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </CardContent>
-      </Card>
+      <CyberpunkFormWrapper title={`${jobType} Application`} icon={getJobIcon()} description={getJobDescription()}>
+        <div className="flex justify-center items-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-[hsl(var(--neon-cyan))]" />
+        </div>
+      </CyberpunkFormWrapper>
     );
   }
 
@@ -259,64 +262,21 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
 
   if (isOnCooldown && rejectedAt) {
     return (
-      <div className="space-y-6">
-        {/* Job Header with Image */}
-        <div className="relative rounded-2xl overflow-hidden h-64 group">
-          <img 
-            src={jobImage} 
-            alt={`${jobType} Career`}
-            className="w-full h-full object-cover object-center opacity-50"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/90 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-8">
-            <div className="flex items-center gap-4 mb-3">
-              <div className="p-3 rounded-xl bg-primary/20 backdrop-blur-sm">
-                {getJobIcon()}
-              </div>
-              <div>
-                <h2 className="text-3xl font-bold text-foreground mb-1">{jobType} Application</h2>
-                <p className="text-muted-foreground">{getJobDescription()}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        
+      <CyberpunkFormWrapper title={`${jobType} Application`} icon={getJobIcon()} description={getJobDescription()}>
         <ApplicationCooldownTimer 
           rejectedAt={rejectedAt} 
           cooldownHours={24}
           onCooldownEnd={handleCooldownEnd}
         />
-      </div>
+      </CyberpunkFormWrapper>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Job Header with Image */}
-      <div className="relative rounded-2xl overflow-hidden h-64 group">
-        <img 
-          src={jobImage} 
-          alt={`${jobType} Career`}
-          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-8">
-          <div className="flex items-center gap-4 mb-3">
-            <div className="p-3 rounded-xl bg-primary/20 backdrop-blur-sm">
-              {getJobIcon()}
-            </div>
-            <div>
-              <h2 className="text-3xl font-bold text-foreground mb-1">{jobType} Application</h2>
-              <p className="text-muted-foreground">{getJobDescription()}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <Card className="glass-effect border-border/20">
-        <CardContent className="pt-8">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <CyberpunkFormWrapper title={`${jobType} Application`} icon={getJobIcon()} description={getJobDescription()}>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <CyberpunkFieldset legend="Personal Information">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -385,7 +345,9 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
                 </FormItem>
               )}
             />
+          </CyberpunkFieldset>
 
+          <CyberpunkFieldset legend="Experience & Motivation">
             <FormField
               control={form.control}
               name="why_join"
@@ -427,7 +389,9 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
                 </FormItem>
               )}
             />
+          </CyberpunkFieldset>
 
+          <CyberpunkFieldset legend="Character Background">
             <FormField
               control={form.control}
               name="character_background"
@@ -448,7 +412,9 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
                 </FormItem>
               )}
             />
+          </CyberpunkFieldset>
 
+          <CyberpunkFieldset legend="Scenario & Strengths">
             <FormField
               control={form.control}
               name="job_specific_answer"
@@ -490,7 +456,9 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
                 </FormItem>
               )}
             />
+          </CyberpunkFieldset>
 
+          <CyberpunkFieldset legend="Availability">
             <FormField
               control={form.control}
               name="availability"
@@ -529,29 +497,28 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
                 </FormItem>
               )}
             />
+          </CyberpunkFieldset>
 
-            <Button 
-              type="submit" 
-              className="w-full"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Submitting...
-                </>
-              ) : (
-                <>
-                  {getJobIcon()}
-                  <span className="ml-2">Submit {jobType} Application</span>
-                </>
-              )}
-            </Button>
-          </form>
-        </Form>
-        </CardContent>
-      </Card>
-    </div>
+          <Button 
+            type="submit" 
+            className="w-full cyberpunk-submit-btn"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              <>
+                {getJobIcon()}
+                <span className="ml-2">Submit {jobType} Application</span>
+              </>
+            )}
+          </Button>
+        </form>
+      </Form>
+    </CyberpunkFormWrapper>
   );
 };
 

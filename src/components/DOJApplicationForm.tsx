@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,11 +14,12 @@ import { ApplicationCooldownTimer } from "@/components/ApplicationCooldownTimer"
 import { PendingApplicationAlert } from "@/components/PendingApplicationAlert";
 import { ApprovedApplicationAlert } from "@/components/ApprovedApplicationAlert";
 import { OnHoldApplicationAlert } from "@/components/OnHoldApplicationAlert";
+import CyberpunkFormWrapper from "@/components/CyberpunkFormWrapper";
+import CyberpunkFieldset from "@/components/CyberpunkFieldset";
+
 const dojApplicationSchema = z.object({
   characterName: z.string().min(2, "Character name is required").max(50),
-  age: z.string().refine((val) => !isNaN(Number(val)) && Number(val) >= 21, {
-    message: "You must be at least 21 years old for DOJ positions"
-  }),
+  age: z.string().refine((val) => !isNaN(Number(val)) && Number(val) >= 21, { message: "You must be at least 21 years old for DOJ positions" }),
   phoneNumber: z.string().min(7, "Valid phone number is required"),
   discordId: z.string().regex(/^\d{17,19}$/, "Discord ID must be 17-19 digits"),
   discordUsername: z.string().min(3, "Discord username is required"),
@@ -48,415 +48,77 @@ const DOJApplicationForm = ({ applicationType, jobImage }: DOJApplicationFormPro
   const Icon = isJudge ? Gavel : Scale;
   const jobType = isJudge ? "DOJ - Judge" : "DOJ - Attorney";
 
-  const { 
-    isOnCooldown, 
-    rejectedAt, 
-    loading, 
-    handleCooldownEnd, 
-    hasPendingApplication, 
-    pendingMessage,
-    hasApprovedApplication,
-    approvedMessage,
-    isOnHold,
-    onHoldMessage
-  } = useApplicationCooldown(
-    'job_applications',
-    24,
-    { column: 'job_type', value: jobType }
-  );
+  const { isOnCooldown, rejectedAt, loading, handleCooldownEnd, hasPendingApplication, pendingMessage, hasApprovedApplication, approvedMessage, isOnHold, onHoldMessage } = useApplicationCooldown('job_applications', 24, { column: 'job_type', value: jobType });
 
   const form = useForm<DOJApplicationFormData>({
     resolver: zodResolver(dojApplicationSchema),
-    defaultValues: {
-      characterName: "",
-      age: "",
-      phoneNumber: "",
-      discordId: "",
-      discordUsername: "",
-      legalExperience: "",
-      lawKnowledge: "",
-      courtScenario: "",
-      whyDOJ: "",
-      availability: "",
-      characterBackground: "",
-      additionalInfo: "",
-    },
+    defaultValues: { characterName: "", age: "", phoneNumber: "", discordId: "", discordUsername: "", legalExperience: "", lawKnowledge: "", courtScenario: "", whyDOJ: "", availability: "", characterBackground: "", additionalInfo: "" },
   });
 
   async function onSubmit(data: DOJApplicationFormData) {
     setIsSubmitting(true);
-    
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast({
-          title: "Authentication Required",
-          description: "You must be logged in to submit an application.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const { error } = await supabase
-        .from("job_applications")
-        .insert({
-          user_id: user.id,
-          job_type: jobType,
-          character_name: data.characterName,
-          discord_id: data.discordId,
-          age: parseInt(data.age),
-          phone_number: data.phoneNumber,
-          previous_experience: data.legalExperience,
-          why_join: data.whyDOJ,
-          character_background: data.characterBackground,
-          availability: data.availability,
-          job_specific_answer: `Law Knowledge: ${data.lawKnowledge}\n\nCourt Scenario Response: ${data.courtScenario}`,
-          additional_info: data.additionalInfo || null,
-          strengths: `Discord: ${data.discordUsername}`,
-        });
-
-      if (error) throw error;
-      
-      toast({
-        title: "Application Submitted Successfully!",
-        description: "Thank you for applying to the Department of Justice. We will review your application and contact you via Discord.",
+      if (!user) { toast({ title: "Authentication Required", description: "You must be logged in to submit an application.", variant: "destructive" }); return; }
+      const { error } = await supabase.from("job_applications").insert({
+        user_id: user.id, job_type: jobType, character_name: data.characterName, discord_id: data.discordId,
+        age: parseInt(data.age), phone_number: data.phoneNumber, previous_experience: data.legalExperience,
+        why_join: data.whyDOJ, character_background: data.characterBackground, availability: data.availability,
+        job_specific_answer: `Law Knowledge: ${data.lawKnowledge}\n\nCourt Scenario Response: ${data.courtScenario}`,
+        additional_info: data.additionalInfo || null, strengths: `Discord: ${data.discordUsername}`,
       });
-      
+      if (error) throw error;
+      toast({ title: "Application Submitted Successfully!", description: "Thank you for applying to the Department of Justice. We will review your application and contact you via Discord." });
       form.reset();
     } catch (error) {
       console.error("Error submitting DOJ application:", error);
-      toast({
-        title: "Submission Failed",
-        description: "There was an error submitting your application. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+      toast({ title: "Submission Failed", description: "There was an error submitting your application. Please try again.", variant: "destructive" });
+    } finally { setIsSubmitting(false); }
   }
 
-  if (loading) {
-    return (
-      <Card className="glass-effect border-border/20">
-        <CardContent className="flex justify-center items-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (hasApprovedApplication && approvedMessage) {
-    return (
-      <ApprovedApplicationAlert 
-        message={approvedMessage}
-        jobImage={jobImage}
-        title={title}
-        icon={<Icon className="w-6 h-6 text-green-500" />}
-      />
-    );
-  }
-
-  if (isOnHold && onHoldMessage) {
-    return (
-      <OnHoldApplicationAlert 
-        message={onHoldMessage}
-        jobImage={jobImage}
-        title={title}
-        icon={<Icon className="w-6 h-6 text-blue-500" />}
-      />
-    );
-  }
-
-  if (hasPendingApplication && pendingMessage) {
-    return (
-      <PendingApplicationAlert 
-        message={pendingMessage}
-        jobImage={jobImage}
-        title={title}
-        icon={<Icon className="w-6 h-6 text-primary" />}
-      />
-    );
-  }
-
-  if (isOnCooldown && rejectedAt) {
-    return (
-      <Card className="glass-effect border-border/20 overflow-hidden">
-        {jobImage && (
-          <div className="relative h-48 overflow-hidden">
-            <img src={jobImage} alt={title} className="w-full h-full object-cover opacity-50" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-            <div className="absolute bottom-4 left-6 flex items-center gap-3">
-              <div className="p-3 rounded-xl bg-primary/20 border border-primary/30">
-                <Icon className="w-8 h-8 text-primary" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-foreground">{title}</h2>
-                <p className="text-sm text-muted-foreground">Department of Justice</p>
-              </div>
-            </div>
-          </div>
-        )}
-        <CardContent className="pt-6">
-          <ApplicationCooldownTimer 
-            rejectedAt={rejectedAt} 
-            cooldownHours={24}
-            onCooldownEnd={handleCooldownEnd}
-          />
-        </CardContent>
-      </Card>
-    );
-  }
+  if (loading) return <CyberpunkFormWrapper title={title} icon={<Icon className="w-6 h-6" />} description="Department of Justice"><div className="flex justify-center items-center py-12"><Loader2 className="w-8 h-8 animate-spin text-[hsl(var(--neon-cyan))]" /></div></CyberpunkFormWrapper>;
+  if (hasApprovedApplication && approvedMessage) return <ApprovedApplicationAlert message={approvedMessage} jobImage={jobImage} title={title} icon={<Icon className="w-6 h-6 text-green-500" />} />;
+  if (isOnHold && onHoldMessage) return <OnHoldApplicationAlert message={onHoldMessage} jobImage={jobImage} title={title} icon={<Icon className="w-6 h-6 text-blue-500" />} />;
+  if (hasPendingApplication && pendingMessage) return <PendingApplicationAlert message={pendingMessage} jobImage={jobImage} title={title} icon={<Icon className="w-6 h-6 text-primary" />} />;
+  if (isOnCooldown && rejectedAt) return <CyberpunkFormWrapper title={title} icon={<Icon className="w-6 h-6" />} description="Department of Justice"><ApplicationCooldownTimer rejectedAt={rejectedAt} cooldownHours={24} onCooldownEnd={handleCooldownEnd} /></CyberpunkFormWrapper>;
 
   return (
-    <Card className="glass-effect border-border/20 overflow-hidden">
-      {jobImage && (
-        <div className="relative h-48 overflow-hidden">
-          <img src={jobImage} alt={title} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-          <div className="absolute bottom-4 left-6 flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-primary/20 border border-primary/30">
-              <Icon className="w-8 h-8 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-foreground">{title}</h2>
-              <p className="text-sm text-muted-foreground">Department of Justice</p>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      <CardHeader className={jobImage ? "pt-4" : ""}>
-        {!jobImage && (
-          <>
-            <div className="flex items-center gap-3 mb-2">
-              <Icon className="w-6 h-6 text-primary" />
-              <CardTitle className="text-gradient">{title}</CardTitle>
-            </div>
-            <CardDescription>Department of Justice - San Andreas</CardDescription>
-          </>
-        )}
-      </CardHeader>
-      
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <CyberpunkFormWrapper title={title} icon={<Icon className="w-6 h-6" />} description="Department of Justice - San Andreas">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <CyberpunkFieldset legend="Personal Information">
             <div className="grid md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="characterName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Character Name *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., Robert Martinez" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="age"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Age *</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="21+" {...field} />
-                    </FormControl>
-                    <FormDescription>Minimum 21 years for DOJ</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <FormField control={form.control} name="characterName" render={({ field }) => (<FormItem><FormLabel>Character Name *</FormLabel><FormControl><Input placeholder="e.g., Robert Martinez" {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="age" render={({ field }) => (<FormItem><FormLabel>Age *</FormLabel><FormControl><Input type="number" placeholder="21+" {...field} /></FormControl><FormDescription>Minimum 21 years for DOJ</FormDescription><FormMessage /></FormItem>)} />
             </div>
-
             <div className="grid md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="phoneNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>In-Game Phone Number *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="555-1234" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="discordUsername"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Discord Username *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="username#1234" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <FormField control={form.control} name="phoneNumber" render={({ field }) => (<FormItem><FormLabel>In-Game Phone Number *</FormLabel><FormControl><Input placeholder="555-1234" {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="discordUsername" render={({ field }) => (<FormItem><FormLabel>Discord Username *</FormLabel><FormControl><Input placeholder="username#1234" {...field} /></FormControl><FormMessage /></FormItem>)} />
             </div>
+          </CyberpunkFieldset>
 
-            <FormField
-              control={form.control}
-              name="characterBackground"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Character Legal Background *</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder=""
-                      className="min-h-[100px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <CyberpunkFieldset legend="Legal Background">
+            <FormField control={form.control} name="characterBackground" render={({ field }) => (<FormItem><FormLabel>Character Legal Background *</FormLabel><FormControl><Textarea placeholder="" className="min-h-[100px]" {...field} /></FormControl><FormMessage /></FormItem>)} />
+            <FormField control={form.control} name="legalExperience" render={({ field }) => (<FormItem><FormLabel>{isJudge ? "Judicial Experience *" : "Legal Experience *"}</FormLabel><FormControl><Textarea placeholder="" className="min-h-[100px]" {...field} /></FormControl><FormMessage /></FormItem>)} />
+            <FormField control={form.control} name="lawKnowledge" render={({ field }) => (<FormItem><FormLabel>Knowledge of San Andreas Law *</FormLabel><FormControl><Textarea placeholder="" className="min-h-[100px]" {...field} /></FormControl><FormMessage /></FormItem>)} />
+          </CyberpunkFieldset>
 
-            <FormField
-              control={form.control}
-              name="legalExperience"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{isJudge ? "Judicial Experience *" : "Legal Experience *"}</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder=""
-                      className="min-h-[100px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <CyberpunkFieldset legend="Scenario & Motivation">
+            <FormField control={form.control} name="courtScenario" render={({ field }) => (<FormItem><FormLabel><div className="flex items-center gap-2"><FileText className="w-4 h-4 text-[hsl(var(--neon-cyan))]" />Court Scenario *</div></FormLabel><FormControl><Textarea placeholder="" className="min-h-[150px]" {...field} /></FormControl><FormDescription>Demonstrate your {isJudge ? "judicial reasoning" : "legal strategy"} skills</FormDescription><FormMessage /></FormItem>)} />
+            <FormField control={form.control} name="whyDOJ" render={({ field }) => (<FormItem><FormLabel>Why Do You Want to Join DOJ? *</FormLabel><FormControl><Textarea placeholder="" className="min-h-[100px]" {...field} /></FormControl><FormMessage /></FormItem>)} />
+          </CyberpunkFieldset>
 
-            <FormField
-              control={form.control}
-              name="lawKnowledge"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Knowledge of San Andreas Law *</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder=""
-                      className="min-h-[100px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <CyberpunkFieldset legend="Availability">
+            <FormField control={form.control} name="availability" render={({ field }) => (<FormItem><FormLabel>Weekly Availability & Timezone *</FormLabel><FormControl><Textarea placeholder="" className="min-h-[80px]" {...field} /></FormControl><FormMessage /></FormItem>)} />
+            <FormField control={form.control} name="additionalInfo" render={({ field }) => (<FormItem><FormLabel>Additional Information</FormLabel><FormControl><Textarea placeholder="" className="min-h-[80px]" {...field} /></FormControl><FormMessage /></FormItem>)} />
+          </CyberpunkFieldset>
 
-            <FormField
-              control={form.control}
-              name="courtScenario"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-primary" />
-                      Court Scenario *
-                    </div>
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder=""
-                      className="min-h-[150px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Demonstrate your {isJudge ? "judicial reasoning" : "legal strategy"} skills
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="whyDOJ"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Why Do You Want to Join DOJ? *</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder=""
-                      className="min-h-[100px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="availability"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Weekly Availability & Timezone *</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder=""
-                      className="min-h-[80px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="additionalInfo"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Additional Information</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder=""
-                      className="min-h-[80px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button 
-              type="submit" 
-              className="w-full bg-primary hover:bg-primary/90" 
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Submitting Application...
-                </>
-              ) : (
-                <>
-                  <Icon className="mr-2 h-4 w-4" />
-                  Submit {isJudge ? "Judge" : "Attorney"} Application
-                </>
-              )}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+          <Button type="submit" className="w-full cyberpunk-submit-btn" disabled={isSubmitting}>
+            {isSubmitting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Submitting Application...</>) : (<><Icon className="mr-2 h-4 w-4" />Submit {isJudge ? "Judge" : "Attorney"} Application</>)}
+          </Button>
+        </form>
+      </Form>
+    </CyberpunkFormWrapper>
   );
 };
 

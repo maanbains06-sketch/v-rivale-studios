@@ -1774,3 +1774,161 @@ All colors MUST be HSL.
     outline-offset: 2px;
   }
 }
+
+/* ===========================
+   CYBERPUNK APPLICATION FORMS
+   =========================== */
+
+.cyberpunk-form-wrapper {
+  background: linear-gradient(180deg, hsl(220 25% 6%) 0%, hsl(215 30% 8%) 50%, hsl(210 25% 10%) 100%);
+  border: 1px solid hsl(199 100% 55% / 0.3);
+  border-radius: 1rem;
+  box-shadow:
+    0 0 15px hsl(199 100% 55% / 0.1),
+    0 0 30px hsl(199 100% 55% / 0.05),
+    inset 0 1px 0 hsl(199 100% 55% / 0.1);
+  overflow: hidden;
+  position: relative;
+}
+
+.cyberpunk-stars {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 15%, hsl(0 0% 100% / 0.4), transparent),
+    radial-gradient(1px 1px at 25% 35%, hsl(0 0% 100% / 0.3), transparent),
+    radial-gradient(1.5px 1.5px at 40% 10%, hsl(0 0% 100% / 0.5), transparent),
+    radial-gradient(1px 1px at 55% 45%, hsl(0 0% 100% / 0.2), transparent),
+    radial-gradient(1px 1px at 70% 20%, hsl(0 0% 100% / 0.4), transparent),
+    radial-gradient(1.5px 1.5px at 80% 55%, hsl(0 0% 100% / 0.3), transparent),
+    radial-gradient(1px 1px at 90% 30%, hsl(0 0% 100% / 0.35), transparent),
+    radial-gradient(1px 1px at 15% 60%, hsl(0 0% 100% / 0.25), transparent),
+    radial-gradient(1px 1px at 35% 75%, hsl(0 0% 100% / 0.3), transparent),
+    radial-gradient(1.5px 1.5px at 50% 85%, hsl(0 0% 100% / 0.4), transparent),
+    radial-gradient(1px 1px at 65% 70%, hsl(0 0% 100% / 0.2), transparent),
+    radial-gradient(1px 1px at 85% 80%, hsl(0 0% 100% / 0.35), transparent),
+    radial-gradient(1px 1px at 5% 90%, hsl(0 0% 100% / 0.3), transparent),
+    radial-gradient(1px 1px at 45% 55%, hsl(199 100% 70% / 0.2), transparent),
+    radial-gradient(1px 1px at 75% 40%, hsl(199 100% 70% / 0.15), transparent);
+}
+
+.cyberpunk-title-bar {
+  border-bottom: 1px solid hsl(199 100% 55% / 0.2);
+  background: linear-gradient(180deg, hsl(199 100% 55% / 0.06) 0%, transparent 100%);
+}
+
+.cyberpunk-fieldset {
+  border: 1px solid hsl(199 100% 55% / 0.25);
+  border-radius: 0.75rem;
+  background: hsl(220 25% 7% / 0.8);
+  margin-bottom: 1.5rem;
+  position: relative;
+  box-shadow: 0 0 8px hsl(199 100% 55% / 0.05);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.cyberpunk-fieldset:hover {
+  border-color: hsl(199 100% 55% / 0.4);
+  box-shadow: 0 0 12px hsl(199 100% 55% / 0.1);
+}
+
+.cyberpunk-legend {
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0.25rem 1.5rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  color: hsl(185 100% 65%);
+  text-shadow: 0 0 8px hsl(185 100% 50% / 0.5);
+  background: hsl(220 25% 8%);
+  border: 1px solid hsl(199 100% 55% / 0.3);
+  border-radius: 0.5rem;
+  text-align: center;
+}
+
+/* Cyberpunk form input styling */
+.cyberpunk-form-content input,
+.cyberpunk-form-content textarea,
+.cyberpunk-form-content select,
+.cyberpunk-form-content [role="combobox"] {
+  background: hsl(220 25% 8% / 0.9) !important;
+  border-color: hsl(199 100% 55% / 0.2) !important;
+  color: hsl(0 0% 90%) !important;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.cyberpunk-form-content input:focus,
+.cyberpunk-form-content textarea:focus,
+.cyberpunk-form-content select:focus,
+.cyberpunk-form-content [role="combobox"]:focus {
+  border-color: hsl(199 100% 55% / 0.5) !important;
+  box-shadow: 0 0 8px hsl(199 100% 55% / 0.15) !important;
+}
+
+.cyberpunk-form-content input::placeholder,
+.cyberpunk-form-content textarea::placeholder {
+  color: hsl(0 0% 45%) !important;
+}
+
+/* Labels in cyberpunk form */
+.cyberpunk-form-content label {
+  color: hsl(0 0% 85%);
+  font-weight: 500;
+}
+
+/* Description text in cyberpunk form */
+.cyberpunk-form-content .text-muted-foreground,
+.cyberpunk-form-content p[class*="FormDescription"] {
+  color: hsl(0 0% 55%) !important;
+}
+
+/* Cyberpunk submit button */
+.cyberpunk-submit-btn {
+  background: linear-gradient(90deg, hsl(199 100% 45%), hsl(185 100% 50%), hsl(199 100% 45%)) !important;
+  border: 1px solid hsl(185 100% 50% / 0.5) !important;
+  color: hsl(220 25% 6%) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  box-shadow:
+    0 0 15px hsl(185 100% 50% / 0.3),
+    0 0 30px hsl(185 100% 50% / 0.15),
+    inset 0 1px 0 hsl(0 0% 100% / 0.15) !important;
+  transition: all 0.3s ease !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.cyberpunk-submit-btn:hover {
+  box-shadow:
+    0 0 20px hsl(185 100% 50% / 0.5),
+    0 0 40px hsl(185 100% 50% / 0.25),
+    inset 0 1px 0 hsl(0 0% 100% / 0.2) !important;
+  transform: translateY(-1px);
+}
+
+.cyberpunk-submit-btn:disabled {
+  opacity: 0.6;
+  box-shadow: none !important;
+  transform: none;
+}
+
+/* Card override within cyberpunk form */
+.cyberpunk-form-content .glass-effect,
+.cyberpunk-form-content [class*="Card"] {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Section headers in cyberpunk form */
+.cyberpunk-form-content h3 {
+  color: hsl(185 100% 65%);
+  text-shadow: 0 0 6px hsl(185 100% 50% / 0.3);
+}
+
+/* Grid gap fix for fieldset content */
+.cyberpunk-fieldset .grid {
+  gap: 1rem;
+}
