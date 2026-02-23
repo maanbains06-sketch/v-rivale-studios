@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Loader2, Building2 } from "lucide-react";
 import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
@@ -17,6 +16,9 @@ import { ApplicationCooldownTimer } from "@/components/ApplicationCooldownTimer"
 import { PendingApplicationAlert } from "@/components/PendingApplicationAlert";
 import { ApprovedApplicationAlert } from "@/components/ApprovedApplicationAlert";
 import { OnHoldApplicationAlert } from "@/components/OnHoldApplicationAlert";
+import CyberpunkFormWrapper from "@/components/CyberpunkFormWrapper";
+import CyberpunkFieldset from "@/components/CyberpunkFieldset";
+
 const formSchema = z.object({
   characterName: z.string().min(2, "Character name must be at least 2 characters"),
   discordId: z.string().regex(/^\d{17,19}$/, "Discord ID must be 17-19 digits"),
@@ -94,7 +96,6 @@ const StateDepartmentApplicationForm = ({ jobImage }: StateDepartmentApplication
         return;
       }
 
-      // Check for existing pending application
       const { data: existingApp } = await supabase
         .from("job_applications")
         .select("id, status")
@@ -152,11 +153,11 @@ const StateDepartmentApplicationForm = ({ jobImage }: StateDepartmentApplication
 
   if (cooldownLoading) {
     return (
-      <Card className="glass-effect border-border/20">
-        <CardContent className="flex justify-center items-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </CardContent>
-      </Card>
+      <CyberpunkFormWrapper title="State Department Application" icon={<Building2 className="w-6 h-6" />} description="Apply to serve in the State Government">
+        <div className="flex justify-center items-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-[hsl(var(--neon-cyan))]" />
+        </div>
+      </CyberpunkFormWrapper>
     );
   }
 
@@ -195,58 +196,25 @@ const StateDepartmentApplicationForm = ({ jobImage }: StateDepartmentApplication
 
   if (isOnCooldown && rejectedAt) {
     return (
-      <Card className="glass-effect border-border/20">
-        <CardHeader>
-          {jobImage && (
-            <div className="relative h-48 -mx-6 -mt-6 mb-6 overflow-hidden rounded-t-lg">
-              <img src={jobImage} alt="State Department" className="w-full h-full object-cover opacity-50" />
-              <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
-              <div className="absolute bottom-4 left-6 flex items-center gap-3">
-                <Building2 className="w-8 h-8 text-amber-400" />
-                <span className="text-2xl font-bold text-white">State Department</span>
-              </div>
-            </div>
-          )}
-          <CardTitle className="text-gradient flex items-center gap-2">
-            <Building2 className="w-6 h-6" />
-            State Department Application
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ApplicationCooldownTimer 
-            rejectedAt={rejectedAt} 
-            cooldownHours={24}
-            onCooldownEnd={handleCooldownEnd}
-          />
-        </CardContent>
-      </Card>
+      <CyberpunkFormWrapper title="State Department Application" icon={<Building2 className="w-6 h-6" />}>
+        <ApplicationCooldownTimer 
+          rejectedAt={rejectedAt} 
+          cooldownHours={24}
+          onCooldownEnd={handleCooldownEnd}
+        />
+      </CyberpunkFormWrapper>
     );
   }
 
   return (
-    <Card className="glass-effect border-border/20">
-      <CardHeader>
-        {jobImage && (
-          <div className="relative h-48 -mx-6 -mt-6 mb-6 overflow-hidden rounded-t-lg">
-            <img src={jobImage} alt="State Department" className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
-            <div className="absolute bottom-4 left-6 flex items-center gap-3">
-              <Building2 className="w-8 h-8 text-amber-400" />
-              <span className="text-2xl font-bold text-white">State Department</span>
-            </div>
-          </div>
-        )}
-        <CardTitle className="text-gradient flex items-center gap-2">
-          <Building2 className="w-6 h-6" />
-          State Department Application
-        </CardTitle>
-        <CardDescription>
-          Apply to serve in the State Government. Shape policies, manage public affairs, and represent the people.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <CyberpunkFormWrapper 
+      title="State Department Application" 
+      icon={<Building2 className="w-6 h-6" />}
+      description="Apply to serve in the State Government. Shape policies, manage public affairs, and represent the people."
+    >
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <CyberpunkFieldset legend="Personal Information">
             <div className="grid md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -347,7 +315,9 @@ const StateDepartmentApplicationForm = ({ jobImage }: StateDepartmentApplication
                 </FormItem>
               )}
             />
+          </CyberpunkFieldset>
 
+          <CyberpunkFieldset legend="Experience & Knowledge">
             <FormField
               control={form.control}
               name="governmentExperience"
@@ -404,7 +374,9 @@ const StateDepartmentApplicationForm = ({ jobImage }: StateDepartmentApplication
                 </FormItem>
               )}
             />
+          </CyberpunkFieldset>
 
+          <CyberpunkFieldset legend="Scenario Questions">
             <FormField
               control={form.control}
               name="citizenScenario"
@@ -442,7 +414,9 @@ const StateDepartmentApplicationForm = ({ jobImage }: StateDepartmentApplication
                 </FormItem>
               )}
             />
+          </CyberpunkFieldset>
 
+          <CyberpunkFieldset legend="Motivation">
             <FormField
               control={form.control}
               name="whyJoin"
@@ -478,21 +452,21 @@ const StateDepartmentApplicationForm = ({ jobImage }: StateDepartmentApplication
                 </FormItem>
               )}
             />
+          </CyberpunkFieldset>
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Submitting...
-                </>
-              ) : (
-                "Submit Application"
-              )}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+          <Button type="submit" className="w-full cyberpunk-submit-btn" disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              "Submit Application"
+            )}
+          </Button>
+        </form>
+      </Form>
+    </CyberpunkFormWrapper>
   );
 };
 
