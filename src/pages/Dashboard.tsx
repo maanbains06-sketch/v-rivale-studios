@@ -11,9 +11,16 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, FileText, Briefcase, Ban, Clock, Radio, Users, Image, Video, RefreshCw, Upload, X, GraduationCap, ExternalLink } from "lucide-react";
+import { Loader2, FileText, Briefcase, Ban, Clock, Radio, Users, Image, Video, RefreshCw, Upload, X, GraduationCap, ExternalLink, Download } from "lucide-react";
 import { format } from "date-fns";
 import headerCommunity from "@/assets/header-community.jpg";
+import {
+  generateApplicationPdf,
+  buildWhitelistFields,
+  buildJobFields,
+  buildStaffFields,
+  buildBanAppealFields,
+} from "@/lib/applicationPdfGenerator";
 
 interface WhitelistApplication {
   id: string;
@@ -344,6 +351,62 @@ const Dashboard = () => {
     }
   };
 
+  const handleDownloadWhitelist = async (appId: string) => {
+    const { data } = await supabase.from("whitelist_applications").select("*").eq("id", appId).single();
+    if (!data) return;
+    generateApplicationPdf({
+      title: 'Whitelist Application',
+      applicationType: 'Whitelist',
+      applicantName: data.discord || 'Unknown',
+      status: data.status,
+      submittedAt: data.created_at,
+      adminNotes: data.admin_notes,
+      fields: buildWhitelistFields(data),
+    });
+  };
+
+  const handleDownloadJob = async (appId: string) => {
+    const { data } = await supabase.from("job_applications").select("*").eq("id", appId).single();
+    if (!data) return;
+    generateApplicationPdf({
+      title: `${data.job_type} Application`,
+      applicationType: data.job_type,
+      applicantName: data.character_name || 'Unknown',
+      status: data.status,
+      submittedAt: data.created_at,
+      adminNotes: data.admin_notes,
+      fields: buildJobFields(data),
+    });
+  };
+
+  const handleDownloadStaff = async (appId: string) => {
+    const { data } = await supabase.from("staff_applications").select("*").eq("id", appId).single();
+    if (!data) return;
+    generateApplicationPdf({
+      title: 'Staff Application',
+      applicationType: 'Staff - ' + (data.position || ''),
+      applicantName: data.full_name || 'Unknown',
+      status: data.status,
+      submittedAt: data.created_at,
+      adminNotes: data.admin_notes,
+      fields: buildStaffFields(data),
+    });
+  };
+
+  const handleDownloadBanAppeal = async (appId: string) => {
+    const { data } = await supabase.from("ban_appeals").select("*").eq("id", appId).single();
+    if (!data) return;
+    generateApplicationPdf({
+      title: 'Ban Appeal',
+      applicationType: 'Ban Appeal',
+      applicantName: data.discord_username || 'Unknown',
+      status: data.status,
+      submittedAt: data.created_at,
+      adminNotes: data.admin_notes,
+      fields: buildBanAppealFields(data),
+    });
+  };
+
   const handleResubmitClick = (submission: GallerySubmission) => {
     setSelectedSubmission(submission);
     setResubmitDescription(submission.description || "");
@@ -542,6 +605,15 @@ const Dashboard = () => {
                             <p className="text-sm text-muted-foreground">{app.admin_notes}</p>
                           </div>
                         )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full mt-4"
+                          onClick={() => handleDownloadWhitelist(app.id)}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Download PDF
+                        </Button>
                       </CardContent>
                     </Card>
                   ))}
@@ -587,6 +659,15 @@ const Dashboard = () => {
                             <p className="text-sm text-muted-foreground">{app.admin_notes}</p>
                           </div>
                         )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full mt-4"
+                          onClick={() => handleDownloadJob(app.id)}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Download PDF
+                        </Button>
                       </CardContent>
                     </Card>
                   ))}
@@ -630,6 +711,15 @@ const Dashboard = () => {
                             <p className="text-sm text-muted-foreground">{appeal.admin_notes}</p>
                           </div>
                         )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full mt-4"
+                          onClick={() => handleDownloadBanAppeal(appeal.id)}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Download PDF
+                        </Button>
                       </CardContent>
                     </Card>
                   ))}
@@ -677,14 +767,25 @@ const Dashboard = () => {
                             <p className="text-sm text-muted-foreground">{app.admin_notes}</p>
                           </div>
                         )}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full mt-4"
-                          onClick={() => navigate('/application-status')}
-                        >
-                          View Detailed Status <ExternalLink className="ml-2 h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-2 mt-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => handleDownloadStaff(app.id)}
+                          >
+                            <Download className="w-4 h-4 mr-2" />
+                            Download PDF
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => navigate('/application-status')}
+                          >
+                            View Status <ExternalLink className="ml-2 h-4 w-4" />
+                          </Button>
+                        </div>
                       </CardContent>
                     </Card>
                   ))}
