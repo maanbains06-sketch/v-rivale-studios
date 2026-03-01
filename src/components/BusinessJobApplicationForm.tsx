@@ -16,6 +16,8 @@ import { ApprovedApplicationAlert } from "@/components/ApprovedApplicationAlert"
 import { OnHoldApplicationAlert } from "@/components/OnHoldApplicationAlert";
 import CyberpunkFormWrapper from "@/components/CyberpunkFormWrapper";
 import CyberpunkFieldset from "@/components/CyberpunkFieldset";
+import { useApplicationOpen } from "@/hooks/useApplicationToggles";
+import ApplicationClosedMessage from "@/components/ApplicationClosedMessage";
 
 const businessJobSchema = z.object({
   business_name: z.string().trim().min(2, "Business name must be at least 2 characters").max(100, "Business name must be less than 100 characters"),
@@ -88,6 +90,7 @@ const BusinessJobApplicationForm = ({ jobType, jobImage }: BusinessJobApplicatio
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const config = jobConfig[jobType];
+  const { isOpen: isAppOpen, loading: toggleLoading } = useApplicationOpen('business_job');
 
   const { 
     isOnCooldown, rejectedAt, loading, handleCooldownEnd, 
@@ -139,13 +142,15 @@ const BusinessJobApplicationForm = ({ jobType, jobImage }: BusinessJobApplicatio
     }
   };
 
-  if (loading) {
+  if (toggleLoading || loading) {
     return (
       <CyberpunkFormWrapper title={`${jobType} Application`} icon={config.icon} description={config.description}>
         <div className="flex justify-center items-center py-12"><Loader2 className="w-8 h-8 animate-spin text-[hsl(var(--neon-cyan))]" /></div>
       </CyberpunkFormWrapper>
     );
   }
+
+  if (!isAppOpen) return <ApplicationClosedMessage title={`${jobType} Application`} icon={config.icon} />;
 
   if (hasApprovedApplication && approvedMessage) return <ApprovedApplicationAlert message={approvedMessage} jobImage={jobImage} title={`${jobType} Application`} icon={config.icon} />;
   if (isOnHold && onHoldMessage) return <OnHoldApplicationAlert message={onHoldMessage} jobImage={jobImage} title={`${jobType} Application`} icon={config.icon} />;

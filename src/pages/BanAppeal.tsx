@@ -15,6 +15,8 @@ import ApplicationsPausedAlert from "@/components/ApplicationsPausedAlert";
 import { ApplicationCooldownTimer } from "@/components/ApplicationCooldownTimer";
 import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
 import { useWhitelistAccess } from "@/hooks/useWhitelistAccess";
+import { useApplicationOpen } from "@/hooks/useApplicationToggles";
+import ApplicationClosedMessage from "@/components/ApplicationClosedMessage";
 import { scanAndAlertForSuspiciousFiles } from "@/lib/fileMetadataScanner";
 import headerBg from "@/assets/header-support.jpg";
 
@@ -23,6 +25,7 @@ const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime'];
 
 const BanAppeal = () => {
+  const { isOpen: isAppOpen, loading: toggleLoading } = useApplicationOpen('ban_appeal');
   const navigate = useNavigate();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -257,12 +260,24 @@ const BanAppeal = () => {
     });
   };
 
-  if (settingsLoading || cooldownLoading) {
+  if (toggleLoading || settingsLoading || cooldownLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
         <div className="container mx-auto px-4 pt-24 pb-12 flex items-center justify-center min-h-screen">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAppOpen) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <PageHeader title="Ban Appeal" backgroundImage={headerBg} />
+        <div className="container mx-auto px-4 py-8 max-w-4xl">
+          <ApplicationClosedMessage title="Ban Appeal" />
         </div>
       </div>
     );

@@ -16,6 +16,8 @@ import { ApprovedApplicationAlert } from "@/components/ApprovedApplicationAlert"
 import { OnHoldApplicationAlert } from "@/components/OnHoldApplicationAlert";
 import CyberpunkFormWrapper from "@/components/CyberpunkFormWrapper";
 import CyberpunkFieldset from "@/components/CyberpunkFieldset";
+import { useApplicationOpen } from "@/hooks/useApplicationToggles";
+import ApplicationClosedMessage from "@/components/ApplicationClosedMessage";
 
 const firefighterSchema = z.object({
   real_name: z.string().trim().min(2, "Real name must be at least 2 characters").max(100, "Real name must be less than 100 characters"),
@@ -34,6 +36,7 @@ interface FirefighterApplicationFormProps {
 const FirefighterApplicationForm = ({ jobImage }: FirefighterApplicationFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { isOpen: isAppOpen, loading: toggleLoading } = useApplicationOpen('firefighter');
 
   const { 
     isOnCooldown, rejectedAt, loading, handleCooldownEnd, 
@@ -68,13 +71,15 @@ const FirefighterApplicationForm = ({ jobImage }: FirefighterApplicationFormProp
     } finally { setIsSubmitting(false); }
   };
 
-  if (loading) {
+  if (toggleLoading || loading) {
     return (
       <CyberpunkFormWrapper title="Firefighter Application" icon={<Flame className="w-6 h-6" />} description="Join the fire department and save lives">
         <div className="flex justify-center items-center py-12"><Loader2 className="w-8 h-8 animate-spin text-[hsl(var(--neon-cyan))]" /></div>
       </CyberpunkFormWrapper>
     );
   }
+
+  if (!isAppOpen) return <ApplicationClosedMessage title="Firefighter Application" icon={<Flame className="w-6 h-6" />} />;
 
   if (hasApprovedApplication && approvedMessage) return <ApprovedApplicationAlert message={approvedMessage} jobImage={jobImage} title="Firefighter Application" icon={<Flame className="w-6 h-6 text-green-500" />} />;
   if (isOnHold && onHoldMessage) return <OnHoldApplicationAlert message={onHoldMessage} jobImage={jobImage} title="Firefighter Application" icon={<Flame className="w-6 h-6 text-blue-500" />} />;

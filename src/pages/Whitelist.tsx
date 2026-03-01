@@ -19,6 +19,8 @@ import { CheckCircle2, Clock, XCircle, Loader2, LogOut, Timer, Save, FileText, M
 import { differenceInDays, differenceInHours, differenceInMinutes, addDays } from "date-fns";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import ApplicationsPausedAlert from "@/components/ApplicationsPausedAlert";
+import { useApplicationOpen } from "@/hooks/useApplicationToggles";
+import ApplicationClosedMessage from "@/components/ApplicationClosedMessage";
 import { useWhitelistRoleSync } from "@/hooks/useWhitelistRoleSync";
 import { motion } from "framer-motion";
 import {
@@ -78,6 +80,7 @@ interface ApplicationDraft {
 
 const Whitelist = () => {
   const { toast } = useToast();
+  const { isOpen: isWhitelistOpen } = useApplicationOpen('whitelist');
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -867,8 +870,13 @@ const Whitelist = () => {
               </div>
             )}
 
+            {/* Closed message */}
+            {(!existingApplication || (existingApplication.status === "rejected" && reapplicationInfo?.canReapply)) && !isWhitelistOpen && (
+              <ApplicationClosedMessage title="Whitelist Application" />
+            )}
+
             {/* Application Form - Only show if no pending/approved application AND reapplication period has passed */}
-            {(!existingApplication || (existingApplication.status === "rejected" && reapplicationInfo?.canReapply)) && (
+            {(!existingApplication || (existingApplication.status === "rejected" && reapplicationInfo?.canReapply)) && isWhitelistOpen && (
               <div className="glass-effect rounded-xl p-8 border border-border/20 animate-fade-in">
                 <div className="mb-6 p-4 glass-effect rounded-lg border border-primary/20">
                   <div className="flex items-start gap-3">

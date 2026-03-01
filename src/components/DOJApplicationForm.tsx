@@ -16,6 +16,8 @@ import { ApprovedApplicationAlert } from "@/components/ApprovedApplicationAlert"
 import { OnHoldApplicationAlert } from "@/components/OnHoldApplicationAlert";
 import CyberpunkFormWrapper from "@/components/CyberpunkFormWrapper";
 import CyberpunkFieldset from "@/components/CyberpunkFieldset";
+import { useApplicationOpen } from "@/hooks/useApplicationToggles";
+import ApplicationClosedMessage from "@/components/ApplicationClosedMessage";
 
 const dojApplicationSchema = z.object({
   characterName: z.string().min(2, "Character name is required").max(50),
@@ -42,6 +44,7 @@ interface DOJApplicationFormProps {
 const DOJApplicationForm = ({ applicationType, jobImage }: DOJApplicationFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { isOpen: isAppOpen, loading: toggleLoading } = useApplicationOpen('doj');
 
   const isJudge = applicationType === "judge";
   const title = isJudge ? "Judge Application" : "Attorney Application";
@@ -76,7 +79,8 @@ const DOJApplicationForm = ({ applicationType, jobImage }: DOJApplicationFormPro
     } finally { setIsSubmitting(false); }
   }
 
-  if (loading) return <CyberpunkFormWrapper title={title} icon={<Icon className="w-6 h-6" />} description="Department of Justice"><div className="flex justify-center items-center py-12"><Loader2 className="w-8 h-8 animate-spin text-[hsl(var(--neon-cyan))]" /></div></CyberpunkFormWrapper>;
+  if (toggleLoading || loading) return <CyberpunkFormWrapper title={title} icon={<Icon className="w-6 h-6" />} description="Department of Justice"><div className="flex justify-center items-center py-12"><Loader2 className="w-8 h-8 animate-spin text-[hsl(var(--neon-cyan))]" /></div></CyberpunkFormWrapper>;
+  if (!isAppOpen) return <ApplicationClosedMessage title={title} icon={<Icon className="w-6 h-6" />} />;
   if (hasApprovedApplication && approvedMessage) return <ApprovedApplicationAlert message={approvedMessage} jobImage={jobImage} title={title} icon={<Icon className="w-6 h-6 text-green-500" />} />;
   if (isOnHold && onHoldMessage) return <OnHoldApplicationAlert message={onHoldMessage} jobImage={jobImage} title={title} icon={<Icon className="w-6 h-6 text-blue-500" />} />;
   if (hasPendingApplication && pendingMessage) return <PendingApplicationAlert message={pendingMessage} jobImage={jobImage} title={title} icon={<Icon className="w-6 h-6 text-primary" />} />;

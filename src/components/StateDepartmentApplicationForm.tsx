@@ -18,6 +18,8 @@ import { ApprovedApplicationAlert } from "@/components/ApprovedApplicationAlert"
 import { OnHoldApplicationAlert } from "@/components/OnHoldApplicationAlert";
 import CyberpunkFormWrapper from "@/components/CyberpunkFormWrapper";
 import CyberpunkFieldset from "@/components/CyberpunkFieldset";
+import { useApplicationOpen } from "@/hooks/useApplicationToggles";
+import ApplicationClosedMessage from "@/components/ApplicationClosedMessage";
 
 const formSchema = z.object({
   characterName: z.string().min(2, "Character name must be at least 2 characters"),
@@ -45,6 +47,7 @@ const StateDepartmentApplicationForm = ({ jobImage }: StateDepartmentApplication
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isOpen: isAppOpen, loading: toggleLoading } = useApplicationOpen('state_department');
 
   const { 
     isOnCooldown, 
@@ -151,7 +154,7 @@ const StateDepartmentApplicationForm = ({ jobImage }: StateDepartmentApplication
     }
   };
 
-  if (cooldownLoading) {
+  if (toggleLoading || cooldownLoading) {
     return (
       <CyberpunkFormWrapper title="State Department Application" icon={<Building2 className="w-6 h-6" />} description="Apply to serve in the State Government">
         <div className="flex justify-center items-center py-12">
@@ -160,6 +163,8 @@ const StateDepartmentApplicationForm = ({ jobImage }: StateDepartmentApplication
       </CyberpunkFormWrapper>
     );
   }
+
+  if (!isAppOpen) return <ApplicationClosedMessage title="State Department Application" icon={<Building2 className="w-6 h-6" />} />;
 
   if (hasApprovedApplication && approvedMessage) {
     return (

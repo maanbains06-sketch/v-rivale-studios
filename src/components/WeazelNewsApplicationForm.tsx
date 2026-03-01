@@ -16,6 +16,8 @@ import { ApprovedApplicationAlert } from "@/components/ApprovedApplicationAlert"
 import { OnHoldApplicationAlert } from "@/components/OnHoldApplicationAlert";
 import CyberpunkFormWrapper from "@/components/CyberpunkFormWrapper";
 import CyberpunkFieldset from "@/components/CyberpunkFieldset";
+import { useApplicationOpen } from "@/hooks/useApplicationToggles";
+import ApplicationClosedMessage from "@/components/ApplicationClosedMessage";
 
 const weazelNewsSchema = z.object({
   character_name: z.string().trim().min(2).max(50),
@@ -39,6 +41,7 @@ interface WeazelNewsApplicationFormProps { jobImage: string; }
 const WeazelNewsApplicationForm = ({ jobImage }: WeazelNewsApplicationFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { isOpen: isAppOpen, loading: toggleLoading } = useApplicationOpen('weazel_news');
 
   const { isOnCooldown, rejectedAt, loading, handleCooldownEnd, hasPendingApplication, pendingMessage, hasApprovedApplication, approvedMessage, isOnHold, onHoldMessage } = useApplicationCooldown('job_applications', 24, { column: 'job_type', value: 'Weazel News' });
 
@@ -66,7 +69,8 @@ const WeazelNewsApplicationForm = ({ jobImage }: WeazelNewsApplicationFormProps)
     } finally { setIsSubmitting(false); }
   };
 
-  if (loading) return <CyberpunkFormWrapper title="Weazel News Application" icon={<Newspaper className="w-6 h-6" />} description="Join the leading news network in San Andreas"><div className="flex justify-center items-center py-12"><Loader2 className="w-8 h-8 animate-spin text-[hsl(var(--neon-cyan))]" /></div></CyberpunkFormWrapper>;
+  if (toggleLoading || loading) return <CyberpunkFormWrapper title="Weazel News Application" icon={<Newspaper className="w-6 h-6" />} description="Join the leading news network in San Andreas"><div className="flex justify-center items-center py-12"><Loader2 className="w-8 h-8 animate-spin text-[hsl(var(--neon-cyan))]" /></div></CyberpunkFormWrapper>;
+  if (!isAppOpen) return <ApplicationClosedMessage title="Weazel News Application" icon={<Newspaper className="w-6 h-6" />} />;
   if (hasApprovedApplication && approvedMessage) return <ApprovedApplicationAlert message={approvedMessage} jobImage={jobImage} title="Weazel News Application" icon={<Newspaper className="w-6 h-6 text-green-500" />} />;
   if (isOnHold && onHoldMessage) return <OnHoldApplicationAlert message={onHoldMessage} jobImage={jobImage} title="Weazel News Application" icon={<Newspaper className="w-6 h-6 text-blue-500" />} />;
   if (hasPendingApplication && pendingMessage) return <PendingApplicationAlert message={pendingMessage} jobImage={jobImage} title="Weazel News Application" icon={<Newspaper className="w-6 h-6 text-primary" />} />;
