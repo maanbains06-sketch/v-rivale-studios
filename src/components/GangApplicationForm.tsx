@@ -17,6 +17,8 @@ import { ApprovedApplicationAlert } from "@/components/ApprovedApplicationAlert"
 import { OnHoldApplicationAlert } from "@/components/OnHoldApplicationAlert";
 import CyberpunkFormWrapper from "@/components/CyberpunkFormWrapper";
 import CyberpunkFieldset from "@/components/CyberpunkFieldset";
+import { useApplicationOpen } from "@/hooks/useApplicationToggles";
+import ApplicationClosedMessage from "@/components/ApplicationClosedMessage";
 
 const gangFormSchema = z.object({
   discord_username: z.string().min(2, "Discord username is required"),
@@ -51,6 +53,7 @@ interface GangApplicationFormProps {
 const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { isOpen: isAppOpen, loading: toggleLoading } = useApplicationOpen('gang');
 
   const { 
     isOnCooldown, 
@@ -161,13 +164,15 @@ const GangApplicationForm = ({ jobImage }: GangApplicationFormProps) => {
     }
   };
 
-  if (loading) {
+  if (toggleLoading || loading) {
     return (
       <CyberpunkFormWrapper title="Gang Roleplay Application" icon={<Users className="w-6 h-6" />} description="Join the criminal underworld of San Andreas">
         <div className="flex justify-center items-center py-12"><Loader2 className="w-8 h-8 animate-spin text-[hsl(var(--neon-cyan))]" /></div>
       </CyberpunkFormWrapper>
     );
   }
+
+  if (!isAppOpen) return <ApplicationClosedMessage title="Gang Roleplay Application" icon={<Users className="w-6 h-6" />} />;
 
   if (hasApprovedApplication && approvedMessage) {
     return <ApprovedApplicationAlert message={approvedMessage} jobImage={jobImage} title="Gang Roleplay Application" icon={<Users className="w-6 h-6 text-green-500" />} />;

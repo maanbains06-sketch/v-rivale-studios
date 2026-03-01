@@ -37,6 +37,7 @@ import OwnerMiniGamesManager from "@/components/OwnerMiniGamesManager";
 import OwnerKillSwitch from "@/components/OwnerKillSwitch";
 import OwnerSecurityDashboard from "@/components/OwnerSecurityDashboard";
 import OwnerCurrencyManager from "@/components/OwnerCurrencyManager";
+import ApplicationToggleManager from "@/components/ApplicationToggleManager";
 
 import { LiveApplicationStats } from "@/components/LiveApplicationStats";
 import OwnerLiveChatManager from "@/components/OwnerLiveChatManager";
@@ -86,6 +87,7 @@ import {
   Lock,
   Trophy,
   Gamepad2,
+  ToggleLeft,
 } from "lucide-react";
 import { Coins } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -1752,6 +1754,10 @@ const OwnerPanel = () => {
                   <Coins className="w-4 h-4" />
                   <span className="hidden sm:inline">Currency</span>
                 </TabsTrigger>
+                <TabsTrigger value="app-toggles" className="flex items-center gap-2 whitespace-nowrap">
+                  <ToggleLeft className="w-4 h-4" />
+                  <span className="hidden sm:inline">App Toggles</span>
+                </TabsTrigger>
               </TabsList>
             </div>
             {/* Fade indicators for scroll hint */}
@@ -2755,6 +2761,11 @@ const OwnerPanel = () => {
           {/* Currency Management Tab */}
           <TabsContent value="currency">
             <OwnerCurrencyManager />
+          </TabsContent>
+
+          {/* Application Toggles Tab */}
+          <TabsContent value="app-toggles">
+            <ApplicationToggleManager />
           </TabsContent>
 
         </Tabs>

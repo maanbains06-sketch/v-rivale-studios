@@ -16,6 +16,8 @@ import { useWhitelistAccess } from "@/hooks/useWhitelistAccess";
 import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
 import CyberpunkFormWrapper from "@/components/CyberpunkFormWrapper";
 import CyberpunkFieldset from "@/components/CyberpunkFieldset";
+import { useApplicationOpen } from "@/hooks/useApplicationToggles";
+import ApplicationClosedMessage from "@/components/ApplicationClosedMessage";
 
 const staffApplicationSchema = z.object({
   fullName: z.string().trim().min(2, { message: "Full name must be at least 2 characters" }).max(100, { message: "Full name must be less than 100 characters" }),
@@ -48,6 +50,7 @@ interface PositionOption {
 }
 
 export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFormProps) {
+  const { isOpen: isAppOpen, loading: toggleLoading } = useApplicationOpen('staff');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCheckingEligibility, setIsCheckingEligibility] = useState(true);
   const [isEligible, setIsEligible] = useState(false);
@@ -211,10 +214,18 @@ export function StaffApplicationForm({ open, onOpenChange }: StaffApplicationFor
             </ul>
           </div>
 
-          {cooldownLoading || isCheckingEligibility ? (
+          {toggleLoading || cooldownLoading || isCheckingEligibility ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--neon-cyan))]" />
               <span className="ml-3 text-muted-foreground">Checking eligibility...</span>
+            </div>
+          ) : !isAppOpen ? (
+            <div className="text-center py-8 space-y-4">
+              <div className="p-4 rounded-full bg-destructive/20 w-20 h-20 mx-auto flex items-center justify-center">
+                <AlertCircle className="w-10 h-10 text-destructive" />
+              </div>
+              <h3 className="text-2xl font-bold text-destructive">Applications Closed</h3>
+              <p className="text-muted-foreground max-w-md mx-auto">Staff applications are currently closed and not accepting new submissions. Please check back later.</p>
             </div>
           ) : hasApprovedApplication && approvedMessage ? (
             <div className="text-center py-8 space-y-4">

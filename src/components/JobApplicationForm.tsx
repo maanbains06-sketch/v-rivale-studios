@@ -17,6 +17,8 @@ import { ApprovedApplicationAlert } from "@/components/ApprovedApplicationAlert"
 import { OnHoldApplicationAlert } from "@/components/OnHoldApplicationAlert";
 import CyberpunkFormWrapper from "@/components/CyberpunkFormWrapper";
 import CyberpunkFieldset from "@/components/CyberpunkFieldset";
+import { useApplicationOpen } from "@/hooks/useApplicationToggles";
+import ApplicationClosedMessage from "@/components/ApplicationClosedMessage";
 
 const jobApplicationSchema = z.object({
   character_name: z.string()
@@ -74,6 +76,8 @@ interface JobApplicationFormProps {
 const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const toggleKey = jobType === "Police Department" ? "police" : jobType === "EMS" ? "ems" : "mechanic";
+  const { isOpen: isAppOpen, loading: toggleLoading } = useApplicationOpen(toggleKey as any);
 
   const { 
     isOnCooldown, 
@@ -217,7 +221,7 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
     }
   };
 
-  if (loading) {
+  if (toggleLoading || loading) {
     return (
       <CyberpunkFormWrapper title={`${jobType} Application`} icon={getJobIcon()} description={getJobDescription()}>
         <div className="flex justify-center items-center py-12">
@@ -226,6 +230,8 @@ const JobApplicationForm = ({ jobType, jobImage }: JobApplicationFormProps) => {
       </CyberpunkFormWrapper>
     );
   }
+
+  if (!isAppOpen) return <ApplicationClosedMessage title={`${jobType} Application`} icon={getJobIcon()} />;
 
   if (hasApprovedApplication && approvedMessage) {
     return (

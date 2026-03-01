@@ -16,6 +16,8 @@ import { ApprovedApplicationAlert } from "@/components/ApprovedApplicationAlert"
 import { OnHoldApplicationAlert } from "@/components/OnHoldApplicationAlert";
 import CyberpunkFormWrapper from "@/components/CyberpunkFormWrapper";
 import CyberpunkFieldset from "@/components/CyberpunkFieldset";
+import { useApplicationOpen } from "@/hooks/useApplicationToggles";
+import ApplicationClosedMessage from "@/components/ApplicationClosedMessage";
 
 const businessApplicationSchema = z.object({
   business_name: z.string().trim().min(3, "Business name must be at least 3 characters").max(100, "Business name must be less than 100 characters"),
@@ -95,6 +97,7 @@ const BusinessApplicationForm = ({ businessType, onBack }: BusinessApplicationFo
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const config = businessConfig[businessType];
+  const { isOpen: isAppOpen, loading: toggleLoading } = useApplicationOpen('business');
 
   const { 
     isOnCooldown, rejectedAt, loading, handleCooldownEnd, 
@@ -146,13 +149,15 @@ const BusinessApplicationForm = ({ businessType, onBack }: BusinessApplicationFo
     }
   };
 
-  if (loading) {
+  if (toggleLoading || loading) {
     return (
       <CyberpunkFormWrapper title={`${config.title} Application`} icon={config.icon} description={config.description}>
         <div className="flex justify-center items-center py-12"><Loader2 className="w-8 h-8 animate-spin text-[hsl(var(--neon-cyan))]" /></div>
       </CyberpunkFormWrapper>
     );
   }
+
+  if (!isAppOpen) return <ApplicationClosedMessage title={`${config.title} Application`} icon={config.icon} />;
 
   if (hasApprovedApplication && approvedMessage) {
     return (

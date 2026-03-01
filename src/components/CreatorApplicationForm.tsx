@@ -30,6 +30,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useApplicationOpen } from "@/hooks/useApplicationToggles";
+import ApplicationClosedMessage from "@/components/ApplicationClosedMessage";
 import { useApplicationCooldown } from "@/hooks/useApplicationCooldown";
 import { scanAndAlertForSuspiciousFiles } from "@/lib/fileMetadataScanner";
 
@@ -80,6 +82,7 @@ const FormField = ({ label, icon, required, error, children }: {
 
 const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { isOpen: isAppOpen, loading: toggleLoading } = useApplicationOpen('creator');
   const [ownershipProofFile, setOwnershipProofFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -257,7 +260,7 @@ const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
   };
 
   // Show loading state
-  if (cooldownLoading) {
+  if (toggleLoading || cooldownLoading) {
     return (
       <div className="relative max-h-[85vh] overflow-y-auto">
         <div className="flex items-center justify-center py-20">
@@ -267,6 +270,8 @@ const CreatorApplicationForm = ({ onClose }: CreatorApplicationFormProps) => {
       </div>
     );
   }
+
+  if (!isAppOpen) return <ApplicationClosedMessage title="Creator Application" />;
 
   // Show approved message
   if (hasApprovedApplication && approvedMessage) {
