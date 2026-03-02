@@ -31,14 +31,25 @@ import {
 
 const TEBEX_STORE_URL = "https://skylife-roleplay-india.tebex.io";
 
-// Panel access is MANUAL ONLY - controlled via Owner Panel > Panel Access tab
-// No hardcoded admin lists - all access granted through panel_access table
+// Owner Discord ID for verification - ONLY Maan has owner access
+const OWNER_DISCORD_ID = "833680146510381097";
+
+// Staff Discord IDs with admin access (Leadership, Management, Administration, Development)
+// NOTE: Owner ID is NOT included here - owner has separate elevated access
+const ADMIN_DISCORD_IDS = [
+  "727581954408710272", // ASCENDOR - Management
+  "1417622059617357824", // Sexy - Management  
+  "407091450560643073", // TheKid™ - Management
+  "299129047177363466", // Shroud - Administration
+  "916158803928567858", // Yug - Administration
+  "1055766042871349248", // DagoBato - Development
+];
 
 const Navigation = () => {
   const [user, setUser] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
-  const [accessiblePanels, setAccessiblePanels] = useState<string[]>([]);
+  const [hasStaffAdminAccess, setHasStaffAdminAccess] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [userDiscordId, setUserDiscordId] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -47,17 +58,9 @@ const Navigation = () => {
   const { hasAccess: hasRosterAccess, loading: rosterLoading } = useRosterAccess();
   const { settings: siteSettings, loading: siteSettingsLoading } = useSiteSettings();
 
-  // Derive panel-specific access from accessiblePanels
-  const hasAdminAccess = accessiblePanels.includes('admin');
-  const hasJobPanelAccess = accessiblePanels.includes('job');
-  const hasBusinessPanelAccess = accessiblePanels.includes('business');
-  const hasCreatorContractAccess = accessiblePanels.includes('creator_contract');
-  const hasStaffContractAccess = accessiblePanels.includes('staff_contract');
-  const hasAnyPanelAccess = accessiblePanels.length > 0;
-
   // Determine if roster should be visible (hidden during maintenance for non-staff/owner)
   const isMaintenanceMode = siteSettings.maintenance_mode;
-  const canSeeRosterDuringMaintenance = isOwner || hasAnyPanelAccess;
+  const canSeeRosterDuringMaintenance = isOwner || hasStaffAdminAccess;
   const showRosterLink = hasRosterAccess && (!isMaintenanceMode || canSeeRosterDuringMaintenance);
 
   // Business header visibility
@@ -79,43 +82,59 @@ const Navigation = () => {
   // Track staff presence when logged in with Discord ID
   useWebsitePresence({ 
     visitorId: userDiscordId || undefined, 
-    enabled: !!userDiscordId && (isOwner || hasAnyPanelAccess) 
+    enabled: !!userDiscordId && hasStaffAdminAccess 
   });
 
-  // Check if user has panel access - MANUAL ONLY via panel_access table
+  // Check if user has admin panel access based on Discord ID
   const checkUserAccess = useCallback(async (currentUser: any) => {
     if (!currentUser) {
       setIsOwner(false);
-      setAccessiblePanels([]);
+      setHasStaffAdminAccess(false);
       setUserDiscordId(null);
       return;
     }
 
-    const discordId = currentUser.user_metadata?.discord_id || 
-                      currentUser.user_metadata?.provider_id || 
-                      currentUser.user_metadata?.sub;
+    const discordId = currentUser.user_metadata?.discord_id;
     setUserDiscordId(discordId || null);
     
-    // Check owner status via database RPC (not hardcoded)
-    const { data: ownerResult } = await supabase.rpc('is_owner', { _user_id: currentUser.id });
-    if (ownerResult) {
+    // Check owner status by Discord ID
+    if (discordId === OWNER_DISCORD_ID) {
       setIsOwner(true);
-      setAccessiblePanels(['admin', 'job', 'business', 'roster', 'staff_contract', 'creator_contract', 'contract']);
+      setHasStaffAdminAccess(true);
       return;
     }
 
-    // Check manual panel_access entries for this user's Discord ID
+    // Check if user's Discord ID is in hardcoded admin list
+    if (discordId && ADMIN_DISCORD_IDS.includes(discordId)) {
+      setHasStaffAdminAccess(true);
+      return;
+    }
+
+    // All staff members get admin panel access
     if (discordId && /^\d{17,19}$/.test(discordId)) {
-      const { data: panelEntries } = await supabase
-        .from('panel_access')
-        .select('panel_type')
+      const { data: staffMember } = await supabase
+        .from('staff_members')
+        .select('role_type, is_active')
         .eq('discord_id', discordId)
-        .eq('is_active', true);
-      
-      if (panelEntries && panelEntries.length > 0) {
-        const panels = [...new Set(panelEntries.map(e => e.panel_type))];
-        setAccessiblePanels(panels);
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (staffMember) {
+        // Check if this staff member is the owner
+        if (staffMember.role_type === 'owner') {
+          setIsOwner(true);
+        }
+        // All active staff members get admin panel access
+        setHasStaffAdminAccess(true);
+        return;
       }
+    }
+
+    // Fallback: check database role by user_id
+    const { data: ownerResult } = await supabase.rpc('is_owner', { _user_id: currentUser.id });
+    if (ownerResult) {
+      setIsOwner(true);
+      setHasStaffAdminAccess(true);
     }
   }, []);
 
@@ -357,23 +376,10 @@ const Navigation = () => {
                   <SheetTitle className="text-gradient">Menu</SheetTitle>
                 </SheetHeader>
                 <div className="flex flex-col gap-2 mt-6">
-                  {/* Panel Access - Only for owner or users with explicit panel_access */}
-                  {(isOwner || hasAnyPanelAccess) && (
+                  {/* Staff & Owner Panel Access - Always at top */}
+                  {(hasStaffAdminAccess || isOwner) && (
                     <div className="flex flex-col gap-1 pb-4 border-b border-border/30">
-                      {isOwner && (
-                        <Button 
-                          variant="outline"
-                          className="justify-start glass-effect border-amber-500/30"
-                          asChild
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <Link to="/owner-panel">
-                            <Crown className="w-4 h-4 mr-2 text-amber-400" />
-                            Owner Panel
-                          </Link>
-                        </Button>
-                      )}
-                      {(isOwner || hasAdminAccess) && (
+                      {hasStaffAdminAccess && !isOwner && (
                         <Button 
                           variant="outline"
                           className="justify-start glass-effect border-primary/30"
@@ -386,57 +392,79 @@ const Navigation = () => {
                           </Link>
                         </Button>
                       )}
-                      {(isOwner || hasJobPanelAccess) && (
-                        <Button 
-                          variant="outline"
-                          className="justify-start glass-effect border-green-500/30"
-                          asChild
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <Link to="/job-panel">
-                            <Briefcase className="w-4 h-4 mr-2 text-green-400" />
-                            Job Panel
-                          </Link>
-                        </Button>
-                      )}
-                      {(isOwner || hasBusinessPanelAccess) && (
-                        <Button 
-                          variant="outline"
-                          className="justify-start glass-effect border-blue-500/30"
-                          asChild
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <Link to="/business-panel">
-                            <Building2 className="w-4 h-4 mr-2 text-blue-400" />
-                            Business Panel
-                          </Link>
-                        </Button>
-                      )}
-                      {(isOwner || hasCreatorContractAccess) && (
-                        <Button 
-                          variant="outline"
-                          className="justify-start glass-effect border-purple-500/30"
-                          asChild
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <Link to="/creator-contract">
-                            <FileText className="w-4 h-4 mr-2 text-purple-400" />
-                            Creator Contract
-                          </Link>
-                        </Button>
-                      )}
-                      {(isOwner || hasStaffContractAccess) && (
-                        <Button 
-                          variant="outline"
-                          className="justify-start glass-effect border-red-500/30"
-                          asChild
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <Link to="/staff-contract">
-                            <FileText className="w-4 h-4 mr-2 text-red-400" />
-                            Staff Agreement
-                          </Link>
-                        </Button>
+                      {isOwner && (
+                        <>
+                          <Button 
+                            variant="outline"
+                            className="justify-start glass-effect border-amber-500/30"
+                            asChild
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <Link to="/owner-panel">
+                              <Crown className="w-4 h-4 mr-2 text-amber-400" />
+                              Owner Panel
+                            </Link>
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            className="justify-start glass-effect border-primary/30"
+                            asChild
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <Link to="/admin">
+                              <Shield className="w-4 h-4 mr-2 text-primary" />
+                              Admin Panel
+                            </Link>
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            className="justify-start glass-effect border-green-500/30"
+                            asChild
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <Link to="/job-panel">
+                              <Briefcase className="w-4 h-4 mr-2 text-green-400" />
+                              Job Panel
+                            </Link>
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            className="justify-start glass-effect border-blue-500/30"
+                            asChild
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <Link to="/business-panel">
+                              <Building2 className="w-4 h-4 mr-2 text-blue-400" />
+                              Business Panel
+                            </Link>
+                          </Button>
+                          {isOwner && (
+                            <>
+                              <Button 
+                                variant="outline"
+                                className="justify-start glass-effect border-purple-500/30"
+                                asChild
+                                onClick={() => setIsMenuOpen(false)}
+                              >
+                                <Link to="/creator-contract">
+                                  <FileText className="w-4 h-4 mr-2 text-purple-400" />
+                                  Creator Contract
+                                </Link>
+                              </Button>
+                              <Button 
+                                variant="outline"
+                                className="justify-start glass-effect border-red-500/30"
+                                asChild
+                                onClick={() => setIsMenuOpen(false)}
+                              >
+                                <Link to="/staff-contract">
+                                  <FileText className="w-4 h-4 mr-2 text-red-400" />
+                                  Staff Agreement
+                                </Link>
+                              </Button>
+                            </>
+                          )}
+                        </>
                       )}
                     </div>
                   )}
@@ -521,8 +549,8 @@ const Navigation = () => {
                     </Button>
                   </div>
 
-                  {/* Quick Admin Links - Only visible to users with admin panel access */}
-                  {(isOwner || hasAdminAccess) && (
+                  {/* Quick Admin Links - Only visible to staff */}
+                  {hasStaffAdminAccess && (
                     <div className="flex flex-col gap-1 pb-4 border-b border-border/30">
                       <p className="text-xs text-muted-foreground px-2 py-1">Quick Access</p>
                       <Button 

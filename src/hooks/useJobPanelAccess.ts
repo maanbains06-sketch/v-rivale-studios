@@ -11,8 +11,6 @@ interface JobPanelAccessState {
   error: string | null;
 }
 
-const ALL_DEPARTMENTS: DepartmentKey[] = ['pd', 'ems', 'firefighter', 'doj', 'state', 'mechanic', 'pdm', 'weazel'];
-
 export const useJobPanelAccess = () => {
   const [state, setState] = useState<JobPanelAccessState>({
     hasAccess: false,
@@ -26,68 +24,53 @@ export const useJobPanelAccess = () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
       
-      if (!user) {
-        setState({ hasAccess: false, isOwner: false, accessibleDepartments: [], loading: false, error: null });
-        return;
-      }
-
-      // Check if owner - full access to all departments
-      const { data: isOwnerResult } = await supabase.rpc('is_owner', { _user_id: user.id });
-      
-      if (isOwnerResult) {
+      if (!session) {
         setState({
-          hasAccess: true,
-          isOwner: true,
-          accessibleDepartments: ALL_DEPARTMENTS,
+          hasAccess: false,
+          isOwner: false,
+          accessibleDepartments: [],
           loading: false,
           error: null,
         });
         return;
       }
 
-      // Check manual panel_access for job panel - NO automatic Discord role access
-      const discordId = user.user_metadata?.discord_id || 
-                        user.user_metadata?.provider_id || 
-                        user.user_metadata?.sub;
-      
-      if (discordId && /^\d{17,19}$/.test(discordId)) {
-        const { data: panelData } = await supabase
-          .from('panel_access')
-          .select('departments')
-          .eq('discord_id', discordId)
-          .eq('panel_type', 'job')
-          .eq('is_active', true)
-          .maybeSingle();
-        
-        if (panelData) {
-          let departments: DepartmentKey[];
-          
-          if (!panelData.departments || panelData.departments.length === 0 || panelData.departments.includes('all')) {
-            departments = ALL_DEPARTMENTS;
-          } else {
-            departments = panelData.departments.filter(
-              (d: string) => ALL_DEPARTMENTS.includes(d as DepartmentKey)
-            ) as DepartmentKey[];
-          }
-          
-          setState({
-            hasAccess: true,
-            isOwner: false,
-            accessibleDepartments: departments,
-            loading: false,
-            error: null,
-          });
-          return;
-        }
+      const { data, error } = await supabase.functions.invoke('verify-job-panel-access', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) {
+        console.error('Error checking job panel access:', error);
+        setState({
+          hasAccess: false,
+          isOwner: false,
+          accessibleDepartments: [],
+          loading: false,
+          error: 'Failed to verify access',
+        });
+        return;
       }
 
-      // No access
-      setState({ hasAccess: false, isOwner: false, accessibleDepartments: [], loading: false, error: null });
+      setState({
+        hasAccess: data.hasAccess || false,
+        isOwner: data.isOwner || false,
+        accessibleDepartments: data.accessibleDepartments || [],
+        loading: false,
+        error: null,
+      });
     } catch (err) {
       console.error('Error in useJobPanelAccess:', err);
-      setState({ hasAccess: false, isOwner: false, accessibleDepartments: [], loading: false, error: 'An error occurred' });
+      setState({
+        hasAccess: false,
+        isOwner: false,
+        accessibleDepartments: [],
+        loading: false,
+        error: 'An error occurred',
+      });
     }
   }, []);
 
