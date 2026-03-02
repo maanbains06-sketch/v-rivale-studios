@@ -3112,6 +3112,63 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_contracts: {
+        Row: {
+          contract_data: Json | null
+          created_at: string
+          created_by: string | null
+          id: string
+          owner_signature: string | null
+          owner_signed_at: string | null
+          staff_discord_id: string | null
+          staff_email: string | null
+          staff_name: string
+          staff_role: string | null
+          staff_signature: string | null
+          staff_signed_at: string | null
+          status: string
+          updated_at: string
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          contract_data?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          owner_signature?: string | null
+          owner_signed_at?: string | null
+          staff_discord_id?: string | null
+          staff_email?: string | null
+          staff_name: string
+          staff_role?: string | null
+          staff_signature?: string | null
+          staff_signed_at?: string | null
+          status?: string
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          contract_data?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          owner_signature?: string | null
+          owner_signed_at?: string | null
+          staff_discord_id?: string | null
+          staff_email?: string | null
+          staff_name?: string
+          staff_role?: string | null
+          staff_signature?: string | null
+          staff_signed_at?: string | null
+          status?: string
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
       staff_members: {
         Row: {
           badge_number: string | null
