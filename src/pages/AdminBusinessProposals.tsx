@@ -123,42 +123,11 @@ const AdminBusinessProposals = () => {
         return;
       }
 
-      const discordId = user.user_metadata?.discord_id;
-      let hasAccess = false;
-
-      // Check if user is owner
-      const OWNER_DISCORD_ID = "833680146510381097";
-      if (discordId === OWNER_DISCORD_ID) {
-        hasAccess = true;
-      }
-
-      // Check if user is in staff_members table
-      if (!hasAccess && discordId && /^\d{17,19}$/.test(discordId)) {
-        const { data: staffMember } = await supabase
-          .from("staff_members")
-          .select("id, is_active")
-          .eq("discord_id", discordId)
-          .eq("is_active", true)
-          .maybeSingle();
-
-        if (staffMember) {
-          hasAccess = true;
-        }
-      }
-
-      // Fallback: check user_roles table
-      if (!hasAccess) {
-        const { data: roleData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", user.id)
-          .in("role", ["admin", "moderator"])
-          .maybeSingle();
-
-        if (roleData) {
-          hasAccess = true;
-        }
-      }
+      // Use has_panel_access RPC - checks owner status + manual panel_access table
+      const { data: hasAccess } = await supabase.rpc("has_panel_access", {
+        _user_id: user.id,
+        _panel_type: "admin"
+      });
 
       if (!hasAccess) {
         toast({
