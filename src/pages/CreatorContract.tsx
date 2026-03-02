@@ -875,8 +875,8 @@ const CreatorContract = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -884,16 +884,19 @@ const CreatorContract = () => {
   if (!isOwner) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 py-6 px-4 cursor-default [&_*]:cursor-auto [&_input]:cursor-text [&_textarea]:cursor-text [&_button]:cursor-pointer [&_a]:cursor-pointer">
+    <div className="min-h-screen bg-background py-6 px-4 cursor-default [&_*]:cursor-auto [&_input]:cursor-text [&_textarea]:cursor-text [&_button]:cursor-pointer [&_a]:cursor-pointer">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <Button variant="outline" onClick={() => navigate(-1)} className="gap-2 bg-white shadow-sm">
+          <Button variant="outline" onClick={() => navigate(-1)} className="gap-2 border-border bg-card text-foreground hover:bg-muted">
             <ArrowLeft className="h-4 w-4" />
             Back
           </Button>
           <div className="flex items-center gap-2">
-            <Badge variant={contractStatus === 'signed' ? 'default' : 'secondary'} className="text-sm">
+            <Badge 
+              variant={contractStatus === 'signed' ? 'default' : 'secondary'} 
+              className={`text-sm ${contractStatus === 'signed' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : contractStatus === 'pending' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-muted text-muted-foreground'}`}
+            >
               {contractStatus === 'signed' && <CheckCircle className="h-3 w-3 mr-1" />}
               {contractStatus === 'pending' && <Clock className="h-3 w-3 mr-1" />}
               {contractStatus.charAt(0).toUpperCase() + contractStatus.slice(1)}
@@ -904,13 +907,13 @@ const CreatorContract = () => {
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Left Sidebar - Templates & Contracts */}
           <div className="lg:col-span-1 space-y-6">
-            <Button onClick={handleNewContract} className="w-full gap-2" size="lg">
+            <Button onClick={handleNewContract} className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20" size="lg">
               <Plus className="h-4 w-4" />
               New Contract
             </Button>
 
             <Tabs defaultValue="contracts" className="w-full">
-              <TabsList className="w-full bg-white">
+              <TabsList className="w-full bg-card border border-border">
                 <TabsTrigger value="contracts" className="flex-1">Contracts</TabsTrigger>
                 <TabsTrigger value="templates" className="flex-1">Templates</TabsTrigger>
               </TabsList>
@@ -933,30 +936,30 @@ const CreatorContract = () => {
           {/* Main Content - Contract Preview/Editor */}
           <div className="lg:col-span-2">
             {/* Action Bar */}
-            <div className="flex items-center justify-between mb-4 bg-white rounded-lg p-3 shadow-sm">
-              <h2 className="font-bold text-slate-800 flex items-center gap-2">
-                <FileText className="h-5 w-5 text-blue-600" />
+            <div className="flex items-center justify-between mb-4 bg-card rounded-lg p-3 border border-border shadow-lg shadow-primary/5">
+              <h2 className="font-bold text-foreground flex items-center gap-2">
+                <FileText className="h-5 w-5 text-primary" />
                 {selectedContractId ? 'Edit Contract' : 'New Contract'}
               </h2>
               <div className="flex gap-2">
                 {isEditing ? (
                   <>
-                    <Button variant="outline" onClick={() => setIsEditing(false)} size="sm">
+                    <Button variant="outline" onClick={() => setIsEditing(false)} size="sm" className="border-border text-foreground hover:bg-muted">
                       <X className="h-4 w-4 mr-1" />
                       Cancel
                     </Button>
-                    <Button onClick={handleSaveContract} size="sm" disabled={saving}>
+                    <Button onClick={handleSaveContract} size="sm" disabled={saving} className="bg-emerald-600 hover:bg-emerald-700 text-white">
                       <Save className="h-4 w-4 mr-1" />
                       {saving ? 'Saving...' : 'Save'}
                     </Button>
                   </>
                 ) : (
                   <>
-                    <Button variant="outline" onClick={() => setIsEditing(true)} size="sm">
+                    <Button variant="outline" onClick={() => setIsEditing(true)} size="sm" className="border-border text-foreground hover:bg-muted">
                       <Edit2 className="h-4 w-4 mr-1" />
                       Edit
                     </Button>
-                    <Button onClick={generatePDF} size="sm" className="bg-blue-600 hover:bg-blue-700">
+                    <Button onClick={generatePDF} size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20">
                       <Download className="h-4 w-4 mr-1" />
                       Download PDF
                     </Button>
@@ -966,143 +969,150 @@ const CreatorContract = () => {
             </div>
 
             {/* Contract Document */}
-            <Card className="bg-white shadow-2xl border-0 overflow-hidden" ref={contractRef}>
+            <Card className="bg-card shadow-2xl border border-border overflow-hidden" ref={contractRef}>
               <CardContent className="p-0">
                 {/* Contract Header */}
-                <div className="bg-gradient-to-r from-slate-800 to-slate-900 text-white p-8 text-center">
-                  <h1 className="text-3xl font-bold tracking-wide mb-2">SKYLIFE ROLEPLAY INDIA</h1>
-                  <p className="text-lg italic opacity-90">Content Creator Agreement</p>
-                  <div className="mt-4 flex items-center justify-center gap-4 text-sm opacity-70">
+                <div className="relative bg-gradient-to-r from-[hsl(220,20%,8%)] via-[hsl(199,89%,15%)] to-[hsl(220,20%,8%)] text-white p-8 text-center overflow-hidden">
+                  {/* Decorative border lines */}
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[hsl(var(--flag-saffron))] via-[hsl(var(--flag-white))] to-[hsl(var(--flag-green))]" />
+                  {/* Glow effect */}
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(199_89%_48%/0.15),transparent_70%)]" />
+                  <h1 className="text-3xl font-bold tracking-widest mb-2 text-gradient relative z-10" style={{textShadow: '0 0 30px hsl(199 89% 48% / 0.5)'}}>SKYLIFE ROLEPLAY INDIA</h1>
+                  <p className="text-lg italic text-primary/80 relative z-10">Content Creator Agreement</p>
+                  <div className="mt-4 flex items-center justify-center gap-4 text-sm text-muted-foreground relative z-10">
                     <span>Contract Date: {format(new Date(), 'dd MMMM yyyy')}</span>
-                    {selectedContractId && <span>•</span>}
+                    {selectedContractId && <span className="text-primary">•</span>}
                     {selectedContractId && <span>ID: {selectedContractId.slice(0, 8)}...</span>}
                   </div>
                 </div>
 
-                <div className="p-8 space-y-8 text-slate-800">
+                <div className="p-8 space-y-8 text-foreground">
                   {/* Parties Section */}
                   <section>
-                    <h2 className="text-xl font-bold text-blue-700 border-b-2 border-blue-200 pb-2 mb-6 uppercase tracking-wide">
+                    <h2 className="text-xl font-bold text-primary border-b-2 border-primary/30 pb-2 mb-6 uppercase tracking-wide">
                       Parties to This Agreement
                     </h2>
-                    <p className="text-sm italic text-slate-600 mb-4">
+                    <p className="text-sm italic text-muted-foreground mb-4">
                       This Content Creator Agreement ("Agreement") is entered into between the following parties:
                     </p>
                     
                     <div className="grid md:grid-cols-2 gap-6">
                       {/* Party A */}
-                      <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-5 rounded-xl border border-slate-200">
-                        <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 text-lg">
-                          <span className="w-7 h-7 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">A</span>
+                      <div className="bg-muted/50 p-5 rounded-xl border border-border relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
+                        <h3 className="font-bold text-foreground mb-4 flex items-center gap-2 text-lg">
+                          <span className="w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold shadow-lg shadow-primary/30">A</span>
                           Server Representative
                         </h3>
                         {isEditing ? (
                           <div className="space-y-3">
                             <div>
-                              <Label className="text-xs font-semibold text-slate-700">Organization Name</Label>
-                              <Input value={contractData.serverName} onChange={(e) => handleInputChange('serverName', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
+                              <Label className="text-xs font-semibold text-muted-foreground">Organization Name</Label>
+                              <Input value={contractData.serverName} onChange={(e) => handleInputChange('serverName', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-700">Representative Name</Label>
-                              <Input value={contractData.serverOwner} onChange={(e) => handleInputChange('serverOwner', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
+                              <Label className="text-xs font-semibold text-muted-foreground">Representative Name</Label>
+                              <Input value={contractData.serverOwner} onChange={(e) => handleInputChange('serverOwner', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-700">Email</Label>
-                              <Input value={contractData.serverEmail} onChange={(e) => handleInputChange('serverEmail', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
+                              <Label className="text-xs font-semibold text-muted-foreground">Email</Label>
+                              <Input value={contractData.serverEmail} onChange={(e) => handleInputChange('serverEmail', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-700">Discord Server</Label>
-                              <Input value={contractData.serverDiscord} onChange={(e) => handleInputChange('serverDiscord', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
+                              <Label className="text-xs font-semibold text-muted-foreground">Discord Server</Label>
+                              <Input value={contractData.serverDiscord} onChange={(e) => handleInputChange('serverDiscord', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-700">Website</Label>
-                              <Input value={contractData.serverWebsite} onChange={(e) => handleInputChange('serverWebsite', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
+                              <Label className="text-xs font-semibold text-muted-foreground">Website</Label>
+                              <Input value={contractData.serverWebsite} onChange={(e) => handleInputChange('serverWebsite', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-700">Address</Label>
-                              <Input value={contractData.serverAddress} onChange={(e) => handleInputChange('serverAddress', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
+                              <Label className="text-xs font-semibold text-muted-foreground">Address</Label>
+                              <Input value={contractData.serverAddress} onChange={(e) => handleInputChange('serverAddress', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-700">GSTIN (Optional)</Label>
-                              <Input value={contractData.serverGSTIN} onChange={(e) => handleInputChange('serverGSTIN', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" placeholder="Optional" />
+                              <Label className="text-xs font-semibold text-muted-foreground">GSTIN (Optional)</Label>
+                              <Input value={contractData.serverGSTIN} onChange={(e) => handleInputChange('serverGSTIN', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" placeholder="Optional" />
                             </div>
                           </div>
                         ) : (
                           <div className="space-y-2 text-sm">
-                            <p><span className="font-bold text-slate-700">Organization:</span> {contractData.serverName}</p>
-                            <p><span className="font-bold text-slate-700">Representative:</span> {contractData.serverOwner}</p>
-                            <p><span className="font-bold text-slate-700">Email:</span> {contractData.serverEmail}</p>
-                            <p><span className="font-bold text-slate-700">Discord:</span> {contractData.serverDiscord}</p>
-                            <p><span className="font-bold text-slate-700">Website:</span> {contractData.serverWebsite}</p>
-                            <p><span className="font-bold text-slate-700">Address:</span> {contractData.serverAddress}</p>
-                            {contractData.serverGSTIN && <p><span className="font-bold text-slate-700">GSTIN:</span> {contractData.serverGSTIN}</p>}
+                            <p><span className="font-bold text-muted-foreground">Organization:</span> <span className="text-foreground">{contractData.serverName}</span></p>
+                            <p><span className="font-bold text-muted-foreground">Representative:</span> <span className="text-foreground">{contractData.serverOwner}</span></p>
+                            <p><span className="font-bold text-muted-foreground">Email:</span> <span className="text-foreground">{contractData.serverEmail}</span></p>
+                            <p><span className="font-bold text-muted-foreground">Discord:</span> <span className="text-foreground">{contractData.serverDiscord}</span></p>
+                            <p><span className="font-bold text-muted-foreground">Website:</span> <span className="text-foreground">{contractData.serverWebsite}</span></p>
+                            <p><span className="font-bold text-muted-foreground">Address:</span> <span className="text-foreground">{contractData.serverAddress}</span></p>
+                            {contractData.serverGSTIN && <p><span className="font-bold text-muted-foreground">GSTIN:</span> <span className="text-foreground">{contractData.serverGSTIN}</span></p>}
                           </div>
                         )}
                       </div>
                       
                       {/* Party B */}
-                      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-xl border border-blue-200">
-                        <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 text-lg">
-                          <span className="w-7 h-7 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-bold">B</span>
+                      <div className="bg-muted/50 p-5 rounded-xl border border-border relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-1 h-full bg-neon-purple" />
+                        <h3 className="font-bold text-foreground mb-4 flex items-center gap-2 text-lg">
+                          <span className="w-7 h-7 bg-neon-purple text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg shadow-neon-purple/30">B</span>
                           Content Creator
                         </h3>
                         {isEditing ? (
                           <div className="space-y-3">
                             <div>
-                              <Label className="text-xs font-semibold text-slate-700">Full Legal Name *</Label>
-                              <Input value={contractData.creatorName} onChange={(e) => handleInputChange('creatorName', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" placeholder="Required" />
+                              <Label className="text-xs font-semibold text-muted-foreground">Full Legal Name *</Label>
+                              <Input value={contractData.creatorName} onChange={(e) => handleInputChange('creatorName', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" placeholder="Required" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-700">Address</Label>
-                              <Input value={contractData.creatorAddress} onChange={(e) => handleInputChange('creatorAddress', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
+                              <Label className="text-xs font-semibold text-muted-foreground">Address</Label>
+                              <Input value={contractData.creatorAddress} onChange={(e) => handleInputChange('creatorAddress', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-700">Email</Label>
-                              <Input type="email" value={contractData.creatorEmail} onChange={(e) => handleInputChange('creatorEmail', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
+                              <Label className="text-xs font-semibold text-muted-foreground">Email</Label>
+                              <Input type="email" value={contractData.creatorEmail} onChange={(e) => handleInputChange('creatorEmail', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-700">Phone Number</Label>
-                              <Input value={contractData.creatorPhone} onChange={(e) => handleInputChange('creatorPhone', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
+                              <Label className="text-xs font-semibold text-muted-foreground">Phone Number</Label>
+                              <Input value={contractData.creatorPhone} onChange={(e) => handleInputChange('creatorPhone', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-700">Discord ID</Label>
-                              <Input value={contractData.creatorDiscord} onChange={(e) => handleInputChange('creatorDiscord', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
+                              <Label className="text-xs font-semibold text-muted-foreground">Discord ID</Label>
+                              <Input value={contractData.creatorDiscord} onChange={(e) => handleInputChange('creatorDiscord', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-700">PAN (Optional)</Label>
-                              <Input value={contractData.creatorPAN} onChange={(e) => handleInputChange('creatorPAN', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" placeholder="For tax purposes" />
+                              <Label className="text-xs font-semibold text-muted-foreground">PAN (Optional)</Label>
+                              <Input value={contractData.creatorPAN} onChange={(e) => handleInputChange('creatorPAN', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" placeholder="For tax purposes" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-700">Channel Name</Label>
-                              <Input value={contractData.channelName} onChange={(e) => handleInputChange('channelName', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
+                              <Label className="text-xs font-semibold text-muted-foreground">Channel Name</Label>
+                              <Input value={contractData.channelName} onChange={(e) => handleInputChange('channelName', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" />
                             </div>
                             <div>
-                              <Label className="text-xs font-semibold text-slate-700">Platform Links</Label>
-                              <Input value={contractData.platformLinks} onChange={(e) => handleInputChange('platformLinks', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" placeholder="YouTube, Twitch, etc." />
+                              <Label className="text-xs font-semibold text-muted-foreground">Platform Links</Label>
+                              <Input value={contractData.platformLinks} onChange={(e) => handleInputChange('platformLinks', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" placeholder="YouTube, Twitch, etc." />
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <Label className="text-xs font-semibold text-slate-700">Subscribers</Label>
-                                <Input value={contractData.subscriberCount} onChange={(e) => handleInputChange('subscriberCount', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
+                                <Label className="text-xs font-semibold text-muted-foreground">Subscribers</Label>
+                                <Input value={contractData.subscriberCount} onChange={(e) => handleInputChange('subscriberCount', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" />
                               </div>
                               <div>
-                                <Label className="text-xs font-semibold text-slate-700">Avg. Views</Label>
-                                <Input value={contractData.averageViews} onChange={(e) => handleInputChange('averageViews', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
+                                <Label className="text-xs font-semibold text-muted-foreground">Avg. Views</Label>
+                                <Input value={contractData.averageViews} onChange={(e) => handleInputChange('averageViews', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" />
                               </div>
                             </div>
                           </div>
                         ) : (
                           <div className="space-y-2 text-sm">
-                            <p><span className="font-bold text-slate-700">Name:</span> {contractData.creatorName || <span className="italic text-slate-400">[To be filled]</span>}</p>
-                            <p><span className="font-bold text-slate-700">Address:</span> {contractData.creatorAddress || <span className="italic text-slate-400">[To be filled]</span>}</p>
-                            <p><span className="font-bold text-slate-700">Email:</span> {contractData.creatorEmail || <span className="italic text-slate-400">[To be filled]</span>}</p>
-                            <p><span className="font-bold text-slate-700">Phone:</span> {contractData.creatorPhone || <span className="italic text-slate-400">[To be filled]</span>}</p>
-                            <p><span className="font-bold text-slate-700">Discord:</span> {contractData.creatorDiscord || <span className="italic text-slate-400">[To be filled]</span>}</p>
-                            {contractData.creatorPAN && <p><span className="font-bold text-slate-700">PAN:</span> {contractData.creatorPAN}</p>}
-                            <p><span className="font-bold text-slate-700">Channel:</span> {contractData.channelName || <span className="italic text-slate-400">[To be filled]</span>}</p>
-                            <p><span className="font-bold text-slate-700">Links:</span> {contractData.platformLinks || <span className="italic text-slate-400">[To be filled]</span>}</p>
-                            <p><span className="font-bold text-slate-700">Subscribers:</span> {contractData.subscriberCount || <span className="italic text-slate-400">[To be filled]</span>}</p>
-                            <p><span className="font-bold text-slate-700">Avg. Views:</span> {contractData.averageViews || <span className="italic text-slate-400">[To be filled]</span>}</p>
+                            <p><span className="font-bold text-muted-foreground">Name:</span> <span className="text-foreground">{contractData.creatorName || <span className="italic text-muted-foreground/50">[To be filled]</span>}</span></p>
+                            <p><span className="font-bold text-muted-foreground">Address:</span> <span className="text-foreground">{contractData.creatorAddress || <span className="italic text-muted-foreground/50">[To be filled]</span>}</span></p>
+                            <p><span className="font-bold text-muted-foreground">Email:</span> <span className="text-foreground">{contractData.creatorEmail || <span className="italic text-muted-foreground/50">[To be filled]</span>}</span></p>
+                            <p><span className="font-bold text-muted-foreground">Phone:</span> <span className="text-foreground">{contractData.creatorPhone || <span className="italic text-muted-foreground/50">[To be filled]</span>}</span></p>
+                            <p><span className="font-bold text-muted-foreground">Discord:</span> <span className="text-foreground">{contractData.creatorDiscord || <span className="italic text-muted-foreground/50">[To be filled]</span>}</span></p>
+                            {contractData.creatorPAN && <p><span className="font-bold text-muted-foreground">PAN:</span> <span className="text-foreground">{contractData.creatorPAN}</span></p>}
+                            <p><span className="font-bold text-muted-foreground">Channel:</span> <span className="text-foreground">{contractData.channelName || <span className="italic text-muted-foreground/50">[To be filled]</span>}</span></p>
+                            <p><span className="font-bold text-muted-foreground">Links:</span> <span className="text-foreground">{contractData.platformLinks || <span className="italic text-muted-foreground/50">[To be filled]</span>}</span></p>
+                            <p><span className="font-bold text-muted-foreground">Subscribers:</span> <span className="text-foreground">{contractData.subscriberCount || <span className="italic text-muted-foreground/50">[To be filled]</span>}</span></p>
+                            <p><span className="font-bold text-muted-foreground">Avg. Views:</span> <span className="text-foreground">{contractData.averageViews || <span className="italic text-muted-foreground/50">[To be filled]</span>}</span></p>
                           </div>
                         )}
                       </div>
@@ -1111,16 +1121,16 @@ const CreatorContract = () => {
 
                   {/* Contract Period */}
                   <section>
-                    <h2 className="text-xl font-bold text-blue-700 border-b-2 border-blue-200 pb-2 mb-6 uppercase tracking-wide">
+                    <h2 className="text-xl font-bold text-primary border-b-2 border-primary/30 pb-2 mb-6 uppercase tracking-wide">
                       Contract Period
                     </h2>
                     <div className="grid md:grid-cols-4 gap-4">
                       {isEditing ? (
                         <>
                           <div>
-                            <Label className="text-xs font-semibold text-slate-700">Duration</Label>
+                            <Label className="text-xs font-semibold text-muted-foreground">Duration</Label>
                             <Select value={contractData.contractDuration} onValueChange={(v) => handleInputChange('contractDuration', v)}>
-                              <SelectTrigger className="h-9 mt-1 bg-white border-slate-300 text-slate-900"><SelectValue /></SelectTrigger>
+                              <SelectTrigger className="h-9 mt-1 bg-input border-border text-foreground"><SelectValue /></SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="1 month">1 Month</SelectItem>
                                 <SelectItem value="3 months">3 Months</SelectItem>
@@ -1130,17 +1140,17 @@ const CreatorContract = () => {
                             </Select>
                           </div>
                           <div>
-                            <Label className="text-xs font-semibold text-slate-700">Start Date</Label>
-                            <Input type="date" value={contractData.startDate} onChange={(e) => handleInputChange('startDate', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
+                            <Label className="text-xs font-semibold text-muted-foreground">Start Date</Label>
+                            <Input type="date" value={contractData.startDate} onChange={(e) => handleInputChange('startDate', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" />
                           </div>
                           <div>
-                            <Label className="text-xs font-semibold text-slate-700">End Date</Label>
-                            <Input type="date" value={contractData.endDate} onChange={(e) => handleInputChange('endDate', e.target.value)} className="h-9 mt-1 bg-white border-slate-300 text-slate-900" />
+                            <Label className="text-xs font-semibold text-muted-foreground">End Date</Label>
+                            <Input type="date" value={contractData.endDate} onChange={(e) => handleInputChange('endDate', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" />
                           </div>
                           <div>
-                            <Label className="text-xs font-semibold text-slate-700">Exclusivity</Label>
+                            <Label className="text-xs font-semibold text-muted-foreground">Exclusivity</Label>
                             <Select value={contractData.exclusivityClause} onValueChange={(v) => handleInputChange('exclusivityClause', v)}>
-                              <SelectTrigger className="h-9 mt-1 bg-white border-slate-300 text-slate-900"><SelectValue /></SelectTrigger>
+                              <SelectTrigger className="h-9 mt-1 bg-input border-border text-foreground"><SelectValue /></SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="Non-exclusive">Non-exclusive</SelectItem>
                                 <SelectItem value="Exclusive">Exclusive</SelectItem>
@@ -1151,21 +1161,21 @@ const CreatorContract = () => {
                         </>
                       ) : (
                         <>
-                          <div className="bg-slate-50 p-4 rounded-lg text-center">
-                            <p className="text-xs text-slate-500 uppercase font-semibold">Duration</p>
-                            <p className="font-bold text-slate-800 text-lg">{contractData.contractDuration}</p>
+                          <div className="bg-muted/50 p-4 rounded-lg text-center border border-border">
+                            <p className="text-xs text-muted-foreground uppercase font-semibold">Duration</p>
+                            <p className="font-bold text-foreground text-lg">{contractData.contractDuration}</p>
                           </div>
-                          <div className="bg-slate-50 p-4 rounded-lg text-center">
-                            <p className="text-xs text-slate-500 uppercase font-semibold">Start Date</p>
-                            <p className="font-bold text-slate-800">{format(new Date(contractData.startDate), 'dd MMM yyyy')}</p>
+                          <div className="bg-muted/50 p-4 rounded-lg text-center border border-border">
+                            <p className="text-xs text-muted-foreground uppercase font-semibold">Start Date</p>
+                            <p className="font-bold text-foreground">{format(new Date(contractData.startDate), 'dd MMM yyyy')}</p>
                           </div>
-                          <div className="bg-slate-50 p-4 rounded-lg text-center">
-                            <p className="text-xs text-slate-500 uppercase font-semibold">End Date</p>
-                            <p className="font-bold text-slate-800">{format(new Date(contractData.endDate), 'dd MMM yyyy')}</p>
+                          <div className="bg-muted/50 p-4 rounded-lg text-center border border-border">
+                            <p className="text-xs text-muted-foreground uppercase font-semibold">End Date</p>
+                            <p className="font-bold text-foreground">{format(new Date(contractData.endDate), 'dd MMM yyyy')}</p>
                           </div>
-                          <div className="bg-slate-50 p-4 rounded-lg text-center">
-                            <p className="text-xs text-slate-500 uppercase font-semibold">Exclusivity</p>
-                            <p className="font-bold text-slate-800 italic">{contractData.exclusivityClause}</p>
+                          <div className="bg-muted/50 p-4 rounded-lg text-center border border-border">
+                            <p className="text-xs text-muted-foreground uppercase font-semibold">Exclusivity</p>
+                            <p className="font-bold text-foreground italic">{contractData.exclusivityClause}</p>
                           </div>
                         </>
                       )}
@@ -1174,36 +1184,38 @@ const CreatorContract = () => {
 
                   {/* Compensation */}
                   <section>
-                    <h2 className="text-xl font-bold text-blue-700 border-b-2 border-blue-200 pb-2 mb-6 uppercase tracking-wide">
+                    <h2 className="text-xl font-bold text-primary border-b-2 border-primary/30 pb-2 mb-6 uppercase tracking-wide">
                       Compensation & Payment
                     </h2>
                     <div className="grid md:grid-cols-2 gap-6">
                       {isEditing ? (
                         <>
                           <div>
-                            <Label className="text-xs font-semibold text-slate-700">Monthly Payment (₹)</Label>
-                            <Input value={contractData.monthlyPayment} onChange={(e) => handleInputChange('monthlyPayment', e.target.value)} className="h-10 mt-1 text-lg font-bold bg-white border-slate-300 text-slate-900" />
+                            <Label className="text-xs font-semibold text-muted-foreground">Monthly Payment (₹)</Label>
+                            <Input value={contractData.monthlyPayment} onChange={(e) => handleInputChange('monthlyPayment', e.target.value)} className="h-10 mt-1 text-lg font-bold bg-input border-border text-foreground" />
                           </div>
                           <div>
-                            <Label className="text-xs font-semibold text-slate-700">Payment Method</Label>
-                            <Input value={contractData.paymentMethod} onChange={(e) => handleInputChange('paymentMethod', e.target.value)} className="h-10 mt-1 bg-white border-slate-300 text-slate-900" />
+                            <Label className="text-xs font-semibold text-muted-foreground">Payment Method</Label>
+                            <Input value={contractData.paymentMethod} onChange={(e) => handleInputChange('paymentMethod', e.target.value)} className="h-10 mt-1 bg-input border-border text-foreground" />
                           </div>
                           <div className="md:col-span-2">
-                            <Label className="text-xs font-semibold text-slate-700">Performance Bonus</Label>
-                            <Input value={contractData.performanceBonus} onChange={(e) => handleInputChange('performanceBonus', e.target.value)} className="h-10 mt-1 bg-white border-slate-300 text-slate-900" />
+                            <Label className="text-xs font-semibold text-muted-foreground">Performance Bonus</Label>
+                            <Input value={contractData.performanceBonus} onChange={(e) => handleInputChange('performanceBonus', e.target.value)} className="h-10 mt-1 bg-input border-border text-foreground" />
                           </div>
                         </>
                       ) : (
                         <>
-                          <div className="bg-green-50 border border-green-200 p-5 rounded-xl">
-                            <p className="text-xs text-green-700 uppercase font-semibold mb-1">Monthly Retainer</p>
-                            <p className="text-3xl font-bold text-green-800">₹{contractData.monthlyPayment}</p>
-                            <p className="text-sm text-green-600 mt-2">via {contractData.paymentMethod}</p>
+                          <div className="bg-emerald-500/10 border border-emerald-500/30 p-5 rounded-xl relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-emerald-400 to-transparent" />
+                            <p className="text-xs text-emerald-400 uppercase font-semibold mb-1">Monthly Retainer</p>
+                            <p className="text-3xl font-bold text-emerald-300">₹{contractData.monthlyPayment}</p>
+                            <p className="text-sm text-emerald-400/70 mt-2">via {contractData.paymentMethod}</p>
                           </div>
-                          <div className="bg-amber-50 border border-amber-200 p-5 rounded-xl">
-                            <p className="text-xs text-amber-700 uppercase font-semibold mb-1">Performance Bonus</p>
-                            <p className="text-lg font-semibold text-amber-800 italic">{contractData.performanceBonus}</p>
-                            <p className="text-sm text-amber-600 mt-2">Payment within 7 working days of month end</p>
+                          <div className="bg-amber-500/10 border border-amber-500/30 p-5 rounded-xl relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
+                            <p className="text-xs text-amber-400 uppercase font-semibold mb-1">Performance Bonus</p>
+                            <p className="text-lg font-semibold text-amber-300 italic">{contractData.performanceBonus}</p>
+                            <p className="text-sm text-amber-400/70 mt-2">Payment within 7 working days of month end</p>
                           </div>
                         </>
                       )}
@@ -1212,86 +1224,88 @@ const CreatorContract = () => {
 
                   {/* Content Requirements */}
                   <section>
-                    <h2 className="text-xl font-bold text-blue-700 border-b-2 border-blue-200 pb-2 mb-6 uppercase tracking-wide">
+                    <h2 className="text-xl font-bold text-primary border-b-2 border-primary/30 pb-2 mb-6 uppercase tracking-wide">
                       Content Deliverables
                     </h2>
                     <div className="grid md:grid-cols-2 gap-6 mb-6">
                       {isEditing ? (
                         <>
                           <div>
-                            <Label className="text-xs font-semibold text-slate-700">Minimum Videos per Month</Label>
-                            <Input value={contractData.minimumVideos} onChange={(e) => handleInputChange('minimumVideos', e.target.value)} className="h-10 mt-1 text-lg font-bold bg-white border-slate-300 text-slate-900" />
+                            <Label className="text-xs font-semibold text-muted-foreground">Minimum Videos per Month</Label>
+                            <Input value={contractData.minimumVideos} onChange={(e) => handleInputChange('minimumVideos', e.target.value)} className="h-10 mt-1 text-lg font-bold bg-input border-border text-foreground" />
                           </div>
                           <div>
-                            <Label className="text-xs font-semibold text-slate-700">Minimum Stream Hours per Month</Label>
-                            <Input value={contractData.minimumStreams} onChange={(e) => handleInputChange('minimumStreams', e.target.value)} className="h-10 mt-1 text-lg font-bold bg-white border-slate-300 text-slate-900" />
+                            <Label className="text-xs font-semibold text-muted-foreground">Minimum Stream Hours per Month</Label>
+                            <Input value={contractData.minimumStreams} onChange={(e) => handleInputChange('minimumStreams', e.target.value)} className="h-10 mt-1 text-lg font-bold bg-input border-border text-foreground" />
                           </div>
                         </>
                       ) : (
                         <>
-                          <div className="bg-purple-50 border border-purple-200 p-5 rounded-xl text-center">
-                            <p className="text-4xl font-bold text-purple-800">{contractData.minimumVideos}</p>
-                            <p className="text-sm font-semibold text-purple-600 uppercase">Videos / Month</p>
+                          <div className="bg-neon-purple/10 border border-neon-purple/30 p-5 rounded-xl text-center relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-neon-purple to-transparent" />
+                            <p className="text-4xl font-bold text-neon-purple">{contractData.minimumVideos}</p>
+                            <p className="text-sm font-semibold text-neon-purple/70 uppercase">Videos / Month</p>
                           </div>
-                          <div className="bg-cyan-50 border border-cyan-200 p-5 rounded-xl text-center">
-                            <p className="text-4xl font-bold text-cyan-800">{contractData.minimumStreams}</p>
-                            <p className="text-sm font-semibold text-cyan-600 uppercase">Stream Hours / Month</p>
+                          <div className="bg-neon-cyan/10 border border-neon-cyan/30 p-5 rounded-xl text-center relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-neon-cyan to-transparent" />
+                            <p className="text-4xl font-bold text-neon-cyan">{contractData.minimumStreams}</p>
+                            <p className="text-sm font-semibold text-neon-cyan/70 uppercase">Stream Hours / Month</p>
                           </div>
                         </>
                       )}
                     </div>
-                    <div className="bg-slate-50 p-4 rounded-lg">
-                      <p className="font-bold text-slate-700 mb-2">Content Guidelines:</p>
-                      <ul className="text-sm space-y-1 text-slate-600 list-disc list-inside">
-                        <li>All content <strong>must prominently feature</strong> Skylife Roleplay India gameplay</li>
-                        <li>Server name and Discord link <strong>required</strong> in all video descriptions</li>
+                    <div className="bg-muted/50 p-4 rounded-lg border border-border">
+                      <p className="font-bold text-foreground mb-2">Content Guidelines:</p>
+                      <ul className="text-sm space-y-1 text-muted-foreground list-disc list-inside">
+                        <li>All content <strong className="text-foreground">must prominently feature</strong> Skylife Roleplay India gameplay</li>
+                        <li>Server name and Discord link <strong className="text-foreground">required</strong> in all video descriptions</li>
                         <li>Content must adhere to <em>community guidelines</em> and be family-friendly</li>
-                        <li><strong>No promotion</strong> of competing GTA RP servers during contract period</li>
+                        <li><strong className="text-foreground">No promotion</strong> of competing GTA RP servers during contract period</li>
                       </ul>
                     </div>
                   </section>
 
                   {/* Obligations */}
                   <section className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <h2 className="text-xl font-bold text-blue-700 border-b-2 border-blue-200 pb-2 mb-4 uppercase tracking-wide">
+                    <div className="bg-muted/30 p-5 rounded-xl border border-border">
+                      <h2 className="text-xl font-bold text-primary border-b-2 border-primary/30 pb-2 mb-4 uppercase tracking-wide">
                         Creator Obligations
                       </h2>
-                      <ul className="text-sm space-y-2 text-slate-700">
-                        <li className="flex items-start gap-2"><span className="text-blue-600 font-bold">1.</span> Maintain <strong>active presence</strong> on the server</li>
-                        <li className="flex items-start gap-2"><span className="text-blue-600 font-bold">2.</span> Engage <em>positively</em> with the community</li>
-                        <li className="flex items-start gap-2"><span className="text-blue-600 font-bold">3.</span> Report technical issues promptly</li>
-                        <li className="flex items-start gap-2"><span className="text-blue-600 font-bold">4.</span> Provide <strong>14 days notice</strong> before termination</li>
-                        <li className="flex items-start gap-2"><span className="text-blue-600 font-bold">5.</span> Maintain <em>confidentiality</em> of server information</li>
-                        <li className="flex items-start gap-2"><span className="text-blue-600 font-bold">6.</span> Follow all server rules and regulations</li>
+                      <ul className="text-sm space-y-2 text-muted-foreground">
+                        <li className="flex items-start gap-2"><span className="text-primary font-bold">1.</span> Maintain <strong className="text-foreground">active presence</strong> on the server</li>
+                        <li className="flex items-start gap-2"><span className="text-primary font-bold">2.</span> Engage <em>positively</em> with the community</li>
+                        <li className="flex items-start gap-2"><span className="text-primary font-bold">3.</span> Report technical issues promptly</li>
+                        <li className="flex items-start gap-2"><span className="text-primary font-bold">4.</span> Provide <strong className="text-foreground">14 days notice</strong> before termination</li>
+                        <li className="flex items-start gap-2"><span className="text-primary font-bold">5.</span> Maintain <em>confidentiality</em> of server information</li>
+                        <li className="flex items-start gap-2"><span className="text-primary font-bold">6.</span> Follow all server rules and regulations</li>
                       </ul>
                     </div>
-                    <div>
-                      <h2 className="text-xl font-bold text-blue-700 border-b-2 border-blue-200 pb-2 mb-4 uppercase tracking-wide">
+                    <div className="bg-muted/30 p-5 rounded-xl border border-border">
+                      <h2 className="text-xl font-bold text-primary border-b-2 border-primary/30 pb-2 mb-4 uppercase tracking-wide">
                         Server Obligations
                       </h2>
-                      <ul className="text-sm space-y-2 text-slate-700">
-                        <li className="flex items-start gap-2"><span className="text-blue-600 font-bold">1.</span> Provide <strong>priority queue access</strong></li>
-                        <li className="flex items-start gap-2"><span className="text-blue-600 font-bold">2.</span> Offer <em>dedicated support</em> for content creation</li>
-                        <li className="flex items-start gap-2"><span className="text-blue-600 font-bold">3.</span> Feature creator content on official channels</li>
-                        <li className="flex items-start gap-2"><span className="text-blue-600 font-bold">4.</span> Provide agreed-upon <strong>in-game perks</strong></li>
-                        <li className="flex items-start gap-2"><span className="text-blue-600 font-bold">5.</span> Maintain open communication</li>
-                        <li className="flex items-start gap-2"><span className="text-blue-600 font-bold">6.</span> Process payments <em>on time</em></li>
+                      <ul className="text-sm space-y-2 text-muted-foreground">
+                        <li className="flex items-start gap-2"><span className="text-primary font-bold">1.</span> Provide <strong className="text-foreground">priority queue access</strong></li>
+                        <li className="flex items-start gap-2"><span className="text-primary font-bold">2.</span> Offer <em>dedicated support</em> for content creation</li>
+                        <li className="flex items-start gap-2"><span className="text-primary font-bold">3.</span> Feature creator content on official channels</li>
+                        <li className="flex items-start gap-2"><span className="text-primary font-bold">4.</span> Provide agreed-upon <strong className="text-foreground">in-game perks</strong></li>
+                        <li className="flex items-start gap-2"><span className="text-primary font-bold">5.</span> Maintain open communication</li>
+                        <li className="flex items-start gap-2"><span className="text-primary font-bold">6.</span> Process payments <em>on time</em></li>
                       </ul>
                     </div>
                   </section>
 
                   {/* Termination */}
                   <section>
-                    <h2 className="text-xl font-bold text-blue-700 border-b-2 border-blue-200 pb-2 mb-4 uppercase tracking-wide">
+                    <h2 className="text-xl font-bold text-primary border-b-2 border-primary/30 pb-2 mb-4 uppercase tracking-wide">
                       Termination Clause
                     </h2>
-                    <div className="bg-red-50 border border-red-200 p-5 rounded-xl">
-                      <p className="text-sm mb-3 italic text-slate-700">
-                        Either party may terminate this agreement with <strong>14 days written notice</strong>.
+                    <div className="bg-destructive/10 border border-destructive/30 p-5 rounded-xl">
+                      <p className="text-sm mb-3 italic text-muted-foreground">
+                        Either party may terminate this agreement with <strong className="text-foreground">14 days written notice</strong>.
                       </p>
-                      <p className="text-sm font-bold text-red-800 mb-2">Grounds for Immediate Termination:</p>
-                      <ul className="text-sm space-y-1 text-red-700 list-disc list-inside">
+                      <p className="text-sm font-bold text-destructive mb-2">Grounds for Immediate Termination:</p>
+                      <ul className="text-sm space-y-1 text-destructive/80 list-disc list-inside">
                         <li>Violation of server rules or community guidelines</li>
                         <li>Failure to meet deliverables for <strong>2 consecutive months</strong></li>
                         <li>Actions damaging to either party's reputation</li>
@@ -1303,17 +1317,16 @@ const CreatorContract = () => {
 
                   {/* Special Terms */}
                   <section>
-                    <h2 className="text-xl font-bold text-blue-700 border-b-2 border-blue-200 pb-2 mb-4 uppercase tracking-wide">
+                    <h2 className="text-xl font-bold text-primary border-b-2 border-primary/30 pb-2 mb-4 uppercase tracking-wide">
                       Special Terms & Conditions
                     </h2>
                     {isEditing ? (
                       <div className="space-y-4">
-                        {/* Predefined Terms with Checkboxes */}
-                        <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                          <p className="text-sm font-semibold text-slate-700 mb-3">Select applicable terms:</p>
+                        <div className="bg-muted/50 p-4 rounded-lg border border-border">
+                          <p className="text-sm font-semibold text-foreground mb-3">Select applicable terms:</p>
                           <div className="space-y-3">
                             {contractData.specialTermsList.map((term, index) => (
-                              <div key={term.id} className="flex items-start gap-3 p-2 rounded hover:bg-slate-100 transition-colors">
+                              <div key={term.id} className="flex items-start gap-3 p-2 rounded hover:bg-muted transition-colors">
                                 <Checkbox
                                   id={`term-${term.id}`}
                                   checked={term.enabled}
@@ -1323,7 +1336,7 @@ const CreatorContract = () => {
                                 {index < 8 ? (
                                   <label
                                     htmlFor={`term-${term.id}`}
-                                    className={`text-sm cursor-pointer ${term.enabled ? 'text-slate-800 font-medium' : 'text-slate-600'}`}
+                                    className={`text-sm cursor-pointer ${term.enabled ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
                                   >
                                     {term.text}
                                   </label>
@@ -1333,12 +1346,12 @@ const CreatorContract = () => {
                                       value={term.text}
                                       onChange={(e) => handleUpdateCustomTerm(term.id, e.target.value)}
                                       placeholder="Enter custom term..."
-                                      className="flex-1 h-8 bg-white border-slate-300 text-slate-900 text-sm"
+                                      className="flex-1 h-8 bg-input border-border text-foreground text-sm"
                                     />
                                     <Button
                                       variant="ghost"
                                       size="icon"
-                                      className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                                      className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                                       onClick={() => handleRemoveCustomTerm(term.id)}
                                     >
                                       <Trash2 className="h-4 w-4" />
@@ -1352,35 +1365,34 @@ const CreatorContract = () => {
                             variant="outline"
                             size="sm"
                             onClick={handleAddCustomTerm}
-                            className="mt-4 gap-2"
+                            className="mt-4 gap-2 border-border"
                           >
                             <PlusCircle className="h-4 w-4" />
                             Add Custom Term
                           </Button>
                         </div>
 
-                        {/* Additional Notes */}
                         <div>
-                          <Label className="text-xs font-semibold text-slate-700">Additional Notes / Custom Terms</Label>
+                          <Label className="text-xs font-semibold text-muted-foreground">Additional Notes / Custom Terms</Label>
                           <Textarea
                             value={contractData.customTerms}
                             onChange={(e) => handleInputChange('customTerms', e.target.value)}
                             placeholder="Add any additional custom terms or notes that aren't covered above..."
-                            className="min-h-[80px] mt-1 bg-white border-slate-300 text-slate-900"
+                            className="min-h-[80px] mt-1 bg-input border-border text-foreground"
                           />
                         </div>
                       </div>
                     ) : (
-                      <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                      <div className="bg-muted/50 p-4 rounded-lg border border-border">
                         {getActiveSpecialTerms().length > 0 || contractData.customTerms ? (
                           <div className="space-y-3">
                             {getActiveSpecialTerms().length > 0 && (
                               <div>
-                                <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Agreed Terms:</p>
+                                <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">Agreed Terms:</p>
                                 <ul className="space-y-2">
                                   {getActiveSpecialTerms().map((term, index) => (
-                                    <li key={term.id} className="flex items-start gap-2 text-sm text-slate-700">
-                                      <span className="text-green-600 font-bold flex-shrink-0">{index + 1}.</span>
+                                    <li key={term.id} className="flex items-start gap-2 text-sm text-foreground">
+                                      <span className="text-emerald-400 font-bold flex-shrink-0">{index + 1}.</span>
                                       <span>{term.text}</span>
                                     </li>
                                   ))}
@@ -1388,41 +1400,41 @@ const CreatorContract = () => {
                               </div>
                             )}
                             {contractData.customTerms && (
-                              <div className="pt-3 border-t border-slate-200">
-                                <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Additional Notes:</p>
-                                <p className="text-sm text-slate-700 whitespace-pre-wrap italic">
+                              <div className="pt-3 border-t border-border">
+                                <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">Additional Notes:</p>
+                                <p className="text-sm text-foreground whitespace-pre-wrap italic">
                                   {contractData.customTerms}
                                 </p>
                               </div>
                             )}
                           </div>
                         ) : (
-                          <p className="italic text-slate-400">No special terms specified.</p>
+                          <p className="italic text-muted-foreground">No special terms specified.</p>
                         )}
                       </div>
                     )}
                   </section>
 
                   {/* Electronic Signatures */}
-                  <section className="pt-8 border-t-2 border-slate-200">
-                    <h2 className="text-xl font-bold text-blue-700 mb-2 uppercase tracking-wide">
+                  <section className="pt-8 border-t-2 border-border">
+                    <h2 className="text-xl font-bold text-primary mb-2 uppercase tracking-wide">
                       Electronic Signatures
                     </h2>
-                    <p className="text-sm italic text-slate-500 mb-6">
+                    <p className="text-sm italic text-muted-foreground mb-6">
                       By signing below, both parties acknowledge that they have read, understood, and agree to all terms of this agreement.
                       Electronic signatures are legally binding and include timestamp verification.
                     </p>
                     
                     <div className="grid md:grid-cols-2 gap-8">
                       {/* Party A Signature */}
-                      <div className="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                      <div className="bg-muted/50 p-5 rounded-xl border border-border">
                         {savedOwnerSignature && !ownerSignature && (
-                          <div className="mb-3 p-2 bg-blue-50 rounded border border-blue-200 flex items-center justify-between">
-                            <p className="text-xs text-blue-700">
+                          <div className="mb-3 p-2 bg-primary/10 rounded border border-primary/30 flex items-center justify-between">
+                            <p className="text-xs text-primary">
                               <CheckCircle className="h-3 w-3 inline mr-1" />
                               Saved signature available — will auto-apply on save
                             </p>
-                            <Button variant="ghost" size="sm" className="h-6 text-xs text-red-500" onClick={() => { clearSavedOwnerSignature(); setOwnerSignature(null); setOwnerSignedAt(null); }}>
+                            <Button variant="ghost" size="sm" className="h-6 text-xs text-destructive" onClick={() => { clearSavedOwnerSignature(); setOwnerSignature(null); setOwnerSignedAt(null); }}>
                               Clear Saved
                             </Button>
                           </div>
@@ -1434,19 +1446,19 @@ const CreatorContract = () => {
                           disabled={!!ownerSignature}
                         />
                         {ownerSignedAt && (
-                          <div className="mt-3 p-2 bg-green-50 rounded border border-green-200">
-                            <p className="text-xs text-green-700">
+                          <div className="mt-3 p-2 bg-emerald-500/10 rounded border border-emerald-500/30">
+                            <p className="text-xs text-emerald-400">
                               <CheckCircle className="h-3 w-3 inline mr-1" />
                               Signed on: {format(new Date(ownerSignedAt), 'dd MMM yyyy, HH:mm:ss')}
                             </p>
-                            <p className="text-xs text-green-600">By: {contractData.serverOwner}</p>
+                            <p className="text-xs text-emerald-400/70">By: {contractData.serverOwner}</p>
                           </div>
                         )}
                         {ownerSignature && (
                           <Button 
                             variant="outline" 
                             size="sm" 
-                            className="mt-2 text-xs w-full"
+                            className="mt-2 text-xs w-full border-border"
                             onClick={() => { setOwnerSignature(null); setOwnerSignedAt(null); }}
                           >
                             Re-sign
@@ -1455,7 +1467,7 @@ const CreatorContract = () => {
                       </div>
 
                       {/* Party B Signature */}
-                      <div className="bg-blue-50 p-5 rounded-xl border border-blue-200">
+                      <div className="bg-muted/50 p-5 rounded-xl border border-border">
                         <SignaturePad
                           label="Party B - Content Creator"
                           onSave={handleCreatorSign}
@@ -1463,12 +1475,12 @@ const CreatorContract = () => {
                           disabled={!!creatorSignature}
                         />
                         {creatorSignedAt && (
-                          <div className="mt-3 p-2 bg-green-50 rounded border border-green-200">
-                            <p className="text-xs text-green-700">
+                          <div className="mt-3 p-2 bg-emerald-500/10 rounded border border-emerald-500/30">
+                            <p className="text-xs text-emerald-400">
                               <CheckCircle className="h-3 w-3 inline mr-1" />
                               Signed on: {format(new Date(creatorSignedAt), 'dd MMM yyyy, HH:mm:ss')}
                             </p>
-                            <p className="text-xs text-green-600">By: {contractData.creatorName || 'Creator'}</p>
+                            <p className="text-xs text-emerald-400/70">By: {contractData.creatorName || 'Creator'}</p>
                           </div>
                         )}
                       </div>
@@ -1476,9 +1488,10 @@ const CreatorContract = () => {
                   </section>
 
                   {/* Footer */}
-                  <div className="text-center pt-8 border-t text-xs text-slate-400">
+                  <div className="text-center pt-8 border-t border-border text-xs text-muted-foreground">
+                    <div className="h-[2px] w-full bg-gradient-to-r from-[hsl(var(--flag-saffron))] via-[hsl(var(--flag-white))] to-[hsl(var(--flag-green))] mb-6 rounded-full" />
                     <p className="italic">This is a legally binding document. Both parties acknowledge having read and understood all terms and conditions stated herein.</p>
-                    <p className="mt-2 font-semibold">Skylife Roleplay India | Content Creator Contract</p>
+                    <p className="mt-2 font-semibold text-primary">Skylife Roleplay India | Content Creator Contract</p>
                     <p className="mt-1">Generated: {format(new Date(), 'dd MMMM yyyy, HH:mm')}</p>
                   </div>
                 </div>

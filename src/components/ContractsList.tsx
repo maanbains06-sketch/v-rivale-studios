@@ -51,15 +51,15 @@ const RENEW_OPTIONS = [
 const getStatusConfig = (status: string) => {
   switch (status) {
     case 'signed':
-      return { icon: CheckCircle, color: 'bg-green-100 text-green-800', label: 'Signed' };
+      return { icon: CheckCircle, color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30', label: 'Signed' };
     case 'pending':
-      return { icon: Clock, color: 'bg-yellow-100 text-yellow-800', label: 'Pending' };
+      return { icon: Clock, color: 'bg-amber-500/20 text-amber-400 border-amber-500/30', label: 'Pending' };
     case 'expired':
-      return { icon: XCircle, color: 'bg-red-100 text-red-800', label: 'Expired' };
+      return { icon: XCircle, color: 'bg-destructive/20 text-destructive border-destructive/30', label: 'Expired' };
     case 'cancelled':
-      return { icon: XCircle, color: 'bg-slate-100 text-slate-800', label: 'Cancelled' };
+      return { icon: XCircle, color: 'bg-muted text-muted-foreground border-border', label: 'Cancelled' };
     default:
-      return { icon: AlertCircle, color: 'bg-blue-100 text-blue-800', label: 'Draft' };
+      return { icon: AlertCircle, color: 'bg-primary/20 text-primary border-primary/30', label: 'Draft' };
   }
 };
 
@@ -157,21 +157,21 @@ const ContractsList = ({ onSelectContract, selectedContractId, refreshTrigger }:
   };
 
   if (loading) {
-    return <div className="animate-pulse h-48 bg-slate-100 rounded-lg" />;
+    return <div className="animate-pulse h-48 bg-muted rounded-lg" />;
   }
 
   return (
     <>
-      <Card className="border-slate-200 shadow-sm">
+      <Card className="border-border bg-card shadow-lg shadow-primary/5">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <FileText className="h-5 w-5 text-blue-600" />
+          <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
+            <FileText className="h-5 w-5 text-primary" />
             Saved Contracts ({contracts.length})
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {contracts.length === 0 ? (
-            <p className="text-sm text-slate-500 text-center py-8 px-4">
+            <p className="text-sm text-muted-foreground text-center py-8 px-4">
               No contracts yet. Create your first contract above.
             </p>
           ) : (
@@ -186,22 +186,22 @@ const ContractsList = ({ onSelectContract, selectedContractId, refreshTrigger }:
                       key={contract.id}
                       className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer ${
                         selectedContractId === contract.id
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-slate-200 hover:border-blue-300 hover:bg-slate-50"
+                          ? "border-primary bg-primary/10 shadow-lg shadow-primary/10"
+                          : "border-border hover:border-primary/50 hover:bg-muted/50"
                       }`}
                       onClick={() => onSelectContract(contract)}
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <p className="font-semibold text-slate-800 text-sm truncate">
+                          <p className="font-semibold text-foreground text-sm truncate">
                             {contract.creator_name}
                           </p>
-                          <Badge className={`text-xs ${statusConfig.color}`}>
+                          <Badge className={`text-xs border ${statusConfig.color}`}>
                             <StatusIcon className="h-3 w-3 mr-1" />
                             {statusConfig.label}
                           </Badge>
                         </div>
-                        <div className="flex items-center gap-3 text-xs text-slate-500">
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
                           <span>Created: {format(new Date(contract.created_at), 'dd MMM yyyy')}</span>
                           {contract.valid_until && (
                             <span>Expires: {format(new Date(contract.valid_until), 'dd MMM yyyy')}</span>
@@ -209,12 +209,12 @@ const ContractsList = ({ onSelectContract, selectedContractId, refreshTrigger }:
                         </div>
                         <div className="flex items-center gap-2 mt-1">
                           {contract.owner_signature && (
-                            <Badge variant="outline" className="text-xs text-green-600 border-green-300">
+                            <Badge variant="outline" className="text-xs text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
                               Owner Signed
                             </Badge>
                           )}
                           {contract.creator_signature && (
-                            <Badge variant="outline" className="text-xs text-green-600 border-green-300">
+                            <Badge variant="outline" className="text-xs text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
                               Creator Signed
                             </Badge>
                           )}
@@ -224,7 +224,7 @@ const ContractsList = ({ onSelectContract, selectedContractId, refreshTrigger }:
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-blue-500 hover:text-blue-600 hover:bg-blue-50"
+                          className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10"
                           onClick={(e) => openRenewDialog(contract, e)}
                           title="Renew Contract"
                         >
@@ -236,12 +236,12 @@ const ContractsList = ({ onSelectContract, selectedContractId, refreshTrigger }:
                           className="h-8 w-8"
                           onClick={(e) => { e.stopPropagation(); onSelectContract(contract); }}
                         >
-                          <Eye className="h-4 w-4 text-slate-500" />
+                          <Eye className="h-4 w-4 text-muted-foreground" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                           onClick={(e) => handleDeleteContract(contract.id, e)}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -258,18 +258,18 @@ const ContractsList = ({ onSelectContract, selectedContractId, refreshTrigger }:
 
       {/* Renew Contract Dialog */}
       <Dialog open={renewDialogOpen} onOpenChange={setRenewDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-card border-border">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <RefreshCw className="h-5 w-5 text-blue-600" />
+            <DialogTitle className="flex items-center gap-2 text-foreground">
+              <RefreshCw className="h-5 w-5 text-primary" />
               Renew Contract
             </DialogTitle>
-            <DialogDescription>
-              Extend the contract for <strong>{renewingContract?.creator_name}</strong>.
+            <DialogDescription className="text-muted-foreground">
+              Extend the contract for <strong className="text-foreground">{renewingContract?.creator_name}</strong>.
               {renewingContract?.valid_until && (
                 <>
                   {" "}Current expiry:{" "}
-                  <strong>{format(new Date(renewingContract.valid_until), "dd MMM yyyy")}</strong>
+                  <strong className="text-foreground">{format(new Date(renewingContract.valid_until), "dd MMM yyyy")}</strong>
                   {new Date(renewingContract.valid_until) < new Date() && (
                     <Badge variant="destructive" className="ml-2 text-xs">Expired</Badge>
                   )}
@@ -292,7 +292,7 @@ const ContractsList = ({ onSelectContract, selectedContractId, refreshTrigger }:
                 <Button
                   key={option.label}
                   variant="outline"
-                  className="flex flex-col items-center gap-1 h-auto py-3 hover:border-blue-400 hover:bg-blue-50"
+                  className="flex flex-col items-center gap-1 h-auto py-3 border-border hover:border-primary hover:bg-primary/10 text-foreground"
                   onClick={() => handleRenew(option)}
                   disabled={isRenewing}
                 >

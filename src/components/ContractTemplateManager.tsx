@@ -118,13 +118,11 @@ const ContractTemplateManager = ({ onSelectTemplate, selectedTemplateId }: Contr
 
   const handleSetDefault = async (id: string) => {
     try {
-      // Remove default from all templates
       await supabase
         .from("contract_templates")
         .update({ is_default: false })
         .neq("id", "");
 
-      // Set new default
       const { error } = await supabase
         .from("contract_templates")
         .update({ is_default: true })
@@ -148,50 +146,50 @@ const ContractTemplateManager = ({ onSelectTemplate, selectedTemplateId }: Contr
   };
 
   if (loading) {
-    return <div className="animate-pulse h-32 bg-slate-100 rounded-lg" />;
+    return <div className="animate-pulse h-32 bg-muted rounded-lg" />;
   }
 
   return (
-    <Card className="border-slate-200 shadow-sm">
+    <Card className="border-border bg-card shadow-lg shadow-primary/5">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <FileText className="h-5 w-5 text-blue-600" />
+          <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
+            <FileText className="h-5 w-5 text-primary" />
             Contract Templates
           </CardTitle>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="sm" onClick={() => { setEditingTemplate(null); setFormData({ name: "", description: "" }); }}>
+              <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20" onClick={() => { setEditingTemplate(null); setFormData({ name: "", description: "" }); }}>
                 <Plus className="h-4 w-4 mr-1" />
                 New Template
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-white">
+            <DialogContent className="bg-card border-border">
               <DialogHeader>
-                <DialogTitle className="text-slate-800">
+                <DialogTitle className="text-foreground">
                   {editingTemplate ? "Edit Template" : "Create New Template"}
                 </DialogTitle>
               </DialogHeader>
               <div className="space-y-4 pt-4">
                 <div>
-                  <Label className="text-slate-700">Template Name</Label>
+                  <Label className="text-muted-foreground">Template Name</Label>
                   <Input
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     placeholder="e.g., Standard Creator Contract"
-                    className="mt-1"
+                    className="mt-1 bg-input border-border text-foreground"
                   />
                 </div>
                 <div>
-                  <Label className="text-slate-700">Description</Label>
+                  <Label className="text-muted-foreground">Description</Label>
                   <Textarea
                     value={formData.description}
                     onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                     placeholder="Brief description of this template..."
-                    className="mt-1"
+                    className="mt-1 bg-input border-border text-foreground"
                   />
                 </div>
-                <Button onClick={handleSaveTemplate} className="w-full">
+                <Button onClick={handleSaveTemplate} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
                   {editingTemplate ? "Update Template" : "Create Template"}
                 </Button>
               </div>
@@ -201,7 +199,7 @@ const ContractTemplateManager = ({ onSelectTemplate, selectedTemplateId }: Contr
       </CardHeader>
       <CardContent>
         {templates.length === 0 ? (
-          <p className="text-sm text-slate-500 text-center py-4">
+          <p className="text-sm text-muted-foreground text-center py-4">
             No templates yet. Create your first template to get started.
           </p>
         ) : (
@@ -211,22 +209,22 @@ const ContractTemplateManager = ({ onSelectTemplate, selectedTemplateId }: Contr
                 key={template.id}
                 className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer ${
                   selectedTemplateId === template.id
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-slate-200 hover:border-blue-300 hover:bg-slate-50"
+                    ? "border-primary bg-primary/10 shadow-lg shadow-primary/10"
+                    : "border-border hover:border-primary/50 hover:bg-muted/50"
                 }`}
                 onClick={() => onSelectTemplate(template)}
               >
                 <div className="flex items-center gap-3">
-                  <FileText className="h-4 w-4 text-slate-400" />
+                  <FileText className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <p className="font-medium text-slate-800 text-sm flex items-center gap-2">
+                    <p className="font-medium text-foreground text-sm flex items-center gap-2">
                       {template.name}
                       {template.is_default && (
-                        <Badge variant="secondary" className="text-xs">Default</Badge>
+                        <Badge variant="secondary" className="text-xs bg-primary/20 text-primary border-primary/30">Default</Badge>
                       )}
                     </p>
                     {template.description && (
-                      <p className="text-xs text-slate-500">{template.description}</p>
+                      <p className="text-xs text-muted-foreground">{template.description}</p>
                     )}
                   </div>
                 </div>
@@ -238,7 +236,7 @@ const ContractTemplateManager = ({ onSelectTemplate, selectedTemplateId }: Contr
                     onClick={(e) => { e.stopPropagation(); handleSetDefault(template.id); }}
                     title="Set as default"
                   >
-                    <Star className={`h-3.5 w-3.5 ${template.is_default ? 'text-yellow-500 fill-yellow-500' : 'text-slate-400'}`} />
+                    <Star className={`h-3.5 w-3.5 ${template.is_default ? 'text-amber-400 fill-amber-400' : 'text-muted-foreground'}`} />
                   </Button>
                   <Button
                     variant="ghost"
@@ -246,12 +244,12 @@ const ContractTemplateManager = ({ onSelectTemplate, selectedTemplateId }: Contr
                     className="h-7 w-7"
                     onClick={(e) => { e.stopPropagation(); openEditDialog(template); }}
                   >
-                    <Edit2 className="h-3.5 w-3.5 text-slate-400" />
+                    <Edit2 className="h-3.5 w-3.5 text-muted-foreground" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-50"
+                    className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
                     onClick={(e) => { e.stopPropagation(); handleDeleteTemplate(template.id); }}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
