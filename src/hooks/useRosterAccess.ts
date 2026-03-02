@@ -105,20 +105,8 @@ export const useRosterAccess = () => {
         }
       }
 
-      // Panel access is MANUAL ONLY - no automatic Discord role-based access
-      // Staff members get view access to all departments but need manual panel_access for edit
-      if (isStaff || isAdmin) {
-        setAccess({ 
-          hasAccess: true, 
-          canEdit: false,
-          loading: false, 
-          isOwner: false, 
-          isStaff: true,
-          accessibleDepartments: allDepts,
-          editableDepartments: [],
-        });
-        return;
-      }
+      // Panel access is MANUAL ONLY - no automatic access for staff/admin
+      // Staff members do NOT get automatic roster access - must be granted via panel_access
 
       // No access
       setAccess({ 
