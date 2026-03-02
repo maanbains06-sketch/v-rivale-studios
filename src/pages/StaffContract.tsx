@@ -157,15 +157,30 @@ const StaffContract = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { navigate("/auth"); return; }
+      
+      // Check if user is owner
       const { data: isOwnerResult } = await supabase.rpc("is_owner", { _user_id: user.id });
-      if (!isOwnerResult) {
-        toast({ title: "Access Denied", description: "Only the owner can access this page.", variant: "destructive" });
-        navigate("/");
+      
+      if (isOwnerResult) {
+        setIsOwner(true);
         return;
       }
-      setIsOwner(true);
+
+      // Check if user has staff_contract panel access
+      const { data: hasPanelResult } = await supabase.rpc("has_panel_access", { 
+        _user_id: user.id, 
+        _panel_type: "staff_contract" 
+      });
+
+      if (hasPanelResult) {
+        setIsOwner(true);
+        return;
+      }
+
+      toast({ title: "Access Denied", description: "You don't have permission to access staff contracts.", variant: "destructive" });
+      navigate("/");
     } catch (error) {
-      console.error("Error checking owner access:", error);
+      console.error("Error checking access:", error);
       navigate("/");
     } finally {
       setLoading(false);
