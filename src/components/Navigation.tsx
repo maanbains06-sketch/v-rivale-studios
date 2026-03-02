@@ -439,17 +439,30 @@ const Navigation = () => {
                             </Link>
                           </Button>
                           {isOwner && (
-                            <Button 
-                              variant="outline"
-                              className="justify-start glass-effect border-purple-500/30"
-                              asChild
-                              onClick={() => setIsMenuOpen(false)}
-                            >
-                              <Link to="/creator-contract">
-                                <FileText className="w-4 h-4 mr-2 text-purple-400" />
-                                Contract
-                              </Link>
-                            </Button>
+                            <>
+                              <Button 
+                                variant="outline"
+                                className="justify-start glass-effect border-purple-500/30"
+                                asChild
+                                onClick={() => setIsMenuOpen(false)}
+                              >
+                                <Link to="/creator-contract">
+                                  <FileText className="w-4 h-4 mr-2 text-purple-400" />
+                                  Creator Contract
+                                </Link>
+                              </Button>
+                              <Button 
+                                variant="outline"
+                                className="justify-start glass-effect border-red-500/30"
+                                asChild
+                                onClick={() => setIsMenuOpen(false)}
+                              >
+                                <Link to="/staff-contract">
+                                  <FileText className="w-4 h-4 mr-2 text-red-400" />
+                                  Staff Agreement
+                                </Link>
+                              </Button>
+                            </>
                           )}
                         </>
                       )}
