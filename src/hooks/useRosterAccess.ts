@@ -105,61 +105,8 @@ export const useRosterAccess = () => {
         }
       }
 
-      // Check Discord roles for edit/view permission via edge function (live fetch)
-      if (discordId && /^\d{17,19}$/.test(discordId)) {
-        console.log('Fetching live roster access for Discord ID:', discordId);
-        
-        const { data, error } = await supabase.functions.invoke('verify-roster-access', {
-          body: { discordId }
-        });
-
-        if (error) {
-          console.error('Error checking roster access:', error);
-          // Fall back to staff check - staff can view all but no edit
-          if (isStaff || isAdmin) {
-            setAccess({ 
-              hasAccess: true, 
-              canEdit: false,
-              loading: false, 
-              isOwner: false, 
-              isStaff: true,
-              accessibleDepartments: allDepts,
-              editableDepartments: [],
-            });
-            return;
-          }
-          setAccess({ 
-            hasAccess: false, 
-            canEdit: false, 
-            loading: false, 
-            isOwner: false, 
-            isStaff: false, 
-            accessibleDepartments: [],
-            editableDepartments: [],
-          });
-          return;
-        }
-
-        if (data) {
-          console.log('Live roster access response:', data);
-          // User has specific Discord roles for roster access
-          const departments = (data.accessibleDepartments || []) as RosterDepartmentKey[];
-          const editable = (data.editableDepartments || []) as RosterDepartmentKey[];
-          
-          setAccess({
-            hasAccess: data.hasAccess || false,
-            canEdit: data.canEdit || false,
-            loading: false,
-            isOwner: data.isOwner || false,
-            isStaff: isStaff || isAdmin || false,
-            accessibleDepartments: departments,
-            editableDepartments: editable,
-          });
-          return;
-        }
-      }
-
-      // Staff members get view access to all departments but need Discord role for edit
+      // Panel access is MANUAL ONLY - no automatic Discord role-based access
+      // Staff members get view access to all departments but need manual panel_access for edit
       if (isStaff || isAdmin) {
         setAccess({ 
           hasAccess: true, 
