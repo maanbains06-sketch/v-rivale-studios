@@ -212,33 +212,21 @@ const CreatorContract = () => {
         return;
       }
 
-      // Check if user is owner
       const { data: isOwnerResult } = await supabase.rpc("is_owner", { _user_id: user.id });
       
-      if (isOwnerResult) {
-        setIsOwner(true);
+      if (!isOwnerResult) {
+        toast({
+          title: "Access Denied",
+          description: "Only the owner can access this page.",
+          variant: "destructive",
+        });
+        navigate("/");
         return;
       }
 
-      // Check if user has creator_contract panel access
-      const { data: hasPanelResult } = await supabase.rpc("has_panel_access", { 
-        _user_id: user.id, 
-        _panel_type: "creator_contract" 
-      });
-
-      if (hasPanelResult) {
-        setIsOwner(true);
-        return;
-      }
-
-      toast({
-        title: "Access Denied",
-        description: "You don't have permission to access creator contracts.",
-        variant: "destructive",
-      });
-      navigate("/");
+      setIsOwner(true);
     } catch (error) {
-      console.error("Error checking access:", error);
+      console.error("Error checking owner access:", error);
       navigate("/");
     } finally {
       setLoading(false);

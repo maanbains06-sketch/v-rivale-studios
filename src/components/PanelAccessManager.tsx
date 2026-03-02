@@ -47,8 +47,6 @@ const PANEL_TYPES = [
   { id: "roster", label: "Roster Panel", icon: Users, description: "View and edit department rosters", hasDepartments: true },
   { id: "admin", label: "Admin Panel", icon: Settings, description: "Full admin access to all features", hasDepartments: false },
   { id: "contract", label: "Contract Panel", icon: FileText, description: "Manage creator contracts (Owner-only by default)", hasDepartments: false },
-  { id: "staff_contract", label: "Staff Contract", icon: Shield, description: "Access Staff & Administrator Agreement contracts", hasDepartments: false },
-  { id: "creator_contract", label: "Creator Contract", icon: FileText, description: "Access Content Creator contracts", hasDepartments: false },
 ];
 
 // Department options for each panel type
