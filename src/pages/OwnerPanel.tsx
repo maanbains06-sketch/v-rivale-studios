@@ -1642,6 +1642,10 @@ const OwnerPanel = () => {
                     </Badge>
                   )}
                 </TabsTrigger>
+                <TabsTrigger value="app-toggles" className="flex items-center gap-2 whitespace-nowrap">
+                  <ToggleLeft className="w-4 h-4" />
+                  <span className="hidden sm:inline">App Toggles</span>
+                </TabsTrigger>
                 <TabsTrigger value="app-stats" className="flex items-center gap-2 whitespace-nowrap">
                   <BarChart3 className="w-4 h-4" />
                   <span className="hidden sm:inline">App Stats</span>
@@ -1753,10 +1757,6 @@ const OwnerPanel = () => {
                 <TabsTrigger value="currency" className="flex items-center gap-2 whitespace-nowrap">
                   <Coins className="w-4 h-4" />
                   <span className="hidden sm:inline">Currency</span>
-                </TabsTrigger>
-                <TabsTrigger value="app-toggles" className="flex items-center gap-2 whitespace-nowrap">
-                  <ToggleLeft className="w-4 h-4" />
-                  <span className="hidden sm:inline">App Toggles</span>
                 </TabsTrigger>
               </TabsList>
             </div>
