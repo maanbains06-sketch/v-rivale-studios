@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Download, Edit2, Save, X, Plus, FileText, CheckCircle, Clock, PlusCircle, Trash2 } from "lucide-react";
+import { ArrowLeft, Download, Edit2, Save, X, Plus, FileText, CheckCircle, Clock, PlusCircle, Trash2, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import jsPDF from "jspdf";
@@ -69,6 +69,14 @@ const defaultSpecialTerms: SpecialTermItem[] = [
   { id: '6', text: 'Creator will be featured on server\'s official social media monthly', enabled: false },
   { id: '7', text: 'Creator will receive early access to new server updates and features', enabled: false },
   { id: '8', text: 'Server will provide custom roleplay scenarios for content creation', enabled: false },
+  { id: '9', text: 'Creator must NOT promote or advertise competing GTA 5 RP servers during the contract period', enabled: true },
+  { id: '10', text: 'Creator must include server name and Discord invite link in all video descriptions and stream titles', enabled: true },
+  { id: '11', text: 'Creator must NOT share unreleased server updates, scripts, or development plans without written permission', enabled: true },
+  { id: '12', text: 'Creator must maintain a minimum upload schedule as agreed and notify management of any planned breaks in advance', enabled: true },
+  { id: '13', text: 'Creator must NOT engage in any activity that could damage the server\'s reputation or brand image', enabled: true },
+  { id: '14', text: 'All content must comply with YouTube/Twitch community guidelines and Indian IT laws', enabled: true },
+  { id: '15', text: 'Creator agrees to remove or edit any content upon server management request if it violates community guidelines', enabled: true },
+  { id: '16', text: 'Creator must NOT use exploits, glitches, or cheats during content creation on the server', enabled: true },
 ];
 
 const defaultContractData: ContractData = {
@@ -110,6 +118,7 @@ const CreatorContract = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
+  const [isStaff, setIsStaff] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [contractData, setContractData] = useState<ContractData>(defaultContractData);
   const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
@@ -123,7 +132,7 @@ const CreatorContract = () => {
   const [savedOwnerSignature, setSavedOwnerSignature] = useState<string | null>(null);
 
   useEffect(() => {
-    checkOwnerAccess();
+    checkAccess();
     loadSavedOwnerSignature();
   }, []);
 
@@ -204,7 +213,7 @@ const CreatorContract = () => {
     }
   };
 
-  const checkOwnerAccess = async () => {
+  const checkAccess = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -212,21 +221,51 @@ const CreatorContract = () => {
         return;
       }
 
+      // Check if owner
       const { data: isOwnerResult } = await supabase.rpc("is_owner", { _user_id: user.id });
-      
-      if (!isOwnerResult) {
-        toast({
-          title: "Access Denied",
-          description: "Only the owner can access this page.",
-          variant: "destructive",
-        });
+      if (isOwnerResult) {
+        setIsOwner(true);
+        setIsStaff(true);
+        setLoading(false);
+        return;
+      }
+
+      // Check if staff member or has panel access
+      const discordId = user.user_metadata?.discord_id;
+      let hasAccess = false;
+
+      const { data: panelAccess } = await supabase.rpc("has_panel_access", { _user_id: user.id, _panel_type: "creator_contract" });
+      if (panelAccess) hasAccess = true;
+
+      if (!hasAccess && discordId) {
+        const { data: staffMember } = await supabase
+          .from("staff_members")
+          .select("id")
+          .eq("discord_id", discordId)
+          .eq("is_active", true)
+          .maybeSingle();
+        if (staffMember) hasAccess = true;
+      }
+
+      if (!hasAccess) {
+        const { data: staffByUser } = await supabase
+          .from("staff_members")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("is_active", true)
+          .maybeSingle();
+        if (staffByUser) hasAccess = true;
+      }
+
+      if (!hasAccess) {
+        toast({ title: "Access Denied", description: "Only staff members can access this page.", variant: "destructive" });
         navigate("/");
         return;
       }
 
-      setIsOwner(true);
+      setIsStaff(true);
     } catch (error) {
-      console.error("Error checking owner access:", error);
+      console.error("Error checking access:", error);
       navigate("/");
     } finally {
       setLoading(false);
@@ -881,7 +920,7 @@ const CreatorContract = () => {
     );
   }
 
-  if (!isOwner) return null;
+  if (!isStaff) return null;
 
   return (
     <div className="min-h-screen bg-background py-6 px-4 cursor-default [&_*]:cursor-auto [&_input]:cursor-text [&_textarea]:cursor-text [&_button]:cursor-pointer [&_a]:cursor-pointer">
@@ -893,6 +932,11 @@ const CreatorContract = () => {
             Back
           </Button>
           <div className="flex items-center gap-2">
+            {!isOwner && (
+              <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-400 bg-amber-500/10">
+                <Eye className="h-3 w-3 mr-1" /> View Only
+              </Badge>
+            )}
             <Badge 
               variant={contractStatus === 'signed' ? 'default' : 'secondary'} 
               className={`text-sm ${contractStatus === 'signed' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : contractStatus === 'pending' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-muted text-muted-foreground'}`}
@@ -907,10 +951,12 @@ const CreatorContract = () => {
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Left Sidebar - Templates & Contracts */}
           <div className="lg:col-span-1 space-y-6">
-            <Button onClick={handleNewContract} className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20" size="lg">
-              <Plus className="h-4 w-4" />
-              New Contract
-            </Button>
+            {isOwner && (
+              <Button onClick={handleNewContract} className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20" size="lg">
+                <Plus className="h-4 w-4" />
+                New Contract
+              </Button>
+            )}
 
             <Tabs defaultValue="contracts" className="w-full">
               <TabsList className="w-full bg-card border border-border">
@@ -922,6 +968,7 @@ const CreatorContract = () => {
                   onSelectContract={handleSelectContract}
                   selectedContractId={selectedContractId || undefined}
                   refreshTrigger={refreshTrigger}
+                  isOwner={isOwner}
                 />
               </TabsContent>
               <TabsContent value="templates" className="mt-4">
@@ -942,26 +989,24 @@ const CreatorContract = () => {
                 {selectedContractId ? 'Edit Contract' : 'New Contract'}
               </h2>
               <div className="flex gap-2">
-                {isEditing ? (
+                {isOwner && isEditing ? (
                   <>
                     <Button variant="outline" onClick={() => setIsEditing(false)} size="sm" className="border-border text-foreground hover:bg-muted">
-                      <X className="h-4 w-4 mr-1" />
-                      Cancel
+                      <X className="h-4 w-4 mr-1" /> Cancel
                     </Button>
                     <Button onClick={handleSaveContract} size="sm" disabled={saving} className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                      <Save className="h-4 w-4 mr-1" />
-                      {saving ? 'Saving...' : 'Save'}
+                      <Save className="h-4 w-4 mr-1" /> {saving ? 'Saving...' : 'Save'}
                     </Button>
                   </>
                 ) : (
                   <>
-                    <Button variant="outline" onClick={() => setIsEditing(true)} size="sm" className="border-border text-foreground hover:bg-muted">
-                      <Edit2 className="h-4 w-4 mr-1" />
-                      Edit
-                    </Button>
+                    {isOwner && (
+                      <Button variant="outline" onClick={() => setIsEditing(true)} size="sm" className="border-border text-foreground hover:bg-muted">
+                        <Edit2 className="h-4 w-4 mr-1" /> Edit
+                      </Button>
+                    )}
                     <Button onClick={generatePDF} size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20">
-                      <Download className="h-4 w-4 mr-1" />
-                      Download PDF
+                      <Download className="h-4 w-4 mr-1" /> Download PDF
                     </Button>
                   </>
                 )}

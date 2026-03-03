@@ -24,29 +24,27 @@ interface PolicyItem {
 }
 
 interface StaffContractData {
-  // Server Info
   serverName: string;
   serverOwner: string;
   serverEmail: string;
   serverDiscord: string;
-  // Staff Info
   staffName: string;
   staffEmail: string;
   staffDiscord: string;
   staffRole: string;
   staffDepartment: string;
   staffJoinDate: string;
-  // Contract Terms
   contractDuration: string;
   startDate: string;
   endDate: string;
-  // Policy Agreements
   ndaPolicies: PolicyItem[];
   conflictPolicies: PolicyItem[];
   antiCorruptionPolicies: PolicyItem[];
   dataProtectionPolicies: PolicyItem[];
   conductPolicies: PolicyItem[];
-  // Custom
+  communicationPolicies: PolicyItem[];
+  serverAssetPolicies: PolicyItem[];
+  emergencyPolicies: PolicyItem[];
   customTerms: string;
   disciplinaryAction: string;
 }
@@ -58,6 +56,8 @@ const defaultNdaPolicies: PolicyItem[] = [
   { id: 'nda4', text: 'Internal staff discussions, meeting notes, and decisions must remain within the staff team', enabled: true },
   { id: 'nda5', text: 'Staff must NOT screenshot or record internal admin panels, tools, or dashboards for external sharing', enabled: true },
   { id: 'nda6', text: 'Any server vulnerabilities or exploits discovered must be reported privately, never disclosed publicly', enabled: true },
+  { id: 'nda7', text: 'Staff must NOT disclose server financial details, revenue data, or donation records to unauthorized parties', enabled: true },
+  { id: 'nda8', text: 'All internal communication channels (staff Discord, admin chat) content is strictly confidential', enabled: true },
 ];
 
 const defaultConflictPolicies: PolicyItem[] = [
@@ -65,6 +65,8 @@ const defaultConflictPolicies: PolicyItem[] = [
   { id: 'coi2', text: 'Staff must disclose any ownership or partnership in other gaming communities', enabled: true },
   { id: 'coi3', text: 'Staff must NOT recruit Skylife RP players or staff members for competing servers', enabled: true },
   { id: 'coi4', text: 'Any secondary involvement in gaming communities must be disclosed to management immediately', enabled: true },
+  { id: 'coi5', text: 'Staff must NOT share server strategies, marketing plans, or growth tactics with competing servers', enabled: true },
+  { id: 'coi6', text: 'Staff must NOT accept compensation or rewards from other servers for any information or services', enabled: true },
 ];
 
 const defaultAntiCorruptionPolicies: PolicyItem[] = [
@@ -75,6 +77,8 @@ const defaultAntiCorruptionPolicies: PolicyItem[] = [
   { id: 'ac5', text: 'Using admin tools to gain unfair advantage during roleplay is strictly forbidden', enabled: true },
   { id: 'ac6', text: 'Staff must NOT modify player records, stats, or inventories without legitimate administrative reason and proper logging', enabled: true },
   { id: 'ac7', text: 'Favoritism in handling reports, applications, or disputes based on personal relationships is prohibited', enabled: true },
+  { id: 'ac8', text: 'Staff must NOT manipulate server economy, job payouts, or business profits for personal gain', enabled: true },
+  { id: 'ac9', text: 'Creating or using alternate accounts to bypass staff restrictions or gain unfair advantages is strictly prohibited', enabled: true },
 ];
 
 const defaultDataProtectionPolicies: PolicyItem[] = [
@@ -83,6 +87,8 @@ const defaultDataProtectionPolicies: PolicyItem[] = [
   { id: 'dp3', text: 'Staff must access player data ONLY when required for legitimate moderation and administrative duties', enabled: true },
   { id: 'dp4', text: 'All moderation actions must be properly logged and documented in the admin system', enabled: true },
   { id: 'dp5', text: 'Staff must follow data retention policies and not store player data on personal devices', enabled: true },
+  { id: 'dp6', text: 'Player ban records and appeal information must be kept confidential and not discussed publicly', enabled: true },
+  { id: 'dp7', text: 'Staff must NOT share player Discord DMs, tickets, or complaint details with other players', enabled: true },
 ];
 
 const defaultConductPolicies: PolicyItem[] = [
@@ -92,6 +98,31 @@ const defaultConductPolicies: PolicyItem[] = [
   { id: 'cd4', text: 'Staff must follow the chain of command and escalate issues appropriately', enabled: true },
   { id: 'cd5', text: 'Maintaining minimum activity requirements as defined by management', enabled: true },
   { id: 'cd6', text: 'Staff must NOT engage in toxic behavior, discrimination, or harassment toward players or other staff', enabled: true },
+  { id: 'cd7', text: 'Staff must remain impartial when handling disputes and avoid personal bias in decisions', enabled: true },
+  { id: 'cd8', text: 'Staff must NOT publicly criticize the server, its management, or other staff members', enabled: true },
+];
+
+const defaultCommunicationPolicies: PolicyItem[] = [
+  { id: 'cm1', text: 'Staff must maintain professional language in all official communications with players', enabled: true },
+  { id: 'cm2', text: 'All warnings, bans, and moderation actions must include clear reasons documented in writing', enabled: true },
+  { id: 'cm3', text: 'Staff must NOT make public statements on behalf of the server without management approval', enabled: true },
+  { id: 'cm4', text: 'Internal disputes between staff members must be resolved through proper channels, not public forums', enabled: true },
+  { id: 'cm5', text: 'Staff must respond to management communications within 24 hours during active duty periods', enabled: true },
+];
+
+const defaultServerAssetPolicies: PolicyItem[] = [
+  { id: 'sa1', text: 'Server assets, scripts, and custom resources are the property of Skylife RP and must NOT be copied or distributed', enabled: true },
+  { id: 'sa2', text: 'Staff must NOT download, backup, or extract server files, database exports, or configuration files without authorization', enabled: true },
+  { id: 'sa3', text: 'Access credentials (FTP, database, admin panels) must NOT be shared with unauthorized individuals', enabled: true },
+  { id: 'sa4', text: 'Any custom tools, scripts, or modifications created for the server remain property of Skylife RP', enabled: true },
+  { id: 'sa5', text: 'Staff must immediately report any unauthorized access or security breach to server management', enabled: true },
+];
+
+const defaultEmergencyPolicies: PolicyItem[] = [
+  { id: 'em1', text: 'In case of server attacks (DDoS, exploits), staff must follow the emergency protocol and notify management immediately', enabled: true },
+  { id: 'em2', text: 'Staff must NOT attempt to handle major security incidents independently without informing senior management', enabled: true },
+  { id: 'em3', text: 'In case of mass rule violations or raids, staff must document all actions taken and players involved', enabled: true },
+  { id: 'em4', text: 'Staff must be available for emergency situations during their assigned duty periods', enabled: true },
 ];
 
 const defaultContractData: StaffContractData = {
@@ -113,9 +144,14 @@ const defaultContractData: StaffContractData = {
   antiCorruptionPolicies: defaultAntiCorruptionPolicies,
   dataProtectionPolicies: defaultDataProtectionPolicies,
   conductPolicies: defaultConductPolicies,
+  communicationPolicies: defaultCommunicationPolicies,
+  serverAssetPolicies: defaultServerAssetPolicies,
+  emergencyPolicies: defaultEmergencyPolicies,
   customTerms: "",
-  disciplinaryAction: "Violations may result in immediate suspension, demotion, permanent removal from staff, and potential ban from the server. Severe breaches involving data leaks or corruption will be handled with zero tolerance.",
+  disciplinaryAction: "Violations may result in immediate suspension, demotion, permanent removal from staff, and potential ban from the server. Severe breaches involving data leaks or corruption will be handled with zero tolerance. Repeated minor violations will result in escalating consequences: 1st offense — Written Warning, 2nd offense — Temporary Suspension (7 days), 3rd offense — Permanent Removal. Major violations (data leaks, corruption, abuse of power) will result in immediate termination without prior warning.",
 };
+
+type PolicySectionKey = 'ndaPolicies' | 'conflictPolicies' | 'antiCorruptionPolicies' | 'dataProtectionPolicies' | 'conductPolicies' | 'communicationPolicies' | 'serverAssetPolicies' | 'emergencyPolicies';
 
 const StaffContract = () => {
   const navigate = useNavigate();
@@ -124,6 +160,7 @@ const StaffContract = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
+  const [isStaff, setIsStaff] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [contractData, setContractData] = useState<StaffContractData>(defaultContractData);
   const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
@@ -136,7 +173,7 @@ const StaffContract = () => {
   const [savedOwnerSignature, setSavedOwnerSignature] = useState<string | null>(null);
 
   useEffect(() => {
-    checkOwnerAccess();
+    checkAccess();
     loadSavedOwnerSignature();
   }, []);
 
@@ -153,19 +190,59 @@ const StaffContract = () => {
     }
   };
 
-  const checkOwnerAccess = async () => {
+  const checkAccess = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { navigate("/auth"); return; }
+      
+      // Check if owner
       const { data: isOwnerResult } = await supabase.rpc("is_owner", { _user_id: user.id });
-      if (!isOwnerResult) {
-        toast({ title: "Access Denied", description: "Only the owner can access this page.", variant: "destructive" });
+      if (isOwnerResult) {
+        setIsOwner(true);
+        setIsStaff(true);
+        setLoading(false);
+        return;
+      }
+
+      // Check if staff member or has panel access
+      const discordId = user.user_metadata?.discord_id;
+      let hasAccess = false;
+
+      // Check panel_access for staff_contract
+      const { data: panelAccess } = await supabase.rpc("has_panel_access", { _user_id: user.id, _panel_type: "staff_contract" });
+      if (panelAccess) hasAccess = true;
+
+      // Check if active staff member
+      if (!hasAccess && discordId) {
+        const { data: staffMember } = await supabase
+          .from("staff_members")
+          .select("id")
+          .eq("discord_id", discordId)
+          .eq("is_active", true)
+          .maybeSingle();
+        if (staffMember) hasAccess = true;
+      }
+
+      if (!hasAccess) {
+        // Fallback: check by user_id
+        const { data: staffByUser } = await supabase
+          .from("staff_members")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("is_active", true)
+          .maybeSingle();
+        if (staffByUser) hasAccess = true;
+      }
+
+      if (!hasAccess) {
+        toast({ title: "Access Denied", description: "Only staff members can access this page.", variant: "destructive" });
         navigate("/");
         return;
       }
-      setIsOwner(true);
+
+      setIsStaff(true);
     } catch (error) {
-      console.error("Error checking owner access:", error);
+      console.error("Error checking access:", error);
       navigate("/");
     } finally {
       setLoading(false);
@@ -176,36 +253,36 @@ const StaffContract = () => {
     setContractData(prev => ({ ...prev, [field]: value }));
   };
 
-  const togglePolicy = (section: 'ndaPolicies' | 'conflictPolicies' | 'antiCorruptionPolicies' | 'dataProtectionPolicies' | 'conductPolicies', policyId: string) => {
+  const togglePolicy = (section: PolicySectionKey, policyId: string) => {
     setContractData(prev => ({
       ...prev,
-      [section]: prev[section].map((p: PolicyItem) =>
+      [section]: (prev[section] as PolicyItem[]).map((p: PolicyItem) =>
         p.id === policyId ? { ...p, enabled: !p.enabled } : p
       )
     }));
   };
 
-  const addCustomPolicy = (section: 'ndaPolicies' | 'conflictPolicies' | 'antiCorruptionPolicies' | 'dataProtectionPolicies' | 'conductPolicies') => {
+  const addCustomPolicy = (section: PolicySectionKey) => {
     const newId = `custom_${Date.now()}`;
     setContractData(prev => ({
       ...prev,
-      [section]: [...prev[section], { id: newId, text: '', enabled: true }]
+      [section]: [...(prev[section] as PolicyItem[]), { id: newId, text: '', enabled: true }]
     }));
   };
 
-  const updatePolicyText = (section: 'ndaPolicies' | 'conflictPolicies' | 'antiCorruptionPolicies' | 'dataProtectionPolicies' | 'conductPolicies', policyId: string, text: string) => {
+  const updatePolicyText = (section: PolicySectionKey, policyId: string, text: string) => {
     setContractData(prev => ({
       ...prev,
-      [section]: prev[section].map((p: PolicyItem) =>
+      [section]: (prev[section] as PolicyItem[]).map((p: PolicyItem) =>
         p.id === policyId ? { ...p, text } : p
       )
     }));
   };
 
-  const removePolicy = (section: 'ndaPolicies' | 'conflictPolicies' | 'antiCorruptionPolicies' | 'dataProtectionPolicies' | 'conductPolicies', policyId: string) => {
+  const removePolicy = (section: PolicySectionKey, policyId: string) => {
     setContractData(prev => ({
       ...prev,
-      [section]: prev[section].filter((p: PolicyItem) => p.id !== policyId)
+      [section]: (prev[section] as PolicyItem[]).filter((p: PolicyItem) => p.id !== policyId)
     }));
   };
 
@@ -240,6 +317,10 @@ const StaffContract = () => {
   };
 
   const handleSaveContract = async () => {
+    if (!isOwner) {
+      toast({ title: "Permission Denied", description: "Only the owner can save contracts.", variant: "destructive" });
+      return;
+    }
     if (!contractData.staffName.trim()) {
       toast({ title: "Please enter staff member name", variant: "destructive" });
       return;
@@ -323,7 +404,6 @@ const StaffContract = () => {
       }
     };
 
-    // Header
     doc.setFillColor(...headerBg);
     doc.rect(0, 0, pageWidth, 40, 'F');
     doc.setFillColor(...red);
@@ -341,7 +421,6 @@ const StaffContract = () => {
 
     yPos = 52;
 
-    // Contract info
     doc.setTextColor(...black);
     doc.setFontSize(8);
     doc.text(`Contract ID: ${selectedContractId?.slice(0, 8) || 'DRAFT'}`, margin, yPos);
@@ -374,7 +453,6 @@ const StaffContract = () => {
       doc.text(value || '', x + 42, y + 5.5);
     };
 
-    // Parties
     drawSectionHeader('Party A - Server Management', '⚡');
     const halfWidth = contentWidth / 2 - 2;
     drawFormField('Organization', contractData.serverName, margin, yPos, halfWidth);
@@ -395,14 +473,12 @@ const StaffContract = () => {
     drawFormField('Join Date', contractData.staffJoinDate ? format(new Date(contractData.staffJoinDate), 'dd/MM/yyyy') : '', margin + halfWidth + 4, yPos, halfWidth);
     yPos += 15;
 
-    // Contract Period
     drawSectionHeader('Contract Period', '📅');
     drawFormField('Duration', contractData.contractDuration, margin, yPos, contentWidth / 3 - 2);
     drawFormField('Start Date', format(new Date(contractData.startDate), 'dd/MM/yyyy'), margin + contentWidth / 3 + 1, yPos, contentWidth / 3 - 2);
     drawFormField('End Date', format(new Date(contractData.endDate), 'dd/MM/yyyy'), margin + (contentWidth / 3 + 1) * 2, yPos, contentWidth / 3 - 2);
     yPos += 15;
 
-    // Policy sections in PDF
     const renderPolicies = (title: string, icon: string, policies: PolicyItem[]) => {
       const active = getActivePolicies(policies);
       if (active.length === 0) return;
@@ -428,8 +504,10 @@ const StaffContract = () => {
     renderPolicies('Anti-Corruption & Zero Tolerance', '🚫', contractData.antiCorruptionPolicies);
     renderPolicies('Data Protection & Privacy', '🛡️', contractData.dataProtectionPolicies);
     renderPolicies('Code of Conduct & Responsibilities', '📋', contractData.conductPolicies);
+    renderPolicies('Communication & Representation', '💬', contractData.communicationPolicies || []);
+    renderPolicies('Server Assets & Intellectual Property', '🔐', contractData.serverAssetPolicies || []);
+    renderPolicies('Emergency Protocols', '🚨', contractData.emergencyPolicies || []);
 
-    // Disciplinary
     checkPageBreak(30);
     drawSectionHeader('Disciplinary Action & Consequences', '⚠️');
     doc.setTextColor(...black);
@@ -443,7 +521,6 @@ const StaffContract = () => {
     });
     yPos += 10;
 
-    // Signatures
     checkPageBreak(70);
     drawSectionHeader('Signatures & Acknowledgement', '✍️');
     doc.setFont('helvetica', 'italic');
@@ -455,7 +532,6 @@ const StaffContract = () => {
     const sigBoxWidth = (contentWidth - 10) / 2;
     const sigBoxHeight = 30;
 
-    // Party A
     doc.setDrawColor(...black);
     doc.setLineWidth(0.3);
     doc.rect(margin, yPos, sigBoxWidth, sigBoxHeight + 25);
@@ -473,7 +549,6 @@ const StaffContract = () => {
     doc.text(`Name: ${contractData.serverOwner}`, margin + 3, yPos + sigBoxHeight + 8);
     doc.text(`Date: ${ownerSignedAt ? format(new Date(ownerSignedAt), 'dd/MM/yyyy HH:mm') : '____________________'}`, margin + 3, yPos + sigBoxHeight + 13);
 
-    // Party B
     const partyBX = margin + sigBoxWidth + 10;
     doc.rect(partyBX, yPos, sigBoxWidth, sigBoxHeight + 25);
     doc.setFillColor(...lightGray);
@@ -489,7 +564,6 @@ const StaffContract = () => {
     doc.text(`Name: ${contractData.staffName || '____________________'}`, partyBX + 3, yPos + sigBoxHeight + 8);
     doc.text(`Date: ${staffSignedAt ? format(new Date(staffSignedAt), 'dd/MM/yyyy HH:mm') : '____________________'}`, partyBX + 3, yPos + sigBoxHeight + 13);
 
-    // Footer on all pages
     const totalPages = doc.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i);
@@ -516,7 +590,7 @@ const StaffContract = () => {
     );
   }
 
-  if (!isOwner) return null;
+  if (!isStaff) return null;
 
   const PolicySection = ({
     title,
@@ -528,7 +602,7 @@ const StaffContract = () => {
     title: string;
     icon: any;
     iconColor: string;
-    sectionKey: 'ndaPolicies' | 'conflictPolicies' | 'antiCorruptionPolicies' | 'dataProtectionPolicies' | 'conductPolicies';
+    sectionKey: PolicySectionKey;
     policies: PolicyItem[];
   }) => (
     <section>
@@ -536,9 +610,9 @@ const StaffContract = () => {
         <Icon className={`h-5 w-5 ${iconColor}`} />
         {title}
       </h2>
-      {isEditing ? (
+      {isEditing && isOwner ? (
         <div className="space-y-2">
-          {policies.map((policy, index) => (
+          {policies.map((policy) => (
             <div key={policy.id} className="flex items-start gap-3 p-2 rounded hover:bg-muted/50 transition-colors">
               <Checkbox
                 checked={policy.enabled}
@@ -595,27 +669,37 @@ const StaffContract = () => {
           <Button variant="outline" onClick={() => navigate(-1)} className="gap-2 border-border bg-card text-foreground hover:bg-muted">
             <ArrowLeft className="h-4 w-4" /> Back
           </Button>
-          <Badge
-            variant={contractStatus === 'signed' ? 'default' : 'secondary'}
-            className={`text-sm ${contractStatus === 'signed' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : contractStatus === 'pending' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-muted text-muted-foreground'}`}
-          >
-            {contractStatus === 'signed' && <CheckCircle className="h-3 w-3 mr-1" />}
-            {contractStatus === 'pending' && <Clock className="h-3 w-3 mr-1" />}
-            {contractStatus.charAt(0).toUpperCase() + contractStatus.slice(1)}
-          </Badge>
+          <div className="flex items-center gap-2">
+            {!isOwner && (
+              <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-400 bg-amber-500/10">
+                <Eye className="h-3 w-3 mr-1" /> View Only
+              </Badge>
+            )}
+            <Badge
+              variant={contractStatus === 'signed' ? 'default' : 'secondary'}
+              className={`text-sm ${contractStatus === 'signed' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : contractStatus === 'pending' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-muted text-muted-foreground'}`}
+            >
+              {contractStatus === 'signed' && <CheckCircle className="h-3 w-3 mr-1" />}
+              {contractStatus === 'pending' && <Clock className="h-3 w-3 mr-1" />}
+              {contractStatus.charAt(0).toUpperCase() + contractStatus.slice(1)}
+            </Badge>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Left Sidebar */}
           <div className="lg:col-span-1 space-y-6">
-            <Button onClick={handleNewContract} className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20" size="lg">
-              <Plus className="h-4 w-4" /> New Staff Agreement
-            </Button>
+            {isOwner && (
+              <Button onClick={handleNewContract} className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20" size="lg">
+                <Plus className="h-4 w-4" /> New Staff Agreement
+              </Button>
+            )}
 
             <StaffContractsList
               onSelectContract={handleSelectContract}
               selectedContractId={selectedContractId || undefined}
               refreshTrigger={refreshTrigger}
+              isOwner={isOwner}
             />
           </div>
 
@@ -625,10 +709,10 @@ const StaffContract = () => {
             <div className="flex items-center justify-between mb-4 bg-card rounded-lg p-3 border border-border shadow-lg shadow-primary/5">
               <h2 className="font-bold text-foreground flex items-center gap-2">
                 <Shield className="h-5 w-5 text-destructive" />
-                {selectedContractId ? 'Edit Staff Agreement' : 'New Staff Agreement'}
+                {isOwner ? (selectedContractId ? 'Edit Staff Agreement' : 'New Staff Agreement') : 'Staff Agreement'}
               </h2>
               <div className="flex gap-2">
-                {isEditing ? (
+                {isOwner && isEditing ? (
                   <>
                     <Button variant="outline" onClick={() => setIsEditing(false)} size="sm" className="border-border text-foreground hover:bg-muted">
                       <X className="h-4 w-4 mr-1" /> Cancel
@@ -639,9 +723,11 @@ const StaffContract = () => {
                   </>
                 ) : (
                   <>
-                    <Button variant="outline" onClick={() => setIsEditing(true)} size="sm" className="border-border text-foreground hover:bg-muted">
-                      <Edit2 className="h-4 w-4 mr-1" /> Edit
-                    </Button>
+                    {isOwner && (
+                      <Button variant="outline" onClick={() => setIsEditing(true)} size="sm" className="border-border text-foreground hover:bg-muted">
+                        <Edit2 className="h-4 w-4 mr-1" /> Edit
+                      </Button>
+                    )}
                     <Button onClick={generatePDF} size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20">
                       <Download className="h-4 w-4 mr-1" /> Download PDF
                     </Button>
@@ -700,23 +786,16 @@ const StaffContract = () => {
                       {/* Party A */}
                       <div className="bg-muted/50 p-5 rounded-xl border border-border relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
-                        <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
+                        <h3 className="font-bold text-foreground mb-4 flex items-center gap-2 text-lg">
                           <span className="w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold shadow-lg shadow-primary/30">A</span>
                           Server Management
                         </h3>
-                        {isEditing ? (
+                        {isEditing && isOwner ? (
                           <div className="space-y-3">
-                            {[
-                              { label: 'Organization', field: 'serverName' as const },
-                              { label: 'Representative', field: 'serverOwner' as const },
-                              { label: 'Email', field: 'serverEmail' as const },
-                              { label: 'Discord', field: 'serverDiscord' as const },
-                            ].map(({ label, field }) => (
-                              <div key={field}>
-                                <Label className="text-xs font-semibold text-muted-foreground">{label}</Label>
-                                <Input value={contractData[field]} onChange={(e) => handleInputChange(field, e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" />
-                              </div>
-                            ))}
+                            <div><Label className="text-xs font-semibold text-muted-foreground">Organization</Label><Input value={contractData.serverName} onChange={(e) => handleInputChange('serverName', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" /></div>
+                            <div><Label className="text-xs font-semibold text-muted-foreground">Representative</Label><Input value={contractData.serverOwner} onChange={(e) => handleInputChange('serverOwner', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" /></div>
+                            <div><Label className="text-xs font-semibold text-muted-foreground">Email</Label><Input value={contractData.serverEmail} onChange={(e) => handleInputChange('serverEmail', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" /></div>
+                            <div><Label className="text-xs font-semibold text-muted-foreground">Discord</Label><Input value={contractData.serverDiscord} onChange={(e) => handleInputChange('serverDiscord', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" /></div>
                           </div>
                         ) : (
                           <div className="space-y-2 text-sm">
@@ -731,67 +810,40 @@ const StaffContract = () => {
                       {/* Party B */}
                       <div className="bg-muted/50 p-5 rounded-xl border border-border relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-1 h-full bg-destructive" />
-                        <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
+                        <h3 className="font-bold text-foreground mb-4 flex items-center gap-2 text-lg">
                           <span className="w-7 h-7 bg-destructive text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg shadow-destructive/30">B</span>
                           Staff Member
                         </h3>
-                        {isEditing ? (
+                        {isEditing && isOwner ? (
                           <div className="space-y-3">
+                            <div><Label className="text-xs font-semibold text-muted-foreground">Full Name *</Label><Input value={contractData.staffName} onChange={(e) => handleInputChange('staffName', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" placeholder="Required" /></div>
+                            <div><Label className="text-xs font-semibold text-muted-foreground">Email</Label><Input value={contractData.staffEmail} onChange={(e) => handleInputChange('staffEmail', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" /></div>
+                            <div><Label className="text-xs font-semibold text-muted-foreground">Discord ID</Label><Input value={contractData.staffDiscord} onChange={(e) => handleInputChange('staffDiscord', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" /></div>
                             <div>
-                              <Label className="text-xs font-semibold text-muted-foreground">Full Name *</Label>
-                              <Input value={contractData.staffName} onChange={(e) => handleInputChange('staffName', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" placeholder="Required" />
-                            </div>
-                            <div>
-                              <Label className="text-xs font-semibold text-muted-foreground">Email</Label>
-                              <Input type="email" value={contractData.staffEmail} onChange={(e) => handleInputChange('staffEmail', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" />
-                            </div>
-                            <div>
-                              <Label className="text-xs font-semibold text-muted-foreground">Discord ID</Label>
-                              <Input value={contractData.staffDiscord} onChange={(e) => handleInputChange('staffDiscord', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" />
-                            </div>
-                            <div>
-                              <Label className="text-xs font-semibold text-muted-foreground">Role / Position</Label>
+                              <Label className="text-xs font-semibold text-muted-foreground">Role</Label>
                               <Select value={contractData.staffRole} onValueChange={(v) => handleInputChange('staffRole', v)}>
                                 <SelectTrigger className="h-9 mt-1 bg-input border-border text-foreground"><SelectValue /></SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="Trial Moderator">Trial Moderator</SelectItem>
+                                  <SelectItem value="Admin">Admin</SelectItem>
                                   <SelectItem value="Moderator">Moderator</SelectItem>
-                                  <SelectItem value="Senior Moderator">Senior Moderator</SelectItem>
-                                  <SelectItem value="Administrator">Administrator</SelectItem>
-                                  <SelectItem value="Senior Administrator">Senior Administrator</SelectItem>
-                                  <SelectItem value="Head Administrator">Head Administrator</SelectItem>
                                   <SelectItem value="Developer">Developer</SelectItem>
-                                  <SelectItem value="Management">Management</SelectItem>
+                                  <SelectItem value="Support">Support</SelectItem>
+                                  <SelectItem value="Trial Moderator">Trial Moderator</SelectItem>
+                                  <SelectItem value="Event Manager">Event Manager</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
-                            <div>
-                              <Label className="text-xs font-semibold text-muted-foreground">Department</Label>
-                              <Select value={contractData.staffDepartment} onValueChange={(v) => handleInputChange('staffDepartment', v)}>
-                                <SelectTrigger className="h-9 mt-1 bg-input border-border text-foreground"><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="General Administration">General Administration</SelectItem>
-                                  <SelectItem value="Player Support">Player Support</SelectItem>
-                                  <SelectItem value="Development">Development</SelectItem>
-                                  <SelectItem value="Community Management">Community Management</SelectItem>
-                                  <SelectItem value="Anti-Cheat">Anti-Cheat</SelectItem>
-                                  <SelectItem value="Training">Training</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div>
-                              <Label className="text-xs font-semibold text-muted-foreground">Join Date</Label>
-                              <Input type="date" value={contractData.staffJoinDate} onChange={(e) => handleInputChange('staffJoinDate', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" />
-                            </div>
+                            <div><Label className="text-xs font-semibold text-muted-foreground">Department</Label><Input value={contractData.staffDepartment} onChange={(e) => handleInputChange('staffDepartment', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" /></div>
+                            <div><Label className="text-xs font-semibold text-muted-foreground">Join Date</Label><Input type="date" value={contractData.staffJoinDate} onChange={(e) => handleInputChange('staffJoinDate', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" /></div>
                           </div>
                         ) : (
                           <div className="space-y-2 text-sm">
-                            <p><span className="font-bold text-muted-foreground">Name:</span> <span className="text-foreground">{contractData.staffName || <span className="italic text-muted-foreground/50">[To be filled]</span>}</span></p>
-                            <p><span className="font-bold text-muted-foreground">Email:</span> <span className="text-foreground">{contractData.staffEmail || <span className="italic text-muted-foreground/50">[To be filled]</span>}</span></p>
-                            <p><span className="font-bold text-muted-foreground">Discord:</span> <span className="text-foreground">{contractData.staffDiscord || <span className="italic text-muted-foreground/50">[To be filled]</span>}</span></p>
+                            <p><span className="font-bold text-muted-foreground">Name:</span> <span className="text-foreground">{contractData.staffName || '[To be filled]'}</span></p>
+                            <p><span className="font-bold text-muted-foreground">Email:</span> <span className="text-foreground">{contractData.staffEmail || '[To be filled]'}</span></p>
+                            <p><span className="font-bold text-muted-foreground">Discord:</span> <span className="text-foreground">{contractData.staffDiscord || '[To be filled]'}</span></p>
                             <p><span className="font-bold text-muted-foreground">Role:</span> <span className="text-foreground">{contractData.staffRole}</span></p>
                             <p><span className="font-bold text-muted-foreground">Department:</span> <span className="text-foreground">{contractData.staffDepartment}</span></p>
-                            <p><span className="font-bold text-muted-foreground">Join Date:</span> <span className="text-foreground">{contractData.staffJoinDate ? format(new Date(contractData.staffJoinDate), 'dd MMM yyyy') : ''}</span></p>
+                            <p><span className="font-bold text-muted-foreground">Join Date:</span> <span className="text-foreground">{contractData.staffJoinDate ? format(new Date(contractData.staffJoinDate), 'dd MMM yyyy') : '[To be filled]'}</span></p>
                           </div>
                         )}
                       </div>
@@ -800,214 +852,151 @@ const StaffContract = () => {
 
                   {/* Contract Period */}
                   <section>
-                    <h2 className="text-xl font-bold text-primary border-b-2 border-primary/30 pb-2 mb-6 uppercase tracking-wide">Contract Period</h2>
-                    <div className="grid md:grid-cols-3 gap-4">
-                      {isEditing ? (
-                        <>
-                          <div>
-                            <Label className="text-xs font-semibold text-muted-foreground">Duration</Label>
-                            <Select value={contractData.contractDuration} onValueChange={(v) => handleInputChange('contractDuration', v)}>
-                              <SelectTrigger className="h-9 mt-1 bg-input border-border text-foreground"><SelectValue /></SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="3 months">3 Months</SelectItem>
-                                <SelectItem value="6 months">6 Months</SelectItem>
-                                <SelectItem value="12 months">12 Months</SelectItem>
-                                <SelectItem value="Indefinite">Indefinite</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div>
-                            <Label className="text-xs font-semibold text-muted-foreground">Start Date</Label>
-                            <Input type="date" value={contractData.startDate} onChange={(e) => handleInputChange('startDate', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" />
-                          </div>
-                          <div>
-                            <Label className="text-xs font-semibold text-muted-foreground">End Date</Label>
-                            <Input type="date" value={contractData.endDate} onChange={(e) => handleInputChange('endDate', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" />
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="bg-muted/50 p-4 rounded-lg text-center border border-border">
-                            <p className="text-xs text-muted-foreground uppercase font-semibold">Duration</p>
-                            <p className="font-bold text-foreground text-lg">{contractData.contractDuration}</p>
-                          </div>
-                          <div className="bg-muted/50 p-4 rounded-lg text-center border border-border">
-                            <p className="text-xs text-muted-foreground uppercase font-semibold">Start Date</p>
-                            <p className="font-bold text-foreground">{format(new Date(contractData.startDate), 'dd MMM yyyy')}</p>
-                          </div>
-                          <div className="bg-muted/50 p-4 rounded-lg text-center border border-border">
-                            <p className="text-xs text-muted-foreground uppercase font-semibold">End Date</p>
-                            <p className="font-bold text-foreground">{format(new Date(contractData.endDate), 'dd MMM yyyy')}</p>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </section>
-
-                  {/* Policy Sections */}
-                  <div className="space-y-8">
-                    <div className="bg-destructive/5 border-l-4 border-destructive rounded-r-xl p-5">
-                      <PolicySection
-                        title="Confidentiality & Non-Disclosure (NDA)"
-                        icon={Lock}
-                        iconColor="text-destructive"
-                        sectionKey="ndaPolicies"
-                        policies={contractData.ndaPolicies}
-                      />
-                    </div>
-
-                    <div className="bg-amber-500/5 border-l-4 border-amber-500 rounded-r-xl p-5">
-                      <PolicySection
-                        title="Conflict of Interest"
-                        icon={Scale}
-                        iconColor="text-amber-400"
-                        sectionKey="conflictPolicies"
-                        policies={contractData.conflictPolicies}
-                      />
-                    </div>
-
-                    <div className="bg-primary/5 border-l-4 border-primary rounded-r-xl p-5">
-                      <PolicySection
-                        title="Anti-Corruption & Zero Tolerance Policy"
-                        icon={AlertTriangle}
-                        iconColor="text-primary"
-                        sectionKey="antiCorruptionPolicies"
-                        policies={contractData.antiCorruptionPolicies}
-                      />
-                    </div>
-
-                    <div className="bg-emerald-500/5 border-l-4 border-emerald-500 rounded-r-xl p-5">
-                      <PolicySection
-                        title="Data Protection & Privacy"
-                        icon={EyeOff}
-                        iconColor="text-emerald-400"
-                        sectionKey="dataProtectionPolicies"
-                        policies={contractData.dataProtectionPolicies}
-                      />
-                    </div>
-
-                    <div className="bg-neon-purple/5 border-l-4 border-neon-purple rounded-r-xl p-5">
-                      <PolicySection
-                        title="Code of Conduct & Responsibilities"
-                        icon={UserCheck}
-                        iconColor="text-neon-purple"
-                        sectionKey="conductPolicies"
-                        policies={contractData.conductPolicies}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Disciplinary Section */}
-                  <section>
-                    <h2 className="text-xl font-bold text-destructive border-b-2 border-destructive/30 pb-2 mb-4 uppercase tracking-wide flex items-center gap-2">
-                      <AlertTriangle className="h-5 w-5" />
-                      Disciplinary Action & Consequences
+                    <h2 className="text-lg font-bold text-foreground border-b-2 border-primary/30 pb-2 mb-4 uppercase tracking-wide flex items-center gap-2">
+                      <Clock className="h-5 w-5 text-primary" /> Contract Period
                     </h2>
-                    <div className="bg-destructive/10 border border-destructive/30 p-5 rounded-xl">
-                      {isEditing ? (
-                        <Textarea
-                          value={contractData.disciplinaryAction}
-                          onChange={(e) => handleInputChange('disciplinaryAction', e.target.value)}
-                          className="min-h-[100px] bg-input border-border text-foreground"
-                        />
-                      ) : (
-                        <p className="text-sm text-foreground whitespace-pre-wrap">{contractData.disciplinaryAction}</p>
-                      )}
-                    </div>
-                  </section>
-
-                  {/* Custom Terms */}
-                  <section>
-                    <h2 className="text-xl font-bold text-primary border-b-2 border-primary/30 pb-2 mb-4 uppercase tracking-wide">
-                      Additional Terms & Notes
-                    </h2>
-                    {isEditing ? (
-                      <Textarea
-                        value={contractData.customTerms}
-                        onChange={(e) => handleInputChange('customTerms', e.target.value)}
-                        placeholder="Add any additional terms or notes..."
-                        className="min-h-[80px] bg-input border-border text-foreground"
-                      />
+                    {isEditing && isOwner ? (
+                      <div className="grid md:grid-cols-3 gap-4">
+                        <div>
+                          <Label className="text-xs font-semibold text-muted-foreground">Duration</Label>
+                          <Select value={contractData.contractDuration} onValueChange={(v) => handleInputChange('contractDuration', v)}>
+                            <SelectTrigger className="h-9 mt-1 bg-input border-border text-foreground"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1 month">1 Month</SelectItem>
+                              <SelectItem value="3 months">3 Months</SelectItem>
+                              <SelectItem value="6 months">6 Months</SelectItem>
+                              <SelectItem value="1 year">1 Year</SelectItem>
+                              <SelectItem value="Indefinite">Indefinite</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div><Label className="text-xs font-semibold text-muted-foreground">Start Date</Label><Input type="date" value={contractData.startDate} onChange={(e) => handleInputChange('startDate', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" /></div>
+                        <div><Label className="text-xs font-semibold text-muted-foreground">End Date</Label><Input type="date" value={contractData.endDate} onChange={(e) => handleInputChange('endDate', e.target.value)} className="h-9 mt-1 bg-input border-border text-foreground" /></div>
+                      </div>
                     ) : (
-                      <div className="bg-muted/50 p-4 rounded-lg border border-border">
-                        {contractData.customTerms ? (
-                          <p className="text-sm text-foreground whitespace-pre-wrap italic">{contractData.customTerms}</p>
-                        ) : (
-                          <p className="italic text-muted-foreground">No additional terms specified.</p>
-                        )}
+                      <div className="grid md:grid-cols-3 gap-4 text-sm">
+                        <div className="bg-muted/50 p-3 rounded-lg border border-border"><span className="font-bold text-muted-foreground block text-xs">Duration</span><span className="text-foreground">{contractData.contractDuration}</span></div>
+                        <div className="bg-muted/50 p-3 rounded-lg border border-border"><span className="font-bold text-muted-foreground block text-xs">Start Date</span><span className="text-foreground">{format(new Date(contractData.startDate), 'dd MMM yyyy')}</span></div>
+                        <div className="bg-muted/50 p-3 rounded-lg border border-border"><span className="font-bold text-muted-foreground block text-xs">End Date</span><span className="text-foreground">{format(new Date(contractData.endDate), 'dd MMM yyyy')}</span></div>
                       </div>
                     )}
                   </section>
 
-                  {/* Electronic Signatures */}
-                  <section className="pt-8 border-t-2 border-border">
-                    <h2 className="text-xl font-bold text-primary mb-2 uppercase tracking-wide">Electronic Signatures</h2>
-                    <p className="text-sm italic text-muted-foreground mb-6">
-                      By signing below, both parties acknowledge that they have read, understood, and agree to all terms and policies of this Staff & Administrator Agreement. 
-                      Electronic signatures are legally binding and include timestamp verification.
-                    </p>
+                  {/* Policy Sections */}
+                  <PolicySection title="1. Confidentiality & Non-Disclosure (NDA)" icon={Lock} iconColor="text-destructive" sectionKey="ndaPolicies" policies={contractData.ndaPolicies} />
+                  <PolicySection title="2. Conflict of Interest" icon={Scale} iconColor="text-amber-400" sectionKey="conflictPolicies" policies={contractData.conflictPolicies} />
+                  <PolicySection title="3. Anti-Corruption & Zero Tolerance" icon={AlertTriangle} iconColor="text-destructive" sectionKey="antiCorruptionPolicies" policies={contractData.antiCorruptionPolicies} />
+                  <PolicySection title="4. Data Protection & Privacy" icon={Shield} iconColor="text-primary" sectionKey="dataProtectionPolicies" policies={contractData.dataProtectionPolicies} />
+                  <PolicySection title="5. Code of Conduct & Responsibilities" icon={UserCheck} iconColor="text-emerald-400" sectionKey="conductPolicies" policies={contractData.conductPolicies} />
+                  <PolicySection title="6. Communication & Representation" icon={Eye} iconColor="text-primary" sectionKey="communicationPolicies" policies={contractData.communicationPolicies || defaultCommunicationPolicies} />
+                  <PolicySection title="7. Server Assets & Intellectual Property" icon={Lock} iconColor="text-amber-400" sectionKey="serverAssetPolicies" policies={contractData.serverAssetPolicies || defaultServerAssetPolicies} />
+                  <PolicySection title="8. Emergency Protocols" icon={AlertTriangle} iconColor="text-destructive" sectionKey="emergencyPolicies" policies={contractData.emergencyPolicies || defaultEmergencyPolicies} />
 
-                    <div className="grid md:grid-cols-2 gap-8">
-                      {/* Party A */}
-                      <div className="bg-muted/50 p-5 rounded-xl border border-border">
-                        {savedOwnerSignature && !ownerSignature && (
-                          <div className="mb-3 p-2 bg-primary/10 rounded border border-primary/30 flex items-center justify-between">
-                            <p className="text-xs text-primary">
-                              <CheckCircle className="h-3 w-3 inline mr-1" />
-                              Saved signature will auto-apply on save
-                            </p>
+                  {/* Disciplinary */}
+                  <section>
+                    <h2 className="text-lg font-bold text-foreground border-b-2 border-destructive/30 pb-2 mb-4 uppercase tracking-wide flex items-center gap-2">
+                      <AlertTriangle className="h-5 w-5 text-destructive" /> 9. Disciplinary Action & Consequences
+                    </h2>
+                    {isEditing && isOwner ? (
+                      <Textarea
+                        value={contractData.disciplinaryAction}
+                        onChange={(e) => handleInputChange('disciplinaryAction', e.target.value)}
+                        className="bg-input border-border text-foreground min-h-[100px]"
+                      />
+                    ) : (
+                      <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-4">
+                        <p className="text-sm text-foreground whitespace-pre-line">{contractData.disciplinaryAction}</p>
+                      </div>
+                    )}
+                  </section>
+
+                  {/* Custom Terms */}
+                  <section>
+                    <h2 className="text-lg font-bold text-foreground border-b-2 border-primary/30 pb-2 mb-4 uppercase tracking-wide flex items-center gap-2">
+                      <PlusCircle className="h-5 w-5 text-primary" /> 10. Additional Terms & Notes
+                    </h2>
+                    {isEditing && isOwner ? (
+                      <Textarea
+                        value={contractData.customTerms}
+                        onChange={(e) => handleInputChange('customTerms', e.target.value)}
+                        className="bg-input border-border text-foreground min-h-[80px]"
+                        placeholder="Add any custom terms, special conditions, or additional notes..."
+                      />
+                    ) : (
+                      contractData.customTerms ? (
+                        <div className="bg-muted/50 border border-border rounded-lg p-4">
+                          <p className="text-sm text-foreground whitespace-pre-line">{contractData.customTerms}</p>
+                        </div>
+                      ) : (
+                        <p className="text-sm italic text-muted-foreground">No additional terms specified.</p>
+                      )
+                    )}
+                  </section>
+
+                  {/* Signatures */}
+                  <section>
+                    <h2 className="text-xl font-bold text-primary border-b-2 border-primary/30 pb-2 mb-6 uppercase tracking-wide flex items-center gap-2">
+                      ✍️ Signatures & Acknowledgement
+                    </h2>
+                    <p className="text-sm italic text-muted-foreground mb-6">
+                      By signing below, both parties acknowledge that they have read, understood, and agree to all terms and conditions of this Staff & Administrator Agreement.
+                    </p>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      {/* Owner Signature */}
+                      <div className="border border-border rounded-xl p-5 bg-muted/30">
+                        <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
+                          <span className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold">A</span>
+                          Server Management
+                        </h3>
+                        {ownerSignature ? (
+                          <div className="space-y-3">
+                            <div className="border border-border rounded-lg p-4 bg-card">
+                              <img src={ownerSignature} alt="Owner Signature" className="max-h-24 mx-auto" />
+                            </div>
+                            <div className="text-xs text-muted-foreground space-y-1">
+                              <p><strong>Signed by:</strong> {contractData.serverOwner}</p>
+                              {ownerSignedAt && <p><strong>Date:</strong> {format(new Date(ownerSignedAt), 'dd MMM yyyy, HH:mm')}</p>}
+                            </div>
+                            {isOwner && isEditing && (
+                              <Button variant="outline" size="sm" onClick={() => { setOwnerSignature(null); setOwnerSignedAt(null); }} className="w-full border-border text-xs">
+                                Clear Signature
+                              </Button>
+                            )}
                           </div>
-                        )}
-                        <SignaturePad
-                          label="Party A - Server Management"
-                          onSave={handleOwnerSign}
-                          existingSignature={ownerSignature || undefined}
-                          disabled={!!ownerSignature}
-                        />
-                        {ownerSignedAt && (
-                          <div className="mt-3 p-2 bg-emerald-500/10 rounded border border-emerald-500/30">
-                            <p className="text-xs text-emerald-400">
-                              <CheckCircle className="h-3 w-3 inline mr-1" />
-                              Signed on: {format(new Date(ownerSignedAt), 'dd MMM yyyy, HH:mm:ss')}
-                            </p>
-                            <p className="text-xs text-emerald-400/70">By: {contractData.serverOwner}</p>
-                          </div>
-                        )}
-                        {ownerSignature && (
-                          <Button variant="outline" size="sm" className="mt-2 text-xs w-full border-border" onClick={() => { setOwnerSignature(null); setOwnerSignedAt(null); }}>
-                            Re-sign
-                          </Button>
+                        ) : isOwner ? (
+                          <SignaturePad onSave={handleOwnerSign} label="Owner Signature" />
+                        ) : (
+                          <p className="text-sm text-muted-foreground italic text-center py-8">Awaiting owner signature</p>
                         )}
                       </div>
 
-                      {/* Party B */}
-                      <div className="bg-muted/50 p-5 rounded-xl border border-border">
-                        <SignaturePad
-                          label="Party B - Staff Member"
-                          onSave={handleStaffSign}
-                          existingSignature={staffSignature || undefined}
-                          disabled={!!staffSignature}
-                        />
-                        {staffSignedAt && (
-                          <div className="mt-3 p-2 bg-emerald-500/10 rounded border border-emerald-500/30">
-                            <p className="text-xs text-emerald-400">
-                              <CheckCircle className="h-3 w-3 inline mr-1" />
-                              Signed on: {format(new Date(staffSignedAt), 'dd MMM yyyy, HH:mm:ss')}
-                            </p>
-                            <p className="text-xs text-emerald-400/70">By: {contractData.staffName || 'Staff Member'}</p>
+                      {/* Staff Signature */}
+                      <div className="border border-border rounded-xl p-5 bg-muted/30">
+                        <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
+                          <span className="w-6 h-6 bg-destructive text-white rounded-full flex items-center justify-center text-xs font-bold">B</span>
+                          Staff Member
+                        </h3>
+                        {staffSignature ? (
+                          <div className="space-y-3">
+                            <div className="border border-border rounded-lg p-4 bg-card">
+                              <img src={staffSignature} alt="Staff Signature" className="max-h-24 mx-auto" />
+                            </div>
+                            <div className="text-xs text-muted-foreground space-y-1">
+                              <p><strong>Signed by:</strong> {contractData.staffName}</p>
+                              {staffSignedAt && <p><strong>Date:</strong> {format(new Date(staffSignedAt), 'dd MMM yyyy, HH:mm')}</p>}
+                            </div>
+                            {isOwner && isEditing && (
+                              <Button variant="outline" size="sm" onClick={() => { setStaffSignature(null); setStaffSignedAt(null); setContractStatus('draft'); }} className="w-full border-border text-xs">
+                                Clear Signature
+                              </Button>
+                            )}
                           </div>
+                        ) : (
+                          <SignaturePad onSave={handleStaffSign} label="Staff Signature" />
                         )}
                       </div>
                     </div>
                   </section>
-
-                  {/* Footer */}
-                  <div className="text-center pt-8 border-t border-border text-xs text-muted-foreground">
-                    <div className="h-[2px] w-full bg-gradient-to-r from-[hsl(var(--flag-saffron))] via-[hsl(var(--flag-white))] to-[hsl(var(--flag-green))] mb-6 rounded-full" />
-                    <p className="italic font-semibold text-destructive/80">CONFIDENTIAL — This document contains sensitive internal information</p>
-                    <p className="mt-2 font-semibold text-primary">Skylife Roleplay India | Staff & Administrator Agreement</p>
-                    <p className="mt-1">Generated: {format(new Date(), 'dd MMMM yyyy, HH:mm')}</p>
-                  </div>
                 </div>
               </CardContent>
             </Card>

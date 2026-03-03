@@ -36,6 +36,7 @@ interface StaffContractsListProps {
   onSelectContract: (contract: StaffContract) => void;
   selectedContractId?: string;
   refreshTrigger?: number;
+  isOwner?: boolean;
 }
 
 const RENEW_OPTIONS = [
@@ -62,7 +63,7 @@ const getStatusConfig = (status: string) => {
   }
 };
 
-const StaffContractsList = ({ onSelectContract, selectedContractId, refreshTrigger }: StaffContractsListProps) => {
+const StaffContractsList = ({ onSelectContract, selectedContractId, refreshTrigger, isOwner = false }: StaffContractsListProps) => {
   const { toast } = useToast();
   const [contracts, setContracts] = useState<StaffContract[]>([]);
   const [loading, setLoading] = useState(true);
@@ -225,15 +226,17 @@ const StaffContractsList = ({ onSelectContract, selectedContractId, refreshTrigg
                         </div>
                       </div>
                       <div className="flex items-center gap-1 ml-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10"
-                          onClick={(e) => openRenewDialog(contract, e)}
-                          title="Renew Contract"
-                        >
-                          <RefreshCw className="h-4 w-4" />
-                        </Button>
+                        {isOwner && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10"
+                            onClick={(e) => openRenewDialog(contract, e)}
+                            title="Renew Contract"
+                          >
+                            <RefreshCw className="h-4 w-4" />
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="icon"
@@ -242,14 +245,16 @@ const StaffContractsList = ({ onSelectContract, selectedContractId, refreshTrigg
                         >
                           <Eye className="h-4 w-4 text-muted-foreground" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={(e) => handleDeleteContract(contract.id, e)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        {isOwner && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={(e) => handleDeleteContract(contract.id, e)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                   );
