@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, memo } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield, LogOut, Menu, UserCircle, Mail, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, ExternalLink, Crown, LayoutDashboard, Gift, Briefcase, Building2, FileText, Newspaper, Trophy, Radio, Gamepad2, Sparkles } from "lucide-react";
+import { Users, Shield, LogOut, Menu, UserCircle, Mail, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, ExternalLink, Crown, LayoutDashboard, Gift, Briefcase, Building2, FileText, Newspaper, Trophy, Radio, Gamepad2, Sparkles, FolderOpen } from "lucide-react";
 import { Button } from "./ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
@@ -380,17 +380,52 @@ const Navigation = () => {
                   {(hasStaffAdminAccess || isOwner) && (
                     <div className="flex flex-col gap-1 pb-4 border-b border-border/30">
                       {hasStaffAdminAccess && !isOwner && (
-                        <Button 
-                          variant="outline"
-                          className="justify-start glass-effect border-primary/30"
-                          asChild
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <Link to="/admin">
-                            <Shield className="w-4 h-4 mr-2 text-primary" />
-                            Admin Panel
-                          </Link>
-                        </Button>
+                        <>
+                          <Button 
+                            variant="outline"
+                            className="justify-start glass-effect border-primary/30"
+                            asChild
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <Link to="/admin">
+                              <Shield className="w-4 h-4 mr-2 text-primary" />
+                              Admin Panel
+                            </Link>
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            className="justify-start glass-effect border-purple-500/30"
+                            asChild
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <Link to="/creator-contract">
+                              <FileText className="w-4 h-4 mr-2 text-purple-400" />
+                              Creator Contract
+                            </Link>
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            className="justify-start glass-effect border-red-500/30"
+                            asChild
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <Link to="/staff-contract">
+                              <FileText className="w-4 h-4 mr-2 text-red-400" />
+                              Staff Agreement
+                            </Link>
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            className="justify-start glass-effect border-orange-500/30"
+                            asChild
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <Link to="/case-files">
+                              <FolderOpen className="w-4 h-4 mr-2 text-orange-400" />
+                              Case Files
+                            </Link>
+                          </Button>
+                        </>
                       )}
                       {isOwner && (
                         <>
@@ -438,32 +473,39 @@ const Navigation = () => {
                               Business Panel
                             </Link>
                           </Button>
-                          {isOwner && (
-                            <>
-                              <Button 
-                                variant="outline"
-                                className="justify-start glass-effect border-purple-500/30"
-                                asChild
-                                onClick={() => setIsMenuOpen(false)}
-                              >
-                                <Link to="/creator-contract">
-                                  <FileText className="w-4 h-4 mr-2 text-purple-400" />
-                                  Creator Contract
-                                </Link>
-                              </Button>
-                              <Button 
-                                variant="outline"
-                                className="justify-start glass-effect border-red-500/30"
-                                asChild
-                                onClick={() => setIsMenuOpen(false)}
-                              >
-                                <Link to="/staff-contract">
-                                  <FileText className="w-4 h-4 mr-2 text-red-400" />
-                                  Staff Agreement
-                                </Link>
-                              </Button>
-                            </>
-                          )}
+                          <Button 
+                            variant="outline"
+                            className="justify-start glass-effect border-purple-500/30"
+                            asChild
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <Link to="/creator-contract">
+                              <FileText className="w-4 h-4 mr-2 text-purple-400" />
+                              Creator Contract
+                            </Link>
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            className="justify-start glass-effect border-red-500/30"
+                            asChild
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <Link to="/staff-contract">
+                              <FileText className="w-4 h-4 mr-2 text-red-400" />
+                              Staff Agreement
+                            </Link>
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            className="justify-start glass-effect border-orange-500/30"
+                            asChild
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <Link to="/case-files">
+                              <FolderOpen className="w-4 h-4 mr-2 text-orange-400" />
+                              Case Files
+                            </Link>
+                          </Button>
                         </>
                       )}
                     </div>
