@@ -171,6 +171,7 @@ const StaffContract = () => {
   const [staffSignedAt, setStaffSignedAt] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [savedOwnerSignature, setSavedOwnerSignature] = useState<string | null>(null);
+  const [currentUserDiscordId, setCurrentUserDiscordId] = useState<string | null>(null);
 
   useEffect(() => {
     checkAccess();
@@ -195,6 +196,10 @@ const StaffContract = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { navigate("/auth"); return; }
       
+      // Store user's discord ID
+      const discordId = user.user_metadata?.discord_id || user.user_metadata?.provider_id || user.user_metadata?.sub;
+      setCurrentUserDiscordId(discordId || null);
+
       // Check if owner
       const { data: isOwnerResult } = await supabase.rpc("is_owner", { _user_id: user.id });
       if (isOwnerResult) {
@@ -205,7 +210,6 @@ const StaffContract = () => {
       }
 
       // Check if staff member or has panel access
-      const discordId = user.user_metadata?.discord_id;
       let hasAccess = false;
 
       // Check panel_access for staff_contract
@@ -374,12 +378,36 @@ const StaffContract = () => {
     toast({ title: "Owner signature recorded" });
   };
 
-  const handleStaffSign = (signature: string) => {
+  const handleStaffSign = async (signature: string) => {
+    const signedAt = new Date().toISOString();
+    const newStatus = ownerSignature ? "signed" : "pending";
+    
     setStaffSignature(signature);
-    setStaffSignedAt(new Date().toISOString());
-    if (ownerSignature) setContractStatus("signed");
-    else setContractStatus("pending");
-    toast({ title: "Staff signature recorded" });
+    setStaffSignedAt(signedAt);
+    setContractStatus(newStatus);
+
+    // If viewing an existing contract, persist the staff signature immediately
+    if (selectedContractId) {
+      try {
+        const { error } = await supabase
+          .from("staff_contracts")
+          .update({
+            staff_signature: signature,
+            staff_signed_at: signedAt,
+            status: newStatus,
+          })
+          .eq("id", selectedContractId);
+
+        if (error) throw error;
+        toast({ title: "Staff signature saved successfully" });
+        setRefreshTrigger(prev => prev + 1);
+      } catch (error: any) {
+        console.error("Error saving staff signature:", error);
+        toast({ title: "Failed to save signature", description: error?.message, variant: "destructive" });
+      }
+    } else {
+      toast({ title: "Staff signature recorded" });
+    }
   };
 
   const generatePDF = () => {
@@ -589,6 +617,9 @@ const StaffContract = () => {
       </div>
     );
   }
+
+  // Staff can sign if they are not the owner, they have a selected contract, and the contract's staff_discord_id matches their discord ID
+  const canStaffSign = !isOwner && isStaff && selectedContractId && currentUserDiscordId && contractData.staffDiscord === currentUserDiscordId;
 
   if (!isStaff) return null;
 
@@ -991,8 +1022,17 @@ const StaffContract = () => {
                               </Button>
                             )}
                           </div>
-                        ) : (
+                        ) : canStaffSign ? (
+                          <div className="space-y-2">
+                            <SignaturePad onSave={handleStaffSign} label="Staff Signature" />
+                            <p className="text-xs text-muted-foreground text-center">Sign to acknowledge and accept this agreement</p>
+                          </div>
+                        ) : isOwner ? (
                           <SignaturePad onSave={handleStaffSign} label="Staff Signature" />
+                        ) : (
+                          <p className="text-sm text-muted-foreground italic text-center py-8">
+                            {selectedContractId ? "This contract is assigned to another staff member" : "Select a contract to sign"}
+                          </p>
                         )}
                       </div>
                     </div>
