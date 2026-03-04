@@ -649,6 +649,381 @@ export type Database = {
         }
         Relationships: []
       }
+      case_file_audit_log: {
+        Row: {
+          action_description: string
+          action_type: string
+          case_id: string
+          created_at: string
+          id: string
+          ip_address: string | null
+          new_value: Json | null
+          old_value: Json | null
+          performed_by: string
+          performed_by_user_id: string | null
+          time_spent_seconds: number | null
+        }
+        Insert: {
+          action_description: string
+          action_type: string
+          case_id: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          new_value?: Json | null
+          old_value?: Json | null
+          performed_by: string
+          performed_by_user_id?: string | null
+          time_spent_seconds?: number | null
+        }
+        Update: {
+          action_description?: string
+          action_type?: string
+          case_id?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          new_value?: Json | null
+          old_value?: Json | null
+          performed_by?: string
+          performed_by_user_id?: string | null
+          time_spent_seconds?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_file_audit_log_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "case_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_file_evidence: {
+        Row: {
+          case_id: string
+          created_at: string
+          description: string | null
+          evidence_type: string
+          file_name: string | null
+          file_url: string | null
+          id: string
+          locked: boolean | null
+          locked_at: string | null
+          locked_by: string | null
+          media_date: string | null
+          timestamp_markers: Json | null
+          upload_ip: string | null
+          uploaded_by: string
+          uploaded_by_user_id: string | null
+        }
+        Insert: {
+          case_id: string
+          created_at?: string
+          description?: string | null
+          evidence_type?: string
+          file_name?: string | null
+          file_url?: string | null
+          id?: string
+          locked?: boolean | null
+          locked_at?: string | null
+          locked_by?: string | null
+          media_date?: string | null
+          timestamp_markers?: Json | null
+          upload_ip?: string | null
+          uploaded_by: string
+          uploaded_by_user_id?: string | null
+        }
+        Update: {
+          case_id?: string
+          created_at?: string
+          description?: string | null
+          evidence_type?: string
+          file_name?: string | null
+          file_url?: string | null
+          id?: string
+          locked?: boolean | null
+          locked_at?: string | null
+          locked_by?: string | null
+          media_date?: string | null
+          timestamp_markers?: Json | null
+          upload_ip?: string | null
+          uploaded_by?: string
+          uploaded_by_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_file_evidence_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "case_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_file_notes: {
+        Row: {
+          author_avatar: string | null
+          author_discord_id: string
+          author_name: string | null
+          case_id: string
+          created_at: string
+          id: string
+          message: string
+          note_type: string
+        }
+        Insert: {
+          author_avatar?: string | null
+          author_discord_id: string
+          author_name?: string | null
+          case_id: string
+          created_at?: string
+          id?: string
+          message: string
+          note_type?: string
+        }
+        Update: {
+          author_avatar?: string | null
+          author_discord_id?: string
+          author_name?: string | null
+          case_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          note_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_file_notes_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "case_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_file_statements: {
+        Row: {
+          case_id: string
+          created_at: string
+          flagged_inconsistency: boolean | null
+          given_to: string
+          given_to_name: string | null
+          id: string
+          inconsistency_details: string | null
+          statement: string
+          suspect_discord_id: string
+        }
+        Insert: {
+          case_id: string
+          created_at?: string
+          flagged_inconsistency?: boolean | null
+          given_to: string
+          given_to_name?: string | null
+          id?: string
+          inconsistency_details?: string | null
+          statement: string
+          suspect_discord_id: string
+        }
+        Update: {
+          case_id?: string
+          created_at?: string
+          flagged_inconsistency?: boolean | null
+          given_to?: string
+          given_to_name?: string | null
+          id?: string
+          inconsistency_details?: string | null
+          statement?: string
+          suspect_discord_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_file_statements_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "case_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_file_votes: {
+        Row: {
+          case_id: string
+          created_at: string
+          id: string
+          is_veto: boolean | null
+          vote: string
+          vote_weight: number
+          voter_discord_id: string
+          voter_name: string | null
+          voter_role_type: string
+        }
+        Insert: {
+          case_id: string
+          created_at?: string
+          id?: string
+          is_veto?: boolean | null
+          vote: string
+          vote_weight?: number
+          voter_discord_id: string
+          voter_name?: string | null
+          voter_role_type?: string
+        }
+        Update: {
+          case_id?: string
+          created_at?: string
+          id?: string
+          is_veto?: boolean | null
+          vote?: string
+          vote_weight?: number
+          voter_discord_id?: string
+          voter_name?: string | null
+          voter_role_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_file_votes_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "case_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_file_witnesses: {
+        Row: {
+          access_code: string
+          case_id: string
+          created_at: string
+          created_by: string
+          deposition: string | null
+          id: string
+          submitted_at: string | null
+          witness_discord_id: string | null
+          witness_name: string | null
+        }
+        Insert: {
+          access_code?: string
+          case_id: string
+          created_at?: string
+          created_by: string
+          deposition?: string | null
+          id?: string
+          submitted_at?: string | null
+          witness_discord_id?: string | null
+          witness_name?: string | null
+        }
+        Update: {
+          access_code?: string
+          case_id?: string
+          created_at?: string
+          created_by?: string
+          deposition?: string | null
+          id?: string
+          submitted_at?: string | null
+          witness_discord_id?: string | null
+          witness_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_file_witnesses_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "case_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_files: {
+        Row: {
+          asset_freeze: boolean | null
+          assigned_to: string | null
+          behavioral_tags: string[] | null
+          case_origin: string
+          case_ref: string
+          created_at: string
+          created_by: string
+          created_by_user_id: string | null
+          id: string
+          locked: boolean | null
+          locked_at: string | null
+          locked_by: string | null
+          priority_impact: string
+          priority_urgency: string
+          resolution_letter_sent: boolean | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          rules_violated: string[] | null
+          severity: string
+          status: string
+          suggested_punishment: string | null
+          suspect_discord_id: string | null
+          suspect_hex_id: string | null
+          suspect_name: string | null
+          suspect_steam_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          asset_freeze?: boolean | null
+          assigned_to?: string | null
+          behavioral_tags?: string[] | null
+          case_origin?: string
+          case_ref: string
+          created_at?: string
+          created_by: string
+          created_by_user_id?: string | null
+          id?: string
+          locked?: boolean | null
+          locked_at?: string | null
+          locked_by?: string | null
+          priority_impact?: string
+          priority_urgency?: string
+          resolution_letter_sent?: boolean | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          rules_violated?: string[] | null
+          severity?: string
+          status?: string
+          suggested_punishment?: string | null
+          suspect_discord_id?: string | null
+          suspect_hex_id?: string | null
+          suspect_name?: string | null
+          suspect_steam_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          asset_freeze?: boolean | null
+          assigned_to?: string | null
+          behavioral_tags?: string[] | null
+          case_origin?: string
+          case_ref?: string
+          created_at?: string
+          created_by?: string
+          created_by_user_id?: string | null
+          id?: string
+          locked?: boolean | null
+          locked_at?: string | null
+          locked_by?: string | null
+          priority_impact?: string
+          priority_urgency?: string
+          resolution_letter_sent?: boolean | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          rules_violated?: string[] | null
+          severity?: string
+          status?: string
+          suggested_punishment?: string | null
+          suspect_discord_id?: string | null
+          suspect_hex_id?: string | null
+          suspect_name?: string | null
+          suspect_steam_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       confidential_tickets: {
         Row: {
           admin_notes: string | null
@@ -4321,6 +4696,7 @@ export type Database = {
       }
       can_edit_roster: { Args: { _user_id: string }; Returns: boolean }
       check_sla_breach: { Args: never; Returns: undefined }
+      generate_case_ref: { Args: never; Returns: string }
       generate_owner_2fa_token: { Args: never; Returns: string }
       generate_promo_code: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
