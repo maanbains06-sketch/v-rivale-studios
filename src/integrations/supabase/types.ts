@@ -846,6 +846,50 @@ export type Database = {
           },
         ]
       }
+      case_file_suspect_evidence: {
+        Row: {
+          case_id: string
+          created_at: string
+          description: string | null
+          evidence_type: string
+          file_name: string | null
+          file_url: string | null
+          id: string
+          uploaded_by: string
+          uploaded_by_user_id: string | null
+        }
+        Insert: {
+          case_id: string
+          created_at?: string
+          description?: string | null
+          evidence_type?: string
+          file_name?: string | null
+          file_url?: string | null
+          id?: string
+          uploaded_by: string
+          uploaded_by_user_id?: string | null
+        }
+        Update: {
+          case_id?: string
+          created_at?: string
+          description?: string | null
+          evidence_type?: string
+          file_name?: string | null
+          file_url?: string | null
+          id?: string
+          uploaded_by?: string
+          uploaded_by_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_file_suspect_evidence_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "case_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       case_file_votes: {
         Row: {
           case_id: string
@@ -900,6 +944,7 @@ export type Database = {
           id: string
           submitted_at: string | null
           witness_discord_id: string | null
+          witness_discord_username: string | null
           witness_name: string | null
         }
         Insert: {
@@ -911,6 +956,7 @@ export type Database = {
           id?: string
           submitted_at?: string | null
           witness_discord_id?: string | null
+          witness_discord_username?: string | null
           witness_name?: string | null
         }
         Update: {
@@ -922,6 +968,7 @@ export type Database = {
           id?: string
           submitted_at?: string | null
           witness_discord_id?: string | null
+          witness_discord_username?: string | null
           witness_name?: string | null
         }
         Relationships: [
@@ -959,7 +1006,9 @@ export type Database = {
           status: string
           suggested_punishment: string | null
           suspect_discord_id: string | null
+          suspect_fivem_id: string | null
           suspect_hex_id: string | null
+          suspect_in_game_name: string | null
           suspect_name: string | null
           suspect_steam_id: string | null
           updated_at: string
@@ -988,7 +1037,9 @@ export type Database = {
           status?: string
           suggested_punishment?: string | null
           suspect_discord_id?: string | null
+          suspect_fivem_id?: string | null
           suspect_hex_id?: string | null
+          suspect_in_game_name?: string | null
           suspect_name?: string | null
           suspect_steam_id?: string | null
           updated_at?: string
@@ -1017,7 +1068,9 @@ export type Database = {
           status?: string
           suggested_punishment?: string | null
           suspect_discord_id?: string | null
+          suspect_fivem_id?: string | null
           suspect_hex_id?: string | null
+          suspect_in_game_name?: string | null
           suspect_name?: string | null
           suspect_steam_id?: string | null
           updated_at?: string
@@ -2874,6 +2927,48 @@ export type Database = {
           player_id?: string
           player_name?: string | null
           reason?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      player_status_records: {
+        Row: {
+          created_at: string
+          discord_avatar: string | null
+          discord_id: string
+          discord_username: string | null
+          id: string
+          last_case_date: string | null
+          risk_level: string | null
+          total_bans: number | null
+          total_cases: number | null
+          total_warnings: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discord_avatar?: string | null
+          discord_id: string
+          discord_username?: string | null
+          id?: string
+          last_case_date?: string | null
+          risk_level?: string | null
+          total_bans?: number | null
+          total_cases?: number | null
+          total_warnings?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discord_avatar?: string | null
+          discord_id?: string
+          discord_username?: string | null
+          id?: string
+          last_case_date?: string | null
+          risk_level?: string | null
+          total_bans?: number | null
+          total_cases?: number | null
+          total_warnings?: number | null
           updated_at?: string
         }
         Relationships: []

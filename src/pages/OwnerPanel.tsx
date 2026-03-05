@@ -88,8 +88,10 @@ import {
   Trophy,
   Gamepad2,
   ToggleLeft,
+  FolderOpen,
 } from "lucide-react";
 import { Coins } from "lucide-react";
+import { OwnerCaseManager } from "@/components/case-files/OwnerCaseManager";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StaffManagementDialog } from "@/components/StaffManagementDialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -1758,6 +1760,10 @@ const OwnerPanel = () => {
                   <Coins className="w-4 h-4" />
                   <span className="hidden sm:inline">Currency</span>
                 </TabsTrigger>
+                <TabsTrigger value="case-files" className="flex items-center gap-2 whitespace-nowrap">
+                  <FolderOpen className="w-4 h-4" />
+                  <span className="hidden sm:inline">Case Files</span>
+                </TabsTrigger>
               </TabsList>
             </div>
             {/* Fade indicators for scroll hint */}
@@ -2761,6 +2767,11 @@ const OwnerPanel = () => {
           {/* Currency Management Tab */}
           <TabsContent value="currency">
             <OwnerCurrencyManager />
+          </TabsContent>
+
+          {/* Case Files Management Tab */}
+          <TabsContent value="case-files">
+            <OwnerCaseManager />
           </TabsContent>
 
           {/* Application Toggles Tab */}
