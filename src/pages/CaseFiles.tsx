@@ -7,8 +7,10 @@ import Navigation from "@/components/Navigation";
 import { CaseFilesList } from "@/components/case-files/CaseFilesList";
 import { CaseFileDetail } from "@/components/case-files/CaseFileDetail";
 import { CreateCaseDialog } from "@/components/case-files/CreateCaseDialog";
+import { PlayerStatusSection } from "@/components/case-files/PlayerStatusSection";
 import { Button } from "@/components/ui/button";
-import { Plus, FolderOpen } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Plus, FolderOpen, Users, Shield } from "lucide-react";
 
 const CaseFiles = () => {
   const navigate = useNavigate();
@@ -17,6 +19,7 @@ const CaseFiles = () => {
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [activeTab, setActiveTab] = useState("cases");
 
   useEffect(() => {
     if (!loading && !isStaff) {
@@ -45,9 +48,11 @@ const CaseFiles = () => {
       <Navigation />
       <div className="container mx-auto px-4 pt-24 pb-12">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <FolderOpen className="w-8 h-8 text-primary" />
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <FolderOpen className="w-6 h-6 text-primary" />
+            </div>
             <div>
               <h1 className="text-3xl font-bold text-foreground">Case Files</h1>
               <p className="text-muted-foreground text-sm">Internal Investigation & Case Management</p>
@@ -72,10 +77,25 @@ const CaseFiles = () => {
             onRefresh={() => setRefreshTrigger(p => p + 1)}
           />
         ) : (
-          <CaseFilesList
-            onSelectCase={setSelectedCaseId}
-            refreshTrigger={refreshTrigger}
-          />
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="cases" className="gap-2">
+                <Shield className="w-4 h-4" /> Case Files
+              </TabsTrigger>
+              <TabsTrigger value="players" className="gap-2">
+                <Users className="w-4 h-4" /> Player Status
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="cases">
+              <CaseFilesList
+                onSelectCase={setSelectedCaseId}
+                refreshTrigger={refreshTrigger}
+              />
+            </TabsContent>
+            <TabsContent value="players">
+              <PlayerStatusSection />
+            </TabsContent>
+          </Tabs>
         )}
 
         <CreateCaseDialog
