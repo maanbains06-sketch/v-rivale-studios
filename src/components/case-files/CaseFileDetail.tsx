@@ -13,8 +13,9 @@ import {
   ArrowLeft, Clock, Shield, FileVideo, MessageSquare, Vote,
   Lock, AlertTriangle, Upload, Plus, Send, Eye,
   History, Flag, Users, Gavel, Copy, RefreshCw, Snowflake,
-  Trash2, UserCheck, Search
+  Trash2, UserCheck, Search, Download
 } from "lucide-react";
+import { EvidenceUploader } from "./EvidenceUploader";
 import { formatDistanceToNow, format } from "date-fns";
 
 interface CaseFileDetailProps {
