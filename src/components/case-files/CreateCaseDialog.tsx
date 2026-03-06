@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Upload, Plus, X, Shield, Gavel, FileVideo, Users, AlertTriangle } from "lucide-react";
+import { EvidenceUploader } from "./EvidenceUploader";
 
 interface CreateCaseDialogProps {
   open: boolean;
