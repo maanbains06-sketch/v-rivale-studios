@@ -476,22 +476,22 @@ export const CaseFileDetail = ({
         {/* Evidence Locker */}
         <TabsContent value="evidence" className="space-y-4">
           <div className="bg-card border border-border/50 rounded-lg p-4 space-y-3">
-            <h3 className="font-semibold flex items-center gap-2"><Upload className="w-4 h-4" /> Add Evidence</h3>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-              <Select value={newEvidenceType} onValueChange={setNewEvidenceType}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="screenshot">📸 Screenshot</SelectItem>
-                  <SelectItem value="video">🎥 Video</SelectItem>
-                  <SelectItem value="document">📄 Document</SelectItem>
-                  <SelectItem value="log">📋 Server Log</SelectItem>
-                  <SelectItem value="audio">🔊 Audio</SelectItem>
-                </SelectContent>
-              </Select>
-              <Input placeholder="URL (YouTube, Imgur, etc.)" value={newEvidenceUrl} onChange={e => setNewEvidenceUrl(e.target.value)} className="md:col-span-2" />
-              <Input placeholder="Description" value={newEvidenceDesc} onChange={e => setNewEvidenceDesc(e.target.value)} />
-            </div>
-            <Button size="sm" onClick={addEvidence} disabled={!newEvidenceUrl.trim()}><Plus className="w-4 h-4 mr-1" /> Add Evidence</Button>
+            <EvidenceUploader
+              label="Add Evidence (Link or Upload)"
+              onEvidenceAdded={async (ev) => {
+                const { error } = await supabase.from("case_file_evidence").insert({
+                  case_id: caseId, evidence_type: ev.type, file_url: ev.url,
+                  description: ev.description || null, uploaded_by: userDiscordId || "unknown",
+                  uploaded_by_user_id: userId || undefined,
+                  file_name: ev.fileName || null, file_size: ev.fileSize || null,
+                });
+                if (error) toast({ title: "Failed to add evidence", variant: "destructive" });
+                else {
+                  await logAudit("evidence_added", `Evidence added by ${discordUsername} (${ev.type})`);
+                  fetchAll();
+                }
+              }}
+            />
           </div>
 
           {evidence.length === 0 ? (
