@@ -458,35 +458,18 @@ export const CreateCaseDialog = ({ open, onOpenChange, userDiscordId, userId, di
                 <FileVideo className="w-4 h-4" /> Evidence Upload
               </h3>
 
-              {/* Add Evidence Form */}
-              <div className="bg-muted/10 border border-border/30 rounded-lg p-4 space-y-3">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                  <Select value={newEvidence.type} onValueChange={v => setNewEvidence(p => ({ ...p, type: v }))}>
-                    <SelectTrigger className="bg-muted/30"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="screenshot">📸 Screenshot</SelectItem>
-                      <SelectItem value="video">🎥 Video</SelectItem>
-                      <SelectItem value="document">📄 Document</SelectItem>
-                      <SelectItem value="log">📋 Server Log</SelectItem>
-                      <SelectItem value="audio">🔊 Audio</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Input 
-                    placeholder="URL (YouTube, Imgur, etc.)" 
-                    value={newEvidence.url} 
-                    onChange={e => setNewEvidence(p => ({ ...p, url: e.target.value }))}
-                    className="md:col-span-2 bg-muted/30"
-                  />
-                  <Input 
-                    placeholder="Description" 
-                    value={newEvidence.description} 
-                    onChange={e => setNewEvidence(p => ({ ...p, description: e.target.value }))}
-                    className="bg-muted/30"
-                  />
-                </div>
-                <Button size="sm" onClick={addEvidence} disabled={!newEvidence.url.trim()} variant="outline" className="gap-2">
-                  <Plus className="w-4 h-4" /> Add Evidence
-                </Button>
+              {/* Add Evidence Form - Now with Link + Upload */}
+              <div className="bg-muted/10 border border-border/30 rounded-lg p-4">
+                <EvidenceUploader
+                  label="Evidence & Incident Attachments"
+                  onEvidenceAdded={(ev) => {
+                    setEvidenceList(prev => [...prev, {
+                      type: ev.type,
+                      url: ev.url,
+                      description: ev.description,
+                    }]);
+                  }}
+                />
               </div>
 
               {/* Evidence List */}
