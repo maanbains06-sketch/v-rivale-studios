@@ -538,11 +538,12 @@ const AdminSupportChat = () => {
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-3 shrink-0">
+                      <div className="flex items-center gap-3 shrink-0">
                       {activeViewers.length > 0 && (
                         <ActiveStaffIndicator viewers={activeViewers} type="chat" />
                       )}
                       <div className="flex gap-2">
+                        <RequestHelpButton chatId={selectedChat.id} chatSubject={selectedChat.subject} />
                         {selectedChat.status === "open" && (
                           <Button
                             size="sm"

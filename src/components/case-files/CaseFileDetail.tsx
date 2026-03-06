@@ -577,21 +577,23 @@ export const CaseFileDetail = ({
         {/* Suspect Evidence */}
         <TabsContent value="suspect-evidence" className="space-y-4">
           <div className="bg-card border border-border/50 rounded-lg p-4 space-y-3">
-            <h3 className="font-semibold flex items-center gap-2"><UserCheck className="w-4 h-4" /> Suspect Evidence (evidence provided by/about the suspect)</h3>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-              <Select value={newSuspectEvidenceType} onValueChange={setNewSuspectEvidenceType}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="screenshot">📸 Screenshot</SelectItem>
-                  <SelectItem value="video">🎥 Video</SelectItem>
-                  <SelectItem value="chat_log">💬 Chat Log</SelectItem>
-                  <SelectItem value="confession">📝 Confession</SelectItem>
-                </SelectContent>
-              </Select>
-              <Input placeholder="URL" value={newSuspectEvidenceUrl} onChange={e => setNewSuspectEvidenceUrl(e.target.value)} className="md:col-span-2" />
-              <Input placeholder="Description" value={newSuspectEvidenceDesc} onChange={e => setNewSuspectEvidenceDesc(e.target.value)} />
-            </div>
-            <Button size="sm" onClick={addSuspectEvidence} disabled={!newSuspectEvidenceUrl.trim()}><Plus className="w-4 h-4 mr-1" /> Add Suspect Evidence</Button>
+            <EvidenceUploader
+              label="Suspect Evidence (evidence provided by/about the suspect)"
+              allowedTypes={["screenshot", "video", "chat_log", "confession"]}
+              onEvidenceAdded={async (ev) => {
+                const { error } = await supabase.from("case_file_suspect_evidence" as any).insert({
+                  case_id: caseId, evidence_type: ev.type, file_url: ev.url,
+                  description: ev.description || null, uploaded_by: userDiscordId || "unknown",
+                  uploaded_by_user_id: userId || undefined,
+                  file_name: ev.fileName || null, file_size: ev.fileSize || null,
+                });
+                if (error) toast({ title: "Failed to add suspect evidence", variant: "destructive" });
+                else {
+                  await logAudit("suspect_evidence_added", `Suspect evidence added by ${discordUsername}`);
+                  fetchAll();
+                }
+              }}
+            />
           </div>
 
           {suspectEvidence.length === 0 ? (
