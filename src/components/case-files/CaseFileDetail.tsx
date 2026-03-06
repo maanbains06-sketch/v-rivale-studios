@@ -13,8 +13,9 @@ import {
   ArrowLeft, Clock, Shield, FileVideo, MessageSquare, Vote,
   Lock, AlertTriangle, Upload, Plus, Send, Eye,
   History, Flag, Users, Gavel, Copy, RefreshCw, Snowflake,
-  Trash2, UserCheck, Search
+  Trash2, UserCheck, Search, Download
 } from "lucide-react";
+import { EvidenceUploader } from "./EvidenceUploader";
 import { formatDistanceToNow, format } from "date-fns";
 
 interface CaseFileDetailProps {
@@ -475,22 +476,22 @@ export const CaseFileDetail = ({
         {/* Evidence Locker */}
         <TabsContent value="evidence" className="space-y-4">
           <div className="bg-card border border-border/50 rounded-lg p-4 space-y-3">
-            <h3 className="font-semibold flex items-center gap-2"><Upload className="w-4 h-4" /> Add Evidence</h3>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-              <Select value={newEvidenceType} onValueChange={setNewEvidenceType}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="screenshot">📸 Screenshot</SelectItem>
-                  <SelectItem value="video">🎥 Video</SelectItem>
-                  <SelectItem value="document">📄 Document</SelectItem>
-                  <SelectItem value="log">📋 Server Log</SelectItem>
-                  <SelectItem value="audio">🔊 Audio</SelectItem>
-                </SelectContent>
-              </Select>
-              <Input placeholder="URL (YouTube, Imgur, etc.)" value={newEvidenceUrl} onChange={e => setNewEvidenceUrl(e.target.value)} className="md:col-span-2" />
-              <Input placeholder="Description" value={newEvidenceDesc} onChange={e => setNewEvidenceDesc(e.target.value)} />
-            </div>
-            <Button size="sm" onClick={addEvidence} disabled={!newEvidenceUrl.trim()}><Plus className="w-4 h-4 mr-1" /> Add Evidence</Button>
+            <EvidenceUploader
+              label="Add Evidence (Link or Upload)"
+              onEvidenceAdded={async (ev) => {
+                const { error } = await supabase.from("case_file_evidence").insert({
+                  case_id: caseId, evidence_type: ev.type, file_url: ev.url,
+                  description: ev.description || null, uploaded_by: userDiscordId || "unknown",
+                  uploaded_by_user_id: userId || undefined,
+                  file_name: ev.fileName || null, file_size: ev.fileSize || null,
+                });
+                if (error) toast({ title: "Failed to add evidence", variant: "destructive" });
+                else {
+                  await logAudit("evidence_added", `Evidence added by ${discordUsername} (${ev.type})`);
+                  fetchAll();
+                }
+              }}
+            />
           </div>
 
           {evidence.length === 0 ? (
@@ -516,15 +517,27 @@ export const CaseFileDetail = ({
                     </div>
                   </div>
                   {ev.description && <p className="text-sm text-foreground/80 mb-2">{ev.description}</p>}
+                  {ev.file_name && ev.file_size && (
+                    <p className="text-xs text-muted-foreground mb-1">📎 {ev.file_name} ({(ev.file_size / (1024 * 1024)).toFixed(1)} MB)</p>
+                  )}
                   {ev.file_url && (
                     ev.evidence_type === "video" && (ev.file_url.includes("youtube") || ev.file_url.includes("youtu.be")) ? (
                       <div className="aspect-video rounded overflow-hidden bg-black">
                         <iframe src={ev.file_url.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/")} className="w-full h-full" allowFullScreen />
                       </div>
+                    ) : ev.evidence_type === "video" ? (
+                      <div className="space-y-2">
+                        <video controls className="max-h-64 rounded border border-border/30 w-full">
+                          <source src={ev.file_url} />
+                        </video>
+                        <a href={ev.file_url} target="_blank" rel="noopener noreferrer" className="text-primary underline text-xs flex items-center gap-1"><Download className="w-3 h-3" /> Download</a>
+                      </div>
                     ) : ev.evidence_type === "screenshot" ? (
                       <img src={ev.file_url} alt="Evidence" className="max-h-64 rounded border border-border/30" />
+                    ) : ev.evidence_type === "audio" ? (
+                      <audio controls className="w-full"><source src={ev.file_url} /></audio>
                     ) : (
-                      <a href={ev.file_url} target="_blank" rel="noopener noreferrer" className="text-primary underline text-sm">{ev.file_url}</a>
+                      <a href={ev.file_url} target="_blank" rel="noopener noreferrer" className="text-primary underline text-sm flex items-center gap-1"><Download className="w-3 h-3" /> {ev.file_url}</a>
                     )
                   )}
                 </div>
@@ -564,21 +577,23 @@ export const CaseFileDetail = ({
         {/* Suspect Evidence */}
         <TabsContent value="suspect-evidence" className="space-y-4">
           <div className="bg-card border border-border/50 rounded-lg p-4 space-y-3">
-            <h3 className="font-semibold flex items-center gap-2"><UserCheck className="w-4 h-4" /> Suspect Evidence (evidence provided by/about the suspect)</h3>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-              <Select value={newSuspectEvidenceType} onValueChange={setNewSuspectEvidenceType}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="screenshot">📸 Screenshot</SelectItem>
-                  <SelectItem value="video">🎥 Video</SelectItem>
-                  <SelectItem value="chat_log">💬 Chat Log</SelectItem>
-                  <SelectItem value="confession">📝 Confession</SelectItem>
-                </SelectContent>
-              </Select>
-              <Input placeholder="URL" value={newSuspectEvidenceUrl} onChange={e => setNewSuspectEvidenceUrl(e.target.value)} className="md:col-span-2" />
-              <Input placeholder="Description" value={newSuspectEvidenceDesc} onChange={e => setNewSuspectEvidenceDesc(e.target.value)} />
-            </div>
-            <Button size="sm" onClick={addSuspectEvidence} disabled={!newSuspectEvidenceUrl.trim()}><Plus className="w-4 h-4 mr-1" /> Add Suspect Evidence</Button>
+            <EvidenceUploader
+              label="Suspect Evidence (evidence provided by/about the suspect)"
+              allowedTypes={["screenshot", "video", "chat_log", "confession"]}
+              onEvidenceAdded={async (ev) => {
+                const { error } = await supabase.from("case_file_suspect_evidence" as any).insert({
+                  case_id: caseId, evidence_type: ev.type, file_url: ev.url,
+                  description: ev.description || null, uploaded_by: userDiscordId || "unknown",
+                  uploaded_by_user_id: userId || undefined,
+                  file_name: ev.fileName || null, file_size: ev.fileSize || null,
+                });
+                if (error) toast({ title: "Failed to add suspect evidence", variant: "destructive" });
+                else {
+                  await logAudit("suspect_evidence_added", `Suspect evidence added by ${discordUsername}`);
+                  fetchAll();
+                }
+              }}
+            />
           </div>
 
           {suspectEvidence.length === 0 ? (

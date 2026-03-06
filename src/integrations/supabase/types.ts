@@ -706,6 +706,7 @@ export type Database = {
           description: string | null
           evidence_type: string
           file_name: string | null
+          file_size: number | null
           file_url: string | null
           id: string
           locked: boolean | null
@@ -723,6 +724,7 @@ export type Database = {
           description?: string | null
           evidence_type?: string
           file_name?: string | null
+          file_size?: number | null
           file_url?: string | null
           id?: string
           locked?: boolean | null
@@ -740,6 +742,7 @@ export type Database = {
           description?: string | null
           evidence_type?: string
           file_name?: string | null
+          file_size?: number | null
           file_url?: string | null
           id?: string
           locked?: boolean | null
@@ -853,6 +856,7 @@ export type Database = {
           description: string | null
           evidence_type: string
           file_name: string | null
+          file_size: number | null
           file_url: string | null
           id: string
           uploaded_by: string
@@ -864,6 +868,7 @@ export type Database = {
           description?: string | null
           evidence_type?: string
           file_name?: string | null
+          file_size?: number | null
           file_url?: string | null
           id?: string
           uploaded_by: string
@@ -875,6 +880,7 @@ export type Database = {
           description?: string | null
           evidence_type?: string
           file_name?: string | null
+          file_size?: number | null
           file_url?: string | null
           id?: string
           uploaded_by?: string

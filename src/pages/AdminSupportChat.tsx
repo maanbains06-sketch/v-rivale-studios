@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Send, MessageCircle, Check, Paperclip, X, Download, Zap, AlertCircle, Clock } from "lucide-react";
+import { Send, MessageCircle, Check, Paperclip, X, Download, Zap, AlertCircle, Clock, LifeBuoy } from "lucide-react";
+import { RequestHelpButton } from "@/components/support/RequestHelpButton";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
@@ -537,11 +538,12 @@ const AdminSupportChat = () => {
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-3 shrink-0">
+                      <div className="flex items-center gap-3 shrink-0">
                       {activeViewers.length > 0 && (
                         <ActiveStaffIndicator viewers={activeViewers} type="chat" />
                       )}
                       <div className="flex gap-2">
+                        <RequestHelpButton chatId={selectedChat.id} chatSubject={selectedChat.subject} />
                         {selectedChat.status === "open" && (
                           <Button
                             size="sm"
