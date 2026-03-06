@@ -517,15 +517,27 @@ export const CaseFileDetail = ({
                     </div>
                   </div>
                   {ev.description && <p className="text-sm text-foreground/80 mb-2">{ev.description}</p>}
+                  {ev.file_name && ev.file_size && (
+                    <p className="text-xs text-muted-foreground mb-1">📎 {ev.file_name} ({(ev.file_size / (1024 * 1024)).toFixed(1)} MB)</p>
+                  )}
                   {ev.file_url && (
                     ev.evidence_type === "video" && (ev.file_url.includes("youtube") || ev.file_url.includes("youtu.be")) ? (
                       <div className="aspect-video rounded overflow-hidden bg-black">
                         <iframe src={ev.file_url.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/")} className="w-full h-full" allowFullScreen />
                       </div>
+                    ) : ev.evidence_type === "video" ? (
+                      <div className="space-y-2">
+                        <video controls className="max-h-64 rounded border border-border/30 w-full">
+                          <source src={ev.file_url} />
+                        </video>
+                        <a href={ev.file_url} target="_blank" rel="noopener noreferrer" className="text-primary underline text-xs flex items-center gap-1"><Download className="w-3 h-3" /> Download</a>
+                      </div>
                     ) : ev.evidence_type === "screenshot" ? (
                       <img src={ev.file_url} alt="Evidence" className="max-h-64 rounded border border-border/30" />
+                    ) : ev.evidence_type === "audio" ? (
+                      <audio controls className="w-full"><source src={ev.file_url} /></audio>
                     ) : (
-                      <a href={ev.file_url} target="_blank" rel="noopener noreferrer" className="text-primary underline text-sm">{ev.file_url}</a>
+                      <a href={ev.file_url} target="_blank" rel="noopener noreferrer" className="text-primary underline text-sm flex items-center gap-1"><Download className="w-3 h-3" /> {ev.file_url}</a>
                     )
                   )}
                 </div>
