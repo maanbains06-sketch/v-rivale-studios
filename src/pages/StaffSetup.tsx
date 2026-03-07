@@ -42,9 +42,19 @@ const StaffSetup = () => {
       _user_id: user.id,
       _panel_type: "staff_setup"
     });
-    if (panelAccess) {
-      setIsAdmin(true);
-      fetchStaffMembers();
+
+    if (!panelAccess) {
+      toast({
+        title: "Access Denied",
+        description: "You don't have permission to access this page.",
+        variant: "destructive",
+      });
+      navigate("/");
+      return;
+    }
+
+    setIsAdmin(true);
+    fetchStaffMembers();
   };
 
   const fetchStaffMembers = async () => {
