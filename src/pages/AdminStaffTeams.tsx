@@ -44,16 +44,24 @@ export default function AdminStaffTeams() {
         return;
       }
 
-      const { data: roleData } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .in("role", ["admin", "moderator"])
-        .maybeSingle();
+      // Check via has_panel_access (covers owner, panel_access, and active staff)
+      const { data: panelAccess } = await supabase.rpc("has_panel_access", {
+        _user_id: user.id,
+        _panel_type: "admin"
+      });
 
-      if (!roleData) {
-        navigate("/");
-        return;
+      if (!panelAccess) {
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .in("role", ["admin", "moderator"])
+          .maybeSingle();
+
+        if (!roleData) {
+          navigate("/");
+          return;
+        }
       }
 
       setIsAdmin(true);
