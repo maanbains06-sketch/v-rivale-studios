@@ -57,21 +57,29 @@ const AdminStaffStats = () => {
         return;
       }
 
-      const { data: roleData } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .maybeSingle();
+      // Check via has_panel_access (covers owner, panel_access, and active staff)
+      const { data: panelAccess } = await supabase.rpc("has_panel_access", {
+        _user_id: user.id,
+        _panel_type: "admin"
+      });
 
-      if (!roleData) {
-        toast({
-          title: "Access Denied",
-          description: "You don't have permission to access this page.",
-          variant: "destructive",
-        });
-        navigate("/");
-        return;
+      if (!panelAccess) {
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .eq("role", "admin")
+          .maybeSingle();
+
+        if (!roleData) {
+          toast({
+            title: "Access Denied",
+            description: "You don't have permission to access this page.",
+            variant: "destructive",
+          });
+          navigate("/");
+          return;
+        }
       }
 
       setIsAdmin(true);

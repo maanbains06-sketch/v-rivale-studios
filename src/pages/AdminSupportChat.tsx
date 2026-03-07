@@ -97,6 +97,18 @@ const AdminSupportChat = () => {
       return;
     }
 
+    // Use has_panel_access which checks owner, panel_access table, AND active staff members
+    const { data: panelAccess } = await supabase.rpc("has_panel_access", {
+      _user_id: user.id,
+      _panel_type: "support"
+    });
+
+    if (panelAccess) {
+      setIsAdmin(true);
+      return;
+    }
+
+    // Fallback: check user_roles
     const { data: roles } = await supabase
       .from("user_roles")
       .select("role")

@@ -394,6 +394,28 @@ const Navigation = () => {
                           </Button>
                           <Button 
                             variant="outline"
+                            className="justify-start glass-effect border-green-500/30"
+                            asChild
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <Link to="/job-panel">
+                              <Briefcase className="w-4 h-4 mr-2 text-green-400" />
+                              Job Panel
+                            </Link>
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            className="justify-start glass-effect border-blue-500/30"
+                            asChild
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <Link to="/business-panel">
+                              <Building2 className="w-4 h-4 mr-2 text-blue-400" />
+                              Business Panel
+                            </Link>
+                          </Button>
+                          <Button 
+                            variant="outline"
                             className="justify-start glass-effect border-purple-500/30"
                             asChild
                             onClick={() => setIsMenuOpen(false)}

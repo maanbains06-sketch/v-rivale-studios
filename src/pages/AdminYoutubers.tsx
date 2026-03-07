@@ -64,6 +64,16 @@ const AdminYoutubers = () => {
         return;
       }
 
+      // Check via has_panel_access (covers owner, panel_access, and active staff)
+      const { data: panelAccess } = await supabase.rpc("has_panel_access", {
+        _user_id: user.id,
+        _panel_type: "admin"
+      });
+      if (panelAccess) {
+        setIsAdmin(true);
+        return;
+      }
+
       const { data: roleData, error: roleError } = await supabase
         .from("user_roles")
         .select("role")

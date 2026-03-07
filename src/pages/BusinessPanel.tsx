@@ -99,6 +99,7 @@ const BusinessPanel = () => {
         return;
       }
 
+      // has_panel_access now checks owner, panel_access table, AND active staff members
       const { data, error } = await supabase.rpc("has_panel_access", {
         _user_id: user.id,
         _panel_type: "business"

@@ -37,11 +37,13 @@ const StaffSetup = () => {
       return;
     }
 
-    const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+    // Check via has_panel_access (covers owner, panel_access, and active staff)
+    const { data: panelAccess } = await supabase.rpc("has_panel_access", {
+      _user_id: user.id,
+      _panel_type: "staff_setup"
+    });
 
-    const hasAccess = roles?.some((r) => r.role === "admin");
-
-    if (!hasAccess) {
+    if (!panelAccess) {
       toast({
         title: "Access Denied",
         description: "You don't have permission to access this page.",
