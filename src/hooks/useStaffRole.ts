@@ -65,10 +65,8 @@ export const useStaffRole = () => {
           staffMember = data;
         }
 
-        // Determine admin status from staff role_type or user_roles
-        const isAdminFromStaff = staffMember?.role_type === 'admin' || 
-                                  staffMember?.role_type === 'owner' ||
-                                  staffMember?.role_type === 'developer';
+        // All active staff members get admin-level access to panels
+        const isAdminFromStaff = !!staffMember;
 
         if (staffMember || isAdminFromRoles) {
           setStaffRole({
