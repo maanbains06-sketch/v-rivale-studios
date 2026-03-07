@@ -94,6 +94,56 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Check if user is an active staff member - grant full access to all departments
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+    
+    const { data: staffMember } = await adminClient
+      .from('staff_members')
+      .select('id, is_active')
+      .eq('discord_id', userDiscordId)
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (staffMember) {
+      console.log('User is active staff member, granting full access');
+      return new Response(
+        JSON.stringify({
+          hasAccess: true,
+          isOwner: false,
+          accessibleDepartments: Object.keys(JOB_PANEL_ROLES) as DepartmentKey[],
+          userDiscordId,
+        } as UserRolesResponse),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Also check panel_access table
+    const { data: panelAccess } = await adminClient
+      .from('panel_access')
+      .select('departments')
+      .eq('discord_id', userDiscordId)
+      .eq('panel_type', 'job')
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (panelAccess) {
+      const depts = panelAccess.departments;
+      const accessibleDepts = depts && !depts.includes('all') 
+        ? depts.filter((d: string) => d in JOB_PANEL_ROLES) as DepartmentKey[]
+        : Object.keys(JOB_PANEL_ROLES) as DepartmentKey[];
+      
+      return new Response(
+        JSON.stringify({
+          hasAccess: true,
+          isOwner: false,
+          accessibleDepartments: accessibleDepts,
+          userDiscordId,
+        } as UserRolesResponse),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     if (!discordBotToken || !discordServerId) {
       console.error('Discord configuration missing');
       return new Response(
