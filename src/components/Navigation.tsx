@@ -641,18 +641,6 @@ const Navigation = () => {
                     <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
                       <Link to="/refund-policy">Refund Policy</Link>
                     </Button>
-                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
-                      <Link to="/awards" className="flex items-center">
-                        <Trophy className="w-4 h-4 mr-2 text-yellow-500" />
-                        Awards
-                      </Link>
-                    </Button>
-                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
-                      <Link to="/awards" className="flex items-center">
-                        <Trophy className="w-4 h-4 mr-2 text-yellow-500" />
-                        Awards
-                      </Link>
-                    </Button>
                   </div>
 
                   {/* Quick Admin Links - Only visible to staff */}
