@@ -14,6 +14,7 @@ import { ArrowLeft, Download, Edit2, Save, X, Plus, Shield, CheckCircle, Clock, 
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import jsPDF from "jspdf";
+import { PDF_COLORS, drawHeader, drawFooter } from "@/lib/pdfStyles";
 import SignaturePad from "@/components/SignaturePad";
 import StaffContractsList from "@/components/StaffContractsList";
 
