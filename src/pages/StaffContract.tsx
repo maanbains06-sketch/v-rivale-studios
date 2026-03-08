@@ -469,7 +469,7 @@ const StaffContract = () => {
     // Branded header
     drawHeader(doc, 'STAFF & ADMINISTRATOR AGREEMENT', 'Confidential — Non-Disclosure Agreement');
 
-    yPos = 50;
+    yPos = 56;
 
     doc.setTextColor(...black);
     doc.setFontSize(8);
