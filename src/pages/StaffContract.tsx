@@ -909,7 +909,7 @@ const StaffContract = () => {
                             <p><span className="font-bold text-muted-foreground">Discord:</span> <span className="text-foreground">{contractData.staffDiscord || '[To be filled]'}</span></p>
                             <p><span className="font-bold text-muted-foreground">Role:</span> <span className="text-foreground">{contractData.staffRole}</span></p>
                             <p><span className="font-bold text-muted-foreground">Department:</span> <span className="text-foreground">{contractData.staffDepartment}</span></p>
-                            <p><span className="font-bold text-muted-foreground">Join Date:</span> <span className="text-foreground">{contractData.staffJoinDate ? format(new Date(contractData.staffJoinDate), 'dd MMM yyyy') : '[To be filled]'}</span></p>
+                            <p><span className="font-bold text-muted-foreground">Join Date:</span> <span className="text-foreground">{contractData.staffJoinDate ? safeFormatDate(contractData.staffJoinDate) : '[To be filled]'}</span></p>
                           </div>
                         )}
                       </div>
