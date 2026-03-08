@@ -399,7 +399,7 @@ const EscapeRoomGame = ({ onBack }: { onBack: () => void }) => {
   const [cipherInput, setCipherInput] = useState("");
   const [foundKey, setFoundKey] = useState(false);
   const [foundClue, setFoundClue] = useState(false);
-  const submitScore = useSubmitScore();
+  const { toast } = useToast();
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
   const game = GAMES[0];
 
