@@ -64,6 +64,7 @@ const DiscordProfile = () => {
     loading: discordLoading,
     refreshProfile 
   } = useDiscordProfile(discordId);
+  const { customization } = useProfileCustomization(user?.id);
 
   useEffect(() => {
     const checkAuth = async () => {
