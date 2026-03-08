@@ -1261,7 +1261,7 @@ const AuctionBiddingGame = ({ onBack, submitScore, GameShell, StartScreen, EndSc
                     </div>
                     {isLeading && <Crown className="w-3 h-3 text-amber-400 flex-shrink-0" />}
                     {bot.rivalry > 0.5 && !isScared && (
-                      <AlertTriangle className="w-3 h-3 text-red-400 flex-shrink-0" title="Has a rivalry with you!" />
+                      <AlertTriangle className="w-3 h-3 text-red-400 flex-shrink-0" />
                     )}
                   </motion.div>
                 );
