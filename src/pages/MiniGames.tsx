@@ -10,11 +10,12 @@ import {
   Gamepad2, Trophy, Clock, ArrowLeft, Brain, Zap, BookOpen,
   Shuffle, Target, Lock, Search, Eye, CheckCircle, XCircle, Star,
   Crosshair, Keyboard, Palette, Grid3X3, Calculator, DoorOpen,
-  Lightbulb, Key, Flame, Bomb, Skull, Box
+  Lightbulb, Key, Flame, Bomb, Skull, Box, Gavel
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import BubbleShooterGame from "@/components/mini-games/BubbleShooterGame";
 import BrickBreakerGame from "@/components/mini-games/BrickBreakerGame";
+import AuctionBiddingGame from "@/components/mini-games/AuctionBiddingGame";
 
 // ─── Types ───────────────────────────────────────────────
 interface LeaderboardEntry {
@@ -30,7 +31,8 @@ interface LeaderboardEntry {
 type GameType =
   | "escape_room" | "memory_match" | "reaction_test" | "trivia_quiz" | "word_scramble"
   | "speed_typer" | "color_match" | "pattern_memory" | "math_blitz" | "aim_trainer"
-  | "bomb_defusal" | "snake_runner" | "block_puzzle" | "bubble_shooter" | "brick_breaker";
+  | "bomb_defusal" | "snake_runner" | "block_puzzle" | "bubble_shooter" | "brick_breaker"
+  | "auction_bidding";
 
 interface GameDef {
   id: GameType;
@@ -57,6 +59,7 @@ const GAMES: GameDef[] = [
   { id: "block_puzzle", title: "Block Blast", description: "Tetris-style falling blocks — place them to clear lines & score!", icon: <Box className="w-8 h-8" />, gradient: "from-blue-500 via-cyan-400 to-blue-600", glow: "shadow-blue-500/40" },
   { id: "bubble_shooter", title: "Bubble Shooter", description: "Aim & pop colorful bubbles — match 3+ to clear the board!", icon: <Target className="w-8 h-8" />, gradient: "from-pink-500 via-fuchsia-500 to-purple-500", glow: "shadow-pink-500/40" },
   { id: "brick_breaker", title: "Brick Breaker", description: "Smash colorful bricks with your paddle — collect power-ups & clear levels!", icon: <Skull className="w-8 h-8" />, gradient: "from-cyan-500 via-blue-500 to-indigo-500", glow: "shadow-cyan-500/40" },
+  { id: "auction_bidding", title: "Auction House", description: "Bid against ruthless rivals for legendary items — manage your budget wisely!", icon: <Gavel className="w-8 h-8" />, gradient: "from-amber-500 via-yellow-500 to-orange-500", glow: "shadow-amber-500/40" },
 ];
 
 // ─── 3D Card Wrapper ─────────────────────────────────────
@@ -2333,6 +2336,11 @@ const BrickBreakerWrapper = ({ onBack }: { onBack: () => void }) => {
   return <BrickBreakerGame onBack={onBack} submitScore={submitScore} GameShell={GameShell} StartScreen={StartScreen} EndScreen={EndScreen} Leaderboard={Leaderboard} game={GAMES[14]} />;
 };
 
+const AuctionBiddingWrapper = ({ onBack }: { onBack: () => void }) => {
+  const submitScore = useSubmitScore();
+  return <AuctionBiddingGame onBack={onBack} submitScore={submitScore} GameShell={GameShell} StartScreen={StartScreen} EndScreen={EndScreen} Leaderboard={Leaderboard} game={GAMES[15]} />;
+};
+
 // ════════════════════════════════════════════════════════
 // MAIN HUB
 // ════════════════════════════════════════════════════════
@@ -2357,6 +2365,7 @@ const MiniGames = () => {
       case "block_puzzle": return <BlockPuzzleGame onBack={onBack} />;
       case "bubble_shooter": return <BubbleShooterWrapper onBack={onBack} />;
       case "brick_breaker": return <BrickBreakerWrapper onBack={onBack} />;
+      case "auction_bidding": return <AuctionBiddingWrapper onBack={onBack} />;
       default: return null;
     }
   };
@@ -2384,7 +2393,7 @@ const MiniGames = () => {
                   WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
                 }}>Mini Games Arena</h1>
                 <p className="text-muted-foreground max-w-lg mx-auto text-lg">
-                  15 unique games with live leaderboards. Compete for the top spot!
+                  16 unique games with live leaderboards. Compete for the top spot!
                 </p>
               </div>
 

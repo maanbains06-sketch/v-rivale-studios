@@ -24,6 +24,7 @@ const ALL_GAMES = [
   { id: "block_puzzle", title: "Block Blast" },
   { id: "bubble_shooter", title: "Bubble Shooter" },
   { id: "brick_breaker", title: "Brick Breaker" },
+  { id: "auction_bidding", title: "Auction House" },
 ];
 
 const OwnerMiniGamesManager = () => {
