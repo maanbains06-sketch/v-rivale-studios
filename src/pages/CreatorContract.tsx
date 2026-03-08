@@ -897,26 +897,7 @@ const CreatorContract = () => {
     doc.text('Creator Signature', partyBX + 3, yPos + sigBoxHeight + 18);
 
     // Footer
-    yPos = pageHeight - 12;
-    doc.setDrawColor(...black);
-    doc.setLineWidth(0.5);
-    doc.line(margin, yPos - 3, pageWidth - margin, yPos - 3);
-    
-    doc.setFontSize(6);
-    doc.setTextColor(...gray);
-    doc.setFont('helvetica', 'italic');
-    doc.text('This is a legally binding electronic document. Both parties acknowledge having read and understood all terms and conditions stated herein.', pageWidth / 2, yPos, { align: 'center' });
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Skylife Roleplay India | Content Creator Contract | Generated: ${format(new Date(), 'dd/MM/yyyy HH:mm')} | Page ${doc.getNumberOfPages()}`, pageWidth / 2, yPos + 4, { align: 'center' });
-
-    // Add page numbers to all pages
-    const totalPages = doc.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i);
-      doc.setFontSize(7);
-      doc.setTextColor(...gray);
-      doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin, pageHeight - 5, { align: 'right' });
-    }
+    drawFooter(doc, 'Content Creator Contract');
 
     // Save
     const fileName = `SLRP-Contract-${contractData.creatorName?.replace(/\s+/g, '-') || 'Draft'}-${format(new Date(), 'yyyy-MM-dd')}.pdf`;
