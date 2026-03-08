@@ -316,16 +316,37 @@ const CreatorContract = () => {
     return contractData.specialTermsList.filter(term => term.enabled && term.text.trim());
   };
 
+  const safeFormatDate = (dateStr: string | null | undefined, fmt: string = 'dd MMM yyyy') => {
+    if (!dateStr) return '[Not set]';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return '[Invalid date]';
+      return format(d, fmt);
+    } catch { return '[Invalid date]'; }
+  };
+
   const handleSelectContract = (contract: any) => {
-    setSelectedContractId(contract.id);
-    const data = contract.contract_data as ContractData;
-    setContractData({ ...defaultContractData, ...data });
-    setContractStatus(contract.status);
-    setOwnerSignature(contract.owner_signature);
-    setOwnerSignedAt(contract.owner_signed_at);
-    setCreatorSignature(contract.creator_signature);
-    setCreatorSignedAt(contract.creator_signed_at);
-    setIsEditing(false);
+    try {
+      setSelectedContractId(contract.id);
+      let data: Partial<ContractData> = {};
+      if (contract.contract_data) {
+        if (typeof contract.contract_data === 'string') {
+          try { data = JSON.parse(contract.contract_data); } catch { data = {}; }
+        } else {
+          data = contract.contract_data as Partial<ContractData>;
+        }
+      }
+      setContractData({ ...defaultContractData, ...data });
+      setContractStatus(contract.status || "draft");
+      setOwnerSignature(contract.owner_signature || null);
+      setOwnerSignedAt(contract.owner_signed_at || null);
+      setCreatorSignature(contract.creator_signature || null);
+      setCreatorSignedAt(contract.creator_signed_at || null);
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error loading contract:", error);
+      toast({ title: "Error loading contract", description: "Could not parse contract data.", variant: "destructive" });
+    }
   };
 
   const handleSelectTemplate = (template: any) => {
