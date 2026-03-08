@@ -764,7 +764,7 @@ const CreatorContract = () => {
     // ========== SPECIAL TERMS SECTION ==========
     const activeTerms = getActiveSpecialTerms();
     if (activeTerms.length > 0 || contractData.customTerms) {
-      yPos = drawSectionHeader('Special Terms & Conditions', yPos);
+      yPos = drawContractSectionHeader('Special Terms & Conditions', yPos);
       
       doc.setTextColor(...black);  // Reset text color after header
       doc.setDrawColor(...black);
