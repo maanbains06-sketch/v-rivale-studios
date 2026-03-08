@@ -54,6 +54,27 @@ const CinemaHub = () => {
     getUser();
   }, []);
 
+  // Subscribe to the same website_presence channel as LiveVisitorCounter
+  useEffect(() => {
+    const sessionId = `cinema_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const channel = supabase.channel('website_presence', {
+      config: { presence: { key: sessionId } },
+    });
+
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const count = Object.keys(channel.presenceState()).length;
+        setLiveVisitorCount(count > 0 ? count : 1);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({ online_at: new Date().toISOString() });
+        }
+      });
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
   const fetchRooms = useCallback(async () => {
     const { data } = await supabase
       .from("cinema_rooms")
