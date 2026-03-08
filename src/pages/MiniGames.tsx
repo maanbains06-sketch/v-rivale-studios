@@ -15,6 +15,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import BubbleShooterGame from "@/components/mini-games/BubbleShooterGame";
 import BrickBreakerGame from "@/components/mini-games/BrickBreakerGame";
+import AuctionBiddingGame from "@/components/mini-games/AuctionBiddingGame";
 
 // ─── Types ───────────────────────────────────────────────
 interface LeaderboardEntry {
