@@ -23,6 +23,18 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
   const [remoteScreenStream, setRemoteScreenStream] = useState<MediaStream | null>(null);
   const [remoteScreenUser, setRemoteScreenUser] = useState<string | null>(null);
   const [connectedPeers, setConnectedPeers] = useState<string[]>([]);
+  const [micPermission, setMicPermission] = useState<PermissionState | "unknown">("unknown");
+  const [lastError, setLastError] = useState<string | null>(null);
+
+  // Check mic permission on mount
+  useEffect(() => {
+    if (navigator.permissions) {
+      navigator.permissions.query({ name: "microphone" as PermissionName }).then((result) => {
+        setMicPermission(result.state);
+        result.onchange = () => setMicPermission(result.state);
+      }).catch(() => {});
+    }
+  }, []);
 
   const createPeerConnection = useCallback((peerId: string, isInitiator: boolean) => {
     if (peers.current.has(peerId)) return peers.current.get(peerId)!.pc;
