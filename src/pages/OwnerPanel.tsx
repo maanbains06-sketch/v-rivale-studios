@@ -90,6 +90,7 @@ import {
   Gamepad2,
   ToggleLeft,
   FolderOpen,
+  Lightbulb,
 } from "lucide-react";
 import { Coins } from "lucide-react";
 import { OwnerCaseManager } from "@/components/case-files/OwnerCaseManager";
