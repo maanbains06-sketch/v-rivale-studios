@@ -387,5 +387,8 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
     remoteScreenUser,
     connectedPeers,
     localScreenStream: localScreenStream.current,
+    micPermission,
+    lastError,
+    clearError: () => setLastError(null),
   };
 }
