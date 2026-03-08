@@ -246,10 +246,10 @@ const CinemaHub = () => {
             <Tv className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium">{rooms.length} Live Rooms</span>
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-border/50">
-            <Users className="w-4 h-4 text-green-400" />
-            <span className="text-sm font-medium">
-              {Object.values(roomMembers).reduce((acc, m) => acc + m.length, 0)} Online
+          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-green-500/30">
+            <Users className="w-4 h-4 text-green-500" />
+            <span className="text-sm font-medium text-green-500">
+              {liveVisitorCount} Online
             </span>
           </div>
         </div>
