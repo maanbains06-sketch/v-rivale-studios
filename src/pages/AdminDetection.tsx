@@ -827,7 +827,7 @@ const AdminDetection = () => {
               drawHeader(doc, 'Alt-Account Detection Evidence', 'Confidential Investigation Report');
 
               // Document reference
-              let y = 50;
+              let y = 56;
               y = drawDocumentRef(doc, d.id.substring(0, 8).toUpperCase(), y, margin);
               y += 3;
 
