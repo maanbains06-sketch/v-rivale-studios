@@ -78,7 +78,6 @@ const Navigation = () => {
   const showGuidesLink = isOwner || (!siteSettingsLoading && !siteSettings.guides_hidden);
   const showMiniGamesLink = isOwner || (!siteSettingsLoading && !siteSettings.mini_games_hidden);
   const showProfileCustomizationLink = isOwner || (!siteSettingsLoading && !siteSettings.profile_customization_hidden);
-  const showMemorialLink = isOwner || (!siteSettingsLoading && !siteSettings.memorial_hidden);
 
   // Track staff presence when logged in with Discord ID
   useWebsitePresence({ 
@@ -724,7 +723,7 @@ const Navigation = () => {
                   )}
                   <Button
                     variant="outline"
-                    className="justify-start glass-effect border-primary/30"
+                    className="justify-start w-full border-border bg-secondary text-secondary-foreground hover:bg-accent"
                     asChild
                     onClick={() => setIsMenuOpen(false)}
                   >
@@ -733,27 +732,25 @@ const Navigation = () => {
                       Cinema Hub
                     </Link>
                   </Button>
-                  {showMemorialLink && (
-                    <Button
-                      variant="outline"
-                      className="justify-start glass-effect border-secondary/30"
-                      asChild
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <Link to="/memorial" className="flex items-center">
-                        <Flame className="w-4 h-4 mr-2 text-secondary" />
-                        Graveyard
-                      </Link>
-                    </Button>
-                  )}
                   <Button
                     variant="outline"
-                    className="justify-start glass-effect border-accent/30"
+                    className="justify-start w-full border-border bg-secondary text-secondary-foreground hover:bg-accent"
+                    asChild
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Link to="/memorial" className="flex items-center">
+                      <Flame className="w-4 h-4 mr-2 text-primary" />
+                      Graveyard
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="justify-start w-full border-border bg-secondary text-secondary-foreground hover:bg-accent"
                     asChild
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <Link to="/suggestion-box" className="flex items-center">
-                      <Lightbulb className="w-4 h-4 mr-2 text-accent" />
+                      <Lightbulb className="w-4 h-4 mr-2 text-primary" />
                       Suggestion Box
                     </Link>
                   </Button>
