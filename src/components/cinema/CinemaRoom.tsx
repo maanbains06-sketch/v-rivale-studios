@@ -1,14 +1,16 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   ArrowLeft, Send, Mic, MicOff, Monitor, MonitorOff, Users, MessageSquare,
-  Crown, Link as LinkIcon, X, Volume2, VolumeX, Maximize2, Minimize2, Wifi, WifiOff
+  Crown, Link as LinkIcon, X, Volume2, VolumeX, Maximize2, Minimize2, Wifi, WifiOff, AlertTriangle, Info
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useWebRTC } from "@/hooks/useWebRTC";
@@ -73,6 +75,8 @@ const CinemaRoom = ({ room, user, onLeave, onEnd }: CinemaRoomProps) => {
 
   const isCreator = user?.id === room.created_by;
   const username = user?.user_metadata?.display_name || user?.user_metadata?.username || "Unknown";
+  const { toast } = useToast();
+  const [showPermissionBanner, setShowPermissionBanner] = useState(true);
 
   const {
     joinSignaling,
@@ -85,7 +89,18 @@ const CinemaRoom = ({ room, user, onLeave, onEnd }: CinemaRoomProps) => {
     remoteScreenUser,
     connectedPeers,
     localScreenStream,
+    micPermission,
+    lastError,
+    clearError,
   } = useWebRTC(room.id, user?.id || "", username);
+
+  // Show error toasts
+  useEffect(() => {
+    if (lastError) {
+      toast({ title: "Permission Required", description: lastError, variant: "destructive" });
+      clearError();
+    }
+  }, [lastError, toast, clearError]);
 
   // Join WebRTC signaling on mount
   useEffect(() => {
@@ -262,6 +277,30 @@ const CinemaRoom = ({ room, user, onLeave, onEnd }: CinemaRoomProps) => {
           )}
         </div>
       </div>
+
+      {/* Permission Banner */}
+      <AnimatePresence>
+        {showPermissionBanner && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden shrink-0"
+          >
+            <Alert className="rounded-none border-x-0 border-t-0 bg-primary/5 border-primary/20">
+              <Info className="w-4 h-4 text-primary" />
+              <AlertDescription className="text-xs flex items-center justify-between">
+                <span>
+                  <strong>Voice & Screen Share:</strong> Your browser will ask for permissions when you click the mic/screen buttons — please <strong>Allow</strong> them. Use Chrome, Edge, or Firefox for best experience.
+                </span>
+                <Button variant="ghost" size="sm" onClick={() => setShowPermissionBanner(false)} className="shrink-0 ml-2 h-6 text-xs">
+                  Got it
+                </Button>
+              </AlertDescription>
+            </Alert>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">

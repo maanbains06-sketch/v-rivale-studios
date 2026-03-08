@@ -23,6 +23,18 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
   const [remoteScreenStream, setRemoteScreenStream] = useState<MediaStream | null>(null);
   const [remoteScreenUser, setRemoteScreenUser] = useState<string | null>(null);
   const [connectedPeers, setConnectedPeers] = useState<string[]>([]);
+  const [micPermission, setMicPermission] = useState<PermissionState | "unknown">("unknown");
+  const [lastError, setLastError] = useState<string | null>(null);
+
+  // Check mic permission on mount
+  useEffect(() => {
+    if (navigator.permissions) {
+      navigator.permissions.query({ name: "microphone" as PermissionName }).then((result) => {
+        setMicPermission(result.state);
+        result.onchange = () => setMicPermission(result.state);
+      }).catch(() => {});
+    }
+  }, []);
 
   const createPeerConnection = useCallback((peerId: string, isInitiator: boolean) => {
     if (peers.current.has(peerId)) return peers.current.get(peerId)!.pc;
@@ -230,11 +242,17 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
     setRemoteScreenUser(null);
   }, [userId]);
 
-  const toggleMic = useCallback(async () => {
+  const toggleMic = useCallback(async (): Promise<string | null> => {
     if (!isMicOn) {
       try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          const msg = "Your browser doesn't support microphone access. Please use Chrome, Edge, or Firefox.";
+          setLastError(msg);
+          return msg;
+        }
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         localAudioStream.current = stream;
+        setMicPermission("granted");
         
         // Add audio tracks to all existing peers
         peers.current.forEach((peer) => {
@@ -255,9 +273,21 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
         }
 
         setIsMicOn(true);
+        setLastError(null);
         await supabase.from("cinema_room_members").update({ is_muted: false }).eq("room_id", roomId).eq("user_id", userId);
-      } catch {
-        console.error("Mic access denied");
+        return null;
+      } catch (err: any) {
+        let msg = "Microphone access denied. ";
+        if (err?.name === "NotAllowedError") {
+          msg += "Click the 🔒 icon in your browser's address bar → Allow Microphone → Reload the page.";
+        } else if (err?.name === "NotFoundError") {
+          msg += "No microphone found. Please connect a microphone and try again.";
+        } else {
+          msg += "Please check your browser permissions.";
+        }
+        setMicPermission("denied");
+        setLastError(msg);
+        return msg;
       }
     } else {
       localAudioStream.current?.getTracks().forEach(t => t.stop());
@@ -267,9 +297,14 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
     }
   }, [isMicOn, userId, roomId]);
 
-  const toggleScreen = useCallback(async () => {
+  const toggleScreen = useCallback(async (): Promise<string | null> => {
     if (!isScreenOn) {
       try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+          const msg = "Your browser doesn't support screen sharing. Please use Chrome, Edge, or Firefox.";
+          setLastError(msg);
+          return msg;
+        }
         const stream = await navigator.mediaDevices.getDisplayMedia({ 
           video: { cursor: "always" } as any, 
           audio: true 
@@ -295,6 +330,7 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
         }
 
         setIsScreenOn(true);
+        setLastError(null);
         await supabase.from("cinema_room_members").update({ is_sharing_screen: true }).eq("room_id", roomId).eq("user_id", userId);
 
         // Handle when user stops sharing from browser UI
@@ -308,8 +344,16 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
             payload: { userId },
           });
         };
-      } catch {
-        console.error("Screen share denied");
+        return null;
+      } catch (err: any) {
+        let msg = "Screen sharing denied. ";
+        if (err?.name === "NotAllowedError") {
+          msg += "You cancelled the screen share dialog or permission was denied.";
+        } else {
+          msg += "Please try again.";
+        }
+        setLastError(msg);
+        return msg;
       }
     } else {
       localScreenStream.current?.getTracks().forEach(t => t.stop());
@@ -321,6 +365,7 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
         event: "screen-stopped",
         payload: { userId },
       });
+      return null;
     }
   }, [isScreenOn, userId, roomId]);
 
@@ -342,5 +387,8 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
     remoteScreenUser,
     connectedPeers,
     localScreenStream: localScreenStream.current,
+    micPermission,
+    lastError,
+    clearError: () => setLastError(null),
   };
 }
