@@ -31,7 +31,8 @@ interface LeaderboardEntry {
 type GameType =
   | "escape_room" | "memory_match" | "reaction_test" | "trivia_quiz" | "word_scramble"
   | "speed_typer" | "color_match" | "pattern_memory" | "math_blitz" | "aim_trainer"
-  | "bomb_defusal" | "snake_runner" | "block_puzzle" | "bubble_shooter" | "brick_breaker";
+  | "bomb_defusal" | "snake_runner" | "block_puzzle" | "bubble_shooter" | "brick_breaker"
+  | "auction_bidding";
 
 interface GameDef {
   id: GameType;
