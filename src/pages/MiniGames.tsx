@@ -1698,20 +1698,24 @@ const BombDefusalGame = ({ onBack }: { onBack: () => void }) => {
 };
 
 // ════════════════════════════════════════════════════════
-// GAME 12: SNAKE RUNNER 🐍
+// GAME 12: SNAKE RUNNER 🐍 (Canvas-based for 60fps)
 // ════════════════════════════════════════════════════════
 const GRID_SIZE = 25;
 const CELL_SIZE = 16;
+const SNAKE_BOARD = GRID_SIZE * CELL_SIZE;
 
 const SnakeRunnerGame = ({ onBack }: { onBack: () => void }) => {
   const [started, setStarted] = useState(false);
   const [gameOver, setGameOver] = useState(false);
-  const [snake, setSnake] = useState<{ x: number; y: number }[]>([{ x: 12, y: 12 }]);
-  const [food, setFood] = useState({ x: 15, y: 10 });
-  const [direction, setDirection] = useState<"up" | "down" | "left" | "right">("right");
   const [score, setScore] = useState(0);
-  const dirRef = useRef(direction);
-  const gameLoopRef = useRef<ReturnType<typeof setInterval>>();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const dirRef = useRef<"up" | "down" | "left" | "right">("right");
+  const snakeRef = useRef<{ x: number; y: number }[]>([{ x: 12, y: 12 }]);
+  const foodRef = useRef({ x: 15, y: 10 });
+  const scoreRef = useRef(0);
+  const gameOverRef = useRef(false);
+  const lastTickRef = useRef(0);
+  const frameRef = useRef<number>();
   const submitScore = useSubmitScore();
   const game = GAMES[11];
 
@@ -1724,10 +1728,18 @@ const SnakeRunnerGame = ({ onBack }: { onBack: () => void }) => {
 
   const initGame = () => {
     const initial = [{ x: 12, y: 12 }];
-    setSnake(initial); setFood(spawnFood(initial)); setDirection("right"); dirRef.current = "right";
-    setScore(0); setGameOver(false); setStarted(true);
+    snakeRef.current = initial;
+    foodRef.current = spawnFood(initial);
+    dirRef.current = "right";
+    scoreRef.current = 0;
+    gameOverRef.current = false;
+    lastTickRef.current = 0;
+    setScore(0);
+    setGameOver(false);
+    setStarted(true);
   };
 
+  // Keyboard + mobile touch input
   useEffect(() => {
     if (!started || gameOver) return;
     const handleKey = (e: KeyboardEvent) => {
@@ -1735,34 +1747,140 @@ const SnakeRunnerGame = ({ onBack }: { onBack: () => void }) => {
       const newDir = map[e.key];
       if (!newDir) return;
       const opposites: Record<string, string> = { up: "down", down: "up", left: "right", right: "left" };
-      if (opposites[newDir] !== dirRef.current) { dirRef.current = newDir; setDirection(newDir); }
+      if (opposites[newDir] !== dirRef.current) dirRef.current = newDir;
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [started, gameOver]);
 
+  // Canvas game loop
   useEffect(() => {
     if (!started || gameOver) return;
-    gameLoopRef.current = setInterval(() => {
-      setSnake(prev => {
-        const head = { ...prev[0] };
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d")!;
+
+    const loop = (time: number) => {
+      if (gameOverRef.current) return;
+
+      // Tick every 100ms
+      if (time - lastTickRef.current >= 100) {
+        lastTickRef.current = time;
+        const snake = snakeRef.current;
+        const head = { ...snake[0] };
         const dir = dirRef.current;
         if (dir === "up") head.y--; else if (dir === "down") head.y++; else if (dir === "left") head.x--; else head.x++;
-        if (head.x < 0 || head.x >= GRID_SIZE || head.y < 0 || head.y >= GRID_SIZE || prev.some(s => s.x === head.x && s.y === head.y)) {
-          setGameOver(true); clearInterval(gameLoopRef.current);
-          setScore(sc => { submitScore("snake_runner", sc * 10); return sc; });
-          return prev;
+
+        if (head.x < 0 || head.x >= GRID_SIZE || head.y < 0 || head.y >= GRID_SIZE || snake.some(s => s.x === head.x && s.y === head.y)) {
+          gameOverRef.current = true;
+          setGameOver(true);
+          submitScore("snake_runner", scoreRef.current * 10);
+          return;
         }
-        const newSnake = [head, ...prev];
-        if (head.x === food.x && head.y === food.y) {
-          setScore(s => s + 1);
-          setFood(spawnFood(newSnake));
-        } else { newSnake.pop(); }
-        return newSnake;
-      });
-    }, 100);
-    return () => clearInterval(gameLoopRef.current);
-  }, [started, gameOver, food, submitScore]);
+
+        const newSnake = [head, ...snake];
+        if (head.x === foodRef.current.x && head.y === foodRef.current.y) {
+          scoreRef.current++;
+          setScore(scoreRef.current);
+          foodRef.current = spawnFood(newSnake);
+        } else {
+          newSnake.pop();
+        }
+        snakeRef.current = newSnake;
+      }
+
+      // ── RENDER ──
+      ctx.clearRect(0, 0, SNAKE_BOARD, SNAKE_BOARD);
+
+      // Background
+      const bg = ctx.createRadialGradient(SNAKE_BOARD / 2, SNAKE_BOARD / 2, 0, SNAKE_BOARD / 2, SNAKE_BOARD / 2, SNAKE_BOARD * 0.7);
+      bg.addColorStop(0, "hsl(220,20%,10%)");
+      bg.addColorStop(1, "hsl(220,25%,5%)");
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, SNAKE_BOARD, SNAKE_BOARD);
+
+      // Grid lines
+      ctx.strokeStyle = "hsla(140,50%,50%,0.06)";
+      ctx.lineWidth = 0.5;
+      for (let i = 0; i <= GRID_SIZE; i++) {
+        ctx.beginPath(); ctx.moveTo(i * CELL_SIZE, 0); ctx.lineTo(i * CELL_SIZE, SNAKE_BOARD); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, i * CELL_SIZE); ctx.lineTo(SNAKE_BOARD, i * CELL_SIZE); ctx.stroke();
+      }
+
+      // Food
+      const food = foodRef.current;
+      const pulse = 1 + Math.sin(time * 0.006) * 0.15;
+      const fx = food.x * CELL_SIZE + CELL_SIZE / 2;
+      const fy = food.y * CELL_SIZE + CELL_SIZE / 2;
+      const fr = (CELL_SIZE / 2 - 1) * pulse;
+      ctx.save();
+      ctx.shadowColor = "hsl(0,80%,55%)";
+      ctx.shadowBlur = 10;
+      const foodGrad = ctx.createRadialGradient(fx, fy, 1, fx, fy, fr);
+      foodGrad.addColorStop(0, "hsl(0,80%,60%)");
+      foodGrad.addColorStop(1, "hsl(0,70%,40%)");
+      ctx.fillStyle = foodGrad;
+      ctx.beginPath(); ctx.arc(fx, fy, fr, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+
+      // Snake
+      const snake = snakeRef.current;
+      for (let i = snake.length - 1; i >= 0; i--) {
+        const seg = snake[i];
+        const isHead = i === 0;
+        const pct = Math.min(i / Math.max(snake.length - 1, 1), 1);
+        const hue = 35 - pct * 10;
+        const sat = 75 - pct * 15;
+        const light = 55 - pct * 15;
+        const x = seg.x * CELL_SIZE + 1;
+        const y = seg.y * CELL_SIZE + 1;
+        const s = CELL_SIZE - 2;
+        const r = isHead ? s * 0.4 : i % 2 === 0 ? s * 0.25 : s * 0.35;
+
+        if (isHead) {
+          ctx.save();
+          ctx.shadowColor = "hsl(40,80%,50%)";
+          ctx.shadowBlur = 10;
+          const hGrad = ctx.createLinearGradient(x, y, x + s, y + s);
+          hGrad.addColorStop(0, "hsl(40,80%,55%)");
+          hGrad.addColorStop(1, "hsl(30,70%,40%)");
+          ctx.fillStyle = hGrad;
+          ctx.beginPath(); ctx.roundRect(x, y, s, s, r); ctx.fill();
+          ctx.strokeStyle = "hsla(40,60%,65%,0.5)";
+          ctx.lineWidth = 1;
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+          // Eyes
+          ctx.fillStyle = "hsl(15,90%,45%)";
+          ctx.beginPath(); ctx.arc(x + 3, y + 3, 2, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(x + s - 3, y + 3, 2, 0, Math.PI * 2); ctx.fill();
+          ctx.restore();
+        } else {
+          const bGrad = ctx.createLinearGradient(x, y, x + s, y + s);
+          bGrad.addColorStop(0, `hsl(${hue},${sat}%,${light}%)`);
+          bGrad.addColorStop(1, `hsl(${hue - 5},${sat - 10}%,${light - 8}%)`);
+          ctx.fillStyle = bGrad;
+          ctx.beginPath(); ctx.roundRect(x, y, s, s, r); ctx.fill();
+          // Scale highlight
+          ctx.fillStyle = `hsla(${hue},${sat}%,${light + 20}%,0.2)`;
+          ctx.beginPath();
+          ctx.arc(x + s * 0.3, y + s * 0.3, s * 0.25, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // Score HUD
+      ctx.fillStyle = "rgba(255,255,255,0.5)";
+      ctx.font = "bold 11px monospace";
+      ctx.textAlign = "center";
+      ctx.fillText(`SCORE: ${scoreRef.current}`, SNAKE_BOARD / 2, 14);
+
+      frameRef.current = requestAnimationFrame(loop);
+    };
+
+    frameRef.current = requestAnimationFrame(loop);
+    return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
+  }, [started, gameOver, submitScore]);
 
   if (!started) return <StartScreen title={game.title} description={game.description} icon={<Flame className="w-14 h-14" />} gradient={game.gradient} glow={game.glow} onStart={initGame} onBack={onBack} gameType="snake_runner" />;
   if (gameOver) return <EndScreen won={score >= 10} title={`Score: ${score}!`} subtitle={`${score * 10} pts — Snake length: ${score + 1}`} onReplay={initGame} onBack={onBack} gameType="snake_runner" />;
@@ -1771,67 +1889,21 @@ const SnakeRunnerGame = ({ onBack }: { onBack: () => void }) => {
     <GameShell onBack={onBack} title="Snake Runner" icon={<Flame className="w-5 h-5 text-foreground" />} gradient={game.gradient}
       badges={<Badge className="bg-emerald-900/40 text-emerald-300 border-emerald-500/30 font-mono">Score: {score}</Badge>}>
       <div className="flex flex-col items-center gap-4">
-        <div className="relative rounded-xl border-2 border-emerald-500/20 overflow-hidden"
-          style={{ width: GRID_SIZE * CELL_SIZE, height: GRID_SIZE * CELL_SIZE, background: "radial-gradient(ellipse at 50% 50%, hsl(220 20% 10%) 0%, hsl(220 25% 5%) 100%)" }}>
-          <div className="absolute inset-0 opacity-[0.06]" style={{
-            backgroundImage: `repeating-linear-gradient(90deg, hsl(140 50% 50%) 0px, transparent 1px, transparent ${CELL_SIZE}px), repeating-linear-gradient(0deg, hsl(140 50% 50%) 0px, transparent 1px, transparent ${CELL_SIZE}px)`
-          }} />
-          {/* Food */}
-          <motion.div className="absolute rounded-full" animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.8 }}
-            style={{ left: food.x * CELL_SIZE + 1, top: food.y * CELL_SIZE + 1, width: CELL_SIZE - 2, height: CELL_SIZE - 2,
-              background: "radial-gradient(circle, hsl(0 80% 60%), hsl(0 70% 40%))", boxShadow: "0 0 10px hsl(0 80% 55% / 0.6)" }} />
-          {/* Snake - Golden/Brown scaled design */}
-          {snake.map((seg, i) => {
-            const isHead = i === 0;
-            const pct = Math.min(i / Math.max(snake.length - 1, 1), 1);
-            const hue = 35 - pct * 10; // golden 35 → brown 25
-            const sat = 75 - pct * 15;
-            const light = 55 - pct * 15;
-            const segSize = CELL_SIZE - 2;
-            return (
-              <div key={i} className="absolute transition-all duration-75" style={{
-                left: seg.x * CELL_SIZE + 1, top: seg.y * CELL_SIZE + 1,
-                width: segSize, height: segSize,
-                borderRadius: isHead ? '40%' : i % 2 === 0 ? '25%' : '35%',
-                background: isHead
-                  ? 'linear-gradient(135deg, hsl(40 80% 55%), hsl(30 70% 40%))'
-                  : `linear-gradient(${135 + i * 15}deg, hsl(${hue} ${sat}% ${light}%), hsl(${hue - 5} ${sat - 10}% ${light - 8}%))`,
-                boxShadow: isHead
-                  ? '0 0 10px hsl(40 80% 50% / 0.6), inset 0 1px 2px hsl(50 90% 70% / 0.3)'
-                  : `inset 0 1px 1px hsl(${hue} ${sat}% ${light + 15}% / 0.3), inset 0 -1px 1px hsl(${hue} ${sat}% ${light - 10}% / 0.4)`,
-                border: isHead ? '1px solid hsl(40 60% 65% / 0.5)' : `1px solid hsl(${hue} ${sat - 20}% ${light - 5}% / 0.25)`,
-              }}>
-                {/* Scale pattern on body segments */}
-                {!isHead && (
-                  <div className="absolute inset-[2px] rounded-[inherit] opacity-30" style={{
-                    background: `radial-gradient(circle at 30% 30%, hsl(${hue} ${sat}% ${light + 20}%) 0%, transparent 50%)`
-                  }} />
-                )}
-                {/* Eyes on head */}
-                {isHead && <>
-                  <div className="absolute rounded-full" style={{
-                    width: 4, height: 4, top: 2, left: 2,
-                    background: 'radial-gradient(circle, hsl(15 90% 45%), hsl(0 80% 25%))',
-                    boxShadow: '0 0 3px hsl(15 90% 50% / 0.8)'
-                  }} />
-                  <div className="absolute rounded-full" style={{
-                    width: 4, height: 4, top: 2, right: 2,
-                    background: 'radial-gradient(circle, hsl(15 90% 45%), hsl(0 80% 25%))',
-                    boxShadow: '0 0 3px hsl(15 90% 50% / 0.8)'
-                  }} />
-                </>}
-              </div>
-            );
-          })}
-        </div>
+        <canvas
+          ref={canvasRef}
+          width={SNAKE_BOARD}
+          height={SNAKE_BOARD}
+          className="rounded-xl border-2 border-emerald-500/20 max-w-full"
+          style={{ maxWidth: SNAKE_BOARD, aspectRatio: "1/1" }}
+        />
         {/* Mobile controls */}
         <div className="grid grid-cols-3 gap-1.5 w-32 md:hidden">
           <div />
-          <Button size="sm" variant="outline" className="border-emerald-500/30 h-10" onClick={() => { if (dirRef.current !== "down") { dirRef.current = "up"; setDirection("up"); } }}>↑</Button>
+          <Button size="sm" variant="outline" className="border-emerald-500/30 h-10" onClick={() => { if (dirRef.current !== "down") dirRef.current = "up"; }}>↑</Button>
           <div />
-          <Button size="sm" variant="outline" className="border-emerald-500/30 h-10" onClick={() => { if (dirRef.current !== "right") { dirRef.current = "left"; setDirection("left"); } }}>←</Button>
-          <Button size="sm" variant="outline" className="border-emerald-500/30 h-10" onClick={() => { if (dirRef.current !== "up") { dirRef.current = "down"; setDirection("down"); } }}>↓</Button>
-          <Button size="sm" variant="outline" className="border-emerald-500/30 h-10" onClick={() => { if (dirRef.current !== "left") { dirRef.current = "right"; setDirection("right"); } }}>→</Button>
+          <Button size="sm" variant="outline" className="border-emerald-500/30 h-10" onClick={() => { if (dirRef.current !== "right") dirRef.current = "left"; }}>←</Button>
+          <Button size="sm" variant="outline" className="border-emerald-500/30 h-10" onClick={() => { if (dirRef.current !== "up") dirRef.current = "down"; }}>↓</Button>
+          <Button size="sm" variant="outline" className="border-emerald-500/30 h-10" onClick={() => { if (dirRef.current !== "left") dirRef.current = "right"; }}>→</Button>
         </div>
         <p className="text-xs text-muted-foreground font-mono">Use WASD or Arrow keys to move</p>
       </div>
