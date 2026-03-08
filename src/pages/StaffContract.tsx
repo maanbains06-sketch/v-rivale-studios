@@ -1021,7 +1021,7 @@ const StaffContract = () => {
                             </div>
                             <div className="text-xs text-muted-foreground space-y-1">
                               <p><strong>Signed by:</strong> {contractData.serverOwner}</p>
-                              {ownerSignedAt && <p><strong>Date:</strong> {format(new Date(ownerSignedAt), 'dd MMM yyyy, HH:mm')}</p>}
+                              {ownerSignedAt && <p><strong>Date:</strong> {safeFormatDate(ownerSignedAt, 'dd MMM yyyy, HH:mm')}</p>}
                             </div>
                             {isOwner && isEditing && (
                               <Button variant="outline" size="sm" onClick={() => { setOwnerSignature(null); setOwnerSignedAt(null); }} className="w-full border-border text-xs">
