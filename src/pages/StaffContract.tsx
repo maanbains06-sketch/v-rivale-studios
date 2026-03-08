@@ -536,7 +536,7 @@ const StaffContract = () => {
     const renderPolicies = (title: string, icon: string, policies: PolicyItem[]) => {
       const active = getActivePolicies(policies);
       if (active.length === 0) return;
-      drawSectionHeader(title, icon);
+      drawStaffSectionHeader(title, icon);
       doc.setTextColor(...black);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(7);
