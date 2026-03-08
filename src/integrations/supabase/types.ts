@@ -1083,6 +1083,130 @@ export type Database = {
         }
         Relationships: []
       }
+      cinema_room_members: {
+        Row: {
+          discord_avatar: string | null
+          discord_username: string | null
+          id: string
+          is_muted: boolean | null
+          is_sharing_screen: boolean | null
+          joined_at: string | null
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          discord_avatar?: string | null
+          discord_username?: string | null
+          id?: string
+          is_muted?: boolean | null
+          is_sharing_screen?: boolean | null
+          joined_at?: string | null
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          discord_avatar?: string | null
+          discord_username?: string | null
+          id?: string
+          is_muted?: boolean | null
+          is_sharing_screen?: boolean | null
+          joined_at?: string | null
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cinema_room_members_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "cinema_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cinema_room_messages: {
+        Row: {
+          created_at: string | null
+          discord_avatar: string | null
+          discord_username: string | null
+          id: string
+          message: string
+          message_type: string | null
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          discord_avatar?: string | null
+          discord_username?: string | null
+          id?: string
+          message: string
+          message_type?: string | null
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          discord_avatar?: string | null
+          discord_username?: string | null
+          id?: string
+          message?: string
+          message_type?: string | null
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cinema_room_messages_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "cinema_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cinema_rooms: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          created_by_avatar: string | null
+          created_by_username: string | null
+          embed_url: string | null
+          id: string
+          is_active: boolean | null
+          max_members: number | null
+          name: string
+          room_number: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          created_by_avatar?: string | null
+          created_by_username?: string | null
+          embed_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_members?: number | null
+          name: string
+          room_number: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          created_by_avatar?: string | null
+          created_by_username?: string | null
+          embed_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_members?: number | null
+          name?: string
+          room_number?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       confidential_tickets: {
         Row: {
           admin_notes: string | null
