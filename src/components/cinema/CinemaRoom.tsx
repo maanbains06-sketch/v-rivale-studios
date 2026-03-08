@@ -75,6 +75,8 @@ const CinemaRoom = ({ room, user, onLeave, onEnd }: CinemaRoomProps) => {
 
   const isCreator = user?.id === room.created_by;
   const username = user?.user_metadata?.display_name || user?.user_metadata?.username || "Unknown";
+  const { toast } = useToast();
+  const [showPermissionBanner, setShowPermissionBanner] = useState(true);
 
   const {
     joinSignaling,
@@ -87,7 +89,18 @@ const CinemaRoom = ({ room, user, onLeave, onEnd }: CinemaRoomProps) => {
     remoteScreenUser,
     connectedPeers,
     localScreenStream,
+    micPermission,
+    lastError,
+    clearError,
   } = useWebRTC(room.id, user?.id || "", username);
+
+  // Show error toasts
+  useEffect(() => {
+    if (lastError) {
+      toast({ title: "Permission Required", description: lastError, variant: "destructive" });
+      clearError();
+    }
+  }, [lastError, toast, clearError]);
 
   // Join WebRTC signaling on mount
   useEffect(() => {
