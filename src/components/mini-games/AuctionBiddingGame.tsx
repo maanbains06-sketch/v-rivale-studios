@@ -1,86 +1,174 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
-import { DollarSign, Gavel, TrendingUp, Users, Clock, Sparkles, AlertTriangle, ArrowUp } from "lucide-react";
+import { DollarSign, Gavel, Eye, EyeOff, Package, TrendingUp, TrendingDown, Users, Clock, Sparkles, ArrowUp, Volume2, ChevronRight, Star, Zap, Trophy } from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────
-interface AuctionItem {
+interface CrateItem {
+  name: string;
+  emoji: string;
+  value: number;
+  rarity: "junk" | "common" | "rare" | "epic" | "legendary";
+}
+
+interface MysteryCreate {
   id: string;
   name: string;
   emoji: string;
+  theme: string;
   description: string;
-  basePrice: number;
-  rarity: "common" | "rare" | "epic" | "legendary";
-  category: string;
+  peekItems: CrateItem[]; // 1-2 items visible during peek
+  hiddenItems: CrateItem[]; // rest revealed after winning
+  totalValue: number;
+  difficulty: "easy" | "medium" | "hard";
 }
 
 interface BotBidder {
   name: string;
   avatar: string;
-  aggression: number; // 0-1 how likely to bid
-  maxMultiplier: number; // how high above base they'll go
-  style: "sniper" | "aggressive" | "conservative" | "random";
+  personality: string;
+  aggression: number;
+  maxBudgetPercent: number; // % of crate value they'll go up to
+  bluffChance: number; // chance they bid beyond value
+  catchphrase: string;
 }
 
 interface BidEntry {
   bidder: string;
   amount: number;
   isPlayer: boolean;
-  timestamp: number;
+  reaction?: string;
 }
 
-type GamePhase = "start" | "auction" | "result" | "summary";
+type GamePhase = "start" | "peek" | "bidding" | "reveal" | "summary";
 
-// ─── Auction Items Pool ──────────────────────────────────
-const ITEM_POOL: AuctionItem[] = [
-  { id: "supercar_1", name: "Zentorno X", emoji: "🏎️", description: "Ultra-rare import supercar with nitro boost", basePrice: 450000, rarity: "legendary", category: "Vehicles" },
-  { id: "supercar_2", name: "Turismo Classic", emoji: "🚗", description: "Vintage Italian sports car, mint condition", basePrice: 320000, rarity: "epic", category: "Vehicles" },
-  { id: "mansion_1", name: "Vinewood Hills Mansion", emoji: "🏰", description: "5-bedroom estate with ocean view & pool", basePrice: 1200000, rarity: "legendary", category: "Property" },
-  { id: "penthouse_1", name: "Eclipse Towers Penthouse", emoji: "🏢", description: "Top floor luxury penthouse, fully furnished", basePrice: 800000, rarity: "epic", category: "Property" },
-  { id: "weapon_1", name: "Gold-Plated Desert Eagle", emoji: "🔫", description: "One-of-a-kind custom engraved sidearm", basePrice: 75000, rarity: "epic", category: "Weapons" },
-  { id: "weapon_2", name: "Diamond-Encrusted Katana", emoji: "⚔️", description: "Forged by a legendary blacksmith", basePrice: 150000, rarity: "legendary", category: "Weapons" },
-  { id: "business_1", name: "Nightclub 'Eclipse'", emoji: "🎵", description: "Downtown nightclub generating $50K/week", basePrice: 950000, rarity: "legendary", category: "Business" },
-  { id: "business_2", name: "Los Santos Customs Franchise", emoji: "🔧", description: "Licensed auto shop with exclusive mods", basePrice: 600000, rarity: "epic", category: "Business" },
-  { id: "jewelry_1", name: "Rolex Daytona (24K)", emoji: "⌚", description: "Solid gold, diamond bezel, 1 of 50 made", basePrice: 250000, rarity: "epic", category: "Luxury" },
-  { id: "jewelry_2", name: "The Blue Hope Diamond", emoji: "💎", description: "45-carat cursed blue diamond necklace", basePrice: 2000000, rarity: "legendary", category: "Luxury" },
-  { id: "vehicle_3", name: "Armored Kuruma", emoji: "🚙", description: "Bulletproof sedan, perfect for heists", basePrice: 180000, rarity: "rare", category: "Vehicles" },
-  { id: "vehicle_4", name: "Oppressor Mk II", emoji: "🏍️", description: "Flying motorcycle with missile lock-on", basePrice: 500000, rarity: "legendary", category: "Vehicles" },
-  { id: "art_1", name: "Banksy Original 'RP Life'", emoji: "🖼️", description: "Authenticated street art canvas", basePrice: 350000, rarity: "epic", category: "Art" },
-  { id: "pet_1", name: "White Bengal Tiger Cub", emoji: "🐯", description: "Exotic pet with custom collar", basePrice: 400000, rarity: "legendary", category: "Exotic" },
-  { id: "yacht_1", name: "Galaxy Super Yacht", emoji: "🛥️", description: "200ft mega yacht with helipad", basePrice: 3000000, rarity: "legendary", category: "Vehicles" },
-  { id: "plane_1", name: "Luxor Deluxe Gold Jet", emoji: "✈️", description: "Gold-plated private jet, champagne bar", basePrice: 1500000, rarity: "legendary", category: "Vehicles" },
-  { id: "cloth_1", name: "Supreme x Gucci Collab Set", emoji: "👔", description: "Limited edition full outfit, 1 of 10", basePrice: 90000, rarity: "rare", category: "Fashion" },
-  { id: "tech_1", name: "Military Drone System", emoji: "🤖", description: "Surveillance drone with night vision", basePrice: 280000, rarity: "epic", category: "Tech" },
+// ─── Item Pools ──────────────────────────────────────────
+const JUNK_ITEMS: CrateItem[] = [
+  { name: "Broken TV", emoji: "📺", value: 25, rarity: "junk" },
+  { name: "Old Newspapers", emoji: "📰", value: 5, rarity: "junk" },
+  { name: "Rusty Toolbox", emoji: "🧰", value: 40, rarity: "junk" },
+  { name: "Moth-Eaten Coat", emoji: "🧥", value: 10, rarity: "junk" },
+  { name: "Broken Chair", emoji: "🪑", value: 15, rarity: "junk" },
+  { name: "Empty Boxes", emoji: "📦", value: 2, rarity: "junk" },
+  { name: "Old Shoes", emoji: "👟", value: 8, rarity: "junk" },
+  { name: "Cracked Mirror", emoji: "🪞", value: 12, rarity: "junk" },
+  { name: "Dead Plant", emoji: "🪴", value: 3, rarity: "junk" },
+  { name: "VHS Tapes", emoji: "📼", value: 20, rarity: "junk" },
 ];
 
-// ─── Bot Bidders ─────────────────────────────────────────
+const COMMON_ITEMS: CrateItem[] = [
+  { name: "Vintage Radio", emoji: "📻", value: 150, rarity: "common" },
+  { name: "Antique Clock", emoji: "🕰️", value: 200, rarity: "common" },
+  { name: "Leather Jacket", emoji: "🧥", value: 180, rarity: "common" },
+  { name: "Guitar", emoji: "🎸", value: 300, rarity: "common" },
+  { name: "Silverware Set", emoji: "🍽️", value: 250, rarity: "common" },
+  { name: "Vinyl Records", emoji: "💿", value: 120, rarity: "common" },
+  { name: "Desk Lamp", emoji: "💡", value: 90, rarity: "common" },
+  { name: "Camping Gear", emoji: "⛺", value: 220, rarity: "common" },
+  { name: "Power Tools", emoji: "🔧", value: 350, rarity: "common" },
+  { name: "Typewriter", emoji: "⌨️", value: 275, rarity: "common" },
+];
+
+const RARE_ITEMS: CrateItem[] = [
+  { name: "Signed Baseball", emoji: "⚾", value: 800, rarity: "rare" },
+  { name: "Antique Vase", emoji: "🏺", value: 1200, rarity: "rare" },
+  { name: "Vintage Camera", emoji: "📷", value: 950, rarity: "rare" },
+  { name: "First Edition Book", emoji: "📚", value: 1500, rarity: "rare" },
+  { name: "Gold Pocket Watch", emoji: "⌚", value: 1800, rarity: "rare" },
+  { name: "Ivory Chess Set", emoji: "♟️", value: 2000, rarity: "rare" },
+  { name: "Oil Painting", emoji: "🖼️", value: 2500, rarity: "rare" },
+  { name: "Samurai Sword", emoji: "⚔️", value: 3000, rarity: "rare" },
+];
+
+const EPIC_ITEMS: CrateItem[] = [
+  { name: "Diamond Ring", emoji: "💍", value: 5000, rarity: "epic" },
+  { name: "Rolex Watch", emoji: "⌚", value: 8000, rarity: "epic" },
+  { name: "Sports Car Keys", emoji: "🔑", value: 15000, rarity: "epic" },
+  { name: "Gold Bars (2)", emoji: "🥇", value: 12000, rarity: "epic" },
+  { name: "Rare Coin Collection", emoji: "🪙", value: 7000, rarity: "epic" },
+  { name: "Fabergé Egg", emoji: "🥚", value: 20000, rarity: "epic" },
+];
+
+const LEGENDARY_ITEMS: CrateItem[] = [
+  { name: "Picasso Sketch", emoji: "🎨", value: 50000, rarity: "legendary" },
+  { name: "Vintage Ferrari Engine", emoji: "🏎️", value: 75000, rarity: "legendary" },
+  { name: "1952 Mickey Mantle Card", emoji: "🃏", value: 100000, rarity: "legendary" },
+  { name: "Ancient Roman Artifact", emoji: "🏛️", value: 60000, rarity: "legendary" },
+  { name: "Elvis' Gold Record", emoji: "🎵", value: 45000, rarity: "legendary" },
+];
+
+// ─── Bot Pool ────────────────────────────────────────────
 const BOT_POOL: BotBidder[] = [
-  { name: "ShadowKing", avatar: "👤", aggression: 0.7, maxMultiplier: 2.2, style: "aggressive" },
-  { name: "VinewoodVIP", avatar: "🎩", aggression: 0.5, maxMultiplier: 2.8, style: "sniper" },
-  { name: "GangsterElite", avatar: "😎", aggression: 0.8, maxMultiplier: 1.8, style: "aggressive" },
-  { name: "LuxuryLord", avatar: "💰", aggression: 0.4, maxMultiplier: 3.5, style: "conservative" },
-  { name: "StreetRacer99", avatar: "🏁", aggression: 0.6, maxMultiplier: 2.0, style: "random" },
-  { name: "DiamondHands", avatar: "💎", aggression: 0.3, maxMultiplier: 4.0, style: "sniper" },
-  { name: "NightOwl", avatar: "🦉", aggression: 0.65, maxMultiplier: 2.5, style: "random" },
-  { name: "BigSpender", avatar: "🤑", aggression: 0.9, maxMultiplier: 1.6, style: "aggressive" },
-  { name: "SilentBidder", avatar: "🤫", aggression: 0.35, maxMultiplier: 3.0, style: "sniper" },
-  { name: "TheCollector", avatar: "🏆", aggression: 0.55, maxMultiplier: 2.3, style: "conservative" },
+  { name: "Rico 'The Shark'", avatar: "🦈", personality: "Ruthless veteran buyer", aggression: 0.85, maxBudgetPercent: 1.3, bluffChance: 0.3, catchphrase: "That's mine, pal!" },
+  { name: "Mama Rosa", avatar: "👩‍🍳", personality: "Savvy antiques dealer", aggression: 0.5, maxBudgetPercent: 0.9, bluffChance: 0.1, catchphrase: "I know what this is worth..." },
+  { name: "Duke", avatar: "🤠", personality: "Reckless cowboy bidder", aggression: 0.9, maxBudgetPercent: 1.5, bluffChance: 0.5, catchphrase: "YEEHAW! Let's go!" },
+  { name: "Silent Mike", avatar: "🤫", personality: "Last-second sniper", aggression: 0.3, maxBudgetPercent: 1.1, bluffChance: 0.05, catchphrase: "..." },
+  { name: "Flashy Felix", avatar: "✨", personality: "Showoff with deep pockets", aggression: 0.7, maxBudgetPercent: 1.8, bluffChance: 0.4, catchphrase: "Money is no object!" },
+  { name: "Professor Oak", avatar: "🧓", personality: "Calculated collector", aggression: 0.4, maxBudgetPercent: 0.85, bluffChance: 0.02, catchphrase: "Hmm, interesting..." },
+  { name: "Neon Nikki", avatar: "💅", personality: "Aggressive newcomer", aggression: 0.75, maxBudgetPercent: 1.2, bluffChance: 0.35, catchphrase: "Don't test me!" },
+  { name: "Big Tony", avatar: "🏋️", personality: "Intimidating bidder", aggression: 0.65, maxBudgetPercent: 1.4, bluffChance: 0.25, catchphrase: "Step aside, kid." },
 ];
 
-const RARITY_COLORS = {
-  common: { bg: "from-gray-500 to-slate-600", text: "text-gray-300", border: "border-gray-500/30", glow: "" },
-  rare: { bg: "from-blue-500 to-indigo-600", text: "text-blue-300", border: "border-blue-500/30", glow: "shadow-blue-500/20" },
-  epic: { bg: "from-purple-500 to-fuchsia-600", text: "text-purple-300", border: "border-purple-500/30", glow: "shadow-purple-500/20" },
-  legendary: { bg: "from-yellow-500 to-amber-600", text: "text-yellow-300", border: "border-yellow-500/30", glow: "shadow-yellow-500/30" },
+const RARITY_CONFIG = {
+  junk: { color: "from-zinc-500 to-stone-600", text: "text-zinc-400", label: "JUNK", border: "border-zinc-500/30" },
+  common: { color: "from-green-500 to-emerald-600", text: "text-green-400", label: "COMMON", border: "border-green-500/30" },
+  rare: { color: "from-blue-500 to-cyan-600", text: "text-blue-400", label: "RARE", border: "border-blue-500/30" },
+  epic: { color: "from-purple-500 to-fuchsia-600", text: "text-purple-400", label: "EPIC", border: "border-purple-500/30" },
+  legendary: { color: "from-amber-400 to-yellow-500", text: "text-amber-400", label: "LEGENDARY", border: "border-amber-500/30" },
 };
 
-const formatCurrency = (n: number) => "$" + n.toLocaleString();
-
 const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => Math.random() - 0.5);
+const pick = <T,>(arr: T[], n: number): T[] => shuffle(arr).slice(0, n);
+const fmt = (n: number) => "$" + n.toLocaleString();
 
-// ─── Main Component ──────────────────────────────────────
+// ─── Generate Mystery Crates ─────────────────────────────
+const CRATE_THEMES = [
+  { name: "Abandoned Storage Unit", emoji: "🚪", theme: "storage" },
+  { name: "Estate Sale Lot", emoji: "🏚️", theme: "estate" },
+  { name: "Warehouse Clearance", emoji: "🏭", theme: "warehouse" },
+  { name: "Celebrity Auction Box", emoji: "⭐", theme: "celebrity" },
+  { name: "Police Seizure Lot", emoji: "🚔", theme: "police" },
+  { name: "Antique Dealer's Vault", emoji: "🗝️", theme: "antique" },
+  { name: "Mystery Container", emoji: "📦", theme: "mystery" },
+  { name: "Collector's Lockbox", emoji: "🔐", theme: "collector" },
+];
+
+function generateCrate(difficulty: "easy" | "medium" | "hard", round: number): MysteryCreate {
+  const theme = CRATE_THEMES[Math.floor(Math.random() * CRATE_THEMES.length)];
+  let allItems: CrateItem[] = [];
+
+  if (difficulty === "easy") {
+    allItems = [...pick(JUNK_ITEMS, 2), ...pick(COMMON_ITEMS, 2), ...pick(RARE_ITEMS, Math.random() > 0.5 ? 1 : 0)];
+  } else if (difficulty === "medium") {
+    allItems = [...pick(JUNK_ITEMS, 1), ...pick(COMMON_ITEMS, 1), ...pick(RARE_ITEMS, 2), ...pick(EPIC_ITEMS, Math.random() > 0.4 ? 1 : 0)];
+  } else {
+    allItems = [...pick(COMMON_ITEMS, 1), ...pick(RARE_ITEMS, 1), ...pick(EPIC_ITEMS, 1), ...pick(LEGENDARY_ITEMS, Math.random() > 0.3 ? 1 : 0)];
+    if (allItems.length < 4) allItems.push(...pick(RARE_ITEMS, 1));
+  }
+
+  allItems = shuffle(allItems);
+
+  // Show 1-2 items during peek (mix of good and bad to create uncertainty)
+  const peekCount = Math.random() > 0.5 ? 2 : 1;
+  const peekItems = allItems.slice(0, peekCount);
+  const hiddenItems = allItems.slice(peekCount);
+  const totalValue = allItems.reduce((s, i) => s + i.value, 0);
+
+  return {
+    id: `crate_${round}_${Date.now()}`,
+    name: `${theme.name} #${round + 1}`,
+    emoji: theme.emoji,
+    theme: theme.theme,
+    description: `${allItems.length} items inside • Difficulty: ${difficulty.toUpperCase()}`,
+    peekItems,
+    hiddenItems,
+    totalValue,
+    difficulty,
+  };
+}
+
+// ─── Component ───────────────────────────────────────────
 interface Props {
   onBack: () => void;
   submitScore: (gameType: any, score: number, time?: number) => Promise<void>;
@@ -91,66 +179,81 @@ interface Props {
   game: any;
 }
 
+const TOTAL_ROUNDS = 7;
+const STARTING_CASH = 50000;
+const PEEK_DURATION = 8; // seconds to examine
+const BID_DURATION = 25; // seconds for bidding
+
 const AuctionBiddingGame = ({ onBack, submitScore, GameShell, StartScreen, EndScreen, Leaderboard, game }: Props) => {
   const [phase, setPhase] = useState<GamePhase>("start");
-  const [items, setItems] = useState<AuctionItem[]>([]);
-  const [bots, setBots] = useState<BotBidder[]>([]);
-  const [currentRound, setCurrentRound] = useState(0);
-  const [budget, setBudget] = useState(5000000);
-  const [initialBudget] = useState(5000000);
-  const [currentBid, setCurrentBid] = useState(0);
-  const [playerBid, setPlayerBid] = useState("");
-  const [bidHistory, setBidHistory] = useState<BidEntry[]>([]);
-  const [timeLeft, setTimeLeft] = useState(30);
-  const [highestBidder, setHighestBidder] = useState<string>("None");
-  const [wonItems, setWonItems] = useState<{ item: AuctionItem; price: number }[]>([]);
-  const [lostItems, setLostItems] = useState<AuctionItem[]>([]);
+  const [crates, setCrates] = useState<MysteryCreate[]>([]);
+  const [activeBots, setActiveBots] = useState<BotBidder[]>([]);
+  const [round, setRound] = useState(0);
+  const [cash, setCash] = useState(STARTING_CASH);
+  const [totalProfit, setTotalProfit] = useState(0);
   const [totalSpent, setTotalSpent] = useState(0);
-  const [score, setScore] = useState(0);
-  const [showBidFlash, setShowBidFlash] = useState(false);
-  const [bidIncrement, setBidIncrement] = useState(0);
+  const [totalEarned, setTotalEarned] = useState(0);
+  const [timer, setTimer] = useState(0);
+  const [currentBid, setCurrentBid] = useState(0);
+  const [highestBidder, setHighestBidder] = useState("");
   const [isPlayerHighest, setIsPlayerHighest] = useState(false);
-  const [auctioneerMessage, setAuctioneerMessage] = useState("Welcome to the auction!");
-  const [goingCount, setGoingCount] = useState(0); // 0, 1 (going once), 2 (going twice), 3 (sold)
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const botTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const bidHistoryRef = useRef<HTMLDivElement>(null);
+  const [bidHistory, setBidHistory] = useState<BidEntry[]>([]);
+  const [botReaction, setBotReaction] = useState("");
+  const [revealedItems, setRevealedItems] = useState<CrateItem[]>([]);
+  const [revealIndex, setRevealIndex] = useState(-1);
+  const [roundResults, setRoundResults] = useState<{ crate: MysteryCreate; won: boolean; paidPrice: number; profit: number }[]>([]);
+  const [goingCount, setGoingCount] = useState(0);
+  const [passed, setPassed] = useState(false);
+  const [score, setScore] = useState(0);
 
-  const TOTAL_ROUNDS = 5;
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const botRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const bidRef = useRef<HTMLDivElement>(null);
+  const currentBidRef = useRef(0);
+  const highestBidderRef = useRef("");
+  const isPlayerHighestRef = useRef(false);
+  const passedRef = useRef(false);
 
-  const startGame = useCallback(() => {
-    const selectedItems = shuffle(ITEM_POOL).slice(0, TOTAL_ROUNDS);
-    const selectedBots = shuffle(BOT_POOL).slice(0, 5);
-    setItems(selectedItems);
-    setBots(selectedBots);
-    setCurrentRound(0);
-    setBudget(5000000);
-    setWonItems([]);
-    setLostItems([]);
-    setTotalSpent(0);
-    setScore(0);
-    setPhase("auction");
-    startRound(selectedItems[0], selectedBots);
-  }, []);
+  // Keep refs in sync
+  useEffect(() => { currentBidRef.current = currentBid; }, [currentBid]);
+  useEffect(() => { highestBidderRef.current = highestBidder; }, [highestBidder]);
+  useEffect(() => { isPlayerHighestRef.current = isPlayerHighest; }, [isPlayerHighest]);
+  useEffect(() => { passedRef.current = passed; }, [passed]);
 
-  const startRound = (item: AuctionItem, activeBots: BotBidder[]) => {
-    const startBid = Math.round(item.basePrice * 0.5);
-    setCurrentBid(startBid);
-    setPlayerBid("");
-    setBidHistory([{ bidder: "Auctioneer", amount: startBid, isPlayer: false, timestamp: Date.now() }]);
-    setTimeLeft(30);
-    setHighestBidder("Auctioneer");
-    setIsPlayerHighest(false);
-    setGoingCount(0);
-    setBidIncrement(Math.round(item.basePrice * 0.05));
-    setAuctioneerMessage(`Starting bid for ${item.name}: ${formatCurrency(startBid)}!`);
+  const clearTimers = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (botRef.current) clearInterval(botRef.current);
   };
 
-  // Timer countdown
-  useEffect(() => {
-    if (phase !== "auction") return;
+  const startGame = useCallback(() => {
+    const difficulties: ("easy" | "medium" | "hard")[] = ["easy", "easy", "medium", "medium", "medium", "hard", "hard"];
+    const generated = shuffle(difficulties).map((d, i) => generateCrate(d, i));
+    setCrates(generated);
+    setActiveBots(pick(BOT_POOL, 4));
+    setRound(0);
+    setCash(STARTING_CASH);
+    setTotalProfit(0);
+    setTotalSpent(0);
+    setTotalEarned(0);
+    setRoundResults([]);
+    setScore(0);
+    startPeek(generated[0]);
+  }, []);
+
+  const startPeek = (crate: MysteryCreate) => {
+    setPhase("peek");
+    setTimer(PEEK_DURATION);
+    setBidHistory([]);
+    setRevealedItems([]);
+    setRevealIndex(-1);
+    setGoingCount(0);
+    setPassed(false);
+    passedRef.current = false;
+    setBotReaction("");
+    clearTimers();
+
     timerRef.current = setInterval(() => {
-      setTimeLeft(prev => {
+      setTimer(prev => {
         if (prev <= 1) {
           clearInterval(timerRef.current!);
           return 0;
@@ -158,471 +261,600 @@ const AuctionBiddingGame = ({ onBack, submitScore, GameShell, StartScreen, EndSc
         return prev - 1;
       });
     }, 1000);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [phase, currentRound]);
+  };
 
-  // Going once/twice/sold logic
+  // Auto-transition from peek to bidding
   useEffect(() => {
-    if (phase !== "auction") return;
-    if (timeLeft === 10 && goingCount === 0) {
-      setGoingCount(1);
-      setAuctioneerMessage(`Going once! Current bid: ${formatCurrency(currentBid)}`);
-    } else if (timeLeft === 5 && goingCount <= 1) {
-      setGoingCount(2);
-      setAuctioneerMessage(`Going TWICE! Last chance!`);
-    } else if (timeLeft === 0) {
-      setGoingCount(3);
-      handleRoundEnd();
+    if (phase === "peek" && timer === 0) {
+      startBidding();
     }
-  }, [timeLeft, phase]);
+  }, [phase, timer]);
 
-  // Bot bidding AI
-  useEffect(() => {
-    if (phase !== "auction" || !items[currentRound]) return;
-    const item = items[currentRound];
+  const startBidding = () => {
+    if (!crates[round]) return;
+    const crate = crates[round];
+    const startBid = Math.round(crate.totalValue * (0.15 + Math.random() * 0.15));
+    setPhase("bidding");
+    setCurrentBid(startBid);
+    currentBidRef.current = startBid;
+    setHighestBidder("Auctioneer");
+    highestBidderRef.current = "Auctioneer";
+    setIsPlayerHighest(false);
+    isPlayerHighestRef.current = false;
+    setTimer(BID_DURATION);
+    setGoingCount(0);
+    setBidHistory([{ bidder: "🔨 Auctioneer", amount: startBid, isPlayer: false, reaction: "Opening bid!" }]);
 
-    botTimerRef.current = setInterval(() => {
-      if (timeLeft <= 2) return;
-
-      setBots(currentBots => {
-        const eligibleBots = currentBots.filter(bot => {
-          const maxBid = item.basePrice * bot.maxMultiplier;
-          return maxBid > currentBid && Math.random() < bot.aggression * 0.3;
-        });
-
-        if (eligibleBots.length > 0) {
-          const bot = eligibleBots[Math.floor(Math.random() * eligibleBots.length)];
-          let newBid: number;
-          const increment = Math.round(item.basePrice * 0.05);
-
-          switch (bot.style) {
-            case "aggressive":
-              newBid = currentBid + increment * (2 + Math.floor(Math.random() * 3));
-              break;
-            case "sniper":
-              newBid = currentBid + increment;
-              break;
-            case "conservative":
-              newBid = currentBid + increment;
-              break;
-            default:
-              newBid = currentBid + increment * (1 + Math.floor(Math.random() * 4));
-          }
-
-          const maxBid = Math.round(item.basePrice * bot.maxMultiplier);
-          newBid = Math.min(newBid, maxBid);
-
-          if (newBid > currentBid) {
-            setCurrentBid(newBid);
-            setHighestBidder(bot.name);
-            setIsPlayerHighest(false);
-            setGoingCount(0);
-            setTimeLeft(prev => Math.min(prev + 5, 30));
-            setBidHistory(prev => [...prev, { bidder: `${bot.avatar} ${bot.name}`, amount: newBid, isPlayer: false, timestamp: Date.now() }]);
-            setAuctioneerMessage(`${bot.name} bids ${formatCurrency(newBid)}!`);
-            setShowBidFlash(true);
-            setTimeout(() => setShowBidFlash(false), 300);
-          }
+    clearTimers();
+    timerRef.current = setInterval(() => {
+      setTimer(prev => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current!);
+          return 0;
         }
-
-        return currentBots;
+        return prev - 1;
       });
-    }, 2000 + Math.random() * 3000);
+    }, 1000);
 
-    return () => { if (botTimerRef.current) clearInterval(botTimerRef.current); };
-  }, [phase, currentRound, currentBid, timeLeft, items]);
+    // Bot bidding loop
+    botRef.current = setInterval(() => {
+      if (passedRef.current) return;
+      
+      const cb = currentBidRef.current;
+      const crateVal = crate.totalValue;
 
-  // Scroll bid history
+      const eligible = activeBots.filter(bot => {
+        const maxBid = crateVal * bot.maxBudgetPercent;
+        const willBid = Math.random() < bot.aggression * 0.25;
+        return willBid && maxBid > cb && !isPlayerHighestRef.current;
+      });
+
+      // Sometimes bots bid even when player is highest
+      const contestEligible = activeBots.filter(bot => {
+        const maxBid = crateVal * bot.maxBudgetPercent;
+        return Math.random() < bot.aggression * 0.15 && maxBid > cb;
+      });
+
+      const candidates = isPlayerHighestRef.current ? contestEligible : eligible;
+
+      if (candidates.length > 0) {
+        const bot = candidates[Math.floor(Math.random() * candidates.length)];
+        const increment = Math.round(crateVal * (0.03 + Math.random() * 0.07));
+        let newBid = cb + increment;
+        const maxBid = Math.round(crateVal * bot.maxBudgetPercent);
+        
+        // Bluff: sometimes bid beyond value
+        const isBluff = Math.random() < bot.bluffChance;
+        if (!isBluff) newBid = Math.min(newBid, maxBid);
+        
+        if (newBid > cb) {
+          currentBidRef.current = newBid;
+          highestBidderRef.current = bot.name;
+          isPlayerHighestRef.current = false;
+          setCurrentBid(newBid);
+          setHighestBidder(bot.name);
+          setIsPlayerHighest(false);
+          setGoingCount(0);
+          setTimer(prev => Math.min(prev + 4, BID_DURATION));
+
+          const reactions = [bot.catchphrase, "💪", "Come on!", "That's nothing!", "Keep up!", "Too rich for you?", "I want this!"];
+          const reaction = reactions[Math.floor(Math.random() * reactions.length)];
+          setBotReaction(`${bot.avatar} ${bot.name}: "${reaction}"`);
+          setBidHistory(prev => [...prev, { bidder: `${bot.avatar} ${bot.name}`, amount: newBid, isPlayer: false, reaction }]);
+        }
+      }
+    }, 1800 + Math.random() * 2500);
+  };
+
+  // Going once/twice/sold
   useEffect(() => {
-    if (bidHistoryRef.current) {
-      bidHistoryRef.current.scrollTop = bidHistoryRef.current.scrollHeight;
+    if (phase !== "bidding") return;
+    if (timer === 8 && goingCount === 0) {
+      setGoingCount(1);
+    } else if (timer === 4 && goingCount <= 1) {
+      setGoingCount(2);
+    } else if (timer === 0) {
+      setGoingCount(3);
+      endBidding();
     }
-  }, [bidHistory]);
+  }, [timer, phase]);
 
-  const handlePlayerBid = () => {
-    const amount = parseInt(playerBid.replace(/,/g, ""));
-    if (isNaN(amount) || amount <= currentBid) {
-      setAuctioneerMessage(`Bid must be higher than ${formatCurrency(currentBid)}!`);
-      return;
-    }
-    if (amount > budget) {
-      setAuctioneerMessage("You don't have enough budget!");
-      return;
-    }
-    const minBid = currentBid + bidIncrement;
-    if (amount < minBid) {
-      setAuctioneerMessage(`Minimum bid increment is ${formatCurrency(bidIncrement)}`);
-      return;
-    }
-
-    setCurrentBid(amount);
-    setHighestBidder("You");
-    setIsPlayerHighest(true);
-    setGoingCount(0);
-    setTimeLeft(prev => Math.min(prev + 5, 30));
-    setBidHistory(prev => [...prev, { bidder: "🙋 You", amount, isPlayer: true, timestamp: Date.now() }]);
-    setAuctioneerMessage(`Player bids ${formatCurrency(amount)}! Do I hear more?`);
-    setPlayerBid("");
-    setShowBidFlash(true);
-    setTimeout(() => setShowBidFlash(false), 300);
-  };
-
-  const handleQuickBid = (multiplier: number) => {
-    const amount = currentBid + Math.round(bidIncrement * multiplier);
-    if (amount > budget) {
-      setAuctioneerMessage("You don't have enough budget!");
+  const playerBid = (multiplier: number) => {
+    if (phase !== "bidding" || passed) return;
+    const crate = crates[round];
+    const increment = Math.round(crate.totalValue * 0.05);
+    const amount = currentBid + Math.round(increment * multiplier);
+    if (amount > cash) {
+      setBotReaction("💸 Not enough cash!");
       return;
     }
     setCurrentBid(amount);
+    currentBidRef.current = amount;
     setHighestBidder("You");
+    highestBidderRef.current = "You";
     setIsPlayerHighest(true);
+    isPlayerHighestRef.current = true;
     setGoingCount(0);
-    setTimeLeft(prev => Math.min(prev + 5, 30));
-    setBidHistory(prev => [...prev, { bidder: "🙋 You", amount, isPlayer: true, timestamp: Date.now() }]);
-    setAuctioneerMessage(`Player bids ${formatCurrency(amount)}!`);
-    setPlayerBid("");
-    setShowBidFlash(true);
-    setTimeout(() => setShowBidFlash(false), 300);
+    setTimer(prev => Math.min(prev + 4, BID_DURATION));
+    setBidHistory(prev => [...prev, { bidder: "🙋 You", amount, isPlayer: true }]);
+    setBotReaction("");
   };
 
-  const handleRoundEnd = () => {
-    if (botTimerRef.current) clearInterval(botTimerRef.current);
-    const item = items[currentRound];
+  const handlePass = () => {
+    setPassed(true);
+    passedRef.current = true;
+    setIsPlayerHighest(false);
+    isPlayerHighestRef.current = false;
+    setBotReaction("Player passed! 👋");
+  };
 
-    if (isPlayerHighest) {
-      const price = currentBid;
-      setBudget(prev => prev - price);
-      setTotalSpent(prev => prev + price);
-      setWonItems(prev => [...prev, { item, price }]);
-      // Score: more points for getting good deals (lower % of base price = better)
-      const dealQuality = Math.max(0, (item.basePrice * 2 - price) / item.basePrice);
-      const rarityMultiplier = item.rarity === "legendary" ? 4 : item.rarity === "epic" ? 3 : item.rarity === "rare" ? 2 : 1;
-      const roundScore = Math.round(dealQuality * 1000 * rarityMultiplier);
+  const endBidding = () => {
+    clearTimers();
+    const crate = crates[round];
+    const won = isPlayerHighestRef.current && !passedRef.current;
+    const paidPrice = won ? currentBidRef.current : 0;
+    const profit = won ? crate.totalValue - paidPrice : 0;
+
+    if (won) {
+      setCash(prev => prev - paidPrice);
+      setTotalSpent(prev => prev + paidPrice);
+      setTotalEarned(prev => prev + crate.totalValue);
+      setTotalProfit(prev => prev + profit);
+      const roundScore = Math.max(0, Math.round(profit * (crate.difficulty === "hard" ? 3 : crate.difficulty === "medium" ? 2 : 1) / 10));
       setScore(prev => prev + roundScore);
-      setAuctioneerMessage(`SOLD to the player for ${formatCurrency(price)}! 🎉`);
-    } else {
-      setLostItems(prev => [...prev, item]);
-      setAuctioneerMessage(`SOLD to ${highestBidder} for ${formatCurrency(currentBid)}!`);
     }
 
-    setPhase("result");
+    setRoundResults(prev => [...prev, { crate, won, paidPrice, profit }]);
+    
+    // Start reveal
+    setPhase("reveal");
+    const allItems = [...crate.peekItems, ...crate.hiddenItems];
+    setRevealedItems(allItems);
+    setRevealIndex(0);
   };
+
+  // Animate reveal one by one
+  useEffect(() => {
+    if (phase !== "reveal" || revealIndex < 0) return;
+    if (revealIndex >= revealedItems.length) return;
+    const t = setTimeout(() => {
+      setRevealIndex(prev => prev + 1);
+    }, 800);
+    return () => clearTimeout(t);
+  }, [phase, revealIndex, revealedItems.length]);
 
   const nextRound = () => {
-    const next = currentRound + 1;
-    if (next >= TOTAL_ROUNDS) {
-      // Submit final score
+    const next = round + 1;
+    if (next >= TOTAL_ROUNDS || cash <= 0) {
       submitScore("auction_bidding" as any, score);
       setPhase("summary");
     } else {
-      setCurrentRound(next);
-      setPhase("auction");
-      startRound(items[next], bots);
+      setRound(next);
+      startPeek(crates[next]);
     }
   };
 
-  // ─── Render: Start ─────────────────────────────────────
+  // Scroll bid feed
+  useEffect(() => {
+    if (bidRef.current) bidRef.current.scrollTop = bidRef.current.scrollHeight;
+  }, [bidHistory]);
+
+  // Cleanup
+  useEffect(() => () => clearTimers(), []);
+
+  // ─── START SCREEN ──────────────────────────────────────
   if (phase === "start") {
-    return <StartScreen title={game.title} description={game.description} icon={game.icon} gradient={game.gradient} glow={game.glow} onStart={startGame} onBack={onBack} gameType={"auction_bidding" as any} />;
+    return <StartScreen title={game.title} description="Bid on mystery crates! Peek inside, outbid rivals, and flip for profit. Can you spot the hidden treasures?" icon={game.icon} gradient={game.gradient} glow={game.glow} onStart={startGame} onBack={onBack} gameType={"auction_bidding" as any} />;
   }
 
-  const currentItem = items[currentRound];
-  const rarityStyle = currentItem ? RARITY_COLORS[currentItem.rarity] : RARITY_COLORS.common;
-  const timerPercent = (timeLeft / 30) * 100;
-  const budgetPercent = (budget / initialBudget) * 100;
+  const crate = crates[round];
+  if (!crate) return null;
 
-  // ─── Render: Result ────────────────────────────────────
-  if (phase === "result" && currentItem) {
+  // ─── SUMMARY SCREEN ───────────────────────────────────
+  if (phase === "summary") {
+    const winsCount = roundResults.filter(r => r.won).length;
     return (
-      <GameShell onBack={onBack} title={game.title} icon={game.icon} gradient={game.gradient}>
+      <GameShell onBack={onBack} title="Bid Wars — Results" icon={game.icon} gradient={game.gradient}>
         <div className="max-w-2xl mx-auto space-y-6">
-          <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center space-y-4">
-            <div className="text-6xl mb-2">{currentItem.emoji}</div>
-            {isPlayerHighest ? (
-              <>
-                <h2 className="text-3xl font-bold text-green-400">You Won! 🎉</h2>
-                <p className="text-muted-foreground text-lg">
-                  {currentItem.name} for {formatCurrency(currentBid)}
-                </p>
-                <Badge className={`bg-gradient-to-r ${rarityStyle.bg} border-0 text-sm px-4 py-1`}>
-                  {currentItem.rarity.toUpperCase()}
-                </Badge>
-              </>
-            ) : (
-              <>
-                <h2 className="text-3xl font-bold text-red-400">Outbid! 😤</h2>
-                <p className="text-muted-foreground text-lg">
-                  {highestBidder} won {currentItem.name} for {formatCurrency(currentBid)}
-                </p>
-              </>
-            )}
-
-            <div className="flex justify-center gap-4 mt-6">
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground uppercase">Budget Left</p>
-                <p className="text-xl font-bold text-green-400">{formatCurrency(budget)}</p>
-              </div>
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground uppercase">Score</p>
-                <p className="text-xl font-bold text-yellow-400">{score}</p>
-              </div>
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground uppercase">Round</p>
-                <p className="text-xl font-bold">{currentRound + 1}/{TOTAL_ROUNDS}</p>
-              </div>
-            </div>
-
-            <Button size="lg" onClick={nextRound} className="bg-gradient-to-r from-amber-500 to-yellow-500 border-0 text-black font-bold mt-4">
-              {currentRound + 1 >= TOTAL_ROUNDS ? "View Results" : "Next Item →"}
-            </Button>
+          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center space-y-3">
+            <div className="text-6xl mb-2">{totalProfit > 0 ? "🏆" : "📉"}</div>
+            <h2 className={`text-3xl font-black ${totalProfit > 0 ? "text-green-400" : "text-red-400"}`}>
+              {totalProfit > 0 ? "PROFIT!" : "LOSS!"}
+            </h2>
+            <p className={`text-5xl font-black font-mono ${totalProfit > 0 ? "text-green-400" : "text-red-400"}`}>
+              {totalProfit >= 0 ? "+" : ""}{fmt(totalProfit)}
+            </p>
           </motion.div>
+
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { label: "Won", value: `${winsCount}/${TOTAL_ROUNDS}`, icon: Trophy },
+              { label: "Spent", value: fmt(totalSpent), icon: DollarSign },
+              { label: "Score", value: score.toString(), icon: Star },
+            ].map((s, i) => (
+              <div key={i} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 text-center">
+                <s.icon className="w-5 h-5 mx-auto mb-1 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground uppercase">{s.label}</p>
+                <p className="text-lg font-bold font-mono">{s.value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Round breakdown */}
+          <div className="space-y-2">
+            {roundResults.map((r, i) => (
+              <motion.div key={i} initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: i * 0.1 }}
+                className={`flex items-center gap-3 p-3 rounded-xl border ${r.won ? (r.profit > 0 ? "border-green-500/20 bg-green-500/5" : "border-red-500/20 bg-red-500/5") : "border-white/[0.06] bg-white/[0.02]"}`}>
+                <span className="text-2xl">{r.crate.emoji}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{r.crate.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Value: {fmt(r.crate.totalValue)} {r.won && `• Paid: ${fmt(r.paidPrice)}`}
+                  </p>
+                </div>
+                <div className="text-right">
+                  {r.won ? (
+                    <span className={`font-mono font-bold text-sm ${r.profit > 0 ? "text-green-400" : "text-red-400"}`}>
+                      {r.profit >= 0 ? "+" : ""}{fmt(r.profit)}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">PASSED</span>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="flex gap-3">
+            <Button onClick={startGame} className="flex-1 bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-bold">
+              Play Again
+            </Button>
+            <Button variant="outline" onClick={onBack} className="flex-1">Back</Button>
+          </div>
+
+          <Leaderboard gameType={"auction_bidding" as any} />
         </div>
       </GameShell>
     );
   }
 
-  // ─── Render: Summary ───────────────────────────────────
-  if (phase === "summary") {
-    const totalValue = wonItems.reduce((sum, w) => sum + w.item.basePrice, 0);
-    const savings = totalValue - totalSpent;
+  // ─── REVEAL SCREEN ─────────────────────────────────────
+  if (phase === "reveal") {
+    const lastResult = roundResults[roundResults.length - 1];
+    const won = lastResult?.won;
+    const profit = lastResult?.profit || 0;
     return (
-      <EndScreen
-        won={wonItems.length > 0}
-        title={wonItems.length > 0 ? `Won ${wonItems.length} Items!` : "Better Luck Next Time!"}
-        subtitle={`Spent ${formatCurrency(totalSpent)} on ${wonItems.length} items worth ${formatCurrency(totalValue)}. ${savings > 0 ? `Saved ${formatCurrency(savings)}!` : ""} Score: ${score}`}
-        onReplay={startGame}
-        onBack={onBack}
-        gameType={"auction_bidding" as any}
-      />
+      <GameShell onBack={onBack} title="Bid Wars" icon={game.icon} gradient={game.gradient}>
+        <div className="max-w-2xl mx-auto space-y-6">
+          <div className="text-center">
+            <motion.div initial={{ rotateY: 180, opacity: 0 }} animate={{ rotateY: 0, opacity: 1 }} transition={{ duration: 0.6 }}>
+              <h2 className="text-2xl font-black mb-1">
+                {won ? "🎉 YOU WON! Let's see what's inside..." : "📦 Let's see what was inside..."}
+              </h2>
+              <p className="text-sm text-muted-foreground">{crate.name}</p>
+            </motion.div>
+          </div>
+
+          {/* Items reveal grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {revealedItems.map((item, i) => {
+              const revealed = i < revealIndex;
+              const wasPeeked = i < crate.peekItems.length;
+              const rc = RARITY_CONFIG[item.rarity];
+              return (
+                <motion.div key={i}
+                  initial={{ rotateY: 180, opacity: 0 }}
+                  animate={revealed ? { rotateY: 0, opacity: 1 } : { rotateY: 180, opacity: 0.3 }}
+                  transition={{ duration: 0.5 }}
+                  className={`relative rounded-xl border p-4 text-center ${revealed ? rc.border : "border-white/[0.06]"} ${revealed ? "bg-white/[0.03]" : "bg-white/[0.01]"}`}
+                >
+                  {revealed ? (
+                    <>
+                      <div className="text-3xl mb-2">{item.emoji}</div>
+                      <p className="text-xs font-bold truncate">{item.name}</p>
+                      <p className={`text-xs font-mono font-bold mt-1 ${rc.text}`}>{fmt(item.value)}</p>
+                      <Badge className={`mt-2 text-[9px] bg-gradient-to-r ${rc.color} border-0`}>{rc.label}</Badge>
+                      {wasPeeked && <span className="absolute top-1 right-1 text-[10px]">👁️</span>}
+                    </>
+                  ) : (
+                    <div className="py-4">
+                      <Package className="w-8 h-8 mx-auto text-muted-foreground animate-pulse" />
+                      <p className="text-[10px] text-muted-foreground mt-2">Revealing...</p>
+                    </div>
+                  )}
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Value summary (after all revealed) */}
+          {revealIndex >= revealedItems.length && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+              <div className={`rounded-xl border p-4 text-center ${won ? (profit > 0 ? "border-green-500/30 bg-green-500/5" : "border-red-500/30 bg-red-500/5") : "border-white/[0.06] bg-white/[0.02]"}`}>
+                <p className="text-sm text-muted-foreground">Total Crate Value</p>
+                <p className="text-3xl font-black font-mono text-foreground">{fmt(crate.totalValue)}</p>
+                {won && (
+                  <div className="mt-2 flex items-center justify-center gap-2">
+                    {profit > 0 ? <TrendingUp className="w-5 h-5 text-green-400" /> : <TrendingDown className="w-5 h-5 text-red-400" />}
+                    <span className={`text-xl font-black font-mono ${profit > 0 ? "text-green-400" : "text-red-400"}`}>
+                      {profit >= 0 ? "+" : ""}{fmt(profit)} PROFIT
+                    </span>
+                  </div>
+                )}
+                {!won && <p className="text-sm text-muted-foreground mt-1">You passed on this one</p>}
+              </div>
+
+              <Button size="lg" onClick={nextRound} className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-bold">
+                {round + 1 >= TOTAL_ROUNDS || cash <= 0 ? "Final Results" : `Next Crate (${round + 2}/${TOTAL_ROUNDS})`}
+                <ChevronRight className="w-5 h-5 ml-1" />
+              </Button>
+            </motion.div>
+          )}
+        </div>
+      </GameShell>
     );
   }
 
-  // ─── Render: Auction ───────────────────────────────────
-  if (!currentItem) return null;
+  // ─── PEEK / BIDDING PHASE ──────────────────────────────
+  const timerPercent = phase === "peek" ? (timer / PEEK_DURATION) * 100 : (timer / BID_DURATION) * 100;
+  const cashPercent = (cash / STARTING_CASH) * 100;
+  const increment = Math.round(crate.totalValue * 0.05);
 
   return (
-    <GameShell onBack={onBack} title={game.title} icon={game.icon} gradient={game.gradient}
+    <GameShell onBack={onBack} title="Bid Wars" icon={game.icon} gradient={game.gradient}
       badges={
         <div className="flex items-center gap-2">
           <Badge className="bg-green-900/40 text-green-300 border-green-500/30 font-mono">
-            <DollarSign className="w-3 h-3 mr-1" /> {formatCurrency(budget)}
+            <DollarSign className="w-3 h-3 mr-1" /> {fmt(cash)}
           </Badge>
-          <Badge className="bg-yellow-900/40 text-yellow-300 border-yellow-500/30 font-mono">
-            <Sparkles className="w-3 h-3 mr-1" /> {score} pts
+          <Badge className="bg-amber-900/40 text-amber-300 border-amber-500/30 font-mono">
+            <Star className="w-3 h-3 mr-1" /> {score}
           </Badge>
           <Badge className="bg-muted/40 border-muted-foreground/20 font-mono">
-            Round {currentRound + 1}/{TOTAL_ROUNDS}
+            {round + 1}/{TOTAL_ROUNDS}
           </Badge>
         </div>
       }>
 
       <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Left: Item Display */}
+        {/* ─── Left: Crate & Controls ─── */}
         <div className="lg:col-span-2 space-y-4">
-          {/* Item Card */}
+          {/* Phase Header */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {phase === "peek" ? (
+                <Badge className="bg-cyan-500/20 text-cyan-300 border-cyan-500/30 animate-pulse gap-1">
+                  <Eye className="w-3 h-3" /> PEEK PHASE
+                </Badge>
+              ) : (
+                <Badge className="bg-red-500/20 text-red-300 border-red-500/30 animate-pulse gap-1">
+                  <Gavel className="w-3 h-3" /> BIDDING LIVE
+                </Badge>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className={`w-4 h-4 ${timer <= 5 ? "text-red-400 animate-pulse" : "text-muted-foreground"}`} />
+              <span className={`font-mono font-bold text-lg ${timer <= 5 ? "text-red-400" : "text-foreground"}`}>{timer}s</span>
+            </div>
+          </div>
+
+          {/* Timer Bar */}
+          <div className="h-1.5 rounded-full bg-muted/20 overflow-hidden">
+            <motion.div className={`h-full rounded-full transition-all duration-1000 ${
+              timer <= 5 ? "bg-gradient-to-r from-red-500 to-red-600" :
+              timer <= 10 ? "bg-gradient-to-r from-orange-500 to-amber-500" :
+              phase === "peek" ? "bg-gradient-to-r from-cyan-500 to-blue-500" :
+              "bg-gradient-to-r from-green-500 to-emerald-500"
+            }`} style={{ width: `${timerPercent}%` }} />
+          </div>
+
+          {/* Crate Card */}
           <motion.div
-            key={currentItem.id}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className={`relative rounded-2xl border ${rarityStyle.border} overflow-hidden ${rarityStyle.glow} shadow-2xl`}
-            style={{ background: "linear-gradient(180deg, hsl(220 20% 10%) 0%, hsl(220 25% 5%) 100%)" }}
+            key={crate.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl border border-white/[0.06] overflow-hidden"
+            style={{ background: "linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--background)) 100%)" }}
           >
-            {/* Rarity glow */}
-            <div className={`absolute inset-0 bg-gradient-to-br ${rarityStyle.bg} opacity-[0.06] pointer-events-none`} />
-            <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${rarityStyle.bg}`} />
-
-            <div className="p-6">
-              <div className="flex items-start gap-6">
-                {/* Item image/emoji */}
-                <motion.div
-                  animate={{ y: [0, -8, 0] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  className={`w-28 h-28 rounded-2xl bg-gradient-to-br ${rarityStyle.bg} flex items-center justify-center shadow-xl ${rarityStyle.glow} flex-shrink-0`}
-                >
-                  <span className="text-5xl">{currentItem.emoji}</span>
-                </motion.div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Badge className={`bg-gradient-to-r ${rarityStyle.bg} border-0 text-xs uppercase tracking-wider`}>
-                      {currentItem.rarity}
-                    </Badge>
-                    <Badge variant="outline" className="text-xs border-muted-foreground/20">{currentItem.category}</Badge>
-                  </div>
-                  <h3 className="text-2xl font-bold mb-1">{currentItem.name}</h3>
-                  <p className="text-muted-foreground text-sm">{currentItem.description}</p>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Estimated Value: <span className="text-foreground font-mono">{formatCurrency(currentItem.basePrice)}</span>
-                  </p>
+            <div className="p-5 flex items-center gap-4">
+              <motion.div
+                animate={{ rotate: [0, -3, 3, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-500/20 to-yellow-600/20 border border-amber-500/20 flex items-center justify-center flex-shrink-0"
+              >
+                <span className="text-4xl">{crate.emoji}</span>
+              </motion.div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-xl font-black mb-0.5">{crate.name}</h3>
+                <p className="text-sm text-muted-foreground">{crate.description}</p>
+                <div className="flex gap-2 mt-2">
+                  <Badge variant="outline" className={`text-[10px] ${
+                    crate.difficulty === "hard" ? "border-red-500/30 text-red-400" :
+                    crate.difficulty === "medium" ? "border-yellow-500/30 text-yellow-400" :
+                    "border-green-500/30 text-green-400"
+                  }`}>
+                    {crate.difficulty.toUpperCase()}
+                  </Badge>
+                  <Badge variant="outline" className="text-[10px] border-muted-foreground/20">
+                    {crate.peekItems.length + crate.hiddenItems.length} items
+                  </Badge>
                 </div>
               </div>
             </div>
 
-            {/* Timer bar */}
-            <div className="px-6 pb-4">
-              <div className="flex items-center justify-between mb-1.5">
-                <div className="flex items-center gap-2">
-                  <Clock className={`w-4 h-4 ${timeLeft <= 10 ? "text-red-400 animate-pulse" : "text-cyan-400"}`} />
-                  <span className={`font-mono text-sm font-bold ${timeLeft <= 10 ? "text-red-400" : "text-cyan-400"}`}>
-                    {timeLeft}s
-                  </span>
-                </div>
-                {goingCount > 0 && (
-                  <motion.span
-                    initial={{ scale: 0.8 }}
-                    animate={{ scale: [1, 1.1, 1] }}
-                    transition={{ duration: 0.5, repeat: Infinity }}
-                    className="text-sm font-bold text-orange-400"
-                  >
-                    {goingCount === 1 ? "⚡ GOING ONCE!" : goingCount === 2 ? "⚡⚡ GOING TWICE!" : "🔨 SOLD!"}
-                  </motion.span>
-                )}
-              </div>
-              <div className="h-2 rounded-full bg-muted/30 overflow-hidden">
-                <motion.div
-                  className={`h-full rounded-full transition-all duration-1000 ${
-                    timeLeft <= 5 ? "bg-gradient-to-r from-red-500 to-red-600" :
-                    timeLeft <= 10 ? "bg-gradient-to-r from-orange-500 to-amber-500" :
-                    "bg-gradient-to-r from-cyan-500 to-blue-500"
-                  }`}
-                  style={{ width: `${timerPercent}%` }}
-                />
+            {/* Peek Items */}
+            <div className="px-5 pb-4">
+              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
+                <Eye className="w-3 h-3" /> Visible Items
+              </p>
+              <div className="flex gap-3">
+                {crate.peekItems.map((item, i) => {
+                  const rc = RARITY_CONFIG[item.rarity];
+                  return (
+                    <motion.div key={i}
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: i * 0.3 }}
+                      className={`flex-1 rounded-xl border ${rc.border} p-3 bg-white/[0.02]`}
+                    >
+                      <div className="text-2xl mb-1">{item.emoji}</div>
+                      <p className="text-xs font-bold truncate">{item.name}</p>
+                      <Badge className={`mt-1 text-[8px] bg-gradient-to-r ${rc.color} border-0`}>{rc.label}</Badge>
+                    </motion.div>
+                  );
+                })}
+                {/* Hidden slots */}
+                {crate.hiddenItems.map((_, i) => (
+                  <div key={`h${i}`} className="flex-1 rounded-xl border border-dashed border-white/[0.08] p-3 bg-white/[0.01] flex flex-col items-center justify-center">
+                    <EyeOff className="w-5 h-5 text-muted-foreground/50" />
+                    <p className="text-[9px] text-muted-foreground/50 mt-1">Hidden</p>
+                  </div>
+                ))}
               </div>
             </div>
           </motion.div>
 
-          {/* Current Bid Display */}
-          <div className={`rounded-xl border p-4 text-center transition-all ${
-            showBidFlash ? "border-yellow-500/50 bg-yellow-500/5" : "border-white/[0.06] bg-white/[0.02]"
-          }`}>
-            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Current Highest Bid</p>
-            <motion.p
-              key={currentBid}
-              initial={{ scale: 1.2, color: "#facc15" }}
-              animate={{ scale: 1, color: "#ffffff" }}
-              className="text-4xl md:text-5xl font-black font-mono"
-              style={{ textShadow: "0 0 20px hsl(50 90% 55% / 0.3)" }}
-            >
-              {formatCurrency(currentBid)}
-            </motion.p>
-            <p className={`text-sm mt-1 font-medium ${isPlayerHighest ? "text-green-400" : "text-red-400"}`}>
-              {isPlayerHighest ? "🏆 You're the highest bidder!" : `Highest: ${highestBidder}`}
-            </p>
-          </div>
+          {/* Bidding Controls (only during bidding phase) */}
+          {phase === "bidding" && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+              {/* Current bid display */}
+              <div className={`rounded-xl border p-4 text-center transition-all ${isPlayerHighest ? "border-green-500/20 bg-green-500/5" : "border-amber-500/20 bg-amber-500/5"}`}>
+                <p className="text-xs text-muted-foreground uppercase">Current Bid</p>
+                <motion.p key={currentBid} initial={{ scale: 1.15 }} animate={{ scale: 1 }}
+                  className="text-4xl font-black font-mono">{fmt(currentBid)}</motion.p>
+                <p className={`text-sm mt-1 font-semibold ${isPlayerHighest ? "text-green-400" : passed ? "text-muted-foreground" : "text-amber-400"}`}>
+                  {passed ? "You passed" : isPlayerHighest ? "🏆 You're winning!" : `Highest: ${highestBidder}`}
+                </p>
+                {goingCount > 0 && (
+                  <motion.p animate={{ scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 0.6 }}
+                    className="text-lg font-black text-orange-400 mt-1">
+                    {goingCount === 1 ? "⚡ GOING ONCE!" : goingCount === 2 ? "⚡⚡ GOING TWICE!" : "🔨 SOLD!"}
+                  </motion.p>
+                )}
+              </div>
 
-          {/* Auctioneer Message */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={auctioneerMessage}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/5 border border-amber-500/20"
-            >
-              <Gavel className="w-5 h-5 text-amber-400 flex-shrink-0" />
-              <p className="text-sm font-medium text-amber-200">{auctioneerMessage}</p>
+              {/* Quick bid buttons */}
+              {!passed && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { mult: 1, label: `+${fmt(increment)}`, color: "border-green-500/30 text-green-300 hover:bg-green-500/10" },
+                    { mult: 2, label: `+${fmt(increment * 2)}`, color: "border-yellow-500/30 text-yellow-300 hover:bg-yellow-500/10" },
+                    { mult: 5, label: `+${fmt(increment * 5)}`, color: "border-orange-500/30 text-orange-300 hover:bg-orange-500/10" },
+                    { mult: 10, label: `+${fmt(increment * 10)}`, color: "border-red-500/30 text-red-300 hover:bg-red-500/10" },
+                  ].map((b, i) => (
+                    <Button key={i} variant="outline" onClick={() => playerBid(b.mult)}
+                      disabled={currentBid + increment * b.mult > cash}
+                      className={`${b.color} font-mono text-xs h-12`}>
+                      <ArrowUp className="w-3 h-3 mr-1" /> {b.label}
+                    </Button>
+                  ))}
+                </div>
+              )}
+
+              {!passed && (
+                <Button variant="outline" onClick={handlePass} className="w-full border-muted-foreground/20 text-muted-foreground hover:text-foreground">
+                  Pass on this crate 👋
+                </Button>
+              )}
             </motion.div>
-          </AnimatePresence>
+          )}
 
-          {/* Bidding Controls */}
-          <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-3">
-            <div className="flex gap-2">
-              <Input
-                type="text"
-                placeholder={`Min bid: ${formatCurrency(currentBid + bidIncrement)}`}
-                value={playerBid}
-                onChange={e => setPlayerBid(e.target.value.replace(/[^0-9]/g, ""))}
-                onKeyDown={e => e.key === "Enter" && handlePlayerBid()}
-                className="font-mono text-lg bg-background/50"
-              />
-              <Button onClick={handlePlayerBid} disabled={timeLeft === 0} className="bg-gradient-to-r from-green-600 to-emerald-600 border-0 px-6 font-bold">
-                <Gavel className="w-4 h-4 mr-2" /> BID
-              </Button>
-            </div>
-            <div className="flex gap-2 flex-wrap">
-              <Button size="sm" variant="outline" onClick={() => handleQuickBid(1)} disabled={timeLeft === 0 || currentBid + bidIncrement > budget}
-                className="border-green-500/30 text-green-300 hover:bg-green-500/10 font-mono text-xs">
-                <ArrowUp className="w-3 h-3 mr-1" /> +{formatCurrency(bidIncrement)}
-              </Button>
-              <Button size="sm" variant="outline" onClick={() => handleQuickBid(2)} disabled={timeLeft === 0 || currentBid + bidIncrement * 2 > budget}
-                className="border-yellow-500/30 text-yellow-300 hover:bg-yellow-500/10 font-mono text-xs">
-                <ArrowUp className="w-3 h-3 mr-1" /> +{formatCurrency(bidIncrement * 2)}
-              </Button>
-              <Button size="sm" variant="outline" onClick={() => handleQuickBid(5)} disabled={timeLeft === 0 || currentBid + bidIncrement * 5 > budget}
-                className="border-orange-500/30 text-orange-300 hover:bg-orange-500/10 font-mono text-xs">
-                <ArrowUp className="w-3 h-3 mr-1" /> +{formatCurrency(bidIncrement * 5)}
-              </Button>
-              <Button size="sm" variant="outline" onClick={() => handleQuickBid(10)} disabled={timeLeft === 0 || currentBid + bidIncrement * 10 > budget}
-                className="border-red-500/30 text-red-300 hover:bg-red-500/10 font-mono text-xs">
-                <TrendingUp className="w-3 h-3 mr-1" /> +{formatCurrency(bidIncrement * 10)}
-              </Button>
-            </div>
-          </div>
+          {/* Bot Reaction */}
+          <AnimatePresence mode="wait">
+            {botReaction && (
+              <motion.div key={botReaction} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
+                className="flex items-center gap-2 p-3 rounded-xl bg-amber-500/5 border border-amber-500/15">
+                <Volume2 className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                <p className="text-sm font-medium text-amber-200">{botReaction}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Right: Bid History & Budget */}
+        {/* ─── Right Panel ─── */}
         <div className="space-y-4">
-          {/* Budget */}
+          {/* Cash meter */}
           <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-muted-foreground uppercase tracking-wider">Budget</span>
-              <span className={`font-mono font-bold text-sm ${budgetPercent < 20 ? "text-red-400" : "text-green-400"}`}>
-                {formatCurrency(budget)}
-              </span>
+              <span className="text-xs text-muted-foreground uppercase">Your Cash</span>
+              <span className={`font-mono font-bold text-sm ${cashPercent < 20 ? "text-red-400" : "text-green-400"}`}>{fmt(cash)}</span>
             </div>
-            <div className="h-2 rounded-full bg-muted/30 overflow-hidden">
-              <div className={`h-full rounded-full transition-all ${budgetPercent < 20 ? "bg-red-500" : budgetPercent < 50 ? "bg-yellow-500" : "bg-green-500"}`}
-                style={{ width: `${budgetPercent}%` }} />
+            <div className="h-2 rounded-full bg-muted/20 overflow-hidden">
+              <div className={`h-full rounded-full transition-all ${cashPercent < 20 ? "bg-red-500" : cashPercent < 50 ? "bg-yellow-500" : "bg-green-500"}`}
+                style={{ width: `${cashPercent}%` }} />
+            </div>
+            {totalProfit !== 0 && (
+              <p className={`text-xs font-mono mt-2 ${totalProfit > 0 ? "text-green-400" : "text-red-400"}`}>
+                Net: {totalProfit >= 0 ? "+" : ""}{fmt(totalProfit)}
+              </p>
+            )}
+          </div>
+
+          {/* Rival Bidders */}
+          <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
+            <div className="p-3 border-b border-white/[0.06] flex items-center gap-2">
+              <Users className="w-4 h-4 text-cyan-400" />
+              <span className="text-xs font-bold uppercase tracking-wider">Rivals</span>
+            </div>
+            <div className="p-3 space-y-2">
+              {activeBots.map((bot, i) => (
+                <div key={i} className={`flex items-center gap-2 p-2 rounded-lg text-xs transition-all ${
+                  highestBidder === bot.name ? "bg-amber-500/10 border border-amber-500/20" : "bg-white/[0.01] border border-transparent"
+                }`}>
+                  <span className="text-lg">{bot.avatar}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold truncate">{bot.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{bot.personality}</p>
+                  </div>
+                  {highestBidder === bot.name && (
+                    <Zap className="w-3 h-3 text-amber-400 flex-shrink-0" />
+                  )}
+                </div>
+              ))}
             </div>
           </div>
 
           {/* Live Bid Feed */}
-          <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
-            <div className="p-3 border-b border-white/[0.06] flex items-center gap-2">
-              <Users className="w-4 h-4 text-cyan-400" />
-              <span className="text-sm font-bold uppercase tracking-wider text-cyan-400">Live Bids</span>
-              <span className="ml-auto text-[10px] text-red-400 font-mono animate-pulse">● LIVE</span>
+          {phase === "bidding" && (
+            <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
+              <div className="p-3 border-b border-white/[0.06] flex items-center gap-2">
+                <Gavel className="w-4 h-4 text-amber-400" />
+                <span className="text-xs font-bold uppercase tracking-wider">Bid Feed</span>
+                <span className="ml-auto text-[10px] text-red-400 font-mono animate-pulse">● LIVE</span>
+              </div>
+              <div ref={bidRef} className="max-h-[200px] overflow-y-auto p-2 space-y-1">
+                <AnimatePresence>
+                  {bidHistory.map((bid, i) => (
+                    <motion.div key={i} initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }}
+                      className={`flex items-center gap-2 p-1.5 rounded text-[11px] ${
+                        bid.isPlayer ? "bg-green-500/10" : "bg-white/[0.02]"
+                      }`}>
+                      <span className="truncate flex-1 font-medium">{bid.bidder}</span>
+                      <span className={`font-mono font-bold ${bid.isPlayer ? "text-green-400" : "text-amber-400"}`}>{fmt(bid.amount)}</span>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
             </div>
-            <div ref={bidHistoryRef} className="max-h-[350px] overflow-y-auto p-3 space-y-1.5">
-              <AnimatePresence>
-                {bidHistory.map((bid, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className={`flex items-center gap-2 p-2 rounded-lg text-xs ${
-                      bid.isPlayer
-                        ? "bg-green-500/10 border border-green-500/20"
-                        : "bg-white/[0.02] border border-white/[0.03]"
-                    }`}
-                  >
-                    <span className="font-medium truncate flex-1">{bid.bidder}</span>
-                    <span className={`font-mono font-bold ${bid.isPlayer ? "text-green-400" : "text-yellow-400"}`}>
-                      {formatCurrency(bid.amount)}
-                    </span>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-          </div>
+          )}
 
-          {/* Won Items */}
-          {wonItems.length > 0 && (
-            <div className="rounded-xl border border-green-500/20 bg-green-500/5 p-3">
-              <p className="text-xs text-green-400 uppercase tracking-wider mb-2 font-bold">🏆 Won Items</p>
-              {wonItems.map((w, i) => (
-                <div key={i} className="flex items-center gap-2 text-xs py-1">
-                  <span>{w.item.emoji}</span>
-                  <span className="truncate flex-1">{w.item.name}</span>
-                  <span className="font-mono text-green-400">{formatCurrency(w.price)}</span>
+          {/* Previous wins */}
+          {roundResults.filter(r => r.won).length > 0 && (
+            <div className="rounded-xl border border-green-500/15 bg-green-500/5 p-3">
+              <p className="text-[10px] text-green-400 uppercase tracking-wider mb-2 font-bold">🏆 Won Crates</p>
+              {roundResults.filter(r => r.won).map((r, i) => (
+                <div key={i} className="flex items-center gap-2 text-xs py-0.5">
+                  <span>{r.crate.emoji}</span>
+                  <span className="truncate flex-1">{r.crate.name}</span>
+                  <span className={`font-mono ${r.profit > 0 ? "text-green-400" : "text-red-400"}`}>
+                    {r.profit >= 0 ? "+" : ""}{fmt(r.profit)}
+                  </span>
                 </div>
               ))}
             </div>
           )}
         </div>
       </div>
-
-      <Leaderboard gameType={"auction_bidding" as any} />
     </GameShell>
   );
 };
