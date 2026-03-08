@@ -8,6 +8,8 @@ import {
   drawDetailField,
   drawFooter,
   drawDocumentRef,
+  drawSummaryCard,
+  drawOfficialStamp,
   checkPageBreak,
 } from './pdfStyles';
 
@@ -32,72 +34,26 @@ export const generateApplicationPdf = (data: ApplicationPdfData) => {
   const pageWidth = doc.internal.pageSize.getWidth();
   const contentWidth = pageWidth - margin * 2;
 
-  // Branded header
-  drawHeader(doc, data.title, 'Application Document');
+  // Premium branded header
+  drawHeader(doc, data.title, 'Official Application Document');
 
-  // Document reference
-  let yPos = 50;
+  // Document reference bar
+  let yPos = 56;
   yPos = drawDocumentRef(doc, `APP-${Date.now().toString(36).toUpperCase()}`, yPos, margin);
 
-  // Application summary box
-  yPos += 2;
-  const boxHeight = 28;
-  doc.setFillColor(...PDF_COLORS.lightBg);
-  doc.roundedRect(margin, yPos, contentWidth, boxHeight, 2, 2, 'F');
-  doc.setDrawColor(...PDF_COLORS.border);
-  doc.setLineWidth(0.3);
-  doc.roundedRect(margin, yPos, contentWidth, boxHeight, 2, 2, 'S');
-
-  // Left column
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(...PDF_COLORS.textSecondary);
-  doc.text('Applicant', margin + 5, yPos + 7);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.setTextColor(...PDF_COLORS.text);
-  doc.text(data.applicantName, margin + 5, yPos + 13);
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(...PDF_COLORS.textSecondary);
-  doc.text('Type', margin + 5, yPos + 20);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(...PDF_COLORS.text);
-  doc.text(data.applicationType, margin + 5, yPos + 25);
-
-  // Middle column
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(...PDF_COLORS.textSecondary);
-  doc.text('Submitted', margin + 70, yPos + 7);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(...PDF_COLORS.text);
-  doc.text(formatPdfDate(data.submittedAt), margin + 70, yPos + 13);
-
-  // Status badge (right side)
+  // Premium summary card with status badge
   const statusColor = getStatusColor(data.status);
   const statusText = data.status.toUpperCase().replace('_', ' ');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(...PDF_COLORS.textSecondary);
-  doc.text('Status', pageWidth - margin - 35, yPos + 7);
   
-  // Status pill
-  const pillY = yPos + 11;
-  doc.setFillColor(...statusColor);
-  doc.roundedRect(pageWidth - margin - 38, pillY - 3, 33, 7, 2, 2, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'bold');
-  doc.text(statusText, pageWidth - margin - 21.5, pillY + 1.5, { align: 'center' });
+  yPos = drawSummaryCard(doc, [
+    { label: 'Applicant', value: data.applicantName, bold: true },
+    { label: 'Application Type', value: data.applicationType },
+    { label: 'Submitted', value: formatPdfDate(data.submittedAt) },
+  ], yPos, margin, { text: statusText, color: statusColor });
 
   // Application Details section
-  yPos += boxHeight + 8;
   yPos = drawSectionHeader(doc, 'Application Details', yPos, margin, contentWidth);
-  yPos += 3;
+  yPos += 2;
 
   // Fields
   data.fields.forEach((field) => {
@@ -109,20 +65,36 @@ export const generateApplicationPdf = (data: ApplicationPdfData) => {
   if (data.adminNotes) {
     yPos = checkPageBreak(doc, yPos, 25);
     yPos += 5;
-    yPos = drawSectionHeader(doc, 'Admin Notes', yPos, margin, contentWidth);
-    yPos += 3;
+    yPos = drawSectionHeader(doc, 'Administrative Notes', yPos, margin, contentWidth);
+    yPos += 2;
 
+    // Notes in a styled box
+    const notesLines = doc.splitTextToSize(data.adminNotes, contentWidth - 16);
+    const notesH = notesLines.length * 4.5 + 8;
+    
+    doc.setFillColor(...PDF_COLORS.lightBg);
+    doc.roundedRect(margin, yPos, contentWidth, notesH, 2, 2, 'F');
+    doc.setDrawColor(...PDF_COLORS.border);
+    doc.setLineWidth(0.2);
+    doc.roundedRect(margin, yPos, contentWidth, notesH, 2, 2, 'S');
+    doc.setFillColor(...PDF_COLORS.warning);
+    doc.rect(margin, yPos, 2, notesH, 'F');
+    
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(...PDF_COLORS.textSecondary);
-
-    const notesLines = doc.splitTextToSize(data.adminNotes, contentWidth - 8);
+    doc.setFontSize(8.5);
+    doc.setTextColor(...PDF_COLORS.text);
+    
+    let ny = yPos + 6;
     notesLines.forEach((line: string) => {
-      yPos = checkPageBreak(doc, yPos);
-      doc.text(line, margin + 5, yPos);
-      yPos += 4.5;
+      doc.text(line, margin + 8, ny);
+      ny += 4.5;
     });
+    yPos += notesH + 5;
   }
+
+  // Official stamp at bottom
+  yPos = checkPageBreak(doc, yPos, 40);
+  drawOfficialStamp(doc, pageWidth - margin - 20, yPos + 15, data.status === 'approved' ? 'APPROVED' : 'RECEIVED');
 
   // Footer
   drawFooter(doc, 'Application Document');

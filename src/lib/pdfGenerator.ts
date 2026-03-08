@@ -6,6 +6,8 @@ import {
   drawSectionHeader,
   drawFooter,
   drawDocumentRef,
+  drawSummaryCard,
+  drawOfficialStamp,
 } from './pdfStyles';
 
 interface OrderItem {
@@ -32,103 +34,74 @@ export const generateReceiptPDF = (data: ReceiptData) => {
   const pageWidth = doc.internal.pageSize.getWidth();
   const contentWidth = pageWidth - margin * 2;
 
-  // Branded header
-  drawHeader(doc, 'PURCHASE RECEIPT', 'SLRP Official Store');
+  // Premium branded header
+  drawHeader(doc, 'PURCHASE RECEIPT', 'SLRP Official Store — Digital Receipt');
 
   // Document reference
-  let yPos = 50;
+  let yPos = 56;
   yPos = drawDocumentRef(doc, data.orderNumber, yPos, margin);
 
-  // Order & Customer Info Box
-  yPos += 2;
-  const boxHeight = 28;
-  doc.setFillColor(...PDF_COLORS.lightBg);
-  doc.roundedRect(margin, yPos, contentWidth, boxHeight, 2, 2, 'F');
-  doc.setDrawColor(...PDF_COLORS.border);
-  doc.setLineWidth(0.3);
-  doc.roundedRect(margin, yPos, contentWidth, boxHeight, 2, 2, 'S');
+  // Premium summary card
+  yPos = drawSummaryCard(doc, [
+    { label: 'Order Number', value: data.orderNumber, bold: true },
+    { label: 'Customer', value: data.customerName, bold: true },
+    { label: 'Date', value: formatPdfDate(data.date) },
+    { label: 'Email', value: data.customerEmail },
+    { label: 'Items', value: String(data.items.length) },
+    { label: 'Currency', value: data.currency },
+  ], yPos, margin);
 
-  // Order Number
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(...PDF_COLORS.textSecondary);
-  doc.text('Order Number', margin + 5, yPos + 7);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.setTextColor(...PDF_COLORS.text);
-  doc.text(data.orderNumber, margin + 5, yPos + 13);
-
-  // Date
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(...PDF_COLORS.textSecondary);
-  doc.text('Date', margin + 5, yPos + 20);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(...PDF_COLORS.text);
-  doc.text(formatPdfDate(data.date), margin + 5, yPos + 25);
-
-  // Customer
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(...PDF_COLORS.textSecondary);
-  doc.text('Customer', margin + 90, yPos + 7);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.setTextColor(...PDF_COLORS.text);
-  doc.text(data.customerName, margin + 90, yPos + 13);
-  doc.setFontSize(9);
-  doc.setTextColor(...PDF_COLORS.textSecondary);
-  doc.text(data.customerEmail, margin + 90, yPos + 20);
-
-  // Items Table
-  yPos += boxHeight + 8;
+  // Items Table section
   yPos = drawSectionHeader(doc, 'Order Items', yPos, margin, contentWidth);
 
   // Table header
   doc.setFillColor(...PDF_COLORS.headerBg);
-  doc.rect(margin, yPos, contentWidth, 8, 'F');
+  doc.rect(margin, yPos, contentWidth, 9, 'F');
   doc.setFillColor(...PDF_COLORS.accent);
-  doc.rect(margin, yPos, 2, 8, 'F');
+  doc.rect(margin, yPos, 2, 9, 'F');
 
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
-  doc.text('Item', margin + 5, yPos + 5.5);
-  doc.text('Qty', margin + 105, yPos + 5.5);
-  doc.text('Unit Price', margin + 125, yPos + 5.5);
-  doc.text('Total', margin + contentWidth - 18, yPos + 5.5);
+  doc.text('Item', margin + 6, yPos + 6.2);
+  doc.text('Qty', margin + 105, yPos + 6.2);
+  doc.text('Unit Price', margin + 122, yPos + 6.2);
+  doc.text('Total', margin + contentWidth - 15, yPos + 6.2);
 
-  yPos += 10;
-  doc.setTextColor(...PDF_COLORS.text);
-  doc.setFont('helvetica', 'normal');
+  yPos += 11;
   doc.setFontSize(9);
 
   data.items.forEach((item, index) => {
+    // Alternating rows
     if (index % 2 === 0) {
       doc.setFillColor(...PDF_COLORS.lightBg);
-      doc.rect(margin, yPos - 4, contentWidth, 9, 'F');
+      doc.rect(margin, yPos - 4.5, contentWidth, 10, 'F');
     }
+    
+    // Bottom border
+    doc.setDrawColor(...PDF_COLORS.borderLight);
+    doc.setLineWidth(0.15);
+    doc.line(margin, yPos + 5, margin + contentWidth, yPos + 5);
 
     doc.setTextColor(...PDF_COLORS.text);
-    doc.text(item.name, margin + 5, yPos);
-    doc.text(item.quantity.toString(), margin + 108, yPos);
-    doc.text(formatCurrency(item.price, data.currency), margin + 125, yPos);
-    doc.setFont('helvetica', 'bold');
-    doc.text(formatCurrency(item.price * item.quantity, data.currency), margin + contentWidth - 18, yPos);
     doc.setFont('helvetica', 'normal');
+    doc.text(item.name, margin + 6, yPos);
+    doc.text(item.quantity.toString(), margin + 108, yPos);
+    doc.text(formatCurrency(item.price, data.currency), margin + 122, yPos);
+    doc.setFont('helvetica', 'bold');
+    doc.text(formatCurrency(item.price * item.quantity, data.currency), margin + contentWidth - 15, yPos);
 
     yPos += 10;
   });
 
   // Divider
-  yPos += 3;
+  yPos += 4;
   doc.setDrawColor(...PDF_COLORS.accent);
-  doc.setLineWidth(0.5);
-  doc.line(margin + 90, yPos, margin + contentWidth, yPos);
+  doc.setLineWidth(0.6);
+  doc.line(margin + 85, yPos, margin + contentWidth, yPos);
 
   // Subtotal
-  yPos += 8;
+  yPos += 9;
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...PDF_COLORS.textSecondary);
@@ -140,23 +113,28 @@ export const generateReceiptPDF = (data: ReceiptData) => {
   if (data.discount && data.discount > 0) {
     yPos += 7;
     doc.setTextColor(...PDF_COLORS.success);
+    doc.setFont('helvetica', 'bold');
     doc.text(`Discount (${data.discount}%):`, margin + 110, yPos);
     doc.text('-' + formatCurrency(data.subtotal * (data.discount / 100), data.currency), margin + contentWidth - 5, yPos, { align: 'right' });
   }
 
-  // Total
-  yPos += 10;
+  // Total — premium styled
+  yPos += 12;
+  doc.setFillColor(...PDF_COLORS.headerBg);
+  doc.roundedRect(margin + 90, yPos - 6, contentWidth - 90, 14, 3, 3, 'F');
   doc.setFillColor(...PDF_COLORS.accent);
-  doc.roundedRect(margin + 100, yPos - 5, contentWidth - 100, 12, 2, 2, 'F');
+  doc.rect(margin + 90, yPos - 6, 3, 14, 'F');
+  
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
   doc.setTextColor(255, 255, 255);
-  doc.text('TOTAL:', margin + 112, yPos + 3);
+  doc.text('TOTAL', margin + 102, yPos + 3);
+  doc.setTextColor(...PDF_COLORS.accentGlow);
   doc.text(formatCurrency(data.total, data.currency), margin + contentWidth - 8, yPos + 3, { align: 'right' });
 
-  // Thank you message
-  yPos += 25;
-  doc.setFontSize(10);
+  // Thank you section
+  yPos += 28;
+  doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...PDF_COLORS.accent);
   doc.text('Thank you for your purchase!', pageWidth / 2, yPos, { align: 'center' });
@@ -166,6 +144,9 @@ export const generateReceiptPDF = (data: ReceiptData) => {
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...PDF_COLORS.textSecondary);
   doc.text('This is an electronic receipt. No signature required.', pageWidth / 2, yPos, { align: 'center' });
+
+  // Official stamp
+  drawOfficialStamp(doc, pageWidth - margin - 20, yPos + 20, 'PAID');
 
   drawFooter(doc, 'Store Receipt');
   doc.save(`SLRP-Receipt-${data.orderNumber}.pdf`);
