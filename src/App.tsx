@@ -106,7 +106,7 @@ const StyleEmporium = lazy(() => import("./pages/StyleEmporium"));
 const CaseFiles = lazy(() => import("./pages/CaseFiles"));
 const SuggestionBox = lazy(() => import("./pages/SuggestionBox"));
 const Memorial = lazy(() => import("./pages/Memorial"));
-
+const CinemaHub = lazy(() => import("./pages/CinemaHub"));
 const DirectMessage = lazy(() => import("./pages/DirectMessage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
