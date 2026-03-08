@@ -389,14 +389,13 @@ const CinemaRoom = ({ room, user, onLeave, onEnd }: CinemaRoomProps) => {
           </div>
 
           {/* Bottom Controls */}
-          <div className="flex items-center justify-center gap-3 py-3 px-4 bg-card/80 backdrop-blur border-t border-border/50">
+          <div className="flex items-center justify-center gap-3 py-3 px-4 bg-card backdrop-blur border-t border-border">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant={isMicOn ? "default" : "outline"}
                   size="icon"
                   onClick={toggleMic}
-                  className={`rounded-full w-12 h-12 transition-all ${isMicOn ? 'bg-green-600 hover:bg-green-700 shadow-lg shadow-green-500/25' : 'hover:border-green-500/50'}`}
+                  className={`rounded-full w-12 h-12 transition-all border-2 ${isMicOn ? 'bg-green-600 hover:bg-green-700 text-white border-green-500 shadow-lg shadow-green-500/30' : 'bg-muted text-foreground border-border hover:bg-accent hover:border-green-500/50'}`}
                 >
                   {isMicOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
                 </Button>
@@ -407,10 +406,9 @@ const CinemaRoom = ({ room, user, onLeave, onEnd }: CinemaRoomProps) => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant={isScreenOn ? "default" : "outline"}
                   size="icon"
                   onClick={toggleScreen}
-                  className={`rounded-full w-12 h-12 transition-all ${isScreenOn ? 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/25' : 'hover:border-blue-500/50'}`}
+                  className={`rounded-full w-12 h-12 transition-all border-2 ${isScreenOn ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-500 shadow-lg shadow-blue-500/30' : 'bg-muted text-foreground border-border hover:bg-accent hover:border-blue-500/50'}`}
                 >
                   {isScreenOn ? <MonitorOff className="w-5 h-5" /> : <Monitor className="w-5 h-5" />}
                 </Button>
@@ -421,10 +419,9 @@ const CinemaRoom = ({ room, user, onLeave, onEnd }: CinemaRoomProps) => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant="outline"
                   size="icon"
                   onClick={() => setShowEmbedInput(!showEmbedInput)}
-                  className="rounded-full w-12 h-12 hover:border-purple-500/50"
+                  className="rounded-full w-12 h-12 bg-muted text-foreground border-2 border-border hover:bg-accent hover:border-purple-500/50 transition-all"
                 >
                   <LinkIcon className="w-5 h-5" />
                 </Button>
@@ -435,10 +432,9 @@ const CinemaRoom = ({ room, user, onLeave, onEnd }: CinemaRoomProps) => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant="destructive"
                   size="icon"
                   onClick={handleLeave}
-                  className="rounded-full w-12 h-12 shadow-lg shadow-red-500/25"
+                  className="rounded-full w-12 h-12 bg-destructive text-destructive-foreground border-2 border-destructive hover:bg-destructive/90 shadow-lg shadow-red-500/30 transition-all"
                 >
                   <X className="w-5 h-5" />
                 </Button>
