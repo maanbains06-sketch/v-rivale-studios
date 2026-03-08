@@ -278,6 +278,30 @@ const CinemaRoom = ({ room, user, onLeave, onEnd }: CinemaRoomProps) => {
         </div>
       </div>
 
+      {/* Permission Banner */}
+      <AnimatePresence>
+        {showPermissionBanner && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden shrink-0"
+          >
+            <Alert className="rounded-none border-x-0 border-t-0 bg-primary/5 border-primary/20">
+              <Info className="w-4 h-4 text-primary" />
+              <AlertDescription className="text-xs flex items-center justify-between">
+                <span>
+                  <strong>Voice & Screen Share:</strong> Your browser will ask for permissions when you click the mic/screen buttons — please <strong>Allow</strong> them. Use Chrome, Edge, or Firefox for best experience.
+                </span>
+                <Button variant="ghost" size="sm" onClick={() => setShowPermissionBanner(false)} className="shrink-0 ml-2 h-6 text-xs">
+                  Got it
+                </Button>
+              </AlertDescription>
+            </Alert>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Main Stage */}
