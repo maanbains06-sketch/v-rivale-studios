@@ -618,6 +618,14 @@ const Navigation = () => {
                         Suggestion Box
                       </Link>
                     </Button>
+                    {showMemorialLink && (
+                      <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                        <Link to="/memorial" className="flex items-center">
+                          <Flame className="w-4 h-4 mr-2 text-amber-500" />
+                          Digital Memorial
+                        </Link>
+                      </Button>
+                    )}
                   </div>
 
                   {/* Quick Admin Links - Only visible to staff */}
