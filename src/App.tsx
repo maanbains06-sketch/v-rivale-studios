@@ -105,6 +105,7 @@ const MiniGames = lazy(() => import("./pages/MiniGames"));
 const StyleEmporium = lazy(() => import("./pages/StyleEmporium"));
 const CaseFiles = lazy(() => import("./pages/CaseFiles"));
 const SuggestionBox = lazy(() => import("./pages/SuggestionBox"));
+const Memorial = lazy(() => import("./pages/Memorial"));
 
 const DirectMessage = lazy(() => import("./pages/DirectMessage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
