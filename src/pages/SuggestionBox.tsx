@@ -85,8 +85,8 @@ const SuggestionBox = () => {
     const { error } = await supabase.from("suggestions").insert({
       user_id: user.id,
       discord_username: displayName,
-      discord_id: meta.discord_id || meta.provider_id || meta.sub || null,
-      discord_avatar: meta.discord_avatar || meta.avatar_url || null,
+      discord_id: discordId || null,
+      discord_avatar: avatarUrl || null,
       category,
       title: title.trim(),
       description: description.trim(),
