@@ -2490,6 +2490,83 @@ export type Database = {
         }
         Relationships: []
       }
+      memorial_comments: {
+        Row: {
+          created_at: string
+          discord_avatar: string | null
+          discord_username: string | null
+          id: string
+          memorial_id: string
+          message: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          discord_avatar?: string | null
+          discord_username?: string | null
+          id?: string
+          memorial_id: string
+          message: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          discord_avatar?: string | null
+          discord_username?: string | null
+          id?: string
+          memorial_id?: string
+          message?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memorial_comments_memorial_id_fkey"
+            columns: ["memorial_id"]
+            isOneToOne: false
+            referencedRelation: "memorials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memorials: {
+        Row: {
+          character_name: string
+          created_at: string
+          created_by: string | null
+          date_of_birth: string | null
+          date_of_death: string | null
+          eulogy: string | null
+          frame_style: string | null
+          id: string
+          image_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          character_name: string
+          created_at?: string
+          created_by?: string | null
+          date_of_birth?: string | null
+          date_of_death?: string | null
+          eulogy?: string | null
+          frame_style?: string | null
+          id?: string
+          image_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          character_name?: string
+          created_at?: string
+          created_by?: string | null
+          date_of_birth?: string | null
+          date_of_death?: string | null
+          eulogy?: string | null
+          frame_style?: string | null
+          id?: string
+          image_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       mini_game_scores: {
         Row: {
           created_at: string
