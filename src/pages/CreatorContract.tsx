@@ -565,7 +565,7 @@ const CreatorContract = () => {
     };
 
     // ========== PARTY A SECTION ==========
-    yPos = drawSectionHeader('Party A - Server Representative', yPos);
+    yPos = drawContractSectionHeader('Party A - Server Representative', yPos);
 
     const halfWidth = contentWidth / 2 - 2;
     
