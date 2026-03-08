@@ -719,6 +719,17 @@ export const EnhancedSiteSettings = ({ settings, onSettingsChange }: EnhancedSit
 
             <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
               <div className="space-y-0.5">
+                <Label className="text-base">Hide Digital Memorial</Label>
+                <p className="text-sm text-muted-foreground">Hide the Graveyard / Memorial page from all users (owner only)</p>
+              </div>
+              <Switch 
+                checked={getValue("memorial_hidden") === "true"}
+                onCheckedChange={() => toggleSetting("memorial_hidden")}
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/50">
+              <div className="space-y-0.5">
                 <Label className="text-base">Giveaways Enabled</Label>
                 <p className="text-sm text-muted-foreground">Enable giveaway system</p>
               </div>
