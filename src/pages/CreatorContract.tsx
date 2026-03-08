@@ -817,7 +817,7 @@ const CreatorContract = () => {
       yPos = 20;
     }
 
-    yPos = drawSectionHeader('Signatures & Acknowledgement', yPos);
+    yPos = drawContractSectionHeader('Signatures & Acknowledgement', yPos);
 
     doc.setFont('helvetica', 'italic');
     doc.setFontSize(7);
