@@ -507,7 +507,7 @@ const StaffContract = () => {
       doc.text(value || '', x + 42, y + 5.5);
     };
 
-    drawSectionHeader('Party A - Server Management', '⚡');
+    drawStaffSectionHeader('Party A - Server Management', '⚡');
     const halfWidth = contentWidth / 2 - 2;
     drawFormField('Organization', contractData.serverName, margin, yPos, halfWidth);
     drawFormField('Representative', contractData.serverOwner, margin + halfWidth + 4, yPos, halfWidth);
