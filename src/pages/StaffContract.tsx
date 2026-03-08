@@ -454,36 +454,22 @@ const StaffContract = () => {
     const contentWidth = pageWidth - (margin * 2);
     let yPos = 0;
 
-    const headerBg: [number, number, number] = [20, 30, 48];
-    const red: [number, number, number] = [220, 50, 50];
-    const black: [number, number, number] = [0, 0, 0];
-    const gray: [number, number, number] = [100, 100, 100];
-    const lightGray: [number, number, number] = [230, 230, 230];
-    const darkRed: [number, number, number] = [180, 30, 30];
+    const headerBg: [number, number, number] = PDF_COLORS.headerBg;
+    const black: [number, number, number] = PDF_COLORS.black;
+    const gray: [number, number, number] = PDF_COLORS.textSecondary;
+    const lightGray: [number, number, number] = PDF_COLORS.lightBg;
 
-    const checkPageBreak = (needed: number) => {
+    const localCheckPageBreak = (needed: number) => {
       if (yPos + needed > pageHeight - 20) {
         doc.addPage();
         yPos = 20;
       }
     };
 
-    doc.setFillColor(...headerBg);
-    doc.rect(0, 0, pageWidth, 40, 'F');
-    doc.setFillColor(...red);
-    doc.rect(0, 40, pageWidth, 3, 'F');
+    // Branded header
+    drawHeader(doc, 'STAFF & ADMINISTRATOR AGREEMENT', 'Confidential — Non-Disclosure Agreement');
 
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(20);
-    doc.setFont('helvetica', 'bold');
-    doc.text('SKYLIFE ROLEPLAY INDIA', pageWidth / 2, 15, { align: 'center' });
-    doc.setFontSize(12);
-    doc.text('STAFF & ADMINISTRATOR AGREEMENT', pageWidth / 2, 25, { align: 'center' });
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    doc.text('CONFIDENTIAL — NON-DISCLOSURE AGREEMENT', pageWidth / 2, 34, { align: 'center' });
-
-    yPos = 52;
+    yPos = 50;
 
     doc.setTextColor(...black);
     doc.setFontSize(8);
@@ -491,14 +477,18 @@ const StaffContract = () => {
     doc.text(`Date: ${format(new Date(), 'dd/MM/yyyy')}`, pageWidth - margin - 30, yPos);
     yPos += 8;
 
-    const drawSectionHeader = (title: string, icon: string) => {
-      checkPageBreak(15);
-      doc.setFillColor(...darkRed);
-      doc.rect(margin, yPos, contentWidth, 8, 'F');
+    const drawStaffSectionHeader = (title: string, icon: string) => {
+      localCheckPageBreak(15);
+      // Accent bar
+      doc.setFillColor(...PDF_COLORS.accent);
+      doc.rect(margin, yPos, 3, 8, 'F');
+      // Header bg
+      doc.setFillColor(...headerBg);
+      doc.rect(margin + 3, yPos, contentWidth - 3, 8, 'F');
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
-      doc.text(`${icon} ${title.toUpperCase()}`, margin + 3, yPos + 5.5);
+      doc.text(`${icon} ${title.toUpperCase()}`, margin + 7, yPos + 5.5);
       yPos += 10;
     };
 
