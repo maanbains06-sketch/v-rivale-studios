@@ -26,6 +26,9 @@ import {
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import StyledUsername from "@/components/StyledUsername";
+import StyledAvatar from "@/components/StyledAvatar";
+import { useProfileCustomization } from "@/hooks/useProfileCustomization";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
