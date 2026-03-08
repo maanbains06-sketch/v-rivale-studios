@@ -575,8 +575,8 @@ const StaffContract = () => {
     });
     yPos += 10;
 
-    checkPageBreak(70);
-    drawSectionHeader('Signatures & Acknowledgement', '✍️');
+    localCheckPageBreak(70);
+    drawStaffSectionHeader('Signatures & Acknowledgement', '✍️');
     doc.setFont('helvetica', 'italic');
     doc.setFontSize(7);
     doc.setTextColor(...gray);
