@@ -538,8 +538,8 @@ const StaffContract = () => {
 
     drawSectionHeader('Contract Period', '📅');
     drawFormField('Duration', contractData.contractDuration, margin, yPos, contentWidth / 3 - 2);
-    drawFormField('Start Date', format(new Date(contractData.startDate), 'dd/MM/yyyy'), margin + contentWidth / 3 + 1, yPos, contentWidth / 3 - 2);
-    drawFormField('End Date', format(new Date(contractData.endDate), 'dd/MM/yyyy'), margin + (contentWidth / 3 + 1) * 2, yPos, contentWidth / 3 - 2);
+    drawFormField('Start Date', safeFormatDate(contractData.startDate, 'dd/MM/yyyy'), margin + contentWidth / 3 + 1, yPos, contentWidth / 3 - 2);
+    drawFormField('End Date', safeFormatDate(contractData.endDate, 'dd/MM/yyyy'), margin + (contentWidth / 3 + 1) * 2, yPos, contentWidth / 3 - 2);
     yPos += 15;
 
     const renderPolicies = (title: string, icon: string, policies: PolicyItem[]) => {
