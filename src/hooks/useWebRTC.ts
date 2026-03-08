@@ -297,9 +297,14 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
     }
   }, [isMicOn, userId, roomId]);
 
-  const toggleScreen = useCallback(async () => {
+  const toggleScreen = useCallback(async (): Promise<string | null> => {
     if (!isScreenOn) {
       try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+          const msg = "Your browser doesn't support screen sharing. Please use Chrome, Edge, or Firefox.";
+          setLastError(msg);
+          return msg;
+        }
         const stream = await navigator.mediaDevices.getDisplayMedia({ 
           video: { cursor: "always" } as any, 
           audio: true 
@@ -325,6 +330,7 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
         }
 
         setIsScreenOn(true);
+        setLastError(null);
         await supabase.from("cinema_room_members").update({ is_sharing_screen: true }).eq("room_id", roomId).eq("user_id", userId);
 
         // Handle when user stops sharing from browser UI
@@ -338,8 +344,16 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
             payload: { userId },
           });
         };
-      } catch {
-        console.error("Screen share denied");
+        return null;
+      } catch (err: any) {
+        let msg = "Screen sharing denied. ";
+        if (err?.name === "NotAllowedError") {
+          msg += "You cancelled the screen share dialog or permission was denied.";
+        } else {
+          msg += "Please try again.";
+        }
+        setLastError(msg);
+        return msg;
       }
     } else {
       localScreenStream.current?.getTracks().forEach(t => t.stop());
@@ -351,6 +365,7 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
         event: "screen-stopped",
         payload: { userId },
       });
+      return null;
     }
   }, [isScreenOn, userId, roomId]);
 
