@@ -76,11 +76,17 @@ const SuggestionBox = () => {
 
     setLoading(true);
     const meta = user.user_metadata || {};
+    const discordId = meta.discord_id || meta.provider_id || meta.sub;
+    const displayName = meta.display_name || meta.discord_username || meta.full_name || "Unknown";
+    let avatarUrl = meta.avatar_url;
+    if (discordId && meta.discord_avatar) {
+      avatarUrl = `https://cdn.discordapp.com/avatars/${discordId}/${meta.discord_avatar}.png?size=256`;
+    }
     const { error } = await supabase.from("suggestions").insert({
       user_id: user.id,
-      discord_username: meta.discord_username || meta.full_name || "Unknown",
-      discord_id: meta.discord_id || meta.provider_id || meta.sub || null,
-      discord_avatar: meta.discord_avatar || meta.avatar_url || null,
+      discord_username: displayName,
+      discord_id: discordId || null,
+      discord_avatar: avatarUrl || null,
       category,
       title: title.trim(),
       description: description.trim(),

@@ -171,9 +171,18 @@ const CinemaRoom = ({ room, user, onLeave, onEnd }: CinemaRoomProps) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const getDiscordAvatarUrl = () => {
+    const meta = user?.user_metadata || {};
+    const discordId = meta.discord_id || meta.provider_id || meta.sub;
+    if (discordId && meta.discord_avatar) {
+      return `https://cdn.discordapp.com/avatars/${discordId}/${meta.discord_avatar}.png?size=256`;
+    }
+    return meta.avatar_url || null;
+  };
+
   const sendMessage = async () => {
     if (!newMessage.trim()) return;
-    const avatar = user.user_metadata?.avatar_url || user.user_metadata?.discord_avatar;
+    const avatar = getDiscordAvatarUrl();
     const isEmbed = /^https?:\/\/(www\.)?(youtube\.com|youtu\.be|twitch\.tv|vimeo\.com)/.test(newMessage.trim());
 
     await supabase.from("cinema_room_messages").insert({
@@ -194,7 +203,7 @@ const CinemaRoom = ({ room, user, onLeave, onEnd }: CinemaRoomProps) => {
       await supabase.from("cinema_rooms").update({ embed_url: embedSrc }).eq("id", room.id);
       setCurrentEmbed(embedSrc);
     }
-    const avatar = user.user_metadata?.avatar_url || user.user_metadata?.discord_avatar;
+    const avatar = getDiscordAvatarUrl();
     await supabase.from("cinema_room_messages").insert({
       room_id: room.id,
       user_id: user.id,

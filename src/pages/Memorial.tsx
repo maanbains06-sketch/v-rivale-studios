@@ -95,12 +95,21 @@ const MemorialCard = ({ memorial }: { memorial: Memorial }) => {
     if (!newComment.trim() || !user) return;
     setSubmitting(true);
     const meta = user.user_metadata || {};
+    const discordId = meta.discord_id || meta.provider_id || meta.sub;
+    const displayName = meta.display_name || meta.discord_username || meta.full_name || "Anonymous";
+    
+    // Construct proper Discord CDN avatar URL
+    let avatarUrl = meta.avatar_url;
+    if (discordId && meta.discord_avatar) {
+      avatarUrl = `https://cdn.discordapp.com/avatars/${discordId}/${meta.discord_avatar}.png?size=256`;
+    }
+    
     await supabase.from("memorial_comments").insert({
       memorial_id: memorial.id,
       user_id: user.id,
       message: newComment.trim(),
-      discord_username: meta.discord_username || meta.full_name || "Anonymous",
-      discord_avatar: meta.discord_avatar || meta.avatar_url,
+      discord_username: displayName,
+      discord_avatar: avatarUrl,
     });
     setNewComment("");
     setSubmitting(false);
@@ -218,7 +227,7 @@ const MemorialCard = ({ memorial }: { memorial: Memorial }) => {
                 {comments.map((c) => (
                   <div key={c.id} className="flex gap-2 p-2 rounded-lg bg-zinc-800/30 border border-zinc-700/20">
                     <Avatar className="w-6 h-6 shrink-0 mt-0.5">
-                      <AvatarImage src={c.discord_avatar ? `https://cdn.discordapp.com/avatars/${c.user_id}/${c.discord_avatar}.png` : undefined} />
+                      <AvatarImage src={c.discord_avatar || undefined} />
                       <AvatarFallback className="text-[10px] bg-zinc-700">{(c.discord_username || "?")[0]}</AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
