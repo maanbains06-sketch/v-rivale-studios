@@ -20,6 +20,7 @@ import { combineAllApplications, filterApplicationsByType } from "@/lib/applicat
 import { sendDiscordNotification } from "@/lib/discordNotificationSender";
 import AdminTicketManagement from "@/components/AdminTicketManagement";
 import ConfidentialTicketManagement from "@/components/ConfidentialTicketManagement";
+import AdminSuggestionsTab from "@/components/admin/AdminSuggestionsTab";
 import { 
   Loader2, 
   Shield, 
@@ -48,7 +49,8 @@ import {
   LayoutGrid,
   AlertTriangle,
   Youtube,
-  Lock
+  Lock,
+  Lightbulb
 } from "lucide-react";
 import headerAdminBg from "@/assets/header-staff.jpg";
 import {
@@ -1344,6 +1346,10 @@ const Admin = () => {
               <AlertTriangle className="w-4 h-4" />
               <span className="hidden sm:inline">Detection</span>
             </TabsTrigger>
+            <TabsTrigger value="suggestions" className="flex items-center gap-1 text-xs sm:text-sm">
+              <Lightbulb className="w-4 h-4" />
+              <span className="hidden sm:inline">Suggestions</span>
+            </TabsTrigger>
           </TabsList>
 
           {/* Organization Applications Tab - Unified View */}
@@ -2205,6 +2211,11 @@ const Admin = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Suggestions Tab */}
+          <TabsContent value="suggestions">
+            <AdminSuggestionsTab />
           </TabsContent>
         </Tabs>
       </div>

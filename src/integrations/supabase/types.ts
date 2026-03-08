@@ -3922,6 +3922,63 @@ export type Database = {
           },
         ]
       }
+      suggestions: {
+        Row: {
+          admin_notes: string | null
+          category: string
+          created_at: string
+          description: string
+          discord_avatar: string | null
+          discord_id: string | null
+          discord_username: string | null
+          id: string
+          priority: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          title: string
+          updated_at: string
+          upvotes: number
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          category?: string
+          created_at?: string
+          description: string
+          discord_avatar?: string | null
+          discord_id?: string | null
+          discord_username?: string | null
+          id?: string
+          priority?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          upvotes?: number
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          category?: string
+          created_at?: string
+          description?: string
+          discord_avatar?: string | null
+          discord_id?: string | null
+          discord_username?: string | null
+          id?: string
+          priority?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          upvotes?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       support_chat_ratings: {
         Row: {
           chat_id: string

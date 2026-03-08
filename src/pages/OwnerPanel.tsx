@@ -38,6 +38,7 @@ import OwnerKillSwitch from "@/components/OwnerKillSwitch";
 import OwnerSecurityDashboard from "@/components/OwnerSecurityDashboard";
 import OwnerCurrencyManager from "@/components/OwnerCurrencyManager";
 import ApplicationToggleManager from "@/components/ApplicationToggleManager";
+import AdminSuggestionsTab from "@/components/admin/AdminSuggestionsTab";
 
 import { LiveApplicationStats } from "@/components/LiveApplicationStats";
 import OwnerLiveChatManager from "@/components/OwnerLiveChatManager";
@@ -89,6 +90,7 @@ import {
   Gamepad2,
   ToggleLeft,
   FolderOpen,
+  Lightbulb,
 } from "lucide-react";
 import { Coins } from "lucide-react";
 import { OwnerCaseManager } from "@/components/case-files/OwnerCaseManager";
@@ -1764,6 +1766,10 @@ const OwnerPanel = () => {
                   <FolderOpen className="w-4 h-4" />
                   <span className="hidden sm:inline">Case Files</span>
                 </TabsTrigger>
+                <TabsTrigger value="suggestions" className="flex items-center gap-2 whitespace-nowrap">
+                  <Lightbulb className="w-4 h-4" />
+                  <span className="hidden sm:inline">Suggestions</span>
+                </TabsTrigger>
               </TabsList>
             </div>
             {/* Fade indicators for scroll hint */}
@@ -2777,6 +2783,22 @@ const OwnerPanel = () => {
           {/* Application Toggles Tab */}
           <TabsContent value="app-toggles">
             <ApplicationToggleManager />
+          </TabsContent>
+
+          {/* Suggestions Tab */}
+          <TabsContent value="suggestions">
+            <Card className="glass-effect border-border/20">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="w-5 h-5 text-primary" />
+                  <CardTitle className="text-gradient">Suggestion Box</CardTitle>
+                </div>
+                <CardDescription>View and manage player suggestions for server and website improvements</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AdminSuggestionsTab />
+              </CardContent>
+            </Card>
           </TabsContent>
 
         </Tabs>

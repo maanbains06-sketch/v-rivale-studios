@@ -104,6 +104,7 @@ const Debate = lazy(() => import("./pages/Debate"));
 const MiniGames = lazy(() => import("./pages/MiniGames"));
 const StyleEmporium = lazy(() => import("./pages/StyleEmporium"));
 const CaseFiles = lazy(() => import("./pages/CaseFiles"));
+const SuggestionBox = lazy(() => import("./pages/SuggestionBox"));
 
 const DirectMessage = lazy(() => import("./pages/DirectMessage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -208,6 +209,7 @@ const AppRoutes = memo(() => {
           
           <Route path="/case-files" element={<PageTransition><RequireAuth message="Login with Discord to access case files."><CaseFiles /></RequireAuth></PageTransition>} />
           <Route path="/direct-message" element={<PageTransition><RequireAuth message="Login with Discord to send direct messages."><DirectMessage /></RequireAuth></PageTransition>} />
+          <Route path="/suggestion-box" element={<PageTransition><RequireAuth message="Login with Discord to submit suggestions."><PageMaintenanceBlock pageKey="suggestion-box"><SuggestionBox /></PageMaintenanceBlock></RequireAuth></PageTransition>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
         </Routes>

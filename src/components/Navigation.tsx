@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, memo } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield, LogOut, Menu, UserCircle, Mail, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, ExternalLink, Crown, LayoutDashboard, Gift, Briefcase, Building2, FileText, Newspaper, Trophy, Radio, Gamepad2, Sparkles, FolderOpen } from "lucide-react";
+import { Users, Shield, LogOut, Menu, UserCircle, Mail, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, ExternalLink, Crown, LayoutDashboard, Gift, Briefcase, Building2, FileText, Newspaper, Trophy, Radio, Gamepad2, Sparkles, FolderOpen, Lightbulb } from "lucide-react";
 import { Button } from "./ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
@@ -609,6 +609,12 @@ const Navigation = () => {
                       <Link to="/awards" className="flex items-center">
                         <Trophy className="w-4 h-4 mr-2 text-yellow-500" />
                         Awards
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/suggestion-box" className="flex items-center">
+                        <Lightbulb className="w-4 h-4 mr-2 text-amber-400" />
+                        Suggestion Box
                       </Link>
                     </Button>
                   </div>
