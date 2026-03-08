@@ -616,7 +616,7 @@ const CreatorContract = () => {
     yPos += 15;
 
     // ========== CONTRACT PERIOD SECTION ==========
-    yPos = drawSectionHeader('Contract Period', yPos);
+    yPos = drawContractSectionHeader('Contract Period', yPos);
 
     const quarterWidth = contentWidth / 4 - 3;
     
