@@ -1165,7 +1165,11 @@ const AuctionBiddingGame = ({ onBack, submitScore, GameShell, StartScreen, EndSc
                   return (
                     <motion.div key={i} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: i * 0.3 }}
                       className={`flex-1 min-w-[100px] rounded-xl border p-3 ${rc.bg} border-white/[0.06]`}>
-                      <div className="text-2xl mb-1">{item.emoji}</div>
+                      {getItemImage(item.name) ? (
+                        <img src={getItemImage(item.name)!} alt={item.name} className="w-12 h-12 mx-auto object-contain mb-1 rounded-lg" />
+                      ) : (
+                        <div className="text-2xl mb-1">{item.emoji}</div>
+                      )}
                       <p className="text-xs font-bold truncate">{item.name}</p>
                       <Badge className={`mt-1 text-[7px] bg-gradient-to-r ${rc.color} border-0 text-white`}>{rc.label}</Badge>
                     </motion.div>
