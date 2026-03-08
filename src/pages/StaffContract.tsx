@@ -610,7 +610,7 @@ const StaffContract = () => {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     doc.text(`Name: ${contractData.serverOwner}`, margin + 3, yPos + sigBoxHeight + 8);
-    doc.text(`Date: ${ownerSignedAt ? format(new Date(ownerSignedAt), 'dd/MM/yyyy HH:mm') : '____________________'}`, margin + 3, yPos + sigBoxHeight + 13);
+    doc.text(`Date: ${ownerSignedAt ? safeFormatDate(ownerSignedAt, 'dd/MM/yyyy HH:mm') : '____________________'}`, margin + 3, yPos + sigBoxHeight + 13);
 
     const partyBX = margin + sigBoxWidth + 10;
     doc.rect(partyBX, yPos, sigBoxWidth, sigBoxHeight + 25);
