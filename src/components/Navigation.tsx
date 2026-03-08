@@ -551,30 +551,6 @@ const Navigation = () => {
                     <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
                       <Link to="/gallery">Gallery</Link>
                     </Button>
-                    <Button
-                      variant="outline"
-                      className="justify-start border-border bg-muted/40 text-foreground hover:bg-accent"
-                      asChild
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <Link to="/cinema-hub" className="flex items-center">
-                        <Tv className="w-4 h-4 mr-2 text-primary" />
-                        Cinema Hub
-                      </Link>
-                    </Button>
-                    {showMemorialLink && (
-                      <Button
-                        variant="outline"
-                        className="justify-start border-border bg-muted/40 text-foreground hover:bg-accent"
-                        asChild
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        <Link to="/memorial" className="flex items-center">
-                          <Flame className="w-4 h-4 mr-2 text-primary" />
-                          Graveyard
-                        </Link>
-                      </Button>
-                    )}
                     <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
                       <Link to="/staff">Staff</Link>
                     </Button>
