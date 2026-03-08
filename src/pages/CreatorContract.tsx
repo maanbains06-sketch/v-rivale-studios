@@ -679,7 +679,7 @@ const CreatorContract = () => {
     yPos = 20;
 
     // ========== OBLIGATIONS SECTION ==========
-    yPos = drawSectionHeader('Creator Obligations', yPos);
+    yPos = drawContractSectionHeader('Creator Obligations', yPos);
 
     doc.setDrawColor(...black);
     doc.setLineWidth(0.3);
