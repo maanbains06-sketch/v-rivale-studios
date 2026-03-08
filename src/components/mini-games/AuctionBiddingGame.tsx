@@ -950,7 +950,11 @@ const AuctionBiddingGame = ({ onBack, submitScore, GameShell, StartScreen, EndSc
                 >
                   {revealed ? (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-                      <div className="text-3xl mb-2">{item.emoji}</div>
+                      {getItemImage(item.name) ? (
+                        <img src={getItemImage(item.name)!} alt={item.name} className="w-16 h-16 mx-auto object-contain mb-2 rounded-lg" />
+                      ) : (
+                        <div className="text-3xl mb-2">{item.emoji}</div>
+                      )}
                       <p className="text-xs font-bold truncate">{item.name}</p>
                       <motion.p initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.4, type: "spring" }}
                         className={`text-sm font-mono font-black mt-1 ${rc.text}`}>{fmt(item.value)}</motion.p>
