@@ -2807,6 +2807,22 @@ const OwnerPanel = () => {
             </Card>
           </TabsContent>
 
+          {/* Memorial Tab */}
+          <TabsContent value="memorial">
+            <Card className="glass-effect border-border/20">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Flame className="w-5 h-5 text-amber-500" />
+                  <CardTitle className="text-gradient">Digital Memorial</CardTitle>
+                </div>
+                <CardDescription>Manage the Graveyard page — honor perma-died characters with memorials</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <OwnerMemorialManager />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
         </Tabs>
       </div>
 
