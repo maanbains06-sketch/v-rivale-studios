@@ -1544,7 +1544,7 @@ const CreatorContract = () => {
                           <div className="mt-3 p-2 bg-emerald-500/10 rounded border border-emerald-500/30">
                             <p className="text-xs text-emerald-400">
                               <CheckCircle className="h-3 w-3 inline mr-1" />
-                              Signed on: {format(new Date(creatorSignedAt), 'dd MMM yyyy, HH:mm:ss')}
+                              Signed on: {safeFormatDate(creatorSignedAt, 'dd MMM yyyy, HH:mm:ss')}
                             </p>
                             <p className="text-xs text-emerald-400/70">By: {contractData.creatorName || 'Creator'}</p>
                           </div>
