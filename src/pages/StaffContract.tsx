@@ -292,6 +292,15 @@ const StaffContract = () => {
 
   const getActivePolicies = (policies: PolicyItem[]) => policies.filter(p => p.enabled && p.text.trim());
 
+  const safeFormatDate = (dateStr: string | null | undefined, fmt: string = 'dd MMM yyyy') => {
+    if (!dateStr) return '[Not set]';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return '[Invalid date]';
+      return format(d, fmt);
+    } catch { return '[Invalid date]'; }
+  };
+
   const handleSelectContract = (contract: any) => {
     try {
       setSelectedContractId(contract.id);
