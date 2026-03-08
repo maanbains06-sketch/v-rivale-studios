@@ -43,6 +43,7 @@ const CinemaHub = () => {
   const [createOpen, setCreateOpen] = useState(false);
   const [roomName, setRoomName] = useState("");
   const [creating, setCreating] = useState(false);
+  const [liveVisitorCount, setLiveVisitorCount] = useState(1);
   const { toast } = useToast();
 
   useEffect(() => {
