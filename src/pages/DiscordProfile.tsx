@@ -284,7 +284,11 @@ const DiscordProfile = () => {
                 <div className="pt-12 md:pt-16">
                   <div className="flex flex-wrap items-center gap-3 mb-2">
                     <CardTitle className="text-2xl md:text-3xl font-bold">
-                      {getDiscordName()}
+                      <StyledUsername
+                        userId={user?.id}
+                        username={getDiscordName()}
+                        showBadge={true}
+                      />
                     </CardTitle>
                     <Badge className="bg-[#5865F2] hover:bg-[#5865F2] text-white">
                       <CheckCircle className="w-3 h-3 mr-1" />
