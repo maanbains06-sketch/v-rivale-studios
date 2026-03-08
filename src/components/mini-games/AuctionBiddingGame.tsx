@@ -10,6 +10,84 @@ import {
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
+// ─── Item Images ─────────────────────────────────────────
+import picassoImg from "@/assets/bidwars/picasso-sketch.png";
+import ferrariImg from "@/assets/bidwars/ferrari-engine.png";
+import mantleImg from "@/assets/bidwars/mantle-card.png";
+import romanImg from "@/assets/bidwars/roman-artifact.png";
+import elvisImg from "@/assets/bidwars/elvis-record.png";
+import moonImg from "@/assets/bidwars/moon-rock.png";
+import diamondImg from "@/assets/bidwars/diamond-ring.png";
+import rolexImg from "@/assets/bidwars/rolex-watch.png";
+import goldImg from "@/assets/bidwars/gold-bars.png";
+import fabergeImg from "@/assets/bidwars/faberge-egg.png";
+import motorcycleImg from "@/assets/bidwars/vintage-motorcycle.png";
+import carKeysImg from "@/assets/bidwars/car-keys.png";
+import coinImg from "@/assets/bidwars/coin-collection.png";
+import samuraiImg from "@/assets/bidwars/samurai-sword.png";
+import paintingImg from "@/assets/bidwars/oil-painting.png";
+import pocketWatchImg from "@/assets/bidwars/pocket-watch.png";
+import baseballImg from "@/assets/bidwars/signed-baseball.png";
+import cameraImg from "@/assets/bidwars/vintage-camera.png";
+import wineImg from "@/assets/bidwars/vintage-wine.png";
+import bookImg from "@/assets/bidwars/first-edition-book.png";
+import radioImg from "@/assets/bidwars/vintage-radio.png";
+import clockImg from "@/assets/bidwars/antique-clock.png";
+import guitarImg from "@/assets/bidwars/guitar.png";
+import toolsImg from "@/assets/bidwars/power-tools.png";
+import telescopeImg from "@/assets/bidwars/telescope.png";
+import vaseImg from "@/assets/bidwars/antique-vase.png";
+import chessImg from "@/assets/bidwars/chess-set.png";
+import brokenTvImg from "@/assets/bidwars/broken-tv.png";
+import toolboxImg from "@/assets/bidwars/rusty-toolbox.png";
+import vhsImg from "@/assets/bidwars/vhs-tapes.png";
+import silverwareImg from "@/assets/bidwars/silverware.png";
+import jacketImg from "@/assets/bidwars/leather-jacket.png";
+import vinylImg from "@/assets/bidwars/vinyl-records.png";
+import typewriterImg from "@/assets/bidwars/typewriter.png";
+import campingImg from "@/assets/bidwars/camping-gear.png";
+
+// Map item names to images
+const ITEM_IMAGES: Record<string, string> = {
+  "Picasso Sketch": picassoImg,
+  "Vintage Ferrari Engine": ferrariImg,
+  "Mickey Mantle Card": mantleImg,
+  "Ancient Roman Artifact": romanImg,
+  "Elvis' Gold Record": elvisImg,
+  "NASA Moon Rock": moonImg,
+  "Diamond Ring": diamondImg,
+  "Rolex Watch": rolexImg,
+  "Gold Bars (2)": goldImg,
+  "Fabergé Egg": fabergeImg,
+  "Vintage Motorcycle": motorcycleImg,
+  "Sports Car Keys": carKeysImg,
+  "Rare Coin Collection": coinImg,
+  "Samurai Sword": samuraiImg,
+  "Oil Painting": paintingImg,
+  "Gold Pocket Watch": pocketWatchImg,
+  "Signed Baseball": baseballImg,
+  "Vintage Camera": cameraImg,
+  "Vintage Wine Case": wineImg,
+  "First Edition Book": bookImg,
+  "Vintage Radio": radioImg,
+  "Antique Clock": clockImg,
+  "Guitar": guitarImg,
+  "Power Tools": toolsImg,
+  "Brass Telescope": telescopeImg,
+  "Antique Vase": vaseImg,
+  "Ivory Chess Set": chessImg,
+  "Broken TV": brokenTvImg,
+  "Rusty Toolbox": toolboxImg,
+  "VHS Tapes": vhsImg,
+  "Silverware Set": silverwareImg,
+  "Leather Jacket": jacketImg,
+  "Vinyl Records": vinylImg,
+  "Typewriter": typewriterImg,
+  "Camping Gear": campingImg,
+};
+
+const getItemImage = (name: string): string | null => ITEM_IMAGES[name] || null;
+
 // ─── Types ───────────────────────────────────────────────
 interface CrateItem {
   name: string;
