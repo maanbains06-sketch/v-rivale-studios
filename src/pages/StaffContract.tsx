@@ -544,7 +544,7 @@ const StaffContract = () => {
         localCheckPageBreak(8);
         const lines = doc.splitTextToSize(`${i + 1}. ${p.text}`, contentWidth - 10);
         lines.forEach((line: string) => {
-          checkPageBreak(5);
+          localCheckPageBreak(5);
           doc.text(line, margin + 3, yPos + 4);
           yPos += 4;
         });
