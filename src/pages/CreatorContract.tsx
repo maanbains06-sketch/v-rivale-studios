@@ -732,7 +732,7 @@ const CreatorContract = () => {
     });
     yPos += 38;
 
-    yPos = drawSectionHeader('Termination Clause', yPos);
+    yPos = drawContractSectionHeader('Termination Clause', yPos);
 
     doc.setTextColor(...black);  // Reset text color after header
     doc.setDrawColor(...black);
