@@ -316,16 +316,37 @@ const CreatorContract = () => {
     return contractData.specialTermsList.filter(term => term.enabled && term.text.trim());
   };
 
+  const safeFormatDate = (dateStr: string | null | undefined, fmt: string = 'dd MMM yyyy') => {
+    if (!dateStr) return '[Not set]';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return '[Invalid date]';
+      return format(d, fmt);
+    } catch { return '[Invalid date]'; }
+  };
+
   const handleSelectContract = (contract: any) => {
-    setSelectedContractId(contract.id);
-    const data = contract.contract_data as ContractData;
-    setContractData({ ...defaultContractData, ...data });
-    setContractStatus(contract.status);
-    setOwnerSignature(contract.owner_signature);
-    setOwnerSignedAt(contract.owner_signed_at);
-    setCreatorSignature(contract.creator_signature);
-    setCreatorSignedAt(contract.creator_signed_at);
-    setIsEditing(false);
+    try {
+      setSelectedContractId(contract.id);
+      let data: Partial<ContractData> = {};
+      if (contract.contract_data) {
+        if (typeof contract.contract_data === 'string') {
+          try { data = JSON.parse(contract.contract_data); } catch { data = {}; }
+        } else {
+          data = contract.contract_data as Partial<ContractData>;
+        }
+      }
+      setContractData({ ...defaultContractData, ...data });
+      setContractStatus(contract.status || "draft");
+      setOwnerSignature(contract.owner_signature || null);
+      setOwnerSignedAt(contract.owner_signed_at || null);
+      setCreatorSignature(contract.creator_signature || null);
+      setCreatorSignedAt(contract.creator_signed_at || null);
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error loading contract:", error);
+      toast({ title: "Error loading contract", description: "Could not parse contract data.", variant: "destructive" });
+    }
   };
 
   const handleSelectTemplate = (template: any) => {
@@ -605,8 +626,8 @@ const CreatorContract = () => {
     const quarterWidth = contentWidth / 4 - 3;
     
     drawFormField('Duration', contractData.contractDuration, margin, yPos, quarterWidth + 15);
-    drawFormField('Start Date', format(new Date(contractData.startDate), 'dd/MM/yyyy'), margin + quarterWidth + 18, yPos, quarterWidth + 15);
-    drawFormField('End Date', format(new Date(contractData.endDate), 'dd/MM/yyyy'), margin + (quarterWidth + 18) * 2, yPos, quarterWidth + 14);
+    drawFormField('Start Date', safeFormatDate(contractData.startDate, 'dd/MM/yyyy'), margin + quarterWidth + 18, yPos, quarterWidth + 15);
+    drawFormField('End Date', safeFormatDate(contractData.endDate, 'dd/MM/yyyy'), margin + (quarterWidth + 18) * 2, yPos, quarterWidth + 14);
     yPos += 10;
     
     drawFormField('Exclusivity', contractData.exclusivityClause, margin, yPos, contentWidth);
@@ -844,7 +865,7 @@ const CreatorContract = () => {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     doc.text(`Name: ${contractData.serverOwner}`, margin + 3, yPos + sigBoxHeight + 8);
-    doc.text(`Date: ${ownerSignedAt ? format(new Date(ownerSignedAt), 'dd/MM/yyyy HH:mm') : '____________________'}`, margin + 3, yPos + sigBoxHeight + 13);
+    doc.text(`Date: ${ownerSignedAt ? safeFormatDate(ownerSignedAt, 'dd/MM/yyyy HH:mm') : '____________________'}`, margin + 3, yPos + sigBoxHeight + 13);
     doc.text('Authorized Signature', margin + 3, yPos + sigBoxHeight + 18);
 
     // Party B Signature Box
@@ -877,7 +898,7 @@ const CreatorContract = () => {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     doc.text(`Name: ${contractData.creatorName || '____________________'}`, partyBX + 3, yPos + sigBoxHeight + 8);
-    doc.text(`Date: ${creatorSignedAt ? format(new Date(creatorSignedAt), 'dd/MM/yyyy HH:mm') : '____________________'}`, partyBX + 3, yPos + sigBoxHeight + 13);
+    doc.text(`Date: ${creatorSignedAt ? safeFormatDate(creatorSignedAt, 'dd/MM/yyyy HH:mm') : '____________________'}`, partyBX + 3, yPos + sigBoxHeight + 13);
     doc.text('Creator Signature', partyBX + 3, yPos + sigBoxHeight + 18);
 
     // Footer
@@ -1212,11 +1233,11 @@ const CreatorContract = () => {
                           </div>
                           <div className="bg-muted/50 p-4 rounded-lg text-center border border-border">
                             <p className="text-xs text-muted-foreground uppercase font-semibold">Start Date</p>
-                            <p className="font-bold text-foreground">{format(new Date(contractData.startDate), 'dd MMM yyyy')}</p>
+                            <p className="font-bold text-foreground">{safeFormatDate(contractData.startDate)}</p>
                           </div>
                           <div className="bg-muted/50 p-4 rounded-lg text-center border border-border">
                             <p className="text-xs text-muted-foreground uppercase font-semibold">End Date</p>
-                            <p className="font-bold text-foreground">{format(new Date(contractData.endDate), 'dd MMM yyyy')}</p>
+                            <p className="font-bold text-foreground">{safeFormatDate(contractData.endDate)}</p>
                           </div>
                           <div className="bg-muted/50 p-4 rounded-lg text-center border border-border">
                             <p className="text-xs text-muted-foreground uppercase font-semibold">Exclusivity</p>
@@ -1494,7 +1515,7 @@ const CreatorContract = () => {
                           <div className="mt-3 p-2 bg-emerald-500/10 rounded border border-emerald-500/30">
                             <p className="text-xs text-emerald-400">
                               <CheckCircle className="h-3 w-3 inline mr-1" />
-                              Signed on: {format(new Date(ownerSignedAt), 'dd MMM yyyy, HH:mm:ss')}
+                              Signed on: {safeFormatDate(ownerSignedAt, 'dd MMM yyyy, HH:mm:ss')}
                             </p>
                             <p className="text-xs text-emerald-400/70">By: {contractData.serverOwner}</p>
                           </div>
@@ -1523,7 +1544,7 @@ const CreatorContract = () => {
                           <div className="mt-3 p-2 bg-emerald-500/10 rounded border border-emerald-500/30">
                             <p className="text-xs text-emerald-400">
                               <CheckCircle className="h-3 w-3 inline mr-1" />
-                              Signed on: {format(new Date(creatorSignedAt), 'dd MMM yyyy, HH:mm:ss')}
+                              Signed on: {safeFormatDate(creatorSignedAt, 'dd MMM yyyy, HH:mm:ss')}
                             </p>
                             <p className="text-xs text-emerald-400/70">By: {contractData.creatorName || 'Creator'}</p>
                           </div>

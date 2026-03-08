@@ -292,6 +292,15 @@ const StaffContract = () => {
 
   const getActivePolicies = (policies: PolicyItem[]) => policies.filter(p => p.enabled && p.text.trim());
 
+  const safeFormatDate = (dateStr: string | null | undefined, fmt: string = 'dd MMM yyyy') => {
+    if (!dateStr) return '[Not set]';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return '[Invalid date]';
+      return format(d, fmt);
+    } catch { return '[Invalid date]'; }
+  };
+
   const handleSelectContract = (contract: any) => {
     try {
       setSelectedContractId(contract.id);
@@ -524,13 +533,13 @@ const StaffContract = () => {
     drawFormField('Discord ID', contractData.staffDiscord || '[To be filled]', margin + halfWidth + 4, yPos, halfWidth);
     yPos += 10;
     drawFormField('Email', contractData.staffEmail || '[To be filled]', margin, yPos, halfWidth);
-    drawFormField('Join Date', contractData.staffJoinDate ? format(new Date(contractData.staffJoinDate), 'dd/MM/yyyy') : '', margin + halfWidth + 4, yPos, halfWidth);
+    drawFormField('Join Date', contractData.staffJoinDate ? safeFormatDate(contractData.staffJoinDate, 'dd/MM/yyyy') : '', margin + halfWidth + 4, yPos, halfWidth);
     yPos += 15;
 
     drawSectionHeader('Contract Period', '📅');
     drawFormField('Duration', contractData.contractDuration, margin, yPos, contentWidth / 3 - 2);
-    drawFormField('Start Date', format(new Date(contractData.startDate), 'dd/MM/yyyy'), margin + contentWidth / 3 + 1, yPos, contentWidth / 3 - 2);
-    drawFormField('End Date', format(new Date(contractData.endDate), 'dd/MM/yyyy'), margin + (contentWidth / 3 + 1) * 2, yPos, contentWidth / 3 - 2);
+    drawFormField('Start Date', safeFormatDate(contractData.startDate, 'dd/MM/yyyy'), margin + contentWidth / 3 + 1, yPos, contentWidth / 3 - 2);
+    drawFormField('End Date', safeFormatDate(contractData.endDate, 'dd/MM/yyyy'), margin + (contentWidth / 3 + 1) * 2, yPos, contentWidth / 3 - 2);
     yPos += 15;
 
     const renderPolicies = (title: string, icon: string, policies: PolicyItem[]) => {
@@ -601,7 +610,7 @@ const StaffContract = () => {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     doc.text(`Name: ${contractData.serverOwner}`, margin + 3, yPos + sigBoxHeight + 8);
-    doc.text(`Date: ${ownerSignedAt ? format(new Date(ownerSignedAt), 'dd/MM/yyyy HH:mm') : '____________________'}`, margin + 3, yPos + sigBoxHeight + 13);
+    doc.text(`Date: ${ownerSignedAt ? safeFormatDate(ownerSignedAt, 'dd/MM/yyyy HH:mm') : '____________________'}`, margin + 3, yPos + sigBoxHeight + 13);
 
     const partyBX = margin + sigBoxWidth + 10;
     doc.rect(partyBX, yPos, sigBoxWidth, sigBoxHeight + 25);
@@ -616,7 +625,7 @@ const StaffContract = () => {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     doc.text(`Name: ${contractData.staffName || '____________________'}`, partyBX + 3, yPos + sigBoxHeight + 8);
-    doc.text(`Date: ${staffSignedAt ? format(new Date(staffSignedAt), 'dd/MM/yyyy HH:mm') : '____________________'}`, partyBX + 3, yPos + sigBoxHeight + 13);
+    doc.text(`Date: ${staffSignedAt ? safeFormatDate(staffSignedAt, 'dd/MM/yyyy HH:mm') : '____________________'}`, partyBX + 3, yPos + sigBoxHeight + 13);
 
     const totalPages = doc.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
@@ -814,7 +823,7 @@ const StaffContract = () => {
                     </Badge>
                   </div>
                   <div className="mt-3 flex items-center justify-center gap-4 text-sm text-muted-foreground relative z-10">
-                    <span>Date: {format(new Date(), 'dd MMMM yyyy')}</span>
+                    <span>Date: {safeFormatDate(new Date().toISOString(), 'dd MMMM yyyy')}</span>
                     {selectedContractId && <span className="text-destructive">•</span>}
                     {selectedContractId && <span>ID: {selectedContractId.slice(0, 8)}...</span>}
                   </div>
@@ -900,7 +909,7 @@ const StaffContract = () => {
                             <p><span className="font-bold text-muted-foreground">Discord:</span> <span className="text-foreground">{contractData.staffDiscord || '[To be filled]'}</span></p>
                             <p><span className="font-bold text-muted-foreground">Role:</span> <span className="text-foreground">{contractData.staffRole}</span></p>
                             <p><span className="font-bold text-muted-foreground">Department:</span> <span className="text-foreground">{contractData.staffDepartment}</span></p>
-                            <p><span className="font-bold text-muted-foreground">Join Date:</span> <span className="text-foreground">{contractData.staffJoinDate ? format(new Date(contractData.staffJoinDate), 'dd MMM yyyy') : '[To be filled]'}</span></p>
+                            <p><span className="font-bold text-muted-foreground">Join Date:</span> <span className="text-foreground">{contractData.staffJoinDate ? safeFormatDate(contractData.staffJoinDate) : '[To be filled]'}</span></p>
                           </div>
                         )}
                       </div>
@@ -933,8 +942,8 @@ const StaffContract = () => {
                     ) : (
                       <div className="grid md:grid-cols-3 gap-4 text-sm">
                         <div className="bg-muted/50 p-3 rounded-lg border border-border"><span className="font-bold text-muted-foreground block text-xs">Duration</span><span className="text-foreground">{contractData.contractDuration}</span></div>
-                        <div className="bg-muted/50 p-3 rounded-lg border border-border"><span className="font-bold text-muted-foreground block text-xs">Start Date</span><span className="text-foreground">{format(new Date(contractData.startDate), 'dd MMM yyyy')}</span></div>
-                        <div className="bg-muted/50 p-3 rounded-lg border border-border"><span className="font-bold text-muted-foreground block text-xs">End Date</span><span className="text-foreground">{format(new Date(contractData.endDate), 'dd MMM yyyy')}</span></div>
+                        <div className="bg-muted/50 p-3 rounded-lg border border-border"><span className="font-bold text-muted-foreground block text-xs">Start Date</span><span className="text-foreground">{safeFormatDate(contractData.startDate)}</span></div>
+                        <div className="bg-muted/50 p-3 rounded-lg border border-border"><span className="font-bold text-muted-foreground block text-xs">End Date</span><span className="text-foreground">{safeFormatDate(contractData.endDate)}</span></div>
                       </div>
                     )}
                   </section>
@@ -1012,7 +1021,7 @@ const StaffContract = () => {
                             </div>
                             <div className="text-xs text-muted-foreground space-y-1">
                               <p><strong>Signed by:</strong> {contractData.serverOwner}</p>
-                              {ownerSignedAt && <p><strong>Date:</strong> {format(new Date(ownerSignedAt), 'dd MMM yyyy, HH:mm')}</p>}
+                              {ownerSignedAt && <p><strong>Date:</strong> {safeFormatDate(ownerSignedAt, 'dd MMM yyyy, HH:mm')}</p>}
                             </div>
                             {isOwner && isEditing && (
                               <Button variant="outline" size="sm" onClick={() => { setOwnerSignature(null); setOwnerSignedAt(null); }} className="w-full border-border text-xs">
@@ -1040,7 +1049,7 @@ const StaffContract = () => {
                             </div>
                             <div className="text-xs text-muted-foreground space-y-1">
                               <p><strong>Signed by:</strong> {contractData.staffName}</p>
-                              {staffSignedAt && <p><strong>Date:</strong> {format(new Date(staffSignedAt), 'dd MMM yyyy, HH:mm')}</p>}
+                              {staffSignedAt && <p><strong>Date:</strong> {safeFormatDate(staffSignedAt, 'dd MMM yyyy, HH:mm')}</p>}
                             </div>
                             {isOwner && isEditing && (
                               <Button variant="outline" size="sm" onClick={() => { setStaffSignature(null); setStaffSignedAt(null); setContractStatus('draft'); }} className="w-full border-border text-xs">
