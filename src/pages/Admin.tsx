@@ -2211,6 +2211,11 @@ const Admin = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Suggestions Tab */}
+          <TabsContent value="suggestions">
+            <AdminSuggestionsTab />
+          </TabsContent>
         </Tabs>
       </div>
 
