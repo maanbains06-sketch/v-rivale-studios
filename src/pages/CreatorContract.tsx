@@ -1233,7 +1233,7 @@ const CreatorContract = () => {
                           </div>
                           <div className="bg-muted/50 p-4 rounded-lg text-center border border-border">
                             <p className="text-xs text-muted-foreground uppercase font-semibold">Start Date</p>
-                            <p className="font-bold text-foreground">{format(new Date(contractData.startDate), 'dd MMM yyyy')}</p>
+                            <p className="font-bold text-foreground">{safeFormatDate(contractData.startDate)}</p>
                           </div>
                           <div className="bg-muted/50 p-4 rounded-lg text-center border border-border">
                             <p className="text-xs text-muted-foreground uppercase font-semibold">End Date</p>
