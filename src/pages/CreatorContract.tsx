@@ -507,7 +507,7 @@ const CreatorContract = () => {
     // Branded Header
     drawHeader(doc, 'CONTENT CREATOR AGREEMENT', 'Official Contract Document');
 
-    yPos = 45;
+    yPos = 50;
 
     // Contract Info Row
     doc.setTextColor(...black);
