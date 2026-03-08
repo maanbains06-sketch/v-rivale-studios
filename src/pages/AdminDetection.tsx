@@ -831,51 +831,14 @@ const AdminDetection = () => {
               y = drawDocumentRef(doc, d.id.substring(0, 8).toUpperCase(), y, margin);
               y += 3;
 
-              // Detection summary box
-              const boxH = 22;
-              doc.setFillColor(...PDF_COLORS.lightBg);
-              doc.roundedRect(margin, y, contentWidth, boxH, 2, 2, 'F');
-              doc.setDrawColor(...PDF_COLORS.border);
-              doc.setLineWidth(0.3);
-              doc.roundedRect(margin, y, contentWidth, boxH, 2, 2, 'S');
-
-              doc.setFont('helvetica', 'bold');
-              doc.setFontSize(8);
-              doc.setTextColor(...PDF_COLORS.textSecondary);
-              doc.text('Detection Type', margin + 5, y + 7);
-              doc.setFont('helvetica', 'normal');
-              doc.setFontSize(9);
-              doc.setTextColor(...PDF_COLORS.text);
-              doc.text(isIp ? 'IP Address Match' : 'Device Fingerprint Match', margin + 5, y + 13);
-
-              doc.setFont('helvetica', 'bold');
-              doc.setFontSize(8);
-              doc.setTextColor(...PDF_COLORS.textSecondary);
-              doc.text('Confidence', margin + 75, y + 7);
-              doc.setFont('helvetica', 'normal');
-              doc.setFontSize(10);
+              // Premium summary card
               const confColor = d.confidence_score >= 80 ? PDF_COLORS.error : d.confidence_score >= 50 ? PDF_COLORS.warning : PDF_COLORS.accent;
-              doc.setTextColor(...confColor);
-              doc.text(`${d.confidence_score}%`, margin + 75, y + 13);
-
-              doc.setFont('helvetica', 'bold');
-              doc.setFontSize(8);
-              doc.setTextColor(...PDF_COLORS.textSecondary);
-              doc.text('Status', margin + 120, y + 7);
-              doc.setFont('helvetica', 'normal');
-              doc.setFontSize(9);
-              doc.setTextColor(...PDF_COLORS.text);
-              doc.text(d.status.toUpperCase(), margin + 120, y + 13);
-
-              doc.setFont('helvetica', 'bold');
-              doc.setFontSize(8);
-              doc.setTextColor(...PDF_COLORS.textSecondary);
-              doc.text('Detected', margin + 5, y + 18);
-              doc.setFont('helvetica', 'normal');
-              doc.setFontSize(8);
-              doc.setTextColor(...PDF_COLORS.text);
-              doc.text(new Date(d.created_at).toLocaleString(), margin + 30, y + 18);
-              y += boxH + 8;
+              y = drawSummaryCard(doc, [
+                { label: 'Detection Type', value: isIp ? 'IP Address Match' : 'Device Fingerprint Match' },
+                { label: 'Confidence Score', value: `${d.confidence_score}%`, color: confColor, bold: true },
+                { label: 'Status', value: d.status.toUpperCase(), bold: true },
+                { label: 'Detected At', value: new Date(d.created_at).toLocaleString() },
+              ], y, margin, { text: d.confidence_score >= 80 ? 'HIGH RISK' : d.confidence_score >= 50 ? 'MEDIUM' : 'LOW', color: confColor });
 
               // Primary Account section
               y = drawSectionHeader(doc, 'Primary Account', y, margin, contentWidth);
