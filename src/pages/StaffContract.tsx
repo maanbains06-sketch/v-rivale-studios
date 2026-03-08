@@ -14,6 +14,7 @@ import { ArrowLeft, Download, Edit2, Save, X, Plus, Shield, CheckCircle, Clock, 
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import jsPDF from "jspdf";
+import { PDF_COLORS, drawHeader, drawFooter } from "@/lib/pdfStyles";
 import SignaturePad from "@/components/SignaturePad";
 import StaffContractsList from "@/components/StaffContractsList";
 
@@ -453,36 +454,22 @@ const StaffContract = () => {
     const contentWidth = pageWidth - (margin * 2);
     let yPos = 0;
 
-    const headerBg: [number, number, number] = [20, 30, 48];
-    const red: [number, number, number] = [220, 50, 50];
-    const black: [number, number, number] = [0, 0, 0];
-    const gray: [number, number, number] = [100, 100, 100];
-    const lightGray: [number, number, number] = [230, 230, 230];
-    const darkRed: [number, number, number] = [180, 30, 30];
+    const headerBg: [number, number, number] = PDF_COLORS.headerBg;
+    const black: [number, number, number] = PDF_COLORS.black;
+    const gray: [number, number, number] = PDF_COLORS.textSecondary;
+    const lightGray: [number, number, number] = PDF_COLORS.lightBg;
 
-    const checkPageBreak = (needed: number) => {
+    const localCheckPageBreak = (needed: number) => {
       if (yPos + needed > pageHeight - 20) {
         doc.addPage();
         yPos = 20;
       }
     };
 
-    doc.setFillColor(...headerBg);
-    doc.rect(0, 0, pageWidth, 40, 'F');
-    doc.setFillColor(...red);
-    doc.rect(0, 40, pageWidth, 3, 'F');
+    // Branded header
+    drawHeader(doc, 'STAFF & ADMINISTRATOR AGREEMENT', 'Confidential — Non-Disclosure Agreement');
 
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(20);
-    doc.setFont('helvetica', 'bold');
-    doc.text('SKYLIFE ROLEPLAY INDIA', pageWidth / 2, 15, { align: 'center' });
-    doc.setFontSize(12);
-    doc.text('STAFF & ADMINISTRATOR AGREEMENT', pageWidth / 2, 25, { align: 'center' });
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    doc.text('CONFIDENTIAL — NON-DISCLOSURE AGREEMENT', pageWidth / 2, 34, { align: 'center' });
-
-    yPos = 52;
+    yPos = 50;
 
     doc.setTextColor(...black);
     doc.setFontSize(8);
@@ -490,14 +477,18 @@ const StaffContract = () => {
     doc.text(`Date: ${format(new Date(), 'dd/MM/yyyy')}`, pageWidth - margin - 30, yPos);
     yPos += 8;
 
-    const drawSectionHeader = (title: string, icon: string) => {
-      checkPageBreak(15);
-      doc.setFillColor(...darkRed);
-      doc.rect(margin, yPos, contentWidth, 8, 'F');
+    const drawStaffSectionHeader = (title: string, icon: string) => {
+      localCheckPageBreak(15);
+      // Accent bar
+      doc.setFillColor(...PDF_COLORS.accent);
+      doc.rect(margin, yPos, 3, 8, 'F');
+      // Header bg
+      doc.setFillColor(...headerBg);
+      doc.rect(margin + 3, yPos, contentWidth - 3, 8, 'F');
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
-      doc.text(`${icon} ${title.toUpperCase()}`, margin + 3, yPos + 5.5);
+      doc.text(`${icon} ${title.toUpperCase()}`, margin + 7, yPos + 5.5);
       yPos += 10;
     };
 
@@ -516,7 +507,7 @@ const StaffContract = () => {
       doc.text(value || '', x + 42, y + 5.5);
     };
 
-    drawSectionHeader('Party A - Server Management', '⚡');
+    drawStaffSectionHeader('Party A - Server Management', '⚡');
     const halfWidth = contentWidth / 2 - 2;
     drawFormField('Organization', contractData.serverName, margin, yPos, halfWidth);
     drawFormField('Representative', contractData.serverOwner, margin + halfWidth + 4, yPos, halfWidth);
@@ -525,7 +516,7 @@ const StaffContract = () => {
     drawFormField('Discord', contractData.serverDiscord, margin + halfWidth + 4, yPos, halfWidth);
     yPos += 15;
 
-    drawSectionHeader('Party B - Staff Member', '👤');
+    drawStaffSectionHeader('Party B - Staff Member', '👤');
     drawFormField('Full Name', contractData.staffName || '[To be filled]', margin, yPos, halfWidth);
     drawFormField('Role/Position', contractData.staffRole, margin + halfWidth + 4, yPos, halfWidth);
     yPos += 10;
@@ -536,7 +527,7 @@ const StaffContract = () => {
     drawFormField('Join Date', contractData.staffJoinDate ? safeFormatDate(contractData.staffJoinDate, 'dd/MM/yyyy') : '', margin + halfWidth + 4, yPos, halfWidth);
     yPos += 15;
 
-    drawSectionHeader('Contract Period', '📅');
+    drawStaffSectionHeader('Contract Period', '📅');
     drawFormField('Duration', contractData.contractDuration, margin, yPos, contentWidth / 3 - 2);
     drawFormField('Start Date', safeFormatDate(contractData.startDate, 'dd/MM/yyyy'), margin + contentWidth / 3 + 1, yPos, contentWidth / 3 - 2);
     drawFormField('End Date', safeFormatDate(contractData.endDate, 'dd/MM/yyyy'), margin + (contentWidth / 3 + 1) * 2, yPos, contentWidth / 3 - 2);
@@ -545,15 +536,15 @@ const StaffContract = () => {
     const renderPolicies = (title: string, icon: string, policies: PolicyItem[]) => {
       const active = getActivePolicies(policies);
       if (active.length === 0) return;
-      drawSectionHeader(title, icon);
+      drawStaffSectionHeader(title, icon);
       doc.setTextColor(...black);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(7);
       active.forEach((p, i) => {
-        checkPageBreak(8);
+        localCheckPageBreak(8);
         const lines = doc.splitTextToSize(`${i + 1}. ${p.text}`, contentWidth - 10);
         lines.forEach((line: string) => {
-          checkPageBreak(5);
+          localCheckPageBreak(5);
           doc.text(line, margin + 3, yPos + 4);
           yPos += 4;
         });
@@ -571,21 +562,21 @@ const StaffContract = () => {
     renderPolicies('Server Assets & Intellectual Property', '🔐', contractData.serverAssetPolicies || []);
     renderPolicies('Emergency Protocols', '🚨', contractData.emergencyPolicies || []);
 
-    checkPageBreak(30);
-    drawSectionHeader('Disciplinary Action & Consequences', '⚠️');
+    localCheckPageBreak(30);
+    drawStaffSectionHeader('Disciplinary Action & Consequences', '⚠️');
     doc.setTextColor(...black);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     const discLines = doc.splitTextToSize(contractData.disciplinaryAction, contentWidth - 10);
     discLines.forEach((line: string) => {
-      checkPageBreak(5);
+      localCheckPageBreak(5);
       doc.text(line, margin + 3, yPos + 4);
       yPos += 4;
     });
     yPos += 10;
 
-    checkPageBreak(70);
-    drawSectionHeader('Signatures & Acknowledgement', '✍️');
+    localCheckPageBreak(70);
+    drawStaffSectionHeader('Signatures & Acknowledgement', '✍️');
     doc.setFont('helvetica', 'italic');
     doc.setFontSize(7);
     doc.setTextColor(...gray);
@@ -627,18 +618,7 @@ const StaffContract = () => {
     doc.text(`Name: ${contractData.staffName || '____________________'}`, partyBX + 3, yPos + sigBoxHeight + 8);
     doc.text(`Date: ${staffSignedAt ? safeFormatDate(staffSignedAt, 'dd/MM/yyyy HH:mm') : '____________________'}`, partyBX + 3, yPos + sigBoxHeight + 13);
 
-    const totalPages = doc.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i);
-      doc.setDrawColor(...black);
-      doc.setLineWidth(0.5);
-      doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
-      doc.setFontSize(6);
-      doc.setTextColor(...gray);
-      doc.setFont('helvetica', 'italic');
-      doc.text('CONFIDENTIAL — Staff & Administrator Agreement | Skylife Roleplay India', pageWidth / 2, pageHeight - 10, { align: 'center' });
-      doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin, pageHeight - 5, { align: 'right' });
-    }
+    drawFooter(doc, 'Staff & Administrator Agreement — Confidential');
 
     const safeName = contractData.staffName?.replace(/\s+/g, '-') || 'Draft';
     doc.save(`SLRP-Staff-Agreement-${safeName}-${format(new Date(), 'yyyy-MM-dd')}.pdf`);

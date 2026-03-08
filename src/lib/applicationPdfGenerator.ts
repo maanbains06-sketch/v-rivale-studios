@@ -1,4 +1,15 @@
 import jsPDF from 'jspdf';
+import {
+  PDF_COLORS,
+  getStatusColor,
+  formatPdfDate,
+  drawHeader,
+  drawSectionHeader,
+  drawDetailField,
+  drawFooter,
+  drawDocumentRef,
+  checkPageBreak,
+} from './pdfStyles';
 
 interface PdfField {
   label: string;
@@ -15,170 +26,106 @@ interface ApplicationPdfData {
   fields: PdfField[];
 }
 
-const PRIMARY: [number, number, number] = [59, 130, 246];
-const TEXT: [number, number, number] = [30, 30, 30];
-const LIGHT_GRAY: [number, number, number] = [245, 245, 245];
-const SUCCESS: [number, number, number] = [34, 197, 94];
-const ERROR: [number, number, number] = [239, 68, 68];
-const WARNING: [number, number, number] = [245, 158, 11];
-
-const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
-
-const getStatusColor = (status: string): [number, number, number] => {
-  switch (status) {
-    case 'approved': return SUCCESS;
-    case 'rejected': return ERROR;
-    case 'on_hold': return WARNING;
-    default: return PRIMARY;
-  }
-};
-
 export const generateApplicationPdf = (data: ApplicationPdfData) => {
   const doc = new jsPDF();
+  const margin = 15;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const contentWidth = pageWidth - margin * 2;
 
-  // Header bar
-  doc.setFillColor(...PRIMARY);
-  doc.rect(0, 0, 210, 40, 'F');
+  // Branded header
+  drawHeader(doc, data.title, 'Application Document');
 
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(24);
-  doc.setFont('helvetica', 'bold');
-  doc.text('SLRP', 105, 16, { align: 'center' });
-
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Summer Life Roleplay', 105, 24, { align: 'center' });
-
-  doc.setFontSize(10);
-  doc.text(data.title, 105, 34, { align: 'center' });
-
-  // Info box
+  // Document reference
   let yPos = 50;
-  doc.setFillColor(...LIGHT_GRAY);
-  doc.rect(15, yPos, 180, 32, 'F');
+  yPos = drawDocumentRef(doc, `APP-${Date.now().toString(36).toUpperCase()}`, yPos, margin);
 
-  doc.setTextColor(...TEXT);
+  // Application summary box
+  yPos += 2;
+  const boxHeight = 28;
+  doc.setFillColor(...PDF_COLORS.lightBg);
+  doc.roundedRect(margin, yPos, contentWidth, boxHeight, 2, 2, 'F');
+  doc.setDrawColor(...PDF_COLORS.border);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(margin, yPos, contentWidth, boxHeight, 2, 2, 'S');
+
+  // Left column
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(...PDF_COLORS.textSecondary);
+  doc.text('Applicant', margin + 5, yPos + 7);
+  doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
+  doc.setTextColor(...PDF_COLORS.text);
+  doc.text(data.applicantName, margin + 5, yPos + 13);
 
   doc.setFont('helvetica', 'bold');
-  doc.text('Applicant:', 20, yPos + 8);
+  doc.setFontSize(8);
+  doc.setTextColor(...PDF_COLORS.textSecondary);
+  doc.text('Type', margin + 5, yPos + 20);
   doc.setFont('helvetica', 'normal');
-  doc.text(data.applicantName, 55, yPos + 8);
+  doc.setFontSize(9);
+  doc.setTextColor(...PDF_COLORS.text);
+  doc.text(data.applicationType, margin + 5, yPos + 25);
 
+  // Middle column
   doc.setFont('helvetica', 'bold');
-  doc.text('Type:', 20, yPos + 16);
+  doc.setFontSize(8);
+  doc.setTextColor(...PDF_COLORS.textSecondary);
+  doc.text('Submitted', margin + 70, yPos + 7);
   doc.setFont('helvetica', 'normal');
-  doc.text(data.applicationType, 55, yPos + 16);
+  doc.setFontSize(9);
+  doc.setTextColor(...PDF_COLORS.text);
+  doc.text(formatPdfDate(data.submittedAt), margin + 70, yPos + 13);
 
-  doc.setFont('helvetica', 'bold');
-  doc.text('Submitted:', 20, yPos + 24);
-  doc.setFont('helvetica', 'normal');
-  doc.text(formatDate(data.submittedAt), 55, yPos + 24);
-
-  // Status on right side
-  doc.setFont('helvetica', 'bold');
-  doc.text('Status:', 130, yPos + 8);
+  // Status badge (right side)
   const statusColor = getStatusColor(data.status);
-  doc.setTextColor(...statusColor);
+  const statusText = data.status.toUpperCase().replace('_', ' ');
   doc.setFont('helvetica', 'bold');
-  doc.text(data.status.toUpperCase().replace('_', ' '), 155, yPos + 8);
-
-  // Fields section title
-  yPos = 92;
-  doc.setTextColor(...PRIMARY);
-  doc.setFontSize(14);
+  doc.setFontSize(8);
+  doc.setTextColor(...PDF_COLORS.textSecondary);
+  doc.text('Status', pageWidth - margin - 35, yPos + 7);
+  
+  // Status pill
+  const pillY = yPos + 11;
+  doc.setFillColor(...statusColor);
+  doc.roundedRect(pageWidth - margin - 38, pillY - 3, 33, 7, 2, 2, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
-  doc.text('Application Details', 15, yPos);
+  doc.text(statusText, pageWidth - margin - 21.5, pillY + 1.5, { align: 'center' });
 
-  yPos += 8;
-  doc.setDrawColor(...PRIMARY);
-  doc.setLineWidth(0.5);
-  doc.line(15, yPos, 195, yPos);
+  // Application Details section
+  yPos += boxHeight + 8;
+  yPos = drawSectionHeader(doc, 'Application Details', yPos, margin, contentWidth);
+  yPos += 3;
 
-  yPos += 8;
-  doc.setTextColor(...TEXT);
-  doc.setFontSize(10);
-
+  // Fields
   data.fields.forEach((field) => {
-    if (yPos > 265) {
-      doc.addPage();
-      yPos = 20;
-    }
-
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...PRIMARY);
-    doc.text(field.label, 15, yPos);
-    yPos += 5;
-
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...TEXT);
-    const value = field.value || 'N/A';
-
-    if (value.length > 90) {
-      const lines = doc.splitTextToSize(value, 175);
-      lines.forEach((line: string) => {
-        if (yPos > 275) {
-          doc.addPage();
-          yPos = 20;
-        }
-        doc.text(line, 15, yPos);
-        yPos += 5;
-      });
-      yPos += 3;
-    } else {
-      doc.text(value, 15, yPos);
-      yPos += 8;
-    }
+    yPos = checkPageBreak(doc, yPos, 15);
+    yPos = drawDetailField(doc, field.label, field.value, yPos, margin);
   });
 
-  // Admin notes section
+  // Admin Notes section
   if (data.adminNotes) {
-    if (yPos > 250) {
-      doc.addPage();
-      yPos = 20;
-    }
-
+    yPos = checkPageBreak(doc, yPos, 25);
     yPos += 5;
-    doc.setFillColor(...LIGHT_GRAY);
-    doc.rect(15, yPos - 4, 180, 8, 'F');
-    doc.setTextColor(...PRIMARY);
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Admin Notes', 20, yPos + 2);
-    yPos += 10;
+    yPos = drawSectionHeader(doc, 'Admin Notes', yPos, margin, contentWidth);
+    yPos += 3;
 
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.setTextColor(...TEXT);
+    doc.setFontSize(9);
+    doc.setTextColor(...PDF_COLORS.textSecondary);
 
-    const notesLines = doc.splitTextToSize(data.adminNotes, 175);
+    const notesLines = doc.splitTextToSize(data.adminNotes, contentWidth - 8);
     notesLines.forEach((line: string) => {
-      if (yPos > 275) {
-        doc.addPage();
-        yPos = 20;
-      }
-      doc.text(line, 15, yPos);
-      yPos += 5;
+      yPos = checkPageBreak(doc, yPos);
+      doc.text(line, margin + 5, yPos);
+      yPos += 4.5;
     });
   }
 
-  // Footer on all pages
-  const pageCount = doc.getNumberOfPages();
-  for (let i = 1; i <= pageCount; i++) {
-    doc.setPage(i);
-    doc.setFontSize(8);
-    doc.setTextColor(150, 150, 150);
-    doc.text(`Page ${i} of ${pageCount}`, 105, 290, { align: 'center' });
-    doc.text('SLRP - Summer Life Roleplay | Confidential Application Document', 105, 285, { align: 'center' });
-  }
+  // Footer
+  drawFooter(doc, 'Application Document');
 
   const safeName = data.applicantName.replace(/[^a-zA-Z0-9]/g, '-');
   doc.save(`SLRP-${data.applicationType.replace(/\s+/g, '-')}-${safeName}.pdf`);

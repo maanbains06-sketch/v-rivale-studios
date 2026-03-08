@@ -1,4 +1,16 @@
 import jsPDF from 'jspdf';
+import {
+  PDF_COLORS,
+  getStatusColor,
+  formatPdfDate,
+  formatPdfDateShort,
+  drawHeader,
+  drawSectionHeader,
+  drawDetailField,
+  drawFooter,
+  drawDocumentRef,
+  checkPageBreak,
+} from './pdfStyles';
 
 interface ApplicationField {
   label: string;
@@ -36,20 +48,9 @@ const typeLabels: Record<string, string> = {
   ban_appeal: 'Ban Appeal',
 };
 
-const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-};
-
 const sanitizeForCSV = (value: string | number | undefined | null): string => {
   if (value === null || value === undefined) return '';
   const str = String(value);
-  // Escape quotes and wrap in quotes if contains comma, quote, or newline
   if (str.includes(',') || str.includes('"') || str.includes('\n')) {
     return `"${str.replace(/"/g, '""')}"`;
   }
@@ -65,21 +66,11 @@ export const exportApplicationsToCSV = (
     throw new Error('No applications to export');
   }
 
-  // Define CSV headers
   const headers = [
-    'ID',
-    'Applicant Name',
-    'Type',
-    'Organization',
-    'Discord ID',
-    'Status',
-    'Handled By',
-    'Admin Notes',
-    'Submitted Date',
-    'Application Details'
+    'ID', 'Applicant Name', 'Type', 'Organization', 'Discord ID',
+    'Status', 'Handled By', 'Admin Notes', 'Submitted Date', 'Application Details'
   ];
 
-  // Build CSV rows
   const rows = applications.map(app => {
     const details = app.fields
       .map(f => `${f.label}: ${f.value ?? 'N/A'}`)
@@ -94,15 +85,12 @@ export const exportApplicationsToCSV = (
       sanitizeForCSV(app.status.charAt(0).toUpperCase() + app.status.slice(1)),
       sanitizeForCSV(app.handledByName || app.handledBy || '-'),
       sanitizeForCSV(app.adminNotes),
-      sanitizeForCSV(formatDate(app.createdAt)),
+      sanitizeForCSV(formatPdfDate(app.createdAt)),
       sanitizeForCSV(details)
     ].join(',');
   });
 
-  // Combine headers and rows
   const csvContent = [headers.join(','), ...rows].join('\n');
-
-  // Create and download file
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   const url = URL.createObjectURL(blob);
@@ -110,15 +98,13 @@ export const exportApplicationsToCSV = (
   link.setAttribute('href', url);
   link.setAttribute('download', `${filename}-${new Date().toISOString().split('T')[0]}.csv`);
   link.style.visibility = 'hidden';
-  
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  
   URL.revokeObjectURL(url);
 };
 
-// Export applications to PDF
+// Export applications to PDF (bulk report)
 export const exportApplicationsToPDF = (
   applications: ExportableApplication[],
   filename: string = 'applications',
@@ -129,161 +115,114 @@ export const exportApplicationsToPDF = (
   }
 
   const doc = new jsPDF();
-  
-  // Colors
-  const primaryColor: [number, number, number] = [59, 130, 246];
-  const textColor: [number, number, number] = [30, 30, 30];
-  const lightGray: [number, number, number] = [245, 245, 245];
-  const successColor: [number, number, number] = [34, 197, 94];
-  const errorColor: [number, number, number] = [239, 68, 68];
-  const warningColor: [number, number, number] = [245, 158, 11];
-  const grayColor: [number, number, number] = [107, 114, 128];
+  const margin = 10;
+  const pageWidth = doc.internal.pageSize.getWidth();
 
-  // Header
-  doc.setFillColor(...primaryColor);
-  doc.rect(0, 0, 210, 35, 'F');
-  
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(22);
-  doc.setFont('helvetica', 'bold');
-  doc.text('SLRP', 105, 15, { align: 'center' });
-  
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'normal');
-  doc.text(title, 105, 25, { align: 'center' });
+  // Branded header
+  drawHeader(doc, title, `${applications.length} Applications`);
 
-  // Summary section
-  let yPos = 45;
-  doc.setTextColor(...textColor);
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'bold');
-  
-  // Stats
+  // Summary stats
+  let yPos = 50;
   const pending = applications.filter(a => a.status === 'pending').length;
   const approved = applications.filter(a => a.status === 'approved').length;
   const rejected = applications.filter(a => a.status === 'rejected').length;
   const onHold = applications.filter(a => a.status === 'on_hold').length;
   const closed = applications.filter(a => a.status === 'closed').length;
 
-  doc.text(`Total Applications: ${applications.length}`, 15, yPos);
-  doc.text(`Generated: ${formatDate(new Date().toISOString())}`, 120, yPos);
+  // Stats bar
+  doc.setFillColor(...PDF_COLORS.lightBg);
+  doc.roundedRect(margin, yPos, pageWidth - margin * 2, 12, 2, 2, 'F');
   
-  yPos += 8;
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.text(`Open: ${pending}  |  Approved: ${approved}  |  Rejected: ${rejected}  |  On Hold: ${onHold}  |  Closed: ${closed}`, 15, yPos);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...PDF_COLORS.text);
+  
+  const statsX = margin + 5;
+  doc.text(`Total: ${applications.length}`, statsX, yPos + 7);
+  
+  doc.setTextColor(...PDF_COLORS.accent);
+  doc.text(`Pending: ${pending}`, statsX + 30, yPos + 7);
+  doc.setTextColor(...PDF_COLORS.success);
+  doc.text(`Approved: ${approved}`, statsX + 62, yPos + 7);
+  doc.setTextColor(...PDF_COLORS.error);
+  doc.text(`Rejected: ${rejected}`, statsX + 98, yPos + 7);
+  doc.setTextColor(...PDF_COLORS.warning);
+  doc.text(`On Hold: ${onHold}`, statsX + 134, yPos + 7);
+  doc.setTextColor(...PDF_COLORS.textSecondary);
+  doc.text(`Closed: ${closed}`, statsX + 164, yPos + 7);
 
   // Table header
-  yPos += 12;
-  doc.setFillColor(...primaryColor);
-  doc.rect(10, yPos, 190, 8, 'F');
+  yPos += 18;
   
-  doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.text('Applicant', 12, yPos + 5.5);
-  doc.text('Type', 55, yPos + 5.5);
-  doc.text('Discord ID', 85, yPos + 5.5);
-  doc.text('Status', 120, yPos + 5.5);
-  doc.text('Handled By', 145, yPos + 5.5);
-  doc.text('Date', 175, yPos + 5.5);
+  const drawTableHeader = (y: number) => {
+    doc.setFillColor(...PDF_COLORS.headerBg);
+    doc.rect(margin, y, pageWidth - margin * 2, 8, 'F');
+    
+    // Accent bar
+    doc.setFillColor(...PDF_COLORS.accent);
+    doc.rect(margin, y, 2, 8, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.text('Applicant', margin + 5, y + 5.5);
+    doc.text('Type', 58, y + 5.5);
+    doc.text('Discord ID', 88, y + 5.5);
+    doc.text('Status', 123, y + 5.5);
+    doc.text('Handled By', 148, y + 5.5);
+    doc.text('Date', 180, y + 5.5);
+    return y + 10;
+  };
 
-  yPos += 10;
+  yPos = drawTableHeader(yPos);
   
-  // Application rows
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
   
   applications.forEach((app, index) => {
-    // Check if we need a new page
     if (yPos > 270) {
       doc.addPage();
       yPos = 20;
-      
-      // Re-add header on new page
-      doc.setFillColor(...primaryColor);
-      doc.rect(10, yPos - 10, 190, 8, 'F');
-      
-      doc.setTextColor(255, 255, 255);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8);
-      doc.text('Applicant', 12, yPos - 4.5);
-      doc.text('Type', 55, yPos - 4.5);
-      doc.text('Discord ID', 85, yPos - 4.5);
-      doc.text('Status', 120, yPos - 4.5);
-      doc.text('Handled By', 145, yPos - 4.5);
-      doc.text('Date', 175, yPos - 4.5);
-      
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7);
+      yPos = drawTableHeader(yPos);
     }
 
-    // Alternate row background
+    // Alternate rows
     if (index % 2 === 0) {
-      doc.setFillColor(...lightGray);
-      doc.rect(10, yPos - 3, 190, 7, 'F');
+      doc.setFillColor(...PDF_COLORS.lightBg);
+      doc.rect(margin, yPos - 3, pageWidth - margin * 2, 7, 'F');
     }
 
-    doc.setTextColor(...textColor);
-    
-    // Applicant name (truncate if too long)
-    const name = app.applicantName.length > 20 
-      ? app.applicantName.substring(0, 18) + '...' 
+    doc.setTextColor(...PDF_COLORS.text);
+    const name = app.applicantName.length > 22 
+      ? app.applicantName.substring(0, 20) + '...' 
       : app.applicantName;
-    doc.text(name, 12, yPos);
+    doc.text(name, margin + 5, yPos);
     
-    // Type
     const type = typeLabels[app.applicationType] || app.applicationType;
-    doc.text(type.substring(0, 12), 55, yPos);
+    doc.text(type.substring(0, 14), 58, yPos);
     
-    // Discord ID
     const discordId = app.discordId 
       ? (app.discordId.length > 15 ? app.discordId.substring(0, 13) + '...' : app.discordId)
       : '-';
-    doc.text(discordId, 85, yPos);
+    doc.text(discordId, 88, yPos);
     
     // Status with color
-    switch (app.status) {
-      case 'approved':
-        doc.setTextColor(...successColor);
-        break;
-      case 'rejected':
-        doc.setTextColor(...errorColor);
-        break;
-      case 'on_hold':
-        doc.setTextColor(...warningColor);
-        break;
-      case 'closed':
-        doc.setTextColor(...grayColor);
-        break;
-      default:
-        doc.setTextColor(...primaryColor);
-    }
-    doc.text(app.status.charAt(0).toUpperCase() + app.status.slice(1).replace('_', ' '), 120, yPos);
+    const statusColor = getStatusColor(app.status);
+    doc.setTextColor(...statusColor);
+    doc.setFont('helvetica', 'bold');
+    doc.text(app.status.charAt(0).toUpperCase() + app.status.slice(1).replace('_', ' '), 123, yPos);
     
-    // Handled by
-    doc.setTextColor(...textColor);
+    doc.setTextColor(...PDF_COLORS.text);
+    doc.setFont('helvetica', 'normal');
     const handler = (app.handledByName || app.handledBy || '-');
-    doc.text(handler.length > 12 ? handler.substring(0, 10) + '...' : handler, 145, yPos);
+    doc.text(handler.length > 14 ? handler.substring(0, 12) + '...' : handler, 148, yPos);
     
-    // Date
-    const date = new Date(app.createdAt);
-    doc.text(`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`, 175, yPos);
+    doc.text(formatPdfDateShort(app.createdAt), 180, yPos);
     
     yPos += 7;
   });
 
-  // Footer
-  const pageCount = doc.getNumberOfPages();
-  for (let i = 1; i <= pageCount; i++) {
-    doc.setPage(i);
-    doc.setFontSize(8);
-    doc.setTextColor(150, 150, 150);
-    doc.text(`Page ${i} of ${pageCount}`, 105, 290, { align: 'center' });
-    doc.text('SLRP - Summer Life Roleplay', 15, 290);
-  }
-
-  // Save the PDF
+  drawFooter(doc, 'Applications Report');
   doc.save(`${filename}-${new Date().toISOString().split('T')[0]}.pdf`);
 };
 
@@ -292,139 +231,108 @@ export const exportSingleApplicationToPDF = (
   application: ExportableApplication
 ): void => {
   const doc = new jsPDF();
-  
-  // Colors
-  const primaryColor: [number, number, number] = [59, 130, 246];
-  const textColor: [number, number, number] = [30, 30, 30];
-  const lightGray: [number, number, number] = [245, 245, 245];
+  const margin = 15;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const contentWidth = pageWidth - margin * 2;
 
-  // Header
-  doc.setFillColor(...primaryColor);
-  doc.rect(0, 0, 210, 40, 'F');
-  
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(24);
+  // Branded header
+  const typeLabel = typeLabels[application.applicationType] || application.applicationType;
+  drawHeader(doc, `${typeLabel} Application`, 'Detailed Application Report');
+
+  // Document reference
+  let yPos = 50;
+  yPos = drawDocumentRef(doc, application.id.substring(0, 8).toUpperCase(), yPos, margin);
+
+  // Summary box
+  yPos += 2;
+  const boxHeight = 30;
+  doc.setFillColor(...PDF_COLORS.lightBg);
+  doc.roundedRect(margin, yPos, contentWidth, boxHeight, 2, 2, 'F');
+  doc.setDrawColor(...PDF_COLORS.border);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(margin, yPos, contentWidth, boxHeight, 2, 2, 'S');
+
+  // Applicant name
   doc.setFont('helvetica', 'bold');
-  doc.text('APPLICATION DETAILS', 105, 20, { align: 'center' });
-  
-  doc.setFontSize(12);
+  doc.setFontSize(8);
+  doc.setTextColor(...PDF_COLORS.textSecondary);
+  doc.text('Applicant', margin + 5, yPos + 7);
   doc.setFont('helvetica', 'normal');
-  doc.text(typeLabels[application.applicationType] || application.applicationType, 105, 32, { align: 'center' });
-
-  let yPos = 55;
-  
-  // Applicant Info Box
-  doc.setFillColor(...lightGray);
-  doc.rect(15, yPos, 180, 30, 'F');
-  
-  doc.setTextColor(...textColor);
-  doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
-  
-  doc.text('Applicant:', 20, yPos + 10);
-  doc.setFont('helvetica', 'normal');
-  doc.text(application.applicantName, 60, yPos + 10);
-  
+  doc.setTextColor(...PDF_COLORS.text);
+  doc.text(application.applicantName, margin + 5, yPos + 14);
+
+  // Discord ID
   doc.setFont('helvetica', 'bold');
-  doc.text('Discord ID:', 20, yPos + 18);
+  doc.setFontSize(8);
+  doc.setTextColor(...PDF_COLORS.textSecondary);
+  doc.text('Discord ID', margin + 5, yPos + 21);
   doc.setFont('helvetica', 'normal');
-  doc.text(application.discordId || 'N/A', 60, yPos + 18);
-  
+  doc.setFontSize(9);
+  doc.setTextColor(...PDF_COLORS.text);
+  doc.text(application.discordId || 'N/A', margin + 5, yPos + 27);
+
+  // Submitted date
   doc.setFont('helvetica', 'bold');
-  doc.text('Status:', 20, yPos + 26);
+  doc.setFontSize(8);
+  doc.setTextColor(...PDF_COLORS.textSecondary);
+  doc.text('Submitted', margin + 75, yPos + 7);
   doc.setFont('helvetica', 'normal');
-  doc.text(application.status.charAt(0).toUpperCase() + application.status.slice(1), 60, yPos + 26);
-  
-  doc.setFont('helvetica', 'bold');
-  doc.text('Submitted:', 110, yPos + 10);
-  doc.setFont('helvetica', 'normal');
-  doc.text(formatDate(application.createdAt), 145, yPos + 10);
-  
+  doc.setFontSize(9);
+  doc.setTextColor(...PDF_COLORS.text);
+  doc.text(formatPdfDate(application.createdAt), margin + 75, yPos + 14);
+
+  // Handled by
   if (application.handledByName || application.handledBy) {
     doc.setFont('helvetica', 'bold');
-    doc.text('Handled By:', 110, yPos + 18);
+    doc.setFontSize(8);
+    doc.setTextColor(...PDF_COLORS.textSecondary);
+    doc.text('Reviewed By', margin + 75, yPos + 21);
     doc.setFont('helvetica', 'normal');
-    doc.text(application.handledByName || application.handledBy || '-', 145, yPos + 18);
+    doc.setFontSize(9);
+    doc.setTextColor(...PDF_COLORS.text);
+    doc.text(application.handledByName || application.handledBy || '-', margin + 75, yPos + 27);
   }
 
-  // Application Fields
-  yPos = 95;
+  // Status badge
+  const statusColor = getStatusColor(application.status);
+  const statusText = application.status.charAt(0).toUpperCase() + application.status.slice(1).replace('_', ' ');
+  doc.setFillColor(...statusColor);
+  doc.roundedRect(pageWidth - margin - 38, yPos + 5, 33, 8, 2, 2, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.setTextColor(...primaryColor);
-  doc.text('Application Responses', 15, yPos);
-  
-  yPos += 10;
-  doc.setTextColor(...textColor);
-  doc.setFontSize(10);
+  doc.text(statusText, pageWidth - margin - 21.5, yPos + 11, { align: 'center' });
+
+  // Application Responses section
+  yPos += boxHeight + 8;
+  yPos = drawSectionHeader(doc, 'Application Responses', yPos, margin, contentWidth);
+  yPos += 3;
 
   application.fields.forEach((field) => {
-    // Check if we need a new page
-    if (yPos > 260) {
-      doc.addPage();
-      yPos = 20;
-    }
-
-    doc.setFont('helvetica', 'bold');
-    doc.text(field.label + ':', 15, yPos);
-    
-    doc.setFont('helvetica', 'normal');
-    const value = String(field.value ?? 'N/A');
-    
-    // Handle long text with word wrap
-    if (value.length > 80) {
-      const lines = doc.splitTextToSize(value, 175);
-      yPos += 5;
-      lines.forEach((line: string) => {
-        if (yPos > 275) {
-          doc.addPage();
-          yPos = 20;
-        }
-        doc.text(line, 15, yPos);
-        yPos += 5;
-      });
-      yPos += 3;
-    } else {
-      yPos += 5;
-      doc.text(value, 15, yPos);
-      yPos += 8;
-    }
+    yPos = checkPageBreak(doc, yPos, 15);
+    yPos = drawDetailField(doc, field.label, String(field.value ?? 'N/A'), yPos, margin);
   });
 
   // Admin Notes
   if (application.adminNotes) {
-    if (yPos > 250) {
-      doc.addPage();
-      yPos = 20;
-    }
-    
+    yPos = checkPageBreak(doc, yPos, 25);
     yPos += 5;
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(12);
-    doc.setTextColor(...primaryColor);
-    doc.text('Admin Notes', 15, yPos);
-    
-    yPos += 8;
+    yPos = drawSectionHeader(doc, 'Admin Notes', yPos, margin, contentWidth);
+    yPos += 3;
+
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.setTextColor(...textColor);
-    
-    const notesLines = doc.splitTextToSize(application.adminNotes, 175);
+    doc.setFontSize(9);
+    doc.setTextColor(...PDF_COLORS.textSecondary);
+
+    const notesLines = doc.splitTextToSize(application.adminNotes, contentWidth - 8);
     notesLines.forEach((line: string) => {
-      if (yPos > 275) {
-        doc.addPage();
-        yPos = 20;
-      }
-      doc.text(line, 15, yPos);
-      yPos += 5;
+      yPos = checkPageBreak(doc, yPos);
+      doc.text(line, margin + 5, yPos);
+      yPos += 4.5;
     });
   }
 
-  // Footer
-  doc.setFontSize(8);
-  doc.setTextColor(150, 150, 150);
-  doc.text('SLRP - Summer Life Roleplay | Generated on ' + formatDate(new Date().toISOString()), 105, 290, { align: 'center' });
-
-  // Save
-  doc.save(`application-${application.applicantName.replace(/\s+/g, '-')}-${application.id.substring(0, 8)}.pdf`);
+  drawFooter(doc, 'Application Detail Report');
+  doc.save(`SLRP-${typeLabel.replace(/\s+/g, '-')}-${application.applicantName.replace(/\s+/g, '-')}-${application.id.substring(0, 8)}.pdf`);
 };

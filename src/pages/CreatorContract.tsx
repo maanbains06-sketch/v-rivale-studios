@@ -14,6 +14,7 @@ import { ArrowLeft, Download, Edit2, Save, X, Plus, FileText, CheckCircle, Clock
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import jsPDF from "jspdf";
+import { PDF_COLORS, drawHeader, drawFooter } from "@/lib/pdfStyles";
 import SignaturePad from "@/components/SignaturePad";
 import ContractTemplateManager from "@/components/ContractTemplateManager";
 import ContractsList from "@/components/ContractsList";
@@ -496,27 +497,17 @@ const CreatorContract = () => {
     let yPos = 0;
 
     // Colors
-    const headerBg: [number, number, number] = [30, 41, 59];
-    const black: [number, number, number] = [0, 0, 0];
-    const gray: [number, number, number] = [100, 100, 100];
-    const lightGray: [number, number, number] = [230, 230, 230];
+    const headerBg: [number, number, number] = PDF_COLORS.headerBg;
+    const black: [number, number, number] = PDF_COLORS.black;
+    const gray: [number, number, number] = PDF_COLORS.textSecondary;
+    const lightGray: [number, number, number] = PDF_COLORS.lightBg;
 
     // ========== PAGE 1 - Header and Party Details ==========
     
-    // Header Box
-    doc.setFillColor(...headerBg);
-    doc.rect(0, 0, pageWidth, 35, 'F');
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.text('SKYLIFE ROLEPLAY INDIA', pageWidth / 2, 15, { align: 'center' });
-    
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'normal');
-    doc.text('CONTENT CREATOR AGREEMENT', pageWidth / 2, 25, { align: 'center' });
+    // Branded Header
+    drawHeader(doc, 'CONTENT CREATOR AGREEMENT', 'Official Contract Document');
 
-    yPos = 45;
+    yPos = 50;
 
     // Contract Info Row
     doc.setTextColor(...black);
@@ -559,18 +550,22 @@ const CreatorContract = () => {
     };
 
     // Helper: Draw section header
-    const drawSectionHeader = (title: string, y: number) => {
+    const drawContractSectionHeader = (title: string, y: number) => {
+      // Accent bar on left
+      doc.setFillColor(...PDF_COLORS.accent);
+      doc.rect(margin, y, 3, 8, 'F');
+      // Header background
       doc.setFillColor(...headerBg);
-      doc.rect(margin, y, contentWidth, 8, 'F');
+      doc.rect(margin + 3, y, contentWidth - 3, 8, 'F');
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
-      doc.text(title.toUpperCase(), margin + 3, y + 5.5);
+      doc.text(title.toUpperCase(), margin + 7, y + 5.5);
       return y + 10;
     };
 
     // ========== PARTY A SECTION ==========
-    yPos = drawSectionHeader('Party A - Server Representative', yPos);
+    yPos = drawContractSectionHeader('Party A - Server Representative', yPos);
 
     const halfWidth = contentWidth / 2 - 2;
     
@@ -594,7 +589,7 @@ const CreatorContract = () => {
     yPos += 5;
 
     // ========== PARTY B SECTION ==========
-    yPos = drawSectionHeader('Party B - Content Creator', yPos);
+    yPos = drawContractSectionHeader('Party B - Content Creator', yPos);
 
     drawFormField('Full Name', contractData.creatorName || '[To be filled]', margin, yPos, halfWidth);
     drawFormField('Email', contractData.creatorEmail || '[To be filled]', margin + halfWidth + 4, yPos, halfWidth);
@@ -621,7 +616,7 @@ const CreatorContract = () => {
     yPos += 15;
 
     // ========== CONTRACT PERIOD SECTION ==========
-    yPos = drawSectionHeader('Contract Period', yPos);
+    yPos = drawContractSectionHeader('Contract Period', yPos);
 
     const quarterWidth = contentWidth / 4 - 3;
     
@@ -634,7 +629,7 @@ const CreatorContract = () => {
     yPos += 15;
 
     // ========== COMPENSATION SECTION ==========
-    yPos = drawSectionHeader('Compensation & Payment Terms', yPos);
+    yPos = drawContractSectionHeader('Compensation & Payment Terms', yPos);
 
     drawFormField('Monthly Payment', `₹${contractData.monthlyPayment}`, margin, yPos, halfWidth);
     drawFormField('Payment Method', contractData.paymentMethod, margin + halfWidth + 4, yPos, halfWidth);
@@ -647,7 +642,7 @@ const CreatorContract = () => {
     yPos += 15;
 
     // ========== CONTENT DELIVERABLES SECTION ==========
-    yPos = drawSectionHeader('Content Deliverables', yPos);
+    yPos = drawContractSectionHeader('Content Deliverables', yPos);
 
     drawFormField('Min. Videos/Month', contractData.minimumVideos, margin, yPos, halfWidth);
     drawFormField('Min. Stream Hours', contractData.minimumStreams, margin + halfWidth + 4, yPos, halfWidth);
@@ -684,7 +679,7 @@ const CreatorContract = () => {
     yPos = 20;
 
     // ========== OBLIGATIONS SECTION ==========
-    yPos = drawSectionHeader('Creator Obligations', yPos);
+    yPos = drawContractSectionHeader('Creator Obligations', yPos);
 
     doc.setDrawColor(...black);
     doc.setLineWidth(0.3);
@@ -711,7 +706,7 @@ const CreatorContract = () => {
     });
     yPos += 43;
 
-    yPos = drawSectionHeader('Server Obligations', yPos);
+    yPos = drawContractSectionHeader('Server Obligations', yPos);
 
     doc.setTextColor(...black);  // Reset text color after header
     doc.setDrawColor(...black);
@@ -737,7 +732,7 @@ const CreatorContract = () => {
     });
     yPos += 38;
 
-    yPos = drawSectionHeader('Termination Clause', yPos);
+    yPos = drawContractSectionHeader('Termination Clause', yPos);
 
     doc.setTextColor(...black);  // Reset text color after header
     doc.setDrawColor(...black);
@@ -769,7 +764,7 @@ const CreatorContract = () => {
     // ========== SPECIAL TERMS SECTION ==========
     const activeTerms = getActiveSpecialTerms();
     if (activeTerms.length > 0 || contractData.customTerms) {
-      yPos = drawSectionHeader('Special Terms & Conditions', yPos);
+      yPos = drawContractSectionHeader('Special Terms & Conditions', yPos);
       
       doc.setTextColor(...black);  // Reset text color after header
       doc.setDrawColor(...black);
@@ -822,7 +817,7 @@ const CreatorContract = () => {
       yPos = 20;
     }
 
-    yPos = drawSectionHeader('Signatures & Acknowledgement', yPos);
+    yPos = drawContractSectionHeader('Signatures & Acknowledgement', yPos);
 
     doc.setFont('helvetica', 'italic');
     doc.setFontSize(7);
@@ -902,26 +897,7 @@ const CreatorContract = () => {
     doc.text('Creator Signature', partyBX + 3, yPos + sigBoxHeight + 18);
 
     // Footer
-    yPos = pageHeight - 12;
-    doc.setDrawColor(...black);
-    doc.setLineWidth(0.5);
-    doc.line(margin, yPos - 3, pageWidth - margin, yPos - 3);
-    
-    doc.setFontSize(6);
-    doc.setTextColor(...gray);
-    doc.setFont('helvetica', 'italic');
-    doc.text('This is a legally binding electronic document. Both parties acknowledge having read and understood all terms and conditions stated herein.', pageWidth / 2, yPos, { align: 'center' });
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Skylife Roleplay India | Content Creator Contract | Generated: ${format(new Date(), 'dd/MM/yyyy HH:mm')} | Page ${doc.getNumberOfPages()}`, pageWidth / 2, yPos + 4, { align: 'center' });
-
-    // Add page numbers to all pages
-    const totalPages = doc.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i);
-      doc.setFontSize(7);
-      doc.setTextColor(...gray);
-      doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin, pageHeight - 5, { align: 'right' });
-    }
+    drawFooter(doc, 'Content Creator Contract');
 
     // Save
     const fileName = `SLRP-Contract-${contractData.creatorName?.replace(/\s+/g, '-') || 'Draft'}-${format(new Date(), 'yyyy-MM-dd')}.pdf`;
