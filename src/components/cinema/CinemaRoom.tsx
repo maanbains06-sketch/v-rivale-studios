@@ -194,6 +194,7 @@ const CinemaRoom = ({ room, user, onLeave, onEnd }: CinemaRoomProps) => {
       message_type: isEmbed ? "embed" : "text",
     });
     setNewMessage("");
+  };
 
   const shareEmbed = async () => {
     if (!embedUrl.trim()) return;
