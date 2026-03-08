@@ -468,18 +468,15 @@ const BubbleShooterGame = ({ onBack, submitScore, GameShell, StartScreen, EndScr
       }
       ctx.globalAlpha = 1;
 
-      // Particles
+      // Particles (no shadowBlur for performance)
       for (const p of particles.current) {
         const [h, s, l] = COLORS_HSL[p.color] || [0, 0, 50];
         const alpha = p.life / p.maxLife;
         ctx.globalAlpha = alpha;
         ctx.fillStyle = hsl(h, s, l + 15);
-        ctx.shadowColor = hsl(h, s, l, 0.6);
-        ctx.shadowBlur = 8;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2);
         ctx.fill();
-        ctx.shadowBlur = 0;
       }
       ctx.globalAlpha = 1;
 
