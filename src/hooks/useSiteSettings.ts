@@ -194,6 +194,7 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
           guides_hidden: settingsMap.guides_hidden === 'true',
           mini_games_hidden: settingsMap.mini_games_hidden === 'true',
           profile_customization_hidden: settingsMap.profile_customization_hidden === 'true',
+          memorial_hidden: settingsMap.memorial_hidden === 'true',
         };
 
         setSettings(newSettings);
