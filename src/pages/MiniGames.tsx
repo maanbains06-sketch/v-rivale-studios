@@ -2365,6 +2365,7 @@ const MiniGames = () => {
       case "block_puzzle": return <BlockPuzzleGame onBack={onBack} />;
       case "bubble_shooter": return <BubbleShooterWrapper onBack={onBack} />;
       case "brick_breaker": return <BrickBreakerWrapper onBack={onBack} />;
+      case "auction_bidding": return <AuctionBiddingWrapper onBack={onBack} />;
       default: return null;
     }
   };
