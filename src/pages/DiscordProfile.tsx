@@ -244,14 +244,18 @@ const DiscordProfile = () => {
                 {/* Avatar */}
                 <div className="absolute -top-16 md:-top-20 left-6">
                   <div className="relative">
-                    <StyledAvatar
-                      userId={user?.id}
-                      discordId={discordId}
-                      discordAvatar={discordAvatar || user?.user_metadata?.discord_avatar}
-                      username={getDiscordName()}
-                      className="w-28 h-28 md:w-36 md:h-36 border-4 border-background shadow-2xl ring-4 ring-primary/20"
-                      size="lg"
-                    />
+                    <Avatar 
+                      className={`w-28 h-28 md:w-36 md:h-36 border-4 border-background shadow-2xl ring-4 ring-primary/20 ${customization.frame_color ? 'border-2' : ''}`}
+                      style={customization.frame_color ? {
+                        boxShadow: `0 0 0 3px ${customization.frame_color}, 0 0 12px ${customization.frame_color}40`,
+                        borderColor: customization.frame_color,
+                      } : {}}
+                    >
+                      <AvatarImage src={getDiscordAvatar() || undefined} alt={getDiscordName()} />
+                      <AvatarFallback className="bg-gradient-to-br from-[#5865F2] to-primary text-white text-3xl md:text-4xl font-bold">
+                        {getDiscordName().charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                     {/* Online indicator */}
                     <div className="absolute bottom-2 right-2 w-5 h-5 bg-green-500 rounded-full border-4 border-background" />
                   </div>
