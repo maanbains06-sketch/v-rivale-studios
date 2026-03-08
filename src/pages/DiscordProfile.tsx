@@ -177,15 +177,6 @@ const DiscordProfile = () => {
       available: true,
     },
     {
-      title: "Community",
-      description: "Events and announcements",
-      icon: Users,
-      href: "/community",
-      colorClass: "bg-purple-500/20 group-hover:bg-purple-500/30",
-      iconColorClass: "text-purple-500",
-      available: true,
-    },
-    {
       title: "View Staff",
       description: "Meet our staff team",
       icon: Crown,
