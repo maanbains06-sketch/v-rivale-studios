@@ -942,8 +942,8 @@ const StaffContract = () => {
                     ) : (
                       <div className="grid md:grid-cols-3 gap-4 text-sm">
                         <div className="bg-muted/50 p-3 rounded-lg border border-border"><span className="font-bold text-muted-foreground block text-xs">Duration</span><span className="text-foreground">{contractData.contractDuration}</span></div>
-                        <div className="bg-muted/50 p-3 rounded-lg border border-border"><span className="font-bold text-muted-foreground block text-xs">Start Date</span><span className="text-foreground">{format(new Date(contractData.startDate), 'dd MMM yyyy')}</span></div>
-                        <div className="bg-muted/50 p-3 rounded-lg border border-border"><span className="font-bold text-muted-foreground block text-xs">End Date</span><span className="text-foreground">{format(new Date(contractData.endDate), 'dd MMM yyyy')}</span></div>
+                        <div className="bg-muted/50 p-3 rounded-lg border border-border"><span className="font-bold text-muted-foreground block text-xs">Start Date</span><span className="text-foreground">{safeFormatDate(contractData.startDate)}</span></div>
+                        <div className="bg-muted/50 p-3 rounded-lg border border-border"><span className="font-bold text-muted-foreground block text-xs">End Date</span><span className="text-foreground">{safeFormatDate(contractData.endDate)}</span></div>
                       </div>
                     )}
                   </section>
