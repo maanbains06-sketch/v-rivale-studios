@@ -1698,20 +1698,24 @@ const BombDefusalGame = ({ onBack }: { onBack: () => void }) => {
 };
 
 // ════════════════════════════════════════════════════════
-// GAME 12: SNAKE RUNNER 🐍
+// GAME 12: SNAKE RUNNER 🐍 (Canvas-based for 60fps)
 // ════════════════════════════════════════════════════════
 const GRID_SIZE = 25;
 const CELL_SIZE = 16;
+const SNAKE_BOARD = GRID_SIZE * CELL_SIZE;
 
 const SnakeRunnerGame = ({ onBack }: { onBack: () => void }) => {
   const [started, setStarted] = useState(false);
   const [gameOver, setGameOver] = useState(false);
-  const [snake, setSnake] = useState<{ x: number; y: number }[]>([{ x: 12, y: 12 }]);
-  const [food, setFood] = useState({ x: 15, y: 10 });
-  const [direction, setDirection] = useState<"up" | "down" | "left" | "right">("right");
   const [score, setScore] = useState(0);
-  const dirRef = useRef(direction);
-  const gameLoopRef = useRef<ReturnType<typeof setInterval>>();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const dirRef = useRef<"up" | "down" | "left" | "right">("right");
+  const snakeRef = useRef<{ x: number; y: number }[]>([{ x: 12, y: 12 }]);
+  const foodRef = useRef({ x: 15, y: 10 });
+  const scoreRef = useRef(0);
+  const gameOverRef = useRef(false);
+  const lastTickRef = useRef(0);
+  const frameRef = useRef<number>();
   const submitScore = useSubmitScore();
   const game = GAMES[11];
 
@@ -1724,10 +1728,18 @@ const SnakeRunnerGame = ({ onBack }: { onBack: () => void }) => {
 
   const initGame = () => {
     const initial = [{ x: 12, y: 12 }];
-    setSnake(initial); setFood(spawnFood(initial)); setDirection("right"); dirRef.current = "right";
-    setScore(0); setGameOver(false); setStarted(true);
+    snakeRef.current = initial;
+    foodRef.current = spawnFood(initial);
+    dirRef.current = "right";
+    scoreRef.current = 0;
+    gameOverRef.current = false;
+    lastTickRef.current = 0;
+    setScore(0);
+    setGameOver(false);
+    setStarted(true);
   };
 
+  // Keyboard + mobile touch input
   useEffect(() => {
     if (!started || gameOver) return;
     const handleKey = (e: KeyboardEvent) => {
@@ -1735,34 +1747,140 @@ const SnakeRunnerGame = ({ onBack }: { onBack: () => void }) => {
       const newDir = map[e.key];
       if (!newDir) return;
       const opposites: Record<string, string> = { up: "down", down: "up", left: "right", right: "left" };
-      if (opposites[newDir] !== dirRef.current) { dirRef.current = newDir; setDirection(newDir); }
+      if (opposites[newDir] !== dirRef.current) dirRef.current = newDir;
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [started, gameOver]);
 
+  // Canvas game loop
   useEffect(() => {
     if (!started || gameOver) return;
-    gameLoopRef.current = setInterval(() => {
-      setSnake(prev => {
-        const head = { ...prev[0] };
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d")!;
+
+    const loop = (time: number) => {
+      if (gameOverRef.current) return;
+
+      // Tick every 100ms
+      if (time - lastTickRef.current >= 100) {
+        lastTickRef.current = time;
+        const snake = snakeRef.current;
+        const head = { ...snake[0] };
         const dir = dirRef.current;
         if (dir === "up") head.y--; else if (dir === "down") head.y++; else if (dir === "left") head.x--; else head.x++;
-        if (head.x < 0 || head.x >= GRID_SIZE || head.y < 0 || head.y >= GRID_SIZE || prev.some(s => s.x === head.x && s.y === head.y)) {
-          setGameOver(true); clearInterval(gameLoopRef.current);
-          setScore(sc => { submitScore("snake_runner", sc * 10); return sc; });
-          return prev;
+
+        if (head.x < 0 || head.x >= GRID_SIZE || head.y < 0 || head.y >= GRID_SIZE || snake.some(s => s.x === head.x && s.y === head.y)) {
+          gameOverRef.current = true;
+          setGameOver(true);
+          submitScore("snake_runner", scoreRef.current * 10);
+          return;
         }
-        const newSnake = [head, ...prev];
-        if (head.x === food.x && head.y === food.y) {
-          setScore(s => s + 1);
-          setFood(spawnFood(newSnake));
-        } else { newSnake.pop(); }
-        return newSnake;
-      });
-    }, 100);
-    return () => clearInterval(gameLoopRef.current);
-  }, [started, gameOver, food, submitScore]);
+
+        const newSnake = [head, ...snake];
+        if (head.x === foodRef.current.x && head.y === foodRef.current.y) {
+          scoreRef.current++;
+          setScore(scoreRef.current);
+          foodRef.current = spawnFood(newSnake);
+        } else {
+          newSnake.pop();
+        }
+        snakeRef.current = newSnake;
+      }
+
+      // ── RENDER ──
+      ctx.clearRect(0, 0, SNAKE_BOARD, SNAKE_BOARD);
+
+      // Background
+      const bg = ctx.createRadialGradient(SNAKE_BOARD / 2, SNAKE_BOARD / 2, 0, SNAKE_BOARD / 2, SNAKE_BOARD / 2, SNAKE_BOARD * 0.7);
+      bg.addColorStop(0, "hsl(220,20%,10%)");
+      bg.addColorStop(1, "hsl(220,25%,5%)");
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, SNAKE_BOARD, SNAKE_BOARD);
+
+      // Grid lines
+      ctx.strokeStyle = "hsla(140,50%,50%,0.06)";
+      ctx.lineWidth = 0.5;
+      for (let i = 0; i <= GRID_SIZE; i++) {
+        ctx.beginPath(); ctx.moveTo(i * CELL_SIZE, 0); ctx.lineTo(i * CELL_SIZE, SNAKE_BOARD); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, i * CELL_SIZE); ctx.lineTo(SNAKE_BOARD, i * CELL_SIZE); ctx.stroke();
+      }
+
+      // Food
+      const food = foodRef.current;
+      const pulse = 1 + Math.sin(time * 0.006) * 0.15;
+      const fx = food.x * CELL_SIZE + CELL_SIZE / 2;
+      const fy = food.y * CELL_SIZE + CELL_SIZE / 2;
+      const fr = (CELL_SIZE / 2 - 1) * pulse;
+      ctx.save();
+      ctx.shadowColor = "hsl(0,80%,55%)";
+      ctx.shadowBlur = 10;
+      const foodGrad = ctx.createRadialGradient(fx, fy, 1, fx, fy, fr);
+      foodGrad.addColorStop(0, "hsl(0,80%,60%)");
+      foodGrad.addColorStop(1, "hsl(0,70%,40%)");
+      ctx.fillStyle = foodGrad;
+      ctx.beginPath(); ctx.arc(fx, fy, fr, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+
+      // Snake
+      const snake = snakeRef.current;
+      for (let i = snake.length - 1; i >= 0; i--) {
+        const seg = snake[i];
+        const isHead = i === 0;
+        const pct = Math.min(i / Math.max(snake.length - 1, 1), 1);
+        const hue = 35 - pct * 10;
+        const sat = 75 - pct * 15;
+        const light = 55 - pct * 15;
+        const x = seg.x * CELL_SIZE + 1;
+        const y = seg.y * CELL_SIZE + 1;
+        const s = CELL_SIZE - 2;
+        const r = isHead ? s * 0.4 : i % 2 === 0 ? s * 0.25 : s * 0.35;
+
+        if (isHead) {
+          ctx.save();
+          ctx.shadowColor = "hsl(40,80%,50%)";
+          ctx.shadowBlur = 10;
+          const hGrad = ctx.createLinearGradient(x, y, x + s, y + s);
+          hGrad.addColorStop(0, "hsl(40,80%,55%)");
+          hGrad.addColorStop(1, "hsl(30,70%,40%)");
+          ctx.fillStyle = hGrad;
+          ctx.beginPath(); ctx.roundRect(x, y, s, s, r); ctx.fill();
+          ctx.strokeStyle = "hsla(40,60%,65%,0.5)";
+          ctx.lineWidth = 1;
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+          // Eyes
+          ctx.fillStyle = "hsl(15,90%,45%)";
+          ctx.beginPath(); ctx.arc(x + 3, y + 3, 2, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(x + s - 3, y + 3, 2, 0, Math.PI * 2); ctx.fill();
+          ctx.restore();
+        } else {
+          const bGrad = ctx.createLinearGradient(x, y, x + s, y + s);
+          bGrad.addColorStop(0, `hsl(${hue},${sat}%,${light}%)`);
+          bGrad.addColorStop(1, `hsl(${hue - 5},${sat - 10}%,${light - 8}%)`);
+          ctx.fillStyle = bGrad;
+          ctx.beginPath(); ctx.roundRect(x, y, s, s, r); ctx.fill();
+          // Scale highlight
+          ctx.fillStyle = `hsla(${hue},${sat}%,${light + 20}%,0.2)`;
+          ctx.beginPath();
+          ctx.arc(x + s * 0.3, y + s * 0.3, s * 0.25, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // Score HUD
+      ctx.fillStyle = "rgba(255,255,255,0.5)";
+      ctx.font = "bold 11px monospace";
+      ctx.textAlign = "center";
+      ctx.fillText(`SCORE: ${scoreRef.current}`, SNAKE_BOARD / 2, 14);
+
+      frameRef.current = requestAnimationFrame(loop);
+    };
+
+    frameRef.current = requestAnimationFrame(loop);
+    return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
+  }, [started, gameOver, submitScore]);
 
   if (!started) return <StartScreen title={game.title} description={game.description} icon={<Flame className="w-14 h-14" />} gradient={game.gradient} glow={game.glow} onStart={initGame} onBack={onBack} gameType="snake_runner" />;
   if (gameOver) return <EndScreen won={score >= 10} title={`Score: ${score}!`} subtitle={`${score * 10} pts — Snake length: ${score + 1}`} onReplay={initGame} onBack={onBack} gameType="snake_runner" />;
@@ -1771,67 +1889,21 @@ const SnakeRunnerGame = ({ onBack }: { onBack: () => void }) => {
     <GameShell onBack={onBack} title="Snake Runner" icon={<Flame className="w-5 h-5 text-foreground" />} gradient={game.gradient}
       badges={<Badge className="bg-emerald-900/40 text-emerald-300 border-emerald-500/30 font-mono">Score: {score}</Badge>}>
       <div className="flex flex-col items-center gap-4">
-        <div className="relative rounded-xl border-2 border-emerald-500/20 overflow-hidden"
-          style={{ width: GRID_SIZE * CELL_SIZE, height: GRID_SIZE * CELL_SIZE, background: "radial-gradient(ellipse at 50% 50%, hsl(220 20% 10%) 0%, hsl(220 25% 5%) 100%)" }}>
-          <div className="absolute inset-0 opacity-[0.06]" style={{
-            backgroundImage: `repeating-linear-gradient(90deg, hsl(140 50% 50%) 0px, transparent 1px, transparent ${CELL_SIZE}px), repeating-linear-gradient(0deg, hsl(140 50% 50%) 0px, transparent 1px, transparent ${CELL_SIZE}px)`
-          }} />
-          {/* Food */}
-          <motion.div className="absolute rounded-full" animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.8 }}
-            style={{ left: food.x * CELL_SIZE + 1, top: food.y * CELL_SIZE + 1, width: CELL_SIZE - 2, height: CELL_SIZE - 2,
-              background: "radial-gradient(circle, hsl(0 80% 60%), hsl(0 70% 40%))", boxShadow: "0 0 10px hsl(0 80% 55% / 0.6)" }} />
-          {/* Snake - Golden/Brown scaled design */}
-          {snake.map((seg, i) => {
-            const isHead = i === 0;
-            const pct = Math.min(i / Math.max(snake.length - 1, 1), 1);
-            const hue = 35 - pct * 10; // golden 35 → brown 25
-            const sat = 75 - pct * 15;
-            const light = 55 - pct * 15;
-            const segSize = CELL_SIZE - 2;
-            return (
-              <div key={i} className="absolute transition-all duration-75" style={{
-                left: seg.x * CELL_SIZE + 1, top: seg.y * CELL_SIZE + 1,
-                width: segSize, height: segSize,
-                borderRadius: isHead ? '40%' : i % 2 === 0 ? '25%' : '35%',
-                background: isHead
-                  ? 'linear-gradient(135deg, hsl(40 80% 55%), hsl(30 70% 40%))'
-                  : `linear-gradient(${135 + i * 15}deg, hsl(${hue} ${sat}% ${light}%), hsl(${hue - 5} ${sat - 10}% ${light - 8}%))`,
-                boxShadow: isHead
-                  ? '0 0 10px hsl(40 80% 50% / 0.6), inset 0 1px 2px hsl(50 90% 70% / 0.3)'
-                  : `inset 0 1px 1px hsl(${hue} ${sat}% ${light + 15}% / 0.3), inset 0 -1px 1px hsl(${hue} ${sat}% ${light - 10}% / 0.4)`,
-                border: isHead ? '1px solid hsl(40 60% 65% / 0.5)' : `1px solid hsl(${hue} ${sat - 20}% ${light - 5}% / 0.25)`,
-              }}>
-                {/* Scale pattern on body segments */}
-                {!isHead && (
-                  <div className="absolute inset-[2px] rounded-[inherit] opacity-30" style={{
-                    background: `radial-gradient(circle at 30% 30%, hsl(${hue} ${sat}% ${light + 20}%) 0%, transparent 50%)`
-                  }} />
-                )}
-                {/* Eyes on head */}
-                {isHead && <>
-                  <div className="absolute rounded-full" style={{
-                    width: 4, height: 4, top: 2, left: 2,
-                    background: 'radial-gradient(circle, hsl(15 90% 45%), hsl(0 80% 25%))',
-                    boxShadow: '0 0 3px hsl(15 90% 50% / 0.8)'
-                  }} />
-                  <div className="absolute rounded-full" style={{
-                    width: 4, height: 4, top: 2, right: 2,
-                    background: 'radial-gradient(circle, hsl(15 90% 45%), hsl(0 80% 25%))',
-                    boxShadow: '0 0 3px hsl(15 90% 50% / 0.8)'
-                  }} />
-                </>}
-              </div>
-            );
-          })}
-        </div>
+        <canvas
+          ref={canvasRef}
+          width={SNAKE_BOARD}
+          height={SNAKE_BOARD}
+          className="rounded-xl border-2 border-emerald-500/20 max-w-full"
+          style={{ maxWidth: SNAKE_BOARD, aspectRatio: "1/1" }}
+        />
         {/* Mobile controls */}
         <div className="grid grid-cols-3 gap-1.5 w-32 md:hidden">
           <div />
-          <Button size="sm" variant="outline" className="border-emerald-500/30 h-10" onClick={() => { if (dirRef.current !== "down") { dirRef.current = "up"; setDirection("up"); } }}>↑</Button>
+          <Button size="sm" variant="outline" className="border-emerald-500/30 h-10" onClick={() => { if (dirRef.current !== "down") dirRef.current = "up"; }}>↑</Button>
           <div />
-          <Button size="sm" variant="outline" className="border-emerald-500/30 h-10" onClick={() => { if (dirRef.current !== "right") { dirRef.current = "left"; setDirection("left"); } }}>←</Button>
-          <Button size="sm" variant="outline" className="border-emerald-500/30 h-10" onClick={() => { if (dirRef.current !== "up") { dirRef.current = "down"; setDirection("down"); } }}>↓</Button>
-          <Button size="sm" variant="outline" className="border-emerald-500/30 h-10" onClick={() => { if (dirRef.current !== "left") { dirRef.current = "right"; setDirection("right"); } }}>→</Button>
+          <Button size="sm" variant="outline" className="border-emerald-500/30 h-10" onClick={() => { if (dirRef.current !== "right") dirRef.current = "left"; }}>←</Button>
+          <Button size="sm" variant="outline" className="border-emerald-500/30 h-10" onClick={() => { if (dirRef.current !== "up") dirRef.current = "down"; }}>↓</Button>
+          <Button size="sm" variant="outline" className="border-emerald-500/30 h-10" onClick={() => { if (dirRef.current !== "left") dirRef.current = "right"; }}>→</Button>
         </div>
         <p className="text-xs text-muted-foreground font-mono">Use WASD or Arrow keys to move</p>
       </div>
@@ -1879,32 +1951,34 @@ type FallingPiece = { shape: number[][]; color: number; row: number; col: number
 const BlockPuzzleGame = ({ onBack }: { onBack: () => void }) => {
   const [started, setStarted] = useState(false);
   const [gameOver, setGameOver] = useState(false);
-  const [board, setBoard] = useState<(number | null)[][]>([]);
   const [score, setScore] = useState(0);
   const [level, setLevel] = useState(1);
   const [linesCleared, setLinesCleared] = useState(0);
   const [combo, setCombo] = useState(0);
-  const [current, setCurrent] = useState<FallingPiece | null>(null);
-  const [next, setNext] = useState<FallingPiece | null>(null);
-  const [flashRows, setFlashRows] = useState<number[]>([]);
   const submitScore = useSubmitScore();
   const game = GAMES[12];
-  const intervalRef = useRef<ReturnType<typeof setInterval>>();
-  const boardRef = useRef(board);
-  const currentRef = useRef(current);
-  const scoreRef = useRef(score);
-  const levelRef = useRef(level);
-  const linesClearedRef = useRef(linesCleared);
-  const comboRef = useRef(combo);
-  const gameOverRef = useRef(gameOver);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const frameRef = useRef<number>();
 
-  boardRef.current = board;
-  currentRef.current = current;
-  scoreRef.current = score;
-  levelRef.current = level;
-  linesClearedRef.current = linesCleared;
-  comboRef.current = combo;
-  gameOverRef.current = gameOver;
+  const boardRef = useRef<(number | null)[][]>([]);
+  const currentRef = useRef<FallingPiece | null>(null);
+  const nextRef = useRef<FallingPiece | null>(null);
+  const scoreRef = useRef(0);
+  const levelRef = useRef(1);
+  const linesClearedRef = useRef(0);
+  const comboRef = useRef(0);
+  const gameOverRef = useRef(false);
+  const lastDropRef = useRef(0);
+  const flashRowsRef = useRef<number[]>([]);
+  const flashTimeRef = useRef(0);
+
+  const CELL = 28;
+  const BOARD_PX_W = BG_COLS * CELL;
+  const BOARD_PX_H = BG_ROWS * CELL;
+  const CANVAS_W = BOARD_PX_W + 140;
+  const CANVAS_H = BOARD_PX_H + 20;
+  const BOARD_X = 10;
+  const BOARD_Y = 10;
 
   const emptyBoard = (): (number | null)[][] => Array.from({ length: BG_ROWS }, () => Array(BG_COLS).fill(null));
 
@@ -1914,34 +1988,27 @@ const BlockPuzzleGame = ({ onBack }: { onBack: () => void }) => {
   }, []);
 
   const collides = useCallback((b: (number | null)[][], piece: FallingPiece): boolean => {
-    for (let r = 0; r < piece.shape.length; r++) {
+    for (let r = 0; r < piece.shape.length; r++)
       for (let c = 0; c < piece.shape[r].length; c++) {
         if (piece.shape[r][c] === 0) continue;
         const br = piece.row + r, bc = piece.col + c;
         if (br < 0 || br >= BG_ROWS || bc < 0 || bc >= BG_COLS) return true;
         if (b[br][bc] !== null) return true;
       }
-    }
     return false;
   }, []);
 
   const lockPiece = useCallback((b: (number | null)[][], piece: FallingPiece): (number | null)[][] => {
     const nb = b.map(row => [...row]);
-    for (let r = 0; r < piece.shape.length; r++) {
-      for (let c = 0; c < piece.shape[r].length; c++) {
-        if (piece.shape[r][c] === 1) {
-          nb[piece.row + r][piece.col + c] = piece.color;
-        }
-      }
-    }
+    for (let r = 0; r < piece.shape.length; r++)
+      for (let c = 0; c < piece.shape[r].length; c++)
+        if (piece.shape[r][c] === 1) nb[piece.row + r][piece.col + c] = piece.color;
     return nb;
   }, []);
 
   const clearLines = useCallback((b: (number | null)[][]): { newBoard: (number | null)[][]; cleared: number; clearedRows: number[] } => {
     const clearedRows: number[] = [];
-    for (let r = 0; r < BG_ROWS; r++) {
-      if (b[r].every(cell => cell !== null)) clearedRows.push(r);
-    }
+    for (let r = 0; r < BG_ROWS; r++) if (b[r].every(cell => cell !== null)) clearedRows.push(r);
     if (clearedRows.length === 0) return { newBoard: b, cleared: 0, clearedRows: [] };
     const remaining = b.filter((_, i) => !clearedRows.includes(i));
     const emptyRows = Array.from({ length: clearedRows.length }, () => Array(BG_COLS).fill(null) as (number | null)[]);
@@ -1959,74 +2026,54 @@ const BlockPuzzleGame = ({ onBack }: { onBack: () => void }) => {
     const b = boardRef.current;
     const piece = currentRef.current;
     if (!piece) return;
-
     const moved = { ...piece, row: piece.row + 1 };
     if (!collides(b, moved)) {
-      setCurrent(moved);
+      currentRef.current = moved;
     } else {
-      // Lock piece
-      const locked = lockPiece(b, piece);
-      // Check if game over (piece locked at row 0 or above)
       if (piece.row <= 0) {
-        setGameOver(true);
-        gameOverRef.current = true;
-        clearInterval(intervalRef.current);
+        gameOverRef.current = true; setGameOver(true);
         submitScore("block_puzzle", scoreRef.current);
         return;
       }
+      const locked = lockPiece(b, piece);
       const { newBoard, cleared, clearedRows } = clearLines(locked);
       if (cleared > 0) {
-        setFlashRows(clearedRows);
-        setTimeout(() => setFlashRows([]), 300);
+        flashRowsRef.current = clearedRows;
+        flashTimeRef.current = performance.now();
         const points = [0, 100, 300, 500, 800][Math.min(cleared, 4)] * levelRef.current;
-        const newCombo = comboRef.current + 1;
-        const comboBonus = newCombo > 1 ? 50 * newCombo : 0;
-        setScore(s => s + points + comboBonus);
-        setCombo(newCombo);
-        const newLines = linesClearedRef.current + cleared;
-        setLinesCleared(newLines);
-        const newLevel = Math.floor(newLines / 10) + 1;
-        setLevel(newLevel);
+        comboRef.current++;
+        const comboBonus = comboRef.current > 1 ? 50 * comboRef.current : 0;
+        scoreRef.current += points + comboBonus;
+        setScore(scoreRef.current); setCombo(comboRef.current);
+        linesClearedRef.current += cleared;
+        setLinesCleared(linesClearedRef.current);
+        levelRef.current = Math.floor(linesClearedRef.current / 10) + 1;
+        setLevel(levelRef.current);
       } else {
-        setCombo(0);
+        comboRef.current = 0; setCombo(0);
       }
-      setBoard(newBoard);
-      // Spawn next
-      const nextPiece = next || spawnPiece();
+      boardRef.current = newBoard;
+      const nextPiece = nextRef.current || spawnPiece();
       if (collides(newBoard, nextPiece)) {
-        setGameOver(true);
-        gameOverRef.current = true;
-        clearInterval(intervalRef.current);
-        submitScore("block_puzzle", scoreRef.current + (cleared > 0 ? [0,100,300,500,800][Math.min(cleared,4)] * levelRef.current : 0));
+        gameOverRef.current = true; setGameOver(true);
+        submitScore("block_puzzle", scoreRef.current);
         return;
       }
-      setCurrent(nextPiece);
-      setNext(spawnPiece());
+      currentRef.current = nextPiece;
+      nextRef.current = spawnPiece();
     }
-  }, [collides, lockPiece, clearLines, next, spawnPiece, submitScore]);
+  }, [collides, lockPiece, clearLines, spawnPiece, submitScore]);
 
   const initGame = useCallback(() => {
-    const b = emptyBoard();
-    setBoard(b);
-    setScore(0); setLevel(1); setLinesCleared(0); setCombo(0);
-    setGameOver(false); setFlashRows([]);
-    gameOverRef.current = false;
-    const p = spawnPiece();
-    setCurrent(p);
-    setNext(spawnPiece());
-    setStarted(true);
+    boardRef.current = emptyBoard();
+    scoreRef.current = 0; levelRef.current = 1; linesClearedRef.current = 0; comboRef.current = 0;
+    gameOverRef.current = false; flashRowsRef.current = []; lastDropRef.current = 0;
+    currentRef.current = spawnPiece();
+    nextRef.current = spawnPiece();
+    setScore(0); setLevel(1); setLinesCleared(0); setCombo(0); setGameOver(false); setStarted(true);
   }, [spawnPiece]);
 
-  // Game loop
-  useEffect(() => {
-    if (!started || gameOver) return;
-    clearInterval(intervalRef.current);
-    const speed = Math.max(100, 800 - (level - 1) * 70);
-    intervalRef.current = setInterval(tick, speed);
-    return () => clearInterval(intervalRef.current);
-  }, [started, gameOver, level, tick]);
-
-  // Keyboard controls
+  // Keyboard
   useEffect(() => {
     if (!started || gameOver) return;
     const handler = (e: KeyboardEvent) => {
@@ -2035,69 +2082,211 @@ const BlockPuzzleGame = ({ onBack }: { onBack: () => void }) => {
       if (!piece) return;
       if (e.key === "ArrowLeft" || e.key === "a") {
         e.preventDefault();
-        const moved = { ...piece, col: piece.col - 1 };
-        if (!collides(b, moved)) setCurrent(moved);
+        const m = { ...piece, col: piece.col - 1 };
+        if (!collides(b, m)) currentRef.current = m;
       } else if (e.key === "ArrowRight" || e.key === "d") {
         e.preventDefault();
-        const moved = { ...piece, col: piece.col + 1 };
-        if (!collides(b, moved)) setCurrent(moved);
+        const m = { ...piece, col: piece.col + 1 };
+        if (!collides(b, m)) currentRef.current = m;
       } else if (e.key === "ArrowDown" || e.key === "s") {
         e.preventDefault();
-        const moved = { ...piece, row: piece.row + 1 };
-        if (!collides(b, moved)) { setCurrent(moved); setScore(s => s + 1); }
+        const m = { ...piece, row: piece.row + 1 };
+        if (!collides(b, m)) { currentRef.current = m; scoreRef.current++; setScore(scoreRef.current); }
       } else if (e.key === "ArrowUp" || e.key === "w") {
         e.preventDefault();
         const rotated = { ...piece, shape: rotateCW(piece.shape) };
-        // Wall kick: try 0, -1, +1, -2, +2
         for (const offset of [0, -1, 1, -2, 2]) {
           const kicked = { ...rotated, col: rotated.col + offset };
-          if (!collides(b, kicked)) { setCurrent(kicked); break; }
+          if (!collides(b, kicked)) { currentRef.current = kicked; break; }
         }
       } else if (e.key === " ") {
         e.preventDefault();
-        // Hard drop
         let dropRow = piece.row;
         while (!collides(b, { ...piece, row: dropRow + 1 })) dropRow++;
-        const dropped = dropRow - piece.row;
-        setScore(s => s + dropped * 2);
-        setCurrent({ ...piece, row: dropRow });
-        // Force immediate lock on next tick
-        setTimeout(tick, 0);
+        scoreRef.current += (dropRow - piece.row) * 2;
+        setScore(scoreRef.current);
+        currentRef.current = { ...piece, row: dropRow };
+        tick();
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [started, gameOver, collides, tick]);
 
-  const CELL = 30;
+  // Canvas game loop
+  useEffect(() => {
+    if (!started || gameOver) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d")!;
+
+    const drawBlock = (x: number, y: number, colorIdx: number, alpha = 1) => {
+      const c = BLOCK_COLORS[colorIdx];
+      ctx.globalAlpha = alpha;
+      const grad = ctx.createLinearGradient(x, y, x + CELL, y + CELL);
+      grad.addColorStop(0, c.light);
+      grad.addColorStop(0.4, c.bg);
+      grad.addColorStop(1, c.dark);
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.roundRect(x + 0.5, y + 0.5, CELL - 1, CELL - 1, 2); ctx.fill();
+      // Highlight
+      ctx.fillStyle = "rgba(255,255,255,0.25)";
+      ctx.fillRect(x + 2, y + 1, CELL - 4, 3);
+      ctx.globalAlpha = 1;
+    };
+
+    const loop = (time: number) => {
+      if (gameOverRef.current) return;
+
+      // Auto-drop
+      const speed = Math.max(100, 800 - (levelRef.current - 1) * 70);
+      if (time - lastDropRef.current >= speed) {
+        lastDropRef.current = time;
+        tick();
+      }
+
+      // Clear flash after 300ms
+      if (flashRowsRef.current.length > 0 && time - flashTimeRef.current > 300) {
+        flashRowsRef.current = [];
+      }
+
+      // ── RENDER ──
+      ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+
+      // Background
+      ctx.fillStyle = "hsl(225,50%,8%)";
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+      // Board background
+      const boardGrad = ctx.createLinearGradient(BOARD_X, BOARD_Y, BOARD_X, BOARD_Y + BOARD_PX_H);
+      boardGrad.addColorStop(0, "hsl(225,50%,15%)");
+      boardGrad.addColorStop(1, "hsl(225,50%,10%)");
+      ctx.fillStyle = boardGrad;
+      ctx.beginPath(); ctx.roundRect(BOARD_X, BOARD_Y, BOARD_PX_W, BOARD_PX_H, 6); ctx.fill();
+      ctx.strokeStyle = "hsl(225,40%,25%)"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(BOARD_X, BOARD_Y, BOARD_PX_W, BOARD_PX_H, 6); ctx.stroke();
+
+      const board = boardRef.current;
+      const piece = currentRef.current;
+      const flashSet = new Set(flashRowsRef.current);
+
+      // Grid cells
+      for (let r = 0; r < BG_ROWS; r++) {
+        for (let c = 0; c < BG_COLS; c++) {
+          const x = BOARD_X + c * CELL;
+          const y = BOARD_Y + r * CELL;
+          const cell = board[r]?.[c];
+          const isFlash = flashSet.has(r);
+
+          if (cell !== null && cell !== undefined) {
+            const flashAlpha = isFlash ? 0.4 + Math.sin(performance.now() * 0.02) * 0.4 : 1;
+            drawBlock(x, y, cell, flashAlpha);
+          } else {
+            ctx.fillStyle = "hsl(225,40%,14%)";
+            ctx.strokeStyle = "hsl(225,40%,18%)";
+            ctx.lineWidth = 0.5;
+            ctx.fillRect(x + 0.5, y + 0.5, CELL - 1, CELL - 1);
+            ctx.strokeRect(x + 0.5, y + 0.5, CELL - 1, CELL - 1);
+          }
+        }
+      }
+
+      // Ghost piece
+      if (piece) {
+        const ghostRow = getGhostRow(board, piece);
+        for (let r = 0; r < piece.shape.length; r++)
+          for (let c = 0; c < piece.shape[r].length; c++)
+            if (piece.shape[r][c] === 1) {
+              const x = BOARD_X + (piece.col + c) * CELL;
+              const y = BOARD_Y + (ghostRow + r) * CELL;
+              const color = BLOCK_COLORS[piece.color];
+              ctx.fillStyle = color.bg + "20";
+              ctx.strokeStyle = color.bg + "60";
+              ctx.lineWidth = 1;
+              ctx.setLineDash([3, 3]);
+              ctx.fillRect(x + 1, y + 1, CELL - 2, CELL - 2);
+              ctx.strokeRect(x + 1, y + 1, CELL - 2, CELL - 2);
+              ctx.setLineDash([]);
+            }
+
+        // Current piece
+        for (let r = 0; r < piece.shape.length; r++)
+          for (let c = 0; c < piece.shape[r].length; c++)
+            if (piece.shape[r][c] === 1) {
+              const br = piece.row + r, bc = piece.col + c;
+              if (br >= 0 && br < BG_ROWS && bc >= 0 && bc < BG_COLS)
+                drawBlock(BOARD_X + bc * CELL, BOARD_Y + br * CELL, piece.color);
+            }
+      }
+
+      // ── Side panel ──
+      const panelX = BOARD_X + BOARD_PX_W + 14;
+
+      // Next piece
+      ctx.fillStyle = "hsl(225,40%,13%)";
+      ctx.strokeStyle = "hsl(225,40%,22%)";
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.roundRect(panelX, BOARD_Y, 110, 90, 8); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,0.4)";
+      ctx.font = "bold 9px monospace"; ctx.textAlign = "center";
+      ctx.fillText("NEXT", panelX + 55, BOARD_Y + 16);
+      const np = nextRef.current;
+      if (np) {
+        const previewCell = 18;
+        const offX = panelX + 55 - (np.shape[0].length * previewCell) / 2;
+        const offY = BOARD_Y + 28;
+        for (let r = 0; r < np.shape.length; r++)
+          for (let c = 0; c < np.shape[r].length; c++)
+            if (np.shape[r][c] === 1)
+              drawBlock(offX + c * previewCell, offY + r * previewCell, np.color);
+      }
+
+      // Stats
+      ctx.fillStyle = "hsl(225,40%,13%)";
+      ctx.beginPath(); ctx.roundRect(panelX, BOARD_Y + 100, 110, 160, 8); ctx.fill();
+      ctx.strokeStyle = "hsl(225,40%,22%)"; ctx.stroke();
+
+      const drawStat = (label: string, value: string, color: string, yOff: number) => {
+        ctx.fillStyle = "rgba(255,255,255,0.35)";
+        ctx.font = "bold 8px monospace"; ctx.textAlign = "left";
+        ctx.fillText(label, panelX + 12, BOARD_Y + 100 + yOff);
+        ctx.fillStyle = color;
+        ctx.font = "bold 18px monospace";
+        ctx.fillText(value, panelX + 12, BOARD_Y + 100 + yOff + 20);
+      };
+      drawStat("SCORE", `${scoreRef.current}`, "hsl(190,90%,60%)", 20);
+      drawStat("LEVEL", `${levelRef.current}`, "hsl(275,70%,65%)", 60);
+      drawStat("LINES", `${linesClearedRef.current}`, "hsl(120,60%,55%)", 100);
+
+      // Controls
+      ctx.fillStyle = "hsl(225,40%,13%)";
+      ctx.beginPath(); ctx.roundRect(panelX, BOARD_Y + 270, 110, 90, 8); ctx.fill();
+      ctx.strokeStyle = "hsl(225,40%,22%)"; ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,0.3)";
+      ctx.font = "9px monospace"; ctx.textAlign = "left";
+      ctx.fillText("← → Move", panelX + 8, BOARD_Y + 290);
+      ctx.fillText("↑ Rotate", panelX + 8, BOARD_Y + 305);
+      ctx.fillText("↓ Soft Drop", panelX + 8, BOARD_Y + 320);
+      ctx.fillText("Space Hard Drop", panelX + 8, BOARD_Y + 335);
+
+      // Combo
+      if (comboRef.current > 1) {
+        ctx.save();
+        ctx.fillStyle = "hsl(45,95%,60%)";
+        ctx.font = "bold 14px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText(`🔥 x${comboRef.current}`, panelX + 55, BOARD_Y + 380);
+        ctx.restore();
+      }
+
+      frameRef.current = requestAnimationFrame(loop);
+    };
+
+    frameRef.current = requestAnimationFrame(loop);
+    return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
+  }, [started, gameOver, tick, getGhostRow]);
 
   if (!started) return <StartScreen title="Block Blast" description="Tetris-style falling blocks! Rotate & place pieces to clear lines. Speed increases with each level!" icon={<Box className="w-14 h-14" />} gradient={game.gradient} glow={game.glow} onStart={initGame} onBack={onBack} gameType="block_puzzle" />;
   if (gameOver) return <EndScreen won={score >= 1000} title={`Score: ${score}!`} subtitle={`Level ${level} — ${linesCleared} lines cleared`} onReplay={initGame} onBack={onBack} gameType="block_puzzle" />;
-
-  // Build display board with current piece and ghost
-  const displayBoard = board.map(row => [...row]);
-  const ghostBoard: boolean[][] = Array.from({ length: BG_ROWS }, () => Array(BG_COLS).fill(false));
-  if (current) {
-    const ghostRow = getGhostRow(board, current);
-    // Draw ghost
-    for (let r = 0; r < current.shape.length; r++) {
-      for (let c = 0; c < current.shape[r].length; c++) {
-        if (current.shape[r][c] === 1) {
-          const gr = ghostRow + r, gc = current.col + c;
-          if (gr >= 0 && gr < BG_ROWS && gc >= 0 && gc < BG_COLS) ghostBoard[gr][gc] = true;
-        }
-      }
-    }
-    // Draw current piece
-    for (let r = 0; r < current.shape.length; r++) {
-      for (let c = 0; c < current.shape[r].length; c++) {
-        if (current.shape[r][c] === 1) {
-          const br = current.row + r, bc = current.col + c;
-          if (br >= 0 && br < BG_ROWS && bc >= 0 && bc < BG_COLS) displayBoard[br][bc] = current.color;
-        }
-      }
-    }
-  }
 
   return (
     <GameShell onBack={onBack} title="Block Blast" icon={<Box className="w-5 h-5 text-foreground" />} gradient={game.gradient}
@@ -2106,139 +2295,59 @@ const BlockPuzzleGame = ({ onBack }: { onBack: () => void }) => {
         <Badge className="bg-purple-900/40 text-purple-300 border-purple-500/30">Lv.{level}</Badge>
         {combo > 1 && <Badge className="bg-yellow-900/40 text-yellow-300 border-yellow-500/30 animate-pulse">🔥 x{combo}</Badge>}
       </>}>
-      <div className="flex flex-col lg:flex-row items-start justify-center gap-6">
-        {/* Game Board */}
-        <div className="relative rounded-2xl p-2" style={{ background: "linear-gradient(135deg, hsl(225,50%,25%), hsl(225,50%,15%))", boxShadow: "0 8px 40px hsl(225 50% 10% / 0.8), inset 0 1px 0 hsl(225 40% 40% / 0.3)" }}>
-          <div className="grid" style={{ gridTemplateColumns: `repeat(${BG_COLS}, ${CELL}px)`, gap: "1px" }}>
-            {displayBoard.map((row, r) =>
-              row.map((cell, c) => {
-                const isFlash = flashRows.includes(r);
-                const isGhost = ghostBoard[r][c] && cell === null;
-                const color = cell !== null ? BLOCK_COLORS[cell] : null;
-
-                return (
-                  <motion.div
-                    key={`${r}-${c}`}
-                    style={{ width: CELL, height: CELL }}
-                    animate={isFlash ? { opacity: [1, 0.3, 1], scale: [1, 1.05, 0.95] } : {}}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {cell !== null ? (
-                      <div className="w-full h-full rounded-[3px] relative overflow-hidden" style={{
-                        background: `linear-gradient(135deg, ${color!.light} 0%, ${color!.bg} 40%, ${color!.dark} 100%)`,
-                        boxShadow: `0 2px 4px ${color!.shadow}, inset 0 1px 0 ${color!.light}80, inset 0 -1px 0 ${color!.dark}80`,
-                      }}>
-                        <div className="absolute inset-0" style={{
-                          background: "linear-gradient(135deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.1) 40%, transparent 60%)",
-                        }} />
-                      </div>
-                    ) : isGhost ? (
-                      <div className="w-full h-full rounded-[3px]" style={{
-                        background: current ? `${BLOCK_COLORS[current.color].bg}20` : "transparent",
-                        border: `1px dashed ${current ? BLOCK_COLORS[current.color].bg + "60" : "transparent"}`,
-                      }} />
-                    ) : (
-                      <div className="w-full h-full rounded-[3px]" style={{
-                        background: "hsl(225,40%,14%)",
-                        border: "1px solid hsl(225,40%,18%)",
-                      }} />
-                    )}
-                  </motion.div>
-                );
-              })
-            )}
-          </div>
+      <div className="flex flex-col items-center gap-4">
+        <canvas
+          ref={canvasRef}
+          width={CANVAS_W}
+          height={CANVAS_H}
+          className="rounded-2xl max-w-full"
+          style={{ maxWidth: CANVAS_W, aspectRatio: `${CANVAS_W}/${CANVAS_H}` }}
+        />
+        {/* Mobile controls */}
+        <div className="grid grid-cols-3 gap-1.5 lg:hidden">
+          <div />
+          <Button size="sm" variant="outline" className="border-blue-500/30 h-10" onClick={() => {
+            const piece = currentRef.current;
+            if (!piece) return;
+            const rotated = { ...piece, shape: rotateCW(piece.shape) };
+            for (const offset of [0, -1, 1, -2, 2]) {
+              const kicked = { ...rotated, col: rotated.col + offset };
+              if (!collides(boardRef.current, kicked)) { currentRef.current = kicked; break; }
+            }
+          }}>↻</Button>
+          <div />
+          <Button size="sm" variant="outline" className="border-blue-500/30 h-10" onClick={() => {
+            const piece = currentRef.current;
+            if (!piece) return;
+            const m = { ...piece, col: piece.col - 1 };
+            if (!collides(boardRef.current, m)) currentRef.current = m;
+          }}>←</Button>
+          <Button size="sm" variant="outline" className="border-blue-500/30 h-10" onClick={() => {
+            const piece = currentRef.current;
+            if (!piece) return;
+            const m = { ...piece, row: piece.row + 1 };
+            if (!collides(boardRef.current, m)) { currentRef.current = m; scoreRef.current++; setScore(scoreRef.current); }
+          }}>↓</Button>
+          <Button size="sm" variant="outline" className="border-blue-500/30 h-10" onClick={() => {
+            const piece = currentRef.current;
+            if (!piece) return;
+            const m = { ...piece, col: piece.col + 1 };
+            if (!collides(boardRef.current, m)) currentRef.current = m;
+          }}>→</Button>
+          <div />
+          <Button size="sm" variant="outline" className="border-yellow-500/30 h-10 col-span-1" onClick={() => {
+            const piece = currentRef.current;
+            if (!piece) return;
+            let dropRow = piece.row;
+            while (!collides(boardRef.current, { ...piece, row: dropRow + 1 })) dropRow++;
+            scoreRef.current += (dropRow - piece.row) * 2;
+            setScore(scoreRef.current);
+            currentRef.current = { ...piece, row: dropRow };
+            tick();
+          }}>⬇</Button>
+          <div />
         </div>
-
-        {/* Side Panel */}
-        <div className="flex flex-col gap-4 min-w-[140px]">
-          {/* Next Piece Preview */}
-          <div className="rounded-xl p-3 text-center" style={{ background: "linear-gradient(135deg, hsl(225,40%,16%), hsl(225,40%,10%))", border: "1px solid hsl(225,40%,22%)" }}>
-            <p className="text-xs text-muted-foreground font-mono mb-2 uppercase tracking-wider">Next</p>
-            {next && (
-              <div className="inline-grid gap-[2px]" style={{ gridTemplateColumns: `repeat(${next.shape[0].length}, 22px)` }}>
-                {next.shape.flat().map((cell, i) => {
-                  const color = BLOCK_COLORS[next.color];
-                  return (
-                    <div key={i} style={{ width: 22, height: 22 }}>
-                      {cell === 1 ? (
-                        <div className="w-full h-full rounded-sm relative overflow-hidden" style={{
-                          background: `linear-gradient(135deg, ${color.light} 0%, ${color.bg} 40%, ${color.dark} 100%)`,
-                          boxShadow: `0 1px 2px ${color.shadow}`,
-                        }}>
-                          <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 50%)" }} />
-                        </div>
-                      ) : <div className="w-full h-full" />}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Stats */}
-          <div className="rounded-xl p-3 space-y-3" style={{ background: "linear-gradient(135deg, hsl(225,40%,16%), hsl(225,40%,10%))", border: "1px solid hsl(225,40%,22%)" }}>
-            <div>
-              <p className="text-[10px] text-muted-foreground font-mono uppercase">Score</p>
-              <p className="text-xl font-bold font-mono text-cyan-400">{score}</p>
-            </div>
-            <div>
-              <p className="text-[10px] text-muted-foreground font-mono uppercase">Level</p>
-              <p className="text-xl font-bold font-mono text-purple-400">{level}</p>
-            </div>
-            <div>
-              <p className="text-[10px] text-muted-foreground font-mono uppercase">Lines</p>
-              <p className="text-xl font-bold font-mono text-green-400">{linesCleared}</p>
-            </div>
-          </div>
-
-          {/* Controls help */}
-          <div className="rounded-xl p-3 text-[10px] text-muted-foreground font-mono space-y-1" style={{ background: "linear-gradient(135deg, hsl(225,40%,16%), hsl(225,40%,10%))", border: "1px solid hsl(225,40%,22%)" }}>
-            <p>← → Move</p>
-            <p>↑ Rotate</p>
-            <p>↓ Soft Drop</p>
-            <p>Space Hard Drop</p>
-          </div>
-
-          {/* Mobile controls */}
-          <div className="grid grid-cols-3 gap-1.5 lg:hidden">
-            <div />
-            <Button size="sm" variant="outline" className="border-blue-500/30 h-10" onClick={() => {
-              if (!current) return;
-              const rotated = { ...current, shape: rotateCW(current.shape) };
-              for (const offset of [0, -1, 1, -2, 2]) {
-                const kicked = { ...rotated, col: rotated.col + offset };
-                if (!collides(board, kicked)) { setCurrent(kicked); break; }
-              }
-            }}>↻</Button>
-            <div />
-            <Button size="sm" variant="outline" className="border-blue-500/30 h-10" onClick={() => {
-              if (!current) return;
-              const moved = { ...current, col: current.col - 1 };
-              if (!collides(board, moved)) setCurrent(moved);
-            }}>←</Button>
-            <Button size="sm" variant="outline" className="border-blue-500/30 h-10" onClick={() => {
-              if (!current) return;
-              const moved = { ...current, row: current.row + 1 };
-              if (!collides(board, moved)) { setCurrent(moved); setScore(s => s + 1); }
-            }}>↓</Button>
-            <Button size="sm" variant="outline" className="border-blue-500/30 h-10" onClick={() => {
-              if (!current) return;
-              const moved = { ...current, col: current.col + 1 };
-              if (!collides(board, moved)) setCurrent(moved);
-            }}>→</Button>
-            <div />
-            <Button size="sm" variant="outline" className="border-yellow-500/30 h-10 col-span-1" onClick={() => {
-              if (!current) return;
-              let dropRow = current.row;
-              while (!collides(board, { ...current, row: dropRow + 1 })) dropRow++;
-              setScore(s => s + (dropRow - current.row) * 2);
-              setCurrent({ ...current, row: dropRow });
-              setTimeout(tick, 0);
-            }}>⬇</Button>
-            <div />
-          </div>
-        </div>
+        <p className="text-xs text-muted-foreground font-mono">← → Move • ↑ Rotate • ↓ Soft Drop • Space Hard Drop</p>
       </div>
       <Leaderboard gameType="block_puzzle" />
     </GameShell>
