@@ -823,7 +823,7 @@ const StaffContract = () => {
                     </Badge>
                   </div>
                   <div className="mt-3 flex items-center justify-center gap-4 text-sm text-muted-foreground relative z-10">
-                    <span>Date: {format(new Date(), 'dd MMMM yyyy')}</span>
+                    <span>Date: {safeFormatDate(new Date().toISOString(), 'dd MMMM yyyy')}</span>
                     {selectedContractId && <span className="text-destructive">•</span>}
                     {selectedContractId && <span>ID: {selectedContractId.slice(0, 8)}...</span>}
                   </div>
