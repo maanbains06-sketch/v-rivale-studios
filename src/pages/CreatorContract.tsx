@@ -706,7 +706,7 @@ const CreatorContract = () => {
     });
     yPos += 43;
 
-    yPos = drawSectionHeader('Server Obligations', yPos);
+    yPos = drawContractSectionHeader('Server Obligations', yPos);
 
     doc.setTextColor(...black);  // Reset text color after header
     doc.setDrawColor(...black);
