@@ -642,7 +642,7 @@ const CreatorContract = () => {
     yPos += 15;
 
     // ========== CONTENT DELIVERABLES SECTION ==========
-    yPos = drawSectionHeader('Content Deliverables', yPos);
+    yPos = drawContractSectionHeader('Content Deliverables', yPos);
 
     drawFormField('Min. Videos/Month', contractData.minimumVideos, margin, yPos, halfWidth);
     drawFormField('Min. Stream Hours', contractData.minimumStreams, margin + halfWidth + 4, yPos, halfWidth);
