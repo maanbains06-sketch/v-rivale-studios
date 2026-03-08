@@ -1182,7 +1182,11 @@ const AuctionBiddingGame = ({ onBack, submitScore, GameShell, StartScreen, EndSc
                   }`}>
                     {xrayRevealed === i ? (
                       <>
-                        <div className="text-2xl mb-1">{item.emoji}</div>
+                        {getItemImage(item.name) ? (
+                          <img src={getItemImage(item.name)!} alt={item.name} className="w-12 h-12 mx-auto object-contain mb-1 rounded-lg" />
+                        ) : (
+                          <div className="text-2xl mb-1">{item.emoji}</div>
+                        )}
                         <p className="text-xs font-bold truncate">{item.name}</p>
                         <Badge className="mt-1 text-[7px] bg-primary/20 border-primary/30 text-primary">X-RAY</Badge>
                       </>
