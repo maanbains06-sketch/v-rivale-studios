@@ -618,6 +618,12 @@ const Navigation = () => {
                         Suggestion Box
                       </Link>
                     </Button>
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/cinema-hub" className="flex items-center">
+                        <Tv className="w-4 h-4 mr-2 text-purple-400" />
+                        Cinema Hub
+                      </Link>
+                    </Button>
                     {showMemorialLink && (
                       <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
                         <Link to="/memorial" className="flex items-center">
