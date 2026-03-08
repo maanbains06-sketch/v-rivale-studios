@@ -527,7 +527,7 @@ const StaffContract = () => {
     drawFormField('Join Date', contractData.staffJoinDate ? safeFormatDate(contractData.staffJoinDate, 'dd/MM/yyyy') : '', margin + halfWidth + 4, yPos, halfWidth);
     yPos += 15;
 
-    drawSectionHeader('Contract Period', '📅');
+    drawStaffSectionHeader('Contract Period', '📅');
     drawFormField('Duration', contractData.contractDuration, margin, yPos, contentWidth / 3 - 2);
     drawFormField('Start Date', safeFormatDate(contractData.startDate, 'dd/MM/yyyy'), margin + contentWidth / 3 + 1, yPos, contentWidth / 3 - 2);
     drawFormField('End Date', safeFormatDate(contractData.endDate, 'dd/MM/yyyy'), margin + (contentWidth / 3 + 1) * 2, yPos, contentWidth / 3 - 2);
