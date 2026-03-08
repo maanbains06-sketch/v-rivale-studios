@@ -626,8 +626,8 @@ const CreatorContract = () => {
     const quarterWidth = contentWidth / 4 - 3;
     
     drawFormField('Duration', contractData.contractDuration, margin, yPos, quarterWidth + 15);
-    drawFormField('Start Date', format(new Date(contractData.startDate), 'dd/MM/yyyy'), margin + quarterWidth + 18, yPos, quarterWidth + 15);
-    drawFormField('End Date', format(new Date(contractData.endDate), 'dd/MM/yyyy'), margin + (quarterWidth + 18) * 2, yPos, quarterWidth + 14);
+    drawFormField('Start Date', safeFormatDate(contractData.startDate, 'dd/MM/yyyy'), margin + quarterWidth + 18, yPos, quarterWidth + 15);
+    drawFormField('End Date', safeFormatDate(contractData.endDate, 'dd/MM/yyyy'), margin + (quarterWidth + 18) * 2, yPos, quarterWidth + 14);
     yPos += 10;
     
     drawFormField('Exclusivity', contractData.exclusivityClause, margin, yPos, contentWidth);
