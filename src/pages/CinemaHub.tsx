@@ -349,7 +349,7 @@ const CinemaHub = () => {
           </div>
         )}
       </div>
-      <Footer />
+      
     </div>
   );
 };
