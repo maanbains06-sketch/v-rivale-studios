@@ -611,6 +611,12 @@ const Navigation = () => {
                         Awards
                       </Link>
                     </Button>
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/suggestion-box" className="flex items-center">
+                        <Lightbulb className="w-4 h-4 mr-2 text-amber-400" />
+                        Suggestion Box
+                      </Link>
+                    </Button>
                   </div>
 
                   {/* Quick Admin Links - Only visible to staff */}
