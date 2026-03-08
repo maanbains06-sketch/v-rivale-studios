@@ -37,6 +37,7 @@ interface SiteSettings {
   guides_hidden: boolean;
   mini_games_hidden: boolean;
   profile_customization_hidden: boolean;
+  memorial_hidden: boolean;
 }
 
 interface UseSiteSettingsReturn {
