@@ -108,7 +108,7 @@ const SuggestionBox = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      <PageHeader title="Suggestion Box" subtitle="Share your ideas to make SLRP even better" />
+      <PageHeader title="Suggestion Box" description="Share your ideas to make SLRP even better" />
       
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Hero Card */}
