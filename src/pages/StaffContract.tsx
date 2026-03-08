@@ -569,7 +569,7 @@ const StaffContract = () => {
     doc.setFontSize(7);
     const discLines = doc.splitTextToSize(contractData.disciplinaryAction, contentWidth - 10);
     discLines.forEach((line: string) => {
-      checkPageBreak(5);
+      localCheckPageBreak(5);
       doc.text(line, margin + 3, yPos + 4);
       yPos += 4;
     });
