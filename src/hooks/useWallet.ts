@@ -114,6 +114,10 @@ export const useWallet = () => {
       toast({ title: "Equip failed", description: data?.error || "Failed to equip", variant: "destructive" });
       return false;
     }
+    // Clear customization cache so profile updates immediately
+    const { clearCustomizationCache } = await import("@/hooks/useProfileCustomization");
+    const { data: { session } } = await supabase.auth.getSession();
+    clearCustomizationCache(session?.user?.id);
     toast({ title: "Item Equipped!" });
     return true;
   }, [toast]);
