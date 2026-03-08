@@ -400,6 +400,7 @@ const EscapeRoomGame = ({ onBack }: { onBack: () => void }) => {
   const [foundKey, setFoundKey] = useState(false);
   const [foundClue, setFoundClue] = useState(false);
   const { toast } = useToast();
+  const submitScore = useSubmitScore();
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
   const game = GAMES[0];
 
