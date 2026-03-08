@@ -562,8 +562,8 @@ const StaffContract = () => {
     renderPolicies('Server Assets & Intellectual Property', '🔐', contractData.serverAssetPolicies || []);
     renderPolicies('Emergency Protocols', '🚨', contractData.emergencyPolicies || []);
 
-    checkPageBreak(30);
-    drawSectionHeader('Disciplinary Action & Consequences', '⚠️');
+    localCheckPageBreak(30);
+    drawStaffSectionHeader('Disciplinary Action & Consequences', '⚠️');
     doc.setTextColor(...black);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
