@@ -497,25 +497,15 @@ const CreatorContract = () => {
     let yPos = 0;
 
     // Colors
-    const headerBg: [number, number, number] = [30, 41, 59];
-    const black: [number, number, number] = [0, 0, 0];
-    const gray: [number, number, number] = [100, 100, 100];
-    const lightGray: [number, number, number] = [230, 230, 230];
+    const headerBg: [number, number, number] = PDF_COLORS.headerBg;
+    const black: [number, number, number] = PDF_COLORS.black;
+    const gray: [number, number, number] = PDF_COLORS.textSecondary;
+    const lightGray: [number, number, number] = PDF_COLORS.lightBg;
 
     // ========== PAGE 1 - Header and Party Details ==========
     
-    // Header Box
-    doc.setFillColor(...headerBg);
-    doc.rect(0, 0, pageWidth, 35, 'F');
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.text('SKYLIFE ROLEPLAY INDIA', pageWidth / 2, 15, { align: 'center' });
-    
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'normal');
-    doc.text('CONTENT CREATOR AGREEMENT', pageWidth / 2, 25, { align: 'center' });
+    // Branded Header
+    drawHeader(doc, 'CONTENT CREATOR AGREEMENT', 'Official Contract Document');
 
     yPos = 45;
 
