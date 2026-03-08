@@ -293,15 +293,41 @@ const StaffContract = () => {
   const getActivePolicies = (policies: PolicyItem[]) => policies.filter(p => p.enabled && p.text.trim());
 
   const handleSelectContract = (contract: any) => {
-    setSelectedContractId(contract.id);
-    const data = contract.contract_data as StaffContractData;
-    setContractData({ ...defaultContractData, ...data });
-    setContractStatus(contract.status);
-    setOwnerSignature(contract.owner_signature);
-    setOwnerSignedAt(contract.owner_signed_at);
-    setStaffSignature(contract.staff_signature);
-    setStaffSignedAt(contract.staff_signed_at);
-    setIsEditing(false);
+    try {
+      setSelectedContractId(contract.id);
+      // Safely parse contract_data - handle null, string, or object
+      let data: Partial<StaffContractData> = {};
+      if (contract.contract_data) {
+        if (typeof contract.contract_data === 'string') {
+          try { data = JSON.parse(contract.contract_data); } catch { data = {}; }
+        } else {
+          data = contract.contract_data as Partial<StaffContractData>;
+        }
+      }
+      // Merge with defaults, ensuring all policy arrays exist with proper structure
+      const merged: StaffContractData = {
+        ...defaultContractData,
+        ...data,
+        ndaPolicies: Array.isArray(data.ndaPolicies) && data.ndaPolicies.length > 0 ? data.ndaPolicies : defaultContractData.ndaPolicies,
+        conflictPolicies: Array.isArray(data.conflictPolicies) && data.conflictPolicies.length > 0 ? data.conflictPolicies : defaultContractData.conflictPolicies,
+        antiCorruptionPolicies: Array.isArray(data.antiCorruptionPolicies) && data.antiCorruptionPolicies.length > 0 ? data.antiCorruptionPolicies : defaultContractData.antiCorruptionPolicies,
+        dataProtectionPolicies: Array.isArray(data.dataProtectionPolicies) && data.dataProtectionPolicies.length > 0 ? data.dataProtectionPolicies : defaultContractData.dataProtectionPolicies,
+        conductPolicies: Array.isArray(data.conductPolicies) && data.conductPolicies.length > 0 ? data.conductPolicies : defaultContractData.conductPolicies,
+        communicationPolicies: Array.isArray(data.communicationPolicies) && data.communicationPolicies.length > 0 ? data.communicationPolicies : defaultContractData.communicationPolicies,
+        serverAssetPolicies: Array.isArray(data.serverAssetPolicies) && data.serverAssetPolicies.length > 0 ? data.serverAssetPolicies : defaultContractData.serverAssetPolicies,
+        emergencyPolicies: Array.isArray(data.emergencyPolicies) && data.emergencyPolicies.length > 0 ? data.emergencyPolicies : defaultContractData.emergencyPolicies,
+      };
+      setContractData(merged);
+      setContractStatus(contract.status || "draft");
+      setOwnerSignature(contract.owner_signature || null);
+      setOwnerSignedAt(contract.owner_signed_at || null);
+      setStaffSignature(contract.staff_signature || null);
+      setStaffSignedAt(contract.staff_signed_at || null);
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error loading contract:", error);
+      toast({ title: "Error loading contract", description: "Could not parse contract data. Try creating a new one.", variant: "destructive" });
+    }
   };
 
   const handleNewContract = () => {

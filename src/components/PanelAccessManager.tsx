@@ -46,7 +46,19 @@ const PANEL_TYPES = [
   { id: "job", label: "Job Panel", icon: Briefcase, description: "Manage department job applications", hasDepartments: true },
   { id: "roster", label: "Roster Panel", icon: Users, description: "View and edit department rosters", hasDepartments: true },
   { id: "admin", label: "Admin Panel", icon: Settings, description: "Full admin access to all features", hasDepartments: false },
-  { id: "contract", label: "Contract Panel", icon: FileText, description: "Manage creator contracts (Owner-only by default)", hasDepartments: false },
+  { id: "support", label: "Support Chat", icon: Shield, description: "Access support chat management", hasDepartments: false },
+  { id: "staff_contract", label: "Staff Contracts", icon: FileText, description: "Access staff agreement contracts", hasDepartments: false },
+  { id: "contract", label: "Creator Contracts", icon: FileText, description: "Manage creator contracts", hasDepartments: false },
+  { id: "staff_setup", label: "Staff Setup", icon: Settings, description: "Staff setup & configuration", hasDepartments: false },
+  { id: "case_files", label: "Case Files", icon: Shield, description: "Access case file management", hasDepartments: false },
+  { id: "gallery", label: "Gallery Panel", icon: Shield, description: "Manage gallery submissions", hasDepartments: false },
+  { id: "referrals", label: "Referrals Panel", icon: Users, description: "Manage referral system", hasDepartments: false },
+  { id: "youtubers", label: "YouTubers Panel", icon: Users, description: "Manage featured YouTubers", hasDepartments: false },
+  { id: "staff_stats", label: "Staff Stats", icon: Settings, description: "View staff statistics", hasDepartments: false },
+  { id: "staff_teams", label: "Staff Teams", icon: Users, description: "Manage staff teams", hasDepartments: false },
+  { id: "promo", label: "Promo Analytics", icon: Settings, description: "Promo code analytics", hasDepartments: false },
+  { id: "staff_applications", label: "Staff Applications", icon: FileText, description: "Review staff applications", hasDepartments: false },
+  { id: "support_analytics", label: "Support Analytics", icon: Settings, description: "Support system analytics", hasDepartments: false },
 ];
 
 // Department options for each panel type
@@ -119,6 +131,22 @@ const PanelAccessManager = () => {
   useEffect(() => {
     loadEntries();
     loadStaffMembers();
+
+    // Subscribe to realtime changes on panel_access
+    const channel = supabase
+      .channel('panel-access-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'panel_access' },
+        () => {
+          loadEntries();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const loadEntries = async () => {
