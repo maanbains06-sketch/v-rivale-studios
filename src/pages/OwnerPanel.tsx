@@ -1772,6 +1772,10 @@ const OwnerPanel = () => {
                   <Lightbulb className="w-4 h-4" />
                   <span className="hidden sm:inline">Suggestions</span>
                 </TabsTrigger>
+                <TabsTrigger value="memorial" className="flex items-center gap-2 whitespace-nowrap">
+                  <Flame className="w-4 h-4" />
+                  <span className="hidden sm:inline">Memorial</span>
+                </TabsTrigger>
               </TabsList>
             </div>
             {/* Fade indicators for scroll hint */}
