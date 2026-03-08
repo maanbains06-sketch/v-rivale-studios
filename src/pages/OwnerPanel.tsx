@@ -92,7 +92,6 @@ import {
   ToggleLeft,
   FolderOpen,
   Lightbulb,
-  Flame,
 } from "lucide-react";
 import { Coins } from "lucide-react";
 import { OwnerCaseManager } from "@/components/case-files/OwnerCaseManager";
