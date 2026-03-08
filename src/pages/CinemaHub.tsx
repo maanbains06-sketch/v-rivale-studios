@@ -10,7 +10,7 @@ import { Plus, Users, Tv, DoorOpen, Crown, Mic, Monitor, MessageSquare } from "l
 import { motion, AnimatePresence } from "framer-motion";
 import CinemaRoom from "@/components/cinema/CinemaRoom";
 import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
+
 
 interface Room {
   id: string;
