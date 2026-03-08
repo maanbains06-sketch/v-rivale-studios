@@ -2393,7 +2393,7 @@ const MiniGames = () => {
                   WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
                 }}>Mini Games Arena</h1>
                 <p className="text-muted-foreground max-w-lg mx-auto text-lg">
-                  15 unique games with live leaderboards. Compete for the top spot!
+                  16 unique games with live leaderboards. Compete for the top spot!
                 </p>
               </div>
 
