@@ -2785,6 +2785,22 @@ const OwnerPanel = () => {
             <ApplicationToggleManager />
           </TabsContent>
 
+          {/* Suggestions Tab */}
+          <TabsContent value="suggestions">
+            <Card className="glass-effect border-border/20">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="w-5 h-5 text-primary" />
+                  <CardTitle className="text-gradient">Suggestion Box</CardTitle>
+                </div>
+                <CardDescription>View and manage player suggestions for server and website improvements</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AdminSuggestionsTab />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
         </Tabs>
       </div>
 

@@ -20,6 +20,7 @@ import { combineAllApplications, filterApplicationsByType } from "@/lib/applicat
 import { sendDiscordNotification } from "@/lib/discordNotificationSender";
 import AdminTicketManagement from "@/components/AdminTicketManagement";
 import ConfidentialTicketManagement from "@/components/ConfidentialTicketManagement";
+import AdminSuggestionsTab from "@/components/admin/AdminSuggestionsTab";
 import { 
   Loader2, 
   Shield, 
