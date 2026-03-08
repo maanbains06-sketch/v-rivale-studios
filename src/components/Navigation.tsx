@@ -376,6 +376,42 @@ const Navigation = () => {
                   <SheetTitle className="text-gradient">Menu</SheetTitle>
                 </SheetHeader>
                 <div className="flex flex-col gap-2 mt-6">
+                  <div className="flex flex-col gap-2 pb-4 border-b border-border/30">
+                    <Button
+                      variant="default"
+                      className="justify-start w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                      asChild
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Link to="/cinema-hub" className="flex items-center">
+                        <Tv className="w-4 h-4 mr-2 text-primary-foreground" />
+                        Cinema Hub
+                      </Link>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="justify-start w-full border-border bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                      asChild
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Link to="/memorial" className="flex items-center">
+                        <Flame className="w-4 h-4 mr-2 text-secondary-foreground" />
+                        Graveyard
+                      </Link>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="justify-start w-full border-border bg-accent text-accent-foreground hover:bg-accent/90"
+                      asChild
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Link to="/suggestion-box" className="flex items-center">
+                        <Lightbulb className="w-4 h-4 mr-2 text-accent-foreground" />
+                        Suggestion Box
+                      </Link>
+                    </Button>
+                  </div>
+
                   {/* Staff & Owner Panel Access - Always at top */}
                   {(hasStaffAdminAccess || isOwner) && (
                     <div className="flex flex-col gap-1 pb-4 border-b border-border/30">
@@ -721,39 +757,6 @@ const Navigation = () => {
                       </Link>
                     </Button>
                   )}
-                  <Button
-                    variant="outline"
-                    className="justify-start w-full border-border bg-secondary text-secondary-foreground hover:bg-accent"
-                    asChild
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <Link to="/cinema-hub" className="flex items-center">
-                      <Tv className="w-4 h-4 mr-2 text-primary" />
-                      Cinema Hub
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="justify-start w-full border-border bg-secondary text-secondary-foreground hover:bg-accent"
-                    asChild
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <Link to="/memorial" className="flex items-center">
-                      <Flame className="w-4 h-4 mr-2 text-primary" />
-                      Graveyard
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="justify-start w-full border-border bg-secondary text-secondary-foreground hover:bg-accent"
-                    asChild
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <Link to="/suggestion-box" className="flex items-center">
-                      <Lightbulb className="w-4 h-4 mr-2 text-primary" />
-                      Suggestion Box
-                    </Link>
-                  </Button>
                   <Button 
                     variant="outline"
                     className="justify-start glass-effect"
