@@ -106,7 +106,7 @@ const StyleEmporium = lazy(() => import("./pages/StyleEmporium"));
 const CaseFiles = lazy(() => import("./pages/CaseFiles"));
 const SuggestionBox = lazy(() => import("./pages/SuggestionBox"));
 const Memorial = lazy(() => import("./pages/Memorial"));
-
+const CinemaHub = lazy(() => import("./pages/CinemaHub"));
 const DirectMessage = lazy(() => import("./pages/DirectMessage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -212,6 +212,7 @@ const AppRoutes = memo(() => {
           <Route path="/direct-message" element={<PageTransition><RequireAuth message="Login with Discord to send direct messages."><DirectMessage /></RequireAuth></PageTransition>} />
           <Route path="/suggestion-box" element={<PageTransition><RequireAuth message="Login with Discord to submit suggestions."><PageMaintenanceBlock pageKey="suggestion-box"><SuggestionBox /></PageMaintenanceBlock></RequireAuth></PageTransition>} />
           <Route path="/memorial" element={<PageTransition><PageMaintenanceBlock pageKey="memorial"><Memorial /></PageMaintenanceBlock></PageTransition>} />
+          <Route path="/cinema-hub" element={<PageTransition><RequireAuth message="Login with Discord to access Cinema Hub."><CinemaHub /></RequireAuth></PageTransition>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
         </Routes>
