@@ -541,7 +541,7 @@ const StaffContract = () => {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(7);
       active.forEach((p, i) => {
-        checkPageBreak(8);
+        localCheckPageBreak(8);
         const lines = doc.splitTextToSize(`${i + 1}. ${p.text}`, contentWidth - 10);
         lines.forEach((line: string) => {
           checkPageBreak(5);
