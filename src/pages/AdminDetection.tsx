@@ -911,6 +911,10 @@ const AdminDetection = () => {
               addDeviceSpecs(`Primary (${det.primary_username || 'Unknown'})`, deviceSpecs.primary);
               addDeviceSpecs(`Alt (${det.alt_username || 'Unknown'})`, deviceSpecs.alt);
 
+              // Official stamp
+              y = checkPageBreak(doc, y, 40);
+              drawOfficialStamp(doc, pageWidth - margin - 20, y + 15, 'EVIDENCE', 15, PDF_COLORS.error);
+
               drawFooter(doc, 'Evidence Report — Confidential');
               doc.save(`SLRP-Evidence-${d.id.substring(0, 8)}.pdf`);
               toast.success('Evidence PDF downloaded');
