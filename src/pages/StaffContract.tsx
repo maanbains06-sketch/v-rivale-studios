@@ -618,18 +618,7 @@ const StaffContract = () => {
     doc.text(`Name: ${contractData.staffName || '____________________'}`, partyBX + 3, yPos + sigBoxHeight + 8);
     doc.text(`Date: ${staffSignedAt ? safeFormatDate(staffSignedAt, 'dd/MM/yyyy HH:mm') : '____________________'}`, partyBX + 3, yPos + sigBoxHeight + 13);
 
-    const totalPages = doc.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i);
-      doc.setDrawColor(...black);
-      doc.setLineWidth(0.5);
-      doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
-      doc.setFontSize(6);
-      doc.setTextColor(...gray);
-      doc.setFont('helvetica', 'italic');
-      doc.text('CONFIDENTIAL — Staff & Administrator Agreement | Skylife Roleplay India', pageWidth / 2, pageHeight - 10, { align: 'center' });
-      doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin, pageHeight - 5, { align: 'right' });
-    }
+    drawFooter(doc, 'Staff & Administrator Agreement — Confidential');
 
     const safeName = contractData.staffName?.replace(/\s+/g, '-') || 'Draft';
     doc.save(`SLRP-Staff-Agreement-${safeName}-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
