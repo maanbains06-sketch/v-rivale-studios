@@ -819,59 +819,108 @@ const AdminDetection = () => {
               const det = d.details || {};
               const isIp = d.detection_type === 'ip_match';
               const doc = new jsPDF();
-              doc.setFontSize(20);
+              const margin = 15;
+              const pageWidth = doc.internal.pageSize.getWidth();
+              const contentWidth = pageWidth - margin * 2;
+
+              // Branded header
+              drawHeader(doc, 'Alt-Account Detection Evidence', 'Confidential Investigation Report');
+
+              // Document reference
+              let y = 50;
+              y = drawDocumentRef(doc, d.id.substring(0, 8).toUpperCase(), y, margin);
+              y += 3;
+
+              // Detection summary box
+              const boxH = 22;
+              doc.setFillColor(...PDF_COLORS.lightBg);
+              doc.roundedRect(margin, y, contentWidth, boxH, 2, 2, 'F');
+              doc.setDrawColor(...PDF_COLORS.border);
+              doc.setLineWidth(0.3);
+              doc.roundedRect(margin, y, contentWidth, boxH, 2, 2, 'S');
+
               doc.setFont('helvetica', 'bold');
-              doc.text('SKYLIFE ROLEPLAY INDIA', 105, 20, { align: 'center' });
-              doc.setFontSize(14);
-              doc.text('Alt-Account Detection Evidence Report', 105, 30, { align: 'center' });
-              doc.setDrawColor(59, 130, 246);
-              doc.line(15, 35, 195, 35);
-              let y = 45;
-              const addLine = (label: string, value: string) => {
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(10);
-                doc.text(label, 20, y);
-                doc.setFont('helvetica', 'normal');
-                doc.text(value, 75, y);
-                y += 7;
-              };
-              addLine('Detection Type:', isIp ? 'IP Address Match' : 'Device Fingerprint Match');
-              addLine('Confidence:', `${d.confidence_score}%`);
-              addLine('Status:', d.status);
-              addLine('Detected At:', new Date(d.created_at).toLocaleString());
-              addLine('Detection ID:', d.id);
-              y += 5;
+              doc.setFontSize(8);
+              doc.setTextColor(...PDF_COLORS.textSecondary);
+              doc.text('Detection Type', margin + 5, y + 7);
+              doc.setFont('helvetica', 'normal');
+              doc.setFontSize(9);
+              doc.setTextColor(...PDF_COLORS.text);
+              doc.text(isIp ? 'IP Address Match' : 'Device Fingerprint Match', margin + 5, y + 13);
+
               doc.setFont('helvetica', 'bold');
-              doc.setFontSize(12);
-              doc.text('Primary Account', 20, y); y += 7;
+              doc.setFontSize(8);
+              doc.setTextColor(...PDF_COLORS.textSecondary);
+              doc.text('Confidence', margin + 75, y + 7);
+              doc.setFont('helvetica', 'normal');
               doc.setFontSize(10);
+              const confColor = d.confidence_score >= 80 ? PDF_COLORS.error : d.confidence_score >= 50 ? PDF_COLORS.warning : PDF_COLORS.accent;
+              doc.setTextColor(...confColor);
+              doc.text(`${d.confidence_score}%`, margin + 75, y + 13);
+
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(8);
+              doc.setTextColor(...PDF_COLORS.textSecondary);
+              doc.text('Status', margin + 120, y + 7);
+              doc.setFont('helvetica', 'normal');
+              doc.setFontSize(9);
+              doc.setTextColor(...PDF_COLORS.text);
+              doc.text(d.status.toUpperCase(), margin + 120, y + 13);
+
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(8);
+              doc.setTextColor(...PDF_COLORS.textSecondary);
+              doc.text('Detected', margin + 5, y + 18);
+              doc.setFont('helvetica', 'normal');
+              doc.setFontSize(8);
+              doc.setTextColor(...PDF_COLORS.text);
+              doc.text(new Date(d.created_at).toLocaleString(), margin + 30, y + 18);
+              y += boxH + 8;
+
+              // Primary Account section
+              y = drawSectionHeader(doc, 'Primary Account', y, margin, contentWidth);
+              const addLine = (label: string, value: string) => {
+                y = checkPageBreak(doc, y, 8);
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(8);
+                doc.setTextColor(...PDF_COLORS.textSecondary);
+                doc.text(label, margin + 5, y);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(...PDF_COLORS.text);
+                doc.text(value, margin + 45, y);
+                y += 6;
+              };
               addLine('Username:', det.primary_username || 'Unknown');
               addLine('Discord ID:', det.primary_discord_id || 'N/A');
               addLine('User ID:', d.primary_user_id);
               y += 5;
-              doc.setFont('helvetica', 'bold');
-              doc.setFontSize(12);
-              doc.text('Suspected Alt Account', 20, y); y += 7;
-              doc.setFontSize(10);
+
+              // Alt Account section
+              y = drawSectionHeader(doc, 'Suspected Alt Account', y, margin, contentWidth);
               addLine('Username:', det.alt_username || 'Unknown');
               addLine('Discord ID:', det.alt_discord_id || 'N/A');
               addLine('User ID:', d.alt_user_id);
               y += 5;
-              doc.setFont('helvetica', 'bold');
-              doc.setFontSize(12);
-              doc.text('Technical Evidence', 20, y); y += 7;
-              doc.setFontSize(10);
+
+              // Technical Evidence section
+              y = drawSectionHeader(doc, 'Technical Evidence', y, margin, contentWidth);
               if (det.shared_ip || d.ip_address) addLine('IP Address:', det.shared_ip || d.ip_address);
               if (det.shared_fingerprint || d.fingerprint_hash) addLine('Fingerprint:', det.shared_fingerprint || d.fingerprint_hash || '');
               if (det.match_count) addLine('Match Count:', `${det.match_count} shared login(s)`);
               y += 5;
+
               // Device specs
               const addDeviceSpecs = (label: string, devices: any[]) => {
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(11);
-                doc.text(label, 20, y); y += 7;
-                doc.setFontSize(9);
-                if (devices.length === 0) { addLine('', 'No device data recorded'); return; }
+                y = checkPageBreak(doc, y, 20);
+                y = drawSectionHeader(doc, `Device: ${label}`, y, margin, contentWidth);
+                if (devices.length === 0) {
+                  doc.setFont('helvetica', 'italic');
+                  doc.setFontSize(8);
+                  doc.setTextColor(...PDF_COLORS.textSecondary);
+                  doc.text('No device data recorded', margin + 5, y);
+                  y += 8;
+                  return;
+                }
                 devices.forEach((dev: any) => {
                   const ua = dev.user_agent || '';
                   let browser = 'Unknown';
@@ -885,7 +934,6 @@ const AdminDetection = () => {
                   else if (/android/i.test(ua)) os = 'Android';
                   else if (/iphone|ipad/i.test(ua)) os = 'iOS';
                   else if (/linux/i.test(ua)) os = 'Linux';
-                  if (y > 260) { doc.addPage(); y = 20; }
                   addLine('Browser:', browser);
                   addLine('OS:', os);
                   addLine('Screen:', dev.screen_resolution || 'N/A');
@@ -899,7 +947,9 @@ const AdminDetection = () => {
               };
               addDeviceSpecs(`Primary (${det.primary_username || 'Unknown'})`, deviceSpecs.primary);
               addDeviceSpecs(`Alt (${det.alt_username || 'Unknown'})`, deviceSpecs.alt);
-              doc.save(`Evidence-${d.id.substring(0, 8)}.pdf`);
+
+              drawFooter(doc, 'Evidence Report — Confidential');
+              doc.save(`SLRP-Evidence-${d.id.substring(0, 8)}.pdf`);
               toast.success('Evidence PDF downloaded');
             }}>
               <Download className="w-4 h-4 mr-1" />
