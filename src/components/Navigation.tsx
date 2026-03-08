@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, memo } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield, LogOut, Menu, UserCircle, Mail, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, ExternalLink, Crown, LayoutDashboard, Gift, Briefcase, Building2, FileText, Newspaper, Trophy, Radio, Gamepad2, Sparkles, FolderOpen, Lightbulb, Flame } from "lucide-react";
+import { Users, Shield, LogOut, Menu, UserCircle, Mail, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, ExternalLink, Crown, LayoutDashboard, Gift, Briefcase, Building2, FileText, Newspaper, Trophy, Radio, Gamepad2, Sparkles, FolderOpen, Lightbulb, Flame, Tv } from "lucide-react";
 import { Button } from "./ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
