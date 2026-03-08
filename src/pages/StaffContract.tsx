@@ -533,7 +533,7 @@ const StaffContract = () => {
     drawFormField('Discord ID', contractData.staffDiscord || '[To be filled]', margin + halfWidth + 4, yPos, halfWidth);
     yPos += 10;
     drawFormField('Email', contractData.staffEmail || '[To be filled]', margin, yPos, halfWidth);
-    drawFormField('Join Date', contractData.staffJoinDate ? format(new Date(contractData.staffJoinDate), 'dd/MM/yyyy') : '', margin + halfWidth + 4, yPos, halfWidth);
+    drawFormField('Join Date', contractData.staffJoinDate ? safeFormatDate(contractData.staffJoinDate, 'dd/MM/yyyy') : '', margin + halfWidth + 4, yPos, halfWidth);
     yPos += 15;
 
     drawSectionHeader('Contract Period', '📅');
