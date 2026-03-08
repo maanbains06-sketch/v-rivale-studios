@@ -10,7 +10,7 @@ import {
   Gamepad2, Trophy, Clock, ArrowLeft, Brain, Zap, BookOpen,
   Shuffle, Target, Lock, Search, Eye, CheckCircle, XCircle, Star,
   Crosshair, Keyboard, Palette, Grid3X3, Calculator, DoorOpen,
-  Lightbulb, Key, Flame, Bomb, Skull, Box
+  Lightbulb, Key, Flame, Bomb, Skull, Box, Gavel
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import BubbleShooterGame from "@/components/mini-games/BubbleShooterGame";
