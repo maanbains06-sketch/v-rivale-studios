@@ -2336,6 +2336,11 @@ const BrickBreakerWrapper = ({ onBack }: { onBack: () => void }) => {
   return <BrickBreakerGame onBack={onBack} submitScore={submitScore} GameShell={GameShell} StartScreen={StartScreen} EndScreen={EndScreen} Leaderboard={Leaderboard} game={GAMES[14]} />;
 };
 
+const AuctionBiddingWrapper = ({ onBack }: { onBack: () => void }) => {
+  const submitScore = useSubmitScore();
+  return <AuctionBiddingGame onBack={onBack} submitScore={submitScore} GameShell={GameShell} StartScreen={StartScreen} EndScreen={EndScreen} Leaderboard={Leaderboard} game={GAMES[15]} />;
+};
+
 // ════════════════════════════════════════════════════════
 // MAIN HUB
 // ════════════════════════════════════════════════════════
