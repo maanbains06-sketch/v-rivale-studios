@@ -612,15 +612,10 @@ const Navigation = () => {
                         Awards
                       </Link>
                     </Button>
-                    <Button
-                      variant="outline"
-                      className="justify-start border-border bg-muted/40 text-foreground hover:bg-accent"
-                      asChild
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <Link to="/suggestion-box" className="flex items-center">
-                        <Lightbulb className="w-4 h-4 mr-2 text-primary" />
-                        Suggestion Box
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/awards" className="flex items-center">
+                        <Trophy className="w-4 h-4 mr-2 text-yellow-500" />
+                        Awards
                       </Link>
                     </Button>
                   </div>
