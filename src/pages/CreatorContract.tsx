@@ -629,7 +629,7 @@ const CreatorContract = () => {
     yPos += 15;
 
     // ========== COMPENSATION SECTION ==========
-    yPos = drawSectionHeader('Compensation & Payment Terms', yPos);
+    yPos = drawContractSectionHeader('Compensation & Payment Terms', yPos);
 
     drawFormField('Monthly Payment', `₹${contractData.monthlyPayment}`, margin, yPos, halfWidth);
     drawFormField('Payment Method', contractData.paymentMethod, margin + halfWidth + 4, yPos, halfWidth);
