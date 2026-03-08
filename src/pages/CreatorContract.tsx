@@ -550,13 +550,17 @@ const CreatorContract = () => {
     };
 
     // Helper: Draw section header
-    const drawSectionHeader = (title: string, y: number) => {
+    const drawContractSectionHeader = (title: string, y: number) => {
+      // Accent bar on left
+      doc.setFillColor(...PDF_COLORS.accent);
+      doc.rect(margin, y, 3, 8, 'F');
+      // Header background
       doc.setFillColor(...headerBg);
-      doc.rect(margin, y, contentWidth, 8, 'F');
+      doc.rect(margin + 3, y, contentWidth - 3, 8, 'F');
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
-      doc.text(title.toUpperCase(), margin + 3, y + 5.5);
+      doc.text(title.toUpperCase(), margin + 7, y + 5.5);
       return y + 10;
     };
 
