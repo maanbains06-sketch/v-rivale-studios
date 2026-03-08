@@ -26,6 +26,9 @@ import {
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import StyledUsername from "@/components/StyledUsername";
+import StyledAvatar from "@/components/StyledAvatar";
+import { useProfileCustomization } from "@/hooks/useProfileCustomization";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
@@ -61,6 +64,7 @@ const DiscordProfile = () => {
     loading: discordLoading,
     refreshProfile 
   } = useDiscordProfile(discordId);
+  const { customization } = useProfileCustomization(user?.id);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -240,12 +244,14 @@ const DiscordProfile = () => {
                 {/* Avatar */}
                 <div className="absolute -top-16 md:-top-20 left-6">
                   <div className="relative">
-                    <Avatar className="w-28 h-28 md:w-36 md:h-36 border-4 border-background shadow-2xl ring-4 ring-primary/20">
-                      <AvatarImage src={getDiscordAvatar() || undefined} alt={getDiscordName()} />
-                      <AvatarFallback className="bg-gradient-to-br from-[#5865F2] to-primary text-white text-3xl md:text-4xl font-bold">
-                        {getDiscordName().charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
+                    <StyledAvatar
+                      userId={user?.id}
+                      discordId={discordId}
+                      discordAvatar={discordAvatar || user?.user_metadata?.discord_avatar}
+                      username={getDiscordName()}
+                      className="w-28 h-28 md:w-36 md:h-36 border-4 border-background shadow-2xl ring-4 ring-primary/20"
+                      size="lg"
+                    />
                     {/* Online indicator */}
                     <div className="absolute bottom-2 right-2 w-5 h-5 bg-green-500 rounded-full border-4 border-background" />
                   </div>
@@ -278,7 +284,11 @@ const DiscordProfile = () => {
                 <div className="pt-12 md:pt-16">
                   <div className="flex flex-wrap items-center gap-3 mb-2">
                     <CardTitle className="text-2xl md:text-3xl font-bold">
-                      {getDiscordName()}
+                      <StyledUsername
+                        userId={user?.id}
+                        username={getDiscordName()}
+                        showBadge={true}
+                      />
                     </CardTitle>
                     <Badge className="bg-[#5865F2] hover:bg-[#5865F2] text-white">
                       <CheckCircle className="w-3 h-3 mr-1" />
