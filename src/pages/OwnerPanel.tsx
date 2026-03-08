@@ -1766,6 +1766,10 @@ const OwnerPanel = () => {
                   <FolderOpen className="w-4 h-4" />
                   <span className="hidden sm:inline">Case Files</span>
                 </TabsTrigger>
+                <TabsTrigger value="suggestions" className="flex items-center gap-2 whitespace-nowrap">
+                  <Lightbulb className="w-4 h-4" />
+                  <span className="hidden sm:inline">Suggestions</span>
+                </TabsTrigger>
               </TabsList>
             </div>
             {/* Fade indicators for scroll hint */}
