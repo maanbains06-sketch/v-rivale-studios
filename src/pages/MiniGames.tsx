@@ -59,6 +59,7 @@ const GAMES: GameDef[] = [
   { id: "block_puzzle", title: "Block Blast", description: "Tetris-style falling blocks — place them to clear lines & score!", icon: <Box className="w-8 h-8" />, gradient: "from-blue-500 via-cyan-400 to-blue-600", glow: "shadow-blue-500/40" },
   { id: "bubble_shooter", title: "Bubble Shooter", description: "Aim & pop colorful bubbles — match 3+ to clear the board!", icon: <Target className="w-8 h-8" />, gradient: "from-pink-500 via-fuchsia-500 to-purple-500", glow: "shadow-pink-500/40" },
   { id: "brick_breaker", title: "Brick Breaker", description: "Smash colorful bricks with your paddle — collect power-ups & clear levels!", icon: <Skull className="w-8 h-8" />, gradient: "from-cyan-500 via-blue-500 to-indigo-500", glow: "shadow-cyan-500/40" },
+  { id: "auction_bidding", title: "Auction House", description: "Bid against ruthless rivals for legendary items — manage your budget wisely!", icon: <Gavel className="w-8 h-8" />, gradient: "from-amber-500 via-yellow-500 to-orange-500", glow: "shadow-amber-500/40" },
 ];
 
 // ─── 3D Card Wrapper ─────────────────────────────────────
