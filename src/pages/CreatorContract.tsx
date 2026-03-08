@@ -589,7 +589,7 @@ const CreatorContract = () => {
     yPos += 5;
 
     // ========== PARTY B SECTION ==========
-    yPos = drawSectionHeader('Party B - Content Creator', yPos);
+    yPos = drawContractSectionHeader('Party B - Content Creator', yPos);
 
     drawFormField('Full Name', contractData.creatorName || '[To be filled]', margin, yPos, halfWidth);
     drawFormField('Email', contractData.creatorEmail || '[To be filled]', margin + halfWidth + 4, yPos, halfWidth);
