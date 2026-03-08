@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, memo } from "react";
 import { NavLink } from "./NavLink";
-import { Users, Shield, LogOut, Menu, UserCircle, Mail, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, ExternalLink, Crown, LayoutDashboard, Gift, Briefcase, Building2, FileText, Newspaper, Trophy, Radio, Gamepad2, Sparkles, FolderOpen, Lightbulb } from "lucide-react";
+import { Users, Shield, LogOut, Menu, UserCircle, Mail, Image as ImageIcon, MessageSquare, BarChart3, ChevronDown, Lock, Scale, CreditCard, ExternalLink, Crown, LayoutDashboard, Gift, Briefcase, Building2, FileText, Newspaper, Trophy, Radio, Gamepad2, Sparkles, FolderOpen, Lightbulb, Flame } from "lucide-react";
 import { Button } from "./ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
@@ -78,6 +78,7 @@ const Navigation = () => {
   const showGuidesLink = isOwner || (!siteSettingsLoading && !siteSettings.guides_hidden);
   const showMiniGamesLink = isOwner || (!siteSettingsLoading && !siteSettings.mini_games_hidden);
   const showProfileCustomizationLink = isOwner || (!siteSettingsLoading && !siteSettings.profile_customization_hidden);
+  const showMemorialLink = isOwner || (!siteSettingsLoading && !siteSettings.memorial_hidden);
 
   // Track staff presence when logged in with Discord ID
   useWebsitePresence({ 
@@ -617,6 +618,14 @@ const Navigation = () => {
                         Suggestion Box
                       </Link>
                     </Button>
+                    {showMemorialLink && (
+                      <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                        <Link to="/memorial" className="flex items-center">
+                          <Flame className="w-4 h-4 mr-2 text-amber-500" />
+                          Digital Memorial
+                        </Link>
+                      </Button>
+                    )}
                   </div>
 
                   {/* Quick Admin Links - Only visible to staff */}

@@ -37,6 +37,7 @@ interface SiteSettings {
   guides_hidden: boolean;
   mini_games_hidden: boolean;
   profile_customization_hidden: boolean;
+  memorial_hidden: boolean;
 }
 
 interface UseSiteSettingsReturn {
@@ -81,6 +82,7 @@ const defaultSettings: SiteSettings = {
   guides_hidden: false,
   mini_games_hidden: false,
   profile_customization_hidden: false,
+  memorial_hidden: false,
 };
 
 // Cache settings in localStorage for instant loading
@@ -192,6 +194,7 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
           guides_hidden: settingsMap.guides_hidden === 'true',
           mini_games_hidden: settingsMap.mini_games_hidden === 'true',
           profile_customization_hidden: settingsMap.profile_customization_hidden === 'true',
+          memorial_hidden: settingsMap.memorial_hidden === 'true',
         };
 
         setSettings(newSettings);

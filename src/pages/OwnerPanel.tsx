@@ -39,6 +39,7 @@ import OwnerSecurityDashboard from "@/components/OwnerSecurityDashboard";
 import OwnerCurrencyManager from "@/components/OwnerCurrencyManager";
 import ApplicationToggleManager from "@/components/ApplicationToggleManager";
 import AdminSuggestionsTab from "@/components/admin/AdminSuggestionsTab";
+import OwnerMemorialManager from "@/components/OwnerMemorialManager";
 
 import { LiveApplicationStats } from "@/components/LiveApplicationStats";
 import OwnerLiveChatManager from "@/components/OwnerLiveChatManager";
@@ -1770,6 +1771,10 @@ const OwnerPanel = () => {
                   <Lightbulb className="w-4 h-4" />
                   <span className="hidden sm:inline">Suggestions</span>
                 </TabsTrigger>
+                <TabsTrigger value="memorial" className="flex items-center gap-2 whitespace-nowrap">
+                  <Flame className="w-4 h-4" />
+                  <span className="hidden sm:inline">Memorial</span>
+                </TabsTrigger>
               </TabsList>
             </div>
             {/* Fade indicators for scroll hint */}
@@ -2797,6 +2802,22 @@ const OwnerPanel = () => {
               </CardHeader>
               <CardContent>
                 <AdminSuggestionsTab />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Memorial Tab */}
+          <TabsContent value="memorial">
+            <Card className="glass-effect border-border/20">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Flame className="w-5 h-5 text-amber-500" />
+                  <CardTitle className="text-gradient">Digital Memorial</CardTitle>
+                </div>
+                <CardDescription>Manage the Graveyard page — honor perma-died characters with memorials</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <OwnerMemorialManager />
               </CardContent>
             </Card>
           </TabsContent>
