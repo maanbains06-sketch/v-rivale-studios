@@ -95,12 +95,21 @@ const MemorialCard = ({ memorial }: { memorial: Memorial }) => {
     if (!newComment.trim() || !user) return;
     setSubmitting(true);
     const meta = user.user_metadata || {};
+    const discordId = meta.discord_id || meta.provider_id || meta.sub;
+    const displayName = meta.display_name || meta.discord_username || meta.full_name || "Anonymous";
+    
+    // Construct proper Discord CDN avatar URL
+    let avatarUrl = meta.avatar_url;
+    if (discordId && meta.discord_avatar) {
+      avatarUrl = `https://cdn.discordapp.com/avatars/${discordId}/${meta.discord_avatar}.png?size=256`;
+    }
+    
     await supabase.from("memorial_comments").insert({
       memorial_id: memorial.id,
       user_id: user.id,
       message: newComment.trim(),
-      discord_username: meta.discord_username || meta.full_name || "Anonymous",
-      discord_avatar: meta.discord_avatar || meta.avatar_url,
+      discord_username: displayName,
+      discord_avatar: avatarUrl,
     });
     setNewComment("");
     setSubmitting(false);
