@@ -26,7 +26,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import headerStaffBg from "@/assets/header-staff.jpg";
 import jsPDF from 'jspdf';
-import { PDF_COLORS, drawHeader, drawSectionHeader, drawFooter, drawDocumentRef, checkPageBreak } from '@/lib/pdfStyles';
+import { PDF_COLORS, drawHeader, drawSectionHeader, drawFooter, drawDocumentRef, drawSummaryCard, drawOfficialStamp, checkPageBreak } from '@/lib/pdfStyles';
 
 interface Detection {
   id: string;
