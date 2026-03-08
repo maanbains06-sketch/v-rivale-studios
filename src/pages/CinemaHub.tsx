@@ -43,6 +43,7 @@ const CinemaHub = () => {
   const [createOpen, setCreateOpen] = useState(false);
   const [roomName, setRoomName] = useState("");
   const [creating, setCreating] = useState(false);
+  const [liveVisitorCount, setLiveVisitorCount] = useState(1);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -51,6 +52,27 @@ const CinemaHub = () => {
       setUser(user);
     };
     getUser();
+  }, []);
+
+  // Subscribe to the same website_presence channel as LiveVisitorCounter
+  useEffect(() => {
+    const sessionId = `cinema_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const channel = supabase.channel('website_presence', {
+      config: { presence: { key: sessionId } },
+    });
+
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const count = Object.keys(channel.presenceState()).length;
+        setLiveVisitorCount(count > 0 ? count : 1);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({ online_at: new Date().toISOString() });
+        }
+      });
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const fetchRooms = useCallback(async () => {
@@ -224,10 +246,10 @@ const CinemaHub = () => {
             <Tv className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium">{rooms.length} Live Rooms</span>
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-border/50">
-            <Users className="w-4 h-4 text-green-400" />
-            <span className="text-sm font-medium">
-              {Object.values(roomMembers).reduce((acc, m) => acc + m.length, 0)} Online
+          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-green-500/30">
+            <Users className="w-4 h-4 text-green-500" />
+            <span className="text-sm font-medium text-green-500">
+              {liveVisitorCount} Online
             </span>
           </div>
         </div>
