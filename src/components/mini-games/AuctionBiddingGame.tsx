@@ -10,6 +10,84 @@ import {
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
+// ─── Item Images ─────────────────────────────────────────
+import picassoImg from "@/assets/bidwars/picasso-sketch.png";
+import ferrariImg from "@/assets/bidwars/ferrari-engine.png";
+import mantleImg from "@/assets/bidwars/mantle-card.png";
+import romanImg from "@/assets/bidwars/roman-artifact.png";
+import elvisImg from "@/assets/bidwars/elvis-record.png";
+import moonImg from "@/assets/bidwars/moon-rock.png";
+import diamondImg from "@/assets/bidwars/diamond-ring.png";
+import rolexImg from "@/assets/bidwars/rolex-watch.png";
+import goldImg from "@/assets/bidwars/gold-bars.png";
+import fabergeImg from "@/assets/bidwars/faberge-egg.png";
+import motorcycleImg from "@/assets/bidwars/vintage-motorcycle.png";
+import carKeysImg from "@/assets/bidwars/car-keys.png";
+import coinImg from "@/assets/bidwars/coin-collection.png";
+import samuraiImg from "@/assets/bidwars/samurai-sword.png";
+import paintingImg from "@/assets/bidwars/oil-painting.png";
+import pocketWatchImg from "@/assets/bidwars/pocket-watch.png";
+import baseballImg from "@/assets/bidwars/signed-baseball.png";
+import cameraImg from "@/assets/bidwars/vintage-camera.png";
+import wineImg from "@/assets/bidwars/vintage-wine.png";
+import bookImg from "@/assets/bidwars/first-edition-book.png";
+import radioImg from "@/assets/bidwars/vintage-radio.png";
+import clockImg from "@/assets/bidwars/antique-clock.png";
+import guitarImg from "@/assets/bidwars/guitar.png";
+import toolsImg from "@/assets/bidwars/power-tools.png";
+import telescopeImg from "@/assets/bidwars/telescope.png";
+import vaseImg from "@/assets/bidwars/antique-vase.png";
+import chessImg from "@/assets/bidwars/chess-set.png";
+import brokenTvImg from "@/assets/bidwars/broken-tv.png";
+import toolboxImg from "@/assets/bidwars/rusty-toolbox.png";
+import vhsImg from "@/assets/bidwars/vhs-tapes.png";
+import silverwareImg from "@/assets/bidwars/silverware.png";
+import jacketImg from "@/assets/bidwars/leather-jacket.png";
+import vinylImg from "@/assets/bidwars/vinyl-records.png";
+import typewriterImg from "@/assets/bidwars/typewriter.png";
+import campingImg from "@/assets/bidwars/camping-gear.png";
+
+// Map item names to images
+const ITEM_IMAGES: Record<string, string> = {
+  "Picasso Sketch": picassoImg,
+  "Vintage Ferrari Engine": ferrariImg,
+  "Mickey Mantle Card": mantleImg,
+  "Ancient Roman Artifact": romanImg,
+  "Elvis' Gold Record": elvisImg,
+  "NASA Moon Rock": moonImg,
+  "Diamond Ring": diamondImg,
+  "Rolex Watch": rolexImg,
+  "Gold Bars (2)": goldImg,
+  "Fabergé Egg": fabergeImg,
+  "Vintage Motorcycle": motorcycleImg,
+  "Sports Car Keys": carKeysImg,
+  "Rare Coin Collection": coinImg,
+  "Samurai Sword": samuraiImg,
+  "Oil Painting": paintingImg,
+  "Gold Pocket Watch": pocketWatchImg,
+  "Signed Baseball": baseballImg,
+  "Vintage Camera": cameraImg,
+  "Vintage Wine Case": wineImg,
+  "First Edition Book": bookImg,
+  "Vintage Radio": radioImg,
+  "Antique Clock": clockImg,
+  "Guitar": guitarImg,
+  "Power Tools": toolsImg,
+  "Brass Telescope": telescopeImg,
+  "Antique Vase": vaseImg,
+  "Ivory Chess Set": chessImg,
+  "Broken TV": brokenTvImg,
+  "Rusty Toolbox": toolboxImg,
+  "VHS Tapes": vhsImg,
+  "Silverware Set": silverwareImg,
+  "Leather Jacket": jacketImg,
+  "Vinyl Records": vinylImg,
+  "Typewriter": typewriterImg,
+  "Camping Gear": campingImg,
+};
+
+const getItemImage = (name: string): string | null => ITEM_IMAGES[name] || null;
+
 // ─── Types ───────────────────────────────────────────────
 interface CrateItem {
   name: string;
@@ -872,7 +950,11 @@ const AuctionBiddingGame = ({ onBack, submitScore, GameShell, StartScreen, EndSc
                 >
                   {revealed ? (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-                      <div className="text-3xl mb-2">{item.emoji}</div>
+                      {getItemImage(item.name) ? (
+                        <img src={getItemImage(item.name)!} alt={item.name} className="w-16 h-16 mx-auto object-contain mb-2 rounded-lg" />
+                      ) : (
+                        <div className="text-3xl mb-2">{item.emoji}</div>
+                      )}
                       <p className="text-xs font-bold truncate">{item.name}</p>
                       <motion.p initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.4, type: "spring" }}
                         className={`text-sm font-mono font-black mt-1 ${rc.text}`}>{fmt(item.value)}</motion.p>
@@ -1083,7 +1165,11 @@ const AuctionBiddingGame = ({ onBack, submitScore, GameShell, StartScreen, EndSc
                   return (
                     <motion.div key={i} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: i * 0.3 }}
                       className={`flex-1 min-w-[100px] rounded-xl border p-3 ${rc.bg} border-white/[0.06]`}>
-                      <div className="text-2xl mb-1">{item.emoji}</div>
+                      {getItemImage(item.name) ? (
+                        <img src={getItemImage(item.name)!} alt={item.name} className="w-12 h-12 mx-auto object-contain mb-1 rounded-lg" />
+                      ) : (
+                        <div className="text-2xl mb-1">{item.emoji}</div>
+                      )}
                       <p className="text-xs font-bold truncate">{item.name}</p>
                       <Badge className={`mt-1 text-[7px] bg-gradient-to-r ${rc.color} border-0 text-white`}>{rc.label}</Badge>
                     </motion.div>
@@ -1096,7 +1182,11 @@ const AuctionBiddingGame = ({ onBack, submitScore, GameShell, StartScreen, EndSc
                   }`}>
                     {xrayRevealed === i ? (
                       <>
-                        <div className="text-2xl mb-1">{item.emoji}</div>
+                        {getItemImage(item.name) ? (
+                          <img src={getItemImage(item.name)!} alt={item.name} className="w-12 h-12 mx-auto object-contain mb-1 rounded-lg" />
+                        ) : (
+                          <div className="text-2xl mb-1">{item.emoji}</div>
+                        )}
                         <p className="text-xs font-bold truncate">{item.name}</p>
                         <Badge className="mt-1 text-[7px] bg-primary/20 border-primary/30 text-primary">X-RAY</Badge>
                       </>
