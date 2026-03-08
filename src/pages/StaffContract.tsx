@@ -625,7 +625,7 @@ const StaffContract = () => {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     doc.text(`Name: ${contractData.staffName || '____________________'}`, partyBX + 3, yPos + sigBoxHeight + 8);
-    doc.text(`Date: ${staffSignedAt ? format(new Date(staffSignedAt), 'dd/MM/yyyy HH:mm') : '____________________'}`, partyBX + 3, yPos + sigBoxHeight + 13);
+    doc.text(`Date: ${staffSignedAt ? safeFormatDate(staffSignedAt, 'dd/MM/yyyy HH:mm') : '____________________'}`, partyBX + 3, yPos + sigBoxHeight + 13);
 
     const totalPages = doc.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
