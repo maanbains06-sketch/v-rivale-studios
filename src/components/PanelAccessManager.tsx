@@ -131,6 +131,22 @@ const PanelAccessManager = () => {
   useEffect(() => {
     loadEntries();
     loadStaffMembers();
+
+    // Subscribe to realtime changes on panel_access
+    const channel = supabase
+      .channel('panel-access-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'panel_access' },
+        () => {
+          loadEntries();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const loadEntries = async () => {
