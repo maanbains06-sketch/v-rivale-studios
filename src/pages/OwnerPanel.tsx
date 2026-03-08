@@ -38,6 +38,7 @@ import OwnerKillSwitch from "@/components/OwnerKillSwitch";
 import OwnerSecurityDashboard from "@/components/OwnerSecurityDashboard";
 import OwnerCurrencyManager from "@/components/OwnerCurrencyManager";
 import ApplicationToggleManager from "@/components/ApplicationToggleManager";
+import AdminSuggestionsTab from "@/components/admin/AdminSuggestionsTab";
 
 import { LiveApplicationStats } from "@/components/LiveApplicationStats";
 import OwnerLiveChatManager from "@/components/OwnerLiveChatManager";
