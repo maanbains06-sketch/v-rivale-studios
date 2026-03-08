@@ -39,28 +39,93 @@ const FRAME_STYLES: Record<string, string> = {
 };
 
 const CandleAnimation = () => (
-  <div className="relative w-8 h-24 mx-auto">
-    {/* Candle body */}
-    <div className="absolute bottom-0 w-6 h-16 mx-auto left-1 bg-gradient-to-t from-amber-100 to-amber-50 rounded-t-sm rounded-b-lg" />
+  <div className="relative w-10 h-28 mx-auto">
+    {/* Candle base / drip tray */}
+    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-2 bg-gradient-to-t from-zinc-600/60 to-zinc-500/40 rounded-full" />
+    
+    {/* Candle body with wax texture */}
+    <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-7 h-[70px] rounded-t-[3px] rounded-b-sm overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-t from-[#f5e6c8] via-[#faf0dc] to-[#fff8ec]" />
+      {/* Wax drip details */}
+      <div className="absolute top-0 left-[2px] w-[6px] h-[14px] bg-gradient-to-b from-[#fff8ec] to-transparent rounded-b-full opacity-80" />
+      <div className="absolute top-0 right-[3px] w-[4px] h-[10px] bg-gradient-to-b from-[#fff8ec] to-transparent rounded-b-full opacity-60" />
+      {/* Subtle side shadow for 3D depth */}
+      <div className="absolute inset-y-0 left-0 w-[3px] bg-gradient-to-r from-[#d4c4a0]/40 to-transparent" />
+      <div className="absolute inset-y-0 right-0 w-[3px] bg-gradient-to-l from-[#d4c4a0]/30 to-transparent" />
+      {/* Melted wax pool at top */}
+      <div className="absolute top-0 left-0 right-0 h-[4px] bg-gradient-to-b from-[#ffe4b5]/90 to-transparent rounded-t-sm" />
+    </div>
+
     {/* Wick */}
-    <div className="absolute bottom-16 left-[13px] w-[2px] h-3 bg-zinc-800" />
-    {/* Flame */}
+    <div className="absolute bottom-[73px] left-1/2 -translate-x-[1px] w-[2px] h-[10px]">
+      <div className="w-full h-full bg-gradient-to-t from-zinc-900 via-zinc-700 to-zinc-500 rounded-t-full" />
+      {/* Glowing ember at wick base */}
+      <motion.div
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[3px] h-[3px] rounded-full bg-orange-600"
+        animate={{ opacity: [0.6, 1, 0.7, 0.9, 0.6] }}
+        transition={{ duration: 1.5, repeat: Infinity }}
+      />
+    </div>
+
+    {/* Inner flame core (blue/white) */}
     <motion.div
-      className="absolute bottom-[72px] left-[7px] w-[14px] h-[22px]"
+      className="absolute bottom-[80px] left-1/2 -translate-x-[4px] w-[8px] h-[12px]"
       animate={{
-        scaleX: [1, 1.15, 0.95, 1.1, 1],
-        scaleY: [1, 1.1, 0.9, 1.05, 1],
-        rotate: [-2, 3, -1, 2, -2],
+        scaleX: [1, 1.1, 0.9, 1.05, 1],
+        scaleY: [1, 1.15, 0.85, 1.1, 1],
+        rotate: [-1, 2, -1.5, 1, -1],
       }}
-      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+      transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
     >
-      <div className="w-full h-full bg-gradient-to-t from-orange-500 via-yellow-400 to-yellow-200 rounded-full opacity-95 blur-[0.5px]" />
+      <div className="w-full h-full bg-gradient-to-t from-blue-200/80 via-white/90 to-transparent rounded-[50%_50%_50%_50%_/_60%_60%_40%_40%]" />
     </motion.div>
-    {/* Glow */}
+
+    {/* Middle flame (orange/yellow) */}
     <motion.div
-      className="absolute bottom-[65px] left-[-4px] w-[36px] h-[36px] rounded-full bg-amber-400/20 blur-md"
-      animate={{ opacity: [0.3, 0.6, 0.35, 0.55, 0.3], scale: [1, 1.1, 0.95, 1.05, 1] }}
-      transition={{ duration: 3, repeat: Infinity }}
+      className="absolute bottom-[78px] left-1/2 -translate-x-[7px] w-[14px] h-[22px]"
+      animate={{
+        scaleX: [1, 1.12, 0.92, 1.08, 1],
+        scaleY: [1, 1.08, 0.88, 1.06, 1],
+        rotate: [-2, 3, -1.5, 2.5, -2],
+      }}
+      transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+    >
+      <div className="w-full h-full bg-gradient-to-t from-orange-500/90 via-amber-400/85 to-yellow-300/70 rounded-[50%_50%_50%_50%_/_65%_65%_35%_35%]" />
+    </motion.div>
+
+    {/* Outer flame (soft glow) */}
+    <motion.div
+      className="absolute bottom-[76px] left-1/2 -translate-x-[9px] w-[18px] h-[28px]"
+      animate={{
+        scaleX: [1, 1.18, 0.88, 1.12, 1],
+        scaleY: [1, 1.12, 0.9, 1.08, 1],
+        rotate: [-3, 4, -2, 3, -3],
+        x: [-0.5, 1, -1, 0.5, -0.5],
+      }}
+      transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+    >
+      <div className="w-full h-full bg-gradient-to-t from-orange-400/50 via-yellow-300/40 to-yellow-100/10 rounded-[50%_50%_50%_50%_/_70%_70%_30%_30%] blur-[1px]" />
+    </motion.div>
+
+    {/* Primary warm glow */}
+    <motion.div
+      className="absolute bottom-[70px] left-1/2 -translate-x-1/2 w-[44px] h-[44px] rounded-full bg-amber-400/25 blur-lg"
+      animate={{ opacity: [0.25, 0.5, 0.3, 0.45, 0.25], scale: [1, 1.08, 0.95, 1.05, 1] }}
+      transition={{ duration: 2.5, repeat: Infinity }}
+    />
+
+    {/* Secondary ambient glow */}
+    <motion.div
+      className="absolute bottom-[60px] left-1/2 -translate-x-1/2 w-[60px] h-[60px] rounded-full bg-orange-300/10 blur-xl"
+      animate={{ opacity: [0.1, 0.25, 0.12, 0.2, 0.1], scale: [1, 1.05, 0.97, 1.03, 1] }}
+      transition={{ duration: 3.5, repeat: Infinity }}
+    />
+
+    {/* Candle light cast on surface */}
+    <motion.div
+      className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-[50px] h-[8px] rounded-full bg-amber-500/15 blur-md"
+      animate={{ opacity: [0.1, 0.2, 0.12, 0.18, 0.1], scaleX: [1, 1.1, 0.95, 1.05, 1] }}
+      transition={{ duration: 2.8, repeat: Infinity }}
     />
   </div>
 );
