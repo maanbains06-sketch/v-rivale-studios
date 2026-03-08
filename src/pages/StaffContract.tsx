@@ -516,7 +516,7 @@ const StaffContract = () => {
     drawFormField('Discord', contractData.serverDiscord, margin + halfWidth + 4, yPos, halfWidth);
     yPos += 15;
 
-    drawSectionHeader('Party B - Staff Member', '👤');
+    drawStaffSectionHeader('Party B - Staff Member', '👤');
     drawFormField('Full Name', contractData.staffName || '[To be filled]', margin, yPos, halfWidth);
     drawFormField('Role/Position', contractData.staffRole, margin + halfWidth + 4, yPos, halfWidth);
     yPos += 10;
