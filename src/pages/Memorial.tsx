@@ -227,7 +227,7 @@ const MemorialCard = ({ memorial }: { memorial: Memorial }) => {
                 {comments.map((c) => (
                   <div key={c.id} className="flex gap-2 p-2 rounded-lg bg-zinc-800/30 border border-zinc-700/20">
                     <Avatar className="w-6 h-6 shrink-0 mt-0.5">
-                      <AvatarImage src={c.discord_avatar ? `https://cdn.discordapp.com/avatars/${c.user_id}/${c.discord_avatar}.png` : undefined} />
+                      <AvatarImage src={c.discord_avatar || undefined} />
                       <AvatarFallback className="text-[10px] bg-zinc-700">{(c.discord_username || "?")[0]}</AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">

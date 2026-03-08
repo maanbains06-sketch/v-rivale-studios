@@ -202,7 +202,7 @@ const CinemaRoom = ({ room, user, onLeave, onEnd }: CinemaRoomProps) => {
       await supabase.from("cinema_rooms").update({ embed_url: embedSrc }).eq("id", room.id);
       setCurrentEmbed(embedSrc);
     }
-    const avatar = user.user_metadata?.avatar_url || user.user_metadata?.discord_avatar;
+    const avatar = getDiscordAvatarUrl();
     await supabase.from("cinema_room_messages").insert({
       room_id: room.id,
       user_id: user.id,
