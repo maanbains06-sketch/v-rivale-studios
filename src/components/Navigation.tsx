@@ -551,30 +551,6 @@ const Navigation = () => {
                     <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
                       <Link to="/gallery">Gallery</Link>
                     </Button>
-                    <Button
-                      variant="outline"
-                      className="justify-start border-border bg-muted/40 text-foreground hover:bg-accent"
-                      asChild
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <Link to="/cinema-hub" className="flex items-center">
-                        <Tv className="w-4 h-4 mr-2 text-primary" />
-                        Cinema Hub
-                      </Link>
-                    </Button>
-                    {showMemorialLink && (
-                      <Button
-                        variant="outline"
-                        className="justify-start border-border bg-muted/40 text-foreground hover:bg-accent"
-                        asChild
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        <Link to="/memorial" className="flex items-center">
-                          <Flame className="w-4 h-4 mr-2 text-primary" />
-                          Graveyard
-                        </Link>
-                      </Button>
-                    )}
                     <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
                       <Link to="/staff">Staff</Link>
                     </Button>
@@ -636,15 +612,10 @@ const Navigation = () => {
                         Awards
                       </Link>
                     </Button>
-                    <Button
-                      variant="outline"
-                      className="justify-start border-border bg-muted/40 text-foreground hover:bg-accent"
-                      asChild
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <Link to="/suggestion-box" className="flex items-center">
-                        <Lightbulb className="w-4 h-4 mr-2 text-primary" />
-                        Suggestion Box
+                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                      <Link to="/awards" className="flex items-center">
+                        <Trophy className="w-4 h-4 mr-2 text-yellow-500" />
+                        Awards
                       </Link>
                     </Button>
                   </div>
@@ -751,6 +722,41 @@ const Navigation = () => {
                       </Link>
                     </Button>
                   )}
+                  <Button
+                    variant="outline"
+                    className="justify-start glass-effect border-primary/30"
+                    asChild
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Link to="/cinema-hub" className="flex items-center">
+                      <Tv className="w-4 h-4 mr-2 text-primary" />
+                      Cinema Hub
+                    </Link>
+                  </Button>
+                  {showMemorialLink && (
+                    <Button
+                      variant="outline"
+                      className="justify-start glass-effect border-secondary/30"
+                      asChild
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Link to="/memorial" className="flex items-center">
+                        <Flame className="w-4 h-4 mr-2 text-secondary" />
+                        Graveyard
+                      </Link>
+                    </Button>
+                  )}
+                  <Button
+                    variant="outline"
+                    className="justify-start glass-effect border-accent/30"
+                    asChild
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Link to="/suggestion-box" className="flex items-center">
+                      <Lightbulb className="w-4 h-4 mr-2 text-accent" />
+                      Suggestion Box
+                    </Link>
+                  </Button>
                   <Button 
                     variant="outline"
                     className="justify-start glass-effect"
