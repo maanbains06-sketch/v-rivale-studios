@@ -16,10 +16,11 @@ interface PeerState {
 export function useWebRTC(roomId: string, userId: string, username: string) {
   const peers = useRef<Map<string, PeerState>>(new Map());
   const localAudioStream = useRef<MediaStream | null>(null);
-  const localScreenStream = useRef<MediaStream | null>(null);
+  const localScreenStreamRef = useRef<MediaStream | null>(null);
   const channelRef = useRef<any>(null);
   const [isMicOn, setIsMicOn] = useState(false);
   const [isScreenOn, setIsScreenOn] = useState(false);
+  const [localScreenStream, setLocalScreenStream] = useState<MediaStream | null>(null);
   const [remoteScreenStream, setRemoteScreenStream] = useState<MediaStream | null>(null);
   const [remoteScreenUser, setRemoteScreenUser] = useState<string | null>(null);
   const [connectedPeers, setConnectedPeers] = useState<string[]>([]);
@@ -49,9 +50,9 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
     }
 
     // Add screen share tracks if sharing
-    if (localScreenStream.current) {
-      localScreenStream.current.getTracks().forEach(track => {
-        pc.addTrack(track, localScreenStream.current!);
+    if (localScreenStreamRef.current) {
+      localScreenStreamRef.current.getTracks().forEach(track => {
+        pc.addTrack(track, localScreenStreamRef.current!);
       });
     }
 
@@ -159,7 +160,6 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
     channel
       .on("broadcast", { event: "peer-join" }, ({ payload }) => {
         if (payload.userId !== userId) {
-          // New peer joined, initiate connection
           initiateConnection(payload.userId);
         }
       })
@@ -199,7 +199,6 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
       })
       .subscribe((status) => {
         if (status === "SUBSCRIBED") {
-          // Announce presence
           channel.send({
             type: "broadcast",
             event: "peer-join",
@@ -234,8 +233,9 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
     // Stop local streams
     localAudioStream.current?.getTracks().forEach(t => t.stop());
     localAudioStream.current = null;
-    localScreenStream.current?.getTracks().forEach(t => t.stop());
-    localScreenStream.current = null;
+    localScreenStreamRef.current?.getTracks().forEach(t => t.stop());
+    localScreenStreamRef.current = null;
+    setLocalScreenStream(null);
     setIsMicOn(false);
     setIsScreenOn(false);
     setRemoteScreenStream(null);
@@ -309,7 +309,8 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
           video: { cursor: "always" } as any, 
           audio: true 
         });
-        localScreenStream.current = stream;
+        localScreenStreamRef.current = stream;
+        setLocalScreenStream(stream);
 
         // Add screen tracks to all existing peers
         peers.current.forEach((peer) => {
@@ -335,7 +336,8 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
 
         // Handle when user stops sharing from browser UI
         stream.getVideoTracks()[0].onended = async () => {
-          localScreenStream.current = null;
+          localScreenStreamRef.current = null;
+          setLocalScreenStream(null);
           setIsScreenOn(false);
           await supabase.from("cinema_room_members").update({ is_sharing_screen: false }).eq("room_id", roomId).eq("user_id", userId);
           channelRef.current?.send({
@@ -356,8 +358,9 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
         return msg;
       }
     } else {
-      localScreenStream.current?.getTracks().forEach(t => t.stop());
-      localScreenStream.current = null;
+      localScreenStreamRef.current?.getTracks().forEach(t => t.stop());
+      localScreenStreamRef.current = null;
+      setLocalScreenStream(null);
       setIsScreenOn(false);
       await supabase.from("cinema_room_members").update({ is_sharing_screen: false }).eq("room_id", roomId).eq("user_id", userId);
       channelRef.current?.send({
@@ -386,7 +389,7 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
     remoteScreenStream,
     remoteScreenUser,
     connectedPeers,
-    localScreenStream: localScreenStream.current,
+    localScreenStream,
     micPermission,
     lastError,
     clearError: () => setLastError(null),
