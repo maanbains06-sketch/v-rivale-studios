@@ -580,12 +580,16 @@ const Navigation = () => {
                     <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
                       <Link to="/features">Features</Link>
                     </Button>
-                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
-                      <Link to="/guides">Guides</Link>
-                    </Button>
-                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
-                      <Link to="/gallery">Gallery</Link>
-                    </Button>
+                    {showGuidesLink && (
+                      <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                        <Link to="/guides">Guides</Link>
+                      </Button>
+                    )}
+                    {showGalleryLink && (
+                      <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                        <Link to="/gallery">Gallery</Link>
+                      </Button>
+                    )}
                     <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
                       <Link to="/staff">Staff</Link>
                     </Button>
@@ -597,9 +601,11 @@ const Navigation = () => {
                         <Link to="/business">Business</Link>
                       </Button>
                     )}
-                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
-                      <Link to="/gang-rp">Gang RP</Link>
-                    </Button>
+                    {showGangRpLink && (
+                      <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                        <Link to="/gang-rp">Gang RP</Link>
+                      </Button>
+                    )}
                     <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
                       <Link to="/support">Support</Link>
                     </Button>
@@ -614,12 +620,14 @@ const Navigation = () => {
                         <Link to="/roster">Roster</Link>
                       </Button>
                     )}
-                    <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
-                      <Link to="/giveaway" className="flex items-center">
-                        <Gift className="w-4 h-4 mr-2" />
-                        Giveaway
-                      </Link>
-                    </Button>
+                    {showGiveawayLink && (
+                      <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
+                        <Link to="/giveaway" className="flex items-center">
+                          <Gift className="w-4 h-4 mr-2" />
+                          Giveaway
+                        </Link>
+                      </Button>
+                    )}
                     {showSpinLink && (
                       <Button variant="ghost" className="justify-start" asChild onClick={() => setIsMenuOpen(false)}>
                         <Link to="/spin" className="flex items-center">
