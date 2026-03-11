@@ -92,7 +92,7 @@ const BrickBreakerGame = ({ onBack, submitScore, GameShell, StartScreen, EndScre
   const comboRef = useRef(0);
   const levelRef = useRef(1);
   const gameOverRef = useRef(false);
-  const wideTimer = useRef<NodeJS.Timeout>();
+  const wideTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const spawnBricks = useCallback((lvl: number) => {
     const bricks: Brick[] = [];

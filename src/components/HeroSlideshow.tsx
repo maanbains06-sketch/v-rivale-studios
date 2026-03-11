@@ -134,7 +134,7 @@ const HeroSlideshow = memo(() => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [showFirst, setShowFirst] = useState(true);
   const [isVisible, setIsVisible] = useState(true);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const preloadedRef = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
   
