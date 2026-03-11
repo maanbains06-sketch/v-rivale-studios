@@ -10,7 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   ArrowLeft, Send, Mic, MicOff, Monitor, MonitorOff, Users, MessageSquare,
-  Crown, Link as LinkIcon, X, Volume2, VolumeX, Maximize2, Minimize2, Wifi, WifiOff, Info,
+  Crown, Link as LinkIcon, X, Volume2, VolumeX, Maximize2, Minimize2, Wifi, WifiOff, Info, Headphones, HeadphoneOff,
   Play, Radio, Sparkles, PanelRightOpen, PanelRightClose
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -88,8 +88,10 @@ const CinemaRoom = ({ room, user, onLeave, onEnd }: CinemaRoomProps) => {
     leaveSignaling,
     toggleMic,
     toggleScreen,
+    toggleDeafen,
     isMicOn,
     isScreenOn,
+    isDeafened,
     remoteScreenStream,
     remoteScreenUser,
     connectedPeers,
@@ -513,6 +515,19 @@ const CinemaRoom = ({ room, user, onLeave, onEnd }: CinemaRoomProps) => {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>{isScreenOn ? "Stop Sharing" : "Share Screen"}</TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  onClick={toggleDeafen}
+                  className={`rounded-full w-10 h-10 md:w-12 md:h-12 transition-all duration-300 border-2 ${isDeafened ? 'bg-red-600 hover:bg-red-700 text-white border-red-500 shadow-lg shadow-red-500/30' : 'bg-muted/50 text-foreground border-border hover:bg-muted'}`}
+                >
+                  {isDeafened ? <HeadphoneOff className="w-4 h-4 md:w-5 md:h-5" /> : <Headphones className="w-4 h-4 md:w-5 md:h-5" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{isDeafened ? "Undeafen" : "Deafen"}</TooltipContent>
             </Tooltip>
 
             <Tooltip>

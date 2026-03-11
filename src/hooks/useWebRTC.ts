@@ -24,17 +24,22 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
   const userIdRef = useRef(userId);
   const [isMicOn, setIsMicOn] = useState(false);
   const [isScreenOn, setIsScreenOn] = useState(false);
+  const [isDeafened, setIsDeafened] = useState(false);
   const [localScreenStream, setLocalScreenStream] = useState<MediaStream | null>(null);
   const [remoteScreenStream, setRemoteScreenStream] = useState<MediaStream | null>(null);
   const [remoteScreenUser, setRemoteScreenUser] = useState<string | null>(null);
   const [connectedPeers, setConnectedPeers] = useState<string[]>([]);
   const [micPermission, setMicPermission] = useState<PermissionState | "unknown">("unknown");
   const [lastError, setLastError] = useState<string | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
+  const isDeafenedRef = useRef(false);
 
   useEffect(() => {
     userIdRef.current = userId;
   }, [userId]);
+
+  useEffect(() => {
+    isDeafenedRef.current = isDeafened;
+  }, [isDeafened]);
 
   // Check mic permission on mount
   useEffect(() => {
@@ -46,87 +51,61 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
     }
   }, []);
 
-  // Resume AudioContext on user interaction to handle autoplay policy
-  const ensureAudioContext = useCallback(() => {
-    if (!audioContextRef.current) {
-      audioContextRef.current = new AudioContext();
-    }
-    if (audioContextRef.current.state === "suspended") {
-      audioContextRef.current.resume().catch(() => {});
-    }
-  }, []);
-
   const createPeerConnection = useCallback((peerId: string) => {
     if (peers.current.has(peerId)) return peers.current.get(peerId)!.pc;
 
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
 
-    // Always add transceivers for audio (sendrecv) so both sides can send/receive
-    pc.addTransceiver("audio", { direction: "sendrecv" });
+    // Add audio transceiver - always sendrecv so both sides can talk
+    const audioTransceiver = pc.addTransceiver("audio", { direction: "sendrecv" });
 
-    // Add local audio tracks if mic is on
+    // If we have a local audio track, set it on the transceiver sender
     if (localAudioStream.current) {
-      const existingSenders = pc.getSenders().filter(s => s.track?.kind === "audio");
-      localAudioStream.current.getAudioTracks().forEach(track => {
-        // Replace the transceiver's track instead of adding new
-        const emptyAudioSender = pc.getSenders().find(s => !s.track && s.track?.kind !== "video");
-        if (emptyAudioSender) {
-          emptyAudioSender.replaceTrack(track).catch(() => {});
-        } else if (!existingSenders.some(s => s.track?.id === track.id)) {
-          pc.addTrack(track, localAudioStream.current!);
-        }
-      });
+      const audioTrack = localAudioStream.current.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTransceiver.sender.replaceTrack(audioTrack).catch(console.error);
+      }
     }
 
-    // Add screen share tracks if sharing
+    // Add screen share tracks if currently sharing
     if (localScreenStreamRef.current) {
       localScreenStreamRef.current.getTracks().forEach(track => {
         pc.addTrack(track, localScreenStreamRef.current!);
       });
     }
 
-    // Handle remote tracks - use separate audio element per peer
+    // Audio element for this peer's audio
     const audioEl = new Audio();
     audioEl.autoplay = true;
-    audioEl.volume = 1.0;
-    // Needed for some mobile browsers
+    audioEl.volume = isDeafenedRef.current ? 0 : 1.0;
     audioEl.setAttribute('playsinline', '');
 
     pc.ontrack = (event) => {
-      ensureAudioContext();
-      
       const track = event.track;
-      const stream = event.streams[0];
-      
+      const stream = event.streams[0] || new MediaStream([track]);
+
       if (track.kind === "video") {
-        // Screen share stream - use the stream containing video
-        const screenStream = stream || new MediaStream([track]);
-        setRemoteScreenStream(screenStream);
+        // Screen share from remote
+        setRemoteScreenStream(stream);
         setRemoteScreenUser(peerId);
-      } else if (track.kind === "audio") {
-        // Audio track - attach to the peer's audio element
-        // Create a new stream with just this audio track to avoid conflicts
-        const audioStream = stream || new MediaStream([track]);
-        audioEl.srcObject = audioStream;
         
-        // Force play with retry
+        track.onended = () => {
+          setRemoteScreenStream(null);
+          setRemoteScreenUser(null);
+        };
+      } else if (track.kind === "audio") {
+        // Remote audio - attach to this peer's audio element
+        audioEl.srcObject = stream;
+        audioEl.volume = isDeafenedRef.current ? 0 : 1.0;
+
         const playAudio = () => {
-          audioEl.play().then(() => {
-            console.log(`[WebRTC] Audio playing for peer ${peerId}`);
-          }).catch((err) => {
-            console.warn(`[WebRTC] Audio play failed for ${peerId}, retrying...`, err);
-            // Retry after a short delay
-            setTimeout(() => {
-              audioEl.play().catch(() => {});
-            }, 500);
+          audioEl.play().catch(() => {
+            setTimeout(() => audioEl.play().catch(() => {}), 500);
           });
         };
         playAudio();
 
-        // Also handle track unmute (track might start muted)
-        track.onunmute = () => {
-          playAudio();
-        };
+        track.onunmute = () => playAudio();
       }
     };
 
@@ -150,7 +129,6 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
         setConnectedPeers(prev => [...new Set([...prev, peerId])]);
       } else if (["disconnected", "failed", "closed"].includes(pc.connectionState)) {
         setConnectedPeers(prev => prev.filter(p => p !== peerId));
-        // Try to restart ICE on failure
         if (pc.connectionState === "failed") {
           pc.restartIce();
         }
@@ -163,11 +141,11 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
       }
     };
 
-    // Handle negotiation needed - perfect negotiation pattern
+    // Perfect negotiation: onnegotiationneeded
     pc.onnegotiationneeded = async () => {
       const peerState = peers.current.get(peerId);
       if (!peerState) return;
-      
+
       try {
         peerState.makingOffer = true;
         await pc.setLocalDescription();
@@ -185,13 +163,13 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
 
     peers.current.set(peerId, { pc, audioEl, makingOffer: false, ignoreOffer: false });
     return pc;
-  }, [ensureAudioContext]);
+  }, []);
 
-  // Perfect negotiation: handle offer
+  // Handle offer (perfect negotiation - polite peer)
   const handleOffer = useCallback(async (from: string, offer: RTCSessionDescriptionInit) => {
     let peerState = peers.current.get(from);
     let pc: RTCPeerConnection;
-    
+
     if (!peerState) {
       pc = createPeerConnection(from);
       peerState = peers.current.get(from)!;
@@ -199,17 +177,16 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
       pc = peerState.pc;
     }
 
-    // Polite peer logic: we are polite if our userId < from (alphabetical)
     const polite = userIdRef.current < from;
     const offerCollision = peerState.makingOffer || pc.signalingState !== "stable";
-    
+
     peerState.ignoreOffer = !polite && offerCollision;
     if (peerState.ignoreOffer) return;
 
     try {
       await pc.setRemoteDescription(new RTCSessionDescription(offer));
       await pc.setLocalDescription();
-      
+
       channelRef.current?.send({
         type: "broadcast",
         event: "answer",
@@ -223,7 +200,7 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
   const handleAnswer = useCallback(async (from: string, answer: RTCSessionDescriptionInit) => {
     const peer = peers.current.get(from);
     if (!peer) return;
-    
+
     try {
       if (peer.pc.signalingState === "have-local-offer") {
         await peer.pc.setRemoteDescription(new RTCSessionDescription(answer));
@@ -243,7 +220,7 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
   }, []);
 
   const initiateConnection = useCallback(async (peerId: string) => {
-    const pc = createPeerConnection(peerId);
+    createPeerConnection(peerId);
     // onnegotiationneeded will fire and send offer automatically
   }, [createPeerConnection]);
 
@@ -267,10 +244,14 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
           if (peer.audioEl) peer.audioEl.srcObject = null;
           peers.current.delete(payload.userId);
           setConnectedPeers(prev => prev.filter(p => p !== payload.userId));
-          if (remoteScreenUser === payload.userId) {
-            setRemoteScreenStream(null);
-            setRemoteScreenUser(null);
-          }
+          // Clear remote screen if this peer was sharing
+          setRemoteScreenUser(prev => {
+            if (prev === payload.userId) {
+              setRemoteScreenStream(null);
+              return null;
+            }
+            return prev;
+          });
         }
       })
       .on("broadcast", { event: "offer" }, ({ payload }) => {
@@ -305,7 +286,7 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
       });
 
     channelRef.current = channel;
-  }, [roomId, userId, username, initiateConnection, handleOffer, handleAnswer, handleIceCandidate, remoteScreenUser]);
+  }, [roomId, userId, username, initiateConnection, handleOffer, handleAnswer, handleIceCandidate]);
 
   const leaveSignaling = useCallback(() => {
     channelRef.current?.send({
@@ -314,7 +295,6 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
       payload: { userId: userIdRef.current },
     });
 
-    // Close all peer connections
     peers.current.forEach((peer) => {
       peer.pc.close();
       peer.audioEl?.pause();
@@ -328,7 +308,6 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
       channelRef.current = null;
     }
 
-    // Stop local streams
     localAudioStream.current?.getTracks().forEach(t => t.stop());
     localAudioStream.current = null;
     localScreenStreamRef.current?.getTracks().forEach(t => t.stop());
@@ -336,50 +315,46 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
     setLocalScreenStream(null);
     setIsMicOn(false);
     setIsScreenOn(false);
+    setIsDeafened(false);
     setRemoteScreenStream(null);
     setRemoteScreenUser(null);
-
-    // Close audio context
-    if (audioContextRef.current) {
-      audioContextRef.current.close().catch(() => {});
-      audioContextRef.current = null;
-    }
   }, []);
 
   const toggleMic = useCallback(async (): Promise<string | null> => {
-    ensureAudioContext();
-    
     if (!isMicOn) {
+      // Turn mic ON
       try {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
           const msg = "Your browser doesn't support microphone access. Please use Chrome, Edge, or Firefox.";
           setLastError(msg);
           return msg;
         }
-        const stream = await navigator.mediaDevices.getUserMedia({ 
+        const stream = await navigator.mediaDevices.getUserMedia({
           audio: {
             echoCancellation: true,
             noiseSuppression: true,
             autoGainControl: true,
-          } 
+          }
         });
         localAudioStream.current = stream;
         setMicPermission("granted");
-        
-        // Add audio tracks to all existing peers using replaceTrack for reliability
+
         const audioTrack = stream.getAudioTracks()[0];
-        for (const [peerId, peer] of peers.current) {
-          const audioSender = peer.pc.getSenders().find(s => 
-            s.track?.kind === "audio" || (!s.track && peer.pc.getTransceivers().some(t => t.sender === s && t.mid !== null))
+
+        // Replace audio track on all peer connections using the audio transceiver
+        for (const [, peer] of peers.current) {
+          const audioTransceiver = peer.pc.getTransceivers().find(t => 
+            t.mid !== null && t.receiver.track?.kind === "audio"
           );
           
-          if (audioSender) {
-            await audioSender.replaceTrack(audioTrack).catch(() => {
-              // Fallback: add track directly
-              peer.pc.addTrack(audioTrack, stream);
+          if (audioTransceiver) {
+            await audioTransceiver.sender.replaceTrack(audioTrack).catch((err) => {
+              console.warn("[WebRTC] replaceTrack failed, adding track:", err);
+              try { peer.pc.addTrack(audioTrack, stream); } catch {}
             });
           } else {
-            peer.pc.addTrack(audioTrack, stream);
+            // No audio transceiver found, add one
+            try { peer.pc.addTrack(audioTrack, stream); } catch {}
           }
         }
 
@@ -401,19 +376,22 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
         return msg;
       }
     } else {
-      // Mute: replace track with null on all senders
+      // Turn mic OFF - replace track with null (keeps transceiver alive)
       for (const [, peer] of peers.current) {
-        const audioSender = peer.pc.getSenders().find(s => s.track?.kind === "audio");
-        if (audioSender) {
-          await audioSender.replaceTrack(null).catch(() => {});
+        const audioTransceiver = peer.pc.getTransceivers().find(t =>
+          t.sender.track?.kind === "audio"
+        );
+        if (audioTransceiver) {
+          await audioTransceiver.sender.replaceTrack(null).catch(() => {});
         }
       }
       localAudioStream.current?.getTracks().forEach(t => t.stop());
       localAudioStream.current = null;
       setIsMicOn(false);
       await supabase.from("cinema_room_members").update({ is_muted: true }).eq("room_id", roomId).eq("user_id", userIdRef.current);
+      return null;
     }
-  }, [isMicOn, roomId, ensureAudioContext]);
+  }, [isMicOn, roomId]);
 
   const toggleScreen = useCallback(async (): Promise<string | null> => {
     if (!isScreenOn) {
@@ -423,27 +401,37 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
           setLastError(msg);
           return msg;
         }
-        const stream = await navigator.mediaDevices.getDisplayMedia({ 
-          video: { cursor: "always" } as any, 
-          audio: true 
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+          video: { cursor: "always" } as any,
+          audio: true
         });
         localScreenStreamRef.current = stream;
         setLocalScreenStream(stream);
 
         // Add screen tracks to all existing peers
-        for (const [peerId, peer] of peers.current) {
+        for (const [, peer] of peers.current) {
           stream.getTracks().forEach(track => {
             peer.pc.addTrack(track, stream);
           });
-          // onnegotiationneeded will handle renegotiation automatically
         }
 
         setIsScreenOn(true);
         setLastError(null);
         await supabase.from("cinema_room_members").update({ is_sharing_screen: true }).eq("room_id", roomId).eq("user_id", userIdRef.current);
 
-        // Handle when user stops sharing from browser UI
+        // Handle browser "Stop sharing" button
         stream.getVideoTracks()[0].onended = async () => {
+          // Remove screen tracks from all peers
+          for (const [, peer] of peers.current) {
+            const screenSenders = peer.pc.getSenders().filter(s =>
+              s.track && stream.getTracks().some(t => t.id === s.track!.id)
+            );
+            screenSenders.forEach(sender => {
+              try { peer.pc.removeTrack(sender); } catch {}
+            });
+          }
+          
+          stream.getTracks().forEach(t => t.stop());
           localScreenStreamRef.current = null;
           setLocalScreenStream(null);
           setIsScreenOn(false);
@@ -466,16 +454,16 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
         return msg;
       }
     } else {
-      // Remove screen tracks from peers
+      // Stop screen share
       for (const [, peer] of peers.current) {
-        const screenSenders = peer.pc.getSenders().filter(s => 
-          s.track && localScreenStreamRef.current?.getTracks().includes(s.track)
+        const screenSenders = peer.pc.getSenders().filter(s =>
+          s.track && localScreenStreamRef.current?.getTracks().some(t => t.id === s.track!.id)
         );
         screenSenders.forEach(sender => {
-          peer.pc.removeTrack(sender);
+          try { peer.pc.removeTrack(sender); } catch {}
         });
       }
-      
+
       localScreenStreamRef.current?.getTracks().forEach(t => t.stop());
       localScreenStreamRef.current = null;
       setLocalScreenStream(null);
@@ -490,6 +478,18 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
     }
   }, [isScreenOn, roomId]);
 
+  // Deafen: mute/unmute all remote audio
+  const toggleDeafen = useCallback(() => {
+    const newDeafened = !isDeafened;
+    setIsDeafened(newDeafened);
+    isDeafenedRef.current = newDeafened;
+
+    // Set volume on all peer audio elements
+    for (const [, peer] of peers.current) {
+      peer.audioEl.volume = newDeafened ? 0 : 1.0;
+    }
+  }, [isDeafened]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -502,8 +502,10 @@ export function useWebRTC(roomId: string, userId: string, username: string) {
     leaveSignaling,
     toggleMic,
     toggleScreen,
+    toggleDeafen,
     isMicOn,
     isScreenOn,
+    isDeafened,
     remoteScreenStream,
     remoteScreenUser,
     connectedPeers,
