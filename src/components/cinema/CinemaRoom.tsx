@@ -10,7 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   ArrowLeft, Send, Mic, MicOff, Monitor, MonitorOff, Users, MessageSquare,
-  Crown, Link as LinkIcon, X, Volume2, VolumeX, Maximize2, Minimize2, Wifi, WifiOff, Info,
+  Crown, Link as LinkIcon, X, Volume2, VolumeX, Maximize2, Minimize2, Wifi, WifiOff, Info, Headphones, HeadphoneOff,
   Play, Radio, Sparkles, PanelRightOpen, PanelRightClose
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
