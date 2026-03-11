@@ -86,7 +86,7 @@ serve(async (req) => {
         },
       ],
       allowed_mentions: {
-        parse: ['everyone', 'users'],
+        parse: ['everyone'],
         users: creatorDiscordId ? [creatorDiscordId] : [],
       },
     };
