@@ -521,6 +521,19 @@ const CinemaRoom = ({ room, user, onLeave, onEnd }: CinemaRoomProps) => {
               <TooltipTrigger asChild>
                 <Button
                   size="icon"
+                  onClick={toggleDeafen}
+                  className={`rounded-full w-10 h-10 md:w-12 md:h-12 transition-all duration-300 border-2 ${isDeafened ? 'bg-red-600 hover:bg-red-700 text-white border-red-500 shadow-lg shadow-red-500/30' : 'bg-muted/50 text-foreground border-border hover:bg-muted'}`}
+                >
+                  {isDeafened ? <HeadphoneOff className="w-4 h-4 md:w-5 md:h-5" /> : <Headphones className="w-4 h-4 md:w-5 md:h-5" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{isDeafened ? "Undeafen" : "Deafen"}</TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
                   onClick={() => setShowEmbedInput(!showEmbedInput)}
                   className="rounded-full w-10 h-10 md:w-12 md:h-12 bg-muted/50 text-foreground border-2 border-border hover:bg-muted transition-all duration-300"
                 >
