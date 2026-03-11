@@ -60,7 +60,7 @@ export const StaffManagementDialog = ({ open, onOpenChange, staffMember, onSucce
 
   const [responsibilityInput, setResponsibilityInput] = useState("");
   const [discordFetched, setDiscordFetched] = useState(false);
-  const fetchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const fetchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastFetchedIdRef = useRef<string>("");
 
   // Reset form data when staffMember prop changes or dialog opens

@@ -335,9 +335,9 @@ const OwnerPanel = () => {
   const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
   
   const lastActivityRef = useRef<number>(Date.now());
-  const warningTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const logoutTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const countdownRef = useRef<NodeJS.Timeout | null>(null);
+  const warningTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const logoutTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Reset activity timer
   const resetActivityTimer = useCallback(() => {
