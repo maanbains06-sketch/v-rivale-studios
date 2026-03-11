@@ -122,6 +122,7 @@ const CinemaHub = () => {
     const roomNumber = getNextRoomNumber();
     const username = user.user_metadata?.display_name || user.user_metadata?.username || "Unknown";
     const avatar = user.user_metadata?.avatar_url || user.user_metadata?.discord_avatar;
+    const discordId = user.user_metadata?.discord_id || user.user_metadata?.provider_id || user.user_metadata?.sub;
 
     const { data, error } = await supabase.from("cinema_rooms").insert({
       room_number: roomNumber,
@@ -141,6 +142,17 @@ const CinemaHub = () => {
         discord_username: username,
         discord_avatar: avatar,
       });
+
+      // Send Discord notification
+      supabase.functions.invoke('send-cinema-notification', {
+        body: {
+          roomName: roomName.trim(),
+          roomNumber: roomNumber,
+          creatorUsername: username,
+          creatorDiscordId: discordId,
+        },
+      }).catch((err) => console.warn('Cinema Discord notification failed:', err));
+
       setActiveRoom(data);
       setCreateOpen(false);
       setRoomName("");
