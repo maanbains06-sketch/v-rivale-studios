@@ -77,6 +77,11 @@ const Auth = () => {
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const [sendingResetEmail, setSendingResetEmail] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [resetCode, setResetCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [resettingPassword, setResettingPassword] = useState(false);
+  const [resetStep, setResetStep] = useState<'email' | 'code' | 'done'>('email');
 
   // Load remembered email and password on mount
   useEffect(() => {
