@@ -43,6 +43,15 @@ const forgotPasswordSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
 });
 
+const resetPasswordSchema = z.object({
+  code: z.string().length(6, "Code must be 6 digits"),
+  newPassword: z.string().min(6, "Password must be at least 6 characters"),
+  confirmNewPassword: z.string(),
+}).refine((data) => data.newPassword === data.confirmNewPassword, {
+  message: "Passwords don't match",
+  path: ["confirmNewPassword"],
+});
+
 const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
