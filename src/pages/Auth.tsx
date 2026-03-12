@@ -412,46 +412,30 @@ const Auth = () => {
     setSendingResetEmail(true);
     
     try {
-      // First generate a reset token via Supabase
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail, {
-        redirectTo: `${window.location.origin}/auth?reset=true`,
+      const { data, error } = await supabase.functions.invoke('send-reset-code', {
+        body: { email: forgotPasswordEmail },
       });
 
-      if (resetError) {
-        // If it's just a user not found error, still show success (security)
-        if (!resetError.message.includes("User not found")) {
-          toast({
-            title: "Error",
-            description: resetError.message,
-            variant: "destructive",
-          });
-          setSendingResetEmail(false);
-          return;
-        }
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to send reset code. Please try again.",
+          variant: "destructive",
+        });
+        setSendingResetEmail(false);
+        return;
       }
 
-      // Send custom email via our edge function for better deliverability
-      const { error: emailError } = await supabase.functions.invoke('send-password-reset', {
-        body: {
-          email: forgotPasswordEmail,
-          resetUrl: `${window.location.origin}/auth?reset=true`,
-        },
-      });
-
-      if (emailError) {
-        console.error("Custom email failed, but Supabase email may have been sent:", emailError);
-      }
-
-      setResetEmailSent(true);
+      setResetStep('code');
       toast({
-        title: "Reset Email Sent!",
-        description: "Check your inbox (and spam folder) for the password reset link.",
+        title: "Code Sent!",
+        description: "Check your inbox for a 6-digit code.",
       });
     } catch (err) {
       console.error("Password reset error:", err);
       toast({
         title: "Error",
-        description: "Failed to send reset email. Please try again.",
+        description: "Failed to send reset code. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -459,10 +443,60 @@ const Auth = () => {
     }
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const result = resetPasswordSchema.safeParse({ code: resetCode, newPassword, confirmNewPassword });
+    if (!result.success) {
+      toast({
+        title: "Validation Error",
+        description: result.error.issues[0].message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setResettingPassword(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-reset-code', {
+        body: { email: forgotPasswordEmail, code: resetCode, newPassword },
+      });
+
+      if (error || data?.error) {
+        toast({
+          title: "Error",
+          description: data?.error || "Invalid or expired code. Please try again.",
+          variant: "destructive",
+        });
+        setResettingPassword(false);
+        return;
+      }
+
+      setResetStep('done');
+      toast({
+        title: "Password Reset!",
+        description: "Your password has been updated. You can now sign in.",
+      });
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to reset password. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setResettingPassword(false);
+    }
+  };
+
   const closeForgotPasswordDialog = () => {
     setShowForgotPassword(false);
     setForgotPasswordEmail("");
     setResetEmailSent(false);
+    setResetCode("");
+    setNewPassword("");
+    setConfirmNewPassword("");
+    setResetStep('email');
   };
 
   if (checkingAuth) {
