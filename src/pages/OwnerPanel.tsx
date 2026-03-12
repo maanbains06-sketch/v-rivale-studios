@@ -2826,6 +2826,11 @@ const OwnerPanel = () => {
             </Card>
           </TabsContent>
 
+          {/* Records Tab */}
+          <TabsContent value="records">
+            <OwnerRecords />
+          </TabsContent>
+
         </Tabs>
       </div>
 
