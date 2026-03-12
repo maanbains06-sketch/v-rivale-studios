@@ -310,14 +310,16 @@ const Navigation = () => {
                 Roster
               </NavLink>
             )}
-            <NavLink 
-              to="/giveaway" 
-              className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1"
-              activeClassName="text-primary"
-            >
-              <Gift className="w-4 h-4" />
-              Giveaway
-            </NavLink>
+            {showGiveawayLink && (
+              <NavLink 
+                to="/giveaway" 
+                className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1"
+                activeClassName="text-primary"
+              >
+                <Gift className="w-4 h-4" />
+                Giveaway
+              </NavLink>
+            )}
             {showSpinLink && (
               <NavLink 
                 to="/spin" 
