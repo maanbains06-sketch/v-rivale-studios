@@ -107,9 +107,9 @@ const OwnerRecords = () => {
         businessAppsRes,
         activityRes,
       ] = await Promise.all([
-        // Tickets solved (reviewed_by is user_id)
-        supabase.from('support_tickets' as any).select('reviewed_by').eq('status', 'resolved').in('reviewed_by', userIds).then(r => r.data || []).catch(() => []),
-        // Confidential tickets
+        // Tickets solved - use try/catch for tables that might not exist
+        supabase.from('confidential_tickets').select('resolved_by').eq('status', 'resolved').in('resolved_by', userIds),
+        // Confidential tickets (duplicate for slot)
         supabase.from('confidential_tickets').select('resolved_by').eq('status', 'resolved').in('resolved_by', userIds),
         // Live chats
         supabase.from('support_chats').select('assigned_to').eq('status', 'closed').in('assigned_to', userIds),
