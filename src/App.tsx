@@ -351,6 +351,7 @@ const AppContent = memo(() => {
             <GlobalAnnouncementBanner />
             <LiveVisitorCounter />
             <StaffPresenceTracker />
+            <StaffActivityTimer />
             <ThemeDecorations />
           </Suspense>
           <AppRoutes />
