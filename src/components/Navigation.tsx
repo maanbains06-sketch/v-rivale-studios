@@ -285,13 +285,15 @@ const Navigation = () => {
                 Business
               </NavLink>
             )}
-            <NavLink 
-              to="/gang-rp" 
-              className="text-foreground/80 hover:text-primary transition-colors"
-              activeClassName="text-primary"
-            >
-              Gang RP
-            </NavLink>
+            {showGangRpLink && (
+              <NavLink 
+                to="/gang-rp" 
+                className="text-foreground/80 hover:text-primary transition-colors"
+                activeClassName="text-primary"
+              >
+                Gang RP
+              </NavLink>
+            )}
             <NavLink 
               to="/support" 
               className="text-foreground/80 hover:text-primary transition-colors"
