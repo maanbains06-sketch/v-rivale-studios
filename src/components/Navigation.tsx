@@ -78,6 +78,7 @@ const Navigation = () => {
   const showGuidesLink = isOwner || (!siteSettingsLoading && !siteSettings.guides_hidden);
   const showMiniGamesLink = isOwner || (!siteSettingsLoading && !siteSettings.mini_games_hidden);
   const showProfileCustomizationLink = isOwner || (!siteSettingsLoading && !siteSettings.profile_customization_hidden);
+  const showMemorialLink = isOwner || (!siteSettingsLoading && !siteSettings.memorial_hidden);
 
   // Track staff presence when logged in with Discord ID
   useWebsitePresence({ 
