@@ -244,20 +244,24 @@ const Navigation = () => {
             >
               Features
             </NavLink>
-            <NavLink 
-              to="/guides" 
-              className="text-foreground/80 hover:text-primary transition-colors"
-              activeClassName="text-primary"
-            >
-              Guides
-            </NavLink>
-            <NavLink 
-              to="/gallery" 
-              className="text-foreground/80 hover:text-primary transition-colors"
-              activeClassName="text-primary"
-            >
-              Gallery
-            </NavLink>
+            {showGuidesLink && (
+              <NavLink 
+                to="/guides" 
+                className="text-foreground/80 hover:text-primary transition-colors"
+                activeClassName="text-primary"
+              >
+                Guides
+              </NavLink>
+            )}
+            {showGalleryLink && (
+              <NavLink 
+                to="/gallery" 
+                className="text-foreground/80 hover:text-primary transition-colors"
+                activeClassName="text-primary"
+              >
+                Gallery
+              </NavLink>
+            )}
             <NavLink 
               to="/staff" 
               className="text-foreground/80 hover:text-primary transition-colors"
