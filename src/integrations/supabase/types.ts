@@ -2988,6 +2988,33 @@ export type Database = {
         }
         Relationships: []
       }
+      password_reset_codes: {
+        Row: {
+          code: string
+          created_at: string | null
+          email: string
+          expires_at: string
+          id: string
+          used: boolean | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          email: string
+          expires_at: string
+          id?: string
+          used?: boolean | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          used?: boolean | null
+        }
+        Relationships: []
+      }
       pdm_applications: {
         Row: {
           additional_info: string | null
@@ -3689,6 +3716,63 @@ export type Database = {
           staff_user_id?: string
         }
         Relationships: []
+      }
+      staff_activity_tracking: {
+        Row: {
+          active_seconds: number | null
+          background_seconds: number | null
+          created_at: string | null
+          id: string
+          idle_seconds: number | null
+          last_heartbeat_at: string | null
+          last_status: string | null
+          staff_member_id: string
+          tracking_date: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          active_seconds?: number | null
+          background_seconds?: number | null
+          created_at?: string | null
+          id?: string
+          idle_seconds?: number | null
+          last_heartbeat_at?: string | null
+          last_status?: string | null
+          staff_member_id: string
+          tracking_date?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          active_seconds?: number | null
+          background_seconds?: number | null
+          created_at?: string | null
+          id?: string
+          idle_seconds?: number | null
+          last_heartbeat_at?: string | null
+          last_status?: string | null
+          staff_member_id?: string
+          tracking_date?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_activity_tracking_staff_member_id_fkey"
+            columns: ["staff_member_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_activity_tracking_staff_member_id_fkey"
+            columns: ["staff_member_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       staff_applications: {
         Row: {
