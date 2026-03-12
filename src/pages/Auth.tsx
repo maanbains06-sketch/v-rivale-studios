@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { User, Session } from "@supabase/supabase-js";
-import { MessageCircle, Loader2, Eye, EyeOff, ExternalLink, ArrowLeft, Mail } from "lucide-react";
+import { MessageCircle, Loader2, Eye, EyeOff, ExternalLink, ArrowLeft, Mail, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
 import AuthPanelLogo from "@/components/AuthPanelLogo";
