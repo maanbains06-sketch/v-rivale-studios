@@ -78,6 +78,7 @@ const Navigation = () => {
   const showGuidesLink = isOwner || (!siteSettingsLoading && !siteSettings.guides_hidden);
   const showMiniGamesLink = isOwner || (!siteSettingsLoading && !siteSettings.mini_games_hidden);
   const showProfileCustomizationLink = isOwner || (!siteSettingsLoading && !siteSettings.profile_customization_hidden);
+  const showMemorialLink = isOwner || (!siteSettingsLoading && !siteSettings.memorial_hidden);
 
   // Track staff presence when logged in with Discord ID
   useWebsitePresence({ 
@@ -243,20 +244,24 @@ const Navigation = () => {
             >
               Features
             </NavLink>
-            <NavLink 
-              to="/guides" 
-              className="text-foreground/80 hover:text-primary transition-colors"
-              activeClassName="text-primary"
-            >
-              Guides
-            </NavLink>
-            <NavLink 
-              to="/gallery" 
-              className="text-foreground/80 hover:text-primary transition-colors"
-              activeClassName="text-primary"
-            >
-              Gallery
-            </NavLink>
+            {showGuidesLink && (
+              <NavLink 
+                to="/guides" 
+                className="text-foreground/80 hover:text-primary transition-colors"
+                activeClassName="text-primary"
+              >
+                Guides
+              </NavLink>
+            )}
+            {showGalleryLink && (
+              <NavLink 
+                to="/gallery" 
+                className="text-foreground/80 hover:text-primary transition-colors"
+                activeClassName="text-primary"
+              >
+                Gallery
+              </NavLink>
+            )}
             <NavLink 
               to="/staff" 
               className="text-foreground/80 hover:text-primary transition-colors"
@@ -280,13 +285,15 @@ const Navigation = () => {
                 Business
               </NavLink>
             )}
-            <NavLink 
-              to="/gang-rp" 
-              className="text-foreground/80 hover:text-primary transition-colors"
-              activeClassName="text-primary"
-            >
-              Gang RP
-            </NavLink>
+            {showGangRpLink && (
+              <NavLink 
+                to="/gang-rp" 
+                className="text-foreground/80 hover:text-primary transition-colors"
+                activeClassName="text-primary"
+              >
+                Gang RP
+              </NavLink>
+            )}
             <NavLink 
               to="/support" 
               className="text-foreground/80 hover:text-primary transition-colors"
@@ -303,14 +310,16 @@ const Navigation = () => {
                 Roster
               </NavLink>
             )}
-            <NavLink 
-              to="/giveaway" 
-              className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1"
-              activeClassName="text-primary"
-            >
-              <Gift className="w-4 h-4" />
-              Giveaway
-            </NavLink>
+            {showGiveawayLink && (
+              <NavLink 
+                to="/giveaway" 
+                className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1"
+                activeClassName="text-primary"
+              >
+                <Gift className="w-4 h-4" />
+                Giveaway
+              </NavLink>
+            )}
             {showSpinLink && (
               <NavLink 
                 to="/spin" 
@@ -388,17 +397,19 @@ const Navigation = () => {
                         Cinema Hub
                       </Link>
                     </Button>
-                    <Button
-                      variant="outline"
-                      className="justify-start w-full border-border bg-secondary text-secondary-foreground hover:bg-secondary/90"
-                      asChild
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <Link to="/memorial" className="flex items-center">
-                        <Flame className="w-4 h-4 mr-2 text-secondary-foreground" />
-                        Graveyard
-                      </Link>
-                    </Button>
+                    {showMemorialLink && (
+                      <Button
+                        variant="outline"
+                        className="justify-start w-full border-border bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                        asChild
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <Link to="/memorial" className="flex items-center">
+                          <Flame className="w-4 h-4 mr-2 text-secondary-foreground" />
+                          Graveyard
+                        </Link>
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       className="justify-start w-full border-border bg-accent text-accent-foreground hover:bg-accent/90"

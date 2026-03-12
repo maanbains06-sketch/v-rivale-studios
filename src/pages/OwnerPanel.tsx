@@ -40,6 +40,7 @@ import OwnerCurrencyManager from "@/components/OwnerCurrencyManager";
 import ApplicationToggleManager from "@/components/ApplicationToggleManager";
 import AdminSuggestionsTab from "@/components/admin/AdminSuggestionsTab";
 import OwnerMemorialManager from "@/components/OwnerMemorialManager";
+import OwnerRecords from "@/components/OwnerRecords";
 
 import { LiveApplicationStats } from "@/components/LiveApplicationStats";
 import OwnerLiveChatManager from "@/components/OwnerLiveChatManager";
@@ -1775,6 +1776,10 @@ const OwnerPanel = () => {
                   <Flame className="w-4 h-4" />
                   <span className="hidden sm:inline">Memorial</span>
                 </TabsTrigger>
+                <TabsTrigger value="records" className="flex items-center gap-2 whitespace-nowrap">
+                  <BarChart3 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Records</span>
+                </TabsTrigger>
               </TabsList>
             </div>
             {/* Fade indicators for scroll hint */}
@@ -2820,6 +2825,11 @@ const OwnerPanel = () => {
                 <OwnerMemorialManager />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Records Tab */}
+          <TabsContent value="records">
+            <OwnerRecords />
           </TabsContent>
 
         </Tabs>

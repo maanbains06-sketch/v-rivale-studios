@@ -18,6 +18,7 @@ import AutoRetryPage from "@/components/AutoRetryPage";
 // Lazy load utility components
 const LiveVisitorCounter = lazy(() => import("@/components/LiveVisitorCounter"));
 const StaffPresenceTracker = lazy(() => import("@/components/StaffPresenceTracker"));
+const StaffActivityTimer = lazy(() => import("@/components/StaffActivityTimer"));
 const NetworkOfflineScreen = lazy(() => import("@/components/NetworkOfflineScreen"));
 const MaintenancePage = lazy(() => import("@/components/MaintenancePage"));
 const GlobalAnnouncementBanner = lazy(() => import("@/components/GlobalAnnouncementBanner"));
@@ -350,6 +351,7 @@ const AppContent = memo(() => {
             <GlobalAnnouncementBanner />
             <LiveVisitorCounter />
             <StaffPresenceTracker />
+            <StaffActivityTimer />
             <ThemeDecorations />
           </Suspense>
           <AppRoutes />

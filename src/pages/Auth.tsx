@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { User, Session } from "@supabase/supabase-js";
-import { MessageCircle, Loader2, Eye, EyeOff, ExternalLink, ArrowLeft, Mail } from "lucide-react";
+import { MessageCircle, Loader2, Eye, EyeOff, ExternalLink, ArrowLeft, Mail, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
 import AuthPanelLogo from "@/components/AuthPanelLogo";
@@ -43,6 +43,15 @@ const forgotPasswordSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
 });
 
+const resetPasswordSchema = z.object({
+  code: z.string().length(6, "Code must be 6 digits"),
+  newPassword: z.string().min(6, "Password must be at least 6 characters"),
+  confirmNewPassword: z.string(),
+}).refine((data) => data.newPassword === data.confirmNewPassword, {
+  message: "Passwords don't match",
+  path: ["confirmNewPassword"],
+});
+
 const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -68,6 +77,11 @@ const Auth = () => {
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const [sendingResetEmail, setSendingResetEmail] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [resetCode, setResetCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [resettingPassword, setResettingPassword] = useState(false);
+  const [resetStep, setResetStep] = useState<'email' | 'code' | 'done'>('email');
 
   // Load remembered email and password on mount
   useEffect(() => {
@@ -398,46 +412,30 @@ const Auth = () => {
     setSendingResetEmail(true);
     
     try {
-      // First generate a reset token via Supabase
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail, {
-        redirectTo: `${window.location.origin}/auth?reset=true`,
+      const { data, error } = await supabase.functions.invoke('send-reset-code', {
+        body: { email: forgotPasswordEmail },
       });
 
-      if (resetError) {
-        // If it's just a user not found error, still show success (security)
-        if (!resetError.message.includes("User not found")) {
-          toast({
-            title: "Error",
-            description: resetError.message,
-            variant: "destructive",
-          });
-          setSendingResetEmail(false);
-          return;
-        }
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to send reset code. Please try again.",
+          variant: "destructive",
+        });
+        setSendingResetEmail(false);
+        return;
       }
 
-      // Send custom email via our edge function for better deliverability
-      const { error: emailError } = await supabase.functions.invoke('send-password-reset', {
-        body: {
-          email: forgotPasswordEmail,
-          resetUrl: `${window.location.origin}/auth?reset=true`,
-        },
-      });
-
-      if (emailError) {
-        console.error("Custom email failed, but Supabase email may have been sent:", emailError);
-      }
-
-      setResetEmailSent(true);
+      setResetStep('code');
       toast({
-        title: "Reset Email Sent!",
-        description: "Check your inbox (and spam folder) for the password reset link.",
+        title: "Code Sent!",
+        description: "Check your inbox for a 6-digit code.",
       });
     } catch (err) {
       console.error("Password reset error:", err);
       toast({
         title: "Error",
-        description: "Failed to send reset email. Please try again.",
+        description: "Failed to send reset code. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -445,10 +443,60 @@ const Auth = () => {
     }
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const result = resetPasswordSchema.safeParse({ code: resetCode, newPassword, confirmNewPassword });
+    if (!result.success) {
+      toast({
+        title: "Validation Error",
+        description: result.error.issues[0].message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setResettingPassword(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-reset-code', {
+        body: { email: forgotPasswordEmail, code: resetCode, newPassword },
+      });
+
+      if (error || data?.error) {
+        toast({
+          title: "Error",
+          description: data?.error || "Invalid or expired code. Please try again.",
+          variant: "destructive",
+        });
+        setResettingPassword(false);
+        return;
+      }
+
+      setResetStep('done');
+      toast({
+        title: "Password Reset!",
+        description: "Your password has been updated. You can now sign in.",
+      });
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to reset password. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setResettingPassword(false);
+    }
+  };
+
   const closeForgotPasswordDialog = () => {
     setShowForgotPassword(false);
     setForgotPasswordEmail("");
     setResetEmailSent(false);
+    setResetCode("");
+    setNewPassword("");
+    setConfirmNewPassword("");
+    setResetStep('email');
   };
 
   if (checkingAuth) {
@@ -871,49 +919,114 @@ const Auth = () => {
         </AnimatePresence>
       </div>
 
-      {/* Forgot Password Dialog */}
+      {/* Forgot Password Dialog - 6 Digit Code Flow */}
       <Dialog open={showForgotPassword} onOpenChange={closeForgotPasswordDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Mail className="w-5 h-5 text-primary" />
-              Reset Password
+              {resetStep === 'done' ? 'Password Reset' : resetStep === 'code' ? 'Enter Reset Code' : 'Reset Password'}
             </DialogTitle>
             <DialogDescription>
-              {resetEmailSent 
-                ? "We've sent a password reset link to your email." 
-                : "Enter your email address and we'll send you a link to reset your password."}
+              {resetStep === 'done'
+                ? "Your password has been updated successfully."
+                : resetStep === 'code'
+                ? `Enter the 6-digit code sent to ${forgotPasswordEmail}`
+                : "Enter your email address and we'll send you a 6-digit code."}
             </DialogDescription>
           </DialogHeader>
           
-          {resetEmailSent ? (
+          {resetStep === 'done' ? (
             <div className="space-y-4">
               <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 text-center">
-                <Mail className="w-12 h-12 mx-auto text-primary mb-3" />
-                <p className="text-sm text-muted-foreground">
-                  Check your inbox at <strong className="text-foreground">{forgotPasswordEmail}</strong> for the reset link.
-                </p>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Didn't receive it? Check your spam folder or try again.
-                </p>
+                <div className="w-12 h-12 mx-auto rounded-full bg-primary/20 flex items-center justify-center mb-3">
+                  <Check className="w-6 h-6 text-primary" />
+                </div>
+                <p className="text-sm text-foreground font-medium">Password Reset Successful!</p>
+                <p className="text-xs text-muted-foreground mt-1">You can now sign in with your new password.</p>
+              </div>
+              <Button className="w-full" onClick={closeForgotPasswordDialog}>
+                Back to Sign In
+              </Button>
+            </div>
+          ) : resetStep === 'code' ? (
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="reset-code">6-Digit Code</Label>
+                <Input
+                  id="reset-code"
+                  type="text"
+                  placeholder="000000"
+                  value={resetCode}
+                  onChange={(e) => setResetCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  className="h-12 text-center text-2xl tracking-[0.5em] font-bold"
+                  maxLength={6}
+                  required
+                  autoFocus
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-password">New Password</Label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  placeholder="Enter new password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="h-11"
+                  required
+                  minLength={6}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm-new-password">Confirm New Password</Label>
+                <Input
+                  id="confirm-new-password"
+                  type="password"
+                  placeholder="Confirm new password"
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  className="h-11"
+                  required
+                  minLength={6}
+                />
               </div>
               <div className="flex gap-3">
                 <Button
+                  type="button"
                   variant="outline"
                   className="flex-1"
-                  onClick={() => setResetEmailSent(false)}
+                  onClick={() => setResetStep('email')}
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Try Again
+                  Back
                 </Button>
                 <Button
+                  type="submit"
+                  disabled={resettingPassword || resetCode.length !== 6}
                   className="flex-1"
-                  onClick={closeForgotPasswordDialog}
                 >
-                  Done
+                  {resettingPassword ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Resetting...
+                    </>
+                  ) : (
+                    "Reset Password"
+                  )}
                 </Button>
               </div>
-            </div>
+              <p className="text-xs text-center text-muted-foreground">
+                Didn't receive the code?{" "}
+                <button
+                  type="button"
+                  onClick={(e) => { setResetStep('email'); handleForgotPassword(e as any); }}
+                  className="text-primary hover:underline"
+                >
+                  Resend
+                </button>
+              </p>
+            </form>
           ) : (
             <form onSubmit={handleForgotPassword} className="space-y-4">
               <div className="space-y-2">
@@ -949,7 +1062,7 @@ const Auth = () => {
                       Sending...
                     </>
                   ) : (
-                    "Send Reset Link"
+                    "Send Code"
                   )}
                 </Button>
               </div>

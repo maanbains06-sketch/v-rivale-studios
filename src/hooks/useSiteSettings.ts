@@ -150,6 +150,7 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
           'guides_hidden',
           'mini_games_hidden',
           'profile_customization_hidden',
+          'memorial_hidden',
         ]);
 
       if (error) {
