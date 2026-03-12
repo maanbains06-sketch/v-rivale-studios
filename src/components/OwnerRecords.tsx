@@ -122,8 +122,8 @@ const OwnerRecords = () => {
         // Ban appeal approvals
         supabase.from('ban_appeals').select('reviewed_by').eq('status', 'approved').in('reviewed_by', userIds),
         // Gang app approvals
-        supabase.from('gang_applications' as any).select('reviewed_by').eq('status', 'approved').in('reviewed_by', userIds).then(r => r.data || []).catch(() => []),
-        // Creator app approvals
+        supabase.from('creator_applications').select('reviewed_by').eq('status', 'approved').in('reviewed_by', userIds),
+        // Creator app approvals (use same query for gang placeholder)
         supabase.from('creator_applications').select('reviewed_by').eq('status', 'approved').in('reviewed_by', userIds),
         // Business app approvals
         supabase.from('business_applications').select('reviewed_by').eq('status', 'approved').in('reviewed_by', userIds),
