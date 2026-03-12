@@ -1068,11 +1068,6 @@ const Auth = () => {
               </div>
             </form>
           )}
-                  )}
-                </Button>
-              </div>
-            </form>
-          )}
         </DialogContent>
       </Dialog>
     </div>
