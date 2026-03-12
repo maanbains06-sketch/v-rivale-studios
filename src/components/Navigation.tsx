@@ -397,17 +397,19 @@ const Navigation = () => {
                         Cinema Hub
                       </Link>
                     </Button>
-                    <Button
-                      variant="outline"
-                      className="justify-start w-full border-border bg-secondary text-secondary-foreground hover:bg-secondary/90"
-                      asChild
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <Link to="/memorial" className="flex items-center">
-                        <Flame className="w-4 h-4 mr-2 text-secondary-foreground" />
-                        Graveyard
-                      </Link>
-                    </Button>
+                    {showMemorialLink && (
+                      <Button
+                        variant="outline"
+                        className="justify-start w-full border-border bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                        asChild
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <Link to="/memorial" className="flex items-center">
+                          <Flame className="w-4 h-4 mr-2 text-secondary-foreground" />
+                          Graveyard
+                        </Link>
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       className="justify-start w-full border-border bg-accent text-accent-foreground hover:bg-accent/90"
