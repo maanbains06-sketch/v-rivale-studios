@@ -77,7 +77,7 @@ const Auth = () => {
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const [sendingResetEmail, setSendingResetEmail] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
-  const [_resetCode, _setResetCode] = useState(""); // kept for compatibility
+  
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [resettingPassword, setResettingPassword] = useState(false);
