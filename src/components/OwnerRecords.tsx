@@ -118,6 +118,7 @@ const OwnerRecords = () => {
         .from('staff_members')
         .select('id, name, discord_id, discord_avatar, role_type, department, user_id')
         .eq('is_active', true)
+        .in('role_type', ['owner', 'admin', 'moderator', 'developer'])
         .order('role_type');
 
       if (!staff) return;

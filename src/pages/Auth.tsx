@@ -77,11 +77,12 @@ const Auth = () => {
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const [sendingResetEmail, setSendingResetEmail] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
-  const [resetCode, setResetCode] = useState("");
+  
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [resettingPassword, setResettingPassword] = useState(false);
-  const [resetStep, setResetStep] = useState<'email' | 'code' | 'done'>('email');
+  const [resetStep, setResetStep] = useState<'email' | 'done'>('email');
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
 
   // Load remembered email and password on mount
   useEffect(() => {
@@ -128,8 +129,11 @@ const Auth = () => {
         setSession(session);
         setUser(session?.user ?? null);
         setCheckingAuth(false);
-        if (event === 'SIGNED_IN' && session?.user) {
-          // Redirect to home page after login/signup
+        if (event === 'PASSWORD_RECOVERY') {
+          setIsPasswordRecovery(true);
+          return; // Don't redirect, show password update form
+        }
+        if (event === 'SIGNED_IN' && session?.user && !isPasswordRecovery) {
           navigate("/");
         }
       }
@@ -412,30 +416,30 @@ const Auth = () => {
     setSendingResetEmail(true);
     
     try {
-      const { data, error } = await supabase.functions.invoke('send-reset-code', {
-        body: { email: forgotPasswordEmail },
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail, {
+        redirectTo: `${window.location.origin}/auth?reset=true`,
       });
 
       if (error) {
         toast({
           title: "Error",
-          description: "Failed to send reset code. Please try again.",
+          description: error.message || "Failed to send reset email. Please try again.",
           variant: "destructive",
         });
         setSendingResetEmail(false);
         return;
       }
 
-      setResetStep('code');
+      setResetStep('done');
       toast({
-        title: "Code Sent!",
-        description: "Check your inbox for a 6-digit code.",
+        title: "Reset Link Sent!",
+        description: "Check your inbox for a password reset link.",
       });
     } catch (err) {
       console.error("Password reset error:", err);
       toast({
         title: "Error",
-        description: "Failed to send reset code. Please try again.",
+        description: "Failed to send reset email. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -443,57 +447,12 @@ const Auth = () => {
     }
   };
 
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const result = resetPasswordSchema.safeParse({ code: resetCode, newPassword, confirmNewPassword });
-    if (!result.success) {
-      toast({
-        title: "Validation Error",
-        description: result.error.issues[0].message,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setResettingPassword(true);
-
-    try {
-      const { data, error } = await supabase.functions.invoke('verify-reset-code', {
-        body: { email: forgotPasswordEmail, code: resetCode, newPassword },
-      });
-
-      if (error || data?.error) {
-        toast({
-          title: "Error",
-          description: data?.error || "Invalid or expired code. Please try again.",
-          variant: "destructive",
-        });
-        setResettingPassword(false);
-        return;
-      }
-
-      setResetStep('done');
-      toast({
-        title: "Password Reset!",
-        description: "Your password has been updated. You can now sign in.",
-      });
-    } catch (err) {
-      toast({
-        title: "Error",
-        description: "Failed to reset password. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setResettingPassword(false);
-    }
-  };
+  // handleResetPassword removed - now using Supabase built-in password reset via email link
 
   const closeForgotPasswordDialog = () => {
     setShowForgotPassword(false);
     setForgotPasswordEmail("");
     setResetEmailSent(false);
-    setResetCode("");
     setNewPassword("");
     setConfirmNewPassword("");
     setResetStep('email');
@@ -919,20 +878,18 @@ const Auth = () => {
         </AnimatePresence>
       </div>
 
-      {/* Forgot Password Dialog - 6 Digit Code Flow */}
+      {/* Forgot Password Dialog */}
       <Dialog open={showForgotPassword} onOpenChange={closeForgotPasswordDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Mail className="w-5 h-5 text-primary" />
-              {resetStep === 'done' ? 'Password Reset' : resetStep === 'code' ? 'Enter Reset Code' : 'Reset Password'}
+              {resetStep === 'done' ? 'Check Your Email' : 'Reset Password'}
             </DialogTitle>
             <DialogDescription>
               {resetStep === 'done'
-                ? "Your password has been updated successfully."
-                : resetStep === 'code'
-                ? `Enter the 6-digit code sent to ${forgotPasswordEmail}`
-                : "Enter your email address and we'll send you a 6-digit code."}
+                ? "A password reset link has been sent to your email."
+                : "Enter your email address and we'll send you a reset link."}
             </DialogDescription>
           </DialogHeader>
           
@@ -942,91 +899,13 @@ const Auth = () => {
                 <div className="w-12 h-12 mx-auto rounded-full bg-primary/20 flex items-center justify-center mb-3">
                   <Check className="w-6 h-6 text-primary" />
                 </div>
-                <p className="text-sm text-foreground font-medium">Password Reset Successful!</p>
-                <p className="text-xs text-muted-foreground mt-1">You can now sign in with your new password.</p>
+                <p className="text-sm text-foreground font-medium">Reset Link Sent!</p>
+                <p className="text-xs text-muted-foreground mt-1">Check your inbox and click the link to reset your password.</p>
               </div>
               <Button className="w-full" onClick={closeForgotPasswordDialog}>
                 Back to Sign In
               </Button>
             </div>
-          ) : resetStep === 'code' ? (
-            <form onSubmit={handleResetPassword} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="reset-code">6-Digit Code</Label>
-                <Input
-                  id="reset-code"
-                  type="text"
-                  placeholder="000000"
-                  value={resetCode}
-                  onChange={(e) => setResetCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  className="h-12 text-center text-2xl tracking-[0.5em] font-bold"
-                  maxLength={6}
-                  required
-                  autoFocus
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="new-password">New Password</Label>
-                <Input
-                  id="new-password"
-                  type="password"
-                  placeholder="Enter new password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="h-11"
-                  required
-                  minLength={6}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirm-new-password">Confirm New Password</Label>
-                <Input
-                  id="confirm-new-password"
-                  type="password"
-                  placeholder="Confirm new password"
-                  value={confirmNewPassword}
-                  onChange={(e) => setConfirmNewPassword(e.target.value)}
-                  className="h-11"
-                  required
-                  minLength={6}
-                />
-              </div>
-              <div className="flex gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => setResetStep('email')}
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={resettingPassword || resetCode.length !== 6}
-                  className="flex-1"
-                >
-                  {resettingPassword ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Resetting...
-                    </>
-                  ) : (
-                    "Reset Password"
-                  )}
-                </Button>
-              </div>
-              <p className="text-xs text-center text-muted-foreground">
-                Didn't receive the code?{" "}
-                <button
-                  type="button"
-                  onClick={(e) => { setResetStep('email'); handleForgotPassword(e as any); }}
-                  className="text-primary hover:underline"
-                >
-                  Resend
-                </button>
-              </p>
-            </form>
           ) : (
             <form onSubmit={handleForgotPassword} className="space-y-4">
               <div className="space-y-2">
@@ -1062,12 +941,93 @@ const Auth = () => {
                       Sending...
                     </>
                   ) : (
-                    "Send Code"
+                    "Send Reset Link"
                   )}
                 </Button>
               </div>
             </form>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Password Recovery Dialog - shown when user clicks reset link in email */}
+      <Dialog open={isPasswordRecovery} onOpenChange={(open) => { if (!open) setIsPasswordRecovery(false); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="w-5 h-5 text-primary" />
+              Set New Password
+            </DialogTitle>
+            <DialogDescription>
+              Enter your new password below.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            if (newPassword !== confirmNewPassword) {
+              toast({ title: "Error", description: "Passwords don't match", variant: "destructive" });
+              return;
+            }
+            if (newPassword.length < 6) {
+              toast({ title: "Error", description: "Password must be at least 6 characters", variant: "destructive" });
+              return;
+            }
+            setResettingPassword(true);
+            try {
+              const { error } = await supabase.auth.updateUser({ password: newPassword });
+              if (error) {
+                toast({ title: "Error", description: error.message, variant: "destructive" });
+              } else {
+                toast({ title: "Success!", description: "Your password has been updated." });
+                setIsPasswordRecovery(false);
+                setNewPassword("");
+                setConfirmNewPassword("");
+                navigate("/");
+              }
+            } catch {
+              toast({ title: "Error", description: "Failed to update password.", variant: "destructive" });
+            } finally {
+              setResettingPassword(false);
+            }
+          }} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-password">New Password</Label>
+              <Input
+                id="new-password"
+                type="password"
+                placeholder="Enter new password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="h-11"
+                required
+                minLength={6}
+                autoFocus
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-new-password">Confirm New Password</Label>
+              <Input
+                id="confirm-new-password"
+                type="password"
+                placeholder="Confirm new password"
+                value={confirmNewPassword}
+                onChange={(e) => setConfirmNewPassword(e.target.value)}
+                className="h-11"
+                required
+                minLength={6}
+              />
+            </div>
+            <Button type="submit" disabled={resettingPassword} className="w-full">
+              {resettingPassword ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                "Update Password"
+              )}
+            </Button>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
