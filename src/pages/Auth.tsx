@@ -412,30 +412,30 @@ const Auth = () => {
     setSendingResetEmail(true);
     
     try {
-      const { data, error } = await supabase.functions.invoke('send-reset-code', {
-        body: { email: forgotPasswordEmail },
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail, {
+        redirectTo: `${window.location.origin}/auth?reset=true`,
       });
 
       if (error) {
         toast({
           title: "Error",
-          description: "Failed to send reset code. Please try again.",
+          description: error.message || "Failed to send reset email. Please try again.",
           variant: "destructive",
         });
         setSendingResetEmail(false);
         return;
       }
 
-      setResetStep('code');
+      setResetStep('done');
       toast({
-        title: "Code Sent!",
-        description: "Check your inbox for a 6-digit code.",
+        title: "Reset Link Sent!",
+        description: "Check your inbox for a password reset link.",
       });
     } catch (err) {
       console.error("Password reset error:", err);
       toast({
         title: "Error",
-        description: "Failed to send reset code. Please try again.",
+        description: "Failed to send reset email. Please try again.",
         variant: "destructive",
       });
     } finally {
