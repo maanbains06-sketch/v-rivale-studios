@@ -447,51 +447,7 @@ const Auth = () => {
     }
   };
 
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const result = resetPasswordSchema.safeParse({ code: resetCode, newPassword, confirmNewPassword });
-    if (!result.success) {
-      toast({
-        title: "Validation Error",
-        description: result.error.issues[0].message,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setResettingPassword(true);
-
-    try {
-      const { data, error } = await supabase.functions.invoke('verify-reset-code', {
-        body: { email: forgotPasswordEmail, code: resetCode, newPassword },
-      });
-
-      if (error || data?.error) {
-        toast({
-          title: "Error",
-          description: data?.error || "Invalid or expired code. Please try again.",
-          variant: "destructive",
-        });
-        setResettingPassword(false);
-        return;
-      }
-
-      setResetStep('done');
-      toast({
-        title: "Password Reset!",
-        description: "Your password has been updated. You can now sign in.",
-      });
-    } catch (err) {
-      toast({
-        title: "Error",
-        description: "Failed to reset password. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setResettingPassword(false);
-    }
-  };
+  // handleResetPassword removed - now using Supabase built-in password reset via email link
 
   const closeForgotPasswordDialog = () => {
     setShowForgotPassword(false);
