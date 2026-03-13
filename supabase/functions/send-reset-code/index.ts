@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 const handler = async (req: Request): Promise<Response> => {
@@ -18,13 +18,15 @@ const handler = async (req: Request): Promise<Response> => {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
     if (!RESEND_API_KEY || !RESEND_FROM) {
+      console.error("Missing RESEND_API_KEY or RESEND_FROM");
       return new Response(
         JSON.stringify({ error: "Email service not configured" }),
         { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
-    const { email, action } = await req.json();
+    const body = await req.json();
+    const { email } = body;
 
     if (!email) {
       return new Response(
@@ -34,15 +36,6 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-    if (action === "verify") {
-      // Verify the code
-      const { code } = await req.json();
-      // This is handled in verify-reset-code function
-      return new Response(JSON.stringify({ error: "Use verify-reset-code endpoint" }), {
-        status: 400, headers: { "Content-Type": "application/json", ...corsHeaders }
-      });
-    }
 
     // Check if user exists
     const { data: userData } = await supabase.auth.admin.listUsers();
@@ -67,9 +60,17 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Store new code (expires in 10 minutes)
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-    await supabase
+    const { error: insertError } = await supabase
       .from("password_reset_codes")
       .insert({ email, code, expires_at: expiresAt });
+
+    if (insertError) {
+      console.error("Insert error:", insertError);
+      return new Response(
+        JSON.stringify({ error: "Failed to generate code" }),
+        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
 
     // Send email with code
     const emailResponse = await fetch("https://api.resend.com/emails", {
