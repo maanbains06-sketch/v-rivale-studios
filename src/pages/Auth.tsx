@@ -453,7 +453,6 @@ const Auth = () => {
     setShowForgotPassword(false);
     setForgotPasswordEmail("");
     setResetEmailSent(false);
-    setResetCode("");
     setNewPassword("");
     setConfirmNewPassword("");
     setResetStep('email');
