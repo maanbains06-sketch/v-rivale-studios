@@ -129,8 +129,11 @@ const Auth = () => {
         setSession(session);
         setUser(session?.user ?? null);
         setCheckingAuth(false);
-        if (event === 'SIGNED_IN' && session?.user) {
-          // Redirect to home page after login/signup
+        if (event === 'PASSWORD_RECOVERY') {
+          setIsPasswordRecovery(true);
+          return; // Don't redirect, show password update form
+        }
+        if (event === 'SIGNED_IN' && session?.user && !isPasswordRecovery) {
           navigate("/");
         }
       }
