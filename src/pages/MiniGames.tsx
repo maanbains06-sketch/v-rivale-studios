@@ -680,34 +680,16 @@ const EscapeRoomGame = ({ onBack }: { onBack: () => void }) => {
                   </div>
                   {!completed.has("code") ? (
                     <div className="flex gap-2">
-                      <input value={codeInput} onChange={e => setCodeInput(e.target.value)} maxLength={4} placeholder="_ _ _ _"
+                      <input value={getInput("code")} onChange={e => setInput("code", e.target.value)} maxLength={4} placeholder="_ _ _ _"
                         className="flex-1 bg-black/40 border border-cyan-500/30 rounded-xl px-4 py-2.5 text-center font-mono tracking-[0.5em] text-lg text-cyan-300 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/30 outline-none" />
-                      <Button onClick={() => { if (codeInput === puzzles.code.answer) completePuzzle("code"); else toast({ title: "Wrong code!", description: "Try again...", variant: "destructive" }); }} className="bg-cyan-600 hover:bg-cyan-500 border-0">Unlock</Button>
+                      <Button onClick={() => { if (getInput("code") === puzzles.code.answer) completePuzzle("code"); else toast({ title: "Wrong code!", description: "Try again...", variant: "destructive" }); }} className="bg-cyan-600 hover:bg-cyan-500 border-0">Unlock</Button>
                     </div>
                   ) : <p className="text-green-400 text-sm flex items-center gap-2 font-mono"><CheckCircle className="w-4 h-4" /> Code: {puzzles.code.answer} — Safe opened!</p>}
                 </>
               ) : activeObject === "bookshelf" ? (
-                <>
-                  <div className="flex items-center gap-2 text-sm text-cyan-400/80 font-mono"><BookOpen className="w-4 h-4" /> {puzzles.rot13.description}</div>
-                  {!completed.has("decrypt") ? (
-                    <div className="flex gap-2">
-                      <input value={decryptInput} onChange={e => setDecryptInput(e.target.value)} placeholder="Decrypted word..."
-                        className="flex-1 bg-black/40 border border-cyan-500/30 rounded-xl px-4 py-2.5 text-sm font-mono text-cyan-300 focus:border-cyan-400 outline-none" />
-                      <Button onClick={() => { if (decryptInput.toLowerCase().trim() === puzzles.rot13.answer) completePuzzle("decrypt"); else toast({ title: "Wrong answer!", description: "Try decrypting again...", variant: "destructive" }); }} className="bg-cyan-600 hover:bg-cyan-500 border-0">Decrypt</Button>
-                    </div>
-                  ) : <p className="text-green-400 text-sm flex items-center gap-2 font-mono"><CheckCircle className="w-4 h-4" /> Decrypted: {puzzles.rot13.answer.toUpperCase()}</p>}
-                </>
+                <>{renderSlotPuzzle(slot1Type, "slot1")}</>
               ) : activeObject === "painting" ? (
-                <>
-                  <div className="flex items-center gap-2 text-sm text-cyan-400/80 font-mono"><Lightbulb className="w-4 h-4" /> Behind the painting: "{puzzles.riddle.question}"</div>
-                  {!completed.has("riddle") ? (
-                    <div className="flex gap-2">
-                      <input value={riddleAnswer} onChange={e => setRiddleAnswer(e.target.value)} placeholder="Answer..."
-                        className="flex-1 bg-black/40 border border-cyan-500/30 rounded-xl px-4 py-2.5 text-sm font-mono text-cyan-300 focus:border-cyan-400 outline-none" />
-                      <Button onClick={() => { const a = riddleAnswer.toLowerCase().trim(); if (puzzles.riddle.answers.includes(a)) completePuzzle("riddle"); else toast({ title: "Wrong answer!", description: "Think harder...", variant: "destructive" }); }} className="bg-cyan-600 hover:bg-cyan-500 border-0">Answer</Button>
-                    </div>
-                  ) : <p className="text-green-400 text-sm flex items-center gap-2 font-mono"><CheckCircle className="w-4 h-4" /> Riddle solved!</p>}
-                </>
+                <>{renderSlotPuzzle(slot2Type, "slot2")}</>
               ) : activeObject === "vent" || activeObject === "desk" ? (
                 <>
                   <div className="flex items-center gap-2 text-sm text-cyan-400/80 font-mono"><Search className="w-4 h-4" /> {activeObject === "vent" ? "You see something glinting inside the vent..." : "The desk drawer has something..."}</div>
@@ -718,16 +700,7 @@ const EscapeRoomGame = ({ onBack }: { onBack: () => void }) => {
                   ) : <p className="text-green-400 text-sm flex items-center gap-2 font-mono"><CheckCircle className="w-4 h-4" /> Key obtained! 🔑</p>}
                 </>
               ) : activeObject === "window" ? (
-                <>
-                  <div className="flex items-center gap-2 text-sm text-cyan-400/80 font-mono"><Eye className="w-4 h-4" /> Moonlight reveals scratched letters: "{puzzles.cipher.encrypted}" — {puzzles.cipher.hint}</div>
-                  {!completed.has("cipher") ? (
-                    <div className="flex gap-2">
-                      <input value={cipherInput} onChange={e => setCipherInput(e.target.value)} placeholder="Decoded word..."
-                        className="flex-1 bg-black/40 border border-cyan-500/30 rounded-xl px-4 py-2.5 text-sm font-mono text-cyan-300 focus:border-cyan-400 outline-none" />
-                      <Button onClick={() => { if (cipherInput.toLowerCase().trim() === puzzles.cipher.answer) completePuzzle("cipher"); else toast({ title: "Wrong answer!", description: "Try decoding again...", variant: "destructive" }); }} className="bg-cyan-600 hover:bg-cyan-500 border-0">Decode</Button>
-                    </div>
-                  ) : <p className="text-green-400 text-sm flex items-center gap-2 font-mono"><CheckCircle className="w-4 h-4" /> Decoded: {puzzles.cipher.answer.toUpperCase()}</p>}
-                </>
+                <>{renderSlotPuzzle(slot3Type, "slot3")}</>
               ) : activeObject === "door" ? (
                 <>
                   <div className="flex items-center gap-2 text-sm text-cyan-400/80 font-mono"><DoorOpen className="w-4 h-4" /> {canEscape ? "All puzzles solved — ESCAPE NOW!" : "Solve all puzzles to unlock."}</div>
@@ -744,6 +717,94 @@ const EscapeRoomGame = ({ onBack }: { onBack: () => void }) => {
       </AnimatePresence>
     </div>
   );
+
+  // Helper to render any puzzle type in a slot
+  function renderSlotPuzzle(type: PuzzleSlotType, slotId: string) {
+    const isDone = completed.has(slotId);
+    const inputKey = slotId;
+
+    switch (type) {
+      case "rot13":
+        return <>
+          <div className="flex items-center gap-2 text-sm text-cyan-400/80 font-mono"><BookOpen className="w-4 h-4" /> {puzzles.rot13.description}</div>
+          {!isDone ? (
+            <div className="flex gap-2">
+              <input value={getInput(inputKey)} onChange={e => setInput(inputKey, e.target.value)} placeholder="Decrypted word..."
+                className="flex-1 bg-black/40 border border-cyan-500/30 rounded-xl px-4 py-2.5 text-sm font-mono text-cyan-300 focus:border-cyan-400 outline-none" />
+              <Button onClick={() => { if (getInput(inputKey).toLowerCase().trim() === puzzles.rot13.answer) completePuzzle(slotId); else toast({ title: "Wrong!", variant: "destructive" }); }} className="bg-cyan-600 hover:bg-cyan-500 border-0">Decrypt</Button>
+            </div>
+          ) : <p className="text-green-400 text-sm flex items-center gap-2 font-mono"><CheckCircle className="w-4 h-4" /> Decrypted: {puzzles.rot13.answer.toUpperCase()}</p>}
+        </>;
+      case "riddle":
+        return <>
+          <div className="flex items-center gap-2 text-sm text-cyan-400/80 font-mono"><Lightbulb className="w-4 h-4" /> "{puzzles.riddle.question}"</div>
+          {!isDone ? (
+            <div className="flex gap-2">
+              <input value={getInput(inputKey)} onChange={e => setInput(inputKey, e.target.value)} placeholder="Answer..."
+                className="flex-1 bg-black/40 border border-cyan-500/30 rounded-xl px-4 py-2.5 text-sm font-mono text-cyan-300 focus:border-cyan-400 outline-none" />
+              <Button onClick={() => { if (puzzles.riddle.answers.includes(getInput(inputKey).toLowerCase().trim())) completePuzzle(slotId); else toast({ title: "Wrong!", variant: "destructive" }); }} className="bg-cyan-600 hover:bg-cyan-500 border-0">Answer</Button>
+            </div>
+          ) : <p className="text-green-400 text-sm flex items-center gap-2 font-mono"><CheckCircle className="w-4 h-4" /> Riddle solved!</p>}
+        </>;
+      case "cipher":
+        return <>
+          <div className="flex items-center gap-2 text-sm text-cyan-400/80 font-mono"><Eye className="w-4 h-4" /> Encoded: "{puzzles.cipher.encrypted}" — {puzzles.cipher.hint}</div>
+          {!isDone ? (
+            <div className="flex gap-2">
+              <input value={getInput(inputKey)} onChange={e => setInput(inputKey, e.target.value)} placeholder="Decoded word..."
+                className="flex-1 bg-black/40 border border-cyan-500/30 rounded-xl px-4 py-2.5 text-sm font-mono text-cyan-300 focus:border-cyan-400 outline-none" />
+              <Button onClick={() => { if (getInput(inputKey).toLowerCase().trim() === puzzles.cipher.answer) completePuzzle(slotId); else toast({ title: "Wrong!", variant: "destructive" }); }} className="bg-cyan-600 hover:bg-cyan-500 border-0">Decode</Button>
+            </div>
+          ) : <p className="text-green-400 text-sm flex items-center gap-2 font-mono"><CheckCircle className="w-4 h-4" /> Decoded: {puzzles.cipher.answer.toUpperCase()}</p>}
+        </>;
+      case "math":
+        return <>
+          <div className="flex items-center gap-2 text-sm text-cyan-400/80 font-mono"><Eye className="w-4 h-4" /> {puzzles.math.hint}: "{puzzles.math.question}"</div>
+          {!isDone ? (
+            <div className="flex gap-2">
+              <input value={getInput(inputKey)} onChange={e => setInput(inputKey, e.target.value)} placeholder="Answer..."
+                className="flex-1 bg-black/40 border border-cyan-500/30 rounded-xl px-4 py-2.5 text-sm font-mono text-cyan-300 focus:border-cyan-400 outline-none" />
+              <Button onClick={() => { if (getInput(inputKey).trim() === puzzles.math.answer) completePuzzle(slotId); else toast({ title: "Wrong!", variant: "destructive" }); }} className="bg-cyan-600 hover:bg-cyan-500 border-0">Solve</Button>
+            </div>
+          ) : <p className="text-green-400 text-sm flex items-center gap-2 font-mono"><CheckCircle className="w-4 h-4" /> Correct: {puzzles.math.answer}</p>}
+        </>;
+      case "anagram":
+        return <>
+          <div className="flex items-center gap-2 text-sm text-cyan-400/80 font-mono"><Eye className="w-4 h-4" /> {puzzles.anagram.hint}: <span className="text-amber-400 font-bold tracking-widest">{puzzles.anagram.scrambled}</span></div>
+          {!isDone ? (
+            <div className="flex gap-2">
+              <input value={getInput(inputKey)} onChange={e => setInput(inputKey, e.target.value)} placeholder="Unscrambled word..."
+                className="flex-1 bg-black/40 border border-cyan-500/30 rounded-xl px-4 py-2.5 text-sm font-mono text-cyan-300 focus:border-cyan-400 outline-none" />
+              <Button onClick={() => { if (getInput(inputKey).toLowerCase().trim() === puzzles.anagram.answer) completePuzzle(slotId); else toast({ title: "Wrong!", variant: "destructive" }); }} className="bg-cyan-600 hover:bg-cyan-500 border-0">Submit</Button>
+            </div>
+          ) : <p className="text-green-400 text-sm flex items-center gap-2 font-mono"><CheckCircle className="w-4 h-4" /> Unscrambled: {puzzles.anagram.answer.toUpperCase()}</p>}
+        </>;
+      case "pattern":
+        return <>
+          <div className="flex items-center gap-2 text-sm text-cyan-400/80 font-mono"><Eye className="w-4 h-4" /> {puzzles.pattern.hint}: <span className="text-amber-400">{puzzles.pattern.sequence}</span></div>
+          {!isDone ? (
+            <div className="flex gap-2">
+              <input value={getInput(inputKey)} onChange={e => setInput(inputKey, e.target.value)} placeholder="What comes next?"
+                className="flex-1 bg-black/40 border border-cyan-500/30 rounded-xl px-4 py-2.5 text-sm font-mono text-cyan-300 focus:border-cyan-400 outline-none" />
+              <Button onClick={() => { if (puzzles.pattern.acceptedAnswers.map((a: string) => a.toLowerCase()).includes(getInput(inputKey).toLowerCase().trim())) completePuzzle(slotId); else toast({ title: "Wrong!", variant: "destructive" }); }} className="bg-cyan-600 hover:bg-cyan-500 border-0">Submit</Button>
+            </div>
+          ) : <p className="text-green-400 text-sm flex items-center gap-2 font-mono"><CheckCircle className="w-4 h-4" /> Pattern complete!</p>}
+        </>;
+      case "morse":
+        return <>
+          <div className="flex items-center gap-2 text-sm text-cyan-400/80 font-mono"><Eye className="w-4 h-4" /> {puzzles.morse.hint}: <span className="text-amber-400 tracking-widest">{puzzles.morse.code}</span></div>
+          {!isDone ? (
+            <div className="flex gap-2">
+              <input value={getInput(inputKey)} onChange={e => setInput(inputKey, e.target.value)} placeholder="Decoded word..."
+                className="flex-1 bg-black/40 border border-cyan-500/30 rounded-xl px-4 py-2.5 text-sm font-mono text-cyan-300 focus:border-cyan-400 outline-none" />
+              <Button onClick={() => { if (getInput(inputKey).toLowerCase().trim() === puzzles.morse.answer) completePuzzle(slotId); else toast({ title: "Wrong!", variant: "destructive" }); }} className="bg-cyan-600 hover:bg-cyan-500 border-0">Decode</Button>
+            </div>
+          ) : <p className="text-green-400 text-sm flex items-center gap-2 font-mono"><CheckCircle className="w-4 h-4" /> Decoded: {puzzles.morse.answer.toUpperCase()}</p>}
+        </>;
+      default:
+        return <p className="text-muted-foreground text-sm">Unknown puzzle type</p>;
+    }
+  }
 };
 
 // ════════════════════════════════════════════════════════
