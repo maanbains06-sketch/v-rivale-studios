@@ -456,10 +456,7 @@ const EscapeRoomGame = ({ onBack }: { onBack: () => void }) => {
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
   const [activeObject, setActiveObject] = useState<string | null>(null);
-  const [codeInput, setCodeInput] = useState("");
-  const [riddleAnswer, setRiddleAnswer] = useState("");
-  const [decryptInput, setDecryptInput] = useState("");
-  const [cipherInput, setCipherInput] = useState("");
+  const [puzzleInputs, setPuzzleInputs] = useState<Record<string, string>>({});
   const [foundKey, setFoundKey] = useState(false);
   const [foundClue, setFoundClue] = useState(false);
   const { toast } = useToast();
@@ -467,13 +464,23 @@ const EscapeRoomGame = ({ onBack }: { onBack: () => void }) => {
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
   const game = GAMES[0];
 
-  // Randomly selected puzzles for this game session
+  // Pick a random slot config and random puzzles within each type
+  const [slotConfig] = useState(() => pickRandom(PUZZLE_SLOT_CONFIGS));
   const [puzzles, setPuzzles] = useState(() => ({
     code: pickRandom(CODE_PUZZLES),
     rot13: pickRandom(ROT13_PUZZLES),
     riddle: pickRandom(RIDDLE_PUZZLES),
     cipher: pickRandom(CIPHER_PUZZLES),
+    math: pickRandom(MATH_PUZZLES),
+    anagram: pickRandom(ANAGRAM_PUZZLES),
+    pattern: pickRandom(PATTERN_PUZZLES),
+    morse: pickRandom(MORSE_PUZZLES),
   }));
+
+  // Slot 0 = code (clock/safe), slot 1 = bookshelf, slot 2 = painting, slot 3 = window
+  const slot1Type = slotConfig[1];
+  const slot2Type = slotConfig[2];
+  const slot3Type = slotConfig[3];
 
   useEffect(() => {
     if (!started || gameOver) return;
