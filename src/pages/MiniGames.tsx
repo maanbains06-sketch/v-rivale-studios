@@ -494,7 +494,7 @@ const EscapeRoomGame = ({ onBack }: { onBack: () => void }) => {
   }, [started, gameOver]);
 
   const completePuzzle = (id: string) => setCompleted(prev => new Set(prev).add(id));
-  const canEscape = completed.has("code") && completed.has("riddle") && completed.has("decrypt") && completed.has("cipher") && foundKey;
+  const canEscape = completed.has("code") && completed.has("slot1") && completed.has("slot2") && completed.has("slot3") && foundKey;
 
   const handleEscape = () => {
     if (!canEscape) return;
@@ -506,15 +506,33 @@ const EscapeRoomGame = ({ onBack }: { onBack: () => void }) => {
   const reset = () => {
     setStarted(false); setTimeLeft(480); setCompleted(new Set());
     setGameOver(false); setWon(false); setActiveObject(null);
-    setCodeInput(""); setRiddleAnswer(""); setDecryptInput(""); setCipherInput("");
+    setPuzzleInputs({});
     setFoundKey(false); setFoundClue(false);
-    // Pick new random puzzles for each replay
     setPuzzles({
       code: pickRandom(CODE_PUZZLES),
       rot13: pickRandom(ROT13_PUZZLES),
       riddle: pickRandom(RIDDLE_PUZZLES),
       cipher: pickRandom(CIPHER_PUZZLES),
+      math: pickRandom(MATH_PUZZLES),
+      anagram: pickRandom(ANAGRAM_PUZZLES),
+      pattern: pickRandom(PATTERN_PUZZLES),
+      morse: pickRandom(MORSE_PUZZLES),
     });
+  };
+
+  const getInput = (key: string) => puzzleInputs[key] || "";
+  const setInput = (key: string, val: string) => setPuzzleInputs(prev => ({ ...prev, [key]: val }));
+
+  // Dynamic puzzle label map
+  const SLOT_LABELS: Record<PuzzleSlotType, { label: string; icon: string }> = {
+    code: { label: "Find 4-Digit Code", icon: "🔢" },
+    rot13: { label: "Decrypt ROT13", icon: "🔐" },
+    riddle: { label: "Solve Riddle", icon: "💡" },
+    cipher: { label: "Break Caesar Cipher", icon: "🧩" },
+    math: { label: "Solve Math Puzzle", icon: "🔢" },
+    anagram: { label: "Unscramble Word", icon: "🔤" },
+    pattern: { label: "Complete Pattern", icon: "🎨" },
+    morse: { label: "Decode Morse Code", icon: "📡" },
   };
 
   if (!started) return <StartScreen title={game.title} description={game.description} icon={<Lock className="w-14 h-14" />} gradient={game.gradient} glow={game.glow} onStart={() => setStarted(true)} onBack={onBack} gameType="escape_room" />;
@@ -522,9 +540,9 @@ const EscapeRoomGame = ({ onBack }: { onBack: () => void }) => {
 
   const tasks = [
     { label: "Find 4-Digit Code", done: completed.has("code"), icon: "🔢" },
-    { label: "Decrypt Message", done: completed.has("decrypt"), icon: "🔐" },
-    { label: "Solve Riddle", done: completed.has("riddle"), icon: "💡" },
-    { label: "Break Caesar Cipher", done: completed.has("cipher"), icon: "🧩" },
+    { label: SLOT_LABELS[slot1Type].label, done: completed.has("slot1"), icon: SLOT_LABELS[slot1Type].icon },
+    { label: SLOT_LABELS[slot2Type].label, done: completed.has("slot2"), icon: SLOT_LABELS[slot2Type].icon },
+    { label: SLOT_LABELS[slot3Type].label, done: completed.has("slot3"), icon: SLOT_LABELS[slot3Type].icon },
     { label: "Locate Secret Key", done: foundKey, icon: "🔑" },
     { label: "Escape Room", done: won, icon: "🚪" },
   ];
