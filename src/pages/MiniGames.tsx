@@ -376,16 +376,7 @@ const EscapeRoomGame = ({ onBack }: { onBack: () => void }) => {
 
   // Pick a random slot config and random puzzles within each type
   const [slotConfig] = useState(() => pickRandom(PUZZLE_SLOT_CONFIGS));
-  const [puzzles, setPuzzles] = useState(() => ({
-    code: pickRandom(CODE_PUZZLES),
-    rot13: pickRandom(ROT13_PUZZLES),
-    riddle: pickRandom(RIDDLE_PUZZLES),
-    cipher: pickRandom(CIPHER_PUZZLES),
-    math: pickRandom(MATH_PUZZLES),
-    anagram: pickRandom(ANAGRAM_PUZZLES),
-    pattern: pickRandom(PATTERN_PUZZLES),
-    morse: pickRandom(MORSE_PUZZLES),
-  }));
+  const [puzzles, setPuzzles] = useState(() => pickRandomPuzzles());
 
   // Slot 0 = code (clock/safe), slot 1 = bookshelf, slot 2 = painting, slot 3 = window
   const slot1Type = slotConfig[1];
