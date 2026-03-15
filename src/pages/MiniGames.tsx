@@ -415,17 +415,7 @@ const EscapeRoomGame = ({ onBack }: { onBack: () => void }) => {
   const getInput = (key: string) => puzzleInputs[key] || "";
   const setInput = (key: string, val: string) => setPuzzleInputs(prev => ({ ...prev, [key]: val }));
 
-  // Dynamic puzzle label map
-  const SLOT_LABELS: Record<PuzzleSlotType, { label: string; icon: string }> = {
-    code: { label: "Find 4-Digit Code", icon: "🔢" },
-    rot13: { label: "Decrypt ROT13", icon: "🔐" },
-    riddle: { label: "Solve Riddle", icon: "💡" },
-    cipher: { label: "Break Caesar Cipher", icon: "🧩" },
-    math: { label: "Solve Math Puzzle", icon: "🔢" },
-    anagram: { label: "Unscramble Word", icon: "🔤" },
-    pattern: { label: "Complete Pattern", icon: "🎨" },
-    morse: { label: "Decode Morse Code", icon: "📡" },
-  };
+  // SLOT_LABELS imported from data file
 
   if (!started) return <StartScreen title={game.title} description={game.description} icon={<Lock className="w-14 h-14" />} gradient={game.gradient} glow={game.glow} onStart={() => setStarted(true)} onBack={onBack} gameType="escape_room" />;
   if (gameOver) return <EndScreen won={won} title={won ? "You Escaped! 🎉" : "Time's Up!"} subtitle={won ? `Escaped in ${Math.floor((480 - timeLeft) / 60)}m ${(480 - timeLeft) % 60}s` : "You didn't escape in time."} onReplay={reset} onBack={onBack} gameType="escape_room" />;
