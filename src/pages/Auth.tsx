@@ -105,6 +105,18 @@ const Auth = () => {
   const location = window.location.pathname;
   const searchParams = new URLSearchParams(window.location.search);
   const tabParam = searchParams.get("tab");
+  const isResetParam = searchParams.get("reset") === "true";
+
+  // Check URL hash for recovery token (Supabase appends #access_token=...&type=recovery)
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash && hash.includes("type=recovery")) {
+      setIsPasswordRecovery(true);
+    }
+    if (isResetParam) {
+      setIsPasswordRecovery(true);
+    }
+  }, [isResetParam]);
 
   useEffect(() => {
     if (tabParam === "signup" || location === "/signup") {
@@ -133,7 +145,14 @@ const Auth = () => {
           setIsPasswordRecovery(true);
           return; // Don't redirect, show password update form
         }
-        if (event === 'SIGNED_IN' && session?.user && !isPasswordRecovery) {
+        // Don't redirect if we're in password recovery mode
+        if (event === 'SIGNED_IN' && session?.user && !isPasswordRecovery && !isResetParam) {
+          // Check hash for recovery type before redirecting
+          const hash = window.location.hash;
+          if (hash && hash.includes("type=recovery")) {
+            setIsPasswordRecovery(true);
+            return;
+          }
           navigate("/");
         }
       }
@@ -144,8 +163,13 @@ const Auth = () => {
       setSession(session);
       setUser(session?.user ?? null);
       setCheckingAuth(false);
-      if (session?.user) {
-        // Redirect to home page if already logged in
+      // Don't redirect if in password recovery flow
+      if (session?.user && !isPasswordRecovery && !isResetParam) {
+        const hash = window.location.hash;
+        if (hash && hash.includes("type=recovery")) {
+          setIsPasswordRecovery(true);
+          return;
+        }
         navigate("/");
       }
     }).catch((error) => {
@@ -160,7 +184,7 @@ const Auth = () => {
       clearTimeout(safetyTimeout);
       subscription.unsubscribe();
     };
-  }, [navigate, checkingAuth]);
+  }, [navigate, checkingAuth, isPasswordRecovery, isResetParam]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
