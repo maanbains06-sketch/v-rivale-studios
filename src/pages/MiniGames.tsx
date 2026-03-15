@@ -350,104 +350,14 @@ const ROOM_OBJECTS = [
   { id: "door", label: "Exit Door", icon: "🚪", hint: "Locked — solve all puzzles first", x: 48, y: 42, w: 14, h: 22 },
 ];
 
-// ─── Puzzle Pools for Random Escape Room ──────────────────
-const CODE_PUZZLES = [
-  { hint: "The clock hands point to 1, 3, 3, 7...", answer: "1337", safeHint: "The safe needs a 4-digit code." },
-  { hint: "Carved into the wall: 'Year the web was born minus 1900'", answer: "0089", safeHint: "The safe needs a 4-digit code." },
-  { hint: "The clock shows 4:2:0:8...", answer: "4208", safeHint: "The safe needs a 4-digit code." },
-  { hint: "Tally marks on the wall: |||| || ||| |||||", answer: "4235", safeHint: "The safe needs a 4-digit code." },
-  { hint: "Roman numerals scratched: VII-III-IX-I", answer: "7391", safeHint: "The safe needs a 4-digit code." },
-  { hint: "Binary on the clock face: 0101 0011 0111 0010", answer: "5372", safeHint: "The safe needs a 4-digit code." },
-  { hint: "Morse code on the wall: ···· ··−−− −−··· ·····", answer: "4375", safeHint: "The safe needs a 4-digit code." },
-  { hint: "Dice arranged on the shelf: ⚃ ⚅ ⚁ ⚂", answer: "4623", safeHint: "The safe needs a 4-digit code." },
-  { hint: "Playing cards pinned up: 9♠ 2♥ 6♦ 1♣", answer: "9261", safeHint: "The safe needs a 4-digit code." },
-  { hint: "A faded receipt shows: Total = $58.17", answer: "5817", safeHint: "The safe needs a 4-digit code." },
-];
-
-const ROT13_PUZZLES = [
-  { encrypted: "ONAQVG", answer: "bandit", description: 'A book title reads: "ONAQVG" — it\'s ROT13 encrypted.' },
-  { encrypted: "CVENGR", answer: "pirate", description: 'A book title reads: "CVENGR" — it\'s ROT13 encrypted.' },
-  { encrypted: "FRPERG", answer: "secret", description: 'A book title reads: "FRPERG" — it\'s ROT13 encrypted.' },
-  { encrypted: "QNATRE", answer: "danger", description: 'A book title reads: "QNATRE" — it\'s ROT13 encrypted.' },
-  { encrypted: "RFPNCR", answer: "escape", description: 'A book title reads: "RFPNCR" — it\'s ROT13 encrypted.' },
-  { encrypted: "UVQQRA", answer: "hidden", description: 'A book title reads: "UVQQRA" — it\'s ROT13 encrypted.' },
-  { encrypted: "INYYHG", answer: "vellum", description: 'A bookmark reads: "INYYHG" — it\'s ROT13 encrypted.' },
-  { encrypted: "FURYYRE", answer: "shelter", description: 'A torn page says: "FURYIRE" — it\'s ROT13 encrypted.' },
-];
-
-const RIDDLE_PUZZLES = [
-  { question: "What has keys but no locks?", answers: ["keyboard", "a keyboard", "piano", "a piano"] },
-  { question: "I have cities but no houses, forests but no trees. What am I?", answers: ["map", "a map"] },
-  { question: "What gets wetter the more it dries?", answers: ["towel", "a towel"] },
-  { question: "What has hands but can't clap?", answers: ["clock", "a clock", "watch", "a watch"] },
-  { question: "What has a head and tail but no body?", answers: ["coin", "a coin"] },
-  { question: "What can travel around the world while staying in a corner?", answers: ["stamp", "a stamp"] },
-  { question: "What has one eye but can't see?", answers: ["needle", "a needle"] },
-  { question: "What breaks yet never falls, and what falls yet never breaks?", answers: ["day and night", "day night", "daybreak nightfall"] },
-  { question: "The more you take, the more you leave behind. What am I?", answers: ["footsteps", "footprints", "steps"] },
-  { question: "What can fill a room but takes up no space?", answers: ["light", "darkness", "air"] },
-];
-
-const CIPHER_PUZZLES = [
-  { encrypted: "HVFDSH", shift: 3, answer: "escape", hint: "Caesar cipher, shift 3 backwards." },
-  { encrypted: "GDQJHU", shift: 3, answer: "danger", hint: "Caesar cipher, shift 3 backwards." },
-  { encrypted: "IUHHGRP", shift: 3, answer: "freedom", hint: "Caesar cipher, shift 3 backwards." },
-  { encrypted: "UXQQLQJ", shift: 3, answer: "running", hint: "Caesar cipher, shift 3 backwards." },
-  { encrypted: "KLGGHQ", shift: 3, answer: "hidden", hint: "Caesar cipher, shift 3 backwards." },
-  { encrypted: "XQORFN", shift: 3, answer: "unlock", hint: "Caesar cipher, shift 3 backwards." },
-  { encrypted: "WJHTJY", shift: 5, answer: "rescue", hint: "Caesar cipher, shift 5 backwards." },
-  { encrypted: "JSCUNY", shift: 7, answer: "clunky", hint: "Caesar cipher, shift 7 backwards." },
-];
-
-// ─── NEW: Additional puzzle type pools for variety ──────────
-const MATH_PUZZLES = [
-  { question: "If A=1, B=2, C=3... What does F + I + V + E equal?", answer: "27", hint: "🔢 Solve the math equation on the wall" },
-  { question: "12 × 7 − 15 + 3 = ?", answer: "72", hint: "🔢 A math equation scratched into the desk" },
-  { question: "What is the next number: 2, 6, 18, 54, ?", answer: "162", hint: "🔢 A number sequence on the mirror" },
-  { question: "Fibonacci: 1, 1, 2, 3, 5, 8, 13, ?", answer: "21", hint: "🔢 Fibonacci spiral carved in the wood" },
-  { question: "If three cats catch three mice in three minutes, how many cats catch 100 mice in 100 minutes?", answer: "3", hint: "🔢 A cat puzzle on the wall" },
-  { question: "What is 2^8?", answer: "256", hint: "🔢 Powers of two etched into stone" },
-];
-
-const ANAGRAM_PUZZLES = [
-  { scrambled: "RIASNP", answer: "prison", hint: "🔤 Unscramble the letters on the note" },
-  { scrambled: "REEDMF", answer: "freedom", hint: "🔤 Unscramble these scattered magnetic letters" },
-  { scrambled: "YTFESA", answer: "safety", hint: "🔤 Rearrange the letters on the bulletin board" },
-  { scrambled: "CSPAEA", answer: "escape", hint: "🔤 Letters jumbled on a sticky note" },
-  { scrambled: "CRTEES", answer: "secret", hint: "🔤 Scrambled letter tiles on the shelf" },
-  { scrambled: "DNAGRE", answer: "danger", hint: "🔤 Magnetic letters jumbled on the fridge" },
-];
-
-const PATTERN_PUZZLES = [
-  { sequence: "🔴🔵🔴🔵🔴?", answer: "blue", hint: "🎨 What color comes next?", acceptedAnswers: ["blue", "🔵"] },
-  { sequence: "⬆️➡️⬇️⬅️⬆️?", answer: "right", hint: "🎨 What direction comes next?", acceptedAnswers: ["right", "➡️"] },
-  { sequence: "🌑🌓🌕🌗🌑?", answer: "first quarter", hint: "🎨 What moon phase comes next?", acceptedAnswers: ["first quarter", "🌓", "half moon"] },
-  { sequence: "AB, CD, EF, GH, ?", answer: "ij", hint: "🎨 What pair comes next?", acceptedAnswers: ["ij", "IJ", "i j"] },
-  { sequence: "1, 4, 9, 16, 25, ?", answer: "36", hint: "🎨 Perfect squares — what's next?", acceptedAnswers: ["36"] },
-];
-
-const MORSE_PUZZLES = [
-  { code: ".... . .-.. .--.", answer: "help", hint: "📡 Decode the Morse code tapping on the pipes" },
-  { code: ".-.. --- -.-. -.-", answer: "lock", hint: "📡 The radio is beeping Morse code" },
-  { code: "--- .--. . -.", answer: "open", hint: "📡 A device flashes Morse code" },
-  { code: "... .- ...- .", answer: "save", hint: "📡 Morse code carved into the wall" },
-  { code: "- .-. .- .--.", answer: "trap", hint: "📡 Morse tapping coming from behind the wall" },
-];
-
-// Pool of puzzle slot assignments — each session picks a random config
-type PuzzleSlotType = "code" | "rot13" | "riddle" | "cipher" | "math" | "anagram" | "pattern" | "morse";
-
-const PUZZLE_SLOT_CONFIGS: PuzzleSlotType[][] = [
-  ["code", "rot13", "riddle", "cipher"],
-  ["code", "math", "riddle", "anagram"],
-  ["code", "morse", "pattern", "rot13"],
-  ["code", "anagram", "cipher", "math"],
-  ["code", "pattern", "morse", "riddle"],
-  ["code", "riddle", "math", "morse"],
-  ["code", "cipher", "anagram", "pattern"],
-];
-
-const pickRandom = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+// ─── Puzzle data imported from dedicated file (200+ puzzles) ──────
+import {
+  CODE_PUZZLES, ROT13_PUZZLES, RIDDLE_PUZZLES, CIPHER_PUZZLES,
+  MATH_PUZZLES, ANAGRAM_PUZZLES, PATTERN_PUZZLES, MORSE_PUZZLES,
+  WORD_PUZZLE, LOGIC_PUZZLES,
+  PUZZLE_SLOT_CONFIGS, SLOT_LABELS, pickRandom, pickRandomPuzzles,
+  type PuzzleSlotType,
+} from "@/data/escapeRoomPuzzles";
 
 const EscapeRoomGame = ({ onBack }: { onBack: () => void }) => {
   const [timeLeft, setTimeLeft] = useState(480);
