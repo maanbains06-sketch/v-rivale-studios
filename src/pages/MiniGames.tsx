@@ -683,6 +683,28 @@ const EscapeRoomGame = ({ onBack }: { onBack: () => void }) => {
             </div>
           ) : <p className="text-green-400 text-sm flex items-center gap-2 font-mono"><CheckCircle className="w-4 h-4" /> Decoded: {puzzles.morse.answer.toUpperCase()}</p>}
         </>;
+      case "word":
+        return <>
+          <div className="flex items-center gap-2 text-sm text-cyan-400/80 font-mono"><Eye className="w-4 h-4" /> {puzzles.word.hint}: "{puzzles.word.clue}"</div>
+          {!isDone ? (
+            <div className="flex gap-2">
+              <input value={getInput(inputKey)} onChange={e => setInput(inputKey, e.target.value)} placeholder="Answer..."
+                className="flex-1 bg-black/40 border border-cyan-500/30 rounded-xl px-4 py-2.5 text-sm font-mono text-cyan-300 focus:border-cyan-400 outline-none" />
+              <Button onClick={() => { if (getInput(inputKey).toLowerCase().trim() === puzzles.word.answer) completePuzzle(slotId); else toast({ title: "Wrong!", variant: "destructive" }); }} className="bg-cyan-600 hover:bg-cyan-500 border-0">Answer</Button>
+            </div>
+          ) : <p className="text-green-400 text-sm flex items-center gap-2 font-mono"><CheckCircle className="w-4 h-4" /> Solved: {puzzles.word.answer.toUpperCase()}</p>}
+        </>;
+      case "logic":
+        return <>
+          <div className="flex items-center gap-2 text-sm text-cyan-400/80 font-mono"><Eye className="w-4 h-4" /> {puzzles.logic.hint}: "{puzzles.logic.question}"</div>
+          {!isDone ? (
+            <div className="flex gap-2">
+              <input value={getInput(inputKey)} onChange={e => setInput(inputKey, e.target.value)} placeholder="Answer..."
+                className="flex-1 bg-black/40 border border-cyan-500/30 rounded-xl px-4 py-2.5 text-sm font-mono text-cyan-300 focus:border-cyan-400 outline-none" />
+              <Button onClick={() => { if (puzzles.logic.acceptedAnswers.map((a: string) => a.toLowerCase()).includes(getInput(inputKey).toLowerCase().trim())) completePuzzle(slotId); else toast({ title: "Wrong!", variant: "destructive" }); }} className="bg-cyan-600 hover:bg-cyan-500 border-0">Submit</Button>
+            </div>
+          ) : <p className="text-green-400 text-sm flex items-center gap-2 font-mono"><CheckCircle className="w-4 h-4" /> Logic puzzle cracked!</p>}
+        </>;
       default:
         return <p className="text-muted-foreground text-sm">Unknown puzzle type</p>;
     }
