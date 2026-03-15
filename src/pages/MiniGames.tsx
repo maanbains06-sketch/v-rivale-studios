@@ -409,16 +409,7 @@ const EscapeRoomGame = ({ onBack }: { onBack: () => void }) => {
     setGameOver(false); setWon(false); setActiveObject(null);
     setPuzzleInputs({});
     setFoundKey(false); setFoundClue(false);
-    setPuzzles({
-      code: pickRandom(CODE_PUZZLES),
-      rot13: pickRandom(ROT13_PUZZLES),
-      riddle: pickRandom(RIDDLE_PUZZLES),
-      cipher: pickRandom(CIPHER_PUZZLES),
-      math: pickRandom(MATH_PUZZLES),
-      anagram: pickRandom(ANAGRAM_PUZZLES),
-      pattern: pickRandom(PATTERN_PUZZLES),
-      morse: pickRandom(MORSE_PUZZLES),
-    });
+    setPuzzles(pickRandomPuzzles());
   };
 
   const getInput = (key: string) => puzzleInputs[key] || "";
