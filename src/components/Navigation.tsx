@@ -494,6 +494,17 @@ const Navigation = () => {
                               Case Files
                             </Link>
                           </Button>
+                          <Button 
+                            variant="outline"
+                            className="justify-start glass-effect border-cyan-500/30"
+                            asChild
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <Link to="/staff-time-clock">
+                              <Clock className="w-4 h-4 mr-2 text-cyan-400" />
+                              Time Clock
+                            </Link>
+                          </Button>
                         </>
                       )}
                       {isOwner && (
