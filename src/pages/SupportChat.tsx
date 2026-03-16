@@ -909,7 +909,7 @@ const SupportChat = () => {
       />
 
       <div className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-3 gap-6 h-[calc(100vh-300px)]">
+        <div className="grid lg:grid-cols-3 gap-6" style={{ height: 'calc(100vh - 300px)', minHeight: '400px' }}>
           {/* Chats List */}
           <Card className="relative overflow-hidden bg-gradient-to-b from-card to-card/80 backdrop-blur-xl border-border/30 shadow-xl">
             {/* Decorative gradient */}
