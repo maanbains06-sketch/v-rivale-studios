@@ -109,6 +109,7 @@ const SuggestionBox = lazy(() => import("./pages/SuggestionBox"));
 const Memorial = lazy(() => import("./pages/Memorial"));
 const CinemaHub = lazy(() => import("./pages/CinemaHub"));
 const DirectMessage = lazy(() => import("./pages/DirectMessage"));
+const StaffTimeClock = lazy(() => import("./pages/StaffTimeClock"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // PERFORMANCE: Ultra-optimized query client for butter-smooth experience
