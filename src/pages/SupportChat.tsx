@@ -1357,7 +1357,7 @@ const SupportChat = () => {
                       <div ref={messagesEndRef} />
                     </div>
                   </ScrollArea>
-                  <div className="space-y-3 mt-4 pt-4 border-t border-border/20">
+                  <div className="space-y-3 mt-4 pt-4 border-t border-border/20 flex-shrink-0">
                     {attachment && (
                       <div className="flex items-center gap-2 text-sm bg-gradient-to-r from-primary/10 to-transparent px-4 py-2.5 rounded-xl border border-primary/20">
                         <Paperclip className="h-4 w-4 text-primary" />
