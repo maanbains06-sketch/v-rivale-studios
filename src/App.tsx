@@ -215,6 +215,7 @@ const AppRoutes = memo(() => {
           <Route path="/suggestion-box" element={<PageTransition><RequireAuth message="Login with Discord to submit suggestions."><PageMaintenanceBlock pageKey="suggestion-box"><SuggestionBox /></PageMaintenanceBlock></RequireAuth></PageTransition>} />
           <Route path="/memorial" element={<PageTransition><PageMaintenanceBlock pageKey="memorial"><Memorial /></PageMaintenanceBlock></PageTransition>} />
           <Route path="/cinema-hub" element={<PageTransition><RequireAuth message="Login with Discord to access Cinema Hub."><CinemaHub /></RequireAuth></PageTransition>} />
+          <Route path="/staff-time-clock" element={<PageTransition><RequireAuth message="Login with Discord to access the Time Clock."><StaffTimeClock /></RequireAuth></PageTransition>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
         </Routes>
