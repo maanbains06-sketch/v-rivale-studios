@@ -1192,12 +1192,25 @@ const SupportChat = () => {
           </Card>
 
           {/* Messages Area */}
-          <Card className="lg:col-span-2 relative overflow-hidden bg-gradient-to-b from-card to-card/80 backdrop-blur-xl border-border/30 shadow-xl flex flex-col">
+          <Card className="lg:col-span-2 relative overflow-hidden bg-gradient-to-b from-card to-card/80 backdrop-blur-xl border-border/30 shadow-xl flex flex-col" style={{ maxHeight: 'calc(100vh - 300px)', minHeight: '400px' }}>
             {/* Decorative gradient */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,hsl(var(--primary)/0.05),transparent_40%)] pointer-events-none" />
             {selectedChat ? (
               <>
-                <CardHeader className="border-b border-border/20">
+                {/* Request Human button - sticky at top */}
+                {!selectedChat.assigned_to && selectedChat.status === 'open' && (
+                  <div className="relative z-10 px-4 py-2 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-b border-amber-500/20 flex items-center justify-between flex-shrink-0">
+                    <p className="text-xs text-muted-foreground flex items-center gap-2">
+                      <Sparkles className="h-3 w-3 text-amber-500" />
+                      AI is assisting you. Need a real person?
+                    </p>
+                    <Button size="sm" variant="outline" onClick={requestHumanSupport} className="border-amber-500/30 hover:bg-amber-500/10 text-amber-500 hover:text-amber-400">
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Request Human
+                    </Button>
+                  </div>
+                )}
+                <CardHeader className="border-b border-border/20 flex-shrink-0">
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle className="text-lg">{selectedChat.subject}</CardTitle>
@@ -1222,12 +1235,6 @@ const SupportChat = () => {
                       </p>
                     </div>
                     <div className="flex gap-2">
-                      {!selectedChat.assigned_to && selectedChat.status === 'open' && (
-                        <Button size="sm" variant="outline" onClick={requestHumanSupport}>
-                          <UserPlus className="h-4 w-4 mr-2" />
-                          Request Human
-                        </Button>
-                      )}
                       {selectedChat.status === "closed" && (
                         <Dialog open={ratingDialogOpen} onOpenChange={setRatingDialogOpen}>
                           <DialogTrigger asChild>
