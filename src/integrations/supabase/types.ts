@@ -4124,6 +4124,60 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_time_clock: {
+        Row: {
+          clock_in_at: string
+          clock_out_at: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          session_date: string
+          staff_member_id: string
+          total_seconds: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          clock_in_at?: string
+          clock_out_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          session_date?: string
+          staff_member_id: string
+          total_seconds?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          clock_in_at?: string
+          clock_out_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          session_date?: string
+          staff_member_id?: string
+          total_seconds?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_time_clock_staff_member_id_fkey"
+            columns: ["staff_member_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_time_clock_staff_member_id_fkey"
+            columns: ["staff_member_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       staff_training_modules: {
         Row: {
           content: string
