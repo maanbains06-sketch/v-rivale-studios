@@ -1283,8 +1283,8 @@ const SupportChat = () => {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="relative flex-1 flex flex-col p-4">
-                  <ScrollArea className="flex-1 pr-4">
+                <CardContent className="relative flex-1 flex flex-col p-4 overflow-hidden min-h-0">
+                  <ScrollArea className="flex-1 pr-4 min-h-0">
                     <div className="space-y-4">
                       {messages.map((message) => {
                         const isAiMessage = message.is_staff && message.user_id === "00000000-0000-0000-0000-000000000000";
