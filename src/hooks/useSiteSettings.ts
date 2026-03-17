@@ -38,6 +38,7 @@ interface SiteSettings {
   mini_games_hidden: boolean;
   profile_customization_hidden: boolean;
   memorial_hidden: boolean;
+  time_clock_hidden: boolean;
 }
 
 interface UseSiteSettingsReturn {
