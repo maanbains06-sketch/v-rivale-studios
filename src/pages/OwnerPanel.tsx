@@ -1781,6 +1781,10 @@ const OwnerPanel = () => {
                   <BarChart3 className="w-4 h-4" />
                   <span className="hidden sm:inline">Records</span>
                 </TabsTrigger>
+                <TabsTrigger value="time-clock" className="flex items-center gap-2 whitespace-nowrap">
+                  <Clock className="w-4 h-4" />
+                  <span className="hidden sm:inline">Time Clock</span>
+                </TabsTrigger>
               </TabsList>
             </div>
             {/* Fade indicators for scroll hint */}
