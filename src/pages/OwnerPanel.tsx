@@ -41,6 +41,7 @@ import ApplicationToggleManager from "@/components/ApplicationToggleManager";
 import AdminSuggestionsTab from "@/components/admin/AdminSuggestionsTab";
 import OwnerMemorialManager from "@/components/OwnerMemorialManager";
 import OwnerRecords from "@/components/OwnerRecords";
+import OwnerTimeClockManager from "@/components/OwnerTimeClockManager";
 
 import { LiveApplicationStats } from "@/components/LiveApplicationStats";
 import OwnerLiveChatManager from "@/components/OwnerLiveChatManager";
