@@ -84,6 +84,7 @@ const defaultSettings: SiteSettings = {
   mini_games_hidden: false,
   profile_customization_hidden: false,
   memorial_hidden: false,
+  time_clock_hidden: false,
 };
 
 // Cache settings in localStorage for instant loading
