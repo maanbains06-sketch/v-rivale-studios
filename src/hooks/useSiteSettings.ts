@@ -38,6 +38,7 @@ interface SiteSettings {
   mini_games_hidden: boolean;
   profile_customization_hidden: boolean;
   memorial_hidden: boolean;
+  time_clock_hidden: boolean;
 }
 
 interface UseSiteSettingsReturn {
@@ -83,6 +84,7 @@ const defaultSettings: SiteSettings = {
   mini_games_hidden: false,
   profile_customization_hidden: false,
   memorial_hidden: false,
+  time_clock_hidden: false,
 };
 
 // Cache settings in localStorage for instant loading
@@ -151,6 +153,7 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
           'mini_games_hidden',
           'profile_customization_hidden',
           'memorial_hidden',
+          'time_clock_hidden',
         ]);
 
       if (error) {
@@ -196,6 +199,7 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
           mini_games_hidden: settingsMap.mini_games_hidden === 'true',
           profile_customization_hidden: settingsMap.profile_customization_hidden === 'true',
           memorial_hidden: settingsMap.memorial_hidden === 'true',
+          time_clock_hidden: settingsMap.time_clock_hidden === 'true',
         };
 
         setSettings(newSettings);

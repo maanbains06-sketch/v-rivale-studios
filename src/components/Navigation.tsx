@@ -79,6 +79,7 @@ const Navigation = () => {
   const showMiniGamesLink = isOwner || (!siteSettingsLoading && !siteSettings.mini_games_hidden);
   const showProfileCustomizationLink = isOwner || (!siteSettingsLoading && !siteSettings.profile_customization_hidden);
   const showMemorialLink = isOwner || (!siteSettingsLoading && !siteSettings.memorial_hidden);
+  const showTimeClockLink = isOwner || (!siteSettingsLoading && !siteSettings.time_clock_hidden);
 
   // Track staff presence when logged in with Discord ID
   useWebsitePresence({ 
@@ -494,17 +495,19 @@ const Navigation = () => {
                               Case Files
                             </Link>
                           </Button>
-                          <Button 
-                            variant="outline"
-                            className="justify-start glass-effect border-cyan-500/30"
-                            asChild
-                            onClick={() => setIsMenuOpen(false)}
-                          >
-                            <Link to="/staff-time-clock">
-                              <Clock className="w-4 h-4 mr-2 text-cyan-400" />
-                              Time Clock
-                            </Link>
-                          </Button>
+                          {showTimeClockLink && (
+                            <Button 
+                              variant="outline"
+                              className="justify-start glass-effect border-cyan-500/30"
+                              asChild
+                              onClick={() => setIsMenuOpen(false)}
+                            >
+                              <Link to="/staff-time-clock">
+                                <Clock className="w-4 h-4 mr-2 text-cyan-400" />
+                                Time Clock
+                              </Link>
+                            </Button>
+                          )}
                         </>
                       )}
                       {isOwner && (
@@ -586,17 +589,19 @@ const Navigation = () => {
                               Case Files
                             </Link>
                           </Button>
-                          <Button 
-                            variant="outline"
-                            className="justify-start glass-effect border-cyan-500/30"
-                            asChild
-                            onClick={() => setIsMenuOpen(false)}
-                          >
-                            <Link to="/staff-time-clock">
-                              <Clock className="w-4 h-4 mr-2 text-cyan-400" />
-                              Time Clock
-                            </Link>
-                          </Button>
+                          {showTimeClockLink && (
+                            <Button 
+                              variant="outline"
+                              className="justify-start glass-effect border-cyan-500/30"
+                              asChild
+                              onClick={() => setIsMenuOpen(false)}
+                            >
+                              <Link to="/staff-time-clock">
+                                <Clock className="w-4 h-4 mr-2 text-cyan-400" />
+                                Time Clock
+                              </Link>
+                            </Button>
+                          )}
                         </>
                       )}
                     </div>
