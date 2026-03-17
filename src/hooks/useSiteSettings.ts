@@ -199,6 +199,7 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
           mini_games_hidden: settingsMap.mini_games_hidden === 'true',
           profile_customization_hidden: settingsMap.profile_customization_hidden === 'true',
           memorial_hidden: settingsMap.memorial_hidden === 'true',
+          time_clock_hidden: settingsMap.time_clock_hidden === 'true',
         };
 
         setSettings(newSettings);
