@@ -153,6 +153,7 @@ export const useSiteSettings = (): UseSiteSettingsReturn => {
           'mini_games_hidden',
           'profile_customization_hidden',
           'memorial_hidden',
+          'time_clock_hidden',
         ]);
 
       if (error) {
