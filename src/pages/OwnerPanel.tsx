@@ -2837,6 +2837,11 @@ const OwnerPanel = () => {
             <OwnerRecords />
           </TabsContent>
 
+          {/* Time Clock Tab */}
+          <TabsContent value="time-clock">
+            <OwnerTimeClockManager />
+          </TabsContent>
+
         </Tabs>
       </div>
 
