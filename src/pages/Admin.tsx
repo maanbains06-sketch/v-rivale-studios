@@ -572,6 +572,7 @@ const Admin = () => {
         .from("staff_members")
         .select("*")
         .eq("is_active", true)
+        .in("role_type", ["owner", "admin", "moderator", "developer"])
         .order("name");
 
       if (staffMembers) {
